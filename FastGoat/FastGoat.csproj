@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{7589D656-93EC-471F-8A49-3555522BD1E7}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>FastGoat</RootNamespace>
+    <AssemblyName>FastGoat</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ExternalConsole>true</ExternalConsole>
+    <LangVersion>Latest</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ExternalConsole>true</ExternalConsole>
+    <LangVersion>Latest</LangVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Zn.cs" />
+    <Compile Include="Helpers.methods.cs" />
+    <Compile Include="Sn.cs" />
+    <Compile Include="CustomTuples.cs" />
+    <Compile Include="SetTheory\SubSet.cs" />
+    <Compile Include="SetTheory\IFSet.cs" />
+    <Compile Include="SetTheory\SetOps.cs" />
+    <Compile Include="GroupTheory\GroupOps.cs" />
+    <Compile Include="GroupTheory\SubGroup.cs" />
+    <Compile Include="GroupTheory\IGroup.cs" />
+    <Compile Include="SetTheory\SetExt.cs" />
+    <Compile Include="GroupTheory\GroupExt.cs" />
+    <Compile Include="GroupTheory\QuotientGroup.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="SetTheory\" />
+    <Folder Include="GroupTheory\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+</Project>
