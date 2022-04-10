@@ -14,12 +14,12 @@ namespace FastGoat
         {
             var z = new Zn(2, 3, 3);
             var i0 = z.CreateElement(1, 0, 0);
-            var i1 = z.CreateElement(0, 1, 0);
-            var i2 = z.CreateElement(0, 0, 1);
-            z.Union(i0, i1, i2).Develop("G").Details();
+            var i1 = z.CE(0, 1, 0);
+            var i2 = z.CE(0, 0, 1);
+            z.Union(i0, i1, i2).Develop("G");
 
             var j0 = z.Monogenic(i0, "H");
-            var j1 = z.Monogenic(z.CreateElement(0, 1, 1), "K");
+            var j1 = z.Monogenic(z.CE(0, 1, 1), "K");
             j0.DirectProduct(j1).Details();
         }
 
@@ -44,8 +44,8 @@ namespace FastGoat
         static void SamplesZnQuotient()
         {
             var z = new Zn(4, 5);
-            var g = z.Union(z.CreateElement(1, 0),z.CreateElement(0, 1)).Develop("G");
-            var h = z.Monogenic(z.CreateElement(0, 1), "H");
+            var g = z.Union(z.CE(1, 0),z.CE(0, 1)).Develop("G");
+            var h = z.Monogenic(z.CE(0, 1), "H");
             var gh = g.Over(h);
             g.SortBy = h.SortBy = gh.SortBy = SortBy.Value;
             g.DisplayElements();
@@ -71,7 +71,12 @@ namespace FastGoat
             //SamplesZn();
             //SamplesSn();
             //SamplesZnQuotient();
-            SamplesSnQuotient();
+            //SamplesSnQuotient();
+
+            new Zn(24).GenerateAll().DisplayElements();
+            new Zn(4, 6).GenerateAll().DisplayElements();
+            new Zn(2, 3, 4).GenerateAll().DisplayElements();
+            new Zn(3, 8).GenerateAll().DisplayElements();
         }
     }
 }

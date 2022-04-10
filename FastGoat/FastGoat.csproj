@@ -47,6 +47,7 @@
     <Compile Include="SetTheory\SetExt.cs" />
     <Compile Include="GroupTheory\GroupExt.cs" />
     <Compile Include="GroupTheory\QuotientGroup.cs" />
+    <Compile Include="GroupTheory\Conjugate.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="SetTheory\" />

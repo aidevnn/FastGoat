@@ -158,8 +158,7 @@ namespace FastGoat.GroupTheory
         {
             foreach(var kp in classOf)
             {
-                var r = kp.Key;
-                Console.WriteLine("Class of : {0}", r);
+                Console.WriteLine("Class of : {0}", kp.Key);
                 foreach (var e in kp.Value)
                     Console.WriteLine("\t{0}", e);
             }

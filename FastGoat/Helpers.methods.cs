@@ -98,6 +98,15 @@ namespace FastGoat
             return l.ToArray();
         }
 
+        public static int[] Canonic(int n, int k)
+        {
+            var arr = new int[n];
+            arr[k] = 1;
+            return arr;
+        }
+
+        public static int[][] BaseCanonic(int n) => n.Range().Select(k => Canonic(n, k)).ToArray();
+
         public static int[][] AllTuples(params int[] dims)
         {
             var acc = new List<List<int>>() { new List<int>() };

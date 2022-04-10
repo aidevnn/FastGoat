@@ -78,5 +78,12 @@ namespace FastGoat
             int hash = Helpers.AddModulo(Dims, vs, Neutral.Table, Cache.Table);
             return new ZnElt(this, Cache.Table, hash);
         }
+
+        public ZnElt CE(params int[] vs) => CreateElement(vs);
+        public SubGroup<ZnElt> GenerateAll()
+        {
+            var bs = Helpers.BaseCanonic(Dims.Length).Select(CE).ToArray();
+            return this.Union(bs).Develop(Name);
+        }
     }
 }

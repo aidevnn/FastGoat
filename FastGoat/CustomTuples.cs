@@ -3,7 +3,6 @@ using System.Linq;
 
 namespace FastGoat
 {
-
     public class SingleTuple
     {
         public int[] Table { get; private set; }
