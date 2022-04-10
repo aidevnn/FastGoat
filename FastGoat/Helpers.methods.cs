@@ -81,6 +81,23 @@ namespace FastGoat
             return hash;
         }
 
+        public static int[] PrimeDecomposition(int n)
+        {
+            var l = new List<int>();
+            var n0 = (int)Math.Sqrt(n) + 1;
+            int m = n;
+            for(int p = 1; p < n0; ++p)
+            {
+                while (m % p == 0)
+                {
+                    l.Add(p);
+                    m /= p;
+                }
+            }
+
+            return l.ToArray();
+        }
+
         public static int[][] AllTuples(params int[] dims)
         {
             var acc = new List<List<int>>() { new List<int>() };
@@ -198,5 +215,31 @@ namespace FastGoat
             return acc.Select(a => a.ToArray()).ToArray();
         }
 
+        public static HashSet<HashSet<int>> Orbits(this int[] arr)
+        {
+            HashSet<HashSet<int>> hs = new HashSet<HashSet<int>>(new EqualityHashSet());
+            for (int k = 0; k < arr.Length; ++k)
+            {
+                var a0 = k;
+                int sz = 0;
+                var hs0 = new HashSet<int>() { a0 };
+                while (sz != hs0.Count)
+                {
+                    sz = hs0.Count;
+                    a0 = arr[a0];
+                    hs0.Add(a0);
+                }
+                hs.Add(hs0);
+            }
+
+            return hs;
+        }
     }
+
+    public class EqualityHashSet : EqualityComparer<HashSet<int>>
+    {
+        public override bool Equals(HashSet<int> x, HashSet<int> y) => x.SetEquals(y);
+        public override int GetHashCode(HashSet<int> obj) => obj.Count;
+    }
+
 }

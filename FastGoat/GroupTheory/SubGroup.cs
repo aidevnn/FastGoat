@@ -24,7 +24,7 @@ namespace FastGoat.GroupTheory
         public abstract U Neutral { get; }
         public abstract U Invert(U a);
         public abstract U Op(U a, U b);
-        public XOpLR OpLR { get; set; } = XOpLR.Left;
+        public XOpLR OpLR { get; set; } = XOpLR.Both;
 
         public bool IsGroup
         {

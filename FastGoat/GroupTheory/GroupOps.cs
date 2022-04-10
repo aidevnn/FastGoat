@@ -159,12 +159,12 @@ namespace FastGoat.GroupTheory
         public override U Invert(U a) => UpperGroup.Invert(a);
         public override U Op(U a, U b) => UpperGroup.Op(a, b);
 
+        U Fct(U a, U b) => Op(a, Op(b, Invert(a)));
         void Generate(HashSet<U> g, HashSet<U> h)
         {
-            Func<U, U, U> func = (U a, U b) => Op(a, Op(b, Invert(a)));
             foreach (var e0 in h)
             {
-                if (g.All(e1 => h.Contains(func(e1, e0))))
+                if (g.All(e1 => h.Contains(Fct(e1, e0))))
                     Add(e0);
             }
         }

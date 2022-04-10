@@ -45,7 +45,7 @@ namespace FastGoat.SetTheory
 
         public U Cache { get; protected set; }
 
-        HashSet<U> Elts { get; }
+        protected HashSet<U> Elts { get; }
 
         public void Add(U e) => Elts.Add(e);
         public bool Contains(U e) => Elts.Contains(e);
@@ -58,6 +58,7 @@ namespace FastGoat.SetTheory
     public interface ISubSet<U> : IFSet<U> where U : struct, IElt
     {
         FSet<U> UpperSet { get; }
+        //bool IsEqual(SubSet<U> set);
     }
 
     public class Eq<U> : EqualityComparer<U> where U : struct, IElt

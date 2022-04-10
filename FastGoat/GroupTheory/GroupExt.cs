@@ -76,5 +76,10 @@ namespace FastGoat.GroupTheory
         {
             return subSet.SubGroupOf(group).Develop(name);
         }
+
+        public static QuotientGroup<U> Over<U>(this SubGroup<U> g, SubGroup<U> h) where U : struct, IElt
+        {
+            return new QuotientGroup<U>(g, h);
+        }
     }
 }

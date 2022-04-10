@@ -20,6 +20,9 @@ namespace FastGoat
             FSet = sn;
             Table = sn.N.Range();
             HashCode = sn.NHash;
+            Invariants = Table.ToArray();
+            Sgn = 1;
+            Cycles = new int[0][];
         }
 
         public Permutation(Sn sn, int[] arr, int hash)
@@ -28,7 +31,15 @@ namespace FastGoat
             FSet = sn;
             Table = arr.ToArray();
             HashCode = hash;
+            var orbits = Table.Orbits();
+            Invariants = orbits.Where(a => a.Count == 1).SelectMany(a => a).ToArray();
+            Cycles = orbits.Where(a => a.Count > 1).Select(a => a.ToArray()).ToArray();
+            Sgn = (int)Math.Pow(-1, Sn.N - orbits.Count);
         }
+
+        public int Sgn { get; }
+        public int[] Invariants { get; }
+        public int[][] Cycles { get; }
 
         public int CompareTo(IElt other) => Helpers.ArrayCompare(Table, other.Table);
 
@@ -44,7 +55,14 @@ namespace FastGoat
 
         public string EltStr() => Table.Select(a => 1 + a).Glue(sep: " ");
 
-        public string Infos() => "";
+        public string Infos()
+        {
+            var inv = Invariants.Length == 0 ? "" : string.Format(" Invariants : [{0}]", Invariants.Select(b => b + 1).Glue(fmt: "{0}"));
+            var strCycles = Cycles.Select(a => string.Format("({0})", a.Select(b => b + 1).Glue(fmt: "{0}"))).Glue();
+            var cycles = Cycles.Length == 0 ? "" : string.Format(" Cycles : {0}", strCycles);
+            var sgn = Sgn == 1 ? "(+)" : "(-)";
+            return string.Format("{0}{1}{2}", sgn, inv, cycles);
+        }
 
     }
     public class Sn : Group<Permutation>
@@ -103,7 +121,7 @@ namespace FastGoat
         public Permutation KCycle(int start, int count) => Cycle(count.Range(start));
 
         public Permutation Cycle(SingleTuple cycle) => Cycle(cycle.Table);
-        public Permutation Cycle(params SingleTuple[] cycles)
+        public Permutation Cycles(params SingleTuple[] cycles)
         {
             Neutral.Table.CopyTo(Cache.Table, 0);
             foreach(var e in cycles)

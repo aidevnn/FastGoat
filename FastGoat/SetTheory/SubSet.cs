@@ -83,5 +83,25 @@ namespace FastGoat.SetTheory
 
             Console.WriteLine();
         }
+
+        public bool IsEqual(SubSet<U> set)
+        {
+            if (!UpperSet.Equals(set.UpperSet)) return false;
+            var eq = Elts.SetEquals(set.Elts);
+            //if (eq)
+            //{
+            //    DisplayElements();
+            //    Console.WriteLine("--------------");
+            //    set.DisplayElements();
+            //    Console.WriteLine("##############");
+            //}
+            return eq;
+        }
+    }
+
+    public class EqSubSet<U> : EqualityComparer<SubSet<U>> where U : struct, IElt
+    {
+        public override bool Equals(SubSet<U> x, SubSet<U> y) => x.IsEqual(y);
+        public override int GetHashCode(SubSet<U> obj) => 1;
     }
 }

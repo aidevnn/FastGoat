@@ -6,7 +6,7 @@ using FastGoat.SetTheory;
 
 namespace FastGoat.GroupTheory
 {
-    public enum XOpLR { Left, Right }
+    public enum XOpLR { Left, Right, Both }
 
     public interface IGroup<U> : ISubSet<U> where U : struct, IElt
     {
@@ -25,7 +25,14 @@ namespace FastGoat.GroupTheory
         public abstract U Neutral { get; }
         public abstract U Invert(U a);
         public abstract U Op(U a, U b);
-        public XOpLR OpLR { get; set; } = XOpLR.Left;
+
+        public bool IsEqual(SubSet<U> set)
+        {
+            if (!UpperSet.Equals(set.UpperSet)) return false;
+            return Elts.SetEquals(set.AllElements());
+        }
+
+        public XOpLR OpLR { get; set; } = XOpLR.Both;
     }
 
     public interface ISubGroup<U> : IGroup<U> where U : struct, IElt
