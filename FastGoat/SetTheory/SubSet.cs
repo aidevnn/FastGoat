@@ -87,15 +87,7 @@ namespace FastGoat.SetTheory
         public bool IsEqual(SubSet<U> set)
         {
             if (!UpperSet.Equals(set.UpperSet)) return false;
-            var eq = Elts.SetEquals(set.Elts);
-            //if (eq)
-            //{
-            //    DisplayElements();
-            //    Console.WriteLine("--------------");
-            //    set.DisplayElements();
-            //    Console.WriteLine("##############");
-            //}
-            return eq;
+            return Elts.SetEquals(set.Elts);
         }
     }
 
