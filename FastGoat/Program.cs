@@ -68,10 +68,10 @@ namespace FastGoat
 
         public static void Main(string[] args)
         {
-            SamplesZn();
+            //SamplesZn();
             //SamplesSn();
             //SamplesZnQuotient();
-            //SamplesSnQuotient();
+            SamplesSnQuotient();
         }
     }
 }

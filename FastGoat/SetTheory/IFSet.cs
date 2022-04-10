@@ -58,7 +58,7 @@ namespace FastGoat.SetTheory
     public interface ISubSet<U> : IFSet<U> where U : struct, IElt
     {
         FSet<U> UpperSet { get; }
-        //bool IsEqual(SubSet<U> set);
+        bool IsEqual(SubSet<U> set);
     }
 
     public class Eq<U> : EqualityComparer<U> where U : struct, IElt
