@@ -8,19 +8,17 @@ namespace FastGoat.GroupTheory
 {
     public class QuotientGroup<U> : SubGroup<U> where U : struct, IElt
     {
-        public QuotientGroup(SubGroup<U> g, SubGroup<U> h, XOpLR opLR, string name) : base(g.UpperGroup, name, g.UpperGroup.Fmt)
+        public QuotientGroup(SubGroup<U> g, SubGroup<U> h, string name) : base(g.UpperGroup, name, g.UpperGroup.Fmt)
         {
             G = g;
             H = h;
-            OpLR = opLR;
             representatives = new Dictionary<U, U>(g.Count, new Eq<U>());
             classOf = new Dictionary<U, List<U>>(g.Count / h.Count, new Eq<U>());
 
             Init();
         }
 
-        public QuotientGroup(SubGroup<U> g, SubGroup<U> h, XOpLR opLR) : this(g, h, opLR, $"{g.Name}/{h.Name}") { }
-        public QuotientGroup(SubGroup<U> g, SubGroup<U> h) : this(g, h, XOpLR.Both, $"{g.Name}/{h.Name}") { }
+        public QuotientGroup(SubGroup<U> g, SubGroup<U> h) : this(g, h, $"{g.Name}/{h.Name}") { }
 
         readonly Dictionary<U, U> representatives;
         readonly Dictionary<U, List<U>> classOf;
@@ -29,7 +27,7 @@ namespace FastGoat.GroupTheory
 
         void Init()
         {
-            Fmt = string.Format("|{{0}}| = {{1}} with |{0}| = {2} and |{1}| = {3}, Op{4}", G.Name, H.Name, G.Count, H.Count, OpLR);
+            Fmt = string.Format("|{{0}}| = {{1}} with |{0}| = {2} and |{1}| = {3}", G.Name, H.Name, G.Count, H.Count);
 
             var gIsGr = G.IsGroup;
             var hIsGr = H.IsGroup;
@@ -55,12 +53,17 @@ namespace FastGoat.GroupTheory
         bool OpCompatibility()
         {
             List<(U, U)> equiv = new List<(U, U)>();
+            var elts = G.AllElements().ToList();
+            int n = elts.Count;
             foreach (var e0 in G.AllElements())
             {
                 foreach (var e1 in G.AllElements())
                 {
-                    var e2 = UpperGroup.Op(e0, UpperGroup.Invert(e1));
-                    if (H.Contains(e2))
+                    if (e0.Equals(e1)) continue;
+
+                    var e20 = UpperGroup.Op(UpperGroup.Invert(e0), e1);
+                    var e21 = UpperGroup.Op(e0, UpperGroup.Invert(e1));
+                    if (H.Contains(e20) && H.Contains(e21))
                         equiv.Add((e0, e1));
                 }
             }
@@ -69,23 +72,17 @@ namespace FastGoat.GroupTheory
             {
                 foreach(var a in G.AllElements())
                 {
-                    if (OpLR == XOpLR.Left)
-                    {
-                        var ax = UpperGroup.Op(a, x);
-                        var ay = UpperGroup.Op(a, y);
-                        var e2 = UpperGroup.Op(ax, UpperGroup.Invert(ay));
-                        if (!H.Contains(e2))
-                            return false;
-                    }
-                    else
-                    {
-                        var xa = UpperGroup.Op(x, a);
-                        var ya = UpperGroup.Op(y, a);
-                        var e2 = UpperGroup.Op(xa, UpperGroup.Invert(ya));
-                        if (!H.Contains(e2))
-                            return false;
+                    var ax = UpperGroup.Op(a, x);
+                    var ay = UpperGroup.Op(a, y);
+                    var el = UpperGroup.Op(UpperGroup.Invert(ax), ay);
+                    if (!H.Contains(el))
+                        return false;
 
-                    }
+                    var xa = UpperGroup.Op(x, a);
+                    var ya = UpperGroup.Op(y, a);
+                    var er = UpperGroup.Op(xa, UpperGroup.Invert(ya));
+                    if (!H.Contains(er))
+                        return false;
                 }
             }
 
@@ -98,46 +95,32 @@ namespace FastGoat.GroupTheory
             if (!comp)
                 return;
 
-            HashSet<SubSet<U>> hs0 = new HashSet<SubSet<U>>(new EqSubSet<U>());
-            HashSet<SubSet<U>> hs1 = new HashSet<SubSet<U>>(new EqSubSet<U>());
+            HashSet<SubSet<U>> xH = new HashSet<SubSet<U>>(new EqSubSet<U>());
+            HashSet<SubSet<U>> Hx = new HashSet<SubSet<U>>(new EqSubSet<U>());
             var listG = G.AllElements().ToList();
             listG.Sort(G.EltCompare);
             foreach(var e0 in listG)
             {
-                if (OpLR == XOpLR.Left || OpLR == XOpLR.Both)
-                {
-                    var equiv = new GroupOp<U>(e0, H);
-                    hs0.Add(equiv);
-                }
+                var l = new GroupOp<U>(e0, H);
+                xH.Add(l);
 
-                if (OpLR == XOpLR.Right || OpLR == XOpLR.Both)
-                {
-                    var equiv = new GroupOp<U>(H, e0);
-                    hs1.Add(equiv);
-                }
+                var r = new GroupOp<U>(H, e0);
+                Hx.Add(r);
             }
 
-            if (OpLR == XOpLR.Right)
-                hs0 = new HashSet<SubSet<U>>(hs1, new EqSubSet<U>());
+            if (xH.Count != Hx.Count || xH.Any(lh => !Hx.Contains(lh)))
+                return;
 
-            if (OpLR == XOpLR.Both)
-            {
-                if (hs0.Count != hs1.Count || hs0.Any(lh => !hs1.Contains(lh)))
-                    return;
-            }
-
-            foreach (var lh in hs0)
+            foreach (var lh in xH)
             {
                 var lu = new List<U>(lh.AllElements());
                 lu.Sort(G.EltCompare);
                 var r = lu.First();
-                var subG = new Union<U>(G.UpperSet, lu.ToArray());
                 classOf[r] = lu;
                 Add(r);
                 foreach (var e in lu)
                     representatives[e] = r;
             }
-
         }
 
         public override U Neutral => UpperGroup.Neutral;
@@ -153,6 +136,8 @@ namespace FastGoat.GroupTheory
             var c = G.Op(a, b);
             return representatives[c];
         }
+
+        public U ClassOf(U e) => representatives[e];
 
         public void DisplayClasses()
         {

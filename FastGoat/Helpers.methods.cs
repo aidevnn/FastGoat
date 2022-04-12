@@ -202,7 +202,7 @@ namespace FastGoat
             arr[cycle[n - 1]] = a0;
         }
 
-        public static int[][] AllPerms(int n)
+        public static int[][] AllPerms(int n, bool fromOne = false)
         {
             var acc = new List<List<int>>() { new List<int>() };
             for (int i = 0; i < n; ++i)
@@ -221,7 +221,7 @@ namespace FastGoat
                 acc = tmpAcc.ToList();
             }
 
-            return acc.Select(a => a.ToArray()).ToArray();
+            return acc.Select(a => a.Select(b => fromOne ? b + 1 : b).ToArray()).ToArray();
         }
 
         public static HashSet<HashSet<int>> Orbits(this int[] arr)

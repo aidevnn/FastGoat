@@ -71,12 +71,7 @@ namespace FastGoat
             //SamplesZn();
             //SamplesSn();
             //SamplesZnQuotient();
-            //SamplesSnQuotient();
-
-            new Zn(24).GenerateAll().DisplayElements();
-            new Zn(4, 6).GenerateAll().DisplayElements();
-            new Zn(2, 3, 4).GenerateAll().DisplayElements();
-            new Zn(3, 8).GenerateAll().DisplayElements();
+            SamplesSnQuotient();
         }
     }
 }

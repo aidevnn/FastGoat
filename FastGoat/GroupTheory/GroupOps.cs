@@ -103,7 +103,7 @@ namespace FastGoat.GroupTheory
             if (!sub.UpperSet.Equals(e.FSet))
                 return;
 
-            Generate(sub.AllElements().ToArray(), e);
+            Generate(sub.AllElements(), e);
         }
 
         public GroupOp(SubGroup<U> sub, U e, string name) : this(sub, e, name, sub.UpperSet.Fmt) { }
@@ -115,24 +115,22 @@ namespace FastGoat.GroupTheory
             if (!sub.UpperSet.Equals(e.FSet))
                 return;
 
-            Generate(sub.AllElements().ToArray(), e);
+            Generate(e, sub.AllElements());
         }
 
         public GroupOp(U e, SubGroup<U> sub, string name) : this(e, sub, name, sub.UpperSet.Fmt) { }
         public GroupOp(U e, SubGroup<U> sub) : this(e, sub, "xH", sub.UpperSet.Fmt) { }
 
-        void Generate(U[] sub, U e)
+        void Generate(U e, IEnumerable<U> sub)
         {
-            if (OpLR == XOpLR.Right)
-            {
-                foreach (var e0 in sub)
-                    Add(Op(e, e0));
-            }
-            else
-            {
-                foreach (var e0 in sub)
-                    Add(Op(e0, e));
-            }
+            foreach (var e0 in sub)
+                Add(Op(e, e0));
+        }
+
+        void Generate(IEnumerable<U> sub, U e)
+        {
+            foreach (var e0 in sub)
+                Add(Op(e0, e));
         }
 
         public override U Neutral => UpperGroup.Neutral;

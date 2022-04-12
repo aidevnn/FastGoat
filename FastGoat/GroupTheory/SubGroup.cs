@@ -74,6 +74,10 @@ namespace FastGoat.GroupTheory
         bool DisplayOrders { get; set; }
         void ComputeOrders()
         {
+            ElementOrder = Elts.ToDictionary(a => a, b => 1);
+            if (!DisplayOrders)
+                return;
+
             List<(U e, int o)> orders = new List<(U, int)>();
             foreach (var e in Elts)
             {
