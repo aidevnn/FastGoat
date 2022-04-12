@@ -6,14 +6,12 @@ namespace FastGoat.SetTheory
 {
     public class EmptySet<U> : SubSet<U> where U : struct, IElt
     {
-        public EmptySet(FSet<U> fset, string name, string fmt) : base(fset, name, fmt) { }
-        public EmptySet(FSet<U> fset, string name) : base(fset, name, fset.Fmt) { }
-        public EmptySet(FSet<U> fset) : base(fset, "{}", fset.Fmt) { }
+        public EmptySet(FSet<U> fset) : base(fset) { Name = "{}"; }
     }
 
     public class Inter<U> : SubSet<U> where U : struct, IElt
     {
-        public Inter(SubSet<U> g, SubSet<U> h, string name, string fmt) : base(g.UpperSet, name, fmt)
+        public Inter(SubSet<U> g, SubSet<U> h) : base(g.UpperSet)
         {
             if (!g.UpperSet.Equals(h.UpperSet))
                 return;
@@ -22,15 +20,13 @@ namespace FastGoat.SetTheory
                 Add(e);
 
             Infos = $"in {UpperSet.Name}";
+            Name = $"{g.Name}_{h.Name}";
         }
-
-        public Inter(SubSet<U> g, SubSet<U> h, string name) : this(g, h, name, g.UpperSet.Fmt) { }
-        public Inter(SubSet<U> g, SubSet<U> h) : this(g, h, $"{g.Name}_{h.Name}", g.UpperSet.Fmt) { }
     }
 
     public class Union<U> : SubSet<U> where U : struct, IElt
     {
-        public Union(SubSet<U> g, SubSet<U> h, string name, string fmt) : base(g.UpperSet, name, fmt)
+        public Union(SubSet<U> g, SubSet<U> h) : base(g.UpperSet)
         {
             if (!g.UpperSet.Equals(h.UpperSet))
                 return;
@@ -39,12 +35,10 @@ namespace FastGoat.SetTheory
                 Add(e);
 
             Infos = $"in {UpperSet.Name}";
+            Name = $"{g.Name}_{h.Name}";
         }
 
-        public Union(SubSet<U> g, SubSet<U> h, string name) : this(g, h, name, g.UpperSet.Fmt) { }
-        public Union(SubSet<U> g, SubSet<U> h) : this(g, h, $"{g.Name}_{h.Name}", g.UpperSet.Fmt) { }
-
-        public Union(FSet<U> fset, string name, string fmt, params U[] us) : base(fset, name, fmt)
+        public Union(FSet<U> fset, params U[] us) : base(fset)
         {
             if (us.Any(e => !UpperSet.Equals(e.FSet)))
                 return;
@@ -53,10 +47,8 @@ namespace FastGoat.SetTheory
                 Add(e);
 
             Infos = $"in {UpperSet.Name}";
+            Name = "G";
         }
-
-        public Union(FSet<U> fset, string name, params U[] us) : this(fset, name, fset.Fmt, us) { }
-        public Union(FSet<U> fset, params U[] us) : this(fset, "G", fset.Fmt, us) { }
     }
 
 }

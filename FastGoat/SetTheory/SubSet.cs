@@ -17,12 +17,10 @@ namespace FastGoat.SetTheory
             return "@abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".Skip(skip).Take(n).Select(c => $"{c}").ToList();
         }
 
-        protected SubSet(FSet<U> fSet, string name, string fmt)
+        protected SubSet(FSet<U> fSet)
         {
             UpperSet = fSet;
             Elts = new HashSet<U>(fSet.Capacity, new Eq<U>());
-            Name = name;
-            Fmt = fmt;
             FmtElt = fSet.FmtElt;
         }
 
@@ -37,10 +35,22 @@ namespace FastGoat.SetTheory
             Elts.Add(e);
         }
 
+        public SubSet<U> SName(string name)
+        {
+            Name = name;
+            return this;
+        }
+
+        public SubSet<U> SFmt(string fmt)
+        {
+            Fmt = fmt;
+            return this;
+        }
+
         public bool Contains(U e) => Elts.Contains(e);
         public int Count => Elts.Count;
 
-        public string Name { get; set; }
+        public string Name { get; set; } = "G";
         public string Fmt { get; set; }
         public string FmtElt { get; set; }
 

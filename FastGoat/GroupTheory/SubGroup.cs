@@ -8,11 +8,12 @@ namespace FastGoat.GroupTheory
 {
     public abstract class SubGroup<U> : SubSet<U>, ISubGroup<U> where U : struct, IElt
     {
-        protected SubGroup(Group<U> group, string name, string fmt) : base(group, name, fmt)
+        protected SubGroup(Group<U> group) : base(group)
         {
             UpperGroup = group;
             ElementOrder = new Dictionary<U, int>();
             SortBy = SortBy.Order;
+            Fmt = group.Fmt;
         }
 
         Dictionary<U, int> ElementOrder { get; set; }
@@ -25,6 +26,18 @@ namespace FastGoat.GroupTheory
         public abstract U Invert(U a);
         public abstract U Op(U a, U b);
         public XOpLR OpLR { get; set; } = XOpLR.Both;
+
+        public SubGroup<U> GName(string name)
+        {
+            Name = name;
+            return this;
+        }
+
+        public SubGroup<U> GFmt(string fmt)
+        {
+            Fmt = fmt;
+            return this;
+        }
 
         public bool IsGroup
         {

@@ -8,17 +8,16 @@ namespace FastGoat.GroupTheory
 {
     public class QuotientGroup<U> : SubGroup<U> where U : struct, IElt
     {
-        public QuotientGroup(SubGroup<U> g, SubGroup<U> h, string name) : base(g.UpperGroup, name, g.UpperGroup.Fmt)
+        public QuotientGroup(SubGroup<U> g, SubGroup<U> h) : base(g.UpperGroup)
         {
             G = g;
             H = h;
             representatives = new Dictionary<U, U>(g.Count, new Eq<U>());
             classOf = new Dictionary<U, List<U>>(g.Count / h.Count, new Eq<U>());
 
+            Name = $"{g.Name}/{h.Name}";
             Init();
         }
-
-        public QuotientGroup(SubGroup<U> g, SubGroup<U> h) : this(g, h, $"{g.Name}/{h.Name}") { }
 
         readonly Dictionary<U, U> representatives;
         readonly Dictionary<U, List<U>> classOf;

@@ -135,5 +135,10 @@ namespace FastGoat
             var hash = Helpers.GenHash(N, Cache.Table);
             return new Permutation(this, Cache.Table, hash);
         }
+
+        public SubGroup<Permutation> GenerateAll()
+        {
+            return this.GeneratedSubGroup(Helpers.AllPerms(N, true).Select(CreateElement).ToArray()).GName($"S{N}");
+        }
     }
 }

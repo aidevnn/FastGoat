@@ -16,10 +16,10 @@ namespace FastGoat
             var i0 = z.CreateElement(1, 0, 0);
             var i1 = z.CE(0, 1, 0);
             var i2 = z.CE(0, 0, 1);
-            z.Union(i0, i1, i2).Develop("G");
+            z.Union(i0, i1, i2).Develop();
 
-            var j0 = z.Monogenic(i0, "H");
-            var j1 = z.Monogenic(z.CE(0, 1, 1), "K");
+            var j0 = z.Monogenic(i0).GName("H");
+            var j1 = z.Monogenic(z.CE(0, 1, 1)).GName("K");
             j0.DirectProduct(j1).Details();
         }
 
@@ -30,22 +30,22 @@ namespace FastGoat
             var b = s.Cycles((1, 2), (3, 4));
             var c = s.KCycle(4);
 
-            var g = s.Monogenic(a, "G");
-            var h = s.Monogenic(b, "H");
+            var g = s.Monogenic(a).GName("G");
+            var h = s.Monogenic(b).GName("H");
             g.DisplayElements();
             h.DisplayElements();
             var k = g.Union(h).SubGroupOf(s);
             k.Details();
-            k.Develop("<GuH>").Details();
+            k.Develop().GName("<GuH>").Details();
 
-            s.Union(a, b, c).Develop("K2").Details();
+            s.Union(a, b, c).Develop().GName("K2").Details();
         }
 
         static void SamplesZnQuotient()
         {
             var z = new Zn(4, 5);
-            var g = z.Union(z.CE(1, 0),z.CE(0, 1)).Develop("G");
-            var h = z.Monogenic(z.CE(0, 1), "H");
+            var g = z.GeneratedSubGroup(z.CE(1, 0),z.CE(0, 1)).GName("G");
+            var h = z.Monogenic(z.CE(0, 1)).GName("H");
             var gh = g.Over(h);
             g.SortBy = h.SortBy = gh.SortBy = SortBy.Value;
             g.DisplayElements();
@@ -57,8 +57,8 @@ namespace FastGoat
         static void SamplesSnQuotient()
         {
             var S4 = new Sn(4);
-            var A4 = S4.Union(S4.Cycle(1, 2, 3), S4.Cycle(2, 3, 4)).Develop("A4");
-            var Klein = S4.Union(S4.Cycles((1, 2), (3, 4)), S4.Cycles((1, 3), (2, 4))).Develop("Klein");
+            var A4 = S4.GeneratedSubGroup(S4.Cycle(1, 2, 3), S4.Cycle(2, 3, 4)).GName("A4");
+            var Klein = S4.GeneratedSubGroup(S4.Cycles((1, 2), (3, 4)), S4.Cycles((1, 3), (2, 4))).GName("Klein");
             var Q = A4.Over(Klein);
             A4.DisplayElements();
             Klein.DisplayElements();
@@ -69,29 +69,31 @@ namespace FastGoat
         static void SamplesZnInvFactors()
         {
             var z = new Zn(2, 2, 2, 3);
-            var z24 = z.Union(z.BaseCanonic).Develop("G");
+            var z24 = z.GenerateAll().GName("G");
             z24.DisplayElements();
 
-            var c6 = z.Monogenic(z.CE(1, 1, 1, 2), "C6");
+            var c6 = z.Monogenic(z.CE(1, 1, 1, 2)).GName("C6");
             c6.DisplayElements();
 
             var k = z24.Over(c6);
             k.Details();
 
-            var c20 = z.Monogenic(z.CE(0, 0, 1, 0), "C2");
+            var c20 = z.Monogenic(z.CE(0, 0, 1, 0)).GName("C2");
             k.Over(c20).Details();
 
-            var c21 = z.Monogenic(z.CE(0, 1, 0, 0), "C2'");
+            var c21 = z.Monogenic(z.CE(0, 1, 0, 0)).GName("C2'");
             c21.DirectProduct(c20).DirectProduct(c6).DisplayElements();
         }
 
         public static void Main(string[] args)
         {
+
             //SamplesZn();
             //SamplesSn();
             //SamplesZnQuotient();
             //SamplesSnQuotient();
-            SamplesZnInvFactors();
+            //SamplesZnInvFactors();
+
         }
     }
 }
