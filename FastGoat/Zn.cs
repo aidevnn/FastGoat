@@ -85,5 +85,7 @@ namespace FastGoat
             var bs = Helpers.BaseCanonic(Dims.Length).Select(CE).ToArray();
             return this.Union(bs).Develop(Name);
         }
+
+        public ZnElt[] BaseCanonic => Helpers.BaseCanonic(Dims.Length).Select(CE).ToArray();
     }
 }

@@ -243,6 +243,25 @@ namespace FastGoat
 
             return hs;
         }
+
+        public static void PrimeFactors(int n)
+        {
+            var n0 = (int)Math.Sqrt(n) + 1;
+            List<int> factors = new List<int>();
+            var m = n;
+            for(int p = 2; p < n0; ++p)
+            {
+                while (m % p == 0)
+                {
+                    factors.Add(p);
+                    m /= p;
+                }
+            }
+
+            var factorsPowers = factors.GroupBy(a => a).ToDictionary(a => a.Key, b => b.Count());
+            var str = factorsPowers.Select(kp => kp.Value == 1 ? $"{kp.Key}" : $"{kp.Key}^{kp.Value}").Glue(fmt: "{0}", sep: " x ");
+            Console.WriteLine("{0} = {1}", n, str);
+        }
     }
 
     public class EqualityHashSet : EqualityComparer<HashSet<int>>

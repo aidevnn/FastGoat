@@ -66,12 +66,32 @@ namespace FastGoat
             Q.DisplayClasses();
         }
 
+        static void SamplesZnInvFactors()
+        {
+            var z = new Zn(2, 2, 2, 3);
+            var z24 = z.Union(z.BaseCanonic).Develop("G");
+            z24.DisplayElements();
+
+            var c6 = z.Monogenic(z.CE(1, 1, 1, 2), "C6");
+            c6.DisplayElements();
+
+            var k = z24.Over(c6);
+            k.Details();
+
+            var c20 = z.Monogenic(z.CE(0, 0, 1, 0), "C2");
+            k.Over(c20).Details();
+
+            var c21 = z.Monogenic(z.CE(0, 1, 0, 0), "C2'");
+            c21.DirectProduct(c20).DirectProduct(c6).DisplayElements();
+        }
+
         public static void Main(string[] args)
         {
             //SamplesZn();
             //SamplesSn();
             //SamplesZnQuotient();
-            SamplesSnQuotient();
+            //SamplesSnQuotient();
+            SamplesZnInvFactors();
         }
     }
 }

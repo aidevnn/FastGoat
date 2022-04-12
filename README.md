@@ -166,7 +166,136 @@ Class of : ( 1  4  2  3)
     ( 2  3  1  4)
     ( 3  2  4  1)
     ( 4  1  3  2)
+    
+```
 
+Invariants factors of Z/2Z x Z/2Z x Z/2Z x Z/3Z
+
+```
+var z = new Zn(2, 2, 2, 3);
+var z24 = z.Union(z.BaseCanonic).Develop("G");
+z24.DisplayElements();
+
+// Greatest order element of the group
+var c6 = z.Monogenic(z.CE(1, 1, 1, 2), "C6");
+c6.DisplayElements();
+
+// Quotient group 
+var k = z24.Over(c6);
+k.Details();
+
+// Greatest order element of the quotient group
+var c20 = z.Monogenic(z.CE(0, 0, 1, 0), "C2");
+k.Over(c20).Details();
+
+var c21 = z.Monogenic(z.CE(0, 1, 0, 0), "C2'");
+
+// Direct product of the invariants factors
+c21.DirectProduct(c20).DirectProduct(c6).DisplayElements();
+```
+
+Will output
+
+```
+|G| = 24 in Z/2Z x Z/2Z x Z/2Z x Z/3Z
+IsGroup      :  True
+IsCommutative:  True
+
+@ = ( 0, 0, 0, 0)[1]
+a = ( 0, 0, 1, 0)[2]
+b = ( 0, 1, 0, 0)[2]
+c = ( 0, 1, 1, 0)[2]
+d = ( 1, 0, 0, 0)[2]
+e = ( 1, 0, 1, 0)[2]
+f = ( 1, 1, 0, 0)[2]
+g = ( 1, 1, 1, 0)[2]
+h = ( 0, 0, 0, 1)[3]
+i = ( 0, 0, 0, 2)[3]
+j = ( 0, 0, 1, 1)[6]
+k = ( 0, 0, 1, 2)[6]
+l = ( 0, 1, 0, 1)[6]
+m = ( 0, 1, 0, 2)[6]
+n = ( 0, 1, 1, 1)[6]
+o = ( 0, 1, 1, 2)[6]
+p = ( 1, 0, 0, 1)[6]
+q = ( 1, 0, 0, 2)[6]
+r = ( 1, 0, 1, 1)[6]
+s = ( 1, 0, 1, 2)[6]
+t = ( 1, 1, 0, 1)[6]
+u = ( 1, 1, 0, 2)[6]
+v = ( 1, 1, 1, 1)[6]
+w = ( 1, 1, 1, 2)[6]
+
+|C6| = 6 in Z/2Z x Z/2Z x Z/2Z x Z/3Z
+IsGroup      :  True
+IsCommutative:  True
+
+@ = ( 0, 0, 0, 0)[1]
+a = ( 1, 1, 1, 0)[2]
+b = ( 0, 0, 0, 1)[3]
+c = ( 0, 0, 0, 2)[3]
+d = ( 1, 1, 1, 1)[6]
+e = ( 1, 1, 1, 2)[6]
+
+|G/C6| = 4 with |G| = 24 and |C6| = 6
+IsGroup      :  True
+IsCommutative:  True
+
+@ = ( 0, 0, 0, 0)[1]
+a = ( 0, 0, 1, 0)[2]
+b = ( 0, 1, 0, 0)[2]
+c = ( 0, 1, 1, 0)[2]
+
+|G/C6| = 4 with |G| = 24 and |C6| = 6
+ *|@ a b c
+--|--------
+ @|@ a b c
+ a|a @ c b
+ b|b c @ a
+ c|c b a @
+
+
+|G/C6/C2| = 2 with |G/C6| = 4 and |C2| = 2
+IsGroup      :  True
+IsCommutative:  True
+
+@ = ( 0, 0, 0, 0)[1]
+a = ( 0, 1, 0, 0)[2]
+
+|G/C6/C2| = 2 with |G/C6| = 4 and |C2| = 2
+ *|@ a
+--|----
+ @|@ a
+ a|a @
+
+
+|C2'.C2.C6| = 24 in Z/2Z x Z/2Z x Z/2Z x Z/3Z
+IsGroup      :  True
+IsCommutative:  True
+
+@ = ( 0, 0, 0, 0)[1]
+a = ( 0, 0, 1, 0)[2]
+b = ( 0, 1, 0, 0)[2]
+c = ( 0, 1, 1, 0)[2]
+d = ( 1, 0, 0, 0)[2]
+e = ( 1, 0, 1, 0)[2]
+f = ( 1, 1, 0, 0)[2]
+g = ( 1, 1, 1, 0)[2]
+h = ( 0, 0, 0, 1)[3]
+i = ( 0, 0, 0, 2)[3]
+j = ( 0, 0, 1, 1)[6]
+k = ( 0, 0, 1, 2)[6]
+l = ( 0, 1, 0, 1)[6]
+m = ( 0, 1, 0, 2)[6]
+n = ( 0, 1, 1, 1)[6]
+o = ( 0, 1, 1, 2)[6]
+p = ( 1, 0, 0, 1)[6]
+q = ( 1, 0, 0, 2)[6]
+r = ( 1, 0, 1, 1)[6]
+s = ( 1, 0, 1, 2)[6]
+t = ( 1, 1, 0, 1)[6]
+u = ( 1, 1, 0, 2)[6]
+v = ( 1, 1, 1, 1)[6]
 
 
 ```
