@@ -37,7 +37,7 @@
     <Compile Include="Zn.cs" />
     <Compile Include="Helpers.methods.cs" />
     <Compile Include="Sn.cs" />
-    <Compile Include="CustomTuples.cs" />
+    <Compile Include="Tuple2Array.cs" />
     <Compile Include="SetTheory\SubSet.cs" />
     <Compile Include="SetTheory\IFSet.cs" />
     <Compile Include="SetTheory\SetOps.cs" />

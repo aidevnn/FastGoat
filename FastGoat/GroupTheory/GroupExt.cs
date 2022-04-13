@@ -23,11 +23,6 @@ namespace FastGoat.GroupTheory
             return new DirectProduct<U>(g, h);
         }
 
-        public static SubGroup<U> Union<U>(this Group<U> g, params U[] us) where U : struct, IElt
-        {
-            return g.EmptySet().Union(us).SubGroupOf(g);
-        }
-
         public static SubGroup<U> Develop<U>(this SubGroup<U> subGroup) where U : struct, IElt
         {
             SubGroup<U> g = subGroup;
@@ -46,6 +41,11 @@ namespace FastGoat.GroupTheory
             return subSet.SubGroupOf(group).Develop();
         }
 
+        public static SubGroup<U> Union<U>(this Group<U> g, params U[] us) where U : struct, IElt
+        {
+            return g.EmptySet().Union(us).SubGroupOf(g);
+        }
+
         public static SubGroup<U> GeneratedSubGroup<U>(this Group<U> g, params U[] us) where U : struct, IElt
         {
             return g.EmptySet().Union(us).SubGroupOf(g).Develop();
@@ -60,6 +60,7 @@ namespace FastGoat.GroupTheory
         {
             return new Normalize<U>(g, h);
         }
+
         public static SubGroup<U> Normalize<U>(this SubGroup<U> g, params U[] us) where U : struct, IElt
         {
             return new Normalize<U>(g, g.UpperSet.Union(us));
@@ -69,6 +70,7 @@ namespace FastGoat.GroupTheory
         {
             return new Centerize<U>(g, h);
         }
+
         public static SubGroup<U> Centerize<U>(this SubGroup<U> g, params U[] us) where U : struct, IElt
         {
             return new Centerize<U>(g, g.UpperSet.Union(us));

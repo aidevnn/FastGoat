@@ -26,8 +26,8 @@ namespace FastGoat
         static void SamplesSn()
         {
             var s = new Sn(4);
-            var a = s.Cycles((1, 3), (2, 4));
-            var b = s.Cycles((1, 2), (3, 4));
+            var a = s.C((1, 3), (2, 4));
+            var b = s.C((1, 2), (3, 4));
             var c = s.KCycle(4);
 
             var g = s.Monogenic(a).GName("G");
@@ -57,8 +57,8 @@ namespace FastGoat
         static void SamplesSnQuotient()
         {
             var S4 = new Sn(4);
-            var A4 = S4.GeneratedSubGroup(S4.Cycle(1, 2, 3), S4.Cycle(2, 3, 4)).GName("A4");
-            var Klein = S4.GeneratedSubGroup(S4.Cycles((1, 2), (3, 4)), S4.Cycles((1, 3), (2, 4))).GName("Klein");
+            var A4 = S4.GeneratedSubGroup(S4.C(1, 2, 3), S4.C(2, 3, 4)).GName("A4");
+            var Klein = S4.GeneratedSubGroup(S4.C((1, 2), (3, 4)), S4.C((1, 3), (2, 4))).GName("Klein");
             var Q = A4.Over(Klein);
             A4.DisplayElements();
             Klein.DisplayElements();
@@ -79,6 +79,8 @@ namespace FastGoat
             k.Details();
 
             var c20 = z.Monogenic(z.CE(0, 0, 1, 0)).GName("C2");
+            c20.DisplayElements();
+
             k.Over(c20).Details();
 
             var c21 = z.Monogenic(z.CE(0, 1, 0, 0)).GName("C2'");
@@ -91,8 +93,8 @@ namespace FastGoat
             //SamplesZn();
             //SamplesSn();
             //SamplesZnQuotient();
-            //SamplesSnQuotient();
-            //SamplesZnInvFactors();
+            SamplesSnQuotient();
+            SamplesZnInvFactors();
 
         }
     }

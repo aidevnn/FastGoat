@@ -25,7 +25,6 @@ namespace FastGoat.GroupTheory
         public abstract U Neutral { get; }
         public abstract U Invert(U a);
         public abstract U Op(U a, U b);
-        public XOpLR OpLR { get; set; } = XOpLR.Both;
 
         public SubGroup<U> GName(string name)
         {
@@ -99,18 +98,9 @@ namespace FastGoat.GroupTheory
                 while (ord == 0 || !acc.Equals(Neutral))
                 {
                     ++ord;
-                    if (OpLR == XOpLR.Left)
-                    {
-                        acc = Op(e, acc);
-                        if (!Elts.Contains(acc))
-                            return;
-                    }
-                    else
-                    {
-                        acc = Op(acc, e);
-                        if (!Elts.Contains(acc))
-                            return;
-                    }
+                    acc = Op(e, acc);
+                    if (!Elts.Contains(acc))
+                        return;
                 }
 
                 orders.Add((e, ord));
@@ -149,7 +139,8 @@ namespace FastGoat.GroupTheory
             {
                 var ordA = ElementOrder[a];
                 var ordB = ElementOrder[b];
-                if (ordA != ordB) return ordA.CompareTo(ordB);
+                if (ordA != ordB)
+                    return ordA.CompareTo(ordB);
             }
 
             return base.EltCompare(a, b);

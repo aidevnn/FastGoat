@@ -120,8 +120,8 @@ namespace FastGoat
         public Permutation KCycle(int count) => Cycle(count.Range(1));
         public Permutation KCycle(int start, int count) => Cycle(count.Range(start));
 
-        public Permutation Cycle(SingleTuple cycle) => Cycle(cycle.Table);
-        public Permutation Cycles(params SingleTuple[] cycles)
+        public Permutation Cycle(Tuple2Array cycle) => Cycle(cycle.Table);
+        public Permutation ComposesCycles(params Tuple2Array[] cycles)
         {
             Neutral.Table.CopyTo(Cache.Table, 0);
             foreach(var e in cycles)
@@ -135,6 +135,9 @@ namespace FastGoat
             var hash = Helpers.GenHash(N, Cache.Table);
             return new Permutation(this, Cache.Table, hash);
         }
+
+        public Permutation C(params int[] vs) => Cycle(vs);
+        public Permutation C(params Tuple2Array[] cycles) => ComposesCycles(cycles);
 
         public SubGroup<Permutation> GenerateAll()
         {

@@ -27,10 +27,7 @@ namespace FastGoat.GroupTheory
             while (!acc.Equals(Neutral))
             {
                 Add(acc);
-                if (OpLR == XOpLR.Left)
-                    acc = Op(e, acc);
-                else
-                    acc = Op(acc, e);
+                acc = Op(e, acc);
             }
         }
     }
@@ -92,7 +89,6 @@ namespace FastGoat.GroupTheory
     {
         public GroupOp(SubGroup<U> sub, U e) : base(sub.UpperGroup)
         {
-            OpLR = XOpLR.Right;
             if (!sub.UpperSet.Equals(e.FSet))
                 return;
 
@@ -102,7 +98,6 @@ namespace FastGoat.GroupTheory
 
         public GroupOp(U e, SubGroup<U> sub) : base(sub.UpperGroup)
         {
-            OpLR = XOpLR.Left;
             if (!sub.UpperSet.Equals(e.FSet))
                 return;
 

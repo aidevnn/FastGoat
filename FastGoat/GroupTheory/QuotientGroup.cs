@@ -28,86 +28,27 @@ namespace FastGoat.GroupTheory
         {
             Fmt = string.Format("|{{0}}| = {{1}} with |{0}| = {2} and |{1}| = {3}", G.Name, H.Name, G.Count, H.Count);
 
-            var gIsGr = G.IsGroup;
-            var hIsGr = H.IsGroup;
-
             if (!G.UpperGroup.Equals(H.UpperGroup))
                 return;
 
-            if (!gIsGr || !hIsGr)
+            if (!G.IsGroup || !H.IsGroup)
                 return;
 
-            foreach (var e in H.AllElements())
-            {
-                if (!G.Contains(e))
-                {
-                    Console.WriteLine(e);
-                    return;
-                }
-            }
-
-            Classes();
-        }
-
-        bool OpCompatibility()
-        {
-            List<(U, U)> equiv = new List<(U, U)>();
-            var elts = G.AllElements().ToList();
-            int n = elts.Count;
-            foreach (var e0 in G.AllElements())
-            {
-                foreach (var e1 in G.AllElements())
-                {
-                    if (e0.Equals(e1)) continue;
-
-                    var e20 = UpperGroup.Op(UpperGroup.Invert(e0), e1);
-                    var e21 = UpperGroup.Op(e0, UpperGroup.Invert(e1));
-                    if (H.Contains(e20) && H.Contains(e21))
-                        equiv.Add((e0, e1));
-                }
-            }
-
-            foreach (var (x, y) in equiv)
-            {
-                foreach(var a in G.AllElements())
-                {
-                    var ax = UpperGroup.Op(a, x);
-                    var ay = UpperGroup.Op(a, y);
-                    var el = UpperGroup.Op(UpperGroup.Invert(ax), ay);
-                    if (!H.Contains(el))
-                        return false;
-
-                    var xa = UpperGroup.Op(x, a);
-                    var ya = UpperGroup.Op(y, a);
-                    var er = UpperGroup.Op(xa, UpperGroup.Invert(ya));
-                    if (!H.Contains(er))
-                        return false;
-                }
-            }
-
-            return true;
-        }
-
-        void Classes()
-        {
-            var comp = OpCompatibility();
-            if (!comp)
+            var h = H.AllElements().ToHashSet(new Eq<U>());
+            if (!h.IsSubsetOf(G.AllElements()))
                 return;
 
             HashSet<SubSet<U>> xH = new HashSet<SubSet<U>>(new EqSubSet<U>());
             HashSet<SubSet<U>> Hx = new HashSet<SubSet<U>>(new EqSubSet<U>());
             var listG = G.AllElements().ToList();
             listG.Sort(G.EltCompare);
-            foreach(var e0 in listG)
+            foreach (var e0 in listG)
             {
-                var l = new GroupOp<U>(e0, H);
-                xH.Add(l);
-
-                var r = new GroupOp<U>(H, e0);
-                Hx.Add(r);
+                xH.Add(new GroupOp<U>(e0, H));
+                Hx.Add(new GroupOp<U>(H, e0));
             }
 
-            if (xH.Count != Hx.Count || xH.Any(lh => !Hx.Contains(lh)))
+            if (!xH.SetEquals(Hx))
                 return;
 
             foreach (var lh in xH)
@@ -117,15 +58,13 @@ namespace FastGoat.GroupTheory
                 var r = lu.First();
                 classOf[r] = lu;
                 Add(r);
-                foreach (var e in lu)
-                    representatives[e] = r;
+                lu.ForEach(e => representatives[e] = r);
             }
         }
 
         public override U Neutral => UpperGroup.Neutral;
         public override U Invert(U a)
         {
-            var ra = representatives[a];
             var ia = G.Invert(a);
             return representatives[ia];
         }
