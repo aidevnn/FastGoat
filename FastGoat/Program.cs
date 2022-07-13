@@ -43,7 +43,7 @@ namespace FastGoat
         {
             var z = new Zn(2, 2, 2, 3);
             var z24 = z.GenerateAll();
-            z24.DisplayElements("G");
+            z24.DisplayElements("G", "Cartesian product Z/2Z x Z/2Z x Z/2Z x Z/3Z");
 
             // Greatest order element of the group
             var c6 = z.Monogenic(z.CE(1, 1, 1, 2));
@@ -89,11 +89,11 @@ namespace FastGoat
             var S4 = new Sn(4);
             var A4 = S4.GroupElement(S4.C(1, 2, 3), S4.C(2, 3, 4)).Generate();
             var Klein = S4.GroupElement(S4.C((1, 2), (3, 4)), S4.C((1, 3), (2, 4))).Generate();
-            A4.DisplayElements("A4");
-            Klein.DisplayElements("Klein");
+            A4.DisplayElements("A4", "in S4");
+            Klein.DisplayElements("Klein", "in S4");
 
             var Q = A4.Over(Klein);
-            Q.Details();
+            Q.Details(infos: "in S4");
             Q.DisplayClasses();
         }
 
@@ -101,10 +101,10 @@ namespace FastGoat
         {
             // SamplesZn();
             // SamplesZnQuotient();
-            SamplesZnInvFactors();
+            // SamplesZnInvFactors();
 
             // SamplesSn();
-            // SamplesSnQuotient();
+            SamplesSnQuotient();
         }
     }
 }

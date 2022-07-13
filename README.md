@@ -102,17 +102,18 @@ Example with S4, A4 and K4
 var S4 = new Sn(4);
 var A4 = S4.GroupElement(S4.C(1, 2, 3), S4.C(2, 3, 4)).Generate();
 var Klein = S4.GroupElement(S4.C((1, 2), (3, 4)), S4.C((1, 3), (2, 4))).Generate();
-A4.DisplayElements("A4");
-Klein.DisplayElements("Klein");
+A4.DisplayElements("A4", "in S4");
+Klein.DisplayElements("Klein", "in S4");
+
 var Q = A4.Over(Klein);
-Q.Details();
+Q.Details(infos: "in S4");
 Q.DisplayClasses();
 ```
 
 Will output
 
 ```
-|A4| = 12 
+|A4| = 12 in S4
 IsGroup      :  True
 IsCommutative: False
 
@@ -129,7 +130,7 @@ i[3]  = [ 3 2 4 1](+) Invariants : [2] Cycles : (1 3 4)
 j[3]  = [ 4 1 3 2](+) Invariants : [3] Cycles : (1 4 2)
 k[3]  = [ 4 2 1 3](+) Invariants : [2] Cycles : (1 4 3)
 
-|Klein| = 4 
+|Klein| = 4 in S4
 IsGroup      :  True
 IsCommutative:  True
 
@@ -138,7 +139,7 @@ a[2]  = [ 2 1 4 3](+) Cycles : (1 2) (3 4)
 b[2]  = [ 3 4 1 2](+) Cycles : (1 3) (2 4)
 c[2]  = [ 4 3 2 1](+) Cycles : (1 4) (2 3)
 
-|A4/Klein| = 3 
+|A4/Klein| = 3 in S4
 IsGroup      :  True
 IsCommutative:  True
 
@@ -146,7 +147,7 @@ IsCommutative:  True
 a[3]  = [ 1 3 4 2](+) Invariants : [1] Cycles : (2 3 4)
 b[3]  = [ 1 4 2 3](+) Invariants : [1] Cycles : (2 4 3)
 
-|A4/Klein| = 3 
+|A4/Klein| = 3 in S4
 IsGroup      :  True
 IsCommutative:  True
 
