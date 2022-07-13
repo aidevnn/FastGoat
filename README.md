@@ -1,5 +1,5 @@
 # FastGoat
-Fastest C# can do for studying Finite Groups, abelians or not, quotient groups, direct products and many more...
+What C# can do for studying Finite Groups, abelians or not, quotient groups, direct products and many more...
 
 ```
 var z = new Zn(4, 5);
