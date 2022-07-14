@@ -30,7 +30,7 @@ namespace FastGoat
 
             g.SortBy = h.SortBy = SortBy.Value;
             g.DisplayElements("G");
-            h.DisplayElements( "H");
+            h.DisplayElements("H");
 
             var gh = g.Over(h);
             gh.SortBy = SortBy.Value;
@@ -97,13 +97,21 @@ namespace FastGoat
             Q.DisplayClasses();
         }
 
-        public static void Main(string[] args)
+        static void Samples()
         {
             // SamplesZn();
             // SamplesZnQuotient();
             // SamplesZnInvFactors();
 
             // SamplesSn();
+            SamplesSnQuotient();
+        }
+        public static void Main(string[] args)
+        {
+            SamplesZn();
+            SamplesZnQuotient();
+            SamplesZnInvFactors();
+            SamplesSn();
             SamplesSnQuotient();
         }
     }

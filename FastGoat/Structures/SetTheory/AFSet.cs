@@ -12,7 +12,7 @@ public abstract class FSet<U> : IFSet<U> where U : struct, IElt<U>
     public void AddElement(U e) => Elts.Add(e);
     public bool Contains(U e) => Elts.Contains(e);
     public int Count => Elts.Count;
-    public IEnumerable<U> AllElements() => Elts;
+    public IEnumerable<U> AllElements => Elts;
 
     public bool Equals(IFSet<U>? other) => other?.GetHashCode() == GetHashCode();
 }

@@ -20,9 +20,9 @@ public class DirectProduct<U> : SubGroup<U> where U : struct, IElt<U>
 
     void Generate(SubGroup<U> g, SubGroup<U> h)
     {
-        foreach (var e0 in g.AllElements())
+        foreach (var e0 in g.AllElements)
         {
-            foreach (var e1 in h.AllElements())
+            foreach (var e1 in h.AllElements)
             {
                 var e2 = Op(e0, e1);
                 AddElement(e2);

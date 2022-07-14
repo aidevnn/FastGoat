@@ -12,7 +12,7 @@ public class Normalize<U> : SubGroup<U> where U : struct, IElt<U>
         if (!h.IsGroup())
             return;
 
-        Generate(h.AllElements().ToHashSet(new EltEquality<U>()), s.AllElements().ToHashSet(new EltEquality<U>()));
+        Generate(h.AllElements.ToHashSet(new EltEquality<U>()), s.AllElements.ToHashSet(new EltEquality<U>()));
         SetName($"N[{h.Infos.Name}]({s.Infos.Name})");
     }
 

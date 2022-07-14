@@ -9,7 +9,7 @@ public class Centerize<U> : SubGroup<U> where U : struct, IElt<U>
         if (!h.UpperGroup.Equals(s.UpperSet))
             return;
 
-        Generate(h.AllElements().ToHashSet(new EltEquality<U>()), s.AllElements().ToHashSet(new EltEquality<U>()));
+        Generate(h.AllElements.ToHashSet(new EltEquality<U>()), s.AllElements.ToHashSet(new EltEquality<U>()));
         SetName($"Z[{h.Infos.Name}]({s.Infos.Name})");
     }
 

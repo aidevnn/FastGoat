@@ -16,6 +16,6 @@ public static partial class SetExt
 {
     public static SubSet<U> SnapShot<U>(this FSet<U> fSet) where U : struct, IElt<U>
     {
-        return new SetElement<U>(fSet, fSet.AllElements().ToArray());
+        return new SetElement<U>(fSet, fSet.AllElements.ToArray());
     }
 }

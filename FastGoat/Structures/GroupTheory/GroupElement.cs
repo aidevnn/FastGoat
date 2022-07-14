@@ -30,7 +30,7 @@ public static partial class GroupExt
 
     public static GroupElement<U> GroupElement<U>(this IGroup<U> group, SubSet<U> subSet) where U : struct, IElt<U>
     {
-        return new GroupElement<U>(group, subSet.AllElements());
+        return new GroupElement<U>(group, subSet.AllElements);
     }
 
     public static GroupElement<U> Singleton<U>(this IGroup<U> group) where U : struct, IElt<U>
@@ -40,7 +40,7 @@ public static partial class GroupExt
 
     public static GroupElement<U> GroupUnion<U>(this IGroup<U> group, params SubSet<U>[] subSets) where U : struct, IElt<U>
     {
-        var Ugi = new GroupElement<U>(group, subSets.SelectMany(h => h.AllElements()).ToArray());
+        var Ugi = new GroupElement<U>(group, subSets.SelectMany(h => h.AllElements).ToArray());
         Ugi.Infos.Name = subSets.Select(h => h.Infos.Name).Glue("{0}", "u");
         return Ugi;
     }

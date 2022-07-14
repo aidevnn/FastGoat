@@ -22,12 +22,12 @@ public abstract class SubSet<U> : ISubSet<U> where U : struct, IElt<U>
 
     public bool Contains(U e) => Elts.Contains(e);
     public int Count => Elts.Count;
-    public IEnumerable<U> AllElements() => Elts;
+    public IEnumerable<U> AllElements => Elts;
 
     public bool Equals(IFSet<U>? other) => other?.GetHashCode() == GetHashCode();
     public bool SetEquals(ISubSet<U> set)
     {
-        return UpperSet.Equals(set.UpperSet) && Elts.SetEquals(set.AllElements());
+        return UpperSet.Equals(set.UpperSet) && Elts.SetEquals(set.AllElements);
     }
 
     public DisplaySet<U> Infos { get; protected set; }

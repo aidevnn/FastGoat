@@ -9,7 +9,7 @@ public class GroupOp<U> : SubGroup<U> where U : struct, IElt<U>
         if (!sub.UpperSet.Equals(e.FSet))
             return;
 
-        Generate(sub.AllElements(), e);
+        Generate(sub.AllElements, e);
         SetName("Hx");
     }
 
@@ -18,7 +18,7 @@ public class GroupOp<U> : SubGroup<U> where U : struct, IElt<U>
         if (!sub.UpperSet.Equals(e.FSet))
             return;
 
-        Generate(e, sub.AllElements());
+        Generate(e, sub.AllElements);
         SetName("xH");
     }
 

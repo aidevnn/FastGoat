@@ -45,7 +45,7 @@ public class DisplaySet<U> where U : struct, IElt<U>
 
     public virtual void DisplayElements()
     {
-        var elts = G.AllElements().ToList();
+        var elts = G.AllElements.ToList();
         if (elts.Count == 0)
         {
             Console.WriteLine("Empty Set");
@@ -72,7 +72,7 @@ public class DisplaySet<U> where U : struct, IElt<U>
 
     public virtual void DisplayTable(char symb, Func<U, U, U> Op)
     {
-        var elts = G.AllElements().ToList();
+        var elts = G.AllElements.ToList();
         if (elts.Count == 0)
         {
             Console.WriteLine("Empty Set");
