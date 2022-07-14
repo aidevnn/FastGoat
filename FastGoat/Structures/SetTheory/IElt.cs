@@ -3,7 +3,6 @@ namespace FastGoat.Structures.SetTheory;
 public interface IElt<U> : IEquatable<U>, IComparable<U> where U : struct, IElt<U>
 {
     IFSet<U> FSet { get; }
-
     int HashCode { get; }
     int GetHashCode();
     string ToString();

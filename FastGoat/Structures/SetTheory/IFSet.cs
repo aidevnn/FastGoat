@@ -5,7 +5,6 @@ public interface IFSet<U> : IEquatable<IFSet<U>> where U : struct, IElt<U>
     void AddElement(U e);
     bool Contains(U e);
     IEnumerable<U> AllElements { get; }
-
     int Count { get; }
 }
 
