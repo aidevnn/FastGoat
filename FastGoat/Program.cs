@@ -97,15 +97,6 @@ namespace FastGoat
             Q.DisplayClasses();
         }
 
-        static void Samples()
-        {
-            // SamplesZn();
-            // SamplesZnQuotient();
-            // SamplesZnInvFactors();
-
-            // SamplesSn();
-            SamplesSnQuotient();
-        }
         public static void Main(string[] args)
         {
             SamplesZn();
