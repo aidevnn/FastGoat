@@ -175,7 +175,7 @@ Class of : [ 1 4 2 3](+) Invariants : [1] Cycles : (2 4 3)
     
 ```
 
-Invariants factors of Z/2Z x Z/2Z x Z/2Z x Z/3Z
+Some computing on Z/2Z x Z/2Z x Z/2Z x Z/3Z
 
 ```
 var z = new Zn(2, 2, 2, 3);
@@ -199,7 +199,7 @@ k.Over(c20).Details();
 var c21 = z.Monogenic(z.CE(0, 1, 0, 0));
 c21.DisplayElements("C2'");
 
-// Direct product of the invariants factors
+// Direct product of the factors
 c20.DirectProduct(c21).DirectProduct(c6).DisplayElements("C2.C2'.C6");
 ```
 
