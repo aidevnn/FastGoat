@@ -327,7 +327,7 @@ w[6]  = ( 1, 1, 1, 2)
 
 ```
 
-Computing Canonical Decomposition of C20 x C30 and C15 x C10 : May the BRUTEFORCE be with you !!!
+Computing Canonical Decomposition of C20 x C30 and C15 x C10
 
 ```
 var z20x30 = new Zn(20, 30).GenerateAll();

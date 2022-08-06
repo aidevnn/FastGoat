@@ -115,9 +115,8 @@ namespace FastGoat
             var z15x20 = new Zn(15, 20).GenerateAll();
             GroupExt.InvariantsFactors(z15x20);
 
-            // var z = new Zn(8, 18, 30);
-            // var G = z.GenerateAll();
-            // GroupExt.InvariantsFactors(G);
+            // var z8x18x30 = new Zn(8, 18, 30).GenerateAll(); May the BRUTEFORCE be with you
+            // GroupExt.InvariantsFactors(z8x18x30);
         }
 
         public static void Main(string[] args)
