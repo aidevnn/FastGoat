@@ -4,7 +4,7 @@ namespace FastGoat.Structures.GroupTheory;
 
 public static partial class GroupExt
 {
-    public static List<U> InvariantsFactors<U>(SubGroup<U> gr) where U : struct, IElt<U>
+    public static List<U> InvariantFactors<U>(SubGroup<U> gr) where U : struct, IElt<U>
     {
         if (!gr.IsCommutative())
         {

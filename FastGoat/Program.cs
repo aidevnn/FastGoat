@@ -120,13 +120,13 @@ namespace FastGoat
         static void SamplesZnInvariants()
         {
             var z20x30 = Zn.CartesianProduct(20, 30);
-            GroupExt.InvariantsFactors(z20x30);
+            GroupExt.InvariantFactors(z20x30);
 
             var z15x20 = Zn.CartesianProduct(15, 20);
-            GroupExt.InvariantsFactors(z15x20);
+            GroupExt.InvariantFactors(z15x20);
 
             var z8x18x30 = Zn.CartesianProduct(8, 18, 30); // May the BRUTEFORCE be with you
-            GroupExt.InvariantsFactors(z8x18x30);
+            GroupExt.InvariantFactors(z8x18x30);
         }
 
         public static void Main(string[] args)

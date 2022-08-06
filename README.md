@@ -349,17 +349,17 @@ v[6]  = ( 1, 1, 1, 1)
 w[6]  = ( 1, 1, 1, 2)
 ```
 
-Computing Canonical Decomposition of C20 x C30 and C15 x C10 and also C8 x C18 x C30
+Computing Invariant Factor Decomposition of C20 x C30 and C15 x C10 and also C8 x C18 x C30
 
 ```
 var z20x30 = Zn.CartesianProduct(20, 30);
-GroupExt.InvariantsFactors(z20x30);
+GroupExt.InvariantFactors(z20x30);
 
 var z15x20 = Zn.CartesianProduct(15, 20);
-GroupExt.InvariantsFactors(z15x20);
+GroupExt.InvariantFactors(z15x20);
 
 var z8x18x30 = Zn.CartesianProduct(8, 18, 30); // May the BRUTEFORCE be with you
-GroupExt.InvariantsFactors(z8x18x30);
+GroupExt.InvariantFactors(z8x18x30);
 ```
 
 Will output
