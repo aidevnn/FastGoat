@@ -1,6 +1,7 @@
 # FastGoat
 What C# can do for studying Finite Groups, abelians or not, quotient groups, direct products and many more...
 
+### Starting with Abelian Group
 ```
 var z = new Zn(4, 5);
 var g = z.GroupElement(z.CE(1, 0), z.CE(0, 1)).Generate();
@@ -97,7 +98,7 @@ Class of : ( 3, 0)
         ( 3, 4)
 ```
 
-Example with S4, A4 and K4
+### Example with S4, A4 and K4
 ```
 var S4 = new Sn(4);
 var A4 = S4.GroupElement(S4.C(1, 2, 3), S4.C(2, 3, 4)).Generate();
@@ -175,7 +176,7 @@ Class of : [ 1 4 2 3](+) Invariants : [1] Cycles : (2 4 3)
     
 ```
 
-Some computing on Z/2Z x Z/2Z x Z/2Z x Z/3Z
+### Some computing on Z/2Z x Z/2Z x Z/2Z x Z/3Z
 
 ```
 var z = new Zn(2, 2, 2, 3);
@@ -349,7 +350,7 @@ v[6]  = ( 1, 1, 1, 1)
 w[6]  = ( 1, 1, 1, 2)
 ```
 
-Computing Invariant Factor Decomposition of C20 x C30 and C15 x C10 and also C8 x C18 x C30
+### Computing Invariant Factor Decomposition of C20 x C30 and C15 x C10 and also C8 x C18 x C30
 
 ```
 var z20x30 = Zn.CartesianProduct(20, 30);
