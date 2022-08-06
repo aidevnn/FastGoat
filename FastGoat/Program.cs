@@ -96,15 +96,25 @@ namespace FastGoat
 
         static void SamplesSnQuotient()
         {
+            var s3 = new Sn(3);
+            var S3all = s3.GroupElement(s3.C(1, 2, 3), s3.C(1, 2)).Generate();
+            var C3 = S3all.Monogenic(s3.C(1, 2, 3));
+            S3all.DisplayElements("S3");
+            C3.DisplayElements("C3", "in S3");
+
+            var Q3 = S3all.Over(C3);
+            Q3.Details(infos: "in S3");
+            Q3.DisplayClasses();
+
             var S4 = new Sn(4);
             var A4 = S4.GroupElement(S4.C(1, 2, 3), S4.C(2, 3, 4)).Generate();
-            var Klein = S4.GroupElement(S4.C((1, 2), (3, 4)), S4.C((1, 3), (2, 4))).Generate();
+            var Klein = A4.GroupElement(S4.C((1, 2), (3, 4)), S4.C((1, 3), (2, 4))).Generate();
             A4.DisplayElements("A4", "in S4");
             Klein.DisplayElements("Klein", "in S4");
 
-            var Q = A4.Over(Klein);
-            Q.Details(infos: "in S4");
-            Q.DisplayClasses();
+            var Q4 = A4.Over(Klein);
+            Q4.Details(infos: "in S4");
+            Q4.DisplayClasses();
         }
 
         static void SamplesZnInvariants()
@@ -124,9 +134,12 @@ namespace FastGoat
             // SamplesZn();
             // SamplesZnQuotient();
             // SamplesZnInvFactors();
+            // SamplesZnInvariants();
+
             // SamplesSn();
             // SamplesSnQuotient();
-            SamplesZnInvariants();
+
+
         }
     }
 }

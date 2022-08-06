@@ -7,7 +7,7 @@ public class QuotientGroup<U> : SubGroup<U> where U : struct, IElt<U>
     public QuotientGroup(SubGroup<U> g, SubGroup<U> h) : base(g.UpperGroup)
     {
         G = new GroupElement<U>(g, g.AllElements) { SortBy = SortBy.Value };
-        H = h;
+        H = new GroupElement<U>(g, h.AllElements);
         representatives = new Dictionary<U, U>(g.Count, new EltEquality<U>());
         classOf = new Dictionary<U, List<U>>(g.Count / h.Count, new EltEquality<U>());
 
@@ -35,6 +35,9 @@ public class QuotientGroup<U> : SubGroup<U> where U : struct, IElt<U>
         if (!H.AllElements.All(G.Contains))
             return;
 
+        if (G.Count % H.Count != 0)
+            return;
+
         HashSet<SubSet<U>> GH = new HashSet<SubSet<U>>(new EqSubSet<U>());
         HashSet<SubSet<U>> HG = new HashSet<SubSet<U>>(new EqSubSet<U>());
         var listG = G.AllElements.ToList();
@@ -42,8 +45,10 @@ public class QuotientGroup<U> : SubGroup<U> where U : struct, IElt<U>
 
         foreach (var x in listG)
         {
-            GH.Add(x.Gop(H));
-            HG.Add(H.Gop(x));
+            var xH = x.Gop(H);
+            var Hx = H.Gop(x);
+            GH.Add(xH);
+            HG.Add(Hx);
         }
 
         if (!GH.SetEquals(HG))

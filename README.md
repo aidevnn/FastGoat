@@ -4,7 +4,7 @@ What C# can do for studying Finite Groups, abelians or not, quotient groups, dir
 ```
 var z = new Zn(4, 5);
 var g = z.GroupElement(z.CE(1, 0), z.CE(0, 1)).Generate();
-var h = z.Monogenic(z.CE(0, 1));
+var h = g.Monogenic(z.CE(0, 1));
 g.SortBy = h.SortBy = SortBy.Value;
 g.DisplayElements("G");
 h.DisplayElements( "H");
@@ -101,7 +101,7 @@ Example with S4, A4 and K4
 ```
 var S4 = new Sn(4);
 var A4 = S4.GroupElement(S4.C(1, 2, 3), S4.C(2, 3, 4)).Generate();
-var Klein = S4.GroupElement(S4.C((1, 2), (3, 4)), S4.C((1, 3), (2, 4))).Generate();
+var Klein = A4.GroupElement(S4.C((1, 2), (3, 4)), S4.C((1, 3), (2, 4))).Generate();
 A4.DisplayElements("A4", "in S4");
 Klein.DisplayElements("Klein", "in S4");
 
@@ -180,33 +180,37 @@ Some computing on Z/2Z x Z/2Z x Z/2Z x Z/3Z
 ```
 var z = new Zn(2, 2, 2, 3);
 var z24 = z.GenerateAll();
-z24.DisplayElements("G");
+z24.DisplayElements("G", "Cartesian product Z/2Z x Z/2Z x Z/2Z x Z/3Z");
 
 // Greatest order element of the group
-var c6 = z.Monogenic(z.CE(1, 1, 1, 2));
+var c6 = z24.Monogenic(z.CE(1, 1, 1, 2));
 c6.DisplayElements("C6");
 
 // Quotient group 
-var k = z24.Over(c6);
-k.Details();
+var q0 = z24.Over(c6);
+q0.Details();
 
 // Greatest order element of the quotient group
-var c20 = z.Monogenic(z.CE(0, 0, 1, 0));
+var c20 = q0.Monogenic(z.CE(0, 0, 1, 0));
 c20.DisplayElements("C2");
 
-k.Over(c20).Details();
+var q1 = q0.Over(c20);
+q1.Details();
 
-var c21 = z.Monogenic(z.CE(0, 1, 0, 0));
+var c21 = q1.Monogenic(z.CE(0, 1, 0, 0));
 c21.DisplayElements("C2'");
 
-// Direct product of the factors
-c20.DirectProduct(c21).DirectProduct(c6).DisplayElements("C2.C2'.C6");
+// Direct product of the invariants factors
+Console.WriteLine("###########");
+c6.DirectProduct(c20).DisplayElements("C6.C2");
+Console.WriteLine("###########");
+c6.DirectProduct(c20).DirectProduct(c21).DisplayElements("C6.C2.C2'");
 ```
 
 Will output
 
 ```
-|G| = 24 
+|G| = 24 Cartesian product Z/2Z x Z/2Z x Z/2Z x Z/3Z
 IsGroup      :  True
 IsCommutative:  True
 
@@ -235,7 +239,7 @@ u[6]  = ( 1, 1, 0, 2)
 v[6]  = ( 1, 1, 1, 1)
 w[6]  = ( 1, 1, 1, 2)
 
-|C6| = 6 
+|C6| = 6
 IsGroup      :  True
 IsCommutative:  True
 
@@ -246,7 +250,7 @@ c[3]  = ( 0, 0, 0, 2)
 d[6]  = ( 1, 1, 1, 1)
 e[6]  = ( 1, 1, 1, 2)
 
-|G/C6| = 4 
+|G/C6| = 4
 IsGroup      :  True
 IsCommutative:  True
 
@@ -255,7 +259,7 @@ a[2]  = ( 0, 0, 1, 0)
 b[2]  = ( 0, 1, 0, 0)
 c[2]  = ( 0, 1, 1, 0)
 
-|G/C6| = 4 
+|G/C6| = 4
 IsGroup      :  True
 IsCommutative:  True
 
@@ -266,21 +270,21 @@ IsCommutative:  True
  b|b c @ a
  c|c b a @
 
-|C2| = 2 
+|C2| = 2
 IsGroup      :  True
 IsCommutative:  True
 
 @[1]  = ( 0, 0, 0, 0)
 a[2]  = ( 0, 0, 1, 0)
 
-|G/C6/C2| = 2 
+|G/C6/C2| = 2
 IsGroup      :  True
 IsCommutative:  True
 
 @[1]  = ( 0, 0, 0, 0)
 a[2]  = ( 0, 1, 0, 0)
 
-|G/C6/C2| = 2 
+|G/C6/C2| = 2
 IsGroup      :  True
 IsCommutative:  True
 
@@ -289,14 +293,33 @@ IsCommutative:  True
  @|@ a
  a|a @
 
-|C2'| = 2 
+|C2'| = 2
 IsGroup      :  True
 IsCommutative:  True
 
 @[1]  = ( 0, 0, 0, 0)
 a[2]  = ( 0, 1, 0, 0)
 
-|C2.C2'.C6| = 24 
+###########
+|C6.C2| = 12
+IsGroup      :  True
+IsCommutative:  True
+
+@[1]  = ( 0, 0, 0, 0)
+a[2]  = ( 0, 0, 1, 0)
+b[2]  = ( 1, 1, 0, 0)
+c[2]  = ( 1, 1, 1, 0)
+d[3]  = ( 0, 0, 0, 1)
+e[3]  = ( 0, 0, 0, 2)
+f[6]  = ( 0, 0, 1, 1)
+g[6]  = ( 0, 0, 1, 2)
+h[6]  = ( 1, 1, 0, 1)
+i[6]  = ( 1, 1, 0, 2)
+j[6]  = ( 1, 1, 1, 1)
+k[6]  = ( 1, 1, 1, 2)
+
+###########
+|C6.C2.C2'| = 24
 IsGroup      :  True
 IsCommutative:  True
 
@@ -324,7 +347,6 @@ t[6]  = ( 1, 1, 0, 1)
 u[6]  = ( 1, 1, 0, 2)
 v[6]  = ( 1, 1, 1, 1)
 w[6]  = ( 1, 1, 1, 2)
-
 ```
 
 Computing Canonical Decomposition of C20 x C30 and C15 x C10
