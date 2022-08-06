@@ -350,7 +350,7 @@ v[6]  = ( 1, 1, 1, 1)
 w[6]  = ( 1, 1, 1, 2)
 ```
 
-### Computing Invariant Factor Decomposition of C20 x C30 and C15 x C10 and also C8 x C18 x C30
+### Computing Invariant Factor Decomposition
 
 ```
 var z20x30 = Zn.CartesianProduct(20, 30);
