@@ -1,4 +1,5 @@
 ﻿using FastGoat.Structures.GroupTheory;
+using FastGoat.Structures.SetTheory;
 
 namespace FastGoat
 {
@@ -26,7 +27,7 @@ namespace FastGoat
         {
             var z = new Zn(4, 5);
             var g = z.GroupElement(z.CE(1, 0), z.CE(0, 1)).Generate();
-            var h = z.Monogenic(z.CE(0, 1));
+            var h = g.Monogenic(z.CE(0, 1));
 
             g.SortBy = h.SortBy = SortBy.Value;
             g.DisplayElements("G");
@@ -46,24 +47,28 @@ namespace FastGoat
             z24.DisplayElements("G", "Cartesian product Z/2Z x Z/2Z x Z/2Z x Z/3Z");
 
             // Greatest order element of the group
-            var c6 = z.Monogenic(z.CE(1, 1, 1, 2));
+            var c6 = z24.Monogenic(z.CE(1, 1, 1, 2));
             c6.DisplayElements("C6");
 
             // Quotient group 
-            var k = z24.Over(c6);
-            k.Details();
+            var q0 = z24.Over(c6);
+            q0.Details();
 
             // Greatest order element of the quotient group
-            var c20 = z.Monogenic(z.CE(0, 0, 1, 0));
+            var c20 = q0.Monogenic(z.CE(0, 0, 1, 0));
             c20.DisplayElements("C2");
 
-            k.Over(c20).Details();
+            var q1 = q0.Over(c20);
+            q1.Details();
 
-            var c21 = z.Monogenic(z.CE(0, 1, 0, 0));
+            var c21 = q1.Monogenic(z.CE(0, 1, 0, 0));
             c21.DisplayElements("C2'");
 
             // Direct product of the invariants factors
-            c20.DirectProduct(c21).DirectProduct(c6).DisplayElements("C2.C2'.C6");
+            Console.WriteLine("###########");
+            c6.DirectProduct(c20).DisplayElements("C6.C2");
+            Console.WriteLine("###########");
+            c6.DirectProduct(c20).DirectProduct(c21).DisplayElements("C6.C2.C2'");
         }
 
         static void SamplesSn()
@@ -72,16 +77,21 @@ namespace FastGoat
             var a = s.C((1, 3), (2, 4));
             var b = s.C((1, 2), (3, 4));
             var c = s.KCycle(4);
+            var s0 = s.GroupElement(a, b, c);
 
-            var g = s.Monogenic(a);
-            var h = s.Monogenic(b);
+            var g = s0.Monogenic(a);
+            var h = s0.Monogenic(b);
             g.DisplayElements("G");
             h.DisplayElements("H");
-            var k = s.GroupUnion(g, h);
-            k.DisplayElements();
+            var k = g.GroupUnion(h);
+            k.DisplayElements("GuH");
             k.Generate().Details("<GuH>");
 
             s.GroupElement(a, b, c).Generate().Details("K2");
+
+            Console.WriteLine($"k:{k.Count}");
+            Console.WriteLine($"S0:{s0.Count}");
+            Console.WriteLine($"S:{s.Count}");
         }
 
         static void SamplesSnQuotient()
@@ -97,13 +107,27 @@ namespace FastGoat
             Q.DisplayClasses();
         }
 
+        static void SamplesZnInvariants()
+        {
+            var z20x30 = new Zn(20, 30).GenerateAll();
+            GroupExt.InvariantsFactors(z20x30);
+
+            var z15x20 = new Zn(15, 20).GenerateAll();
+            GroupExt.InvariantsFactors(z15x20);
+
+            // var z = new Zn(8, 18, 30);
+            // var G = z.GenerateAll();
+            // GroupExt.InvariantsFactors(G);
+        }
+
         public static void Main(string[] args)
         {
-            SamplesZn();
-            SamplesZnQuotient();
-            SamplesZnInvFactors();
-            SamplesSn();
-            SamplesSnQuotient();
+            // SamplesZn();
+            // SamplesZnQuotient();
+            // SamplesZnInvFactors();
+            // SamplesSn();
+            // SamplesSnQuotient();
+            SamplesZnInvariants();
         }
     }
 }

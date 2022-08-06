@@ -7,7 +7,7 @@ public class DirectProduct<U> : SubGroup<U> where U : struct, IElt<U>
 {
     public DirectProduct(SubGroup<U> g, SubGroup<U> h) : base(g.UpperGroup)
     {
-        if (!g.UpperGroup.Equals(h.UpperGroup))
+        if (!g.Ancestor.Equals(h.Ancestor))
             return;
 
         Generate(g, h);
@@ -35,13 +35,13 @@ public static partial class GroupExt
 {
     public static SubGroup<U> DirectProduct<U>(this SubGroup<U> g, params SubGroup<U>[] subGroups) where U : struct, IElt<U>
     {
-        var acc = new DirectProduct<U>(g, g.UpperGroup.Singleton());
+        var acc = new DirectProduct<U>(g, g.Singleton());
         return subGroups.Aggregate(acc, (a, h) => new DirectProduct<U>(a, h));
     }
 
     public static SubGroup<U> Generate<U>(this SubGroup<U> g) where U : struct, IElt<U>
     {
-        SubGroup<U> h = g.UpperGroup.GroupUnion(g, g.UpperGroup.Singleton());
+        SubGroup<U> h = new GroupElement<U>(g, g.AllElements);
         int sz = 0;
         do
         {
@@ -50,10 +50,5 @@ public static partial class GroupExt
         } while (sz != h.Count);
 
         return h;
-    }
-
-    public static SubGroup<U> Generate<U>(this SubSet<U> g, IGroup<U> group) where U : struct, IElt<U>
-    {
-        return group.GroupElement(g).Generate();
     }
 }

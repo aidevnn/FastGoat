@@ -6,7 +6,7 @@ public class GroupOp<U> : SubGroup<U> where U : struct, IElt<U>
 {
     public GroupOp(SubGroup<U> sub, U e) : base(sub.UpperGroup)
     {
-        if (!sub.UpperSet.Equals(e.FSet))
+        if (!sub.UpperSet.Contains(e))
             return;
 
         Generate(sub.AllElements, e);
@@ -15,7 +15,7 @@ public class GroupOp<U> : SubGroup<U> where U : struct, IElt<U>
 
     public GroupOp(U e, SubGroup<U> sub) : base(sub.UpperGroup)
     {
-        if (!sub.UpperSet.Equals(e.FSet))
+        if (!sub.UpperSet.Contains(e))
             return;
 
         Generate(e, sub.AllElements);

@@ -2,12 +2,11 @@ using FastGoat.Structures.SetTheory;
 
 namespace FastGoat.Structures.GroupTheory;
 
-
 public class Monogenic<U> : SubGroup<U> where U : struct, IElt<U>
 {
     public Monogenic(IGroup<U> group, U e) : base(group)
     {
-        if (group.Equals(e.FSet))
+        if (group.Contains(e))
             Generate(e);
 
         SetName($"<{e}>".Replace(" ", ""));

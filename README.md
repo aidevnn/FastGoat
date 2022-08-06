@@ -326,3 +326,55 @@ v[6]  = ( 1, 1, 1, 1)
 w[6]  = ( 1, 1, 1, 2)
 
 ```
+
+Computing Canonical Decomposition of Z/20Z x Z/30Z and Z/15Z x Z/20Z
+
+```
+var z20x30 = new Zn(20, 30).GenerateAll();
+GroupExt.InvariantsFactors(z20x30);
+
+var z15x20 = new Zn(15, 20).GenerateAll();
+GroupExt.InvariantsFactors(z15x20);
+```
+
+Will output
+```
+Invariants factors of G = Z/20Z x Z/30Z
+|G| = 600 
+IsGroup      :  True
+IsCommutative:  True
+
+C60 = ( 1, 1); |<C60>|=60
+C60 is SubGroup of G : True
+|G/C60| = 10 
+IsGroup      :  True
+IsCommutative:  True
+
+C10 = ( 0, 1); |<C10>|=10
+C10 is SubGroup of G/C60 : True
+|G/C60/C10| = 1 
+IsGroup      :  True
+IsCommutative:  True
+
+Z/20Z x Z/30Z = G[600] ~ C10 x C60
+-----------------------------
+Invariants factors of G = Z/15Z x Z/20Z
+|G| = 300 
+IsGroup      :  True
+IsCommutative:  True
+
+C60 = ( 1, 1); |<C60>|=60
+C60 is SubGroup of G : True
+|G/C60| = 5 
+IsGroup      :  True
+IsCommutative:  True
+
+C5 = ( 0, 1); |<C5>|=5
+C5 is SubGroup of G/C60 : True
+|G/C60/C5| = 1 
+IsGroup      :  True
+IsCommutative:  True
+
+Z/15Z x Z/20Z = G[300] ~ C5 x C60
+-----------------------------
+```

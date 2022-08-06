@@ -29,6 +29,20 @@ public abstract class SubGroup<U> : SubSet<U>, ISubGroup<U> where U : struct, IE
         base.AddElement(e);
     }
 
+    public IEnumerable<IGroup<U>> UpperGroupChain()
+    {
+        ISubGroup<U> gr = this;
+        while (gr.UpperGroup is ISubGroup<U>)
+        {
+            yield return gr.UpperGroup;
+            gr = (ISubGroup<U>)gr.UpperGroup;
+        }
+
+        yield return gr.UpperGroup;
+    }
+
+    public IGroup<U> Ancestor => UpperGroupChain().Last();
+
     public bool IsGroup()
     {
         foreach (var e0 in Elts)

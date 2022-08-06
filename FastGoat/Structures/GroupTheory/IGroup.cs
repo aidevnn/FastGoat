@@ -12,4 +12,6 @@ public interface IGroup<U> : IFSet<U> where U : struct, IElt<U>
 public interface ISubGroup<U> : IGroup<U> where U : struct, IElt<U>
 {
     IGroup<U> UpperGroup { get; }
+    IEnumerable<IGroup<U>> UpperGroupChain();
+    IGroup<U> Ancestor { get; }
 }
