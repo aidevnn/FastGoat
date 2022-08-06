@@ -349,7 +349,7 @@ v[6]  = ( 1, 1, 1, 1)
 w[6]  = ( 1, 1, 1, 2)
 ```
 
-Computing Canonical Decomposition of C20 x C30 and C15 x C10
+Computing Canonical Decomposition of C20 x C30 and C15 x C10 and also C8 x C18 x C30
 
 ```
 var z20x30 = new Zn(20, 30).GenerateAll();
@@ -357,6 +357,9 @@ GroupExt.InvariantsFactors(z20x30);
 
 var z15x20 = new Zn(15, 20).GenerateAll();
 GroupExt.InvariantsFactors(z15x20);
+
+var z8x18x30 = new Zn(8, 18, 30).GenerateAll(); // May the BRUTEFORCE be with you
+GroupExt.InvariantsFactors(z8x18x30);
 ```
 
 Will output
@@ -398,5 +401,30 @@ IsGroup      :  True
 IsCommutative:  True
 
 C15 x C20 = G[300] ~ C5 x C60
+-----------------------------
+Invariants factors of G = C8 x C18 x C30
+|G| = 4320 
+IsGroup      :  True
+IsCommutative:  True
+
+C360 = ( 1, 1, 1); |<C360>|=360
+C360 is SubGroup of G : True
+|G/C360| = 12 
+IsGroup      :  True
+IsCommutative:  True
+
+C6 = ( 0, 0, 1); |<C6>|=6
+C6 is SubGroup of G/C360 : True
+|G/C360/C6| = 2 
+IsGroup      :  True
+IsCommutative:  True
+
+C2 = ( 0, 1, 0); |<C2>|=2
+C2 is SubGroup of G/C360/C6 : True
+|G/C360/C6/C2| = 1 
+IsGroup      :  True
+IsCommutative:  True
+
+C8 x C18 x C30 = G[4320] ~ C2 x C6 x C360
 -----------------------------
 ```

@@ -40,7 +40,7 @@ namespace FastGoat
             gh.DisplayClasses();
         }
 
-        static void SamplesZnInvFactors()
+        static void SamplesZnComputing()
         {
             var z = new Zn(2, 2, 2, 3);
             var z24 = z.GenerateAll();
@@ -125,16 +125,16 @@ namespace FastGoat
             var z15x20 = new Zn(15, 20).GenerateAll();
             GroupExt.InvariantsFactors(z15x20);
 
-            // var z8x18x30 = new Zn(8, 18, 30).GenerateAll(); May the BRUTEFORCE be with you
-            // GroupExt.InvariantsFactors(z8x18x30);
+            var z8x18x30 = new Zn(8, 18, 30).GenerateAll(); // May the BRUTEFORCE be with you
+            GroupExt.InvariantsFactors(z8x18x30);
         }
 
         public static void Main(string[] args)
         {
             // SamplesZn();
             // SamplesZnQuotient();
-            // SamplesZnInvFactors();
-            // SamplesZnInvariants();
+            // SamplesZnComputing();
+            SamplesZnInvariants();
 
             // SamplesSn();
             // SamplesSnQuotient();
