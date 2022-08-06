@@ -66,7 +66,7 @@ public class Zn : Group<ZnElt>
     public SubGroup<ZnElt> GenerateAll()
     {
         var g = this.GroupElement(BaseCanonic).Generate();
-        g.SetName(Dims.Glue(fmt: "Z/{0}Z", sep: " x "));
+        g.SetName(Dims.Glue(fmt: "C{0}", sep: " x "));
         return g;
     }
 }
