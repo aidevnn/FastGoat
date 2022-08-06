@@ -64,7 +64,7 @@ namespace FastGoat
             var c21 = q1.Monogenic(z.CE(0, 1, 0, 0));
             c21.DisplayElements("C2'");
 
-            // Direct product of the invariants factors
+            // Direct product of the elementaries divisors
             Console.WriteLine("###########");
             c6.DirectProduct(c20).DisplayElements("C6.C2");
             Console.WriteLine("###########");
@@ -119,13 +119,13 @@ namespace FastGoat
 
         static void SamplesZnInvariants()
         {
-            var z20x30 = new Zn(20, 30).GenerateAll();
+            var z20x30 = Zn.CartesianProduct(20, 30);
             GroupExt.InvariantsFactors(z20x30);
 
-            var z15x20 = new Zn(15, 20).GenerateAll();
+            var z15x20 = Zn.CartesianProduct(15, 20);
             GroupExt.InvariantsFactors(z15x20);
 
-            var z8x18x30 = new Zn(8, 18, 30).GenerateAll(); // May the BRUTEFORCE be with you
+            var z8x18x30 = Zn.CartesianProduct(8, 18, 30); // May the BRUTEFORCE be with you
             GroupExt.InvariantsFactors(z8x18x30);
         }
 
@@ -138,8 +138,6 @@ namespace FastGoat
 
             // SamplesSn();
             // SamplesSnQuotient();
-
-
         }
     }
 }

@@ -69,4 +69,6 @@ public class Zn : Group<ZnElt>
         g.SetName(Dims.Glue(fmt: "C{0}", sep: " x "));
         return g;
     }
+
+    public static SubGroup<ZnElt> CartesianProduct(params int[] mods) => new Zn(mods).GenerateAll();
 }
