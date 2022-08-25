@@ -353,8 +353,8 @@ w[6]  = ( 1, 1, 1, 2)
 ### Computing Invariant Factor Decomposition
 
 ```
-var z10x15 = Zn.CartesianProduct(10, 15);
-GroupExt.InvariantFactors(z10x15);
+var z14x21 = Zn.CartesianProduct(14, 21);
+GroupExt.InvariantFactors(z14x21);
 
 var z20x30 = Zn.CartesianProduct(20, 30);
 GroupExt.InvariantFactors(z20x30);
@@ -375,24 +375,24 @@ GroupExt.InvariantFactors(H1);
 
 Will output
 ```
-Invariants factors of G = C10 x C15
-|G| = 150 
+Invariants factors of G = C14 x C21
+|G| = 294 
 IsGroup      :  True
 IsCommutative:  True
 
-C30 = ( 1, 1); |<C30>|=30
-C30 is SubGroup of G : True
-|G/C30| = 5 
+C42 = ( 1, 1); |<C42>|=42
+C42 is SubGroup of G : True
+|G/C42| = 7 
 IsGroup      :  True
 IsCommutative:  True
 
-C5 = ( 0, 1); |<C5>|=5
-C5 is SubGroup of G/C30 : True
-|G/C30/C5| = 1 
+C7 = ( 0, 1); |<C7>|=7
+C7 is SubGroup of G/C42 : True
+|G/C42/C7| = 1 
 IsGroup      :  True
 IsCommutative:  True
 
-C10 x C15 = G[150] ~ C5 x C30
+C14 x C21 = G[294] ~ C7 x C42
 -----------------------------
 Invariants factors of G = C20 x C30
 |G| = 600 

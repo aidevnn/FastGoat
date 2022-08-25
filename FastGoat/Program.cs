@@ -119,8 +119,8 @@ namespace FastGoat
 
         static void SamplesZnInvariants()
         {
-            var z10x15 = Zn.CartesianProduct(10, 15);
-            GroupExt.InvariantFactors(z10x15);
+            var z14x21 = Zn.CartesianProduct(14, 21);
+            GroupExt.InvariantFactors(z14x21);
 
             var z20x30 = Zn.CartesianProduct(20, 30);
             GroupExt.InvariantFactors(z20x30);
@@ -151,7 +151,7 @@ namespace FastGoat
 
             // SamplesSn();
             // SamplesSnQuotient();
-            // SamplesSnInvariants();
+            SamplesSnInvariants();
         }
     }
 }
