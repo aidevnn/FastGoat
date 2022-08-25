@@ -353,11 +353,11 @@ w[6]  = ( 1, 1, 1, 2)
 ### Computing Invariant Factor Decomposition
 
 ```
+var z10x15 = Zn.CartesianProduct(10, 15);
+GroupExt.InvariantFactors(z10x15);
+
 var z20x30 = Zn.CartesianProduct(20, 30);
 GroupExt.InvariantFactors(z20x30);
-
-var z15x20 = Zn.CartesianProduct(15, 20);
-GroupExt.InvariantFactors(z15x20);
 
 var z8x18x30 = Zn.CartesianProduct(8, 18, 30); // May the BRUTEFORCE be with you
 GroupExt.InvariantFactors(z8x18x30);
@@ -375,6 +375,25 @@ GroupExt.InvariantFactors(H1);
 
 Will output
 ```
+Invariants factors of G = C10 x C15
+|G| = 150 
+IsGroup      :  True
+IsCommutative:  True
+
+C30 = ( 1, 1); |<C30>|=30
+C30 is SubGroup of G : True
+|G/C30| = 5 
+IsGroup      :  True
+IsCommutative:  True
+
+C5 = ( 0, 1); |<C5>|=5
+C5 is SubGroup of G/C30 : True
+|G/C30/C5| = 1 
+IsGroup      :  True
+IsCommutative:  True
+
+C10 x C15 = G[150] ~ C5 x C30
+-----------------------------
 Invariants factors of G = C20 x C30
 |G| = 600 
 IsGroup      :  True
@@ -393,25 +412,6 @@ IsGroup      :  True
 IsCommutative:  True
 
 C20 x C30 = G[600] ~ C10 x C60
------------------------------
-Invariants factors of G = C15 x C20
-|G| = 300 
-IsGroup      :  True
-IsCommutative:  True
-
-C60 = ( 1, 1); |<C60>|=60
-C60 is SubGroup of G : True
-|G/C60| = 5 
-IsGroup      :  True
-IsCommutative:  True
-
-C5 = ( 0, 1); |<C5>|=5
-C5 is SubGroup of G/C60 : True
-|G/C60/C5| = 1 
-IsGroup      :  True
-IsCommutative:  True
-
-C15 x C20 = G[300] ~ C5 x C60
 -----------------------------
 Invariants factors of G = C8 x C18 x C30
 |G| = 4320 
