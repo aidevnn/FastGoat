@@ -361,6 +361,16 @@ GroupExt.InvariantFactors(z15x20);
 
 var z8x18x30 = Zn.CartesianProduct(8, 18, 30); // May the BRUTEFORCE be with you
 GroupExt.InvariantFactors(z8x18x30);
+
+var s6 = new Sn(6);
+var H0 = s6.GroupElement(s6.KCycle(2), s6.KCycle(3, 4)).Generate("H0");
+H0.DisplayElements();
+GroupExt.InvariantFactors(H0);
+
+var s9 = new Sn(9);
+var H1 = s9.GroupElement(s9.KCycle(3), s9.KCycle(4, 6)).Generate("H1");
+H1.DisplayElements();
+GroupExt.InvariantFactors(H1);
 ```
 
 Will output
@@ -428,4 +438,79 @@ IsCommutative:  True
 
 C8 x C18 x C30 = G[4320] ~ C2 x C6 x C360
 -----------------------------
+|H0| = 8 
+IsGroup      :  True
+IsCommutative:  True
+
+@[1]  = [ 1 2 3 4 5 6](+) Invariants : [1 2 3 4 5 6]
+a[2]  = [ 1 2 5 6 3 4](+) Invariants : [1 2] Cycles : (3 5) (4 6)
+b[2]  = [ 2 1 3 4 5 6](-) Invariants : [3 4 5 6] Cycles : (1 2)
+c[2]  = [ 2 1 5 6 3 4](-) Cycles : (1 2) (3 5) (4 6)
+d[4]  = [ 1 2 4 5 6 3](-) Invariants : [1 2] Cycles : (3 4 5 6)
+e[4]  = [ 1 2 6 3 4 5](-) Invariants : [1 2] Cycles : (3 6 5 4)
+f[4]  = [ 2 1 4 5 6 3](+) Cycles : (1 2) (3 4 5 6)
+g[4]  = [ 2 1 6 3 4 5](+) Cycles : (1 2) (3 6 5 4)
+
+Invariants factors of G = H0
+|G| = 8 
+IsGroup      :  True
+IsCommutative:  True
+
+C4 = [ 1 2 4 5 6 3](-) Invariants : [1 2] Cycles : (3 4 5 6); |<C4>|=4
+C4 is SubGroup of G : True
+|G/C4| = 2 
+IsGroup      :  True
+IsCommutative:  True
+
+C2 = [ 2 1 3 4 5 6](-) Invariants : [3 4 5 6] Cycles : (1 2); |<C2>|=2
+C2 is SubGroup of G/C4 : True
+|G/C4/C2| = 1 
+IsGroup      :  True
+IsCommutative:  True
+
+H0 = G[8] ~ C2 x C4
+-----------------------------
+|H1| = 18 
+IsGroup      :  True
+IsCommutative:  True
+
+@[1]  = [ 1 2 3 4 5 6 7 8 9](+) Invariants : [1 2 3 4 5 6 7 8 9]
+a[2]  = [ 1 2 3 7 8 9 4 5 6](-) Invariants : [1 2 3] Cycles : (4 7) (5 8) (6 9)
+b[3]  = [ 1 2 3 6 7 8 9 4 5](+) Invariants : [1 2 3] Cycles : (4 6 8) (5 7 9)
+c[3]  = [ 1 2 3 8 9 4 5 6 7](+) Invariants : [1 2 3] Cycles : (4 8 6) (5 9 7)
+d[3]  = [ 2 3 1 4 5 6 7 8 9](+) Invariants : [4 5 6 7 8 9] Cycles : (1 2 3)
+e[3]  = [ 2 3 1 6 7 8 9 4 5](+) Cycles : (1 2 3) (4 6 8) (5 7 9)
+f[3]  = [ 2 3 1 8 9 4 5 6 7](+) Cycles : (1 2 3) (4 8 6) (5 9 7)
+g[3]  = [ 3 1 2 4 5 6 7 8 9](+) Invariants : [4 5 6 7 8 9] Cycles : (1 3 2)
+h[3]  = [ 3 1 2 6 7 8 9 4 5](+) Cycles : (1 3 2) (4 6 8) (5 7 9)
+i[3]  = [ 3 1 2 8 9 4 5 6 7](+) Cycles : (1 3 2) (4 8 6) (5 9 7)
+j[6]  = [ 1 2 3 5 6 7 8 9 4](-) Invariants : [1 2 3] Cycles : (4 5 6 7 8 9)
+k[6]  = [ 1 2 3 9 4 5 6 7 8](-) Invariants : [1 2 3] Cycles : (4 9 8 7 6 5)
+l[6]  = [ 2 3 1 5 6 7 8 9 4](-) Cycles : (1 2 3) (4 5 6 7 8 9)
+m[6]  = [ 2 3 1 7 8 9 4 5 6](-) Cycles : (1 2 3) (4 7) (5 8) (6 9)
+n[6]  = [ 2 3 1 9 4 5 6 7 8](-) Cycles : (1 2 3) (4 9 8 7 6 5)
+o[6]  = [ 3 1 2 5 6 7 8 9 4](-) Cycles : (1 3 2) (4 5 6 7 8 9)
+p[6]  = [ 3 1 2 7 8 9 4 5 6](-) Cycles : (1 3 2) (4 7) (5 8) (6 9)
+q[6]  = [ 3 1 2 9 4 5 6 7 8](-) Cycles : (1 3 2) (4 9 8 7 6 5)
+
+Invariants factors of G = H1
+|G| = 18 
+IsGroup      :  True
+IsCommutative:  True
+
+C6 = [ 1 2 3 5 6 7 8 9 4](-) Invariants : [1 2 3] Cycles : (4 5 6 7 8 9); |<C6>|=6
+C6 is SubGroup of G : True
+|G/C6| = 3 
+IsGroup      :  True
+IsCommutative:  True
+
+C3 = [ 2 3 1 4 5 6 7 8 9](+) Invariants : [4 5 6 7 8 9] Cycles : (1 2 3); |<C3>|=3
+C3 is SubGroup of G/C6 : True
+|G/C6/C3| = 1 
+IsGroup      :  True
+IsCommutative:  True
+
+H1 = G[18] ~ C3 x C6
+-----------------------------
+
 ```
