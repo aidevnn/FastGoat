@@ -52,7 +52,8 @@ public abstract class SubGroup<U> : SubSet<U>, ISubGroup<U> where U : struct, IE
                 return false;
             foreach (var e1 in Elts)
             {
-                if (!Elts.Contains(Op(e0, e1)))
+                var e2 = Op(e0, e1);
+                if (!Elts.Contains(e2))
                     return false;
             }
         }

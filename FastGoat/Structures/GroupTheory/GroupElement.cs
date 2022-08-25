@@ -36,6 +36,10 @@ public static partial class GroupExt
     {
         return new GroupElement<U>(group, us);
     }
+    public static GroupElement<U> GroupElement<U>(this ISubGroup<U> group, IEnumerable<U> us) where U : struct, IElt<U>
+    {
+        return new GroupElement<U>(group, us);
+    }
 
     public static GroupElement<U> GroupUnion<U>(this ISubGroup<U> group, params SubSet<U>[] subSets) where U : struct, IElt<U>
     {

@@ -77,7 +77,9 @@ public class Sn : Group<Perm>
             return Neutral;
 
         var hash = Helpers.GenHash(N, vs);
-        return new Perm(this, vs, hash);
+        var p = new Perm(this, vs, hash);
+        AddElement(p);
+        return p;
     }
 
     public Perm Cycle(params int[] vs)
@@ -113,5 +115,13 @@ public class Sn : Group<Perm>
 
     public Perm C(params int[] vs) => Cycle(vs);
     public Perm C(params Tuple2Array[] cycles) => ComposesCycles(cycles);
+    public Perm[] AllPerm => Helpers.AllPerms(N, true).Select(CreateElement).ToArray();
 
+    public SubGroup<Perm> GenerateAll()
+    {
+        var h = AllPerm;
+        var g = this.GroupElement();
+        g.SetName($"S{N}");
+        return g;
+    }
 }

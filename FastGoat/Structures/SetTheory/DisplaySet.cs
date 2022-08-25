@@ -5,7 +5,7 @@ public class DisplaySet<U> where U : struct, IElt<U>
     protected static List<string> GenLetters(int n)
     {
         if (n > 50)
-            return Enumerable.Range(0, n).Select(a => $"E{a,2:000}").ToList();
+            return Enumerable.Range(1, n).Select(a => $"E{a,2:000}").ToList();
 
         return "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".Take(n).Select(c => $"{c}").ToList();
     }

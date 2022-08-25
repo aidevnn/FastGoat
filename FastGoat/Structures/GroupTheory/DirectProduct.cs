@@ -51,4 +51,11 @@ public static partial class GroupExt
 
         return h;
     }
+
+    public static SubGroup<U> Generate<U>(this SubGroup<U> g, string name) where U : struct, IElt<U>
+    {
+        var g0 = g.Generate();
+        g0.SetName(name);
+        return g0;
+    }
 }

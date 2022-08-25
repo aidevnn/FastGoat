@@ -129,15 +129,30 @@ namespace FastGoat
             GroupExt.InvariantFactors(z8x18x30);
         }
 
+        static void SamplesSnInvariants()
+        {
+            var s6 = new Sn(6);
+            var H0 = s6.GroupElement(s6.KCycle(2), s6.KCycle(3, 4)).Generate("H0");
+            H0.DisplayElements();
+            GroupExt.InvariantFactors(H0);
+
+            var s9 = new Sn(9);
+            var H1 = s9.GroupElement(s9.KCycle(3), s9.KCycle(4, 6)).Generate("H1");
+            H1.DisplayElements();
+            GroupExt.InvariantFactors(H1);
+        }
+
         public static void Main(string[] args)
         {
             // SamplesZn();
             // SamplesZnQuotient();
             // SamplesZnComputing();
-            SamplesZnInvariants();
+            // SamplesZnInvariants();
 
             // SamplesSn();
             // SamplesSnQuotient();
+            SamplesSnInvariants();
+
         }
     }
 }

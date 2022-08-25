@@ -58,17 +58,28 @@ public class Zn : Group<ZnElt>
     {
         Helpers.ClearArray(cache);
         int hash = Helpers.AddModulo(Dims, vs, Neutral.Table, cache);
-        return new ZnElt(this, cache, hash);
+        var z = new ZnElt(this, cache, hash);
+        AddElement(z);
+        return z;
     }
 
     public ZnElt CE(params int[] vs) => CreateElement(vs);
     public ZnElt[] BaseCanonic => Helpers.BaseCanonic(Dims.Length).Select(CE).ToArray();
     public SubGroup<ZnElt> GenerateAll()
     {
-        var g = this.GroupElement(BaseCanonic).Generate();
+        var h = BaseCanonic;
+        var g = this.GroupElement().Generate();
         g.SetName(Dims.Glue(fmt: "C{0}", sep: " x "));
         return g;
     }
 
     public static SubGroup<ZnElt> CartesianProduct(params int[] mods) => new Zn(mods).GenerateAll();
+    public static SubGroup<ZnElt> DirectSum(params int[] mods)
+    {
+        var z = new Zn(mods);
+        var g = z.CE(Enumerable.Repeat(1, mods.Length).ToArray());
+        var gr = z.Monogenic(g);
+        gr.SetName($"C{gr.Count}");
+        return gr;
+    }
 }
