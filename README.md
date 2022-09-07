@@ -514,3 +514,7 @@ H1 = G[18] ~ C3 x C6
 -----------------------------
 
 ```
+
+## References
+
+<b>Daniel Guin, Thomas Hausberger.</b> ALGÈBRE T1 Groupes, corps et théorie de Galois. 
