@@ -70,5 +70,5 @@ public struct ZnInt : IElt<ZnInt>
     public override int GetHashCode() => Hash;
     public override string ToString() => string.Format(Zn.fmt, k);
 
-    public static implicit operator ZnInt((int k, int mod) p) => new(new Zn(p.mod), p.k);
+    public static implicit operator ZnInt((Zn zn, int k) p) => new(p.zn, p.k);
 }
