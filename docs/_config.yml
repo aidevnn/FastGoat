@@ -1,4 +1,6 @@
-title: 🐐 Fast Goat
+title: Fast Goat 🐐 for Finite Groups
+author:
+  name: "@aidevnn"
 baseurl: "/FastGoat" # the subpath of your site, e.g. /blog
 url: "https::/aidenn.github.io" # the base hostname & protocol for your site, e.g. http://example.com
 
