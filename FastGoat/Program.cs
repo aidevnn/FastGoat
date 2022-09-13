@@ -1,7 +1,4 @@
 ﻿using FastGoat;
-using System.Diagnostics;
-
-var sw = Stopwatch.StartNew();
 
 var z2 = new Zn(2);
 var z3 = new Zn(3);
@@ -133,14 +130,56 @@ var z30 = new Zn(30);
 //     G.InvariantFactors();
 // }
 
+// {
+//     var s6 = new Sn(6);
+//     var s6xs6 = Group.CartesianProduct(s6, s6);
+//     Perm id = s6.Neutral();
+//     Perm p0 = (s6, (1, 2));
+//     Perm p1 = (s6, (3, 4, 5));
+//     Perm p2 = (s6, (3, 4, 5, 6));
+//     var G = s6xs6.Generate((p0 * p1, id), (id, p2));
+//     G.InvariantFactors();
+//     G.DisplayDetails();
+// }
+
 {
-    var s6 = new Sn(6);
-    var s6xs6 = Group.CartesianProduct(s6, s6);
-    Perm id = s6.Neutral();
-    Perm p0 = (s6, (1, 2));
-    Perm p1 = (s6, (3, 4, 5));
-    Perm p2 = (s6, (3, 4, 5, 6));
-    var G = s6xs6.Generate((p0 * p1, id), (id, p2));
-    G.InvariantFactors();
-    G.DisplayDetails();
+    // Creating the BaseGroup generator. These classes are created by users 
+    // by implementing the interface IGroup. They dont contains data structures
+    // for storing the elements.
+    // var z6 = new Zn(6);
+    // var z10 = new Zn(10);
+    // var z18 = new Zn(18);
+
+    // Implicit definition, the tuple will be processed to a group element.
+    // Base Elements classes are created by users by implementing the 
+    // interface IElt and they also contain a property named Group
+    // for the BaseGroup they belong to.
+    ZnInt e1 = (z6, 1);
+    Console.WriteLine(e1);
+
+    // Dotnet Tuple elements, nothing will be done. They keyword var 
+    // will not interprete the tuple as a Group element
+    var v1 = (z6, 1);
+    Console.WriteLine("{0} != {1}", e1, v1);
+
+    // G[i] is another way to create the element i from the group G,
+    // but it can be hard to predict its value depending of the group, 
+    Console.WriteLine("{0} == {1}", e1, z6[1]);
+
+    ZnInt e2 = (z10, 2);
+    // Tuple of integers from Z6 x Z10
+    Ep<ZnInt, ZnInt> ep = (e1, e2);
+    Console.WriteLine("Tuple {0} of {1}", ep, ep.Group);
+    Console.WriteLine();
+}
+
+{
+    ZnInt e1 = (z6, 2);
+    ZnInt e2 = (z18, 3);
+    Group.Generate(z6[2]).DisplayDetails();
+    Group.Generate(z18[3]).DisplayDetails();
+    Ep<ZnInt, ZnInt> ep = (z6[2], z18[3]);
+    Group.Generate(ep).DisplayDetails();
+
+    Group.Generate<Ep<ZnInt, ZnInt>>(((z6, 2), (z18, 0)), ((z6, 0), (z18, 3))).DisplayDetails();
 }

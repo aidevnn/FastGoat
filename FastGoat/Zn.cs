@@ -16,7 +16,7 @@ public struct Zn : IGroup<ZnInt>
 
         mod = mod0;
         Hash = mod;
-        fmt = $"{{0,{mod.ToString().Length}}}";
+        fmt = $"{{0,{(mod - 1).ToString().Length}}}";
     }
 
     public ZnInt Invert(ZnInt a)

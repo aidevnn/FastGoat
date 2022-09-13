@@ -2,26 +2,33 @@ namespace FastGoat;
 
 public static class Group
 {
-    public static GroupPack<U1, U2> CartesianProduct<U1, U2>(IGroup<U1> g1, IGroup<U2> g2)
+    public static Gp<U1, U2> CartesianProduct<U1, U2>(IGroup<U1> g1, IGroup<U2> g2)
         where U1 : struct, IElt<U1>
         where U2 : struct, IElt<U2>
     {
-        return new GroupPack<U1, U2>(g1, g2);
+        return new Gp<U1, U2>(g1, g2);
     }
-    public static GroupPack<U1, U2, U3> CartesianProduct<U1, U2, U3>(IGroup<U1> g1, IGroup<U2> g2, IGroup<U3> g3)
+    public static Gp<U1, U2, U3> CartesianProduct<U1, U2, U3>(IGroup<U1> g1, IGroup<U2> g2, IGroup<U3> g3)
         where U1 : struct, IElt<U1>
         where U2 : struct, IElt<U2>
         where U3 : struct, IElt<U3>
     {
-        return new GroupPack<U1, U2, U3>(g1, g2, g3);
+        return new Gp<U1, U2, U3>(g1, g2, g3);
     }
-    public static GroupPack<U1, U2, U3, U4> CartesianProduct<U1, U2, U3, U4>(IGroup<U1> g1, IGroup<U2> g2, IGroup<U3> g3, IGroup<U4> g4)
+    public static Gp<U1, U2, U3, U4> CartesianProduct<U1, U2, U3, U4>(IGroup<U1> g1, IGroup<U2> g2, IGroup<U3> g3, IGroup<U4> g4)
         where U1 : struct, IElt<U1>
         where U2 : struct, IElt<U2>
         where U3 : struct, IElt<U3>
         where U4 : struct, IElt<U4>
     {
-        return new GroupPack<U1, U2, U3, U4>(g1, g2, g3, g4);
+        return new Gp<U1, U2, U3, U4>(g1, g2, g3, g4);
+    }
+    public static WorkGroup<T> Generate<T>(params T[] te) where T : struct, IElt<T>
+    {
+        if (te.Length == 0)
+            throw new Exception("Elements must be specified");
+
+        return new WorkGroup<T>(te);
     }
     public static WorkGroup<T> Generate<T>(this IGroup<T> gr, params T[] te) where T : struct, IElt<T>
     {
@@ -33,44 +40,44 @@ public static class Group
 
         return new WorkGroup<T>(te);
     }
-    public static WorkGroup<EltPack<U1, U2>> Generate<U1, U2>(this GroupPack<U1, U2> gr, params EltPack<U1, U2>[] te)
+    public static WorkGroup<Ep<U1, U2>> Generate<U1, U2>(this Gp<U1, U2> gr, params Ep<U1, U2>[] te)
         where U1 : struct, IElt<U1>
         where U2 : struct, IElt<U2>
     {
         if (te.Length == 0)
-            return new WorkGroup<EltPack<U1, U2>>(gr.Neutral());
+            return new WorkGroup<Ep<U1, U2>>(gr.Neutral());
 
         if (!gr.Equals(te.First().Group))
             throw new BaseGroupException();
 
-        return new WorkGroup<EltPack<U1, U2>>(te);
+        return new WorkGroup<Ep<U1, U2>>(te);
     }
-    public static WorkGroup<EltPack<U1, U2, U3>> Generate<U1, U2, U3>(this GroupPack<U1, U2, U3> gr, params EltPack<U1, U2, U3>[] te)
+    public static WorkGroup<Ep<U1, U2, U3>> Generate<U1, U2, U3>(this Gp<U1, U2, U3> gr, params Ep<U1, U2, U3>[] te)
         where U1 : struct, IElt<U1>
         where U2 : struct, IElt<U2>
         where U3 : struct, IElt<U3>
     {
         if (te.Length == 0)
-            return new WorkGroup<EltPack<U1, U2, U3>>(gr.Neutral());
+            return new WorkGroup<Ep<U1, U2, U3>>(gr.Neutral());
 
         if (!gr.Equals(te.First().Group))
             throw new BaseGroupException();
 
-        return new WorkGroup<EltPack<U1, U2, U3>>(te);
+        return new WorkGroup<Ep<U1, U2, U3>>(te);
     }
-    public static WorkGroup<EltPack<U1, U2, U3, U4>> Generate<U1, U2, U3, U4>(this GroupPack<U1, U2, U3, U4> gr, params EltPack<U1, U2, U3, U4>[] te)
+    public static WorkGroup<Ep<U1, U2, U3, U4>> Generate<U1, U2, U3, U4>(this Gp<U1, U2, U3, U4> gr, params Ep<U1, U2, U3, U4>[] te)
         where U1 : struct, IElt<U1>
         where U2 : struct, IElt<U2>
         where U3 : struct, IElt<U3>
         where U4 : struct, IElt<U4>
     {
         if (te.Length == 0)
-            return new WorkGroup<EltPack<U1, U2, U3, U4>>(gr.Neutral());
+            return new WorkGroup<Ep<U1, U2, U3, U4>>(gr.Neutral());
 
         if (!gr.Equals(te.First().Group))
             throw new BaseGroupException();
 
-        return new WorkGroup<EltPack<U1, U2, U3, U4>>(te);
+        return new WorkGroup<Ep<U1, U2, U3, U4>>(te);
     }
 
     public static QuotientGroup<T> Over<T>(this WorkGroup<T> g, WorkGroup<T> h) where T : struct, IElt<T>
