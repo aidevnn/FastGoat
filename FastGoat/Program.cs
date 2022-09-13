@@ -1,157 +1,145 @@
-﻿using FastGoat.Structures.GroupTheory;
-using FastGoat.Structures.SetTheory;
+﻿using FastGoat;
+using System.Diagnostics;
 
-namespace FastGoat
+var sw = Stopwatch.StartNew();
+
+var z2 = new Zn(2);
+var z3 = new Zn(3);
+var z4 = new Zn(4);
+var z6 = new Zn(6);
+var z8 = new Zn(8);
+var z10 = new Zn(10);
+var z15 = new Zn(15);
+var z18 = new Zn(18);
+var z20 = new Zn(20);
+var z30 = new Zn(30);
+
+// {
+//     var sn = new Sn(4);
+//     Perm p0 = (sn, (1, 2));
+//     Perm p1 = (sn, (3, 4));
+//     var wgr = sn.Generate(p0, p1);
+//     wgr.DisplayDetails();
+// }
+
+// {
+//     var z2xz2 = Group.CartesianProduct(z2, z2);
+//     var wgr = z2xz2.Generate(z2xz2[0, 1], z2xz2[1, 0]);
+//     wgr.DisplayDetails();
+// }
+
+// {
+//     var wgr = z4.Generate(z4[1]);
+//     wgr.DisplayDetails();
+// }
+
+// {
+//     var sn = new Sn(3);
+//     Perm p0 = (sn, (1, 2));
+//     Perm p1 = (sn, (1, 2, 3));
+//     var wgr = sn.Generate(p0, p1);
+//     wgr.DisplayDetails();
+// }
+
+// {
+//     var z12 = new Zn(12);
+//     var wgr = z12.Generate(z12[3], z12[4]);
+//     wgr.DisplayDetails();
+// }
+
+// {
+//     var z4xz3 = Group.CartesianProduct(z4, z3);
+//     var wgr = z4xz3.Generate(z4xz3[1, 0], z4xz3[0, 1]);
+//     wgr.DisplayDetails();
+// }
+
+// {
+//     var z6xz2 = Group.CartesianProduct(z6, z2);
+//     var wgr = z6xz2.Generate(z6xz2[1, 0], z6xz2[0, 1]);
+//     wgr.DisplayDetails();
+// }
+
+// {
+//     var z3xz2xz2 = Group.CartesianProduct(z3, z2, z2);
+//     var wgr = z3xz2xz2.Generate(z3xz2xz2[1, 0, 0], z3xz2xz2[0, 1, 0], z3xz2xz2[0, 0, 1]);
+//     wgr.DisplayDetails();
+// }
+
+// {
+//     var sn = new Sn(4);
+//     Perm p0 = (sn, (1, 2));
+//     Perm p1 = (sn, (3, 4));
+//     Perm p2 = (sn, (1, 2, 3));
+//     var wgr = sn.Generate(p0 * p1, p2);
+//     wgr.DisplayDetails();
+// }
+
+// {
+//     var G = z20.Generate(z20[1]);
+//     var H = z20.Generate(z20[4]);
+//     G.DisplayDetails(SortElements.ByValue);
+//     H.DisplayDetails(SortElements.ByValue);
+//     var G_H = G.Over(H);
+//     G_H.DisplayDetails(SortElements.ByValue);
+//     G_H.DisplayCosets();
+// }
+
+// {
+//     var sn = new Sn(4);
+//     Perm p0 = (sn, (1, 2));
+//     Perm p1 = (sn, (3, 4));
+//     Perm p2 = (sn, (1, 3));
+//     Perm p3 = (sn, (2, 4));
+//     Perm c3 = (sn, (1, 2, 3));
+//     var G = sn.Generate(p0 * p1, c3);
+//     var H = sn.Generate(p0 * p1, p2 * p3);
+//     G.DisplayDetails();
+//     H.DisplayDetails();
+//     var G_H = G.Over(H);
+//     G_H.DisplayDetails();
+//     G_H.DisplayCosets();
+// }
+
+// {
+//     var z8x18x30 = Group.CartesianProduct(z8, z18, z30);
+//     var G = z8x18x30.Generate(z8x18x30[1, 0, 0], z8x18x30[0, 1, 0], z8x18x30[0, 0, 1]);
+//     G.DisplayHead();
+//     var eMax = G.OrderByDescending(G.GetOrderOf).ThenAscending().First();
+//     G.DisplayElement(eMax, "eMax");
+//     var H = z8x18x30.Generate(z8x18x30[1]);
+//     H.DisplayHead();
+//     var G_H = G.Over(H);
+//     G_H.DisplayHead();
+// }
+
+// {
+//     var z6x8x18x20 = Group.CartesianProduct(z4, z6, z8, z10);
+//     var wgr = z6x8x18x20.Generate(z6x8x18x20[1, 0, 0, 0], z6x8x18x20[0, 1, 0, 0], z6x8x18x20[0, 0, 1, 0], z6x8x18x20[0, 0, 0, 1]);
+//     wgr.InvariantFactors();
+// }
+
+// {
+//     var z8x18x30 = Group.CartesianProduct(z8, z18, z30);
+//     var G = z8x18x30.Generate(z8x18x30[1, 0, 0], z8x18x30[0, 1, 0], z8x18x30[0, 0, 1]);
+//     G.InvariantFactors();
+// }
+
+// {
+//     var sn = new Sn(6);
+//     Perm p0 = (sn, (1, 2));
+//     Perm p1 = (sn, (3, 4, 5, 6));
+//     var G = sn.Generate(p0, p1);
+//     G.InvariantFactors();
+// }
+
 {
-    public class Program
-    {
-        static void SamplesZn()
-        {
-            var z = new Zn(2, 3, 3);
-            var i0 = z.CreateElement(1, 0, 0);
-            var i1 = z.CE(0, 1, 0);
-            var i2 = z.CE(0, 0, 1);
-            z.GroupElement(i0, i1, i2).Generate();
-
-            var h = z.Monogenic(i0);
-            var k = z.Monogenic(z.CE(0, 1, 1));
-            var hk = h.DirectProduct(k);
-
-            h.DisplayElements("H");
-            k.DisplayElements("K");
-            hk.DisplayElements("H.K");
-            hk.DisplayGroupTable();
-        }
-
-        static void SamplesZnQuotient()
-        {
-            var z = new Zn(4, 5);
-            var g = z.GroupElement(z.CE(1, 0), z.CE(0, 1)).Generate();
-            var h = g.Monogenic(z.CE(0, 1));
-
-            g.SortBy = h.SortBy = SortBy.Value;
-            g.DisplayElements("G");
-            h.DisplayElements("H");
-
-            var gh = g.Over(h);
-            gh.SortBy = SortBy.Value;
-            gh.DisplayElements();
-            gh.DisplayGroupTable();
-            gh.DisplayClasses();
-        }
-
-        static void SamplesZnComputing()
-        {
-            var z = new Zn(2, 2, 2, 3);
-            var z24 = z.GenerateAll();
-            z24.DisplayElements("G", "Cartesian product Z/2Z x Z/2Z x Z/2Z x Z/3Z");
-
-            // Greatest order element of the group
-            var c6 = z24.Monogenic(z.CE(1, 1, 1, 2));
-            c6.DisplayElements("C6");
-
-            // Quotient group 
-            var q0 = z24.Over(c6);
-            q0.Details();
-
-            // Greatest order element of the quotient group
-            var c20 = q0.Monogenic(z.CE(0, 0, 1, 0));
-            c20.DisplayElements("C2");
-
-            var q1 = q0.Over(c20);
-            q1.Details();
-
-            var c21 = q1.Monogenic(z.CE(0, 1, 0, 0));
-            c21.DisplayElements("C2'");
-
-            // Direct product of the elementaries divisors
-            Console.WriteLine("###########");
-            c6.DirectProduct(c20).DisplayElements("C6.C2");
-            Console.WriteLine("###########");
-            c6.DirectProduct(c20).DirectProduct(c21).DisplayElements("C6.C2.C2'");
-        }
-
-        static void SamplesSn()
-        {
-            var s = new Sn(4);
-            var a = s.C((1, 3), (2, 4));
-            var b = s.C((1, 2), (3, 4));
-            var c = s.KCycle(4);
-            var s0 = s.GroupElement(a, b, c);
-
-            var g = s0.Monogenic(a);
-            var h = s0.Monogenic(b);
-            g.DisplayElements("G");
-            h.DisplayElements("H");
-            var k = g.GroupUnion(h);
-            k.DisplayElements("GuH");
-            k.Generate().Details("<GuH>");
-
-            s.GroupElement(a, b, c).Generate().Details("K2");
-
-            Console.WriteLine($"k:{k.Count}");
-            Console.WriteLine($"S0:{s0.Count}");
-            Console.WriteLine($"S:{s.Count}");
-        }
-
-        static void SamplesSnQuotient()
-        {
-            var s3 = new Sn(3);
-            var S3all = s3.GroupElement(s3.C(1, 2, 3), s3.C(1, 2)).Generate();
-            var C3 = S3all.Monogenic(s3.C(1, 2, 3));
-            S3all.DisplayElements("S3");
-            C3.DisplayElements("C3", "in S3");
-
-            var Q3 = S3all.Over(C3);
-            Q3.Details(infos: "in S3");
-            Q3.DisplayClasses();
-
-            var S4 = new Sn(4);
-            var A4 = S4.GroupElement(S4.C(1, 2, 3), S4.C(2, 3, 4)).Generate();
-            var Klein = A4.GroupElement(S4.C((1, 2), (3, 4)), S4.C((1, 3), (2, 4))).Generate();
-            A4.DisplayElements("A4", "in S4");
-            Klein.DisplayElements("Klein", "in S4");
-
-            var Q4 = A4.Over(Klein);
-            Q4.Details(infos: "in S4");
-            Q4.DisplayClasses();
-        }
-
-        static void SamplesZnInvariants()
-        {
-            var z14x21 = Zn.CartesianProduct(14, 21);
-            GroupExt.InvariantFactors(z14x21);
-
-            var z20x30 = Zn.CartesianProduct(20, 30);
-            GroupExt.InvariantFactors(z20x30);
-
-            var z8x18x30 = Zn.CartesianProduct(8, 18, 30); // May the BRUTEFORCE be with you
-            GroupExt.InvariantFactors(z8x18x30);
-        }
-
-        static void SamplesSnInvariants()
-        {
-            var s6 = new Sn(6);
-            var H0 = s6.GroupElement(s6.KCycle(2), s6.KCycle(3, 4)).Generate("H0");
-            H0.DisplayElements();
-            GroupExt.InvariantFactors(H0);
-
-            var s9 = new Sn(9);
-            var H1 = s9.GroupElement(s9.KCycle(3), s9.KCycle(4, 6)).Generate("H1");
-            H1.DisplayElements();
-            GroupExt.InvariantFactors(H1);
-        }
-
-        public static void Main(string[] args)
-        {
-            // SamplesZn();
-            // SamplesZnQuotient();
-            // SamplesZnComputing();
-            // SamplesZnInvariants();
-
-            // SamplesSn();
-            // SamplesSnQuotient();
-            SamplesSnInvariants();
-        }
-    }
+    var s6 = new Sn(6);
+    var s6xs6 = Group.CartesianProduct(s6, s6);
+    Perm id = s6.Neutral();
+    Perm p0 = (s6, (1, 2));
+    Perm p1 = (s6, (3, 4, 5));
+    Perm p2 = (s6, (3, 4, 5, 6));
+    var G = s6xs6.Generate((p0 * p1, id), (id, p2));
+    G.InvariantFactors();
+    G.DisplayDetails();
 }

@@ -1,85 +1,45 @@
-using FastGoat.Structures.GroupTheory;
-using FastGoat.Structures.SetTheory;
+using FastGoat;
 
-namespace FastGoat;
-
-public struct ZnElt : IElt<ZnElt>
+public struct Zn : IGroup<ZnInt>
 {
-    public int HashCode { get; }
-    public int[] Table { get; }
-    public IFSet<ZnElt> FSet { get; }
-
-    public ZnElt(Zn zn)
+    public string fmt { get; }
+    public int mod { get; }
+    public int Hash { get; }
+    public Zn()
     {
-        FSet = zn;
-        Table = new int[zn.Dims.Length];
-        HashCode = 0;
+        throw new Exception();
+    }
+    public Zn(int mod0)
+    {
+        if (mod0 < 2)
+            throw new Exception();
+
+        mod = mod0;
+        Hash = mod;
+        fmt = $"{{0,{mod.ToString().Length}}}";
     }
 
-    public ZnElt(Zn zn, int[] arr, int hash)
+    public ZnInt Invert(ZnInt a)
     {
-        FSet = zn;
-        Table = arr.ToArray();
-        HashCode = hash;
+        if (!a.Zn.Equals(this))
+            throw new Exception();
+
+        return new(this, -a.k);
     }
 
-    public int CompareTo(ZnElt other) => Helpers.ArrayCompare(Table, other.Table);
-    public bool Equals(ZnElt other) => HashCode == other.HashCode;
-    public override int GetHashCode() => HashCode;
-    public override string ToString() => $"({Table.Glue(sep: ",")})";
+    public ZnInt Neutral() => new(this);
 
-}
-
-public class Zn : Group<ZnElt>
-{
-    public int[] Dims { get; }
-    readonly int[] cache;
-
-    public Zn(params int[] dims)
+    public ZnInt Op(ZnInt a, ZnInt b)
     {
-        Dims = dims;
-        cache = new int[dims.Length];
+        if (!a.Zn.Equals(this) || !b.Zn.Equals(this))
+            throw new Exception();
+
+        return new(this, a.k + b.k);
     }
 
-    public override ZnElt Neutral => new ZnElt(this);
-    public override ZnElt Invert(ZnElt a)
-    {
-        var hash = Helpers.InvertModulo(Dims, a.Table, cache);
-        return new ZnElt(this, cache, hash);
-    }
+    public bool Equals(IGroup<ZnInt>? other) => other?.Hash == Hash;
 
-    public override ZnElt Op(ZnElt a, ZnElt b)
-    {
-        var hash = Helpers.AddModulo(Dims, a.Table, b.Table, cache);
-        return new ZnElt(this, cache, hash);
-    }
-
-    public ZnElt CreateElement(params int[] vs)
-    {
-        Helpers.ClearArray(cache);
-        int hash = Helpers.AddModulo(Dims, vs, Neutral.Table, cache);
-        var z = new ZnElt(this, cache, hash);
-        AddElement(z);
-        return z;
-    }
-
-    public ZnElt CE(params int[] vs) => CreateElement(vs);
-    public ZnElt[] BaseCanonic => Helpers.BaseCanonic(Dims.Length).Select(CE).ToArray();
-    public SubGroup<ZnElt> GenerateAll()
-    {
-        var h = BaseCanonic;
-        var g = this.GroupElement().Generate();
-        g.SetName(Dims.Glue(fmt: "C{0}", sep: " x "));
-        return g;
-    }
-
-    public static SubGroup<ZnElt> CartesianProduct(params int[] mods) => new Zn(mods).GenerateAll();
-    public static SubGroup<ZnElt> DirectSum(params int[] mods)
-    {
-        var z = new Zn(mods);
-        var g = z.CE(Enumerable.Repeat(1, mods.Length).ToArray());
-        var gr = z.Monogenic(g);
-        gr.SetName($"C{gr.Count}");
-        return gr;
-    }
+    public ZnInt this[int k] => new(this, k);
+    public override int GetHashCode() => Hash;
+    public override string ToString() => $"Z/{mod}Z";
 }
