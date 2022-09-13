@@ -5,4 +5,7 @@ baseurl: "/FastGoat" # the subpath of your site, e.g. /blog
 url: "https::/aidenn.github.io" # the base hostname & protocol for your site, e.g. http://example.com
 
 # Build settings
-theme: minima
+theme: hacker
+remote_theme: pages-themes/hacker@v0.2.0
+plugins:
+- jekyll-remote-theme # add this line to the plugins list if you already have one
