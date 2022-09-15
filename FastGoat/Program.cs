@@ -308,7 +308,9 @@ var s7 = new Sn(7);
     Func<ZnInt, ZnInt, ZnInt> action = (ZnInt g, ZnInt x) => g == Cg.Neutral() ? x : g == (z3, 1) ? x ^ 2 : x ^ 4;
     var Cn_sp_Cg = new SemiDirectProduct<ZnInt, ZnInt>(Cn, Cg, action);
     Cn_sp_Cg.DisplayDetails("G=HK");
-    Cn_sp_Cg.Over(Cn_sp_Cg.Ncan).DisplayDetails("G/H");
+    var Cn_sp_CgoNcan = Cn_sp_Cg.Over(Cn_sp_Cg.Ncan);
+    Cn_sp_CgoNcan.DisplayDetails("G/H");
+    Cn_sp_CgoNcan.DisplayCosets();
     GlobalStopWatch.Show("SemiDirectProduct");
 }
 

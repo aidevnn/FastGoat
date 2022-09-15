@@ -336,7 +336,9 @@ var Cn = Group.Generate(cn);
 Func<ZnInt, ZnInt, ZnInt> action = (ZnInt g, ZnInt x) => g == Cg.Neutral() ? x : g == (z3, 1) ? x ^ 2 : x ^ 4;
 var Cn_sp_Cg = new SemiDirectProduct<ZnInt, ZnInt>(Cn, Cg, action);
 Cn_sp_Cg.DisplayDetails("G=HK");
-Cn_sp_Cg.Over(Cn_sp_Cg.Ncan).DisplayDetails("G/H");
+var Cn_sp_CgoNcan = Cn_sp_Cg.Over(Cn_sp_Cg.Ncan);
+Cn_sp_CgoNcan.DisplayDetails("G/H");
+Cn_sp_CgoNcan.DisplayCosets();
 ```
 will output
 ```dotnetcli
@@ -402,7 +404,33 @@ Table
 2 3 1
 3 1 2
 
-# SemiDirectProduct Time:8 ms
+Cosets
+(1)[1] = (0, 0)
+      (0, 0)
+      (1, 0)
+      (2, 0)
+      (3, 0)
+      (4, 0)
+      (5, 0)
+      (6, 0)
+(2)[3] = (0, 1)
+      (0, 1)
+      (1, 1)
+      (2, 1)
+      (3, 1)
+      (4, 1)
+      (5, 1)
+      (6, 1)
+(3)[3] = (0, 2)
+      (0, 2)
+      (1, 2)
+      (2, 2)
+      (3, 2)
+      (4, 2)
+      (5, 2)
+      (6, 2)
+# SemiDirectProduct Time:2 ms
+
 ```
 
 ## References
