@@ -31,7 +31,7 @@ var GoH = G.Over(H);
 
 H.DisplayDetails("H");
 K.DisplayDetails("K");
-G.DisplayDetails("G=C3⋊C7");
+G.DisplayDetails("G=HK");
 GoH.DisplayDetails("G/H");
 GoH.DisplayCosets();
 ```
