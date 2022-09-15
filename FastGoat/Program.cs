@@ -294,7 +294,7 @@ var s7 = new Sn(7);
     ZnInt cg = (z2, 1);
     var Cg = Group.Generate(cg);
     var Cn = Group.Generate(cn);
-    Func<ZnInt, ZnInt, ZnInt> action = (ZnInt g, ZnInt x) => g.Equals(Cg.Neutral()) ? x : Cn.Invert(x);
+    Func<ZnInt, ZnInt, ZnInt> action = (ZnInt g, ZnInt x) => g == Cg.Neutral() ? x : Cn.Invert(x);
     var Cn_sp_Cg = new SemiDirectProduct<ZnInt, ZnInt>(Cn, Cg, action);
     Cn_sp_Cg.DisplayDetails();
 }
