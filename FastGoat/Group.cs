@@ -127,4 +127,11 @@ public static class Group
         Console.WriteLine($"in {group.BaseGroup}");
         Console.WriteLine();
     }
+
+    public static SemiDirectProduct<U1, U2> SemiDirectProd<U1, U2>(WorkGroup<U1> n, WorkGroup<U2> g, Func<U2, U1, U1> action)
+        where U1 : struct, IElt<U1>
+        where U2 : struct, IElt<U2>
+    {
+        return new SemiDirectProduct<U1, U2>(n, g, action);
+    }
 }
