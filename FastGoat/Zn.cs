@@ -12,7 +12,7 @@ public struct Zn : IGroup<ZnInt>
     public Zn(int mod0)
     {
         if (mod0 < 2)
-            throw new Exception();
+            throw new Exception("modulo must be at least egal 2");
 
         mod = mod0;
         Hash = mod;
@@ -22,7 +22,7 @@ public struct Zn : IGroup<ZnInt>
     public ZnInt Invert(ZnInt a)
     {
         if (!a.Zn.Equals(this))
-            throw new Exception();
+            throw new BaseGroupException();
 
         return new(this, -a.k);
     }
@@ -32,7 +32,7 @@ public struct Zn : IGroup<ZnInt>
     public ZnInt Op(ZnInt a, ZnInt b)
     {
         if (!a.Zn.Equals(this) || !b.Zn.Equals(this))
-            throw new Exception();
+            throw new BaseGroupException();
 
         return new(this, a.k + b.k);
     }

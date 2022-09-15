@@ -22,7 +22,7 @@ public struct Ep<U1> : IElt<Ep<U1>> where U1 : struct, IElt<U1>
     public int CompareTo(Ep<U1> other)
     {
         if (!Group.Equals(other.Group))
-            throw new Exception();
+            throw new BaseGroupException();
 
         return e1.CompareTo(other.e1);
     }
@@ -30,7 +30,7 @@ public struct Ep<U1> : IElt<Ep<U1>> where U1 : struct, IElt<U1>
     public bool Equals(Ep<U1> other)
     {
         if (!Group.Equals(other.Group))
-            throw new Exception();
+            throw new BaseGroupException();
 
         return e1.Equals(other.e1);
     }
@@ -79,7 +79,7 @@ public struct Ep<U1, U2> : IElt<Ep<U1, U2>> where U1 : struct, IElt<U1> where U2
     public int CompareTo(Ep<U1, U2> other)
     {
         if (!Group.Equals(other.Group))
-            throw new Exception();
+            throw new BaseGroupException();
 
         return (e1, e2).CompareTo((other.e1, other.e2));
     }
@@ -87,7 +87,7 @@ public struct Ep<U1, U2> : IElt<Ep<U1, U2>> where U1 : struct, IElt<U1> where U2
     public bool Equals(Ep<U1, U2> other)
     {
         if (!Group.Equals(other.Group))
-            throw new Exception();
+            throw new BaseGroupException();
 
         return (e1, e2).Equals((other.e1, other.e2));
     }
@@ -127,7 +127,7 @@ public struct Ep<U1, U2, U3> : IElt<Ep<U1, U2, U3>>
     public int CompareTo(Ep<U1, U2, U3> other)
     {
         if (!Group.Equals(other.Group))
-            throw new Exception();
+            throw new BaseGroupException();
 
         return (e1, e2, e3).CompareTo((other.e1, other.e2, other.e3));
     }
@@ -135,7 +135,7 @@ public struct Ep<U1, U2, U3> : IElt<Ep<U1, U2, U3>>
     public bool Equals(Ep<U1, U2, U3> other)
     {
         if (!Group.Equals(other.Group))
-            throw new Exception();
+            throw new BaseGroupException();
 
         return (e1, e2, e3).Equals((other.e1, other.e2, other.e3));
     }
@@ -176,14 +176,14 @@ public struct Ep<U1, U2, U3, U4> : IElt<Ep<U1, U2, U3, U4>>
     public int CompareTo(Ep<U1, U2, U3, U4> other)
     {
         if (!Group.Equals(other.Group))
-            throw new Exception();
+            throw new BaseGroupException();
 
         return (e1, e2, e3, e4).CompareTo((other.e1, other.e2, other.e3, other.e4));
     }
     public bool Equals(Ep<U1, U2, U3, U4> other)
     {
         if (!Group.Equals(other.Group))
-            throw new Exception();
+            throw new BaseGroupException();
 
         return (e1, e2, e3, e4).Equals((other.e1, other.e2, other.e3, other.e4));
     }
@@ -206,7 +206,7 @@ public struct Ep<U1, U2, U3, U4, U5> : IElt<Ep<U1, U2, U3, U4, U5>>
         e4 = ie4;
         e5 = ie5;
         Group = new Gp<U1, U2, U3, U4, U5>(e1.Group, e2.Group, e3.Group, e4.Group, e5.Group);
-        Hash = HashCode.Combine(e1.Hash, e2.Hash, e3.Hash, e4.Hash);
+        Hash = HashCode.Combine(e1.Hash, e2.Hash, e3.Hash, e4.Hash, e5.Hash);
     }
     public Ep(Gp<U1, U2, U3, U4, U5> gr, U1 ie1, U2 ie2, U3 ie3, U4 ie4, U5 ie5)
     {
@@ -228,18 +228,18 @@ public struct Ep<U1, U2, U3, U4, U5> : IElt<Ep<U1, U2, U3, U4, U5>>
     public int CompareTo(Ep<U1, U2, U3, U4, U5> other)
     {
         if (!Group.Equals(other.Group))
-            throw new Exception();
+            throw new BaseGroupException();
 
-        return (e1, e2, e3, e4).CompareTo((other.e1, other.e2, other.e3, other.e4));
+        return (e1, e2, e3, e4, e5).CompareTo((other.e1, other.e2, other.e3, other.e4, other.e5));
     }
     public bool Equals(Ep<U1, U2, U3, U4, U5> other)
     {
         if (!Group.Equals(other.Group))
-            throw new Exception();
+            throw new BaseGroupException();
 
-        return (e1, e2, e3, e4).Equals((other.e1, other.e2, other.e3, other.e4));
+        return (e1, e2, e3, e4, e5).Equals((other.e1, other.e2, other.e3, other.e4, other.e5));
     }
     public override int GetHashCode() => Hash;
-    public override string ToString() => (e1, e2, e3, e4).ToString();
+    public override string ToString() => (e1, e2, e3, e4, e5).ToString();
     public static implicit operator Ep<U1, U2, U3, U4, U5>((U1, U2, U3, U4, U5) e) => new(e.Item1, e.Item2, e.Item3, e.Item4, e.Item5);
 }

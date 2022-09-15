@@ -52,7 +52,7 @@ public partial class ConcreteGroup<T>
     public void DisplayDetails(SortElements sort) => DisplayDetails("G", sort);
     public void DisplayDetails(string name = "G", SortElements sort = SortElements.ByOrder)
     {
-        DisplayHead();
+        DisplayHead(name);
         Console.WriteLine();
         DisplayElements(sort);
         Console.WriteLine();

@@ -9,7 +9,7 @@ public class QuotientGroup<T> : WorkGroup<T> where T : struct, IElt<T>
             grG.DisplayHead("G");
             grH.DisplayHead("H");
             grH.DisplayElements(SortElements.ByValue);
-            throw new Exception("H is not a subgroup of G");
+            throw new SubGroupException("Not subgroup");
         }
 
         G = new(grG);
@@ -42,6 +42,7 @@ public class QuotientGroup<T> : WorkGroup<T> where T : struct, IElt<T>
 
     public void DisplayCosets(SortElements sort = SortElements.ByOrder)
     {
+        Console.WriteLine("Cosets");
         var cosets = InternalTable.GroupBy(a => a.Value).ToDictionary(a => a.Key, a => a.Select(b => b.Key).Ascending());
         int k = 0;
         var arr = sort == SortElements.ByOrder ? SortByOrder(elements).ToArray() : elements.Ascending().ToArray();

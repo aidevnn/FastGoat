@@ -12,6 +12,12 @@ var z18 = new Zn(18);
 var z20 = new Zn(20);
 var z30 = new Zn(30);
 
+var s2 = new Sn(2);
+var s3 = new Sn(3);
+var s4 = new Sn(4);
+var s5 = new Sn(5);
+var s6 = new Sn(6);
+
 // {
 //     var sn = new Sn(4);
 //     Perm p0 = (sn, (1, 2));
@@ -154,32 +160,62 @@ var z30 = new Zn(30);
     // Base Elements classes are created by users by implementing the 
     // interface IElt and they also contain a property named Group
     // for the BaseGroup they belong to.
-    ZnInt e1 = (z6, 1);
-    Console.WriteLine(e1);
+    // ZnInt e1 = (z6, 1);
+    // Console.WriteLine(e1);
 
     // Dotnet Tuple elements, nothing will be done. They keyword var 
     // will not interprete the tuple as a Group element
-    var v1 = (z6, 1);
-    Console.WriteLine("{0} != {1}", e1, v1);
+    // var v1 = (z6, 1);
+    // Console.WriteLine("{0} != {1}", e1, v1);
 
     // G[i] is another way to create the element i from the group G,
     // but it can be hard to predict its value depending of the group, 
-    Console.WriteLine("{0} == {1}", e1, z6[1]);
+    // Console.WriteLine("{0} == {1}", e1, z6[1]);
 
-    ZnInt e2 = (z10, 2);
-    // Tuple of integers from Z6 x Z10
-    Ep<ZnInt, ZnInt> ep = (e1, e2);
-    Console.WriteLine("Tuple {0} of {1}", ep, ep.Group);
-    Console.WriteLine();
+    // ZnInt e2 = (z10, 2);
+    // // Tuple of integers from Z6 x Z10
+    // Ep<ZnInt, ZnInt> ep = (e1, e2);
+    // Console.WriteLine("Tuple {0} of {1}", ep, ep.Group);
+    // Console.WriteLine();
 }
 
-{
-    ZnInt e1 = (z6, 2);
-    ZnInt e2 = (z18, 3);
-    Group.Generate(z6[2]).DisplayDetails();
-    Group.Generate(z18[3]).DisplayDetails();
-    Ep<ZnInt, ZnInt> ep = (z6[2], z18[3]);
-    Group.Generate(ep).DisplayDetails();
+// {
+//     ZnInt e1 = (z6, 2);
+//     ZnInt e2 = (z18, 3);
+//     Group.Generate(z6[2]).DisplayDetails();
+//     Group.Generate(z18[3]).DisplayDetails();
+//     Ep<ZnInt, ZnInt> ep = (z6[2], z18[3]);
+//     Group.Generate(ep).DisplayDetails();
 
-    Group.Generate<Ep<ZnInt, ZnInt>>(((z6, 2), (z18, 0)), ((z6, 0), (z18, 3))).DisplayDetails();
+//     Group.Generate<Ep<ZnInt, ZnInt>>(((z6, 2), (z18, 0)), ((z6, 0), (z18, 3))).DisplayDetails();
+// }
+
+{
+    var s7 = new Sn(7);
+    Perm c7 = (s7, (1, 2, 3, 4, 5, 6, 7));
+    Perm c2 = (s7, (1, 2));
+    var S7 = Group.Generate(c2, c7);
+
+    var allC7 = S7.Where(e => S7.GetOrderOf(e) == 7);
+    var allC3 = S7.Where(e => S7.GetOrderOf(e) == 3);
+    var set = allC7.SelectMany(h => allC3.Select(k => (h, k)));
+    Console.WriteLine("|S7|={0}, |{{HK in S7 with H~C7 and K~C3}}| = {1}", S7.Count(), set.Count());
+    Console.WriteLine();
+
+    var s = set.First(e => Group.Generate(e.h, e.k).Count() == 21);
+    Console.WriteLine("First Solution |HK| = 21 : h = {0} and k = {1}", s.h, s.k);
+
+    Console.WriteLine();
+
+    var H = Group.Generate(s.h);
+    var K = Group.Generate(s.k);
+    var G = Group.Generate(s.h, s.k);
+    var GoH = G.Over(H);
+
+    H.DisplayDetails("H");
+    K.DisplayDetails("K");
+    G.DisplayDetails("G=C3⋊C7");
+    GoH.DisplayDetails("G/H");
+    GoH.DisplayCosets();
+
 }

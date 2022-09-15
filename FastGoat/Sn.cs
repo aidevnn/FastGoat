@@ -11,26 +11,23 @@ public struct Sn : IGroup<Perm>
     }
     public Sn(int n)
     {
-        if (n < 2 || n > 8)
-            throw new Exception("Seventh Sky is the limit.");
+        // if (n < 2 || n > 8)
+        //     throw new Exception("Seventh Sky is the limit.");
 
         N = Hash = n;
         cache = new int[n];
     }
-
     public Perm Neutral() => new Perm(this);
     public Perm Invert(Perm a)
     {
         var hash = IntExt.InvertPermutation(a.Table, cache);
         return new Perm(this, cache, hash);
     }
-
     public Perm Op(Perm a, Perm b)
     {
         var hash = IntExt.ComposePermutation(a.Table, b.Table, cache);
         return new Perm(this, cache, hash);
     }
-
     public Perm CreateElement(params int[] vs)
     {
         vs.Add(-1);
@@ -41,7 +38,6 @@ public struct Sn : IGroup<Perm>
         var p = new Perm(this, vs, hash);
         return p;
     }
-
     public Perm Cycle(params int[] vs)
     {
         vs.Add(-1);

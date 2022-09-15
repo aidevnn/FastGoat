@@ -39,7 +39,7 @@ public partial struct Perm : IElt<Perm>
     }
 
     public static Perm operator *(Perm a, Perm b) => a.Group.Op(a, b);
-    public static Perm operator *(Perm a, int k)
+    public static Perm operator ^(Perm a, int k)
     {
         var g = a.Group;
         if (k == 0)

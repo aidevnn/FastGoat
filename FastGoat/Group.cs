@@ -79,12 +79,19 @@ public static class Group
 
         return new WorkGroup<Ep<U1, U2, U3, U4>>(te);
     }
-
     public static QuotientGroup<T> Over<T>(this WorkGroup<T> g, WorkGroup<T> h) where T : struct, IElt<T>
     {
-        return new QuotientGroup<T>(g, h);
-    }
+        try
+        {
+            return new QuotientGroup<T>(g, h);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine("{0} : {1}", e.GetType(), e.Message);
+        }
 
+        return new QuotientGroup<T>(g, g);
+    }
     static (T factor, int order, WorkGroup<T> subGroup) InvariantFactor<T>(this WorkGroup<T> group) where T : struct, IElt<T>
     {
         if (group.groupType == GroupType.NotAbelianGroup)
@@ -94,7 +101,6 @@ public static class Group
         var H = group.GenerateSubgroup(eMax);
         return (eMax, group.GetOrderOf(eMax), group.Over(H));
     }
-
     public static void InvariantFactors<T>(this WorkGroup<T> group) where T : struct, IElt<T>
     {
         var g0 = new WorkGroup<T>(group);

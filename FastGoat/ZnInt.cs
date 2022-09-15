@@ -61,7 +61,7 @@ public struct ZnInt : IElt<ZnInt>
     public int CompareTo(ZnInt other)
     {
         if (!Group.Equals(other.Group))
-            throw new Exception();
+            throw new BaseGroupException();
 
         return k.CompareTo(other.k);
     }

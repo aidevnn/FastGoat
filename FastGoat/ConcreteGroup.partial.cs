@@ -183,12 +183,12 @@ public partial class ConcreteGroup<T>
     public IEnumerable<IEnumerable<T>> Cosets1(ConcreteGroup<T> H)
     {
         if (!H.IsProperSubGroupOf(this))
-            throw new Exception("Not subgroup");
+            throw new SubGroupException("Not subgroup");
 
         var leftCosets = this.LeftCosets(H);
         var rightCosets = this.RightCosets(H);
         if (this.Any(x => !leftCosets[x].SetEquals(rightCosets[x])))
-            throw new Exception("Not normal subgroup");
+            throw new SubGroupException("Not normal subgroup");
 
         var cosets = leftCosets.Values.Distinct(new EqualityHashSet<T>()).Select(set => set.Ascending());
         return cosets;
@@ -196,7 +196,7 @@ public partial class ConcreteGroup<T>
     public IEnumerable<IEnumerable<T>> Cosets(ConcreteGroup<T> H)
     {
         if (!H.IsSubGroupOf(this))
-            throw new Exception("Not subgroup");
+            throw new SubGroupException("Not subgroup");
 
         List<HashSet<T>> cosets = new();
         foreach (var x in elements)
@@ -205,7 +205,7 @@ public partial class ConcreteGroup<T>
             var xH = H.Select(h => this.Op(x, h)).ToHashSet();
             var xHxi = xH.Select(xh => this.Op(xh, xi));
             if (!H.GroupEqual(xHxi))
-                throw new Exception("Not normal subgroup");
+                throw new SubGroupException("Not normal subgroup");
 
             cosets.Add(xH);
         }
