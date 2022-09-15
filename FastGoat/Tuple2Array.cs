@@ -24,6 +24,7 @@ public class Tuple2Array
     public static implicit operator Tuple2Array((int a, int b, int c, int d, int e) p) => new Tuple2Array(p.a, p.b, p.c, p.d, p.e);
     public static implicit operator Tuple2Array((int a, int b, int c, int d, int e, int f) p) => new Tuple2Array(p.a, p.b, p.c, p.d, p.e, p.f);
     public static implicit operator Tuple2Array((int a, int b, int c, int d, int e, int f, int g) p) => new Tuple2Array(p.a, p.b, p.c, p.d, p.e, p.f, p.g);
+    public static implicit operator Tuple2Array((int a, int b, int c, int d, int e, int f, int g, int h) p) => new Tuple2Array(p.a, p.b, p.c, p.d, p.e, p.f, p.g, p.h);
 
     public override string ToString() => string.Format("({0})", string.Join(" ", Table.Select(e => $"{e,2}")));
 }

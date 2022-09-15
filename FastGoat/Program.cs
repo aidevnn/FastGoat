@@ -197,20 +197,18 @@ var s6 = new Sn(6);
     Perm c2 = (s7, (1, 2));
     var S7 = Group.Generate(c2, c7);
 
-    var allC7 = S7.Where(e => S7.GetOrderOf(e) == 7);
     var allC3 = S7.Where(e => S7.GetOrderOf(e) == 3);
-    var set = allC7.SelectMany(h => allC3.Select(k => (h, k)));
-    Console.WriteLine("|S7|={0}, |{{HK in S7 with H~C7 and K~C3}}| = {1}", S7.Count(), set.Count());
+    Console.WriteLine("|S7|={0}, |{{K in S7 with K~C3}}| = {1}", S7.Count(), allC3.Count());
     Console.WriteLine();
 
-    var s = set.First(e => Group.Generate(e.h, e.k).Count() == 21);
-    Console.WriteLine("First Solution |HK| = 21 : h = {0} and k = {1}", s.h, s.k);
+    var sc3 = allC3.First(c3 => Group.Generate(c7, c3).Count() == 21);
+    Console.WriteLine("First Solution |HK| = 21 : h = {0} and k = {1}", c7, sc3);
 
     Console.WriteLine();
 
-    var H = Group.Generate(s.h);
-    var K = Group.Generate(s.k);
-    var G = Group.Generate(s.h, s.k);
+    var H = Group.Generate(c7);
+    var K = Group.Generate(sc3);
+    var G = Group.Generate(c7, sc3);
     var GoH = G.Over(H);
 
     H.DisplayDetails("H");
@@ -228,22 +226,20 @@ var s6 = new Sn(6);
     Perm c2 = (s7, (1, 2));
     var S7 = Group.Generate(c2, c7);
 
-    var allC7 = S7.Where(e => S7.GetOrderOf(e) == 7);
     var allC3 = S7.Where(e => S7.GetOrderOf(e) == 3);
-    var set = allC7.SelectMany(a => allC3.Select(b => (a, b)));
-    Console.WriteLine("|S7|={0}, |{{(a,b) in S7xS7 with a^7 = b^3 = 1}}| = {1}", S7.Count(), set.Count());
+    Console.WriteLine("|S7|={0}, |{{b in S7 with b^3 = 1}}| = {1}", S7.Count(), allC3.Count());
     Console.WriteLine();
 
-    var s = set.First(e => (e.a ^ 2) * e.b == e.b * e.a);
-    var allSols = set.Count(e => (e.a ^ 2) * e.b == e.b * e.a);
-    Console.WriteLine("First Solution a^2 * b = b * a : a = {0} and b = {1}", s.a, s.b);
+    var sc3 = allC3.First(c3 => (c7 ^ 2) * c3 == c3 * c7);
+    var allSols = allC3.Count(c3 => (c7 ^ 2) * c3 == c3 * c7);
+    Console.WriteLine("First Solution a^7 = b^3 = 1 and a^2 * b = b * a : a = {0} and b = {1}", c7, sc3);
     Console.WriteLine("All Solutions : {0}", allSols);
 
     Console.WriteLine();
 
-    var H = Group.Generate(s.a);
-    var K = Group.Generate(s.b);
-    var G = Group.Generate(s.a, s.b);
+    var H = Group.Generate(c7);
+    var K = Group.Generate(sc3);
+    var G = Group.Generate(c7, sc3);
     var GoH = G.Over(H);
 
     H.DisplayDetails("H");
@@ -253,3 +249,40 @@ var s6 = new Sn(6);
     GoH.DisplayCosets();
     GlobalStopWatch.Show("Example");
 }
+
+// {
+//     GlobalStopWatch.Restart();
+//     var s7 = new Sn(7);
+//     Perm c7 = (s7, (1, 2, 3, 4, 5, 6, 7));
+//     Perm c2 = (s7, (1, 2));
+//     var S7 = Group.Generate(c2, c7);
+
+//     var allC2 = S7.Where(e => S7.GetOrderOf(e) == 2);
+//     var allC3 = S7.Where(e => S7.GetOrderOf(e) == 3);
+//     var set = allC3.SelectMany(a => allC2.Select(b => (a, b)));
+//     var ne = S7.Neutral();
+//     var filter1 = from e in set
+//                   where ((e.a * e.b) ^ 2) != ne && ((e.a * e.b) ^ 4) == ne
+//                   select e;
+
+//     var filter2 = from e in filter1
+//                   from ec in allC2
+//                   where ((e.a * ec) ^ 2) == ne
+//                   && ((e.b * ec) ^ 3) == ne
+//                   && !Group.Generate(e.a, e.b).Contains(ec)
+//                   select (e.a, e.b, ec);
+
+//     var (a, b, c) = filter2.First();
+
+//     Console.WriteLine("All C2 = {0}", allC2.Count());
+//     Console.WriteLine("All C3 = {0}", allC3.Count());
+//     Console.WriteLine("|S7|={0}, |{{(a,b) in S7xS7 with a^3 = b^2 = 1}}| = {1}", S7.Count(), set.Count());
+//     Console.WriteLine("Filter (ab)^4 = 1. Count = {0}", filter1.Count());
+//     Console.WriteLine("First Solution (ac)^2 = (bc)^3 = 1 : a = {0} and b = {1} and c = {2}", a, b, c);
+//     // Console.WriteLine();
+
+//     var G = Group.Generate(a, b, c);
+//     G.DisplayHead("G");
+
+//     GlobalStopWatch.Show("Example");
+// }
