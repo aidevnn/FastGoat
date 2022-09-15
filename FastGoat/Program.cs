@@ -305,7 +305,7 @@ var s7 = new Sn(7);
     ZnInt cg = (z3, 1);
     var Cg = Group.Generate(cg);
     var Cn = Group.Generate(cn);
-    var Cn_sp_Cg = Group.SemiDirectProd(Cn, Cg, (g, x) => g == Cg.Neutral() ? x : g == cg ? x ^ 2 : x ^ 4);
+    var Cn_sp_Cg = Group.SemiDirectProd(Cn, Cg, (g, x) => g == (z3, 0) ? x : g == cg ? x ^ 2 : x ^ 4);
     Cn_sp_Cg.DisplayDetails("G=HK");
     var Cn_sp_CgoNcan = Cn_sp_Cg.Over(Cn_sp_Cg.Ncan);
     Cn_sp_CgoNcan.DisplayDetails("G/H");
