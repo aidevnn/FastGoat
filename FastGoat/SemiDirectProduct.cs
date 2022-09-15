@@ -1,6 +1,6 @@
 namespace FastGoat;
 
-public class SemiDirectProduct<T1, T2> : ConcreteGroup<Ep<T1, T2>> where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
+public class SemiDirectProduct<T1, T2> : WorkGroup<Ep<T1, T2>> where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
 {
     public SemiDirectProduct(WorkGroup<T1> n, WorkGroup<T2> g, Func<T2, T1, T1> action) : base(new Gp<T1, T2>(n.BaseGroup, g.BaseGroup))
     {
@@ -10,10 +10,14 @@ public class SemiDirectProduct<T1, T2> : ConcreteGroup<Ep<T1, T2>> where T1 : st
         this.action = action;
         var nGens = n.Select(n0 => new Ep<T1, T2>(n0, g.Neutral()));
         var gGens = g.Select(g0 => new Ep<T1, T2>(n.Neutral(), g0));
+        Ncan = Group.Generate(nGens.ToArray());
+        Gcan = Group.Generate(gGens.ToArray());
         var tmpElements = Generate(nGens, gGens);
         (groupType, elementOrder, monogenics) = ComputeDetails(tmpElements);
         elements = new(tmpElements);
     }
+    public WorkGroup<Ep<T1, T2>> Ncan { get; }
+    public WorkGroup<Ep<T1, T2>> Gcan { get; }
     WorkGroup<T1> N { get; }
     WorkGroup<T2> G { get; }
     Func<T2, T1, T1> action { get; }

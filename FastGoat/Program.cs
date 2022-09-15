@@ -290,11 +290,23 @@ var s7 = new Sn(7);
 // }
 
 {
-    ZnInt cn = (z6, 1);
+    ZnInt cn = (z4, 1);
     ZnInt cg = (z2, 1);
     var Cg = Group.Generate(cg);
     var Cn = Group.Generate(cn);
-    Func<ZnInt, ZnInt, ZnInt> action = (ZnInt g, ZnInt x) => g == Cg.Neutral() ? x : Cn.Invert(x);
+    Func<ZnInt, ZnInt, ZnInt> action = (ZnInt g, ZnInt x) => g == Cg.Neutral() ? x : x ^ -1;
     var Cn_sp_Cg = new SemiDirectProduct<ZnInt, ZnInt>(Cn, Cg, action);
     Cn_sp_Cg.DisplayDetails();
+    Cn_sp_Cg.Over(Cn_sp_Cg.Ncan).DisplayDetails();
+}
+
+{
+    ZnInt cn = (z7, 1);
+    ZnInt cg = (z3, 1);
+    var Cg = Group.Generate(cg);
+    var Cn = Group.Generate(cn);
+    Func<ZnInt, ZnInt, ZnInt> action = (ZnInt g, ZnInt x) => g == Cg.Neutral() ? x : g == (z3, 1) ? x ^ 2 : x ^ 4;
+    var Cn_sp_Cg = new SemiDirectProduct<ZnInt, ZnInt>(Cn, Cg, action);
+    Cn_sp_Cg.DisplayDetails();
+    Cn_sp_Cg.Over(Cn_sp_Cg.Ncan).DisplayDetails();
 }

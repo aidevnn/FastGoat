@@ -2,6 +2,10 @@ namespace FastGoat;
 
 public partial class WorkGroup<T> : ConcreteGroup<T> where T : struct, IElt<T>
 {
+    public WorkGroup(IGroup<T> g) : base(g)
+    {
+
+    }
     public WorkGroup(T e) : base(e.Group)
     {
         ControlGroup = new ConcreteGroup<T>(BaseGroup);
