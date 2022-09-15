@@ -218,8 +218,6 @@ var s6 = new Sn(6);
     G.DisplayDetails("G=HK");
     GoH.DisplayDetails("G/H");
     GoH.DisplayCosets();
-
-    Console.WriteLine();
     GlobalStopWatch.Show("Example");
 }
 
@@ -232,18 +230,20 @@ var s6 = new Sn(6);
 
     var allC7 = S7.Where(e => S7.GetOrderOf(e) == 7);
     var allC3 = S7.Where(e => S7.GetOrderOf(e) == 3);
-    var set = allC7.SelectMany(h => allC3.Select(k => (h, k)));
-    Console.WriteLine("|S7|={0}, |{{HK in S7 with H~C7 and K~C3}}| = {1}", S7.Count(), set.Count());
+    var set = allC7.SelectMany(a => allC3.Select(b => (a, b)));
+    Console.WriteLine("|S7|={0}, |{{(a,b) in S7xS7 with a^7 = b^3 = 1}}| = {1}", S7.Count(), set.Count());
     Console.WriteLine();
 
-    var s = set.First(e => Group.Generate(e.h, e.k).Count() == 21);
-    Console.WriteLine("First Solution |HK| = 21 : h = {0} and k = {1}", s.h, s.k);
+    var s = set.First(e => (e.a ^ 2) * e.b == e.b * e.a);
+    var allSols = set.Count(e => (e.a ^ 2) * e.b == e.b * e.a);
+    Console.WriteLine("First Solution a^2 * b = b * a : a = {0} and b = {1}", s.a, s.b);
+    Console.WriteLine("All Solutions : {0}", allSols);
 
     Console.WriteLine();
 
-    var H = Group.Generate(s.h);
-    var K = Group.Generate(s.k);
-    var G = Group.Generate(s.h, s.k);
+    var H = Group.Generate(s.a);
+    var K = Group.Generate(s.b);
+    var G = Group.Generate(s.a, s.b);
     var GoH = G.Over(H);
 
     H.DisplayDetails("H");
@@ -251,40 +251,5 @@ var s6 = new Sn(6);
     G.DisplayDetails("G=HK");
     GoH.DisplayDetails("G/H");
     GoH.DisplayCosets();
-
-    Console.WriteLine();
-    GlobalStopWatch.Show("Example");
-}
-
-{
-    GlobalStopWatch.Restart();
-    var s7 = new Sn(7);
-    Perm c7 = (s7, (1, 2, 3, 4, 5, 6, 7));
-    Perm c2 = (s7, (1, 2));
-    var S7 = Group.Generate(c2, c7);
-
-    var allC7 = S7.Where(e => S7.GetOrderOf(e) == 7);
-    var allC3 = S7.Where(e => S7.GetOrderOf(e) == 3);
-    var set = allC7.SelectMany(h => allC3.Select(k => (h, k)));
-    Console.WriteLine("|S7|={0}, |{{HK in S7 with H~C7 and K~C3}}| = {1}", S7.Count(), set.Count());
-    Console.WriteLine();
-
-    var s = set.First(e => Group.Generate(e.h, e.k).Count() == 21);
-    Console.WriteLine("First Solution |HK| = 21 : h = {0} and k = {1}", s.h, s.k);
-
-    Console.WriteLine();
-
-    var H = Group.Generate(s.h);
-    var K = Group.Generate(s.k);
-    var G = Group.Generate(s.h, s.k);
-    var GoH = G.Over(H);
-
-    H.DisplayDetails("H");
-    K.DisplayDetails("K");
-    G.DisplayDetails("G=HK");
-    GoH.DisplayDetails("G/H");
-    GoH.DisplayCosets();
-
-    Console.WriteLine();
     GlobalStopWatch.Show("Example");
 }

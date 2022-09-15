@@ -38,6 +38,13 @@ public partial struct Perm : IElt<Perm>
         return $"[{strCycles}]";
     }
 
+    public override bool Equals(object? obj)
+    {
+        if (obj is null) return false;
+        return this.Equals((Perm)obj);
+    }
+    public static bool operator ==(Perm a, Perm b) => a.Equals(b);
+    public static bool operator !=(Perm a, Perm b) => !a.Equals(b);
     public static Perm operator *(Perm a, Perm b) => a.Group.Op(a, b);
     public static Perm operator ^(Perm a, int k)
     {
@@ -58,4 +65,5 @@ public partial struct Perm : IElt<Perm>
     public static implicit operator Perm((Sn sn, Tuple2Array c0, Tuple2Array c1) p) => p.sn.ComposesCycles(p.c0, p.c1);
     public static implicit operator Perm((Sn sn, Tuple2Array c0, Tuple2Array c1, Tuple2Array c2) p) => p.sn.ComposesCycles(p.c0, p.c1, p.c2);
     public static implicit operator Perm((Sn sn, Tuple2Array c0, Tuple2Array c1, Tuple2Array c2, Tuple2Array c3) p) => p.sn.ComposesCycles(p.c0, p.c1, p.c2, p.c3);
+
 }
