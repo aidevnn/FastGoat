@@ -5,7 +5,7 @@ What C# can do for studying Finite Groups, abelians or not, quotient groups, dir
 This version is faster and it allows to study more complex cases.
 
 ## Example
-Searching semi-direct product $C_7 \rtimes C_3$ in $\textbf{S}_7$
+Searching semi-direct product $C_3 \rtimes C_7$ in $\textbf{S}_7$
 
 ```csharp
 var s7 = new Sn(7);
