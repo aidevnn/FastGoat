@@ -192,33 +192,33 @@ var s7 = new Sn(7);
 //     Group.Generate<Ep<ZnInt, ZnInt>>(((z6, 2), (z18, 0)), ((z6, 0), (z18, 3))).DisplayDetails();
 // }
 
-{
-    GlobalStopWatch.Restart();
-    Perm c7 = (s7, (1, 2, 3, 4, 5, 6, 7));
-    Perm c2 = (s7, (1, 2));
-    var S7 = Group.Generate(c2, c7);
+// {
+//     GlobalStopWatch.Restart();
+//     Perm c7 = (s7, (1, 2, 3, 4, 5, 6, 7));
+//     Perm c2 = (s7, (1, 2));
+//     var S7 = Group.Generate(c2, c7);
 
-    var allC3 = S7.Where(e => S7.GetOrderOf(e) == 3);
-    Console.WriteLine("|S7|={0}, |{{K in S7 with K~C3}}| = {1}", S7.Count(), allC3.Count());
-    Console.WriteLine();
+//     var allC3 = S7.Where(e => S7.GetOrderOf(e) == 3);
+//     Console.WriteLine("|S7|={0}, |{{K in S7 with K~C3}}| = {1}", S7.Count(), allC3.Count());
+//     Console.WriteLine();
 
-    var sc3 = allC3.First(c3 => Group.Generate(c7, c3).Count() == 21);
-    Console.WriteLine("First Solution |HK| = 21 : h = {0} and k = {1}", c7, sc3);
+//     var sc3 = allC3.First(c3 => Group.Generate(c7, c3).Count() == 21);
+//     Console.WriteLine("First Solution |HK| = 21 : h = {0} and k = {1}", c7, sc3);
 
-    Console.WriteLine();
+//     Console.WriteLine();
 
-    var H = Group.Generate(c7);
-    var K = Group.Generate(sc3);
-    var G = Group.Generate(c7, sc3);
-    var GoH = G.Over(H);
+//     var H = Group.Generate(c7);
+//     var K = Group.Generate(sc3);
+//     var G = Group.Generate(c7, sc3);
+//     var GoH = G.Over(H);
 
-    H.DisplayDetails("H");
-    K.DisplayDetails("K");
-    G.DisplayDetails("G=HK");
-    GoH.DisplayDetails("G/H");
-    GoH.DisplayCosets();
-    GlobalStopWatch.Show("Example");
-}
+//     H.DisplayDetails("H");
+//     K.DisplayDetails("K");
+//     G.DisplayDetails("G=HK");
+//     GoH.DisplayDetails("G/H");
+//     GoH.DisplayCosets();
+//     GlobalStopWatch.Show("Example");
+// }
 
 // {
 //     GlobalStopWatch.Restart();
@@ -300,23 +300,25 @@ var s7 = new Sn(7);
 // }
 
 {
+    GlobalStopWatch.Restart();
     ZnInt cn = (z7, 1);
     ZnInt cg = (z3, 1);
     var Cg = Group.Generate(cg);
     var Cn = Group.Generate(cn);
     Func<ZnInt, ZnInt, ZnInt> action = (ZnInt g, ZnInt x) => g == Cg.Neutral() ? x : g == (z3, 1) ? x ^ 2 : x ^ 4;
     var Cn_sp_Cg = new SemiDirectProduct<ZnInt, ZnInt>(Cn, Cg, action);
-    Cn_sp_Cg.DisplayDetails();
-    Cn_sp_Cg.Over(Cn_sp_Cg.Ncan).DisplayDetails();
+    Cn_sp_Cg.DisplayDetails("G=HK");
+    Cn_sp_Cg.Over(Cn_sp_Cg.Ncan).DisplayDetails("G/H");
+    GlobalStopWatch.Show("SemiDirectProduct");
 }
 
-{
-    Perm cn = (s7, (1, 2, 3, 4, 5, 6, 7));
-    Perm cg = (s3, (1, 2, 3));
-    var Cg = Group.Generate(cg);
-    var Cn = Group.Generate(cn);
-    Func<Perm, Perm, Perm> action = (Perm g, Perm x) => g == Cg.Neutral() ? x : g == cg ? x ^ 2 : x ^ 4;
-    var Cn_sp_Cg = new SemiDirectProduct<Perm, Perm>(Cn, Cg, action);
-    Cn_sp_Cg.DisplayDetails();
-    Cn_sp_Cg.Over(Cn_sp_Cg.Ncan).DisplayDetails();
-}
+// {
+//     Perm cn = (s7, (1, 2, 3, 4, 5, 6, 7));
+//     Perm cg = (s3, (1, 2, 3));
+//     var Cg = Group.Generate(cg);
+//     var Cn = Group.Generate(cn);
+//     Func<Perm, Perm, Perm> action = (Perm g, Perm x) => g == Cg.Neutral() ? x : g == cg ? x ^ 2 : x ^ 4;
+//     var Cn_sp_Cg = new SemiDirectProduct<Perm, Perm>(Cn, Cg, action);
+//     Cn_sp_Cg.DisplayDetails();
+//     Cn_sp_Cg.Over(Cn_sp_Cg.Ncan).DisplayDetails();
+// }

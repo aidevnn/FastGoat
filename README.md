@@ -402,6 +402,7 @@ Table
 2 3 1
 3 1 2
 
+# SemiDirectProduct Time:8 ms
 ```
 
 ## References
