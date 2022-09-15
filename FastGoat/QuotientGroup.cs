@@ -16,7 +16,7 @@ public class QuotientGroup<T> : WorkGroup<T> where T : struct, IElt<T>
         InternalTable = Table(grH);
 
         var tmpElements = G.SortByOrder(InternalTable.Values.ToHashSet());
-        (groupType, elementOrder) = ComputeDetails(tmpElements);
+        (groupType, elementOrder, monogenics) = ComputeDetails(tmpElements);
         elements = new(tmpElements);
     }
     WorkGroup<T> G { get; }

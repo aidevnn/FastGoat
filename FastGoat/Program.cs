@@ -5,6 +5,7 @@ var z3 = new Zn(3);
 var z4 = new Zn(4);
 var z5 = new Zn(5);
 var z6 = new Zn(6);
+var z7 = new Zn(7);
 var z8 = new Zn(8);
 var z10 = new Zn(10);
 var z15 = new Zn(15);
@@ -17,6 +18,7 @@ var s3 = new Sn(3);
 var s4 = new Sn(4);
 var s5 = new Sn(5);
 var s6 = new Sn(6);
+var s7 = new Sn(7);
 
 // {
 //     var sn = new Sn(4);
@@ -190,65 +192,65 @@ var s6 = new Sn(6);
 //     Group.Generate<Ep<ZnInt, ZnInt>>(((z6, 2), (z18, 0)), ((z6, 0), (z18, 3))).DisplayDetails();
 // }
 
-{
-    GlobalStopWatch.Restart();
-    var s7 = new Sn(7);
-    Perm c7 = (s7, (1, 2, 3, 4, 5, 6, 7));
-    Perm c2 = (s7, (1, 2));
-    var S7 = Group.Generate(c2, c7);
+// {
+//     GlobalStopWatch.Restart();
+//     var s7 = new Sn(7);
+//     Perm c7 = (s7, (1, 2, 3, 4, 5, 6, 7));
+//     Perm c2 = (s7, (1, 2));
+//     var S7 = Group.Generate(c2, c7);
 
-    var allC3 = S7.Where(e => S7.GetOrderOf(e) == 3);
-    Console.WriteLine("|S7|={0}, |{{K in S7 with K~C3}}| = {1}", S7.Count(), allC3.Count());
-    Console.WriteLine();
+//     var allC3 = S7.Where(e => S7.GetOrderOf(e) == 3);
+//     Console.WriteLine("|S7|={0}, |{{K in S7 with K~C3}}| = {1}", S7.Count(), allC3.Count());
+//     Console.WriteLine();
 
-    var sc3 = allC3.First(c3 => Group.Generate(c7, c3).Count() == 21);
-    Console.WriteLine("First Solution |HK| = 21 : h = {0} and k = {1}", c7, sc3);
+//     var sc3 = allC3.First(c3 => Group.Generate(c7, c3).Count() == 21);
+//     Console.WriteLine("First Solution |HK| = 21 : h = {0} and k = {1}", c7, sc3);
 
-    Console.WriteLine();
+//     Console.WriteLine();
 
-    var H = Group.Generate(c7);
-    var K = Group.Generate(sc3);
-    var G = Group.Generate(c7, sc3);
-    var GoH = G.Over(H);
+//     var H = Group.Generate(c7);
+//     var K = Group.Generate(sc3);
+//     var G = Group.Generate(c7, sc3);
+//     var GoH = G.Over(H);
 
-    H.DisplayDetails("H");
-    K.DisplayDetails("K");
-    G.DisplayDetails("G=HK");
-    GoH.DisplayDetails("G/H");
-    GoH.DisplayCosets();
-    GlobalStopWatch.Show("Example");
-}
+//     H.DisplayDetails("H");
+//     K.DisplayDetails("K");
+//     G.DisplayDetails("G=HK");
+//     GoH.DisplayDetails("G/H");
+//     GoH.DisplayCosets();
+//     GlobalStopWatch.Show("Example");
+// }
 
-{
-    GlobalStopWatch.Restart();
-    var s7 = new Sn(7);
-    Perm c7 = (s7, (1, 2, 3, 4, 5, 6, 7));
-    Perm c2 = (s7, (1, 2));
-    var S7 = Group.Generate(c2, c7);
+// {
+//     GlobalStopWatch.Restart();
+//     var s7 = new Sn(7);
+//     Perm c7 = (s7, (1, 2, 3, 4, 5, 6, 7));
+//     Perm c2 = (s7, (1, 2));
+//     var S7 = Group.Generate(c2, c7);
 
-    var allC3 = S7.Where(e => S7.GetOrderOf(e) == 3);
-    Console.WriteLine("|S7|={0}, |{{b in S7 with b^3 = 1}}| = {1}", S7.Count(), allC3.Count());
-    Console.WriteLine();
+//     var allC3 = S7.Where(e => S7.GetOrderOf(e) == 3);
+//     Console.WriteLine("|S7|={0}, |{{b in S7 with b^3 = 1}}| = {1}", S7.Count(), allC3.Count());
+//     Console.WriteLine();
 
-    var sc3 = allC3.First(c3 => (c7 ^ 2) * c3 == c3 * c7);
-    var allSols = allC3.Count(c3 => (c7 ^ 2) * c3 == c3 * c7);
-    Console.WriteLine("First Solution a^7 = b^3 = 1 and a^2 * b = b * a : a = {0} and b = {1}", c7, sc3);
-    Console.WriteLine("All Solutions : {0}", allSols);
+//     var sc3 = allC3.First(c3 => (c7 ^ 2) * c3 == c3 * c7);
+//     var allSols = allC3.Count(c3 => (c7 ^ 2) * c3 == c3 * c7);
+//     Console.WriteLine("First Solution a^7 = b^3 = 1 and a^2 * b = b * a : a = {0} and b = {1}", c7, sc3);
+//     Console.WriteLine("All Solutions : {0}", allSols);
 
-    Console.WriteLine();
+//     Console.WriteLine();
 
-    var H = Group.Generate(c7);
-    var K = Group.Generate(sc3);
-    var G = Group.Generate(c7, sc3);
-    var GoH = G.Over(H);
+//     var H = Group.Generate(c7);
+//     var K = Group.Generate(sc3);
+//     var G = Group.Generate(c7, sc3);
+//     var GoH = G.Over(H);
 
-    H.DisplayDetails("H");
-    K.DisplayDetails("K");
-    G.DisplayDetails("G=HK");
-    GoH.DisplayDetails("G/H");
-    GoH.DisplayCosets();
-    GlobalStopWatch.Show("Example");
-}
+//     H.DisplayDetails("H");
+//     K.DisplayDetails("K");
+//     G.DisplayDetails("G=HK");
+//     GoH.DisplayDetails("G/H");
+//     GoH.DisplayCosets();
+//     GlobalStopWatch.Show("Example");
+// }
 
 // {
 //     GlobalStopWatch.Restart();
@@ -286,3 +288,13 @@ var s6 = new Sn(6);
 
 //     GlobalStopWatch.Show("Example");
 // }
+
+{
+    ZnInt cn = (z6, 1);
+    ZnInt cg = (z2, 1);
+    var Cg = Group.Generate(cg);
+    var Cn = Group.Generate(cn);
+    Func<ZnInt, ZnInt, ZnInt> action = (ZnInt g, ZnInt x) => g.Equals(Cg.Neutral()) ? x : Cn.Invert(x);
+    var Cn_sp_Cg = new SemiDirectProduct<ZnInt, ZnInt>(Cn, Cg, action);
+    Cn_sp_Cg.DisplayDetails();
+}

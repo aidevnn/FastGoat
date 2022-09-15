@@ -6,7 +6,7 @@ public partial class WorkGroup<T> : ConcreteGroup<T> where T : struct, IElt<T>
     {
         ControlGroup = new ConcreteGroup<T>(BaseGroup);
         var tmpElements = Generate(new[] { e });
-        (groupType, elementOrder) = ComputeDetails(tmpElements);
+        (groupType, elementOrder, monogenics) = ComputeDetails(tmpElements);
         elements = new(tmpElements);
     }
     public WorkGroup(IEnumerable<T> ts) : base(ts.First().Group)
@@ -16,7 +16,7 @@ public partial class WorkGroup<T> : ConcreteGroup<T> where T : struct, IElt<T>
             throw new BaseGroupException();
 
         var tmpElements = Generate(ts);
-        (groupType, elementOrder) = ComputeDetails(tmpElements);
+        (groupType, elementOrder, monogenics) = ComputeDetails(tmpElements);
         elements = new(tmpElements);
     }
     public WorkGroup(WorkGroup<T> group) : base(group.BaseGroup)
@@ -28,8 +28,11 @@ public partial class WorkGroup<T> : ConcreteGroup<T> where T : struct, IElt<T>
     private WorkGroup(WorkGroup<T> group, IEnumerable<T> ts) : base(group.BaseGroup)
     {
         ControlGroup = group;
+        if (ts.Any(e => !group.Contains(e)))
+            throw new SubGroupException("Element doesnt belong to the super group");
+
         var tmpElements = Generate(ts);
-        (groupType, elementOrder) = ComputeDetails(tmpElements);
+        (groupType, elementOrder, monogenics) = ComputeDetails(tmpElements);
         elements = new(tmpElements);
     }
     public override T Neutral() => ControlGroup.Neutral();

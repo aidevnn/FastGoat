@@ -147,30 +147,14 @@ public partial class ConcreteGroup<T>
 
         return gens;
     }
-    protected (GroupType, Dictionary<T, int>) ComputeDetails(IEnumerable<T> elements)
+    protected (GroupType, Dictionary<T, int>, List<T>) ComputeDetails(IEnumerable<T> elements)
     {
         var gens = ComputeGenerators(elements);
         var gType = ComputeGroupType(gens.Keys);
         var orders = ComputeOrders(gens.Values);
+        var monogenics = gens.Select(e => e.Key.e).Ascending().ToList();
 
-        // foreach (var p in gens.OrderBy(p0 => p0.Value.Count).ThenBy(p0 => p0.Key))
-        // {
-        //     Console.WriteLine("g = {0} Order:{1}", p.Key.e, p.Value.Count);
-        //     Console.WriteLine("{0}", p.Value.Glue("; "));
-        //     // Console.WriteLine();
-        // }
-
-        // Console.WriteLine($"Total Generators : {gens.Count}");
-        // // foreach (var gp in Orders.GroupBy(p0 => p0.Value).OrderBy(p0 => p0.Key))
-        // //     Console.WriteLine("{0,3} => {1}", gp.Key, gp.OrderBy(p1 => p1.Key).Select(p0 => p0.Key).Glue("; "));
-
-        // foreach (var gp in orders.GroupBy(p0 => p0.Value).OrderBy(p0 => p0.Key))
-        //     Console.WriteLine("{0,-3} => {1}", gp.Key, gp.Count());
-
-        // Console.WriteLine($"Total  {orders.Count} {gType}");
-        // Console.WriteLine();
-
-        return (gType, orders);
+        return (gType, orders, monogenics);
     }
     public Dictionary<T, HashSet<T>> LeftCosets(IEnumerable<T> H)
     {

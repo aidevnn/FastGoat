@@ -9,6 +9,7 @@ public partial class ConcreteGroup<T> : IConcreteGroup<T> where T : struct, IElt
     public IConcreteGroup<T> ControlGroup { get; protected set; }
     protected HashSet<T> elements { get; set; }
     protected Dictionary<T, int> elementOrder { get; set; }
+    protected List<T> monogenics { get; set; }
     public ConcreteGroup(IGroup<T> baseGroup)
     {
         BaseGroup = baseGroup;
@@ -17,8 +18,9 @@ public partial class ConcreteGroup<T> : IConcreteGroup<T> where T : struct, IElt
 
         elements = new() { baseGroup.Neutral() };
         elementOrder = new() { [baseGroup.Neutral()] = 1 };
+        monogenics = new() { baseGroup.Neutral() };
     }
-
+    public IEnumerable<T> GetMonogenics() => monogenics;
     public IEnumerator<T> GetEnumerator() => elements.GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => elements.GetEnumerator();
     public bool Equals(IConcreteGroup<T>? other) => other?.Hash == Hash;

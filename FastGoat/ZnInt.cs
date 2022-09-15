@@ -71,4 +71,6 @@ public struct ZnInt : IElt<ZnInt>
     public override string ToString() => string.Format(Zn.fmt, k);
 
     public static implicit operator ZnInt((Zn zn, int k) p) => new(p.zn, p.k);
+    public static ZnInt operator *(ZnInt a, ZnInt b) => a.Group.Op(a, b);
+    public static ZnInt operator ^(ZnInt a, int p) => (a.Zn, a.k * p);
 }
