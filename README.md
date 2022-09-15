@@ -77,7 +77,7 @@ Table
 2 3 1
 3 1 2
 
-|G=C3⋊C7| = 21 in S7
+|G=HK| = 21 in S7
 is NotAbelianGroup
 
 Elements
@@ -164,6 +164,8 @@ Cosets
       [(1 5 7)(3 6 4)]
       [(1 6 5)(2 3 7)]
       [(1 7 3)(2 4 5)]
+
+# Example Time:2669 ms
 
 ```
 

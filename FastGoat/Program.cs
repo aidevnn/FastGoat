@@ -191,6 +191,7 @@ var s6 = new Sn(6);
 // }
 
 {
+    GlobalStopWatch.Restart();
     var s7 = new Sn(7);
     Perm c7 = (s7, (1, 2, 3, 4, 5, 6, 7));
     Perm c2 = (s7, (1, 2));
@@ -214,8 +215,76 @@ var s6 = new Sn(6);
 
     H.DisplayDetails("H");
     K.DisplayDetails("K");
-    G.DisplayDetails("G=C3⋊C7");
+    G.DisplayDetails("G=HK");
     GoH.DisplayDetails("G/H");
     GoH.DisplayCosets();
 
+    Console.WriteLine();
+    GlobalStopWatch.Show("Example");
+}
+
+{
+    GlobalStopWatch.Restart();
+    var s7 = new Sn(7);
+    Perm c7 = (s7, (1, 2, 3, 4, 5, 6, 7));
+    Perm c2 = (s7, (1, 2));
+    var S7 = Group.Generate(c2, c7);
+
+    var allC7 = S7.Where(e => S7.GetOrderOf(e) == 7);
+    var allC3 = S7.Where(e => S7.GetOrderOf(e) == 3);
+    var set = allC7.SelectMany(h => allC3.Select(k => (h, k)));
+    Console.WriteLine("|S7|={0}, |{{HK in S7 with H~C7 and K~C3}}| = {1}", S7.Count(), set.Count());
+    Console.WriteLine();
+
+    var s = set.First(e => Group.Generate(e.h, e.k).Count() == 21);
+    Console.WriteLine("First Solution |HK| = 21 : h = {0} and k = {1}", s.h, s.k);
+
+    Console.WriteLine();
+
+    var H = Group.Generate(s.h);
+    var K = Group.Generate(s.k);
+    var G = Group.Generate(s.h, s.k);
+    var GoH = G.Over(H);
+
+    H.DisplayDetails("H");
+    K.DisplayDetails("K");
+    G.DisplayDetails("G=HK");
+    GoH.DisplayDetails("G/H");
+    GoH.DisplayCosets();
+
+    Console.WriteLine();
+    GlobalStopWatch.Show("Example");
+}
+
+{
+    GlobalStopWatch.Restart();
+    var s7 = new Sn(7);
+    Perm c7 = (s7, (1, 2, 3, 4, 5, 6, 7));
+    Perm c2 = (s7, (1, 2));
+    var S7 = Group.Generate(c2, c7);
+
+    var allC7 = S7.Where(e => S7.GetOrderOf(e) == 7);
+    var allC3 = S7.Where(e => S7.GetOrderOf(e) == 3);
+    var set = allC7.SelectMany(h => allC3.Select(k => (h, k)));
+    Console.WriteLine("|S7|={0}, |{{HK in S7 with H~C7 and K~C3}}| = {1}", S7.Count(), set.Count());
+    Console.WriteLine();
+
+    var s = set.First(e => Group.Generate(e.h, e.k).Count() == 21);
+    Console.WriteLine("First Solution |HK| = 21 : h = {0} and k = {1}", s.h, s.k);
+
+    Console.WriteLine();
+
+    var H = Group.Generate(s.h);
+    var K = Group.Generate(s.k);
+    var G = Group.Generate(s.h, s.k);
+    var GoH = G.Over(H);
+
+    H.DisplayDetails("H");
+    K.DisplayDetails("K");
+    G.DisplayDetails("G=HK");
+    GoH.DisplayDetails("G/H");
+    GoH.DisplayCosets();
+
+    Console.WriteLine();
+    GlobalStopWatch.Show("Example");
 }
