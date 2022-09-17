@@ -37,6 +37,14 @@ public static class IntExt
         int r = a - b * q;
         return GCD(b, r);
     }
+    public static int PowMod(int a, int exp, int mod)
+    {
+        var a0 = 1;
+        for (int k = 0; k < exp; ++k)
+            a0 = (a0 * a) % mod;
+
+        return a0;
+    }
 
     public static int LCM(int a, int b) => a * b / GCD(a, b);
     public static int[] Range(this int a, int start = 0) => Enumerable.Range(start, a).ToArray();

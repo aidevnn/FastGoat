@@ -95,6 +95,8 @@ public partial class ConcreteGroup<T>
         }
         return ordersTuple.ToDictionary(a => a.Item1, a => a.Item2);
     }
+    Dictionary<Order, HashSet<Order>> monogenicSubGroup;
+    public Dictionary<T, (T, int)[]> MonogenicSubGroup() => monogenicSubGroup.ToDictionary(a => a.Key.e, b => b.Value.Select(e => (e.e, e.p)).Ascending().ToArray());
     protected Dictionary<Order, HashSet<Order>> ComputeGenerators(IEnumerable<T> elements)
     {
         var ne = this.Neutral();
@@ -150,6 +152,7 @@ public partial class ConcreteGroup<T>
     protected (GroupType, Dictionary<T, int>, List<T>) ComputeDetails(IEnumerable<T> elements)
     {
         var gens = ComputeGenerators(elements);
+        monogenicSubGroup = new(gens);
         var gType = ComputeGroupType(gens.Keys);
         var orders = ComputeOrders(gens.Values);
         var monogenics = gens.Select(e => e.Key.e).Ascending().ToList();

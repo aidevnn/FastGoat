@@ -81,16 +81,7 @@ public static class Group
     }
     public static QuotientGroup<T> Over<T>(this WorkGroup<T> g, WorkGroup<T> h) where T : struct, IElt<T>
     {
-        try
-        {
-            return new QuotientGroup<T>(g, h);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine("{0} : {1}", e.GetType(), e.Message);
-        }
-
-        return new QuotientGroup<T>(g, g);
+        return new QuotientGroup<T>(g, h);
     }
     static (T factor, int order, WorkGroup<T> subGroup) InvariantFactor<T>(this WorkGroup<T> group) where T : struct, IElt<T>
     {
@@ -98,7 +89,7 @@ public static class Group
             throw new Exception("Not Abelian group");
 
         var eMax = group.OrderByDescending(group.GetOrderOf).ThenAscending().First();
-        var H = group.GenerateSubgroup(eMax);
+        var H = group.GenerateProperSubgroup(eMax);
         return (eMax, group.GetOrderOf(eMax), group.Over(H));
     }
     public static void InvariantFactors<T>(this WorkGroup<T> group) where T : struct, IElt<T>
@@ -127,11 +118,10 @@ public static class Group
         Console.WriteLine($"in {group.BaseGroup}");
         Console.WriteLine();
     }
-
-    public static SemiDirectProduct<U1, U2> SemiDirectProd<U1, U2>(WorkGroup<U1> n, WorkGroup<U2> g, Func<U2, U1, U1> action)
+    public static SemiProduct<U1, U2> SemiDirectProd<U1, U2>(WorkGroup<U1> n, WorkGroup<U2> g)
         where U1 : struct, IElt<U1>
         where U2 : struct, IElt<U2>
     {
-        return new SemiDirectProduct<U1, U2>(n, g, action);
+        return new SemiProduct<U1, U2>(n, g);
     }
 }

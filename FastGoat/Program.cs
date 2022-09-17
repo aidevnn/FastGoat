@@ -7,7 +7,9 @@ var z5 = new Zn(5);
 var z6 = new Zn(6);
 var z7 = new Zn(7);
 var z8 = new Zn(8);
+var z9 = new Zn(9);
 var z10 = new Zn(10);
+var z12 = new Zn(12);
 var z15 = new Zn(15);
 var z18 = new Zn(18);
 var z20 = new Zn(20);
@@ -151,7 +153,7 @@ var s7 = new Sn(7);
 // }
 
 {
-    // Creating the BaseGroup generator. These classes are created by users 
+    // Creating the BaseGroup generator. These classes are created by users
     // by implementing the interface IGroup. They dont contains data structures
     // for storing the elements.
     // var z6 = new Zn(6);
@@ -159,19 +161,19 @@ var s7 = new Sn(7);
     // var z18 = new Zn(18);
 
     // Implicit definition, the tuple will be processed to a group element.
-    // Base Elements classes are created by users by implementing the 
+    // Base Elements classes are created by users by implementing the
     // interface IElt and they also contain a property named Group
     // for the BaseGroup they belong to.
     // ZnInt e1 = (z6, 1);
     // Console.WriteLine(e1);
 
-    // Dotnet Tuple elements, nothing will be done. They keyword var 
+    // Dotnet Tuple elements, nothing will be done. They keyword var
     // will not interprete the tuple as a Group element
     // var v1 = (z6, 1);
     // Console.WriteLine("{0} != {1}", e1, v1);
 
     // G[i] is another way to create the element i from the group G,
-    // but it can be hard to predict its value depending of the group, 
+    // but it can be hard to predict its value depending of the group,
     // Console.WriteLine("{0} == {1}", e1, z6[1]);
 
     // ZnInt e2 = (z10, 2);
@@ -299,19 +301,19 @@ var s7 = new Sn(7);
 //     Cn_sp_Cg.Over(Cn_sp_Cg.Ncan).DisplayDetails();
 // }
 
-{
-    GlobalStopWatch.Restart();
-    ZnInt cn = (z7, 1);
-    ZnInt cg = (z3, 1);
-    var Cg = Group.Generate(cg);
-    var Cn = Group.Generate(cn);
-    var Cn_sp_Cg = Group.SemiDirectProd(Cn, Cg, (g, x) => g == (z3, 0) ? x : g == cg ? x ^ 2 : x ^ 4);
-    Cn_sp_Cg.DisplayDetails("G=HK");
-    var Cn_sp_CgoNcan = Cn_sp_Cg.Over(Cn_sp_Cg.Ncan);
-    Cn_sp_CgoNcan.DisplayDetails("G/H");
-    Cn_sp_CgoNcan.DisplayCosets();
-    GlobalStopWatch.Show("SemiDirectProduct");
-}
+// {
+//     GlobalStopWatch.Restart();
+//     ZnInt cn = (z7, 1);
+//     ZnInt cg = (z3, 1);
+//     var Cg = Group.Generate(cg);
+//     var Cn = Group.Generate(cn);
+//     var Cn_sp_Cg = Group.SemiDirectProd(Cn, Cg, (g, x) => g == (z3, 0) ? x : g == cg ? x ^ 2 : x ^ 4);
+//     Cn_sp_Cg.DisplayDetails("G=HK");
+//     var Cn_sp_CgoNcan = Cn_sp_Cg.Over(Cn_sp_Cg.Ncan);
+//     Cn_sp_CgoNcan.DisplayDetails("G/H");
+//     Cn_sp_CgoNcan.DisplayCosets();
+//     GlobalStopWatch.Show("SemiDirectProduct");
+// }
 
 // {
 //     Perm cn = (s7, (1, 2, 3, 4, 5, 6, 7));
@@ -323,3 +325,102 @@ var s7 = new Sn(7);
 //     Cn_sp_Cg.DisplayDetails();
 //     Cn_sp_Cg.Over(Cn_sp_Cg.Ncan).DisplayDetails();
 // }
+
+// {
+//     var z0 = z12;
+//     var z1 = z8;
+//     var zx = Group.CartesianProduct(z0, z1);
+//     ZnInt c0 = (z0, 1);
+//     ZnInt c1 = (z1, 1);
+//     var C0 = Group.Generate(c0);
+//     var C1 = Group.Generate(c1);
+//     var C2 = Group.Generate(zx[0, 1], zx[1, 0]);
+//     var C2sg = Group.Generate(zx[0, 2], zx[3, 0]).ToList();
+//     C2sg.ForEach(e => Console.WriteLine(e));
+//     Console.WriteLine("IsSubGroup : {0}", C2.VerifySubGroup(C2sg));
+//     Group.Homomorphism(C0, C0, z0[1], z0[2]).DisplayFullGraph();
+//     Group.Homomorphism(C0, C0, z0[1], z0[3]).DisplayFullGraph();
+//     Group.Homomorphism(C0, C1, z0[1], z1[3]).DisplayFullGraph();
+//     Group.Homomorphism(C1, C0, z1[1], z0[1]).DisplayFullGraph();
+//     Group.Homomorphism(C1, C0, z1[1], z0[2]).DisplayFullGraph();
+//     Group.Homomorphism(C2, C1, (zx[0, 1], z1[1]), (zx[1, 0], z1[0])).DisplayFullGraph();
+//     Group.Homomorphism(C1, C1, (z1[1], z1[1])).DisplayFullGraph();
+//     Group.Homomorphism(C1, C1, (z1[1], z1[2])).DisplayFullGraph();
+//     Group.Homomorphism(C1, C1, (z1[1], z1[4])).DisplayFullGraph();
+//     Group.Homomorphism(C2, C1, (zx[0, 1], z1[1]), (zx[1, 0], z1[2])).DisplayFullGraph();
+// }
+
+// {
+//     GlobalStopWatch.Restart();
+//     var z7xz3 = Group.CartesianProduct(z7, z3);
+//     var Cg = Group.Generate(z7xz3[0, 1]);
+//     var Cn = Group.Generate(z7xz3[1, 0]);
+//     var Cn_sp_Cg = Group.SemiDirectProd(Cn, Cg, (g, x) => z7xz3.Op(z7xz3.Op(g, x), z7xz3.Invert(g)));
+//     Cn_sp_Cg.DisplayDetails("G=HK");
+//     var Cn_sp_CgoNcan = Cn_sp_Cg.Over(Cn_sp_Cg.Ncan);
+//     Cn_sp_CgoNcan.DisplayDetails("G/H");
+//     Cn_sp_CgoNcan.DisplayCosets();
+//     GlobalStopWatch.Show("SemiDirectProduct");
+// }
+
+// {
+//     var zx = z7;
+//     var zg = z2;
+//     var n = (zx.mod - 1) / (zg.mod - 1);
+//     var str = Enumerable.Range(0, zg.mod).Select(i => i == 0 ? zx[1] : zx[1] ^ (n * i)).Glue(" | ");
+//     Console.WriteLine(str);
+// }
+
+// for (int x = 3; x < 10; ++x)
+// {
+//     var zx = new Zn(x);
+//     for (int g = 2; g < x; ++g)
+//     {
+//         var zg = new Zn(g);
+//         var str = Enumerable.Range(0, zg.mod).Select(i => i == 0 ? zx[1] : zx[1] ^ -i).Glue(" | ", "{0,3}");
+//         Console.WriteLine("{0,5} {1,5}; {2}", zx, zg, str);
+//     }
+//     Console.WriteLine();
+// }
+
+{
+    GlobalStopWatch.Restart();
+    var zx = z4;
+    var zg = z2;
+    var Cn = Group.Generate(zx[1]);
+    var Cg = Group.Generate(zg[1]);
+    var Cn_sp_Cg = Group.SemiDirectProd(Cn, Cg);
+    Cn_sp_Cg.DisplayDetails("G = H ⋊  K");
+    var Cn_sp_CgoNcan = Cn_sp_Cg.Over(Cn_sp_Cg.Ncan);
+    Cn_sp_CgoNcan.DisplayDetails("G/H");
+    Cn_sp_CgoNcan.DisplayCosets();
+    GlobalStopWatch.Show("SemiDirectProduct");
+}
+
+{
+    GlobalStopWatch.Restart();
+    var zx = new Zn(7);
+    var zg = z3;
+    var Cn = Group.Generate(zx[1]);
+    var Cg = Group.Generate(zg[1]);
+    var Cn_sp_Cg = Group.SemiDirectProd(Cn, Cg);
+    Cn_sp_Cg.DisplayDetails("G = H ⋊  K");
+    var Cn_sp_CgoNcan = Cn_sp_Cg.Over(Cn_sp_Cg.Ncan);
+    Cn_sp_CgoNcan.DisplayDetails("G/H");
+    Cn_sp_CgoNcan.DisplayCosets();
+    GlobalStopWatch.Show("SemiDirectProduct");
+}
+
+{
+    GlobalStopWatch.Restart();
+    var zx = z5;
+    var zg = z4;
+    var Cn = Group.Generate(zx[1]);
+    var Cg = Group.Generate(zg[1]);
+    var Cn_sp_Cg = Group.SemiDirectProd(Cn, Cg);
+    Cn_sp_Cg.DisplayDetails("G = H ⋊  K");
+    var Cn_sp_CgoNcan = Cn_sp_Cg.Over(Cn_sp_Cg.Ncan);
+    Cn_sp_CgoNcan.DisplayDetails("G/H");
+    Cn_sp_CgoNcan.DisplayCosets();
+    GlobalStopWatch.Show("SemiDirectProduct");
+}
