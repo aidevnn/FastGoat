@@ -339,8 +339,6 @@ Cn_sp_CgoNcan.DisplayCosets();
 
 // Cn_sp_Cg.GNGi_it(); 
 ```
-The commented method GNGi_it, will compares action group $\gamma(g)(n)$ and SemiDirectProduct internal operation gngi = (1,g).(n,1).(1,gi)
-
 will output
 ```dotnetcli
 |G=HK| = 21 in Z/7Z x Z/3Z
@@ -433,6 +431,8 @@ Cosets
 # SemiDirectProduct Time:2 ms
 
 ```
+
+The commented method GNGi_it, will compares action group $\gamma(g)(n)$ and SemiDirectProduct internal operation gngi = (1,g).(n,1).(1,gi)
 
 ## References
 
