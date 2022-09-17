@@ -329,10 +329,8 @@ Cosets
 
 Another way for the previous example
 ```csharp
-ZnInt cn = (z7, 1);
-var Cn = Group.Generate(cn);
-ZnInt cg = (z3, 1);
-var Cg = Group.Generate(cg);
+var Cn = Group.Generate((z7, 1));
+var Cg = Group.Generate((z3, 1));
 var Cn_sp_Cg = Group.SemiDirectProd(Cn, Cg);
 Cn_sp_Cg.DisplayDetails("G=HK");
 var Cn_sp_CgoNcan = Cn_sp_Cg.Over(Cn_sp_Cg.Ncan);
