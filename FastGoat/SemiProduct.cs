@@ -73,7 +73,7 @@ public class SemiProduct<T1, T2> : WorkGroup<Ep<T1, T2>> where T1 : struct, IElt
                 Ep<T1, T2> n = (n0, G.Neutral());
                 var gngi = this.Op(this.Op(g, n), gi);
                 var gngi_it = action[g0](n0);
-                Console.WriteLine("g={0} n={1}; y(g)(n) = {2} ? {3} = gngi", g0, n0, gngi_it, gngi);
+                Console.WriteLine("g={0} n={1}; 𝛄(g)(n) = {2} ? {3} = gngi", g0, n0, gngi_it, gngi);
             }
         }
 

@@ -13,6 +13,7 @@ var z12 = new Zn(12);
 var z15 = new Zn(15);
 var z18 = new Zn(18);
 var z20 = new Zn(20);
+var z25 = new Zn(25);
 var z30 = new Zn(30);
 
 var s2 = new Sn(2);
@@ -316,41 +317,6 @@ var s7 = new Sn(7);
 // }
 
 // {
-//     Perm cn = (s7, (1, 2, 3, 4, 5, 6, 7));
-//     Perm cg = (s3, (1, 2, 3));
-//     var Cg = Group.Generate(cg);
-//     var Cn = Group.Generate(cn);
-//     Func<Perm, Perm, Perm> action = (Perm g, Perm x) => g == Cg.Neutral() ? x : g == cg ? x ^ 2 : x ^ 4;
-//     var Cn_sp_Cg = new SemiDirectProduct<Perm, Perm>(Cn, Cg, action);
-//     Cn_sp_Cg.DisplayDetails();
-//     Cn_sp_Cg.Over(Cn_sp_Cg.Ncan).DisplayDetails();
-// }
-
-// {
-//     var z0 = z12;
-//     var z1 = z8;
-//     var zx = Group.CartesianProduct(z0, z1);
-//     ZnInt c0 = (z0, 1);
-//     ZnInt c1 = (z1, 1);
-//     var C0 = Group.Generate(c0);
-//     var C1 = Group.Generate(c1);
-//     var C2 = Group.Generate(zx[0, 1], zx[1, 0]);
-//     var C2sg = Group.Generate(zx[0, 2], zx[3, 0]).ToList();
-//     C2sg.ForEach(e => Console.WriteLine(e));
-//     Console.WriteLine("IsSubGroup : {0}", C2.VerifySubGroup(C2sg));
-//     Group.Homomorphism(C0, C0, z0[1], z0[2]).DisplayFullGraph();
-//     Group.Homomorphism(C0, C0, z0[1], z0[3]).DisplayFullGraph();
-//     Group.Homomorphism(C0, C1, z0[1], z1[3]).DisplayFullGraph();
-//     Group.Homomorphism(C1, C0, z1[1], z0[1]).DisplayFullGraph();
-//     Group.Homomorphism(C1, C0, z1[1], z0[2]).DisplayFullGraph();
-//     Group.Homomorphism(C2, C1, (zx[0, 1], z1[1]), (zx[1, 0], z1[0])).DisplayFullGraph();
-//     Group.Homomorphism(C1, C1, (z1[1], z1[1])).DisplayFullGraph();
-//     Group.Homomorphism(C1, C1, (z1[1], z1[2])).DisplayFullGraph();
-//     Group.Homomorphism(C1, C1, (z1[1], z1[4])).DisplayFullGraph();
-//     Group.Homomorphism(C2, C1, (zx[0, 1], z1[1]), (zx[1, 0], z1[2])).DisplayFullGraph();
-// }
-
-// {
 //     GlobalStopWatch.Restart();
 //     var z7xz3 = Group.CartesianProduct(z7, z3);
 //     var Cg = Group.Generate(z7xz3[0, 1]);
@@ -438,5 +404,31 @@ var s7 = new Sn(7);
     Cn_sp_CgoNcan.DisplayDetails("G/H");
     Cn_sp_CgoNcan.DisplayCosets();
     Cn_sp_Cg.GNGi_it();
+    GlobalStopWatch.Show("SemiDirectProduct");
+}
+
+{
+    Perm cn = (s7, (1, 2, 3, 4, 5, 6, 7));
+    Perm cg = (s3, (1, 2, 3));
+    var Cg = Group.Generate(cg);
+    var Cn = Group.Generate(cn);
+    var Cn_sp_Cg = new SemiProduct<Perm, Perm>(Cn, Cg);
+    Cn_sp_Cg.DisplayDetails();
+    Cn_sp_Cg.GNGi_it();
+    Cn_sp_Cg.Over(Cn_sp_Cg.Ncan).DisplayDetails();
+}
+
+{
+    GlobalStopWatch.Restart();
+    var zx = z25;
+    var zg = z15;
+    var Cn = Group.Generate(zx[1]);
+    var Cg = Group.Generate(zg[1]);
+    var Cn_sp_Cg = Group.SemiDirectProd(Cn, Cg);
+    Cn_sp_Cg.DisplayDetails("G = H ⋊  K");
+    var Cn_sp_CgoNcan = Cn_sp_Cg.Over(Cn_sp_Cg.Ncan);
+    Cn_sp_CgoNcan.DisplayDetails("G/H");
+    // Cn_sp_CgoNcan.DisplayCosets();
+    // Cn_sp_Cg.GNGi_it();
     GlobalStopWatch.Show("SemiDirectProduct");
 }
