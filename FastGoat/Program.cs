@@ -408,6 +408,7 @@ var s7 = new Sn(7);
     var Cn_sp_CgoNcan = Cn_sp_Cg.Over(Cn_sp_Cg.Ncan);
     Cn_sp_CgoNcan.DisplayDetails("G/H");
     Cn_sp_CgoNcan.DisplayCosets();
+    Cn_sp_Cg.GNGi_it();
     GlobalStopWatch.Show("SemiDirectProduct");
 }
 
@@ -422,5 +423,20 @@ var s7 = new Sn(7);
     var Cn_sp_CgoNcan = Cn_sp_Cg.Over(Cn_sp_Cg.Ncan);
     Cn_sp_CgoNcan.DisplayDetails("G/H");
     Cn_sp_CgoNcan.DisplayCosets();
+    Cn_sp_Cg.GNGi_it();
+    GlobalStopWatch.Show("SemiDirectProduct");
+}
+
+{
+    GlobalStopWatch.Restart();
+    var zx = new Zn(21);
+    var Cn = Group.Generate(zx[3]);
+    var Cg = Group.Generate(zx[7]);
+    var Cn_sp_Cg = Group.SemiDirectProd(Cn, Cg);
+    Cn_sp_Cg.DisplayDetails("G = H ⋊  K");
+    var Cn_sp_CgoNcan = Cn_sp_Cg.Over(Cn_sp_Cg.Ncan);
+    Cn_sp_CgoNcan.DisplayDetails("G/H");
+    Cn_sp_CgoNcan.DisplayCosets();
+    Cn_sp_Cg.GNGi_it();
     GlobalStopWatch.Show("SemiDirectProduct");
 }

@@ -336,6 +336,8 @@ Cn_sp_Cg.DisplayDetails("G=HK");
 var Cn_sp_CgoNcan = Cn_sp_Cg.Over(Cn_sp_Cg.Ncan);
 Cn_sp_CgoNcan.DisplayDetails("G/H");
 Cn_sp_CgoNcan.DisplayCosets();
+
+// Cn_sp_Cg.GNGi_it(); // Uncomment it for GNGi_it, it will compares action group y(g)(n) and SemiDirectProduct internal operation gngi = (1,g)(n,1)*(1,gi)
 ```
 will output
 ```dotnetcli

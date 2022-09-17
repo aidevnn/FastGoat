@@ -59,4 +59,24 @@ public class SemiProduct<T1, T2> : WorkGroup<Ep<T1, T2>> where T1 : struct, IElt
         var y = b.e1;
         return (N.Op(x, action[g](y)), G.Op(g, h));
     }
+
+    public void GNGi_it()
+    {
+        Console.WriteLine();
+        Console.WriteLine("GNGi_it !!!");
+        foreach (var g0 in G)
+        {
+            Ep<T1, T2> g = (N.Neutral(), g0);
+            Ep<T1, T2> gi = (N.Neutral(), G.Invert(g0));
+            foreach (var n0 in N)
+            {
+                Ep<T1, T2> n = (n0, G.Neutral());
+                var gngi = this.Op(this.Op(g, n), gi);
+                var gngi_it = action[g0](n0);
+                Console.WriteLine("g={0} n={1}; y(g)(n) = {2} ? {3} = gngi", g0, n0, gngi_it, gngi);
+            }
+        }
+
+        Console.WriteLine();
+    }
 }
