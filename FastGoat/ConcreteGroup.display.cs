@@ -2,7 +2,7 @@ namespace FastGoat;
 
 public partial class ConcreteGroup<T>
 {
-    public void DisplayHead(string name = "G")
+    public virtual void DisplayHead(string name = "G")
     {
         Console.WriteLine("|{0}| = {1} in {2}", name, this.Count(), BaseGroup);
         Console.WriteLine($"is {groupType}");
@@ -34,7 +34,7 @@ public partial class ConcreteGroup<T>
     public void DisplayTable(SortElements sort = SortElements.ByOrder)
     {
         Console.WriteLine("Table");
-        if (elements.Count > 30)
+        if (elements.Count > 40)
         {
             Console.WriteLine("*** TOO BIG ***");
             return;
@@ -48,9 +48,16 @@ public partial class ConcreteGroup<T>
         foreach (var r in table)
             Console.WriteLine(r.Glue(" ", fmt));
     }
-
-    public void DisplayDetails(SortElements sort) => DisplayDetails("G", sort);
-    public void DisplayDetails(string name = "G", SortElements sort = SortElements.ByOrder)
+    public (int[][], int[][]) CayleyTable(SortElements sort = SortElements.ByOrder)
+    {
+        var arr = sort == SortElements.ByOrder ? SortByOrder(elements).ToArray() : elements.Ascending().ToArray();
+        var dico = arr.Select((e, i) => (e, i + 1)).ToDictionary(a => a.e, a => a.Item2);
+        var rows = arr.Select(a0 => arr.Select(a1 => dico[this.Op(a0, a1)]).ToArray()).ToArray();
+        var cols = arr.Select(a1 => arr.Select(a0 => dico[this.Op(a0, a1)]).ToArray()).ToArray();
+        return (rows, cols);
+    }
+    public virtual void DisplayDetails(SortElements sort) => DisplayDetails("G", sort);
+    public virtual void DisplayDetails(string name = "G", SortElements sort = SortElements.ByOrder)
     {
         DisplayHead(name);
         Console.WriteLine();

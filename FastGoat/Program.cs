@@ -22,6 +22,7 @@ var s4 = new Sn(4);
 var s5 = new Sn(5);
 var s6 = new Sn(6);
 var s7 = new Sn(7);
+var s8 = new Sn(8);
 
 // {
 //     var sn = new Sn(4);
@@ -51,7 +52,6 @@ var s7 = new Sn(7);
 // }
 
 // {
-//     var z12 = new Zn(12);
 //     var wgr = z12.Generate(z12[3], z12[4]);
 //     wgr.DisplayDetails();
 // }
@@ -102,10 +102,10 @@ var s7 = new Sn(7);
 //     Perm c3 = (sn, (1, 2, 3));
 //     var G = sn.Generate(p0 * p1, c3);
 //     var H = sn.Generate(p0 * p1, p2 * p3);
-//     G.DisplayDetails();
-//     H.DisplayDetails();
+//     G.DisplayDetails("G");
+//     H.DisplayDetails("H");
 //     var G_H = G.Over(H);
-//     G_H.DisplayDetails();
+//     G_H.DisplayDetails("G/H");
 //     G_H.DisplayCosets();
 // }
 
@@ -116,9 +116,9 @@ var s7 = new Sn(7);
 //     var eMax = G.OrderByDescending(G.GetOrderOf).ThenAscending().First();
 //     G.DisplayElement(eMax, "eMax");
 //     var H = z8x18x30.Generate(z8x18x30[1]);
-//     H.DisplayHead();
+//     H.DisplayHead("H");
 //     var G_H = G.Over(H);
-//     G_H.DisplayHead();
+//     G_H.DisplayHead("G/H");
 // }
 
 // {
@@ -142,7 +142,6 @@ var s7 = new Sn(7);
 // }
 
 // {
-//     var s6 = new Sn(6);
 //     var s6xs6 = Group.CartesianProduct(s6, s6);
 //     Perm id = s6.Neutral();
 //     Perm p0 = (s6, (1, 2));
@@ -349,86 +348,152 @@ var s7 = new Sn(7);
 //     Console.WriteLine();
 // }
 
+// {
+//     GlobalStopWatch.Restart();
+//     var zx = z4;
+//     var zg = z2;
+//     var Cn = Group.Generate(zx[1]);
+//     var Cg = Group.Generate(zg[1]);
+//     var Cn_sp_Cg = Group.SemiDirectProd(Cn, Cg);
+//     Cn_sp_Cg.DisplayDetails("G = H ⋊  K");
+//     var Cn_sp_CgoNcan = Cn_sp_Cg.Over(Cn_sp_Cg.Ncan);
+//     Cn_sp_CgoNcan.DisplayDetails("G/H");
+//     Cn_sp_CgoNcan.DisplayCosets();
+//     GlobalStopWatch.Show("SemiDirectProduct");
+// }
+
+// {
+//     GlobalStopWatch.Restart();
+//     var zx = z7;
+//     var zg = z3;
+//     var Cn = Group.Generate(zx[1]);
+//     var Cg = Group.Generate(zg[1]);
+//     var Cn_sp_Cg = Group.SemiDirectProd(Cn, Cg);
+//     Cn_sp_Cg.DisplayDetails("P");
+//     Cn_sp_Cg.DisplayAction();
+//     var Cn_sp_CgoNcan = Cn_sp_Cg.Over(Cn_sp_Cg.Ncan);
+//     Cn_sp_CgoNcan.DisplayDetails("P/N");
+//     Cn_sp_CgoNcan.DisplayCosets();
+//     Cn_sp_Cg.GNGi_it();
+//     GlobalStopWatch.Show("SemiDirectProduct");
+// }
+
+// {
+//     GlobalStopWatch.Restart();
+//     var zx = z5;
+//     var zg = z4;
+//     var Cn = Group.Generate(zx[1]);
+//     var Cg = Group.Generate(zg[1]);
+//     var Cn_sp_Cg = Group.SemiDirectProd(Cn, Cg);
+//     Cn_sp_Cg.DisplayDetails("G = H ⋊  K");
+//     var Cn_sp_CgoNcan = Cn_sp_Cg.Over(Cn_sp_Cg.Ncan);
+//     Cn_sp_CgoNcan.DisplayDetails("G/H");
+//     Cn_sp_CgoNcan.DisplayCosets();
+//     Cn_sp_Cg.GNGi_it();
+//     GlobalStopWatch.Show("SemiDirectProduct");
+// }
+
+// {
+//     GlobalStopWatch.Restart();
+//     var zx = new Zn(21);
+//     var Cn = Group.Generate(zx[3]);
+//     var Cg = Group.Generate(zx[7]);
+//     var Cn_sp_Cg = Group.SemiDirectProd(Cn, Cg);
+//     Cn_sp_Cg.DisplayDetails("G = H ⋊  K");
+//     var Cn_sp_CgoNcan = Cn_sp_Cg.Over(Cn_sp_Cg.Ncan);
+//     Cn_sp_CgoNcan.DisplayDetails("G/H");
+//     Cn_sp_CgoNcan.DisplayCosets();
+//     Cn_sp_Cg.GNGi_it();
+//     GlobalStopWatch.Show("SemiDirectProduct");
+// }
+
+// {
+//     Perm cn = (s7, (1, 2, 3, 4, 5, 6, 7));
+//     Perm cg = (s3, (1, 2, 3));
+//     var Cg = Group.Generate(cg);
+//     var Cn = Group.Generate(cn);
+//     var Cn_sp_Cg = new SemiProduct<Perm, Perm>(Cn, Cg);
+//     Cn_sp_Cg.DisplayDetails();
+//     // Cn_sp_Cg.GNGi_it();
+//     Cn_sp_Cg.Over(Cn_sp_Cg.Ncan).DisplayDetails();
+// }
+
+// {
+//     GlobalStopWatch.Restart();
+//     var zx = z9;
+//     var zg = z5;
+//     var Cn = Group.Generate(zx[1]);
+//     var Cg = Group.Generate(zg[1]);
+//     var Cn_sp_Cg = Group.SemiDirectProd(Cn, Cg);
+//     Cn_sp_Cg.DisplayDetails("G = H ⋊  K");
+//     var Cn_sp_CgoNcan = Cn_sp_Cg.Over(Cn_sp_Cg.Ncan);
+//     Cn_sp_CgoNcan.DisplayDetails("G/H");
+//     // Cn_sp_CgoNcan.DisplayCosets();
+//     // Cn_sp_Cg.GNGi_it();
+//     GlobalStopWatch.Show("SemiDirectProduct");
+// }
+
+// {
+//     List<(int m, int n, int x)> solutions = new();
+//     int N = 20;
+//     for (int m0 = 2; m0 <= N; ++m0)
+//     {
+//         for (int n0 = 2; m0 * n0 <= N; ++n0)
+//         {
+//             var x = IntExt.Solve_x_pow_n_equal_one_mod_m(m0, n0);
+//             if (x != 0)
+//                 solutions.Add((m0, n0, x));
+//         }
+//     }
+
+//     foreach (var e in solutions.OrderBy(e => e.m * e.n))
+//     {
+//         // Console.WriteLine("{0,3} : {1}", e.m * e.n, e);
+//         GlobalStopWatch.Restart();
+//         var zx = new Zn(e.m);
+//         var zg = new Zn(e.n);
+//         var Cn = Group.Generate(zx[1]);
+//         var Cg = Group.Generate(zg[1]);
+//         var Cn_sp_Cg = Group.SemiDirectProd(Cn, Cg);
+//         GlobalStopWatch.Stop();
+//         Cn_sp_Cg.DisplayHead();
+//         Cn_sp_Cg.DisplayAction();
+//         // GlobalStopWatch.Show("SemiDirectProduct");
+//         // Console.WriteLine("#############");
+//     }
+// }
+
+// {
+//     var zx = Group.CartesianProduct(z3, z3);
+//     var wgr = Group.Generate(zx[0, 1], zx[1, 0]);
+//     foreach (var p in wgr.MonogenicSubGroup())
+//     {
+//         foreach (var e in p.Value.OrderBy(e0 => e0.Item2))
+//             Console.WriteLine("{0} * {1,2} = {2}", p.Key, e.Item2, e.Item1);
+
+//         Console.WriteLine();
+//     }
+// }
+
 {
-    GlobalStopWatch.Restart();
-    var zx = z4;
-    var zg = z2;
+    var zx = new Zn(4);
+    var zg = new Zn(10);
     var Cn = Group.Generate(zx[1]);
     var Cg = Group.Generate(zg[1]);
     var Cn_sp_Cg = Group.SemiDirectProd(Cn, Cg);
-    Cn_sp_Cg.DisplayDetails("G = H ⋊  K");
-    var Cn_sp_CgoNcan = Cn_sp_Cg.Over(Cn_sp_Cg.Ncan);
-    Cn_sp_CgoNcan.DisplayDetails("G/H");
-    Cn_sp_CgoNcan.DisplayCosets();
-    GlobalStopWatch.Show("SemiDirectProduct");
-}
-
-{
-    GlobalStopWatch.Restart();
-    var zx = new Zn(7);
-    var zg = z3;
-    var Cn = Group.Generate(zx[1]);
-    var Cg = Group.Generate(zg[1]);
-    var Cn_sp_Cg = Group.SemiDirectProd(Cn, Cg);
-    Cn_sp_Cg.DisplayDetails("G = H ⋊  K");
-    var Cn_sp_CgoNcan = Cn_sp_Cg.Over(Cn_sp_Cg.Ncan);
-    Cn_sp_CgoNcan.DisplayDetails("G/H");
-    Cn_sp_CgoNcan.DisplayCosets();
-    Cn_sp_Cg.GNGi_it();
-    GlobalStopWatch.Show("SemiDirectProduct");
-}
-
-{
-    GlobalStopWatch.Restart();
-    var zx = z5;
-    var zg = z4;
-    var Cn = Group.Generate(zx[1]);
-    var Cg = Group.Generate(zg[1]);
-    var Cn_sp_Cg = Group.SemiDirectProd(Cn, Cg);
-    Cn_sp_Cg.DisplayDetails("G = H ⋊  K");
-    var Cn_sp_CgoNcan = Cn_sp_Cg.Over(Cn_sp_Cg.Ncan);
-    Cn_sp_CgoNcan.DisplayDetails("G/H");
-    Cn_sp_CgoNcan.DisplayCosets();
-    Cn_sp_Cg.GNGi_it();
-    GlobalStopWatch.Show("SemiDirectProduct");
-}
-
-{
-    GlobalStopWatch.Restart();
-    var zx = new Zn(21);
-    var Cn = Group.Generate(zx[3]);
-    var Cg = Group.Generate(zx[7]);
-    var Cn_sp_Cg = Group.SemiDirectProd(Cn, Cg);
-    Cn_sp_Cg.DisplayDetails("G = H ⋊  K");
-    var Cn_sp_CgoNcan = Cn_sp_Cg.Over(Cn_sp_Cg.Ncan);
-    Cn_sp_CgoNcan.DisplayDetails("G/H");
-    Cn_sp_CgoNcan.DisplayCosets();
-    Cn_sp_Cg.GNGi_it();
-    GlobalStopWatch.Show("SemiDirectProduct");
-}
-
-{
-    Perm cn = (s7, (1, 2, 3, 4, 5, 6, 7));
-    Perm cg = (s3, (1, 2, 3));
-    var Cg = Group.Generate(cg);
-    var Cn = Group.Generate(cn);
-    var Cn_sp_Cg = new SemiProduct<Perm, Perm>(Cn, Cg);
     Cn_sp_Cg.DisplayDetails();
-    Cn_sp_Cg.GNGi_it();
-    Cn_sp_Cg.Over(Cn_sp_Cg.Ncan).DisplayDetails();
+    var cayley = Cn_sp_Cg.CayleyTable();
+    HashSet<int> set = new(cayley.Item1[0]);
+    foreach (var e in cayley.Item1.Concat(cayley.Item2))
+        if (!set.SetEquals(e))
+            throw new();
 }
 
-{
-    GlobalStopWatch.Restart();
-    var zx = z25;
-    var zg = z15;
-    var Cn = Group.Generate(zx[1]);
-    var Cg = Group.Generate(zg[1]);
-    var Cn_sp_Cg = Group.SemiDirectProd(Cn, Cg);
-    Cn_sp_Cg.DisplayDetails("G = H ⋊  K");
-    var Cn_sp_CgoNcan = Cn_sp_Cg.Over(Cn_sp_Cg.Ncan);
-    Cn_sp_CgoNcan.DisplayDetails("G/H");
-    // Cn_sp_CgoNcan.DisplayCosets();
-    // Cn_sp_Cg.GNGi_it();
-    GlobalStopWatch.Show("SemiDirectProduct");
-}
+// {
+//     var zx = new Zn(9);
+//     var zg = new Zn(3);
+//     var Cn = Group.Generate(zx[1]);
+//     var Cg = Group.Generate(zg[1]);
+//     var Cn_sp_Cg = Group.SemiDirectProd(Cn, Cg);
+//     Cn_sp_Cg.DisplayDetails();
+// }

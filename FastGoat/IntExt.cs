@@ -27,6 +27,14 @@ public static class IntExt
     static Dictionary<int, int[][]> AllPermutations { get; }
     public static int GCD(int a, int b)
     {
+        if (a < 0 && b < 0)
+            return GCD(-a, -b);
+        else if (a * b < 0)
+            if (a < 0)
+                return GCD(-a, b);
+            else
+                return GCD(a, -b);
+
         if (a < b)
             return GCD(b, a);
 
@@ -45,8 +53,21 @@ public static class IntExt
 
         return a0;
     }
-
+    public static int Solve_x_pow_n_equal_one_mod_m(int m, int n)
+    {
+        var seq = Enumerable.Range(2, m - 2);
+        var criteria = seq.Where(i => IntExt.GCD(i, m) == 1 && IntExt.PowMod(i, n, m) == 1);
+        return criteria.FirstOrDefault();
+    }
     public static int LCM(int a, int b) => a * b / GCD(a, b);
+    public static void Bezout(int a, int b)
+    {
+        int d = GCD(a, b);
+        int b0 = b > 0 ? b : -b;
+        var x = Enumerable.Range(b > 0 ? 0 : b, b0).First(i => (i * a - d) % b == 0);
+        var y = (a * x - d) / b;
+        Console.WriteLine("{0,3}x {1,4}y = {2,3} : x = {3,3} y = {4}", a, b > 0 ? $"+{b,3}" : $"-{-b,3}", d, x, -y);
+    }
     public static int[] Range(this int a, int start = 0) => Enumerable.Range(start, a).ToArray();
     public static int[][] GetPermutations(int n) => AllPermutations[n];
     public static int[] GetPermutation(int n, int k) => AllPermutations[n][k];
@@ -91,7 +112,7 @@ public static class IntExt
         return GenHash(n, arr1);
     }
 
-    public static int ComposePermutation(int[] arr0, int[] arr1, int[]? arr2 = null)
+    public static int ComposePermutation(int[] arr0, int[] arr1, int[] arr2)
     {
         int n = arr0.Length;
         int hash = 0;
@@ -101,16 +122,10 @@ public static class IntExt
             var v = arr1[arr0[k]];
             hash += v * pow;
             pow *= n;
-            arr2?.SetValue(v, k);
+            arr2[k] = v;
         }
 
         return hash;
-    }
-
-    public static void Add(this int[] arr, int v)
-    {
-        for (int k = 0; k < arr.Length; ++k)
-            arr[k] += v;
     }
 
     public static bool CheckTable(int n, int[] arr)

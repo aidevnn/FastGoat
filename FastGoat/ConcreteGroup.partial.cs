@@ -2,6 +2,7 @@ namespace FastGoat;
 
 public partial class ConcreteGroup<T>
 {
+    protected enum SubGroupEnum { OutOfBaseGroup, OutOfSubGroup, IsSubGroup }
     protected struct Order : IEquatable<Order>, IComparable<Order>
     {
         public T e { get; }
@@ -149,9 +150,38 @@ public partial class ConcreteGroup<T>
 
         return gens;
     }
+    protected (SubGroupEnum, Dictionary<Order, HashSet<Order>>) VerifySubGroup(IEnumerable<T> ts)
+    {
+        if (ts.Any(t => !elements.Contains(t)))
+            return (SubGroupEnum.OutOfBaseGroup, new());
+
+        var gens = ComputeGenerators(ts);
+        var ts0 = gens.SelectMany(p => p.Value).Select(p => p.e).ToHashSet();
+        if (!ts0.SetEquals(ts))
+            return (SubGroupEnum.OutOfSubGroup, new());
+
+        var head = gens.Keys.Select(p => p.e).Ascending().ToHashSet();
+        foreach (var e0 in head)
+        {
+            var ei = Invert(e0);
+            if (!ts0.Contains(ei))
+                return (SubGroupEnum.OutOfSubGroup, new());
+
+            foreach (var e1 in head)
+            {
+                if (!ts0.Contains(this.Op(ei, e1)))
+                    return (SubGroupEnum.OutOfSubGroup, new());
+            }
+        }
+        return (SubGroupEnum.IsSubGroup, gens);
+    }
     protected (GroupType, Dictionary<T, int>, List<T>) ComputeDetails(IEnumerable<T> elements)
     {
         var gens = ComputeGenerators(elements);
+        return ComputeDetails(gens);
+    }
+    protected (GroupType, Dictionary<T, int>, List<T>) ComputeDetails(Dictionary<Order, HashSet<Order>> gens)
+    {
         monogenicSubGroup = new(gens);
         var gType = ComputeGroupType(gens.Keys);
         var orders = ComputeOrders(gens.Values);

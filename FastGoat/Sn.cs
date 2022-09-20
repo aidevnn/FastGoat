@@ -30,22 +30,22 @@ public struct Sn : IGroup<Perm>
     }
     public Perm CreateElement(params int[] vs)
     {
-        vs.Add(-1);
-        if (!IntExt.CheckTable(N, vs))
+        var vs0 = vs.Select(v => v - 1).ToArray();
+        if (!IntExt.CheckTable(N, vs0))
             return Neutral();
 
-        var hash = IntExt.GenHash(N, vs);
-        var p = new Perm(this, vs, hash);
+        var hash = IntExt.GenHash(N, vs0);
+        var p = new Perm(this, vs0, hash);
         return p;
     }
     public Perm Cycle(params int[] vs)
     {
-        vs.Add(-1);
-        if (!IntExt.CheckCycle(N, vs))
+        var vs0 = vs.Select(v => v - 1).ToArray();
+        if (!IntExt.CheckCycle(N, vs0))
             return Neutral();
 
         Neutral().Table.CopyTo(cache, 0);
-        IntExt.ApplyCycle(cache, vs);
+        IntExt.ApplyCycle(cache, vs0);
         var hash = IntExt.GenHash(N, cache);
         return new Perm(this, cache, hash);
     }
@@ -59,10 +59,10 @@ public struct Sn : IGroup<Perm>
         Neutral().Table.CopyTo(cache, 0);
         foreach (var e in cycles)
         {
-            e.Table.Add(-1);
-            if (!IntExt.CheckCycle(N, e.Table)) return Neutral();
+            var eTable = e.Table.Select(v => v - 1).ToArray();
+            if (!IntExt.CheckCycle(N, eTable)) return Neutral();
 
-            IntExt.ApplyCycle(cache, e.Table);
+            IntExt.ApplyCycle(cache, eTable);
         }
 
         var hash = IntExt.GenHash(N, cache);

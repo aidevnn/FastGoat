@@ -39,57 +39,37 @@ public partial class WorkGroup<T> : ConcreteGroup<T> where T : struct, IElt<T>
         (groupType, elementOrder, monogenics) = ComputeDetails(tmpElements);
         elements = new(tmpElements);
     }
-    private WorkGroup(WorkGroup<T> group, IEnumerable<T> ts, int diff) : base(group.BaseGroup)
+    private WorkGroup(WorkGroup<T> group, IEnumerable<T> ts, bool verify) : base(group.BaseGroup)
     {
         ControlGroup = group;
         if (ts.Any(e => !group.BaseGroup.Equals(e.Group)))
             throw new BaseGroupException();
 
-        var tmpElements = Generate(ts);
-        (groupType, elementOrder, monogenics) = ComputeDetails(tmpElements);
-        elements = new(tmpElements);
+        if (!verify)
+        {
+            var tmpElements = Generate(ts);
+            (groupType, elementOrder, monogenics) = ComputeDetails(tmpElements);
+            elements = new(tmpElements);
+        }
+        else
+        {
+            var (sgENum, gens) = VerifySubGroup(ts);
+            if (sgENum == SubGroupEnum.IsSubGroup)
+            {
+                var tmpElements = ts;
+                (groupType, elementOrder, monogenics) = ComputeDetails(gens);
+                elements = new(tmpElements);
+            }
+            else if (sgENum == SubGroupEnum.OutOfSubGroup)
+                throw new SubGroupException("Set is not a valid subGroup");
+            else
+                throw new BaseGroupException();
+        }
     }
     public override T Neutral() => ControlGroup.Neutral();
     public override T Invert(T a) => ControlGroup.Invert(a);
     public override T Op(T a, T b) => ControlGroup.Op(a, b);
-    public T Pow(T a, int k)
-    {
-        if (k == 0)
-            return this.Neutral();
-
-        var a0 = k > 0 ? a : this.Invert(a);
-        var k0 = k > 0 ? k : -k;
-        var acc = a0;
-        for (int i = 1; i < k0; ++i)
-            acc = this.Op(acc, a0);
-
-        return acc;
-    }
     public WorkGroup<T> GenerateProperSubgroup(params T[] ts) => new(this, ts);
-    public WorkGroup<T> GenerateSubgroup(IEnumerable<T> ts) => new(this, ts, 0);
-    public bool VerifySubGroup(IEnumerable<T> ts)
-    {
-        if (ts.Any(t => !elements.Contains(t)))
-            return false;
-
-        var gens = ComputeGenerators(ts);
-        var ts0 = gens.SelectMany(p => p.Value).Select(p => p.e).ToHashSet();
-        if (!ts0.SetEquals(ts))
-            return false;
-
-        var head = gens.Keys.Select(p => p.e).Ascending().ToHashSet();
-        foreach (var e0 in head)
-        {
-            var ei = Invert(e0);
-            if (!ts0.Contains(ei))
-                return false;
-
-            foreach (var e1 in head)
-            {
-                if (!ts0.Contains(this.Op(ei, e1)))
-                    return false;
-            }
-        }
-        return true;
-    }
+    public WorkGroup<T> GenerateSubgroup(IEnumerable<T> ts) => new(this, ts, false);
+    public WorkGroup<T> GetSubgroup(IEnumerable<T> ts) => new(this, ts, true);
 }

@@ -52,5 +52,7 @@ public class QuotientGroup<T> : WorkGroup<T> where T : struct, IElt<T>
             foreach (var e in cosets[a])
                 Console.WriteLine($"      {e}");
         }
+
+        Console.WriteLine();
     }
 }

@@ -332,17 +332,22 @@ Another way for the previous example
 var Cn = Group.Generate((z7, 1));
 var Cg = Group.Generate((z3, 1));
 var Cn_sp_Cg = Group.SemiDirectProd(Cn, Cg);
-Cn_sp_Cg.DisplayDetails("G=HK");
+Cn_sp_Cg.DisplayDetails("P");
+Cn_sp_Cg.DisplayAction();
 var Cn_sp_CgoNcan = Cn_sp_Cg.Over(Cn_sp_Cg.Ncan);
-Cn_sp_CgoNcan.DisplayDetails("G/H");
+Cn_sp_CgoNcan.DisplayDetails("P/N");
 Cn_sp_CgoNcan.DisplayCosets();
 
 // Cn_sp_Cg.GNGi_it(); 
 ```
 will output
 ```dotnetcli
-|G=HK| = 21 in Z/7Z x Z/3Z
+|P = C7 ⋊  C3| = 21 in Z/7Z x Z/3Z
 is NotAbelianGroup
+Action
+g = 0, 𝛄(g)(x) = x
+g = 1, 𝛄(g)(x) = x^2
+g = 2, 𝛄(g)(x) = x^4
 
 Elements
 ( 1)[ 1] = (0, 0)
@@ -390,7 +395,12 @@ Table
 20 12 13 14 15  2  3  4  5  6  7  8  9 10 11 21  1 16 17 18 19
 21 14 15  2  3  4  5  6  7  8  9 10 11 12 13  1 16 17 18 19 20
 
-|G/H| = 3 in Z/7Z x Z/3Z
+Action
+g = 0, 𝛄(g)(x) = x
+g = 1, 𝛄(g)(x) = x^2
+g = 2, 𝛄(g)(x) = x^4
+
+|P/N| = 3 in Z/7Z x Z/3Z
 is AbelianGroup
 
 Elements
@@ -428,6 +438,7 @@ Cosets
       (4, 2)
       (5, 2)
       (6, 2)
+
 # SemiDirectProduct Time:2 ms
 
 ```
@@ -437,3 +448,4 @@ The commented method GNGi_it, will compares action group $\gamma(g)(n)$ and Semi
 ## References
 
 <b>Daniel Guin, Thomas Hausberger.</b> ALGÈBRE T1 Groupes, corps et théorie de Galois. 
+<b>Saunders MacLane, Garrett Birkhoff.<b> Algebra (3rd ed.). American Mathematical Society.
