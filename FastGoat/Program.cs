@@ -475,19 +475,19 @@ var s8 = new Sn(8);
 //     }
 // }
 
-{
-    var zx = new Zn(4);
-    var zg = new Zn(10);
-    var Cn = Group.Generate(zx[1]);
-    var Cg = Group.Generate(zg[1]);
-    var Cn_sp_Cg = Group.SemiDirectProd(Cn, Cg);
-    Cn_sp_Cg.DisplayDetails();
-    var cayley = Cn_sp_Cg.CayleyTable();
-    HashSet<int> set = new(cayley.Item1[0]);
-    foreach (var e in cayley.Item1.Concat(cayley.Item2))
-        if (!set.SetEquals(e))
-            throw new();
-}
+// {
+//     var zx = new Zn(4);
+//     var zg = new Zn(10);
+//     var Cn = Group.Generate(zx[1]);
+//     var Cg = Group.Generate(zg[1]);
+//     var Cn_sp_Cg = Group.SemiDirectProd(Cn, Cg);
+//     Cn_sp_Cg.DisplayDetails();
+//     var cayley = Cn_sp_Cg.CayleyTable();
+//     HashSet<int> set = new(cayley.Item1[0]);
+//     foreach (var e in cayley.Item1.Concat(cayley.Item2))
+//         if (!set.SetEquals(e))
+//             throw new();
+// }
 
 // {
 //     var zx = new Zn(9);
@@ -497,3 +497,28 @@ var s8 = new Sn(8);
 //     var Cn_sp_Cg = Group.SemiDirectProd(Cn, Cg);
 //     Cn_sp_Cg.DisplayDetails();
 // }
+
+// {
+//     var zMxzN = Group.CartesianProduct(z2, z4);
+//     var g = Group.Generate(zMxzN[1, 0], zMxzN[0, 1]);
+//     var mgen = g.MonogenicSubGroup();
+//     foreach (var p in mgen.OrderBy(e => e.Value.Length))
+//     {
+//         Console.WriteLine("{0}; {1}", p.Key, p.Value.Length);
+//         Console.WriteLine(p.Value.OrderBy(e => e.Item2).ThenBy(e => e.Item1).Glue(", "));
+
+//         Console.WriteLine();
+//     }
+// }
+
+{
+    var g = Group.CartesianProduct(z4, z5, z6, z8);
+    var wg = Group.Generate(g[1, 0, 0, 0], g[0, 1, 0, 0], g[0, 0, 1, 0], g[0, 0, 0, 1]);
+    Console.WriteLine(wg.Count());
+    for (int k = 0; k < 10; ++k)
+    {
+        GlobalStopWatch.Restart();
+        Group.Generate(g[1, 0, 0, 0], g[0, 1, 0, 0], g[0, 0, 1, 0], g[0, 0, 0, 1]);
+        GlobalStopWatch.Show("bench");
+    }
+}
