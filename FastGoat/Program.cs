@@ -479,15 +479,6 @@ var s8 = new Sn(8);
 // }
 
 // {
-//     var zx = new Zn(9);
-//     var zg = new Zn(3);
-//     var Cn = Group.Generate(zx[1]);
-//     var Cg = Group.Generate(zg[1]);
-//     var Cn_sp_Cg = Group.SemiDirectProd(Cn, Cg);
-//     Cn_sp_Cg.DisplayDetails();
-// }
-
-// {
 //     var zMxzN = Group.CartesianProduct(z2, z4);
 //     var g = Group.Generate(zMxzN[1, 0], zMxzN[0, 1]);
 //     var mgen = g.MonogenicSubGroup();
