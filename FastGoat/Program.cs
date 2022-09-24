@@ -453,18 +453,6 @@ var s8 = new Sn(8);
 // }
 
 // {
-//     var zx = Group.CartesianProduct(z3, z3);
-//     var wgr = Group.Generate(zx[0, 1], zx[1, 0]);
-//     foreach (var p in wgr.MonogenicSubGroup())
-//     {
-//         foreach (var e in p.Value.OrderBy(e0 => e0.Item2))
-//             Console.WriteLine("{0} * {1,2} = {2}", p.Key, e.Item2, e.Item1);
-
-//         Console.WriteLine();
-//     }
-// }
-
-// {
 //     var zx = new Zn(4);
 //     var zg = new Zn(10);
 //     var Cn = Group.Generate(zx[1]);
