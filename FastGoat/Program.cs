@@ -184,17 +184,6 @@ var s8 = new Sn(8);
 }
 
 // {
-//     ZnInt e1 = (z6, 2);
-//     ZnInt e2 = (z18, 3);
-//     Group.Generate(z6[2]).DisplayDetails();
-//     Group.Generate(z18[3]).DisplayDetails();
-//     Ep<ZnInt, ZnInt> ep = (z6[2], z18[3]);
-//     Group.Generate(ep).DisplayDetails();
-
-//     Group.Generate<Ep<ZnInt, ZnInt>>(((z6, 2), (z18, 0)), ((z6, 0), (z18, 3))).DisplayDetails();
-// }
-
-// {
 //     GlobalStopWatch.Restart();
 //     Perm c7 = (s7, (1, 2, 3, 4, 5, 6, 7));
 //     Perm c2 = (s7, (1, 2));
