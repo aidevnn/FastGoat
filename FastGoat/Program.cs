@@ -491,18 +491,6 @@ var s8 = new Sn(8);
 //     }
 // }
 
-// {
-//     var g = Group.CartesianProduct(z4, z5, z6, z8);
-//     var wg = Group.Generate(g[1, 0, 0, 0], g[0, 1, 0, 0], g[0, 0, 1, 0], g[0, 0, 0, 1]);
-//     Console.WriteLine(wg.Count());
-//     for (int k = 0; k < 10; ++k)
-//     {
-//         GlobalStopWatch.Restart();
-//         Group.Generate(g[1, 0, 0, 0], g[0, 1, 0, 0], g[0, 0, 1, 0], g[0, 0, 0, 1]);
-//         GlobalStopWatch.Show("bench");
-//     }
-// }
-
 {
     for (int k = 3; k < 7; ++k)
     {
