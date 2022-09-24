@@ -408,21 +408,6 @@ var s8 = new Sn(8);
 // }
 
 // {
-//     GlobalStopWatch.Restart();
-//     var zx = z9;
-//     var zg = z5;
-//     var Cn = Group.Generate(zx[1]);
-//     var Cg = Group.Generate(zg[1]);
-//     var Cn_sp_Cg = Group.SemiDirectProd(Cn, Cg);
-//     Cn_sp_Cg.DisplayDetails("G = H ⋊  K");
-//     var Cn_sp_CgoNcan = Cn_sp_Cg.Over(Cn_sp_Cg.Ncan);
-//     Cn_sp_CgoNcan.DisplayDetails("G/H");
-//     // Cn_sp_CgoNcan.DisplayCosets();
-//     // Cn_sp_Cg.GNGi_it();
-//     GlobalStopWatch.Show("SemiDirectProduct");
-// }
-
-// {
 //     List<(int m, int n, int x)> solutions = new();
 //     int N = 20;
 //     for (int m0 = 2; m0 <= N; ++m0)
