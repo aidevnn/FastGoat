@@ -353,6 +353,22 @@ var s8 = new Sn(8);
 
 // {
 //     GlobalStopWatch.Restart();
+//     var zx = z7;
+//     var zg = z3;
+//     var Cn = Group.Generate(zx[1]);
+//     var Cg = Group.Generate(zg[1]);
+//     var Cn_sp_Cg = Group.SemiDirectProd(Cn, Cg);
+//     Cn_sp_Cg.DisplayDetails("P");
+//     Cn_sp_Cg.DisplayAction();
+//     var Cn_sp_CgoNcan = Cn_sp_Cg.Over(Cn_sp_Cg.Ncan);
+//     Cn_sp_CgoNcan.DisplayDetails("P/N");
+//     Cn_sp_CgoNcan.DisplayCosets();
+//     Cn_sp_Cg.GNGi_it();
+//     GlobalStopWatch.Show("SemiDirectProduct");
+// }
+
+// {
+//     GlobalStopWatch.Restart();
 //     var zx = z5;
 //     var zg = z4;
 //     var Cn = Group.Generate(zx[1]);
