@@ -478,19 +478,6 @@ var s8 = new Sn(8);
 //             throw new();
 // }
 
-// {
-//     var zMxzN = Group.CartesianProduct(z2, z4);
-//     var g = Group.Generate(zMxzN[1, 0], zMxzN[0, 1]);
-//     var mgen = g.MonogenicSubGroup();
-//     foreach (var p in mgen.OrderBy(e => e.Value.Length))
-//     {
-//         Console.WriteLine("{0}; {1}", p.Key, p.Value.Length);
-//         Console.WriteLine(p.Value.OrderBy(e => e.Item2).ThenBy(e => e.Item1).Glue(", "));
-
-//         Console.WriteLine();
-//     }
-// }
-
 {
     for (int k = 3; k < 7; ++k)
     {
