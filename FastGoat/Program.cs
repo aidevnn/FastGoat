@@ -351,21 +351,6 @@ var s8 = new Sn(8);
 //     GlobalStopWatch.Show("SemiDirectProduct");
 // }
 
-// {
-//     GlobalStopWatch.Restart();
-//     var zx = z7;
-//     var zg = z3;
-//     var Cn = Group.Generate(zx[1]);
-//     var Cg = Group.Generate(zg[1]);
-//     var Cn_sp_Cg = Group.SemiDirectProd(Cn, Cg);
-//     Cn_sp_Cg.DisplayDetails("P");
-//     Cn_sp_Cg.DisplayAction();
-//     var Cn_sp_CgoNcan = Cn_sp_Cg.Over(Cn_sp_Cg.Ncan);
-//     Cn_sp_CgoNcan.DisplayDetails("P/N");
-//     Cn_sp_CgoNcan.DisplayCosets();
-//     Cn_sp_Cg.GNGi_it();
-//     GlobalStopWatch.Show("SemiDirectProduct");
-// }
 
 // {
 //     GlobalStopWatch.Restart();
@@ -408,8 +393,9 @@ var s8 = new Sn(8);
 // }
 
 // {
+//     // List of semiproducts of cyclics groups
 //     List<(int m, int n, int x)> solutions = new();
-//     int N = 20;
+//     int N = 200;
 //     for (int m0 = 2; m0 <= N; ++m0)
 //     {
 //         for (int n0 = 2; m0 * n0 <= N; ++n0)
@@ -451,13 +437,38 @@ var s8 = new Sn(8);
 //             throw new();
 // }
 
+// {
+//     for (int k = 3; k < 7; ++k)
+//     {
+//         var sx = new Sn(k);
+//         var t = (sx, (1, 2));
+//         var cn = sx.KCycle(k);
+//         var Sn = Group.Generate(t, cn);
+//         Console.WriteLine("S{0}; Total:{1}; Mon:{2}", k, Sn.Count(), Sn.GetMonogenics().Count());
+//     }
+// }
+
 {
-    for (int k = 3; k < 7; ++k)
-    {
-        var sx = new Sn(k);
-        var t = (sx, (1, 2));
-        var cn = sx.KCycle(k);
-        var Sn = Group.Generate(t, cn);
-        Console.WriteLine("S{0}; Total:{1}; Mon:{2}", k, Sn.Count(), Sn.GetMonogenics().Count());
-    }
+    var zx = Group.CartesianProduct(z2, z3);
+    var Cn = Group.Generate(zx[1, 0], zx[0, 1]);
+    var Cg = Group.Generate(z4[1]);
+    var Cn_sp_Cg = Group.SemiDirectProd(Cn, Cg);
+    Cn_sp_Cg.DisplayHead();
+    Cn_sp_Cg.DisplayAction();
+    Cn_sp_Cg.DisplayElements();
+    var cayley0 = Cn_sp_Cg.CayleyTable();
+    HashSet<int> set0 = new(cayley0.Item1[0]);
+    foreach (var e in cayley0.Item1.Concat(cayley0.Item2))
+        if (!set0.SetEquals(e))
+            throw new(); // No exception for a valid group
+
+    Console.WriteLine();
+
+    var D8 = Group.SemiDirectProd(Group.Generate(z4[1]), Group.Generate(z2[1]));
+    D8.DisplayDetails("D8");
+    var cayley1 = D8.CayleyTable();
+    HashSet<int> set1 = new(cayley1.Item1[0]);
+    foreach (var e in cayley1.Item1.Concat(cayley1.Item2))
+        if (!set1.SetEquals(e))
+            throw new(); // No exception for a valid group
 }

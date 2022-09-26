@@ -216,6 +216,8 @@ public partial class ConcreteGroup<T>
             throw new SubGroupException("Not subgroup");
 
         List<HashSet<T>> cosets = new();
+        Console.WriteLine(H.Ascending().Glue(" "));
+        Console.WriteLine();
         foreach (var x in elements)
         {
             var xi = this.Invert(x);
@@ -224,6 +226,9 @@ public partial class ConcreteGroup<T>
             if (!H.GroupEqual(xHxi))
                 throw new SubGroupException("Not normal subgroup");
 
+            Console.WriteLine(x);
+            Console.WriteLine(xHxi.Ascending().Glue(" "));
+            Console.WriteLine();
             cosets.Add(xH);
         }
 

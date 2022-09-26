@@ -33,7 +33,7 @@ public struct Gp<U1, U2> : IGroup<Ep<U1, U2>> where U1 : struct, IElt<U1> where 
     public Ep<U1, U2> Op(Ep<U1, U2> a, Ep<U1, U2> b) => new(this, g1.Op(a.e1, b.e1), g2.Op(a.e2, b.e2));
     public Ep<U1, U2> this[int k] => new(this, g1[k], g2[k]);
     public Ep<U1, U2> this[int k1, int k2] => new(this, g1[k1], g2[k2]);
-    public override string ToString() => $"{g1} x {g2}";
+    public override string ToString() => $"({g1} x {g2})";
 }
 public struct Gp<U1, U2, U3> : IGroup<Ep<U1, U2, U3>>
     where U1 : struct, IElt<U1>
@@ -57,7 +57,7 @@ public struct Gp<U1, U2, U3> : IGroup<Ep<U1, U2, U3>>
     public Ep<U1, U2, U3> Op(Ep<U1, U2, U3> a, Ep<U1, U2, U3> b) => new(this, g1.Op(a.e1, b.e1), g2.Op(a.e2, b.e2), g3.Op(a.e3, b.e3));
     public Ep<U1, U2, U3> this[int k] => new(this, g1[k], g2[k], g3[k]);
     public Ep<U1, U2, U3> this[int k1, int k2, int k3] => new(this, g1[k1], g2[k2], g3[k3]);
-    public override string ToString() => $"{g1} x {g2} x {g3}";
+    public override string ToString() => $"({g1} x {g2} x {g3})";
 }
 public struct Gp<U1, U2, U3, U4> : IGroup<Ep<U1, U2, U3, U4>>
     where U1 : struct, IElt<U1>
@@ -84,7 +84,7 @@ public struct Gp<U1, U2, U3, U4> : IGroup<Ep<U1, U2, U3, U4>>
     public Ep<U1, U2, U3, U4> Op(Ep<U1, U2, U3, U4> a, Ep<U1, U2, U3, U4> b) => new(this, g1.Op(a.e1, b.e1), g2.Op(a.e2, b.e2), g3.Op(a.e3, b.e3), g4.Op(a.e4, b.e4));
     public Ep<U1, U2, U3, U4> this[int k] => new(this, g1[k], g2[k], g3[k], g4[k]);
     public Ep<U1, U2, U3, U4> this[int k1, int k2, int k3, int k4] => new(this, g1[k1], g2[k2], g3[k3], g4[k4]);
-    public override string ToString() => $"{g1} x {g2} x {g3} x {g4}";
+    public override string ToString() => $"({g1} x {g2} x {g3} x {g4})";
 }
 public struct Gp<U1, U2, U3, U4, U5> : IGroup<Ep<U1, U2, U3, U4, U5>>
     where U1 : struct, IElt<U1>
@@ -114,5 +114,5 @@ public struct Gp<U1, U2, U3, U4, U5> : IGroup<Ep<U1, U2, U3, U4, U5>>
     public Ep<U1, U2, U3, U4, U5> Op(Ep<U1, U2, U3, U4, U5> a, Ep<U1, U2, U3, U4, U5> b) => new(this, g1.Op(a.e1, b.e1), g2.Op(a.e2, b.e2), g3.Op(a.e3, b.e3), g4.Op(a.e4, b.e4), g5.Op(a.e5, b.e5));
     public Ep<U1, U2, U3, U4, U5> this[int k] => new(this, g1[k], g2[k], g3[k], g4[k], g5[k]);
     public Ep<U1, U2, U3, U4, U5> this[int k1, int k2, int k3, int k4, int k5] => new(this, g1[k1], g2[k2], g3[k3], g4[k4], g5[k5]);
-    public override string ToString() => $"{g1} x {g2} x {g3} x {g4} x {g5}";
+    public override string ToString() => $"({g1} x {g2} x {g3} x {g4} x {g5})";
 }
