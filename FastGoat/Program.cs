@@ -450,13 +450,13 @@ var s8 = new Sn(8);
 
 {
     var zx = Group.CartesianProduct(z2, z3);
-    var Cn = Group.Generate(zx[1, 0], zx[0, 1]);
-    var Cg = Group.Generate(z4[1]);
-    var Cn_sp_Cg = Group.SemiDirectProd(Cn, Cg);
-    Cn_sp_Cg.DisplayHead();
-    Cn_sp_Cg.DisplayAction();
-    Cn_sp_Cg.DisplayElements();
-    var cayley0 = Cn_sp_Cg.CayleyTable();
+    var cn = Group.Generate(zx[1, 0], zx[0, 1]);
+    var cg = Group.Generate(z4[1]);
+    var cnSpCg = Group.SemiDirectProd(cn, cg);
+    cnSpCg.DisplayHead();
+    cnSpCg.DisplayAction();
+    cnSpCg.DisplayElements();
+    var cayley0 = cnSpCg.CayleyTable();
     HashSet<int> set0 = new(cayley0.Item1[0]);
     foreach (var e in cayley0.Item1.Concat(cayley0.Item2))
         if (!set0.SetEquals(e))
@@ -464,9 +464,9 @@ var s8 = new Sn(8);
 
     Console.WriteLine();
 
-    var D8 = Group.SemiDirectProd(Group.Generate(z4[1]), Group.Generate(z2[1]));
-    D8.DisplayDetails("D8");
-    var cayley1 = D8.CayleyTable();
+    var d8 = Group.SemiDirectProd(Group.Generate(z4[1]), Group.Generate(z2[1]));
+    d8.DisplayDetails("D8");
+    var cayley1 = d8.CayleyTable();
     HashSet<int> set1 = new(cayley1.Item1[0]);
     foreach (var e in cayley1.Item1.Concat(cayley1.Item2))
         if (!set1.SetEquals(e))
