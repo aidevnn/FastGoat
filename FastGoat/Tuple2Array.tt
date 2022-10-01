@@ -1,0 +1,42 @@
+<#@ template language="C#" #>
+<#@ output extension=".cs"#>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Linq" #>
+namespace FastGoat;
+
+public class Tuple2Array
+{
+    public int[] Table { get; private set; }
+    public Tuple2Array(params int[] table)
+    {
+        Table = table.ToArray();
+    }
+
+    public override string ToString() => $"[{Table.Glue(" ")}]";
+    public static implicit operator Tuple2Array(ValueType v)
+    {
+        if (v is int v1) 
+            return new(v1);
+
+<#
+    for (int k = 2; k < 8; ++k)
+    {
+        var l = Enumerable.Range(1, k).ToArray();
+        var ei = l.Select(i => $"int e{i}").ToArray();
+        var pi = l.Select(i => $"p.e{i}").ToArray();
+        var ints = string.Join(", ", Enumerable.Repeat("int", k));
+        var vi = $"v{k}";
+#>
+        if(v is ValueTuple<<#= ints #>> <#= vi #>)
+        {
+            (<#= string.Join(", ", ei) #>) p = <#= vi #>;
+            return new(<#= string.Join(", ", pi) #>);
+        }
+
+<#
+    }
+#>
+        return new();
+    }
+}

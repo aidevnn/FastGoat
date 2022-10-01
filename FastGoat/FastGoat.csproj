@@ -13,12 +13,21 @@
             <Generator>TextTemplatingFileGenerator</Generator>
             <LastGenOutput>GpEp.cs</LastGenOutput>
         </None>
+        <None Update="Tuple2Array.tt">
+          <Generator>TextTemplatingFileGenerator</Generator>
+          <LastGenOutput>Tuple2Array.cs</LastGenOutput>
+        </None>
     </ItemGroup>
     <ItemGroup>
         <Compile Update="Gp\GpEp.cs">
             <AutoGen>True</AutoGen>
             <DesignTime>True</DesignTime>
             <DependentUpon>GpEp.tt</DependentUpon>
+        </Compile>
+        <Compile Update="Tuple2Array.cs">
+          <AutoGen>True</AutoGen>
+          <DesignTime>True</DesignTime>
+          <DependentUpon>Tuple2Array.tt</DependentUpon>
         </Compile>
     </ItemGroup>
 </Project>
