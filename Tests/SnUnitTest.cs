@@ -1,4 +1,7 @@
+using System.Linq;
 using FastGoat;
+using FastGoat.Gp;
+using FastGoat.UserGroup;
 using Xunit;
 
 namespace Tests;
@@ -6,26 +9,87 @@ namespace Tests;
 public class SnUnitTest
 {
     [Fact]
-    public void Test1Tuple2Array()
+    public void Test1ThrowException()
     {
-        Tuple2Array c1 = 1;
-        Tuple2Array c2 = (2, 1);
-        Tuple2Array c3 = (2, 3, 5);
-        Tuple2Array c4 = (2, 3, 4, 5);
-        Tuple2Array c5 = (8, 6, 2, 3, 5);
-        Tuple2Array c6 = (2, 9, 3, 1, 5, 4);
-        Tuple2Array c7 = (2, 8, 6, 11, 3, 5, 0);
-        Tuple2Array c8 = (2, 8, 6, 11, 3, 10, 5, 8, 0);
-        Tuple2Array c9 = (2, (1, 7), 5);
+        var s3 = new Sn(3);
+        var e1 = s3.Neutral();
+        var s4 = new Sn(4);
+        var e2 = s4.Neutral();
+        Assert.Throws<GroupException>(() =>
+        {
+            var _ = new Sn(-5);
+        });
+        Assert.Throws<GroupException>(() =>
+        {
+            var _ = s4.Invert(e1);
+        });
+        Assert.Throws<GroupException>(() =>
+        {
+            var _ = s3.Op(e1, e2);
+        });
+        Assert.Throws<GroupException>(() =>
+        {
+            var _ = e1.CompareTo(e2);
+        });
+        Assert.Throws<GroupException>(() =>
+        {
+            var _ = s3.Times(e2, 3);
+        });
+        Assert.Throws<GroupException>(() =>
+        {
+            var _ = s4[(4, 3, 4)];
+        });
+        Assert.Throws<GroupException>(() =>
+        {
+            var _ = s4[(2, 6)];
+        });
+        Assert.Throws<GroupException>(() =>
+        {
+            var _ = s4[(2, 1), 3];
+        });
+        Assert.Throws<GroupException>(() =>
+        {
+            var _ = s4[((2, 1), (3, 4))];
+        });
+    }
 
-        Assert.Single(c1.Table);
-        Assert.Equal(2, c2.Table.Length);
-        Assert.Equal(3, c3.Table.Length);
-        Assert.Equal(4, c4.Table.Length);
-        Assert.Equal(5, c5.Table.Length);
-        Assert.Equal(6, c6.Table.Length);
-        Assert.Equal(7, c7.Table.Length);
-        Assert.Empty(c8.Table);
-        Assert.Empty(c9.Table);
+    [Fact]
+    public void Test2Create()
+    {
+        var s4 = new Sn(4);
+        var e1 = s4[(1, 2)];
+        var e2 = s4[(1, 3), (2, 4)];
+        var e3 = s4[(1, 2, 4)];
+        var e4 = s4[(4, 2, 1)];
+        Assert.True(e1.Table.SequenceEqual(new[] { 1, 0, 2, 3 }));
+        Assert.True(e2.Table.SequenceEqual(new[] { 2, 3, 0, 1 }));
+        Assert.Equal(e1, s4.Invert(e1));
+        Assert.Equal(e3, s4.Invert(e4));
+        Assert.Equal(s4[(1, 4)], s4.Op(e1, e3));
+        Assert.Equal(e4, s4.Times(e3, 2));
+        Assert.Equal(s4.Neutral(), s4.Times(e3, -6));
+        Assert.Equal(s4, e3.BaseGroup);
+    }
+
+    [Fact]
+    public void Test3AllElements()
+    {
+        var s3 = new Sn(3);
+        var s4 = new Sn(4);
+        var s5 = new Sn(5);
+        var s6 = new Sn(6);
+        var s7 = new Sn(7);
+
+        var S3 = Group.Generate(s3, s3[(1, 2)], s3[(1, 2, 3)]).ToHashSet();
+        var S4 = Group.Generate(s4, s4[(1, 2)], s4[(1, 2, 3, 4)]).ToHashSet();
+        var S5 = Group.Generate(s5, s5[(1, 2)], s5[(1, 2, 3, 4, 5)]).ToHashSet();
+        var S6 = Group.Generate(s6, s6[(1, 2)], s6[(1, 2, 3, 4, 5, 6)]).ToHashSet();
+        var S7 = Group.Generate(s7, s7[(1, 2)], s7[(1, 2, 3, 4, 5, 6, 7)]).ToHashSet();
+
+        Assert.True(S3.SetEquals(IntExt.GetPermutations(3).Select(s3.CreateElement)));
+        Assert.True(S4.SetEquals(IntExt.GetPermutations(4).Select(s4.CreateElement)));
+        Assert.True(S5.SetEquals(IntExt.GetPermutations(5).Select(s5.CreateElement)));
+        Assert.True(S6.SetEquals(IntExt.GetPermutations(6).Select(s6.CreateElement)));
+        Assert.True(S7.SetEquals(IntExt.GetPermutations(7).Select(s7.CreateElement)));
     }
 }
