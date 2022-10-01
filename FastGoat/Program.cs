@@ -9,4 +9,3 @@ using FastGoat.UserGroup;
 //////////////////////////////////
 
 Console.WriteLine("Hello World");
-
