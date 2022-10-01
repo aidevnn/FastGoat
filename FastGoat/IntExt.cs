@@ -143,13 +143,14 @@ public static class IntExt
                 while (true)
                 {
                     var idx0 = dic[idx];
-                    if (idx0 == v.Value)
+                    if (idx0 == v.Key)
                     {
-                        dic.Remove(v.Key);
+                        dic.Remove(idx);
                         break;
                     }
 
                     cycle.Add(idx0);
+                    dic.Remove(idx);
                     idx = idx0;
                 }
 
