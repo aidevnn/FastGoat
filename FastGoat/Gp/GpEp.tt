@@ -10,9 +10,7 @@
         return string.Join(sep, ts.Select(t => string.Format(fmt, t)));
     }
 #>
-
 using System.Collections;
-
 namespace FastGoat.Gp;
 
 <#
@@ -42,7 +40,7 @@ namespace FastGoat.Gp;
         var fori = l.Select(i => $"foreach(var {ei[i]} in {Gi[i]})").ToArray();
 
         var TiEi = l.Select(i => $"public {Ti[i]} {Ei[i]} {{get ;}}").ToArray();
-        var Tiei = l.Select(i => $"{Ti[i]} {ei[i]}");
+        var Tiei = l.Select(i => $"{Ti[i]} {ei[i]}").ToArray();
         var Eiei = l.Select(i => $"{Ei[i]} = {ei[i]};").ToArray();
         var hshei = l.Select(i => $"{ei[i]}.Hash");
         var gpkbg = l.Select(i => $"{ei[i]}.BaseGroup");
