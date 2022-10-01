@@ -84,4 +84,15 @@ public class PermutationUnitTest
         IntExt.ApplyCycle(c, new[] { 3, 2 });
         Assert.True(p4.SequenceEqual(c));
     }
+
+    [Fact]
+    public void Test4AllPermutations()
+    {
+        Assert.Equal(6,IntExt.GetPermutations(3).Length);
+        Assert.Equal(24,IntExt.GetPermutations(4).Length);
+        Assert.Equal(120,IntExt.GetPermutations(5).Length);
+        Assert.Equal(720,IntExt.GetPermutations(6).Length);
+        Assert.Equal(5040,IntExt.GetPermutations(7).Length);
+        Assert.Equal(40320,IntExt.GetPermutations(8).Length);
+    }
 }
