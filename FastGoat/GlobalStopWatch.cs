@@ -8,6 +8,7 @@ public static class GlobalStopWatch
     {
         sw = Stopwatch.StartNew();
     }
+
     static Stopwatch sw { get; }
     public static void Restart() => sw.Restart();
     public static void Stop() => sw.Stop();

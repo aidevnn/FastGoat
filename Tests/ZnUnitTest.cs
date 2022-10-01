@@ -1,0 +1,112 @@
+using System.Linq;
+using FastGoat;
+using FastGoat.Gp;
+using FastGoat.UserGroup;
+using Xunit;
+
+namespace Tests;
+
+public class ZnUnitTest
+{
+    [Fact]
+    public void Test1ThrowException()
+    {
+        var z4 = new Zn(3);
+        var z5 = new Zn(5);
+        var e1 = z4[2];
+        var e2 = z5[3];
+        var g = Product.Group(z4, z5);
+
+        Assert.Throws<GroupException>(() =>
+        {
+            var _ = new Zn(-5);
+        });
+        Assert.Throws<GroupException>(() =>
+        {
+            var _ = z5.Invert(e1);
+        });
+        Assert.Throws<GroupException>(() =>
+        {
+            var _ = z5.Op(e1, e2);
+        });
+        Assert.Throws<GroupException>(() =>
+        {
+            var _ = e1.CompareTo(e2);
+        });
+        Assert.Throws<GroupException>(() =>
+        {
+            var _ = z4.Times(e2, 3);
+        });
+        Assert.Throws<GroupException>(() =>
+        {
+            var _ = g[(1, 2), 2];
+        });
+    }
+
+    [Fact]
+    public void Test2CreateElementsAndGroups()
+    {
+        var z7 = new Zn(7);
+        var e1 = z7[3];
+        var e2 = z7[6];
+        Assert.Equal(e1.BaseGroup, z7);
+        Assert.Equal(e1, z7[10]);
+        Assert.Equal(z7.Invert(e1), z7[4]);
+        Assert.Equal(z7.Op(e1, e2), z7[2]);
+        Assert.Equal(z7.Times(e1, 4), z7[5]);
+        Assert.Equal(z7.Times(e1, -2), z7[1]);
+    }
+
+    [Fact]
+    public void Test3SetOfElements()
+    {
+        var z7 = new Zn(7);
+        var set0 = (new[] { 1, 2, 6, 11, 13, 23, 32 }).Select(i => z7[i]).ToHashSet();
+        var set1 = (new[] { 1, 2, 6, 4 }).Select(i => z7[i]).ToHashSet();
+        Assert.True(set0.SetEquals(set1));
+
+        var arr1 = new[] { 1, 11, 13, 2, 6, 23, 32 };
+        var arr2 = new[] { 1, 2, 2, 4, 4, 6, 6 };
+        var es1 = arr1.Select(i => z7[i]).Ascending();
+        var es2 = arr2.Select(i => z7[i]);
+        Assert.True(es1.SequenceEqual(es2));
+    }
+
+    [Fact]
+    public void Test4Tuples()
+    {
+        var z5 = new Zn(5);
+        var z8 = new Zn(8);
+        var g1 = Product.Group(z5, z8);
+
+        var e1 = z5[2];
+        var e2 = z8[5];
+        var ep1 = g1[2, 5];
+        var ep2 = Product.Elt(e1, e2);
+
+        Assert.Equal(g1.G1, z5);
+        Assert.Equal(g1.G2, z8);
+        Assert.Equal(ep1.E1, e1);
+        Assert.Equal(ep1.E2, e2);
+        Assert.Equal(ep1.BaseGroup, g1);
+        Assert.Equal(ep2.BaseGroup, g1);
+
+        var ep3 = g1[1, 7];
+        Assert.Equal(g1.Invert(ep1), g1[3, 3]);
+        Assert.Equal(g1.Op(ep1, ep3), g1[3, 4]);
+        Assert.Equal(g1.Times(ep1, 3), ep3);
+
+        var z12 = new Zn(12);
+        var g2 = Product.Group(z5, z8, z12);
+        Assert.Equal(g2.Neutral(), g2[0, 0, 0]);
+        Assert.Equal(g2.Invert(g2[2, 3, 10]), g2[3, 5, 2]);
+        Assert.Equal(g2.Op(g2[2, 3, 10], g2[4, 7, 5]), g2[1, 2, 3]);
+        Assert.Equal(g2.Times(g2[2, 3, 10], 4), g2[3, 4, 4]);
+
+        var g3 = Product.Group(g1, z12);
+        Assert.Equal(g3.Neutral(), g3[(0, 0), 0]);
+        Assert.Equal(g3.Invert(g3[(2, 3), 10]), g3[(3, 5), 2]);
+        Assert.Equal(g3.Op(g3[(2, 3), 10], g3[(4, 7), 5]), g3[(1, 2), 3]);
+        Assert.Equal(g3.Times(g3[(2, 3), 10], 4), g3[(3, 4), 4]);
+    }
+}

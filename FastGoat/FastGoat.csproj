@@ -1,8 +1,24 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="dotnet-t4-project-tool" Version="2.2.1"/>
+    </ItemGroup>
+    <ItemGroup>
+        <None Update="Gp\GpEp.tt">
+            <Generator>TextTemplatingFileGenerator</Generator>
+            <LastGenOutput>GpEp.cs</LastGenOutput>
+        </None>
+    </ItemGroup>
+    <ItemGroup>
+        <Compile Update="Gp\GpEp.cs">
+            <AutoGen>True</AutoGen>
+            <DesignTime>True</DesignTime>
+            <DependentUpon>GpEp.tt</DependentUpon>
+        </Compile>
+    </ItemGroup>
 </Project>
