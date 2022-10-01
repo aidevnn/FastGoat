@@ -4,7 +4,7 @@ public readonly struct ZnInt : IElt<ZnInt>
 {
     private Zn Zn { get; }
     public int K { get; }
-    private string fmt { get; }
+    private string Fmt { get; }
 
     public ZnInt(Zn zn, int k)
     {
@@ -15,7 +15,7 @@ public readonly struct ZnInt : IElt<ZnInt>
 
         Hash = (K, zn.Hash).GetHashCode();
         var digits = $"{zn.Mod - 1}".Length;
-        fmt = $"{{0,{digits}}}";
+        Fmt = $"{{0,{digits}}}";
     }
 
     public bool Equals(ZnInt other)
@@ -41,6 +41,6 @@ public readonly struct ZnInt : IElt<ZnInt>
 
     public override string ToString()
     {
-        return string.Format(fmt, K);
+        return string.Format(Fmt, K);
     }
 }
