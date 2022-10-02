@@ -44,7 +44,7 @@ NormalGroup |H| = 7
 ```
 
 ## Another Example
-Comparing the previous results with the group presented by $\langle (a,\ b) \ | \ a^7=b^3=1,\ a^2b=ba \rangle$
+Comparing the previous results with the group presented by $\langle (a,\ b) \ | \ a^7=b^3=1,\ a^2=bab^{-1} \rangle$
 
 ```csharp
 
