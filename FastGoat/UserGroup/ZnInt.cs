@@ -43,4 +43,15 @@ public readonly struct ZnInt : IElt<ZnInt>
     {
         return string.Format(Fmt, K);
     }
+
+    public override bool Equals(object? obj)
+    {
+        return obj is ZnInt z && Equals(z);
+    }
+
+    public static bool operator ==(ZnInt a, ZnInt b) => a.Equals(b);
+    public static bool operator !=(ZnInt a, ZnInt b) => !a.Equals(b);
+
+    public static ZnInt operator +(ZnInt a, ZnInt b) => a.BaseGroup.Op(a, b);
+    public static ZnInt operator *(ZnInt a, int k) => a.BaseGroup.Times(a, k);
 }
