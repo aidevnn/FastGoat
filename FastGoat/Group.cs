@@ -218,7 +218,9 @@ public static class Group
 
     public static QuotientGroup<T> Over<T>(this ConcreteGroup<T> g, ConcreteGroup<T> h) where T : struct, IElt<T>
     {
-        return new QuotientGroup<T>(g, h, $"{g.Name}/{h.Name}");
+        var gName = g.Name.Trim().Contains(' ') ? $"({g.Name})" : g.Name;
+        var hName = h.Name.Trim().Contains(' ') ? $"({h.Name})" : h.Name;
+        return new QuotientGroup<T>(g, h, $"{gName}/{hName}");
     }
 
     public static QuotientGroup<T> Over<T>(this ConcreteGroup<T> g, ConcreteGroup<T> h, string name)
