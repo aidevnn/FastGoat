@@ -1,449 +1,114 @@
 # FastGoat
 What C# can do for studying Finite Groups, abelians or not, quotient groups, cartesian products, direct products, semi-direct products and many more...
 
-## New version
-This version is faster and it allows to study more complex cases.
-
 ## Example
 Searching semi-direct product $C_7 \rtimes C_3$ in $\textbf{S}_7$
 
 ```csharp
-var s7 = new Sn(7);
-Perm c7 = (s7, (1, 2, 3, 4, 5, 6, 7));
-Perm c2 = (s7, (1, 2));
-var S7 = Group.Generate(c2, c7);
+GlobalStopWatch.Restart();
+var s7 = new Sn(7); // Trivial s7
+var a = s7[(1, 2, 3, 4, 5, 6, 7)];
+var S7 = Group.GenerateElements(s7, s7[(1, 2)], a);
+var allC3 = S7.Where(p => (p ^ 3) == s7.Neutral()).ToArray();
+var b = allC3.First(p => Group.GenerateElements(s7, a, p).Count() == 21);
+GlobalStopWatch.Stop();
 
-var allC3 = S7.Where(e => S7.GetOrderOf(e) == 3);
-Console.WriteLine("|S7|={0}, |{{K in S7 with K~C3}}| = {1}", S7.Count(), allC3.Count());
+Console.WriteLine("|S7|={0}, |{{b in S7 with b^3 = 1}}| = {1}",S7.Count(), allC3.Count());
+Console.WriteLine("First Solution |HK| = 21 : h = {0} and k = {1}", a, b);
 Console.WriteLine();
 
-var sc3 = allC3.First(c3 => Group.Generate(c7, c3).Count() == 21);
-Console.WriteLine("First Solution |HK| = 21 : h = {0} and k = {1}", c7, sc3);
-Console.WriteLine();
-
-var H = Group.Generate(c7);
-var K = Group.Generate(sc3);
-var G = Group.Generate(c7, sc3);
-var GoH = G.Over(H);
-
-H.DisplayDetails("H");
-K.DisplayDetails("K");
-G.DisplayDetails("G=HK");
-GoH.DisplayDetails("G/H");
-GoH.DisplayCosets();
+var h = Group.Generate("H", a);
+var g21 = Group.Generate(a, b);
+DisplayGroup.Head(g21);
+DisplayGroup.Head(g21.Over(h));
+GlobalStopWatch.Show("Group21");
 ```
 
 will output
 
 ```dotnetcli
-|S7|=5040, |{K in S7 with K~C3}| = 350
+|S7|=5040, |{b in S7 with b^3 = 1}| = 351
+First Solution |HK| = 21 : h = [(1 2 3 4 5 6 7)] and k = [(1 2 4)(3 6 5)]
 
-First Solution |HK| = 21 : h = [(1 2 3 4 5 6 7)] and k = [(2 3 5)(4 7 6)]
+|G| = 21
+Type        NonAbelianGroup
+BaseGroup   S7
 
-|H| = 7 in S7
-is AbelianGroup
+|G/H| = 3
+Type        AbelianGroup
+BaseGroup   S7
+SuperGroup  |G| = 21
+NormalGroup |H| = 7
 
-Elements
-(1)[1] = []
-(2)[7] = [(1 2 3 4 5 6 7)]
-(3)[7] = [(1 3 5 7 2 4 6)]
-(4)[7] = [(1 4 7 3 6 2 5)]
-(5)[7] = [(1 5 2 6 3 7 4)]
-(6)[7] = [(1 6 4 2 7 5 3)]
-(7)[7] = [(1 7 6 5 4 3 2)]
-
-Table
-1 2 3 4 5 6 7
-2 3 4 5 6 7 1
-3 4 5 6 7 1 2
-4 5 6 7 1 2 3
-5 6 7 1 2 3 4
-6 7 1 2 3 4 5
-7 1 2 3 4 5 6
-
-|K| = 3 in S7
-is AbelianGroup
-
-Elements
-(1)[1] = []
-(2)[3] = [(2 3 5)(4 7 6)]
-(3)[3] = [(2 5 3)(4 6 7)]
-
-Table
-1 2 3
-2 3 1
-3 1 2
-
-|G=HK| = 21 in S7
-is NotAbelianGroup
-
-Elements
-( 1)[ 1] = []
-( 2)[ 3] = [(2 3 5)(4 7 6)]
-( 3)[ 3] = [(2 5 3)(4 6 7)]
-( 4)[ 3] = [(1 2 4)(3 6 5)]
-( 5)[ 3] = [(1 2 6)(4 7 5)]
-( 6)[ 3] = [(1 3 7)(2 5 4)]
-( 7)[ 3] = [(1 3 4)(2 7 6)]
-( 8)[ 3] = [(1 4 2)(3 5 6)]
-( 9)[ 3] = [(1 4 3)(2 6 7)]
-(10)[ 3] = [(1 5 7)(3 6 4)]
-(11)[ 3] = [(1 5 6)(2 7 3)]
-(12)[ 3] = [(1 6 2)(4 5 7)]
-(13)[ 3] = [(1 6 5)(2 3 7)]
-(14)[ 3] = [(1 7 5)(3 4 6)]
-(15)[ 3] = [(1 7 3)(2 4 5)]
-(16)[ 7] = [(1 2 3 4 5 6 7)]
-(17)[ 7] = [(1 3 5 7 2 4 6)]
-(18)[ 7] = [(1 4 7 3 6 2 5)]
-(19)[ 7] = [(1 5 2 6 3 7 4)]
-(20)[ 7] = [(1 6 4 2 7 5 3)]
-(21)[ 7] = [(1 7 6 5 4 3 2)]
-
-Table
- 1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21
- 2  3  1  5 16  7 17 18  8 19 10 13 20 15 21  4  6  9 11 12 14
- 3  1  2 16  4 17  6  9 18 11 19 20 12 21 14  5  7  8 10 13 15
- 4  7 19  8 20 10 21  1 13 16 15  3 17  5 18  6  9 11 12 14  2
- 5 17 11 18 12 19 14  2 20  4 21  1  6 16  9  7  8 10 13 15  3
- 6 10 16 13 17 15 18 19  3 20  5  7 21  8  1  9 11 12 14  2  4
- 7 19  4 20  6 21  9 11  1 12 16 17 14 18  2  8 10 13 15  3  5
- 8 21 12  1 14 16  2  4 17  6 18 19  9 20 11 10 13 15  3  5  7
- 9 15 20  3 21  5  1 16  7 17  8 10 18 13 19 11 12 14  2  4  6
-10 16  6 17  9 18 11 12 19 14 20 21  2  1  4 13 15  3  5  7  8
-11  5 17  7 18  8 19 20 10 21 13 15  1  3 16 12 14  2  4  6  9
-12  8 21 10  1 13 16 17 15 18  3  5 19  7 20 14  2  4  6  9 11
-13 18 14 19  2 20  4  6 21  9  1 16 11 17 12 15  3  5  7  8 10
-14 13 18 15 19  3 20 21  5  1  7  8 16 10 17  2  4  6  9 11 12
-15 20  9 21 11  1 12 14 16  2 17 18  4 19  6  3  5  7  8 10 13
-16  6 10  9 13 11 15  3 12  5 14  2  7  4  8 17 18 19 20 21  1
-17 11  5 12  7 14  8 10  2 13  4  6 15  9  3 18 19 20 21  1 16
-18 14 13  2 15  4  3  5  6  7  9 11  8 12 10 19 20 21  1 16 17
-19  4  7  6  8  9 10 13 11 15 12 14  3  2  5 20 21  1 16 17 18
-20  9 15 11  3 12  5  7 14  8  2  4 10  6 13 21  1 16 17 18 19
-21 12  8 14 10  2 13 15  4  3  6  9  5 11  7  1 16 17 18 19 20
-
-|G/H| = 3 in S7
-is AbelianGroup
-
-Elements
-(1)[1] = []
-(2)[3] = [(2 3 5)(4 7 6)]
-(3)[3] = [(2 5 3)(4 6 7)]
-
-Table
-1 2 3
-2 3 1
-3 1 2
-
-Cosets
-(1)[1] = []
-      []
-      [(1 2 3 4 5 6 7)]
-      [(1 3 5 7 2 4 6)]
-      [(1 4 7 3 6 2 5)]
-      [(1 5 2 6 3 7 4)]
-      [(1 6 4 2 7 5 3)]
-      [(1 7 6 5 4 3 2)]
-(2)[3] = [(2 3 5)(4 7 6)]
-      [(2 3 5)(4 7 6)]
-      [(1 2 4)(3 6 5)]
-      [(1 3 7)(2 5 4)]
-      [(1 4 3)(2 6 7)]
-      [(1 5 6)(2 7 3)]
-      [(1 6 2)(4 5 7)]
-      [(1 7 5)(3 4 6)]
-(3)[3] = [(2 5 3)(4 6 7)]
-      [(2 5 3)(4 6 7)]
-      [(1 2 6)(4 7 5)]
-      [(1 3 4)(2 7 6)]
-      [(1 4 2)(3 5 6)]
-      [(1 5 7)(3 6 4)]
-      [(1 6 5)(2 3 7)]
-      [(1 7 3)(2 4 5)]
-# Example Time:2751 ms
+# Group21 Time:322 ms
 ```
 
 ## Another Example
 Comparing the previous results with the group presented by $\langle (a,\ b) \ | \ a^7=b^3=1,\ a^2b=ba \rangle$
 
 ```csharp
-var s7 = new Sn(7);
-Perm c7 = (s7, (1, 2, 3, 4, 5, 6, 7));
-Perm c2 = (s7, (1, 2));
-var S7 = Group.Generate(c2, c7);
 
-var allC3 = S7.Where(e => S7.GetOrderOf(e) == 3);
-Console.WriteLine("|S7|={0}, |{{b in S7 with b^3 = 1}}| = {1}", S7.Count(), allC3.Count());
-Console.WriteLine();
-
-var sc3 = allC3.First(c3 => (c7 ^ 2) * c3 == c3 * c7);
-Console.WriteLine("First Solution a^7 = b^3 = 1 and a^2 * b = b * a : a = {0} and b = {1}", c7, sc3);
-Console.WriteLine();
-
-var H = Group.Generate(c7);
-var K = Group.Generate(sc3);
-var G = Group.Generate(c7, sc3);
-var GoH = G.Over(H);
-
-H.DisplayDetails("H");
-K.DisplayDetails("K");
-G.DisplayDetails("G=HK");
-GoH.DisplayDetails("G/H");
-GoH.DisplayCosets();
+var b = allC3.First(p => (a ^ 2) == p * a * (p ^ -1));
+Console.WriteLine("First Solution a^7 = b^3 = 1 and a^2 = b * a * b^-1 : a = {0} and b = {1}", a, b);
 ```
 
 will output
 
 ```dotnetcli
-|S7|=5040, |{b in S7 with b^3 = 1}| = 350
+|S7|=5040, |{b in S7 with b^3 = 1}| = 351
+First Solution a^7 = b^3 = 1 and a^2 = b * a * b^-1 : a = [(1 2 3 4 5 6 7)] and b = [(1 2 6)(4 7 5)]
 
-First Solution a^7 = b^3 = 1 and a^2 * b = b * a : a = [(1 2 3 4 5 6 7)] and b = [(2 5 3)(4 6 7)]
+|G| = 21
+Type        NonAbelianGroup
+BaseGroup   S7
 
-|H| = 7 in S7
-is AbelianGroup
+|G/H| = 3
+Type        AbelianGroup
+BaseGroup   S7
+SuperGroup  |G| = 21
+NormalGroup |H| = 7
 
-Elements
-(1)[1] = []
-(2)[7] = [(1 2 3 4 5 6 7)]
-(3)[7] = [(1 3 5 7 2 4 6)]
-(4)[7] = [(1 4 7 3 6 2 5)]
-(5)[7] = [(1 5 2 6 3 7 4)]
-(6)[7] = [(1 6 4 2 7 5 3)]
-(7)[7] = [(1 7 6 5 4 3 2)]
-
-Table
-1 2 3 4 5 6 7
-2 3 4 5 6 7 1
-3 4 5 6 7 1 2
-4 5 6 7 1 2 3
-5 6 7 1 2 3 4
-6 7 1 2 3 4 5
-7 1 2 3 4 5 6
-
-|K| = 3 in S7
-is AbelianGroup
-
-Elements
-(1)[1] = []
-(2)[3] = [(2 3 5)(4 7 6)]
-(3)[3] = [(2 5 3)(4 6 7)]
-
-Table
-1 2 3
-2 3 1
-3 1 2
-
-|G=HK| = 21 in S7
-is NotAbelianGroup
-
-Elements
-( 1)[ 1] = []
-( 2)[ 3] = [(2 3 5)(4 7 6)]
-( 3)[ 3] = [(2 5 3)(4 6 7)]
-( 4)[ 3] = [(1 2 4)(3 6 5)]
-( 5)[ 3] = [(1 2 6)(4 7 5)]
-( 6)[ 3] = [(1 3 7)(2 5 4)]
-( 7)[ 3] = [(1 3 4)(2 7 6)]
-( 8)[ 3] = [(1 4 2)(3 5 6)]
-( 9)[ 3] = [(1 4 3)(2 6 7)]
-(10)[ 3] = [(1 5 7)(3 6 4)]
-(11)[ 3] = [(1 5 6)(2 7 3)]
-(12)[ 3] = [(1 6 2)(4 5 7)]
-(13)[ 3] = [(1 6 5)(2 3 7)]
-(14)[ 3] = [(1 7 5)(3 4 6)]
-(15)[ 3] = [(1 7 3)(2 4 5)]
-(16)[ 7] = [(1 2 3 4 5 6 7)]
-(17)[ 7] = [(1 3 5 7 2 4 6)]
-(18)[ 7] = [(1 4 7 3 6 2 5)]
-(19)[ 7] = [(1 5 2 6 3 7 4)]
-(20)[ 7] = [(1 6 4 2 7 5 3)]
-(21)[ 7] = [(1 7 6 5 4 3 2)]
-
-Table
- 1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21
- 2  3  1  5 16  7 17 18  8 19 10 13 20 15 21  4  6  9 11 12 14
- 3  1  2 16  4 17  6  9 18 11 19 20 12 21 14  5  7  8 10 13 15
- 4  7 19  8 20 10 21  1 13 16 15  3 17  5 18  6  9 11 12 14  2
- 5 17 11 18 12 19 14  2 20  4 21  1  6 16  9  7  8 10 13 15  3
- 6 10 16 13 17 15 18 19  3 20  5  7 21  8  1  9 11 12 14  2  4
- 7 19  4 20  6 21  9 11  1 12 16 17 14 18  2  8 10 13 15  3  5
- 8 21 12  1 14 16  2  4 17  6 18 19  9 20 11 10 13 15  3  5  7
- 9 15 20  3 21  5  1 16  7 17  8 10 18 13 19 11 12 14  2  4  6
-10 16  6 17  9 18 11 12 19 14 20 21  2  1  4 13 15  3  5  7  8
-11  5 17  7 18  8 19 20 10 21 13 15  1  3 16 12 14  2  4  6  9
-12  8 21 10  1 13 16 17 15 18  3  5 19  7 20 14  2  4  6  9 11
-13 18 14 19  2 20  4  6 21  9  1 16 11 17 12 15  3  5  7  8 10
-14 13 18 15 19  3 20 21  5  1  7  8 16 10 17  2  4  6  9 11 12
-15 20  9 21 11  1 12 14 16  2 17 18  4 19  6  3  5  7  8 10 13
-16  6 10  9 13 11 15  3 12  5 14  2  7  4  8 17 18 19 20 21  1
-17 11  5 12  7 14  8 10  2 13  4  6 15  9  3 18 19 20 21  1 16
-18 14 13  2 15  4  3  5  6  7  9 11  8 12 10 19 20 21  1 16 17
-19  4  7  6  8  9 10 13 11 15 12 14  3  2  5 20 21  1 16 17 18
-20  9 15 11  3 12  5  7 14  8  2  4 10  6 13 21  1 16 17 18 19
-21 12  8 14 10  2 13 15  4  3  6  9  5 11  7  1 16 17 18 19 20
-
-|G/H| = 3 in S7
-is AbelianGroup
-
-Elements
-(1)[1] = []
-(2)[3] = [(2 3 5)(4 7 6)]
-(3)[3] = [(2 5 3)(4 6 7)]
-
-Table
-1 2 3
-2 3 1
-3 1 2
-
-Cosets
-(1)[1] = []
-      []
-      [(1 2 3 4 5 6 7)]
-      [(1 3 5 7 2 4 6)]
-      [(1 4 7 3 6 2 5)]
-      [(1 5 2 6 3 7 4)]
-      [(1 6 4 2 7 5 3)]
-      [(1 7 6 5 4 3 2)]
-(2)[3] = [(2 3 5)(4 7 6)]
-      [(2 3 5)(4 7 6)]
-      [(1 2 4)(3 6 5)]
-      [(1 3 7)(2 5 4)]
-      [(1 4 3)(2 6 7)]
-      [(1 5 6)(2 7 3)]
-      [(1 6 2)(4 5 7)]
-      [(1 7 5)(3 4 6)]
-(3)[3] = [(2 5 3)(4 6 7)]
-      [(2 5 3)(4 6 7)]
-      [(1 2 6)(4 7 5)]
-      [(1 3 4)(2 7 6)]
-      [(1 4 2)(3 5 6)]
-      [(1 5 7)(3 6 4)]
-      [(1 6 5)(2 3 7)]
-      [(1 7 3)(2 4 5)]
-# Example Time:291 ms
-
+# Group21 Time:18 ms
 ```
 
 ## Semidirect product using group action
 
 Another way for the previous example
 ```csharp
-var Cn = Group.Generate((z7, 1));
-var Cg = Group.Generate((z3, 1));
-var Cn_sp_Cg = Group.SemiDirectProd(Cn, Cg);
-Cn_sp_Cg.DisplayDetails("P");
-Cn_sp_Cg.DisplayAction();
-var Cn_sp_CgoNcan = Cn_sp_Cg.Over(Cn_sp_Cg.Ncan);
-Cn_sp_CgoNcan.DisplayDetails("P/N");
-Cn_sp_CgoNcan.DisplayCosets();
+GlobalStopWatch.Restart();
+var z7 = new Zn(7); // Trivial Z7
+var z3 = new Zn(3); // Trivial Z3
+var c7 = Group.Generate("C7", z7[1]);
+var c3 = Group.Generate("C3", z3[1]);
+var g21 = Group.SemiDirectProd(c7, c3);
+GlobalStopWatch.Stop();
 
-// Cn_sp_Cg.GNGi_it(); 
+var n = Group.Generate("N", g21, g21[1, 0]);
+DisplayGroup.HeadSdp(g21);
+DisplayGroup.Head(g21.Over(n));
+GlobalStopWatch.Show("Group21");
 ```
 will output
 ```dotnetcli
-|P = C7 ⋊  C3| = 21 in Z/7Z x Z/3Z
-is NotAbelianGroup
-Action
-g = 0, 𝛄(g)(x) = x
-g = 1, 𝛄(g)(x) = x^2
-g = 2, 𝛄(g)(x) = x^4
+|C7 x: C3| = 21
+Type        NonAbelianGroup
+BaseGroup    Z7 x Z3
+NormalGroup  |C7| = 7
+ActionGroup  |C3| = 3
 
-Elements
-( 1)[ 1] = (0, 0)
-( 2)[ 3] = (0, 1)
-( 3)[ 3] = (0, 2)
-( 4)[ 3] = (1, 1)
-( 5)[ 3] = (1, 2)
-( 6)[ 3] = (2, 1)
-( 7)[ 3] = (2, 2)
-( 8)[ 3] = (3, 1)
-( 9)[ 3] = (3, 2)
-(10)[ 3] = (4, 1)
-(11)[ 3] = (4, 2)
-(12)[ 3] = (5, 1)
-(13)[ 3] = (5, 2)
-(14)[ 3] = (6, 1)
-(15)[ 3] = (6, 2)
-(16)[ 7] = (1, 0)
-(17)[ 7] = (2, 0)
-(18)[ 7] = (3, 0)
-(19)[ 7] = (4, 0)
-(20)[ 7] = (5, 0)
-(21)[ 7] = (6, 0)
+Actions
+g=0 y(g):x->x
+g=1 y(g):x->x^2
+g=2 y(g):x->x^4
 
-Table
- 1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21
- 2  3  1  7 17 11 19 15 21  5 16  9 18 13 20  6 10 14  4  8 12
- 3  1  2 19 10 16  4 20 12 17  6 21 14 18  8 11  5 13  7 15  9
- 4  5 16  9 18 13 20  3  1  7 17 11 19 15 21  8 12  2  6 10 14
- 5 16  4 20 12 17  6 21 14 18  8  1  2 19 10 13  7 15  9  3 11
- 6  7 17 11 19 15 21  5 16  9 18 13 20  3  1 10 14  4  8 12  2
- 7 17  6 21 14 18  8  1  2 19 10 16  4 20 12 15  9  3 11  5 13
- 8  9 18 13 20  3  1  7 17 11 19 15 21  5 16 12  2  6 10 14  4
- 9 18  8  1  2 19 10 16  4 20 12 17  6 21 14  3 11  5 13  7 15
-10 11 19 15 21  5 16  9 18 13 20  3  1  7 17 14  4  8 12  2  6
-11 19 10 16  4 20 12 17  6 21 14 18  8  1  2  5 13  7 15  9  3
-12 13 20  3  1  7 17 11 19 15 21  5 16  9 18  2  6 10 14  4  8
-13 20 12 17  6 21 14 18  8  1  2 19 10 16  4  7 15  9  3 11  5
-14 15 21  5 16  9 18 13 20  3  1  7 17 11 19  4  8 12  2  6 10
-15 21 14 18  8  1  2 19 10 16  4 20 12 17  6  9  3 11  5 13  7
-16  4  5  6  7  8  9 10 11 12 13 14 15  2  3 17 18 19 20 21  1
-17  6  7  8  9 10 11 12 13 14 15  2  3  4  5 18 19 20 21  1 16
-18  8  9 10 11 12 13 14 15  2  3  4  5  6  7 19 20 21  1 16 17
-19 10 11 12 13 14 15  2  3  4  5  6  7  8  9 20 21  1 16 17 18
-20 12 13 14 15  2  3  4  5  6  7  8  9 10 11 21  1 16 17 18 19
-21 14 15  2  3  4  5  6  7  8  9 10 11 12 13  1 16 17 18 19 20
+|(C7 x: C3)/N| = 3
+Type        AbelianGroup
+BaseGroup   Z7 x Z3
+SuperGroup  |C7 x: C3| = 21
+NormalGroup |N| = 7
 
-Action
-g = 0, 𝛄(g)(x) = x
-g = 1, 𝛄(g)(x) = x^2
-g = 2, 𝛄(g)(x) = x^4
-
-|P/N| = 3 in Z/7Z x Z/3Z
-is AbelianGroup
-
-Elements
-(1)[1] = (0, 0)
-(2)[3] = (0, 1)
-(3)[3] = (0, 2)
-
-Table
-1 2 3
-2 3 1
-3 1 2
-
-Cosets
-(1)[1] = (0, 0)
-      (0, 0)
-      (1, 0)
-      (2, 0)
-      (3, 0)
-      (4, 0)
-      (5, 0)
-      (6, 0)
-(2)[3] = (0, 1)
-      (0, 1)
-      (1, 1)
-      (2, 1)
-      (3, 1)
-      (4, 1)
-      (5, 1)
-      (6, 1)
-(3)[3] = (0, 2)
-      (0, 2)
-      (1, 2)
-      (2, 2)
-      (3, 2)
-      (4, 2)
-      (5, 2)
-      (6, 2)
-
-# SemiDirectProduct Time:2 ms
-
+# Group21 Time:0 ms
 ```
-
-The commented method GNGi_it, will compares action group $\gamma(g)(n)$ and SemiDirectProduct internal operation gngi = (1,g).(n,1).(1,gi)
 
 ## References
 
