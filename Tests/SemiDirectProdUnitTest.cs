@@ -1,3 +1,4 @@
+using System;
 using FastGoat;
 using FastGoat.Gp;
 using FastGoat.UserGroup;
@@ -15,8 +16,8 @@ public class SemiDirectProdUnitTest
         var v = Group.Generate(z2Xz2[1, 0], z2Xz2[0, 1]);
         var g3 = Group.Generate(z3[1]);
 
-        Assert.Throws<GroupException>(() => { _ = Group.SemiDirectProd(v, g3); });
-        Assert.Throws<GroupException>(() => { _ = Group.SemiDirectProd(g3, g3); });
+        Assert.Throws<GroupException>(() => Group.SemiDirectProd(v, g3));
+        Assert.Throws<GroupException>(() => Group.SemiDirectProd(g3, g3));
     }
 
     [Fact]
@@ -24,10 +25,13 @@ public class SemiDirectProdUnitTest
     {
         var g2 = Group.Generate(new Zn(2)[1]);
         var g3 = Group.Generate(new Zn(3)[1]);
-        var sdp = Group.SemiDirectProd(g3, g2);
+        var g4 = Group.Generate(new Zn(4)[1]);
+        var d3 = Group.SemiDirectProd(g3, g2);
+        var d4 = Group.SemiDirectProd("D4", g4, g2);
 
         var s3 = new Sn(3);
         var g6 = Group.Generate(s3[(1, 2)], s3[(1, 2, 3)]);
-        Assert.True(sdp.IsIsomorphicTo(g6));
+        Assert.True(d3.IsIsomorphicTo(g6));
+        Assert.Equal("D4", d4.Name);
     }
 }
