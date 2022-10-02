@@ -17,30 +17,12 @@ public class ZnUnitTest
         var e2 = z5[3];
         var g = Product.Group(z4, z5);
 
-        Assert.Throws<GroupException>(() =>
-        {
-            var _ = new Zn(-5);
-        });
-        Assert.Throws<GroupException>(() =>
-        {
-            var _ = z5.Invert(e1);
-        });
-        Assert.Throws<GroupException>(() =>
-        {
-            var _ = z5.Op(e1, e2);
-        });
-        Assert.Throws<GroupException>(() =>
-        {
-            var _ = e1.CompareTo(e2);
-        });
-        Assert.Throws<GroupException>(() =>
-        {
-            var _ = z4.Times(e2, 3);
-        });
-        Assert.Throws<GroupException>(() =>
-        {
-            var _ = g[(1, 2), 2];
-        });
+        Assert.Throws<GroupException>(() => { _ = new Zn(-5); });
+        Assert.Throws<GroupException>(() => { _ = z5.Invert(e1); });
+        Assert.Throws<GroupException>(() => { _ = z5.Op(e1, e2); });
+        Assert.Throws<GroupException>(() => { _ = e1.CompareTo(e2); });
+        Assert.Throws<GroupException>(() => { _ = z4.Times(e2, 3); });
+        Assert.Throws<GroupException>(() => { _ = g[(1, 2), 2]; });
     }
 
     [Fact]

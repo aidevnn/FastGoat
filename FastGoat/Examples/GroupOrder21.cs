@@ -38,6 +38,7 @@ public static class GroupOrder21
         var g21 = Group.Generate(a, b);
         DisplayGroup.HeadElements(g21);
     }
+
     public static void SemiDirectProduct()
     {
         var c7 = Group.Generate("C7", new Zn(7)[1]);

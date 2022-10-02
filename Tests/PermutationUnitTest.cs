@@ -76,7 +76,7 @@ public class PermutationUnitTest
 
         IntExt.ComposePermutation(p1, p2, c);
         Assert.True(p4.SequenceEqual(c));
-        
+
         c = new[] { 0, 1, 2, 3 };
         IntExt.ApplyCycle(c, new[] { 2, 1, 0 });
         Assert.True(p2.SequenceEqual(c));
@@ -88,11 +88,11 @@ public class PermutationUnitTest
     [Fact]
     public void Test4AllPermutations()
     {
-        Assert.Equal(6,IntExt.GetPermutations(3).Length);
-        Assert.Equal(24,IntExt.GetPermutations(4).Length);
-        Assert.Equal(120,IntExt.GetPermutations(5).Length);
-        Assert.Equal(720,IntExt.GetPermutations(6).Length);
-        Assert.Equal(5040,IntExt.GetPermutations(7).Length);
-        Assert.Equal(40320,IntExt.GetPermutations(8).Length);
+        Assert.Equal(6, IntExt.GetPermutations(3).Length);
+        Assert.Equal(24, IntExt.GetPermutations(4).Length);
+        Assert.Equal(120, IntExt.GetPermutations(5).Length);
+        Assert.Equal(720, IntExt.GetPermutations(6).Length);
+        Assert.Equal(5040, IntExt.GetPermutations(7).Length);
+        Assert.Equal(40320, IntExt.GetPermutations(8).Length);
     }
 }

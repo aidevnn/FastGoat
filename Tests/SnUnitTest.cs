@@ -15,38 +15,14 @@ public class SnUnitTest
         var e1 = s3.Neutral();
         var s4 = new Sn(4);
         var e2 = s4.Neutral();
-        Assert.Throws<GroupException>(() =>
-        {
-            var _ = new Sn(-5);
-        });
-        Assert.Throws<GroupException>(() =>
-        {
-            var _ = s4.Invert(e1);
-        });
-        Assert.Throws<GroupException>(() =>
-        {
-            var _ = s3.Op(e1, e2);
-        });
-        Assert.Throws<GroupException>(() =>
-        {
-            var _ = e1.CompareTo(e2);
-        });
-        Assert.Throws<GroupException>(() =>
-        {
-            var _ = s3.Times(e2, 3);
-        });
-        Assert.Throws<GroupException>(() =>
-        {
-            var _ = s4[(4, 3, 4)];
-        });
-        Assert.Throws<GroupException>(() =>
-        {
-            var _ = s4[(2, 6)];
-        });
-        Assert.Throws<GroupException>(() =>
-        {
-            var _ = s4[(2, 1), 3];
-        });
+        Assert.Throws<GroupException>(() => { _ = new Sn(-5); });
+        Assert.Throws<GroupException>(() => { _ = s4.Invert(e1); });
+        Assert.Throws<GroupException>(() => { _ = s3.Op(e1, e2); });
+        Assert.Throws<GroupException>(() => { _ = e1.CompareTo(e2); });
+        Assert.Throws<GroupException>(() => { _ = s3.Times(e2, 3); });
+        Assert.Throws<GroupException>(() => { _ = s4[(4, 3, 4)]; });
+        Assert.Throws<GroupException>(() => { _ = s4[(2, 6)]; });
+        Assert.Throws<GroupException>(() => { _ = s4[(2, 1), 3]; });
         Assert.Throws<GroupException>(() =>
         {
             var _ = s4[((2, 1), (3, 4))];

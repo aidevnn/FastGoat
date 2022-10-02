@@ -68,10 +68,9 @@ public struct Perm : IElt<Perm>
     {
         return obj is Perm perm && Equals(perm);
     }
-    
+
     public static Perm operator *(Perm a, Perm b) => a.BaseGroup.Op(a, b);
     public static Perm operator ^(Perm a, int p) => a.BaseGroup.Times(a, p);
     public static bool operator ==(Perm a, Perm b) => a.Equals(b);
     public static bool operator !=(Perm a, Perm b) => !a.Equals(b);
-
 }
