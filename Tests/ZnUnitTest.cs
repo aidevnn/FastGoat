@@ -109,4 +109,16 @@ public class ZnUnitTest
         Assert.Equal(g3.Op(g3[(2, 3), 10], g3[(4, 7), 5]), g3[(1, 2), 3]);
         Assert.Equal(g3.Times(g3[(2, 3), 10], 4), g3[(3, 4), 4]);
     }
+
+    [Fact]
+    public void Test5InfixOperators()
+    {
+        var z6 = new Zn(6);
+        Assert.True(z6[4] == z6[10]);
+        Assert.True(z6[4] != z6[5]);
+        Assert.False(z6[4] != z6[10]);
+        Assert.False(z6[4] == z6[5]);
+        Assert.Equal(z6[2], z6[5] + z6[3]);
+        Assert.Equal(z6[2], z6[5] * 4);
+    }
 }

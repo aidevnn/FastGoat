@@ -92,4 +92,16 @@ public class SnUnitTest
         Assert.True(S6.SetEquals(IntExt.GetPermutations(6).Select(s6.CreateElement)));
         Assert.True(S7.SetEquals(IntExt.GetPermutations(7).Select(s7.CreateElement)));
     }
+
+    [Fact]
+    public void Test4InfixOperators()
+    {
+        var s3 = new Sn(3);
+        Assert.True(s3[(1, 2)] == s3[(2, 1)]);
+        Assert.True(s3[(1, 2)] != s3[(1, 3)]);
+        Assert.False(s3[(1, 2)] != s3[(2, 1)]);
+        Assert.False(s3[(1, 2)] == s3[(1, 3)]);
+        Assert.Equal(s3[(1, 2, 3)], s3[(1, 2)] * s3[(1, 3)]);
+        Assert.Equal(s3.Neutral(), s3[(1, 2, 3)] ^ 3);
+    }
 }
