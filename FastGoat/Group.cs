@@ -27,7 +27,7 @@ public static class Group
 
         var q = new Queue<T>();
         q.Enqueue(bg.Neutral());
-        HashSet<T> generatedElements = new() { bg.Neutral() };
+        HashSet<T> generatedElements = new HashSet<T>() { bg.Neutral() };
         while (q.Count != 0)
         {
             var e1 = q.Dequeue();
@@ -80,7 +80,7 @@ public static class Group
                 continue;
             }
 
-            var tmpCycles = new Dictionary<T, ReadOnlyDictionary<T, int>>(allCycles);
+            var tmpCycles = allCycles.Select(p => (p.Key, p.Value));
             allCycles.Clear();
             var done = false;
             foreach (var (e1, cycle1) in tmpCycles)
