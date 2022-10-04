@@ -2,9 +2,8 @@ namespace FastGoat.UserGroup;
 
 public readonly struct ZnInt : IElt<ZnInt>
 {
-    private Zn Zn { get; }
+    public Zn Zn { get; }
     public int K { get; }
-    private string Fmt { get; }
 
     public ZnInt(Zn zn, int k)
     {
@@ -14,8 +13,6 @@ public readonly struct ZnInt : IElt<ZnInt>
             K += zn.Mod;
 
         Hash = (K, zn.Hash).GetHashCode();
-        var digits = $"{zn.Mod - 1}".Length;
-        Fmt = $"{{0,{digits}}}";
     }
 
     public bool Equals(ZnInt other)
@@ -41,7 +38,7 @@ public readonly struct ZnInt : IElt<ZnInt>
 
     public override string ToString()
     {
-        return string.Format(Fmt, K);
+        return string.Format(Zn.Fmt, K);
     }
 
     public override bool Equals(object? obj)

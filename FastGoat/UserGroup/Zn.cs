@@ -6,6 +6,7 @@ public readonly struct Zn : IGroup<ZnInt>
 {
     public int Mod { get; }
     public string Name { get; }
+    public string Fmt { get; }
 
     public Zn(int mod)
     {
@@ -14,6 +15,8 @@ public readonly struct Zn : IGroup<ZnInt>
 
         Mod = mod;
         Name = $"Z{mod}";
+        var digits = $"{Mod - 1}".Length;
+        Fmt = $"{{0,{digits}}}";
     }
 
     public bool Equals(IGroup<ZnInt>? other)
@@ -30,7 +33,7 @@ public readonly struct Zn : IGroup<ZnInt>
 
     public ZnInt Invert(ZnInt e)
     {
-        if (!Equals(e.BaseGroup))
+        if (Mod != e.Zn.Mod)
             throw new GroupException(GroupExceptionType.BaseGroup);
 
         return new ZnInt(this, -e.K);
@@ -38,7 +41,7 @@ public readonly struct Zn : IGroup<ZnInt>
 
     public ZnInt Op(ZnInt e1, ZnInt e2)
     {
-        if (!Equals(e1.BaseGroup) || !Equals(e2.BaseGroup))
+        if (Mod != e1.Zn.Mod || Mod != e2.Zn.Mod)
             throw new GroupException(GroupExceptionType.BaseGroup);
 
         return new ZnInt(this, e1.K + e2.K);
