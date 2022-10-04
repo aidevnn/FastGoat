@@ -80,7 +80,7 @@ public static class Group
                 continue;
             }
 
-            var tmpCycles = allCycles.Select(p => (p.Key, p.Value));
+            var tmpCycles = allCycles.Select(p => (p.Key, p.Value)).ToArray();
             allCycles.Clear();
             var done = false;
             foreach (var (e1, cycle1) in tmpCycles)
