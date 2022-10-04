@@ -153,19 +153,22 @@ public static class Group
 
         cosets[g.Neutral()] = new ReadOnlyCollection<T>(setH.ToList());
         sets.Add(setH);
+        var xH = new HashSet<T>(setH.Count);
         foreach (var x in g)
         {
             if (x.Equals(g.Neutral()))
                 continue;
+
+            xH.Clear();
             var xi = g.Invert(x);
-            var xH = setH.Select(h => g.Op(x, h)).ToHashSet();
+            xH.UnionWith(setH.Select(h => g.Op(x, h)));
             if (xH.Any(xh => !setH.Contains(g.Op(xh, xi))))
                 throw new GroupException(GroupExceptionType.NotNormal);
 
             var x0 = xH.First();
             if (sets.All(set => !set.Contains(x0)))
             {
-                sets.Add(xH);
+                sets.Add(xH.ToHashSet());
                 cosets[x0] = new ReadOnlyCollection<T>(xH.ToList());
             }
         }
