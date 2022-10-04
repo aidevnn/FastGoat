@@ -113,4 +113,8 @@ NormalGroup |N| = 7
 ## References
 
 <b>Daniel Guin, Thomas Hausberger.</b> ALGÈBRE T1 Groupes, corps et théorie de Galois. 
+
 <b>Saunders MacLane, Garrett Birkhoff.<b> Algebra (3rd ed.). American Mathematical Society.
+
+[GAP2022](https://www.gap-system.org)
+The GAP Group, GAP -- Groups, Algorithms, and Programming, Version 4.12.0; 2022.
