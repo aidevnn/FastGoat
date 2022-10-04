@@ -21,7 +21,7 @@ public class SemiDirectProduct<T1, T2> : ConcreteGroup<Ep2<T1, T2>>
         N = n;
         var cg = G.Count();
         var cn = N.Count();
-        var pow = IntExt.Solve_x_pow_n_equal_one_mod_m(cn, cg);
+        var pow = IntExt.Solve_k_pow_m_equal_one_mod_n(cn, cg);
         if (pow == 0)
             throw new GroupException(GroupExceptionType.SemiDirectProductDontExist);
 

@@ -146,11 +146,20 @@ namespace FastGoat
             return a0;
         }
 
-        public static int Solve_x_pow_n_equal_one_mod_m(int m, int n)
+        // Saunders MacLane, Garrett Birkhoff. Algebra (3rd ed.) criteria
+        public static int Solve_k_pow_m_equal_one_mod_n(int n, int m)
         {
-            var seq = Enumerable.Range(2, m - 2);
-            var criteria = seq.Where(i => Gcd(i, m) == 1 && PowMod(i, n, m) == 1);
+            var seq = Enumerable.Range(2, n - 2);
+            var criteria = seq.Where(i => Gcd(i, n) == 1 && PowMod(i, m, n) == 1);
             return criteria.FirstOrDefault();
+        }
+
+        // Saunders MacLane, Garrett Birkhoff. Algebra (3rd ed.) criteria
+        public static List<int> SolveAll_k_pow_m_equal_one_mod_n(int n, int m)
+        {
+            var seq = Enumerable.Range(2, n - 2);
+            var criteria = seq.Where(i => Gcd(i, n) == 1 && PowMod(i, m, n) == 1);
+            return criteria.ToList();
         }
 
         public static int Lcm(int a, int b)
