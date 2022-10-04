@@ -107,7 +107,7 @@ public struct <#= gpk #> : IGroup<<#= epk #>> <#= whereTn #>
 <#
         }
 #>
-                return new(<#= Glue(ei, ", ") #>);
+                return new(this, <#= Glue(ei, ", ") #>);
         }
         }
 

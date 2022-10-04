@@ -40,7 +40,7 @@ public struct Gp2<T1, T2> : IGroup<Ep2<T1, T2>> where T1 : IElt<T1> where T2 : I
 
             var e1 = G1[us0[0]];
             var e2 = G2[us0[1]];
-            return new(e1, e2);
+            return new(this, e1, e2);
         }
     }
 
@@ -155,7 +155,7 @@ public struct Gp3<T1, T2, T3> : IGroup<Ep3<T1, T2, T3>> where T1 : IElt<T1> wher
             var e1 = G1[us0[0]];
             var e2 = G2[us0[1]];
             var e3 = G3[us0[2]];
-            return new(e1, e2, e3);
+            return new(this, e1, e2, e3);
         }
     }
 
@@ -283,7 +283,7 @@ public struct Gp4<T1, T2, T3, T4> : IGroup<Ep4<T1, T2, T3, T4>> where T1 : IElt<
             var e2 = G2[us0[1]];
             var e3 = G3[us0[2]];
             var e4 = G4[us0[3]];
-            return new(e1, e2, e3, e4);
+            return new(this, e1, e2, e3, e4);
         }
     }
 
@@ -425,7 +425,7 @@ public struct Gp5<T1, T2, T3, T4, T5> : IGroup<Ep5<T1, T2, T3, T4, T5>> where T1
             var e3 = G3[us0[2]];
             var e4 = G4[us0[3]];
             var e5 = G5[us0[4]];
-            return new(e1, e2, e3, e4, e5);
+            return new(this, e1, e2, e3, e4, e5);
         }
     }
 
@@ -579,7 +579,7 @@ public struct Gp6<T1, T2, T3, T4, T5, T6> : IGroup<Ep6<T1, T2, T3, T4, T5, T6>> 
             var e4 = G4[us0[3]];
             var e5 = G5[us0[4]];
             var e6 = G6[us0[5]];
-            return new(e1, e2, e3, e4, e5, e6);
+            return new(this, e1, e2, e3, e4, e5, e6);
         }
     }
 
