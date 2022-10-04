@@ -61,6 +61,13 @@ public class SemiDirectProduct<T1, T2> : ConcreteGroup<Ep2<T1, T2>>
     {
     }
 
+    public Ep2<T1, T2> Act(T1 en, T2 eg)
+    {
+        if (!N.Contains(en) || !G.Contains(eg))
+            throw new GroupException(GroupExceptionType.BaseGroup);
+        
+        return Product.Elt(Actions[eg](en), eg);
+    }
     public override Ep2<T1, T2> Invert(Ep2<T1, T2> e)
     {
         var gi = G.Invert(e.E2);
