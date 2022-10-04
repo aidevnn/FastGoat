@@ -13,7 +13,7 @@ public static class AbelianInvariantsFactors
 
         var g0 = g;
         Stack<int> facts = new Stack<int>();
-        while (g0.Count()!=1)
+        while (g0.Count() != 1)
         {
             var p = g0.ElementsOrders.OrderByDescending(e => e.Value).ThenBy(e => e.Key).First();
             var h = Group.Generate(g0, p.Key);
@@ -23,12 +23,12 @@ public static class AbelianInvariantsFactors
 
         return facts;
     }
-    
+
     public static void InvariantFactors294()
     {
         var c14 = new Cn(14);
         var c21 = new Cn(21);
-        
+
         var bg = Product.Group(c14, c21);
         var g = Group.Create(bg.Name, bg);
         var decomposition = Reduce(g);
@@ -39,7 +39,7 @@ public static class AbelianInvariantsFactors
     {
         var c20 = new Cn(20);
         var c30 = new Cn(30);
-        
+
         var bg = Product.Group(c20, c30);
         var g = Group.Create(bg.Name, bg);
         var decomposition = Reduce(g);
@@ -51,7 +51,7 @@ public static class AbelianInvariantsFactors
         var c8 = new Cn(8);
         var c18 = new Cn(18);
         var c30 = new Cn(30);
-        
+
         var bg = Product.Group(c8, c18, c30);
         var g = Group.Create(bg.Name, bg);
         var decomposition = Reduce(g);

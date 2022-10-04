@@ -14,10 +14,10 @@ public class ExamplesUnitTest
     {
         GroupOrder21.Zn21();
         GroupOrder21.ZnDirectProduct();
-        
+
         GroupOrder21.Symmetric7();
         GroupOrder21.Symmetric7Fast();
-        
+
         GroupOrder21.SemiDirectProduct();
         Assert.True(true);
     }
