@@ -99,4 +99,44 @@ public class MorphismUnitTest
         Assert.Equal(4320, hMap.Count);
         Assert.Equal(12, hMap.Values.Distinct().Count());
     }
+
+    [Fact]
+    public void Test8Isomorphism()
+    {
+        var s4 = new Sn(4);
+        var g1 = Group.SemiDirectProd(new Cn(4), new Cn(2));
+        var h1 = Group.Generate(s4[(1, 2), (3, 4)], s4[(1, 2, 3, 4)]);
+        var pMap1 = Group.PartialMap((g1[1, 0], h1[(1, 2, 3, 4)]), (g1[0, 1], h1[(1, 2), (3, 4)]));
+        var hMap1 = Group.IsomorphismMap(g1, h1, pMap1);
+        Assert.Equal(8, hMap1.Count);
+        Assert.Equal(8, hMap1.Values.Distinct().Count());
+
+        var s5 = new Sn(5);
+        var c = s5[(1, 2), (3, 4, 5)];
+        var g2 = Group.Generate(c);
+        var h2 = Group.Create(Product.Group(new Cn(2), new Cn(3)));
+        var pMap2 = Group.PartialMap((g2[(1, 2)], h2[1, 0]), (g2[(3, 4, 5)], h2[0, 1]));
+        var hMap2 = Group.IsomorphismMap(g2, h2, pMap2);
+        Assert.Equal(6, hMap2.Count);
+        Assert.Equal(6, hMap2.Values.Distinct().Count());
+    }
+
+    [Fact]
+    public void Test9Automorphism()
+    {
+        var s7 = new Sn(7);
+        var a = s7[(1, 2, 3, 4, 5, 6, 7)];
+        var b = s7[(1, 3, 5, 7, 2, 4, 6)];
+        var g = Group.Generate(a);
+        var pMap1 = Group.PartialMap((a, b));
+        var hMap1 = Group.AutomorphismMap(g, pMap1);
+        Assert.Equal(7, hMap1.Count);
+        Assert.Equal(7, hMap1.Values.Distinct().Count());
+
+        var h = Group.Generate(s7[(1, 2, 3)], s7[(4, 5, 6)]);
+        var pMap2 = Group.PartialMap((s7[(1, 2, 3)], s7[(4, 5, 6)]), (s7[(4, 6, 5)], s7[(1, 2, 3)]));
+        var hMap2 = Group.AutomorphismMap(h, pMap2);
+        Assert.Equal(9, hMap2.Count);
+        Assert.Equal(9, hMap2.Values.Distinct().Count());
+    }
 }
