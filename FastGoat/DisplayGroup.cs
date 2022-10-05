@@ -184,7 +184,7 @@ public static class DisplayGroup
         Console.WriteLine();
         Console.WriteLine("Actions");
 
-        var ordered = p.G.ElementsOrders.Keys.OrderBy(a => p.G.ElementsOrders[a]).ThenAscending().ToArray();
+        var ordered = p.G.ElementsOrders.Keys.Ascending().ThenBy(a => p.G.ElementsOrders[a]).ToArray();
         foreach (var g in ordered)
         {
             Console.WriteLine("g={0} y(g):{1}", g, p.ActionsStr[g]);
