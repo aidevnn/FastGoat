@@ -83,9 +83,20 @@ public class MorphismUnitTest
     public void Test7G600()
     {
         var g = Group.Create(Product.Group(new Cn(20), new Cn(30)));
-        var pMap = Group.PartialMap((g[1, 1], g[0, 0]), (g[2, 3], g[2, 3]));
+        var pMap = Group.PartialMap((g[1, 1], g[0, 0]), (g[3, 4], g[2, 3]));
         var hMap = Group.EndomorphismMap(g, pMap);
         Assert.Equal(600, hMap.Count);
         Assert.Equal(10, hMap.Values.Distinct().Count());
+    }
+
+    [Fact]
+    public void Test7G4320()
+    {
+        var g = Group.Create(Product.Group(new Cn(8), new Cn(18), new Cn(30)));
+        var h = Group.Create(Product.Group(new Cn(2), new Cn(6)));
+        var pMap = Group.PartialMap((g[1, 1, 1], h[0, 0]), (g[5, 1, 6], h[0, 1]), (g[1, 10, 1], h[1, 0]));
+        var hMap = Group.HomomorphismMap(g, h, pMap);
+        Assert.Equal(4320, hMap.Count);
+        Assert.Equal(12, hMap.Values.Distinct().Count());
     }
 }
