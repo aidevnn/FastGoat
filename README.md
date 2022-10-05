@@ -116,5 +116,5 @@ NormalGroup |N| = 7
 
 <b>Saunders MacLane, Garrett Birkhoff.</b> Algebra (3rd ed.). American Mathematical Society. <i>Chapter XII.2 Groups extensions.</i>
 
-[GAP2021](https://www.gap-system.org)
-<b>The GAP Group.</b> GAP -- Groups, Algorithms, and Programming. <i>Version 4.11.1; 2021.</i>
+[GAP2022](https://www.gap-system.org)
+<b>The GAP Group.</b> GAP -- Groups, Algorithms, and Programming. <i>Version 4.12.0; 2022.</i>
