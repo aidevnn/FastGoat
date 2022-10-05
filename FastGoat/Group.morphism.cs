@@ -1,5 +1,6 @@
 using FastGoat.Examples;
 using FastGoat.Gp;
+using FastGoat.UserGroup;
 
 namespace FastGoat;
 
@@ -72,5 +73,10 @@ public static partial class Group
         where T : struct, IElt<T>
     {
         return IsomorphismMap(g, g, pMap);
+    }
+
+    public static AutomorphismGroup<T> Aut<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
+    {
+        return new AutomorphismGroup<T>(g);
     }
 }
