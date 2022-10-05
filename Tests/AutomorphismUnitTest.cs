@@ -1,6 +1,7 @@
 using System.Linq;
 using Xunit;
 using FastGoat;
+using FastGoat.Gp;
 using FastGoat.UserGroup;
 
 namespace Tests;
@@ -73,5 +74,16 @@ public class AutomorphismUnitTest
         var y2 = gbAut[(S3[(1, 2)], S3[(1, 3)]), (S3[(1, 3)], S3[(1, 2)])];
         var AutS3 = Group.Generate(y1, y2);
         Assert.True(AutS3.IsIsomorphicTo(S3));
+    }
+
+    [Fact]
+    public void Test5Un()
+    {
+        Assert.Single(new Un(2));
+        Assert.Equal(2, new Un(3).Count());
+        Assert.True(new Un(4).IsIsomorphicTo(new Un(3)));
+        Assert.True(new Un(5).IsIsomorphicTo(new Cn(4)));
+        var klein = Group.Create(Product.Group(new Cn(2), new Cn(2)));
+        Assert.True(new Un(8).IsIsomorphicTo(klein));
     }
 }
