@@ -109,6 +109,12 @@ public static partial class Product
     {
         return new(e1, e2);
     }
+
+    public static ConcreteGroup<Ep2<T1, T2>> Generate<T1, T2>(IGroup<T1> g1, IGroup<T2> g2)
+        where T1 : IElt<T1> where T2 : IElt<T2>
+    {
+        return new(Group(g1, g2));
+    }
 }
 
 public struct Gp3<T1, T2, T3> : IGroup<Ep3<T1, T2, T3>> where T1 : IElt<T1> where T2 : IElt<T2> where T3 : IElt<T3>
@@ -227,6 +233,12 @@ public static partial class Product
         where T1 : IElt<T1> where T2 : IElt<T2> where T3 : IElt<T3>
     {
         return new(e1, e2, e3);
+    }
+
+    public static ConcreteGroup<Ep3<T1, T2, T3>> Generate<T1, T2, T3>(IGroup<T1> g1, IGroup<T2> g2, IGroup<T3> g3)
+        where T1 : IElt<T1> where T2 : IElt<T2> where T3 : IElt<T3>
+    {
+        return new(Group(g1, g2, g3));
     }
 }
 
@@ -362,6 +374,13 @@ public static partial class Product
         where T1 : IElt<T1> where T2 : IElt<T2> where T3 : IElt<T3> where T4 : IElt<T4>
     {
         return new(e1, e2, e3, e4);
+    }
+
+    public static ConcreteGroup<Ep4<T1, T2, T3, T4>> Generate<T1, T2, T3, T4>(IGroup<T1> g1, IGroup<T2> g2,
+        IGroup<T3> g3, IGroup<T4> g4)
+        where T1 : IElt<T1> where T2 : IElt<T2> where T3 : IElt<T3> where T4 : IElt<T4>
+    {
+        return new(Group(g1, g2, g3, g4));
     }
 }
 
@@ -510,6 +529,13 @@ public static partial class Product
         where T1 : IElt<T1> where T2 : IElt<T2> where T3 : IElt<T3> where T4 : IElt<T4> where T5 : IElt<T5>
     {
         return new(e1, e2, e3, e4, e5);
+    }
+
+    public static ConcreteGroup<Ep5<T1, T2, T3, T4, T5>> Generate<T1, T2, T3, T4, T5>(IGroup<T1> g1, IGroup<T2> g2,
+        IGroup<T3> g3, IGroup<T4> g4, IGroup<T5> g5)
+        where T1 : IElt<T1> where T2 : IElt<T2> where T3 : IElt<T3> where T4 : IElt<T4> where T5 : IElt<T5>
+    {
+        return new(Group(g1, g2, g3, g4, g5));
     }
 }
 
@@ -679,5 +705,17 @@ public static partial class Product
         where T6 : IElt<T6>
     {
         return new(e1, e2, e3, e4, e5, e6);
+    }
+
+    public static ConcreteGroup<Ep6<T1, T2, T3, T4, T5, T6>> Generate<T1, T2, T3, T4, T5, T6>(IGroup<T1> g1,
+        IGroup<T2> g2, IGroup<T3> g3, IGroup<T4> g4, IGroup<T5> g5, IGroup<T6> g6)
+        where T1 : IElt<T1>
+        where T2 : IElt<T2>
+        where T3 : IElt<T3>
+        where T4 : IElt<T4>
+        where T5 : IElt<T5>
+        where T6 : IElt<T6>
+    {
+        return new(Group(g1, g2, g3, g4, g5, g6));
     }
 }

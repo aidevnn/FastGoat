@@ -196,6 +196,12 @@ public static partial class Product
         return new(<#= Glue(ei, ", ") #>);
     }
 
+    public static ConcreteGroup<<#= epk #>> Generate<<#= Glue(Ti, ", ") #>>(<#= Glue(igtk, ", ") #>)
+        <#= whereTn #>
+    {
+        return new(Group(<#= Glue(gi, ", ") #>));
+    }
+
 }
 
 <#
