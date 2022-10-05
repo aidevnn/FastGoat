@@ -2,7 +2,7 @@ using System.Collections.ObjectModel;
 
 namespace FastGoat;
 
-public static class Group
+public static partial class Group
 {
     public static T Times<T>(this IGroup<T> g, T e, int p) where T : struct, IElt<T>
     {
