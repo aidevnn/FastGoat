@@ -62,4 +62,16 @@ public class AutomorphismUnitTest
 
         Assert.Throws<GroupException>(() => gbAut[(c5[1], c5[2]), (c5[2], c5[3])]);
     }
+
+    [Fact]
+    public void Test4AutS3()
+    {
+        var s3 = new Sn(3);
+        var S3 = Group.Generate(s3[(1, 2)], s3[(1, 3)]);
+        var gbAut = Group.Aut(S3);
+        var y1 = gbAut[(S3[(1, 2)], S3[(2, 3)]), (S3[(1, 3)], S3[(1, 2)])];
+        var y2 = gbAut[(S3[(1, 2)], S3[(1, 3)]), (S3[(1, 3)], S3[(1, 2)])];
+        var AutS3 = Group.Generate(y1, y2);
+        Assert.True(AutS3.IsIsomorphicTo(S3));
+    }
 }
