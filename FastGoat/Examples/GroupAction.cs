@@ -52,6 +52,8 @@ public static class GroupAction
             .Select(pm => Group.HomomorphismMap(c2c4, autC3C3, pm))
             .First(map => map.Count != 0);
 
+        Console.WriteLine("(C3 x C3) :y (C2 x C4)");
+        Console.WriteLine("y = Hom(C2 x C4, Aut(C3 x C3))");
         foreach (var kp in homC2C4ToAutC3C3)
         {
             Console.WriteLine("g={0} y(g) = [{1}]", kp.Key, kp.Value);
@@ -80,7 +82,7 @@ public static class GroupAction
         };
 
         var group = c3c3.SelectMany(n => c2c4.Select(g => Product.Elt(n, g))).ToHashSet();
-        Console.WriteLine("Group elements : {0}", group.Count);
+        bool isabelian = true;
         foreach (var a in group)
         {
             var ai = invert(a);
@@ -91,9 +93,19 @@ public static class GroupAction
                 var aib = op(ai, b);
                 if(!group.Contains(aib))
                     throw new Exception();
+
+                if (isabelian)
+                {
+                    var bai = op(b, ai);
+                    isabelian &= aib.Equals(bai);
+                }
+                
             }
         }
 
+        Console.WriteLine();
         Console.WriteLine("Test Group Passed with success !!!");
+        Console.WriteLine("Group elements : {0}", group.Count);
+        Console.WriteLine(isabelian ? GroupType.AbelianGroup : GroupType.NonAbelianGroup);
     }
 }
