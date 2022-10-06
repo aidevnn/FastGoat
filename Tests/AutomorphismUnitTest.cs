@@ -98,4 +98,25 @@ public class AutomorphismUnitTest
             Assert.True(un.IsIsomorphicTo(autCn));
         }
     }
+    [Fact]
+    public void Test6AutCmXCn()
+    {
+        int N = 10;
+        for (int m = 2; m < N; ++m)
+        {
+            var um = new Un(m);
+            var cm = new Cn(m);
+            for (int n = 2; n < N; ++n)
+            {
+                if (IntExt.Gcd(m, n) != 1)
+                    continue;
+
+                var un = new Un(n);
+                var cn = new Cn(n);
+                var gmn = Product.Group(cm, cn);
+                var autCmXCn = Group.Aut(gmn[1, 0], gmn[0, 1]);
+                Assert.Equal(um.Count()*un.Count(),autCmXCn.Count());
+            }
+        }
+    }
 }
