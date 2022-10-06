@@ -81,30 +81,22 @@ public static class GroupAction
             return Product.Elt(c3c3.Op(n1, yg1n2), c2c4.Op(g1, g2));
         };
 
-        var group = c3c3.SelectMany(n => c2c4.Select(g => Product.Elt(n, g))).ToHashSet();
-        var setInvert = new HashSet<Ep2<Ep2<ZnInt, ZnInt>, Ep2<ZnInt, ZnInt>>>();
-        var setProd = new HashSet<Ep2<Ep2<ZnInt, ZnInt>, Ep2<ZnInt, ZnInt>>>();
-        
-        var cayleyTable = new Ep2<Ep2<ZnInt, ZnInt>, Ep2<ZnInt, ZnInt>>[72, 72];
+        var group = Product.Group(c3c3, c2c4).ToHashSet();
+        var cayleyTable = new Ep2<Ep2<ZnInt, ZnInt>, Ep2<ZnInt, ZnInt>>[group.Count, group.Count];
         bool isabelian = true;
         int i = 0;
         foreach (var a in group)
         {
-            var ai = invert(a);
-            setInvert.Add(ai);
-            List<Ep2<Ep2<ZnInt, ZnInt>, Ep2<ZnInt, ZnInt>>> row = new();
             int j = 0;
             foreach (var b in group)
             {
-                var aib = op(ai, b);
-                setProd.Add(aib);
+                var ab = op(a, b);
                 if (isabelian)
                 {
-                    var bai = op(b, ai);
-                    isabelian &= aib.Equals(bai);
+                    var ba = op(b, a);
+                    isabelian &= ab.Equals(ba);
                 }
 
-                var ab = op(a, b);
                 cayleyTable[i, j] = ab;
                 ++j;
             }
@@ -112,7 +104,7 @@ public static class GroupAction
             ++i;
         }
 
-        var lt = Enumerable.Range(0, 72).ToArray();
+        var lt = Enumerable.Range(0, group.Count).ToArray();
         var cayleyRows = lt.Select(i0 => lt.Select(j0 => cayleyTable[i0, j0]).ToHashSet()).All(group.SetEquals);
         var cayleyCols = lt.Select(i0 => lt.Select(j0 => cayleyTable[j0, i0]).ToHashSet()).All(group.SetEquals);
 
