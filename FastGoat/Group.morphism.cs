@@ -12,6 +12,7 @@ public static partial class Group
     {
         return elements.ToDictionary(p => p.Item1, p => p.Item2);
     }
+
     public static Dictionary<T1, T2> HomomorphismMap<T1, T2>(ConcreteGroup<T1> g, ConcreteGroup<T2> h,
         Dictionary<T1, T2> pMap)
         where T1 : struct, IElt<T1>
@@ -66,7 +67,11 @@ public static partial class Group
         if (pMap.Any(kp => g.ElementsOrders[kp.Key] != h.ElementsOrders[kp.Value]))
             return new();
 
-        return HomomorphismMap(g, h, pMap);
+        var map = HomomorphismMap(g, h, pMap);
+        if (map.Any(kp => g.ElementsOrders[kp.Key] != h.ElementsOrders[kp.Value]))
+            return new();
+
+        return map;
     }
 
     public static Dictionary<T, T> AutomorphismMap<T>(ConcreteGroup<T> g, Dictionary<T, T> pMap)
@@ -78,5 +83,50 @@ public static partial class Group
     public static AutomorphismGroup<T> Aut<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
     {
         return new AutomorphismGroup<T>(g);
+    }
+
+    public static ConcreteGroup<Automorphism<T>> Aut<T>(string name, T e, params T[] others) where T : struct, IElt<T>
+    {
+        var g = Generate(name, e, others);
+        var bgAut = Aut(g);
+        var gens = others.Prepend(e).Distinct().ToArray();
+        var gByOrders = g.ElementsOrders.GroupBy(kp => kp.Value)
+            .ToDictionary(a => a.Key, a => a.Select(kp => kp.Key).ToArray());
+        var gensPossibles = gens.ToDictionary(a => a, a => gByOrders[g.ElementsOrders[a]]);
+        var allTuples = gensPossibles.Select(kp => kp.Value.Select(a => (kp.Key, a))).ToArray();
+        List<Dictionary<T, T>> allMaps = new();
+        foreach (var tuples in allTuples)
+        {
+            if (allMaps.Count == 0)
+            {
+                allMaps = tuples.Select(t => new Dictionary<T, T>() { [t.Key] = t.a }).ToList();
+                continue;
+            }
+
+            List<Dictionary<T, T>> tmpMaps = new();
+            foreach (var t in tuples)
+            {
+                foreach (var map in allMaps)
+                {
+                    var map0 = new Dictionary<T, T>(map) { [t.Key] = t.a };
+                    tmpMaps.Add(map0);
+                }
+            }
+
+            allMaps.Clear();
+            allMaps.AddRange(tmpMaps);
+        }
+
+        var allAuts = allMaps.Select(pMap => AutomorphismMap(g, pMap)).Where(map => map.Count == g.Count())
+            .Select(map => new Automorphism<T>(bgAut, map))
+            .ToHashSet();
+
+        var autG = Generate($"Aut[{name}]", allAuts.First(), allAuts.Skip(1).ToArray());
+        return autG;
+    }
+
+    public static ConcreteGroup<Automorphism<T>> Aut<T>(T e, params T[] others) where T : struct, IElt<T>
+    {
+        return Aut("G", e, others);
     }
 }
