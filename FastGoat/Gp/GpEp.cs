@@ -47,6 +47,15 @@ public struct Gp2<T1, T2> : IGroup<Ep2<T1, T2>> where T1 : IElt<T1> where T2 : I
     public override int GetHashCode() => Hash;
     public override string ToString() => Name;
 
+    public IEnumerable<Ep2<T1, T2>> GetGenerators()
+    {
+        foreach (var e in G1.GetGenerators())
+            yield return new Ep2<T1, T2>(this, e, G2.Neutral());
+
+        foreach (var e in G2.GetGenerators())
+            yield return new Ep2<T1, T2>(this, G1.Neutral(), e);
+    }
+
     public IEnumerable<Ep2<T1, T2>> GetElements()
     {
         foreach (var e1 in G1)
@@ -167,6 +176,18 @@ public struct Gp3<T1, T2, T3> : IGroup<Ep3<T1, T2, T3>> where T1 : IElt<T1> wher
 
     public override int GetHashCode() => Hash;
     public override string ToString() => Name;
+
+    public IEnumerable<Ep3<T1, T2, T3>> GetGenerators()
+    {
+        foreach (var e in G1.GetGenerators())
+            yield return new Ep3<T1, T2, T3>(this, e, G2.Neutral(), G3.Neutral());
+
+        foreach (var e in G2.GetGenerators())
+            yield return new Ep3<T1, T2, T3>(this, G1.Neutral(), e, G3.Neutral());
+
+        foreach (var e in G3.GetGenerators())
+            yield return new Ep3<T1, T2, T3>(this, G1.Neutral(), G2.Neutral(), e);
+    }
 
     public IEnumerable<Ep3<T1, T2, T3>> GetElements()
     {
@@ -301,6 +322,21 @@ public struct Gp4<T1, T2, T3, T4> : IGroup<Ep4<T1, T2, T3, T4>> where T1 : IElt<
 
     public override int GetHashCode() => Hash;
     public override string ToString() => Name;
+
+    public IEnumerable<Ep4<T1, T2, T3, T4>> GetGenerators()
+    {
+        foreach (var e in G1.GetGenerators())
+            yield return new Ep4<T1, T2, T3, T4>(this, e, G2.Neutral(), G3.Neutral(), G4.Neutral());
+
+        foreach (var e in G2.GetGenerators())
+            yield return new Ep4<T1, T2, T3, T4>(this, G1.Neutral(), e, G3.Neutral(), G4.Neutral());
+
+        foreach (var e in G3.GetGenerators())
+            yield return new Ep4<T1, T2, T3, T4>(this, G1.Neutral(), G2.Neutral(), e, G4.Neutral());
+
+        foreach (var e in G4.GetGenerators())
+            yield return new Ep4<T1, T2, T3, T4>(this, G1.Neutral(), G2.Neutral(), G3.Neutral(), e);
+    }
 
     public IEnumerable<Ep4<T1, T2, T3, T4>> GetElements()
     {
@@ -450,6 +486,24 @@ public struct Gp5<T1, T2, T3, T4, T5> : IGroup<Ep5<T1, T2, T3, T4, T5>> where T1
 
     public override int GetHashCode() => Hash;
     public override string ToString() => Name;
+
+    public IEnumerable<Ep5<T1, T2, T3, T4, T5>> GetGenerators()
+    {
+        foreach (var e in G1.GetGenerators())
+            yield return new Ep5<T1, T2, T3, T4, T5>(this, e, G2.Neutral(), G3.Neutral(), G4.Neutral(), G5.Neutral());
+
+        foreach (var e in G2.GetGenerators())
+            yield return new Ep5<T1, T2, T3, T4, T5>(this, G1.Neutral(), e, G3.Neutral(), G4.Neutral(), G5.Neutral());
+
+        foreach (var e in G3.GetGenerators())
+            yield return new Ep5<T1, T2, T3, T4, T5>(this, G1.Neutral(), G2.Neutral(), e, G4.Neutral(), G5.Neutral());
+
+        foreach (var e in G4.GetGenerators())
+            yield return new Ep5<T1, T2, T3, T4, T5>(this, G1.Neutral(), G2.Neutral(), G3.Neutral(), e, G5.Neutral());
+
+        foreach (var e in G5.GetGenerators())
+            yield return new Ep5<T1, T2, T3, T4, T5>(this, G1.Neutral(), G2.Neutral(), G3.Neutral(), G4.Neutral(), e);
+    }
 
     public IEnumerable<Ep5<T1, T2, T3, T4, T5>> GetElements()
     {
@@ -611,6 +665,33 @@ public struct Gp6<T1, T2, T3, T4, T5, T6> : IGroup<Ep6<T1, T2, T3, T4, T5, T6>> 
 
     public override int GetHashCode() => Hash;
     public override string ToString() => Name;
+
+    public IEnumerable<Ep6<T1, T2, T3, T4, T5, T6>> GetGenerators()
+    {
+        foreach (var e in G1.GetGenerators())
+            yield return new Ep6<T1, T2, T3, T4, T5, T6>(this, e, G2.Neutral(), G3.Neutral(), G4.Neutral(),
+                G5.Neutral(), G6.Neutral());
+
+        foreach (var e in G2.GetGenerators())
+            yield return new Ep6<T1, T2, T3, T4, T5, T6>(this, G1.Neutral(), e, G3.Neutral(), G4.Neutral(),
+                G5.Neutral(), G6.Neutral());
+
+        foreach (var e in G3.GetGenerators())
+            yield return new Ep6<T1, T2, T3, T4, T5, T6>(this, G1.Neutral(), G2.Neutral(), e, G4.Neutral(),
+                G5.Neutral(), G6.Neutral());
+
+        foreach (var e in G4.GetGenerators())
+            yield return new Ep6<T1, T2, T3, T4, T5, T6>(this, G1.Neutral(), G2.Neutral(), G3.Neutral(), e,
+                G5.Neutral(), G6.Neutral());
+
+        foreach (var e in G5.GetGenerators())
+            yield return new Ep6<T1, T2, T3, T4, T5, T6>(this, G1.Neutral(), G2.Neutral(), G3.Neutral(), G4.Neutral(),
+                e, G6.Neutral());
+
+        foreach (var e in G6.GetGenerators())
+            yield return new Ep6<T1, T2, T3, T4, T5, T6>(this, G1.Neutral(), G2.Neutral(), G3.Neutral(), G4.Neutral(),
+                G5.Neutral(), e);
+    }
 
     public IEnumerable<Ep6<T1, T2, T3, T4, T5, T6>> GetElements()
     {

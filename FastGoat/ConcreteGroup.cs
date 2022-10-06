@@ -84,6 +84,14 @@ public class ConcreteGroup<T> : IConcreteGroup<T> where T : struct, IElt<T>
 
     public int Hash { get; }
 
+    public IEnumerable<T> GetGenerators()
+    {
+        if (LongestCycles.Count == 1)
+            yield return LongestCycles.First().Key;
+        
+        throw new GroupException(GroupExceptionType.GroupDef);
+    }
+
     public IEnumerable<T> GetElements()
     {
         return Elements;

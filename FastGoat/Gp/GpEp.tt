@@ -45,6 +45,10 @@ namespace FastGoat.Gp;
         var hshei = l.Select(i => $"{ei[i]}.Hash");
         var gpkbg = l.Select(i => $"{ei[i]}.BaseGroup");
         var compi = l.Select(i => $"other.{Ei[i]}");
+
+        var eli = (int i, int j) => i != j ? $"{Gi[j]}.Neutral()" : "e";
+        var canfor = l.Select(i => $"foreach(var e in {Gi[i]}.GetGenerators())").ToArray();
+        var cantpl = l.Select(i => Glue(l.Select(j => eli(i, j)), ", ")).Select(s => $"new {epk}(this, {s});").ToArray();
 #>
 
 public struct <#= gpk #> : IGroup<<#= epk #>> <#= whereTn #>
@@ -113,6 +117,19 @@ public struct <#= gpk #> : IGroup<<#= epk #>> <#= whereTn #>
 
         public override int GetHashCode() => Hash;
         public override string ToString() => Name;
+        public IEnumerable<<#= epk #>> GetGenerators()
+        {
+<#
+        for (int i = 0; i < k; ++i)
+        {
+#>
+                <#= canfor[i] #>
+                        yield return <#= cantpl[i] #>
+
+<#
+        }
+#>
+        }
         public IEnumerable<<#= epk #>> GetElements()
         {
                <#

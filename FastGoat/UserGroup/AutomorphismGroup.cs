@@ -13,6 +13,11 @@ public class AutomorphismGroup<T> : IGroup<Automorphism<T>> where T : struct, IE
         Hash = (g.Hash, "Aut").GetHashCode();
     }
 
+    public IEnumerable<Automorphism<T>> GetGenerators()
+    {
+        throw new GroupException(GroupExceptionType.GroupDef);
+    }
+
     public IEnumerable<Automorphism<T>> GetElements()
     {
         yield return Neutral();

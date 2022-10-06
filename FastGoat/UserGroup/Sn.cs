@@ -26,6 +26,12 @@ public struct Sn : IGroup<Perm>
         Name = $"S{N}";
     }
 
+    public IEnumerable<Perm> GetGenerators()
+    {
+        for (int i = 1; i < N; ++i)
+            yield return this[(i, i + 1)]; // Coxeter generators, other generators are also interesting to add
+
+    }
     public IEnumerable<Perm> GetElements()
     {
         yield return new Perm(this);

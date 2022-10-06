@@ -63,6 +63,10 @@ public readonly struct Zn : IGroup<ZnInt>
         }
     }
 
+    public IEnumerable<ZnInt> GetGenerators()
+    {
+        yield return new ZnInt(this, 1);
+    }
     public IEnumerable<ZnInt> GetElements()
     {
         yield return Neutral();
