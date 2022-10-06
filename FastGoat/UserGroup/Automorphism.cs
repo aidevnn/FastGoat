@@ -7,26 +7,18 @@ public readonly struct Automorphism<T> : IElt<Automorphism<T>> where T : struct,
     public Automorphism(AutomorphismGroup<T> aut)
     {
         AutMap = aut.G.ToDictionary(e => e, e => e);
+        Hash = AutMap.OrderBy(kp => kp.Key).Aggregate(aut.G.Hash, (acc, kp) => (acc, kp.Key, kp.Value).GetHashCode());
         BaseGroup = aut;
     }
 
     public Automorphism(AutomorphismGroup<T> aut, Dictionary<T, T> e)
     {
         AutMap = new Dictionary<T, T>(e);
+        Hash = AutMap.OrderBy(kp => kp.Key).Aggregate(aut.G.Hash, (acc, kp) => (acc, kp.Key, kp.Value).GetHashCode());
         BaseGroup = aut;
     }
 
-    public bool Equals(Automorphism<T> other)
-    {
-        if (!BaseGroup.Equals(other.BaseGroup))
-            return false;
-
-        foreach (var kp in AutMap)
-            if (!other.AutMap.ContainsKey(kp.Key) || !other.AutMap[kp.Key].Equals(kp.Value))
-                return false;
-
-        return true;
-    }
+    public bool Equals(Automorphism<T> other) => Hash == other.Hash;
 
     public int CompareTo(Automorphism<T> other)
     {
@@ -38,9 +30,9 @@ public readonly struct Automorphism<T> : IElt<Automorphism<T>> where T : struct,
             .SequenceCompareTo(other.AutMap.OrderBy(a => a.Key).Select(kp => kp.Value));
     }
 
-    public int Hash { get; } = 0;
+    public int Hash { get; }
     public IGroup<Automorphism<T>> BaseGroup { get; }
-    public override int GetHashCode() => BaseGroup.Hash;
+    public override int GetHashCode() => Hash;
 
     public T this[T index] => AutMap[index];
 

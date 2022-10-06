@@ -115,7 +115,9 @@ public class AutomorphismUnitTest
                 var cn = new Cn(n);
                 var gmn = Product.Group(cm, cn);
                 var autCmXCn = Group.Aut(gmn[1, 0], gmn[0, 1]);
+                var umn = Product.Generate(um, un);
                 Assert.Equal(um.Count()*un.Count(),autCmXCn.Count());
+                Assert.True(umn.IsIsomorphicTo(autCmXCn));
             }
         }
     }
