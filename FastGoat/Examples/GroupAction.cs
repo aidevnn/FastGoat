@@ -82,26 +82,42 @@ public static class GroupAction
         };
 
         var group = c3c3.SelectMany(n => c2c4.Select(g => Product.Elt(n, g))).ToHashSet();
+        var setInvert = new HashSet<Ep2<Ep2<ZnInt, ZnInt>, Ep2<ZnInt, ZnInt>>>();
+        var setProd = new HashSet<Ep2<Ep2<ZnInt, ZnInt>, Ep2<ZnInt, ZnInt>>>();
+        
+        var cayleyTable = new Ep2<Ep2<ZnInt, ZnInt>, Ep2<ZnInt, ZnInt>>[72, 72];
         bool isabelian = true;
+        int i = 0;
         foreach (var a in group)
         {
             var ai = invert(a);
-            if (!group.Contains(ai))
-                throw new Exception();
+            setInvert.Add(ai);
+            List<Ep2<Ep2<ZnInt, ZnInt>, Ep2<ZnInt, ZnInt>>> row = new();
+            int j = 0;
             foreach (var b in group)
             {
                 var aib = op(ai, b);
-                if(!group.Contains(aib))
-                    throw new Exception();
-
+                setProd.Add(aib);
                 if (isabelian)
                 {
                     var bai = op(b, ai);
                     isabelian &= aib.Equals(bai);
                 }
-                
+
+                var ab = op(a, b);
+                cayleyTable[i, j] = ab;
+                ++j;
             }
+            
+            ++i;
         }
+
+        var lt = Enumerable.Range(0, 72).ToArray();
+        var cayleyRows = lt.Select(i0 => lt.Select(j0 => cayleyTable[i0, j0]).ToHashSet()).All(group.SetEquals);
+        var cayleyCols = lt.Select(i0 => lt.Select(j0 => cayleyTable[j0, i0]).ToHashSet()).All(group.SetEquals);
+
+        if (!cayleyRows || !cayleyCols)
+            throw new Exception();
 
         Console.WriteLine();
         Console.WriteLine("Test Group Passed with success !!!");
