@@ -11,6 +11,7 @@ public static class EnumerableExt
     {
         return string.Join(sep, map.Select(kp => string.Format(fmt, kp.Key, kp.Value)));
     }
+
     public static IOrderedEnumerable<T> Ascending<T>(this IEnumerable<T> ts) where T : IComparable<T>
     {
         return ts.OrderBy(t => t);

@@ -22,7 +22,8 @@ namespace FastGoat
                     }
 
                 acc = tmpAcc.ToList();
-                AllPermutations[i + 1] = acc.OrderBy(a => a, comp).Select(a => a.Select(b => b + 1).ToArray()).ToArray();
+                AllPermutations[i + 1] =
+                    acc.OrderBy(a => a, comp).Select(a => a.Select(b => b + 1).ToArray()).ToArray();
             }
         }
 

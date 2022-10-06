@@ -33,7 +33,7 @@ public class AutomorphismGroup<T> : IGroup<Automorphism<T>> where T : struct, IE
     {
         if (!Equals(e.BaseGroup))
             throw new GroupException(GroupExceptionType.BaseGroup);
-        
+
         var autMap = e.AutMap.ToDictionary(kp => kp.Value, kp => kp.Key);
         return new Automorphism<T>(this, autMap);
     }
@@ -55,7 +55,7 @@ public class AutomorphismGroup<T> : IGroup<Automorphism<T>> where T : struct, IE
             var autMap = Group.AutomorphismMap(G, pMap);
             if (autMap.Count != G.Count())
                 throw new GroupException(GroupExceptionType.GroupDef);
-            
+
             return new Automorphism<T>(this, autMap);
         }
     }

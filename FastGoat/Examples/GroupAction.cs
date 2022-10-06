@@ -58,7 +58,7 @@ public static class GroupAction
         {
             Console.WriteLine("g={0} y(g) = [{1}]", kp.Key, kp.Value);
         }
-        
+
         var y = homC2C4ToAutC3C3;
         var invert = (Ep2<Ep2<ZnInt, ZnInt>, Ep2<ZnInt, ZnInt>> x) =>
         {
@@ -100,7 +100,7 @@ public static class GroupAction
                 cayleyTable[i, j] = ab;
                 ++j;
             }
-            
+
             ++i;
         }
 
