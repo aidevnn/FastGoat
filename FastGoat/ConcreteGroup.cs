@@ -88,8 +88,10 @@ public class ConcreteGroup<T> : IConcreteGroup<T> where T : struct, IElt<T>
     {
         if (LongestCycles.Count == 1)
             yield return LongestCycles.First().Key;
-        
-        throw new GroupException(GroupExceptionType.GroupDef);
+        else
+        {
+            throw new GroupException(GroupExceptionType.GroupDef);
+        }
     }
 
     public IEnumerable<T> GetElements()
