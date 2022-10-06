@@ -85,14 +85,14 @@ public static partial class Group
         return new AutomorphismGroup<T>(g);
     }
 
-    public static ConcreteGroup<Automorphism<T>> Aut<T>(string name, T e, params T[] others) where T : struct, IElt<T>
+    public static ConcreteGroup<Automorphism<T>> Aut<T>(string name, IGroup<T> bg, T[] generators)
+        where T : struct, IElt<T>
     {
-        var g = Generate(name, e, others);
+        var g = Generate(name, bg, generators);
         var bgAut = Aut(g);
-        var gens = others.Prepend(e).Distinct().ToArray();
         var gByOrders = g.ElementsOrders.GroupBy(kp => kp.Value)
             .ToDictionary(a => a.Key, a => a.Select(kp => kp.Key).ToArray());
-        var gensPossibles = gens.ToDictionary(a => a, a => gByOrders[g.ElementsOrders[a]]);
+        var gensPossibles = generators.ToDictionary(a => a, a => gByOrders[g.ElementsOrders[a]]);
         var allTuples = gensPossibles.Select(kp => kp.Value.Select(a => (kp.Key, a))).ToArray();
         List<Dictionary<T, T>> allMaps = new();
         foreach (var tuples in allTuples)
@@ -128,5 +128,16 @@ public static partial class Group
     public static ConcreteGroup<Automorphism<T>> Aut<T>(T e, params T[] others) where T : struct, IElt<T>
     {
         return Aut(e.BaseGroup.Name, e, others);
+    }
+
+    public static ConcreteGroup<Automorphism<T>> Aut<T>(string name, T e, params T[] others) where T : struct, IElt<T>
+    {
+        return Aut(name, e.BaseGroup, others.Prepend(e).ToArray());
+    }
+
+    public static ConcreteGroup<Automorphism<T>> Aut<T>(IGroup<T> bg, T[] generators)
+        where T : struct, IElt<T>
+    {
+        return Aut(bg.Name, bg, generators);
     }
 }
