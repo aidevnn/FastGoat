@@ -32,7 +32,7 @@ public class ConcreteGroup<T> : IConcreteGroup<T> where T : struct, IElt<T>
         }
     }
 
-    public ConcreteGroup(IGroup<T> g) : this("G", g)
+    public ConcreteGroup(IGroup<T> g) : this(g.Name, g)
     {
     }
 
@@ -55,7 +55,7 @@ public class ConcreteGroup<T> : IConcreteGroup<T> where T : struct, IElt<T>
             : GroupType.NonAbelianGroup;
     }
 
-    public ConcreteGroup(IGroup<T> g, T[] generators) : this("G", g, generators)
+    public ConcreteGroup(IGroup<T> g, T[] generators) : this(g.Name, g, generators)
     {
     }
 

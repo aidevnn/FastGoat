@@ -188,7 +188,7 @@ public static partial class Group
 
     public static ConcreteGroup<T> Generate<T>(T e, params T[] others) where T : struct, IElt<T>
     {
-        return Generate("G", e, others);
+        return Generate(e.BaseGroup.Name, e, others);
     }
 
     public static ConcreteGroup<T> Generate<T>(string name, T e, params T[] others) where T : struct, IElt<T>

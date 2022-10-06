@@ -127,6 +127,6 @@ public static partial class Group
 
     public static ConcreteGroup<Automorphism<T>> Aut<T>(T e, params T[] others) where T : struct, IElt<T>
     {
-        return Aut("G", e, others);
+        return Aut(e.BaseGroup.Name, e, others);
     }
 }
