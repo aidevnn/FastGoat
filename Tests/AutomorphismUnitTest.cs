@@ -86,4 +86,16 @@ public class AutomorphismUnitTest
         var klein = Group.Create(Product.Group(new Cn(2), new Cn(2)));
         Assert.True(new Un(8).IsIsomorphicTo(klein));
     }
+
+    [Fact]
+    public void Test6AutCn()
+    {
+        for (int k = 2; k < 33; ++k)
+        {
+            var un = new Un(k);
+            var cn = new Cn(k);
+            var autCn = Group.Aut(cn[1]);
+            Assert.True(un.IsIsomorphicTo(autCn));
+        }
+    }
 }
