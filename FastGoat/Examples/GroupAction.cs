@@ -48,23 +48,52 @@ public static class GroupAction
         var pMap = (Automorphism<Ep2<ZnInt, ZnInt>> a1, Automorphism<Ep2<ZnInt, ZnInt>> a2) =>
             Group.PartialMap((e1, a1), (e2, a2));
 
-        Console.WriteLine(allPossibles.Length);
-        var solution = allPossibles.Select(e => pMap(e.a1, e.a2)).Select(pm => Group.HomomorphismMap(c2c4, autC3C3, pm))
+        var homC2C4ToAutC3C3 = allPossibles.Select(e => pMap(e.a1, e.a2))
+            .Select(pm => Group.HomomorphismMap(c2c4, autC3C3, pm))
             .First(map => map.Count != 0);
-        
-        var homC2C4ToC3C3 = solution;
-        foreach (var kp in homC2C4ToC3C3)
+
+        foreach (var kp in homC2C4ToAutC3C3)
         {
-            Console.WriteLine("g={0} y(g) = [{1}]", kp.Key,kp.Value);
+            Console.WriteLine("g={0} y(g) = [{1}]", kp.Key, kp.Value);
         }
         
-        foreach (var n in c3c3)
+        var y = homC2C4ToAutC3C3;
+        var invert = (Ep2<Ep2<ZnInt, ZnInt>, Ep2<ZnInt, ZnInt>> x) =>
         {
-            foreach (var g in c2c4)
+            var n = x.E1;
+            var g = x.E2;
+            var ni = c3c3.Invert(n);
+            var gi = c2c4.Invert(g);
+            var gini = y[gi][ni];
+            return Product.Elt(gini, gi);
+        };
+
+        var op = (Ep2<Ep2<ZnInt, ZnInt>, Ep2<ZnInt, ZnInt>> x1, Ep2<Ep2<ZnInt, ZnInt>, Ep2<ZnInt, ZnInt>> x2) =>
+        {
+            var n1 = x1.E1;
+            var g1 = x1.E2;
+            var n2 = x2.E1;
+            var g2 = x2.E2;
+
+            var yg1n2 = y[g1][n2];
+            return Product.Elt(c3c3.Op(n1, yg1n2), c2c4.Op(g1, g2));
+        };
+
+        var group = c3c3.SelectMany(n => c2c4.Select(g => Product.Elt(n, g))).ToHashSet();
+        Console.WriteLine("Group elements : {0}", group.Count);
+        foreach (var a in group)
+        {
+            var ai = invert(a);
+            if (!group.Contains(ai))
+                throw new Exception();
+            foreach (var b in group)
             {
-                var n0 = homC2C4ToC3C3[g][n];
-                Console.WriteLine("({0},{1}) -> ({2},{1})", n, g, n0);
+                var aib = op(ai, b);
+                if(!group.Contains(aib))
+                    throw new Exception();
             }
         }
+
+        Console.WriteLine("Test Group Passed with success !!!");
     }
 }
