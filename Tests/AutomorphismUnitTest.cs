@@ -121,4 +121,25 @@ public class AutomorphismUnitTest
             }
         }
     }
+
+    [Fact]
+    public void Test7GapValidation()
+    {
+        var g1 = Product.Group(new Cn(3), new Cn(3));
+        var autG1 = Group.Aut(g1[1, 0], g1[0, 1]);
+        Assert.Equal(48, autG1.Count());
+        
+        var g2 = Product.Group(new Cn(2), new Cn(2), new Cn(2));
+        var autG2 = Group.Aut(g2[1, 0, 0], g2[0, 1, 0], g2[0, 0, 1]);
+        Assert.Equal(168, autG2.Count());
+        
+        var g3 = Product.Group(new Cn(2), new Cn(8));
+        var autG3 = Group.Aut(g3[1, 0], g3[0, 1]);
+        Assert.Equal(16, autG3.Count());
+        
+        var g4 = Product.Group(new Cn(2), new Cn(2), new Cn(4));
+        var autG4 = Group.Aut(g4[1, 0, 0], g4[0, 1, 0], g4[0, 0, 1]);
+        Assert.Equal(192, autG4.Count());
+
+    }
 }
