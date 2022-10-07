@@ -141,10 +141,14 @@ public static partial class Group
         return Aut(bg.Name, bg, generators);
     }
 
-    public static List<Dictionary<T1, T2>> AllHomomorphisms<T1, T2>(IGroup<T1> bg, ConcreteGroup<T2> g2)
+    public static List<Dictionary<T1, T2>> AllHomomorphisms<T1, T2>(IGroup<T1> bg, ConcreteGroup<T2> g2,
+        bool getNeutral = false)
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
     {
+        Func<int, int, bool> neutralTrue = (e, a) => e % a == 0;
+        Func<int, int, bool> neutralFalse = (e, a) => e % a == 0 && a != 1;
+        var fct = getNeutral ? neutralTrue : neutralFalse;
         var gGens = bg.GetGenerators().ToArray();
         var g1 = Group.Generate(bg, gGens);
 
@@ -152,7 +156,7 @@ public static partial class Group
             .ToArray();
         var gGensOrders = gGens.Select(e => (g: e, ord: g1.ElementsOrders[e])).ToArray();
         var gpMap = gGensOrders.Select(e =>
-                g2ByOrders.Where(a => e.ord % a.ord == 0).SelectMany(a => a.auts).Select(a => (e.g, a))
+                g2ByOrders.Where(a => fct(e.ord, a.ord)).SelectMany(a => a.auts).Select(a => (e.g, a))
                     .ToArray())
             .ToArray();
 
@@ -195,6 +199,6 @@ public static partial class Group
     {
         var nGens = bn.GetGenerators().ToArray();
         var autN = Group.Aut(bn, nGens);
-        return AllHomomorphisms(bg, autN);
+        return AllHomomorphisms(bg, autN, true);
     }
 }

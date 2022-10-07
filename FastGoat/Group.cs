@@ -176,6 +176,25 @@ public static partial class Group
         return cosets;
     }
 
+    public static bool IsGroup<T>(IGroup<T> g) where T : struct, IElt<T>
+    {
+        var elements = g.GetElements().Ascending().ToArray();
+        var cayleyTable = new T[elements.Length, elements.Length];
+        var lt = Enumerable.Range(0, elements.Length).ToArray();
+        foreach (var i in lt)
+        {
+            foreach (var j in lt)
+            {
+                cayleyTable[i, j] = g.Op(elements[i], elements[j]);
+            }
+        }
+
+        var group = elements.ToHashSet();
+        var cayleyRows = lt.Select(i0 => lt.Select(j0 => cayleyTable[i0, j0]).ToHashSet()).All(group.SetEquals);
+        var cayleyCols = lt.Select(i0 => lt.Select(j0 => cayleyTable[j0, i0]).ToHashSet()).All(group.SetEquals);
+        return cayleyRows && cayleyCols;
+    }
+
     public static ConcreteGroup<T> Create<T>(string name, IGroup<T> g) where T : struct, IElt<T>
     {
         return new ConcreteGroup<T>(name, g);
@@ -236,13 +255,21 @@ public static partial class Group
         ConcreteGroup<T2> g)
         where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
     {
-        return new SemiDirectProduct<T1, T2>(name, n, g);
+        var theta = AllOpsByAutomorphisms(g, n).FirstOrDefault(kp => kp.Values.Distinct().Count() > 1, new());
+        if (theta.Count == 0)
+            throw new GroupException(GroupExceptionType.SemiDirectProductDontExist);
+
+        return new SemiDirectProduct<T1, T2>(name, n, theta, g);
     }
 
     public static SemiDirectProduct<T1, T2> SemiDirectProd<T1, T2>(ConcreteGroup<T1> n,
         ConcreteGroup<T2> g)
         where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
     {
-        return new SemiDirectProduct<T1, T2>(n, g);
+        var theta = AllOpsByAutomorphisms(g, n).FirstOrDefault(kp => kp.Values.Distinct().Count() > 1, new());
+        if (theta.Count == 0)
+            throw new GroupException(GroupExceptionType.SemiDirectProductDontExist);
+
+        return new SemiDirectProduct<T1, T2>("", n, theta, g);
     }
 }

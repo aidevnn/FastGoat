@@ -11,12 +11,9 @@ public class SemiDirectProduct<T1, T2> : ConcreteGroup<Ep2<T1, T2>>
     public ConcreteGroup<T1> N { get; }
     public ConcreteGroup<T2> G { get; }
 
-    public SemiDirectProduct(string name, ConcreteGroup<T1> n, ConcreteGroup<T2> g) : base(name,
+    public SemiDirectProduct(string name, ConcreteGroup<T1> n,Dictionary<T2, Automorphism<T1>> theta, ConcreteGroup<T2> g) : base(name,
         Product.Elt(n.Neutral(), g.Neutral()).BaseGroup, true)
     {
-        // if (g.LongestCycles.Count != 1 || n.LongestCycles.Count != 1)
-        //     throw new GroupException(GroupExceptionType.OnlyCyclicGroups);
-
         G = g;
         N = n;
         if (string.IsNullOrEmpty(name))
@@ -30,16 +27,12 @@ public class SemiDirectProduct<T1, T2> : ConcreteGroup<Ep2<T1, T2>>
             Name = name;
         }
         
-        var theta = Group.AllOpsByAutomorphisms(g, n).FirstOrDefault(kp => kp.Values.Distinct().Count() > 1, new());
-        if (theta.Count == 0)
-            throw new GroupException(GroupExceptionType.SemiDirectProductDontExist);
-        
         Theta = new(theta);
         List<Ep2<T1, T2>> generators = new List<Ep2<T1, T2>>();
-        foreach (var (e, _) in G.LongestCycles)
+        foreach (var e in G.GetGenerators())
             generators.Add(Product.Elt(N.Neutral(), e));
 
-        foreach (var (e, _) in N.LongestCycles)
+        foreach (var e in N.GetGenerators())
             generators.Add(Product.Elt(e, G.Neutral()));
 
         Elements = Group.GenerateElements(this, generators.ToArray()).ToHashSet();
@@ -48,10 +41,6 @@ public class SemiDirectProduct<T1, T2> : ConcreteGroup<Ep2<T1, T2>>
         GroupType = Group.IsCommutative(this, LongestCycles.Keys)
             ? GroupType.AbelianGroup
             : GroupType.NonAbelianGroup;
-    }
-
-    public SemiDirectProduct(ConcreteGroup<T1> n, ConcreteGroup<T2> g) : this("", n, g)
-    {
     }
 
     public Ep2<T1, T2> Act(T1 en, T2 eg)

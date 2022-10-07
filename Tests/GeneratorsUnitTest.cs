@@ -93,9 +93,6 @@ public class GeneratorsUnitTest
         Assert.Equal(50, gr1.Count());
 
         var g2 = Product.Generate(c1, c2);
-        var act = () => g2.GetGenerators().ToArray();
-        Assert.Throws<GroupException>(act);
-
         var gr2 = Group.Generate(g2, g2[4, 8]);
         var gr2G = gr2.GetGenerators().ToArray();
         Assert.Single(gr2G);
