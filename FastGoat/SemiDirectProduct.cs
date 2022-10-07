@@ -14,11 +14,22 @@ public class SemiDirectProduct<T1, T2> : ConcreteGroup<Ep2<T1, T2>>
     public SemiDirectProduct(string name, ConcreteGroup<T1> n, ConcreteGroup<T2> g) : base(name,
         Product.Elt(n.Neutral(), g.Neutral()).BaseGroup, true)
     {
-        if (g.LongestCycles.Count != 1 || n.LongestCycles.Count != 1)
-            throw new GroupException(GroupExceptionType.OnlyCyclicGroups);
+        // if (g.LongestCycles.Count != 1 || n.LongestCycles.Count != 1)
+        //     throw new GroupException(GroupExceptionType.OnlyCyclicGroups);
 
         G = g;
         N = n;
+        if (string.IsNullOrEmpty(name))
+        {
+            var nName = n.Name.Contains(' ') ? $"({n.Name})" : n.Name;
+            var gName = g.Name.Contains(' ') ? $"({g.Name})" : g.Name;
+            Name = $"{nName} x: {gName}";
+        }
+        else
+        {
+            Name = name;
+        }
+        
         var theta = Group.AllOpsByAutomorphisms(g, n).FirstOrDefault(kp => kp.Values.Distinct().Count() > 1, new());
         if (theta.Count == 0)
             throw new GroupException(GroupExceptionType.SemiDirectProductDontExist);
@@ -39,7 +50,7 @@ public class SemiDirectProduct<T1, T2> : ConcreteGroup<Ep2<T1, T2>>
             : GroupType.NonAbelianGroup;
     }
 
-    public SemiDirectProduct(ConcreteGroup<T1> n, ConcreteGroup<T2> g) : this($"{n} x: {g}", n, g)
+    public SemiDirectProduct(ConcreteGroup<T1> n, ConcreteGroup<T2> g) : this("", n, g)
     {
     }
 

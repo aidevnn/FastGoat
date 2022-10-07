@@ -90,7 +90,17 @@ public class ConcreteGroup<T> : IConcreteGroup<T> where T : struct, IElt<T>
             yield return LongestCycles.First().Key;
         else
         {
-            throw new GroupException(GroupExceptionType.GroupDef);
+            var bgGens = BaseGroup.GetGenerators().ToArray();
+            var prod = bgGens.Aggregate(1, (acc, a) => ElementsOrders[a] * acc);
+            if (prod == Elements.Count)
+            {
+                foreach (var e in bgGens)
+                    yield return e;
+            }
+            else
+            {
+                throw new GroupException(GroupExceptionType.GroupDef);
+            }
         }
     }
 
