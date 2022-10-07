@@ -1,13 +1,13 @@
 using System.Collections.ObjectModel;
 using FastGoat.Gp;
+using FastGoat.UserGroup;
 
 namespace FastGoat;
 
 public class SemiDirectProduct<T1, T2> : ConcreteGroup<Ep2<T1, T2>>
     where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
 {
-    public ReadOnlyDictionary<T2, Func<T1, T1>> Actions { get; }
-    public ReadOnlyDictionary<T2, string> ActionsStr { get; }
+    public ReadOnlyDictionary<T2, Automorphism<T1>> Theta { get; }
     public ConcreteGroup<T1> N { get; }
     public ConcreteGroup<T2> G { get; }
 
@@ -19,29 +19,11 @@ public class SemiDirectProduct<T1, T2> : ConcreteGroup<Ep2<T1, T2>>
 
         G = g;
         N = n;
-        var cg = G.Count();
-        var cn = N.Count();
-        var pow = IntExt.Solve_k_pow_m_equal_one_mod_n(cn, cg);
-        if (pow == 0)
+        var theta = Group.AllOpsByAutomorphisms(g, n).FirstOrDefault(kp => kp.Values.Distinct().Count() > 1, new());
+        if (theta.Count == 0)
             throw new GroupException(GroupExceptionType.SemiDirectProductDontExist);
-
-        var actions = new Dictionary<T2, Func<T1, T1>>();
-        var actionsStr = new Dictionary<T2, string>();
-        actions[g.Neutral()] = x => x;
-        actionsStr[g.Neutral()] = "x->x";
-        foreach (var (_, set) in G.LongestCycles)
-        {
-            foreach (var (e, p) in set.SkipLast(1))
-            {
-                var p0 = IntExt.PowMod(pow, p, cn);
-                actions[e] = x => N.Times(x, p0);
-                actionsStr[e] = p0 == 1 ? "x->x" : $"x->x^{p0}";
-            }
-        }
-
-        Actions = new ReadOnlyDictionary<T2, Func<T1, T1>>(actions);
-        ActionsStr = new ReadOnlyDictionary<T2, string>(actionsStr);
-
+        
+        Theta = new(theta);
         List<Ep2<T1, T2>> generators = new List<Ep2<T1, T2>>();
         foreach (var (e, _) in G.LongestCycles)
             generators.Add(Product.Elt(N.Neutral(), e));
@@ -66,19 +48,19 @@ public class SemiDirectProduct<T1, T2> : ConcreteGroup<Ep2<T1, T2>>
         if (!N.Contains(en) || !G.Contains(eg))
             throw new GroupException(GroupExceptionType.BaseGroup);
 
-        return Product.Elt(Actions[eg](en), eg);
+        return Product.Elt(Theta[eg][en], eg);
     }
 
     public override Ep2<T1, T2> Invert(Ep2<T1, T2> e)
     {
         var gi = G.Invert(e.E2);
         var xi = N.Invert(e.E1);
-        return Product.Elt(Actions[gi](xi), gi);
+        return Product.Elt(Theta[gi][xi], gi);
     }
 
     public override Ep2<T1, T2> Op(Ep2<T1, T2> e1, Ep2<T1, T2> e2)
     {
-        var n = N.Op(e1.E1, Actions[e1.E2](e2.E1));
+        var n = N.Op(e1.E1, Theta[e1.E2][e2.E1]);
         var g = G.Op(e1.E2, e2.E2);
         return Product.Elt(n, g);
     }

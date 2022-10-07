@@ -187,7 +187,7 @@ public static class DisplayGroup
         var ordered = p.G.ElementsOrders.Keys.Ascending().ThenBy(a => p.G.ElementsOrders[a]).ToArray();
         foreach (var g in ordered)
         {
-            Console.WriteLine("g={0} y(g):{1}", g, p.ActionsStr[g]);
+            Console.WriteLine("g={0} y(g) = ({1})", g, p.Theta[g]);
         }
 
         Console.WriteLine();
