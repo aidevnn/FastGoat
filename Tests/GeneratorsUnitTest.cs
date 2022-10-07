@@ -102,4 +102,28 @@ public class GeneratorsUnitTest
         Assert.Contains(g2[4, 8], gr2G);
         Assert.Equal(10, gr2.Count());
     }
+
+    [Fact]
+    public void Test4GapAllAutomorphisms()
+    {
+        // gap> Size(AllAutomorphisms(AbelianGroup([2,3]))); = 2
+        var n1 = Product.Group(new Zn(2), new Zn(3));
+        var autN1 = Group.Aut(n1, n1.GetGenerators().ToArray());
+        Assert.Equal(2, autN1.Count());
+
+        // gap> Size(AllAutomorphisms(AbelianGroup([3,3]))); = 48
+        var n2 = Product.Group(new Zn(3), new Zn(3));
+        var autN2 = Group.Aut(n2, n2.GetGenerators().ToArray());
+        Assert.Equal(48, autN2.Count());
+
+        // gap> Size(AllAutomorphisms(AbelianGroup([2,2,2]))); = 168
+        var n3 = Product.Group(new Zn(2), new Zn(2), new Zn(2));
+        var autN3 = Group.Aut(n3, n3.GetGenerators().ToArray());
+        Assert.Equal(168, autN3.Count());
+
+        // gap> Size(AllAutomorphisms(AbelianGroup([4,4]))); = 96
+        var n4 = Product.Group(new Zn(4), new Zn(4));
+        var autN4 = Group.Aut(n4, n4.GetGenerators().ToArray());
+        Assert.Equal(96, autN4.Count());
+    }
 }
