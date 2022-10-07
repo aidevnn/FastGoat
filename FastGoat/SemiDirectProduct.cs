@@ -10,8 +10,11 @@ public class SemiDirectProduct<T1, T2> : ConcreteGroup<Ep2<T1, T2>>
     public ReadOnlyDictionary<T2, Automorphism<T1>> Theta { get; }
     public ConcreteGroup<T1> N { get; }
     public ConcreteGroup<T2> G { get; }
+    public ConcreteGroup<Ep2<T1, T2>> Ncan { get; }
+    public ConcreteGroup<Ep2<T1, T2>> Gcan { get; }
 
-    public SemiDirectProduct(string name, ConcreteGroup<T1> n,Dictionary<T2, Automorphism<T1>> theta, ConcreteGroup<T2> g) : base(name,
+    public SemiDirectProduct(string name, ConcreteGroup<T1> n, Dictionary<T2, Automorphism<T1>> theta,
+        ConcreteGroup<T2> g) : base(name,
         Product.Elt(n.Neutral(), g.Neutral()).BaseGroup, true)
     {
         G = g;
@@ -41,6 +44,9 @@ public class SemiDirectProduct<T1, T2> : ConcreteGroup<Ep2<T1, T2>>
         GroupType = Group.IsCommutative(this, LongestCycles.Keys)
             ? GroupType.AbelianGroup
             : GroupType.NonAbelianGroup;
+        
+        Ncan = Group.Generate(N.Name, this, n.Select(e => Product.Elt(e, G.Neutral())).ToArray());
+        Gcan = Group.Generate(G.Name, this, g.Select(e => Product.Elt(N.Neutral(), e)).ToArray());
     }
 
     public Ep2<T1, T2> Act(T1 en, T2 eg)
