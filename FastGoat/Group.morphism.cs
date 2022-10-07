@@ -141,7 +141,7 @@ public static partial class Group
         return Aut(bg.Name, bg, generators);
     }
 
-    public static List<Dictionary<T2, Automorphism<T1>>> AllHomomorphisms<T1, T2>(IGroup<T1> bn, IGroup<T2> bg)
+    public static List<Dictionary<T2, Automorphism<T1>>> AllHomomorphisms<T1, T2>(IGroup<T2> bg, IGroup<T1> bn)
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
     {

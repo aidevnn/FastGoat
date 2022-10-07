@@ -146,21 +146,27 @@ public class GeneratorsUnitTest
     public void Test5GapAllHomomorphisms()
     {
         // gap> Size(AllHomomorphisms(AbelianGroup([2,2]),AutomorphismGroup(AbelianGroup([2,2,2])))); = 148
-        var n1 = Product.Group(new Zn(2), new Zn(2), new Zn(2));
         var g1 = Product.Group(new Zn(2), new Zn(2));
-        var allHom1 = Group.AllHomomorphisms(n1, g1);
+        var n1 = Product.Group(new Zn(2), new Zn(2), new Zn(2));
+        var allHom1 = Group.AllHomomorphisms(g1, n1);
         Assert.Equal(148, allHom1.Count);
         
         // gap> Size(AllHomomorphisms(AbelianGroup([2,2,2]),AutomorphismGroup(AbelianGroup([2,2])))); = 22
-        var n2 = Product.Group(new Zn(2), new Zn(2));
         var g2 = Product.Group(new Zn(2), new Zn(2), new Zn(2));
-        var allHom2 = Group.AllHomomorphisms(n2, g2);
+        var n2 = Product.Group(new Zn(2), new Zn(2));
+        var allHom2 = Group.AllHomomorphisms(g2, n2);
         Assert.Equal(22, allHom2.Count);
         
         // gap> Size(AllHomomorphisms(AbelianGroup([2,4]),AutomorphismGroup(AbelianGroup([3,3])))); = 88
-        var n3 = Product.Group(new Zn(3), new Zn(3));
         var g3 = Product.Group(new Zn(2), new Zn(4));
-        var allHom3 = Group.AllHomomorphisms(n3, g3);
+        var n3 = Product.Group(new Zn(3), new Zn(3));
+        var allHom3 = Group.AllHomomorphisms(g3, n3);
         Assert.Equal(88, allHom3.Count);
+        
+        // gap> Size(AllHomomorphisms(AbelianGroup([2,2]),AutomorphismGroup(AbelianGroup([3,3])))); = 76
+        var g4 = Product.Group(new Zn(2), new Zn(2));
+        var n4 = Product.Group(new Zn(3), new Zn(3));
+        var allHom4 = Group.AllHomomorphisms(g4, n4);
+        Assert.Equal(76, allHom4.Count);
     }
 }
