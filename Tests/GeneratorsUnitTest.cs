@@ -125,5 +125,20 @@ public class GeneratorsUnitTest
         var n4 = Product.Group(new Zn(4), new Zn(4));
         var autN4 = Group.Aut(n4, n4.GetGenerators().ToArray());
         Assert.Equal(96, autN4.Count());
+
+        // gap> Size(AllAutomorphisms(AbelianGroup([3,5]))); = 8
+        var n5 = Product.Group(new Zn(3), new Zn(5));
+        var autN5 = Group.Aut(n5, n5.GetGenerators().ToArray());
+        Assert.Equal(8, autN5.Count());
+
+        // gap> Size(AllAutomorphisms(AbelianGroup([5,5]))); = 480
+        var n6 = Product.Group(new Zn(5), new Zn(5));
+        var autN6 = Group.Aut(n6, n6.GetGenerators().ToArray());
+        Assert.Equal(480, autN6.Count()); // 12sec
+
+        // // gap> Size(AllAutomorphisms(AbelianGroup([3,3,3]))); = 11232
+        // var n7 = Product.Group(new Zn(3), new Zn(3), new Zn(3));
+        // var autN7 = Group.Aut(n7, n7.GetGenerators().ToArray());
+        // Assert.Equal(11232, autN7.Count()); // still running
     }
 }
