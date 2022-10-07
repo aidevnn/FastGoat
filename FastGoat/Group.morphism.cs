@@ -140,4 +140,52 @@ public static partial class Group
     {
         return Aut(bg.Name, bg, generators);
     }
+
+    public static List<Dictionary<T2, Automorphism<T1>>> AllHomomorphisms<T1, T2>(IGroup<T1> bn, IGroup<T2> bg)
+        where T1 : struct, IElt<T1>
+        where T2 : struct, IElt<T2>
+    {
+        var nGens = bn.GetGenerators().ToArray();
+        var gGens = bg.GetGenerators().ToArray();
+        var n = Group.Generate(bn, nGens);
+        var g = Group.Generate(bg, gGens);
+
+        var autN = Group.Aut(bn, nGens);
+        var autOrders = autN.GroupBy(e => autN.ElementsOrders[e]).Select(e => (ord: e.Key, auts: e.ToArray()))
+            .ToArray();
+        var gGensOrders = gGens.Select(e => (g: e, ord: g.ElementsOrders[e])).ToArray();
+        var gpMap = gGensOrders.Select(e =>
+                autOrders.Where(a => e.ord % a.ord == 0).SelectMany(a => a.auts).Select(a => (e.g, a))
+                    .ToArray())
+            .ToArray();
+
+        var maps = new List<Dictionary<T2, Automorphism<T1>>>() { new Dictionary<T2, Automorphism<T1>>() };
+        foreach (var tuples in gpMap)
+        {
+            var tmpMaps = new List<Dictionary<T2, Automorphism<T1>>>();
+            foreach (var e in tuples)
+            {
+                foreach (var map in maps)
+                {
+                    var pmap = new Dictionary<T2, Automorphism<T1>>(map);
+                    pmap[e.g] = e.a;
+                    tmpMaps.Add(pmap);
+                }
+            }
+
+            maps.Clear();
+            maps = tmpMaps.ToList();
+        }
+
+        List<Dictionary<T2, Automorphism<T1>>> allHom = new();
+        var ng = g.Count();
+        foreach (var map in maps)
+        {
+            var hom = Group.HomomorphismMap(g, autN, map);
+            if (hom.Count == ng)
+                allHom.Add(hom);
+        }
+
+        return allHom.Distinct().ToList();
+    }
 }
