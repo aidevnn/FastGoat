@@ -199,6 +199,6 @@ public static partial class Group
     {
         var nGens = bn.GetGenerators().ToArray();
         var autN = Group.Aut(bn, nGens);
-        return AllHomomorphisms(bg, autN, true);
+        return AllHomomorphisms(bg, autN, false);
     }
 }
