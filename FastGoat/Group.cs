@@ -179,6 +179,10 @@ public static partial class Group
     public static bool IsGroup<T>(IGroup<T> g) where T : struct, IElt<T>
     {
         var elements = g.GetElements().Ascending().ToArray();
+        var group = elements.ToHashSet();
+        if (group.Count != elements.Length)
+            return false;
+        
         var cayleyTable = new T[elements.Length, elements.Length];
         var lt = Enumerable.Range(0, elements.Length).ToArray();
         foreach (var i in lt)
@@ -189,7 +193,6 @@ public static partial class Group
             }
         }
 
-        var group = elements.ToHashSet();
         var cayleyRows = lt.Select(i0 => lt.Select(j0 => cayleyTable[i0, j0]).ToHashSet()).All(group.SetEquals);
         var cayleyCols = lt.Select(i0 => lt.Select(j0 => cayleyTable[j0, i0]).ToHashSet()).All(group.SetEquals);
         return cayleyRows && cayleyCols;
