@@ -48,8 +48,7 @@ public static class DihedralAutomorphisms
         for (int n = 6; n <= 32; n += 2)
         {
             var d2n = DnSdp(n / 2);
-            var homD2N = Group.AllHomomorphisms(d2n, d2n);
-            var autD2N = homD2N.Where(h => h.Values.Distinct().Count() == h.Count && h.Count == d2n.Count()).ToArray();
+            var autD2N = Group.AllAutomorphisms(d2n);
 
             var a = d2n[1, 0];
             var b = d2n[0, 1];
@@ -57,9 +56,10 @@ public static class DihedralAutomorphisms
             var autK = autD2N.Where(aut => aut[b].Equals(b)).ToArray();
 
             var phi = new Un(n / 2).Count();
-            Console.WriteLine("|Aut(D{0})| = {1}; phi({2}) = {3}", n, autD2N.Length, n / 2, phi);
+            Console.WriteLine("|Aut(D{0})| = {1}; phi({2}) = {3}", n, autD2N.Count, n / 2, phi);
             Console.WriteLine($"a={a}[{d2n.ElementsOrders[a]}] b={b}[{d2n.ElementsOrders[b]}]");
-            Console.WriteLine("|y in Aut(D{0}), y(a)=a| = {1,-3}; |y in Aut(D{0}), y(b) = b| = {2,-3}",n, autH.Count(), autK.Count());
+            Console.WriteLine("|y in Aut(D{0}), y(a)=a| = {1,-3}; |y in Aut(D{0}), y(b) = b| = {2,-3}", n, autH.Count(),
+                autK.Count());
             Console.WriteLine();
         }
 
