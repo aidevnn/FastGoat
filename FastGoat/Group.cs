@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using FastGoat.UserGroup;
 
 namespace FastGoat;
 
@@ -182,7 +183,7 @@ public static partial class Group
         var group = elements.ToHashSet();
         if (group.Count != elements.Length)
             return false;
-        
+
         var cayleyTable = new T[elements.Length, elements.Length];
         var lt = Enumerable.Range(0, elements.Length).ToArray();
         foreach (var i in lt)
@@ -274,5 +275,19 @@ public static partial class Group
             throw new GroupException(GroupExceptionType.SemiDirectProductDontExist);
 
         return new SemiDirectProduct<T1, T2>("", n, theta, g);
+    }
+
+    public static SemiDirectProduct<T1, T2> SemiDirectProd<T1, T2>(ConcreteGroup<T1> n,
+        Dictionary<T2, Automorphism<T1>> theta, ConcreteGroup<T2> g)
+        where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
+    {
+        return new SemiDirectProduct<T1, T2>("", n, theta, g);
+    }
+
+    public static SemiDirectProduct<T1, T2> SemiDirectProd<T1, T2>(string name, ConcreteGroup<T1> n,
+        Dictionary<T2, Automorphism<T1>> theta, ConcreteGroup<T2> g)
+        where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
+    {
+        return new SemiDirectProduct<T1, T2>(name, n, theta, g);
     }
 }
