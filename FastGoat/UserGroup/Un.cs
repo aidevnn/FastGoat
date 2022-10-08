@@ -18,6 +18,7 @@ public class Un : ConcreteGroup<Automorphism<ZnInt>>
             elements.Add(ak);
         }
 
+        Hash = (BaseGroup.Hash, "Un").GetHashCode();
         Elements = elements.ToHashSet();
         LongestCycles = Group.LongestCycles(autCn, elements);
         ElementsOrders = Group.ElementsOrders(LongestCycles);
