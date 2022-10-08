@@ -11,6 +11,7 @@ public static class GroupOrder32C4C8
     private static Cn C8 { get; } = new Cn(8);
     private static Un U8 { get; } = new Un(8);
     private static Cn C12 { get; } = new Cn(12);
+
     public static void NonIsomorphic()
     {
         var yC8C4 = U8[(C8[1], C8[5])];
@@ -35,6 +36,31 @@ public static class GroupOrder32C4C8
         Console.WriteLine("Isomorphisms  Count = {0}", homs.Count(h => h.Values.Distinct().Count() == h.Count));
     }
 
+    public static void NonIsomorphicAnotherExample()
+    {
+        var C2 = new Cn(2);
+        var yC8C2 = U8[(C8[1], C8[5])];
+        var mapC8C2 = Group.PartialMap((C2[1], yC8C2));
+        var thetaC8C2 = Group.HomomorphismMap(C2, U8, mapC8C2);
+        var gC8C2 = Group.SemiDirectProd(C8, thetaC8C2, C2);
+        DisplayGroup.HeadSdp(gC8C2);
+        var oC8C2 = gC8C2.ElementsOrders.Values.Ascending().ToArray();
+        Console.WriteLine("Sorted Orders {0} : ({1})", gC8C2, oC8C2.Glue(", "));
+
+        var gdC8C2 = Product.Generate(C8, C2);
+        DisplayGroup.Head(gdC8C2);
+        var odC8C2 = gdC8C2.ElementsOrders.Values.Ascending().ToArray();
+        Console.WriteLine("Sorted Orders {0} : ({1})", gdC8C2, odC8C2.Glue(", "));
+        Console.WriteLine("Sorted Order Equal : {0}", oC8C2.SequenceEqual(odC8C2));
+
+        Console.WriteLine();
+        Console.WriteLine("Isomorphic {0} ~ {1} {2}", gdC8C2, gC8C2, gdC8C2.IsIsomorphicTo(gC8C2));
+
+        var homs = Group.AllHomomorphisms(gC8C2, gdC8C2);
+        Console.WriteLine("Homomorphisms Count = {0}", homs.Count);
+        Console.WriteLine("Isomorphisms  Count = {0}", homs.Count(h => h.Values.Distinct().Count() == h.Count));
+    }
+
     public static void Isomorphic()
     {
         var gC3C4 = Product.Generate(new Cn(3), C4);
@@ -50,6 +76,7 @@ public static class GroupOrder32C4C8
         Console.WriteLine("Homomorphisms Count = {0}", homs.Count);
         Console.WriteLine("Isomorphisms  Count = {0}", homs.Count(h => h.Values.Distinct().Count() == h.Count));
     }
+
     public static void IsomorphicAnotherExample()
     {
         var gC8C12 = Product.Generate(C8, C12);
