@@ -9,10 +9,10 @@ public static class DihedralAutomorphisms
 {
     static ConcreteGroup<Perm> DnPerm(int n = 16)
     {
-        int m = (n % 2) == 0 ? n / 2 - 1 : n / 2;
+        int m = (n % 2) == 0 ? 1 : 2;
         var sn = new Sn(n);
         var an = Enumerable.Range(1, n).Select(i => (i % n) + 1).ToArray();
-        var a2 = Enumerable.Range(1, m).Select(i => (Tuple2Array)(i, n - i)).ToArray();
+        var a2 = Enumerable.Range(m, n / 2).Select(i => (Tuple2Array)(i, n + m - i)).ToArray();
         var cn = sn.CreateElement(an);
         var c2 = sn.ComposesCycles(a2);
         var d2n = Group.Generate("D2n", c2, cn);
@@ -35,12 +35,12 @@ public static class DihedralAutomorphisms
 
     public static void Dn()
     {
-        int n = 18;
+        int n = 3;
         var d2n = DnSdp(n);
         var d2n2 = DnPerm(n);
         DisplayGroup.HeadSdp(d2n);
         DisplayGroup.Head(d2n2);
-        Console.WriteLine("IsIsomorphic : {0}", d2n.IsIsomorphicTo(d2n2));
+        Console.WriteLine("IsIsomorphic : {0}", d2n2.IsIsomorphicTo(d2n));
     }
 
     public static void AutDn()
@@ -57,7 +57,7 @@ public static class DihedralAutomorphisms
 
             var phi = new Un(n / 2).Count();
             Console.WriteLine("|Aut(D{0})| = {1}; phi({2}) = {3}", n, autD2N.Count, n / 2, phi);
-            Console.WriteLine($"a={a}[{d2n.ElementsOrders[a]}] b={b}[{d2n.ElementsOrders[b]}]");
+            Console.WriteLine($"a[{d2n.ElementsOrders[a]}]={a} b[{d2n.ElementsOrders[b]}]={b}");
             Console.WriteLine("|y in Aut(D{0}), y(a)=a| = {1,-3}; |y in Aut(D{0}), y(b) = b| = {2,-3}", n, autH.Count(),
                 autK.Count());
             Console.WriteLine();
@@ -82,5 +82,27 @@ public static class DihedralAutomorphisms
         // Nb Aut(D28) = 84
         // Nb Aut(D30) = 120
         // Nb Aut(D32) = 128
+    }
+
+    public static void AutDnPerm()
+    {
+        for (int n = 6; n <= 32; n += 2)
+        {
+            var d2n = DnPerm(n / 2);
+            var autD2N = Group.AllAutomorphisms(d2n);
+
+            var gens = d2n.GetGenerators().ToArray();
+            var a = gens.First(e => d2n.ElementsOrders[e] == n / 2);
+            var b = gens.First(e => d2n.ElementsOrders[e] == 2);
+            var autH = autD2N.Where(aut => aut[a].Equals(a)).ToArray();
+            var autK = autD2N.Where(aut => aut[b].Equals(b)).ToArray();
+
+            var phi = new Un(n / 2).Count();
+            Console.WriteLine("|Aut(D{0})| = {1}; phi({2}) = {3}", n, autD2N.Count, n / 2, phi);
+            Console.WriteLine($"a[{d2n.ElementsOrders[a]}]={a} b[{d2n.ElementsOrders[b]}]={b}");
+            Console.WriteLine("|y in Aut(D{0}), y(a)=a| = {1,-3}; |y in Aut(D{0}), y(b) = b| = {2,-3}", n, autH.Count(),
+                autK.Count());
+            Console.WriteLine();
+        }
     }
 }
