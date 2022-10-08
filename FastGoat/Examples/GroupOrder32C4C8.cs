@@ -80,16 +80,16 @@ public static class GroupOrder32C4C8
     public static void IsomorphicAnotherExample()
     {
         var gC8C12 = Product.Generate(C8, C12);
-        var gC2C24 = Product.Generate(new Cn(2), new Cn(24));
-        DisplayGroup.Head(gC2C24);
-        Console.WriteLine("Sorted Orders {0} : ({1})", gC2C24, gC2C24.ElementsOrders.Values.Ascending().Glue(", "));
+        var gC4C24 = Product.Generate(C4, new Cn(24));
+        DisplayGroup.Head(gC4C24);
+        Console.WriteLine("Sorted Orders {0} : ({1})", gC4C24, gC4C24.ElementsOrders.Values.Ascending().Glue(", "));
         DisplayGroup.Head(gC8C12);
         Console.WriteLine("Sorted Orders {0} : ({1})", gC8C12, gC8C12.ElementsOrders.Values.Ascending().Glue(", "));
 
         Console.WriteLine();
-        Console.WriteLine("Isomorphic {0} ~ {1} {2}", gC8C12, gC2C24, gC8C12.IsIsomorphicTo(gC2C24));
+        Console.WriteLine("Isomorphic {0} ~ {1} {2}", gC8C12, gC4C24, gC8C12.IsIsomorphicTo(gC4C24));
 
-        var homs = Group.AllHomomorphisms(gC2C24, gC8C12);
+        var homs = Group.AllHomomorphisms(gC4C24, gC8C12);
         Console.WriteLine("Homomorphisms Count = {0}", homs.Count);
         Console.WriteLine("Isomorphisms  Count = {0}", homs.Count(h => h.Values.Distinct().Count() == h.Count));
     }
