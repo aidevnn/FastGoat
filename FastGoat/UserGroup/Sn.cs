@@ -18,8 +18,8 @@ public struct Sn : IGroup<Perm>
 
     public Sn(int n)
     {
-        // if (n < 2 || n > 8)
-        //     throw new GroupException(GroupExceptionType.GroupDef); // "Seventh Sky is the limit."
+        if (n < 2)
+            throw new GroupException(GroupExceptionType.GroupDef); // "Seventh Sky is the limit."
 
         N = Hash = n;
         _cache = new int[n];
