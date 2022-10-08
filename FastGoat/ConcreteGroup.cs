@@ -138,7 +138,7 @@ public class ConcreteGroup<T> : IConcreteGroup<T> where T : struct, IElt<T>
 
     public bool IsIsomorphicTo<Tu>(ConcreteGroup<Tu> gu) where Tu : struct, IElt<Tu>
     {
-        var homs = Group.AllHomomorphisms(this, gu, true);
+        var homs = Group.AllHomomorphisms(this, gu);
         var nbIsomorphisms = homs.Count(h => h.Values.Distinct().Count() == h.Count);
         return nbIsomorphisms > 0;
     }

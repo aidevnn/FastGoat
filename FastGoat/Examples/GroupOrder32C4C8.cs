@@ -31,7 +31,7 @@ public static class GroupOrder32C4C8
         Console.WriteLine();
         Console.WriteLine("Isomorphic {0} ~ {1} {2}", gC3C4, gC8C4, gC3C4.IsIsomorphicTo(gC8C4));
 
-        var homs = Group.AllHomomorphisms(gC8C4, gC3C4, true);
+        var homs = Group.AllHomomorphisms(gC8C4, gC3C4);
         Console.WriteLine("Homomorphisms Count = {0}", homs.Count);
         Console.WriteLine("Isomorphisms  Count = {0}", homs.Count(h => h.Values.Distinct().Count() == h.Count));
     }
@@ -47,7 +47,7 @@ public static class GroupOrder32C4C8
         Console.WriteLine();
         Console.WriteLine("Isomorphic {0} ~ {1} {2}", gC3C4, C12, gC3C4.IsIsomorphicTo(C12));
 
-        var homs = Group.AllHomomorphisms(C12, gC3C4, true);
+        var homs = Group.AllHomomorphisms(C12, gC3C4);
         Console.WriteLine("Homomorphisms Count = {0}", homs.Count);
         Console.WriteLine("Isomorphisms  Count = {0}", homs.Count(h => h.Values.Distinct().Count() == h.Count));
     }
