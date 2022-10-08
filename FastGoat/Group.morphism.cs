@@ -141,18 +141,32 @@ public static partial class Group
         return Aut(bg.Name, bg, generators);
     }
 
-    public static List<Dictionary<T1, T2>> AllHomomorphisms<T1, T2>(IGroup<T1> bg, ConcreteGroup<T2> g2)
+    private enum MorphismType
+    {
+        Homomorphism,
+        Isomorphism
+    }
+
+    private static List<Dictionary<T1, T2>> AllMorphisms<T1, T2>(IGroup<T1> bg, ConcreteGroup<T2> g2,
+        MorphismType mType = MorphismType.Homomorphism)
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
     {
         var gGens = bg.GetGenerators().ToArray();
-        var g1 = Group.Generate(bg, gGens);
+        ConcreteGroup<T1> g1;
+        if (bg is ConcreteGroup<T1> gi)
+            g1 = gi;
+        else
+            g1 = Group.Generate(bg, gGens);
 
-        var g2ByOrders = g2.GroupBy(e => g2.ElementsOrders[e]).Select(e => (ord: e.Key, auts: e.ToArray()))
+        bool Filter(int e, int a) => mType == MorphismType.Homomorphism ? e % a == 0 : e == a;
+
+        var g2ByOrders = g2.GroupBy(e => g2.ElementsOrders[e])
+            .Select(e => (ord: e.Key, auts: e.ToArray()))
             .ToArray();
         var gGensOrders = gGens.Select(e => (g: e, ord: g1.ElementsOrders[e])).ToArray();
         var gpMap = gGensOrders.Select(e =>
-                g2ByOrders.Where(a => e.ord % a.ord == 0).SelectMany(a => a.auts).Select(a => (e.g, a))
+                g2ByOrders.Where(a => Filter(e.ord, a.ord)).SelectMany(a => a.auts).Select(a => (e.g, a))
                     .ToArray())
             .ToArray();
 
@@ -172,21 +186,59 @@ public static partial class Group
             maps = tmpMaps.ToList();
         }
 
-        List<Dictionary<T1, T2>> allHomomorphisms = new();
+        List<Dictionary<T1, T2>> allMorphisms = new();
         var ng = g1.Count();
         foreach (var map in maps)
         {
-            var hom = Group.HomomorphismMap(g1, g2, map);
-            if (hom.Count == ng)
-                allHomomorphisms.Add(hom);
+            if (mType == MorphismType.Homomorphism)
+            {
+                var hom = Group.HomomorphismMap(g1, g2, map);
+                if (hom.Count == ng)
+                    allMorphisms.Add(hom);
+            }
+            else
+            {
+                var iso = Group.IsomorphismMap(g1, g2, map);
+                if (iso.Count == ng && iso.Values.Count() == ng)
+                    allMorphisms.Add(iso);
+            }
         }
 
-        if (allHomomorphisms.Count == 0)
+        if (allMorphisms.Count == 0)
         {
             return new List<Dictionary<T1, T2>>() { new() };
         }
 
-        return allHomomorphisms.Distinct().ToList();
+        return allMorphisms.Distinct().ToList();
+    }
+
+    public static List<Dictionary<T1, T2>> AllIsomorphisms<T1, T2>(IGroup<T1> bg, ConcreteGroup<T2> g2)
+        where T1 : struct, IElt<T1>
+        where T2 : struct, IElt<T2>
+    {
+        return AllMorphisms(bg, g2, MorphismType.Isomorphism);
+    }
+
+    public static List<Dictionary<T, T>> AllAutomorphisms<T>(ConcreteGroup<T> g)
+        where T : struct, IElt<T>
+    {
+        return AllIsomorphisms(g, g);
+    }
+
+    public static ConcreteGroup<Automorphism<T>> AutomorphismGroup<T>(ConcreteGroup<T> g)
+        where T : struct, IElt<T>
+    {
+        var bgAut = new AutomorphismGroup<T>(g);
+        var allAut = AllAutomorphisms(g);
+        var autG = Generate($"Aut[{g.Name}]", bgAut, allAut.Select(aut => new Automorphism<T>(bgAut, aut)).ToArray());
+        return autG;
+    }
+
+    public static List<Dictionary<T1, T2>> AllHomomorphisms<T1, T2>(IGroup<T1> bg, ConcreteGroup<T2> g2)
+        where T1 : struct, IElt<T1>
+        where T2 : struct, IElt<T2>
+    {
+        return AllMorphisms(bg, g2, MorphismType.Homomorphism);
     }
 
     public static List<Dictionary<T2, Automorphism<T1>>> AllOpsByAutomorphisms<T1, T2>(IGroup<T2> bg, IGroup<T1> bn)
