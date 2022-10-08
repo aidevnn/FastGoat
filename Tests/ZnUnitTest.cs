@@ -90,6 +90,28 @@ public class ZnUnitTest
         Assert.Equal(g3.Invert(g3[(2, 3), 10]), g3[(3, 5), 2]);
         Assert.Equal(g3.Op(g3[(2, 3), 10], g3[(4, 7), 5]), g3[(1, 2), 3]);
         Assert.Equal(g3.Times(g3[(2, 3), 10], 4), g3[(3, 4), 4]);
+
+        var g4 = Product.Group(z12, z12, z12, z12);
+        var ep4 = Product.Elt(z12[1], z12[3], z12[5], z12[6]);
+        Assert.Equal(g4.Neutral(), g4[0, 0, 0, 0]);
+        Assert.Equal(g4[11, 9, 7, 6], g4.Invert(ep4));
+        Assert.Equal(g4[2, 6, 10, 0], g4.Op(ep4, ep4));
+        Assert.Equal(ep4, g4[1, 3, 5, 6]);
+        Assert.True(ep4.Equals(g4[1, 3, 5, 6]));
+        Assert.Equal(1, ep4.CompareTo(g4[1, 3, 4, 6]));
+        Assert.Single(g4);
+        Assert.Equal(4, g4.GetGenerators().Count());
+
+        var g5 = Product.Group(z12, z12, z12, z12, z12);
+        var ep5 = Product.Elt(z12[1], z12[3], z12[5], z12[6], z12[2]);
+        Assert.Equal(g5.Neutral(), g5[0, 0, 0, 0, 0]);
+        Assert.Equal(g5[11, 9, 7, 6, 10], g5.Invert(ep5));
+        Assert.Equal(g5[2, 6, 10, 0, 4], g5.Op(ep5, ep5));
+        Assert.Equal(ep5, g5[1, 3, 5, 6, 2]);
+        Assert.True(ep5.Equals(g5[1, 3, 5, 6, 2]));
+        Assert.Equal(1, ep5.CompareTo(g5[1, 3, 4, 6, 1]));
+        Assert.Single(g5);
+        Assert.Equal(5, g5.GetGenerators().Count());
     }
 
     [Fact]
