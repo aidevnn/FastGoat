@@ -136,11 +136,11 @@ public class ConcreteGroup<T> : IConcreteGroup<T> where T : struct, IElt<T>
         }
     }
 
-    public bool IsIsomorphicTo<TU>(IConcreteGroup<TU> gu) where TU : struct, IElt<TU>
+    public bool IsIsomorphicTo<Tu>(ConcreteGroup<Tu> gu) where Tu : struct, IElt<Tu>
     {
-        var set0 = ElementsOrders.Values.Ascending();
-        var set1 = gu.ElementsOrders.Values.Ascending();
-        return set0.SequenceEqual(set1);
+        var homs = Group.AllHomomorphisms(this, gu, true);
+        var nbIsomorphisms = homs.Count(h => h.Values.Distinct().Count() == h.Count);
+        return nbIsomorphisms > 0;
     }
 
     public override int GetHashCode()
