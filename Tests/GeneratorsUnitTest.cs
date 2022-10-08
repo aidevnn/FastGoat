@@ -147,19 +147,19 @@ public class GeneratorsUnitTest
         var n1 = Product.Group(new Zn(2), new Zn(2), new Zn(2));
         var allHom1 = Group.AllOpsByAutomorphisms(g1, n1);
         Assert.Equal(148, allHom1.Count);
-        
+
         // gap> Size(AllHomomorphisms(AbelianGroup([2,2,2]),AutomorphismGroup(AbelianGroup([2,2])))); = 22
         var g2 = Product.Group(new Zn(2), new Zn(2), new Zn(2));
         var n2 = Product.Group(new Zn(2), new Zn(2));
         var allHom2 = Group.AllOpsByAutomorphisms(g2, n2);
         Assert.Equal(22, allHom2.Count);
-        
+
         // gap> Size(AllHomomorphisms(AbelianGroup([2,4]),AutomorphismGroup(AbelianGroup([3,3])))); = 88
         var g3 = Product.Group(new Zn(2), new Zn(4));
         var n3 = Product.Group(new Zn(3), new Zn(3));
         var allHom3 = Group.AllOpsByAutomorphisms(g3, n3);
         Assert.Equal(88, allHom3.Count);
-        
+
         // gap> Size(AllHomomorphisms(AbelianGroup([2,2]),AutomorphismGroup(AbelianGroup([3,3])))); = 76
         var g4 = Product.Group(new Zn(2), new Zn(2));
         var n4 = Product.Group(new Zn(3), new Zn(3));

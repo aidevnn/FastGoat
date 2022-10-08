@@ -73,7 +73,9 @@ public class AutomorphismUnitTest
         var y1 = gbAut[(S3[(1, 2)], S3[(2, 3)]), (S3[(1, 3)], S3[(1, 2)])];
         var y2 = gbAut[(S3[(1, 2)], S3[(1, 3)]), (S3[(1, 3)], S3[(1, 2)])];
         var AutS3 = Group.Generate(y1, y2);
-        Assert.True(AutS3.IsIsomorphicTo(S3));
+        var sdp = Group.SemiDirectProd(new Cn(3), new Cn(2));
+        Assert.True(sdp.IsIsomorphicTo(AutS3));
+        Assert.True(sdp.IsIsomorphicTo(S3));
     }
 
     [Fact]
@@ -81,10 +83,11 @@ public class AutomorphismUnitTest
     {
         Assert.Single(new Un(2));
         Assert.Equal(2, new Un(3).Count());
-        Assert.True(new Un(4).IsIsomorphicTo(new Un(3)));
-        Assert.True(new Un(5).IsIsomorphicTo(new Cn(4)));
+        Assert.True(new Cn(2).IsIsomorphicTo(new Un(3)));
+        Assert.True(new Cn(2).IsIsomorphicTo(new Un(4)));
+        Assert.True(new Cn(4).IsIsomorphicTo(new Un(5)));
         var klein = Group.Create(Product.Group(new Cn(2), new Cn(2)));
-        Assert.True(new Un(8).IsIsomorphicTo(klein));
+        Assert.True(klein.IsIsomorphicTo(new Un(8)));
     }
 
     [Fact]
@@ -95,7 +98,9 @@ public class AutomorphismUnitTest
             var un = new Un(k);
             var cn = new Cn(k);
             var autCn = Group.Aut(cn[1]);
-            Assert.True(un.IsIsomorphicTo(autCn));
+            var arr1 = autCn.ElementsOrders.Select(kp => kp.Value).Ascending().ToArray();
+            var arr2 = un.ElementsOrders.Select(kp => kp.Value).Ascending().ToArray();
+            Assert.True(arr1.SequenceEqual(arr2));
         }
     }
 
@@ -118,7 +123,9 @@ public class AutomorphismUnitTest
                 var autCmXCn = Group.Aut(gmn[1, 0], gmn[0, 1]);
                 var umn = Product.Generate(um, un);
                 Assert.Equal(um.Count() * un.Count(), autCmXCn.Count());
-                Assert.True(umn.IsIsomorphicTo(autCmXCn));
+                var arr1 = autCmXCn.ElementsOrders.Select(kp => kp.Value).Ascending().ToArray();
+                var arr2 = umn.ElementsOrders.Select(kp => kp.Value).Ascending().ToArray();
+                Assert.True(arr1.SequenceEqual(arr2));
             }
         }
     }
