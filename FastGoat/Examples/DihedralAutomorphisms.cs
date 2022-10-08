@@ -5,7 +5,7 @@ using FastGoat.UserGroup;
 
 namespace FastGoat.Examples;
 
-public static class Dihedral
+public static class DihedralAutomorphisms
 {
     static ConcreteGroup<Perm> DnPerm(int n = 16)
     {
@@ -35,7 +35,7 @@ public static class Dihedral
 
     public static void Dn()
     {
-        int n = 8;
+        int n = 18;
         var d2n = DnSdp(n);
         var d2n2 = DnPerm(n);
         DisplayGroup.HeadSdp(d2n);
@@ -45,14 +45,24 @@ public static class Dihedral
 
     public static void AutDn()
     {
-        for (int n = 4; n <= 32; n += 2)
+        for (int n = 6; n <= 32; n += 2)
         {
             var d2n = DnSdp(n / 2);
             var homD2N = Group.AllHomomorphisms(d2n, d2n);
             var autD2N = homD2N.Where(h => h.Values.Distinct().Count() == h.Count && h.Count == d2n.Count()).ToArray();
-            Console.WriteLine("Nb Aut(D{0}) = {1}", n, autD2N.Length);
+
+            var a = d2n[1, 0];
+            var b = d2n[0, 1];
+            var autH = autD2N.Where(aut => aut[a].Equals(a)).ToArray();
+            var autK = autD2N.Where(aut => aut[b].Equals(b)).ToArray();
+
+            var phi = new Un(n / 2).Count();
+            Console.WriteLine("|Aut(D{0})| = {1}; phi({2}) = {3}", n, autD2N.Length, n / 2, phi);
+            Console.WriteLine($"a={a}[{d2n.ElementsOrders[a]}] b={b}[{d2n.ElementsOrders[b]}]");
+            Console.WriteLine("|y in Aut(D{0}), y(a)=a| = {1,-3}; |y in Aut(D{0}), y(b) = b| = {2,-3}",n, autH.Count(), autK.Count());
+            Console.WriteLine();
         }
-        
+
         // gap> for i in [2..16] do
         // > dn:=DihedralGroup(2*i);
         // > Print("Nb Aut(D", 2*i, ") = ", Size(AllAutomorphisms(dn)),"\n");
