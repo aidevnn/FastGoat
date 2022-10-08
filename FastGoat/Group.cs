@@ -19,16 +19,15 @@ public static partial class Group
         return acc;
     }
 
-    private static IEnumerable<T> GenerateElements<T>(IGroup<T> bg, IEnumerable<T> elements) where T : struct, IElt<T>
+    public static HashSet<T> GenerateElements<T>(IGroup<T> bg, HashSet<T> elements, List<T> generators)
+        where T : struct, IElt<T>
     {
-        var generators = elements.ToHashSet().ToArray();
         var bg0 = bg.Neutral().BaseGroup;
-        if (generators.Any(e => !bg0.Equals(e.BaseGroup)))
+        if (!elements.Contains(bg.Neutral()))
             throw new GroupException(GroupExceptionType.BaseGroup);
 
-        var q = new Queue<T>();
-        q.Enqueue(bg.Neutral());
-        HashSet<T> generatedElements = new HashSet<T>() { bg.Neutral() };
+        var q = new Queue<T>(elements);
+        HashSet<T> generatedElements = new HashSet<T>(elements);
         while (q.Count != 0)
         {
             var e1 = q.Dequeue();
@@ -41,6 +40,11 @@ public static partial class Group
         }
 
         return generatedElements;
+    }
+
+    private static HashSet<T> GenerateElements<T>(IGroup<T> bg, List<T> generators) where T : struct, IElt<T>
+    {
+        return GenerateElements(bg, new HashSet<T>() { bg.Neutral() }, generators);
     }
 
     public static IEnumerable<T> GenerateElements<T>(IGroup<T> bg, params T[] elements) where T : struct, IElt<T>

@@ -38,7 +38,9 @@ public class SemiDirectProduct<T1, T2> : ConcreteGroup<Ep2<T1, T2>>
         foreach (var e in N.GetGenerators())
             generators.Add(Product.Elt(e, G.Neutral()));
 
-        Elements = Group.GenerateElements(this, generators.ToArray()).ToHashSet();
+        var (tmpElements, uniqueGenerators) = InternalGenerators(generators.ToArray());
+        PseudoGenerators = uniqueGenerators;
+        Elements = tmpElements;
         LongestCycles = Group.LongestCycles(this, Elements);
         ElementsOrders = Group.ElementsOrders(LongestCycles);
         GroupType = Group.IsCommutative(this, LongestCycles.Keys)

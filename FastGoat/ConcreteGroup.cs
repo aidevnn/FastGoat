@@ -8,13 +8,14 @@ public class ConcreteGroup<T> : IConcreteGroup<T> where T : struct, IElt<T>
     public ConcreteGroup(string name, IGroup<T> g, bool singleton = false)
     {
         Name = name;
-        Hash = new HashCode().ToHashCode();
+        Hash = Guid.NewGuid().GetHashCode();
         var ne = g.Neutral();
         BaseGroup = ne.BaseGroup;
         SuperGroup = g as ConcreteGroup<T>;
         if (singleton)
         {
             Elements = new HashSet<T> { ne };
+            PseudoGenerators = new List<T>();
             var kp = new Dictionary<T, int> { [ne] = 1 };
             ElementsOrders = new ReadOnlyDictionary<T, int>(kp);
             var lc = new Dictionary<T, ReadOnlyDictionary<T, int>> { [ne] = ElementsOrders };
@@ -23,6 +24,7 @@ public class ConcreteGroup<T> : IConcreteGroup<T> where T : struct, IElt<T>
         }
         else
         {
+            PseudoGenerators = SuperGroup?.GetGenerators().ToList() ?? g.GetGenerators().ToList();
             Elements = SuperGroup?.GetElements().ToHashSet() ?? new HashSet<T>(g);
             LongestCycles = SuperGroup?.LongestCycles ?? Group.LongestCycles(g, Elements);
             ElementsOrders = SuperGroup?.ElementsOrders ?? Group.ElementsOrders(LongestCycles);
@@ -39,14 +41,15 @@ public class ConcreteGroup<T> : IConcreteGroup<T> where T : struct, IElt<T>
     public ConcreteGroup(string name, IGroup<T> g, T[] generators)
     {
         Name = name;
-        Hash = new HashCode().ToHashCode();
+        Hash = Guid.NewGuid().GetHashCode();
         var ne = g.Neutral();
         BaseGroup = ne.BaseGroup;
         SuperGroup = g as ConcreteGroup<T>;
         if (SuperGroup is not null && generators.Any(e => !SuperGroup.Contains(e)))
             throw new GroupException(GroupExceptionType.GroupDef);
 
-        var tmpElements = Group.GenerateElements(g, generators);
+        var (tmpElements, uniqueGenerators) = InternalGenerators(generators);
+        PseudoGenerators = uniqueGenerators;
         Elements = new HashSet<T>(tmpElements);
         LongestCycles = Group.LongestCycles(g, Elements);
         ElementsOrders = Group.ElementsOrders(LongestCycles);
@@ -57,6 +60,24 @@ public class ConcreteGroup<T> : IConcreteGroup<T> where T : struct, IElt<T>
 
     public ConcreteGroup(IGroup<T> g, T[] generators) : this(g.Name, g, generators)
     {
+    }
+
+    protected List<T> PseudoGenerators { get; set; }
+
+    protected (HashSet<T> elements, List<T> uniqueGenerators) InternalGenerators(T[] generators)
+    {
+        HashSet<T> tmpElements = new() { this.Neutral() };
+        List<T> uniqueGenerators = new();
+        foreach (var elt in generators)
+        {
+            if (tmpElements.Contains(elt))
+                continue;
+
+            uniqueGenerators.Add(elt);
+            tmpElements = Group.GenerateElements(this, tmpElements, uniqueGenerators);
+        }
+
+        return (tmpElements, uniqueGenerators);
     }
 
     protected HashSet<T> Elements { get; set; }
@@ -82,12 +103,17 @@ public class ConcreteGroup<T> : IConcreteGroup<T> where T : struct, IElt<T>
         return other?.Hash == Hash;
     }
 
-    public int Hash { get; }
+    public int Hash { get; protected set; }
 
     public IEnumerable<T> GetGenerators()
     {
         if (LongestCycles.Count == 1)
             yield return LongestCycles.First().Key;
+        else if (PseudoGenerators.Count() != 0)
+        {
+            foreach (var e in PseudoGenerators)
+                yield return e;
+        }
         else
         {
             var bgGens = BaseGroup.GetGenerators().ToArray();
