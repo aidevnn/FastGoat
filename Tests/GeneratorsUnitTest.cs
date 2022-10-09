@@ -104,39 +104,39 @@ public class GeneratorsUnitTest
     public void Test4GapAllAutomorphisms()
     {
         // gap> Size(AllAutomorphisms(AbelianGroup([2,3]))); = 2
-        var n1 = Product.Group(new Zn(2), new Zn(3));
-        var autN1 = Group.Aut(n1, n1.GetGenerators().ToArray());
+        var n1 = Product.Generate(new Cn(2), new Cn(3));
+        var autN1 = Group.AllAutomorphisms(n1);
         Assert.Equal(2, autN1.Count());
 
         // gap> Size(AllAutomorphisms(AbelianGroup([3,3]))); = 48
-        var n2 = Product.Group(new Zn(3), new Zn(3));
-        var autN2 = Group.Aut(n2, n2.GetGenerators().ToArray());
+        var n2 = Product.Generate(new Cn(3), new Cn(3));
+        var autN2 = Group.AllAutomorphisms(n2);
         Assert.Equal(48, autN2.Count());
 
         // gap> Size(AllAutomorphisms(AbelianGroup([2,2,2]))); = 168
-        var n3 = Product.Group(new Zn(2), new Zn(2), new Zn(2));
-        var autN3 = Group.Aut(n3, n3.GetGenerators().ToArray());
+        var n3 = Product.Generate(new Cn(2), new Cn(2), new Cn(2));
+        var autN3 = Group.AllAutomorphisms(n3);
         Assert.Equal(168, autN3.Count());
 
         // gap> Size(AllAutomorphisms(AbelianGroup([4,4]))); = 96
-        var n4 = Product.Group(new Zn(4), new Zn(4));
-        var autN4 = Group.Aut(n4, n4.GetGenerators().ToArray());
+        var n4 = Product.Generate(new Cn(4), new Cn(4));
+        var autN4 =Group.AllAutomorphisms(n4);
         Assert.Equal(96, autN4.Count());
 
         // gap> Size(AllAutomorphisms(AbelianGroup([3,5]))); = 8
-        var n5 = Product.Group(new Zn(3), new Zn(5));
-        var autN5 = Group.Aut(n5, n5.GetGenerators().ToArray());
+        var n5 = Product.Generate(new Cn(3), new Cn(5));
+        var autN5 = Group.AllAutomorphisms(n5);
         Assert.Equal(8, autN5.Count());
 
         // gap> Size(AllAutomorphisms(AbelianGroup([5,5]))); = 480
-        var n6 = Product.Group(new Zn(5), new Zn(5));
-        var autN6 = Group.Aut(n6, n6.GetGenerators().ToArray());
-        Assert.Equal(480, autN6.Count()); // 12sec
+        var n6 = Product.Generate(new Cn(5), new Cn(5));
+        var autN6 = Group.AllAutomorphisms(n6);
+        Assert.Equal(480, autN6.Count());
 
         // // gap> Size(AllAutomorphisms(AbelianGroup([3,3,3]))); = 11232
-        // var n7 = Product.Group(new Zn(3), new Zn(3), new Zn(3));
-        // var autN7 = Group.Aut(n7, n7.GetGenerators().ToArray());
-        // Assert.Equal(11232, autN7.Count()); // still running
+        // var n7 = Product.Generate(new Cn(3), new Cn(3), new Cn(3));
+        // var autN7 = Group.AllAutomorphisms(n7);
+        // Assert.Equal(11232, autN7.Count()); // 2sec
     }
 
     [Fact]

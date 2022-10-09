@@ -15,8 +15,12 @@ public class QuotientGroup<T> : ConcreteGroup<T> where T : struct, IElt<T>
         Representatives = new ReadOnlyDictionary<T, T>(representatives);
         Elements = Representatives.Values.ToHashSet();
         LongestCycles = Group.LongestCycles(this, Elements);
-        ElementsOrders = Group.ElementsOrders(LongestCycles);
+        ElementsOrders = Group.ElementsOrders(this, LongestCycles);
         GroupType = Group.IsCommutative(this, Elements) ? GroupType.AbelianGroup : GroupType.NonAbelianGroup;
+        
+        
+        var (tmpElements, uniqueGenerators) = InternalGenerators(LongestCycles.Keys.ToArray());
+        PseudoGenerators = new(uniqueGenerators);
     }
 
     public ReadOnlyDictionary<T, ReadOnlyCollection<T>> Cosets { get; }

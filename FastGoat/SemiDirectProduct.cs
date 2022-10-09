@@ -39,10 +39,10 @@ public class SemiDirectProduct<T1, T2> : ConcreteGroup<Ep2<T1, T2>>
             generators.Add(Product.Elt(e, G.Neutral()));
 
         var (tmpElements, uniqueGenerators) = InternalGenerators(generators.ToArray());
-        PseudoGenerators = uniqueGenerators;
+        PseudoGenerators = new(uniqueGenerators);
         Elements = tmpElements;
         LongestCycles = Group.LongestCycles(this, Elements);
-        ElementsOrders = Group.ElementsOrders(LongestCycles);
+        ElementsOrders = Group.ElementsOrders(this, LongestCycles);
         GroupType = Group.IsCommutative(this, LongestCycles.Keys)
             ? GroupType.AbelianGroup
             : GroupType.NonAbelianGroup;

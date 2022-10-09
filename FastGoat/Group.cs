@@ -71,7 +71,7 @@ public static partial class Group
         IEnumerable<T> elements)
         where T : struct, IElt<T>
     {
-        var set = elements.ToHashSet();
+        var set = elements.Ascending().ToHashSet();
         var allCycles = new Dictionary<T, ReadOnlyDictionary<T, int>>(set.Count);
 
         while (set.Count != 0)
@@ -79,44 +79,21 @@ public static partial class Group
             var e0 = set.First();
             var cycle0 = Cycle(g, e0);
             set.ExceptWith(cycle0.Keys);
-            if (allCycles.Count == 0)
-            {
-                allCycles[e0] = cycle0;
+            if (e0.Equals(g.Neutral()))
                 continue;
-            }
 
-            var tmpCycles = allCycles.Select(p => (p.Key, p.Value)).ToArray();
-            allCycles.Clear();
-            var done = false;
-            foreach (var (e1, cycle1) in tmpCycles)
-                if (cycle0.Count % cycle1.Count != 0)
-                {
-                    allCycles[e1] = cycle1;
-                }
-                else
-                {
-                    if (cycle1.ContainsKey(e0))
-                    {
-                        allCycles[e1] = cycle1;
-                        done = true;
-                    }
-                    else if (!cycle0.ContainsKey(e1))
-                    {
-                        allCycles[e1] = cycle1;
-                    }
-                }
-
-            if (!done) allCycles[e0] = cycle0;
+            allCycles[e0] = cycle0;
         }
 
         return new ReadOnlyDictionary<T, ReadOnlyDictionary<T, int>>(allCycles);
     }
 
-    public static ReadOnlyDictionary<T, int> ElementsOrders<T>(
+    public static ReadOnlyDictionary<T, int> ElementsOrders<T>(IGroup<T> g,
         ReadOnlyDictionary<T, ReadOnlyDictionary<T, int>> longCycles)
         where T : struct, IElt<T>
     {
         var orders = new Dictionary<T, int>();
+        orders[g.Neutral()] = 1;
         foreach (var (_, cycle) in longCycles)
         {
             var n = cycle.Count;

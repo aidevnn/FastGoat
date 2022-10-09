@@ -15,7 +15,7 @@ public class ConcreteGroup<T> : IConcreteGroup<T> where T : struct, IElt<T>
         if (singleton)
         {
             Elements = new HashSet<T> { ne };
-            PseudoGenerators = new List<T>();
+            PseudoGenerators = new(new List<T>());
             var kp = new Dictionary<T, int> { [ne] = 1 };
             ElementsOrders = new ReadOnlyDictionary<T, int>(kp);
             var lc = new Dictionary<T, ReadOnlyDictionary<T, int>> { [ne] = ElementsOrders };
@@ -24,10 +24,11 @@ public class ConcreteGroup<T> : IConcreteGroup<T> where T : struct, IElt<T>
         }
         else
         {
-            PseudoGenerators = SuperGroup?.GetGenerators().ToList() ?? g.GetGenerators().ToList();
+            var pseudo = SuperGroup?.GetGenerators().ToList() ?? g.GetGenerators().ToList();
+            PseudoGenerators = new(pseudo);
             Elements = SuperGroup?.GetElements().ToHashSet() ?? new HashSet<T>(g);
             LongestCycles = SuperGroup?.LongestCycles ?? Group.LongestCycles(g, Elements);
-            ElementsOrders = SuperGroup?.ElementsOrders ?? Group.ElementsOrders(LongestCycles);
+            ElementsOrders = SuperGroup?.ElementsOrders ?? Group.ElementsOrders(g, LongestCycles);
             GroupType = SuperGroup?.GroupType ?? (Group.IsCommutative(g, LongestCycles.Keys)
                 ? GroupType.AbelianGroup
                 : GroupType.NonAbelianGroup);
@@ -49,20 +50,21 @@ public class ConcreteGroup<T> : IConcreteGroup<T> where T : struct, IElt<T>
             throw new GroupException(GroupExceptionType.GroupDef);
 
         var (tmpElements, uniqueGenerators) = InternalGenerators(generators);
-        PseudoGenerators = uniqueGenerators;
         Elements = new HashSet<T>(tmpElements);
         LongestCycles = Group.LongestCycles(g, Elements);
-        ElementsOrders = Group.ElementsOrders(LongestCycles);
+        ElementsOrders = Group.ElementsOrders(g, LongestCycles);
         GroupType = Group.IsCommutative(g, LongestCycles.Keys)
             ? GroupType.AbelianGroup
             : GroupType.NonAbelianGroup;
+        
+        PseudoGenerators = new(InternalGenerators(LongestCycles.Keys.ToArray()).uniqueGenerators);
     }
 
     public ConcreteGroup(IGroup<T> g, T[] generators) : this(g.Name, g, generators)
     {
     }
 
-    protected List<T> PseudoGenerators { get; set; }
+    public ReadOnlyCollection<T> PseudoGenerators { get; protected set; }
 
     protected (HashSet<T> elements, List<T> uniqueGenerators) InternalGenerators(T[] generators)
     {
@@ -107,7 +109,9 @@ public class ConcreteGroup<T> : IConcreteGroup<T> where T : struct, IElt<T>
 
     public IEnumerable<T> GetGenerators()
     {
-        if (LongestCycles.Count == 1)
+        if (Elements.Count == 1)
+            yield return Neutral();
+        else if (LongestCycles.Count == 1)
             yield return LongestCycles.First().Key;
         else if (PseudoGenerators.Count() != 0)
         {
@@ -116,17 +120,7 @@ public class ConcreteGroup<T> : IConcreteGroup<T> where T : struct, IElt<T>
         }
         else
         {
-            var bgGens = BaseGroup.GetGenerators().ToArray();
-            var prod = bgGens.Aggregate(1, (acc, a) => ElementsOrders[a] * acc);
-            if (prod == Elements.Count)
-            {
-                foreach (var e in bgGens)
-                    yield return e;
-            }
-            else
-            {
-                throw new GroupException(GroupExceptionType.GroupDef);
-            }
+            throw new GroupException(GroupExceptionType.GroupDef);
         }
     }
 
@@ -164,10 +158,8 @@ public class ConcreteGroup<T> : IConcreteGroup<T> where T : struct, IElt<T>
 
     public bool IsIsomorphicTo<Tu>(ConcreteGroup<Tu> gu) where Tu : struct, IElt<Tu>
     {
-        var homs = Group.AllHomomorphisms(this, gu);
-        var nb = gu.Count();
-        var nbIsomorphisms = homs.Count(h => h.Values.Distinct().Count() == h.Count && h.Count == nb);
-        return nbIsomorphisms > 0;
+        var homs = Group.AllIsomorphisms(this, gu);
+        return homs.Count > 0;
     }
 
     public override int GetHashCode()

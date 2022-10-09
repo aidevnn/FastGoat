@@ -147,8 +147,44 @@ namespace FastGoat
             return a0;
         }
 
+        public static IEnumerable<int> LoopPowMod(int a, int mod)
+        {
+            HashSet<int> set = new() { a };
+            int a0 = a;
+            while (true)
+            {
+                a0 = (a0 * a) % mod;
+                if (!set.Add(a0))
+                    break;
+            }
+
+            return set;
+        }
+
+        public static IEnumerable<int> PowModSubGroups(int mod)
+        {
+            var setCoprimes = Enumerable.Range(2, mod - 2).Where(i => Gcd(i, mod) == 1).ToHashSet();
+            HashSet<int> setGenerators = new();
+            while (setCoprimes.Count != 0)
+            {
+                var a = setCoprimes.Min();
+                setGenerators.Add(a);
+                var loop = LoopPowMod(a, mod).ToArray();
+                setCoprimes.ExceptWith(loop); 
+            }
+
+            return setGenerators;
+        }
+
         // Saunders MacLane, Garrett Birkhoff. Algebra (3rd ed.) criteria
         public static int Solve_k_pow_m_equal_one_mod_n(int n, int m)
+        {
+            var seq = Enumerable.Range(2, n - 2);
+            var criteria = seq.Where(i => Gcd(i, n) == 1 && PowMod(i, m, n) == 1);
+            return criteria.FirstOrDefault();
+        }
+
+        public static int KpowMmodN(int n, int m)
         {
             var seq = Enumerable.Range(2, n - 2);
             var criteria = seq.Where(i => Gcd(i, n) == 1 && PowMod(i, m, n) == 1);

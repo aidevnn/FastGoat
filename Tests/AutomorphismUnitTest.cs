@@ -112,20 +112,21 @@ public class AutomorphismUnitTest
         {
             var um = new Un(m);
             var cm = new Cn(m);
-            for (int n = 2; n < N; ++n)
+            for (int n = m; n < N; ++n)
             {
                 if (IntExt.Gcd(m, n) != 1)
                     continue;
 
                 var un = new Un(n);
                 var cn = new Cn(n);
-                var gmn = Product.Group(cm, cn);
-                var autCmXCn = Group.Aut(gmn[1, 0], gmn[0, 1]);
+                var gmn = Product.Generate(cm, cn);
+                var autCmXCn = Group.AutomorphismGroup(gmn);
                 var umn = Product.Generate(um, un);
                 Assert.Equal(um.Count() * un.Count(), autCmXCn.Count());
                 var arr1 = autCmXCn.ElementsOrders.Select(kp => kp.Value).Ascending().ToArray();
                 var arr2 = umn.ElementsOrders.Select(kp => kp.Value).Ascending().ToArray();
                 Assert.True(arr1.SequenceEqual(arr2));
+                // Assert.True(umn.IsIsomorphicTo(autCmXCn)); // costly
             }
         }
     }
