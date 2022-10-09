@@ -7,23 +7,30 @@ namespace FastGoat
             Primes10000 = new(AllPrimes(10000));
             Partitions32 = IntPartitions(32);
 
-            AllPermutations = new Dictionary<int, int[][]>();
-            var acc = new List<List<int>> { new() };
-            var comp = Comparer<List<int>>.Create((a, b) => a.SequenceCompareTo(b));
-            for (var i = 0; i < 8; ++i)
+            var comp = Comparer<int[]>.Create((a, b) => a.SequenceCompareTo(b));
+            AllPermutations = new Dictionary<int, int[][]>
             {
-                var tmpAcc = new List<List<int>>();
-                foreach (var l0 in acc)
-                    for (var k = 0; k <= i; ++k)
-                    {
-                        var l1 = l0.ToList();
-                        l1.Insert(k, i);
-                        tmpAcc.Add(l1);
-                    }
+                [0] = new[] { Array.Empty<int>() }
+            };
+            for (int k = 1; k <= 8; ++k)
+            {
+                int k0 = k;
+                AllPermutations[k] = Enumerable.Range(0, k)
+                    .SelectMany(c =>
+                        AllPermutations[k - 1].Select(l => l.Take(c).Append(k0).Concat(l.Skip(c)).ToArray()))
+                    .OrderBy(a => a, comp).ToArray();
+            }
 
-                acc = tmpAcc.ToList();
-                AllPermutations[i + 1] =
-                    acc.OrderBy(a => a, comp).Select(a => a.Select(b => b + 1).ToArray()).ToArray();
+            AllCombinations = new Dictionary<int, int[][]>
+            {
+                [0] = new[] { Array.Empty<int>() }
+            };
+            for (int k = 1; k <= 4; ++k)
+            {
+                AllCombinations[k] = Enumerable.Range(0, 2)
+                    .SelectMany(c => 
+                        AllCombinations[k - 1].Select(l => l.Prepend(c).ToArray()))
+                    .ToArray();
             }
         }
 
@@ -116,6 +123,7 @@ namespace FastGoat
         }
 
         private static Dictionary<int, int[][]> AllPermutations { get; }
+        private static Dictionary<int, int[][]> AllCombinations { get; }
 
         public static int Gcd(int a, int b)
         {
@@ -244,6 +252,16 @@ namespace FastGoat
         public static int[] GetPermutation(int n, int k)
         {
             return AllPermutations[n][k];
+        }
+
+        public static int[][] GetCombinations(int n)
+        {
+            return AllCombinations[n];
+        }
+
+        public static int[] GetCombination(int n, int k)
+        {
+            return AllCombinations[n][k];
         }
 
         public static int GenHash(int n, int[] m)
