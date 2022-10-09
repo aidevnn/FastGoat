@@ -29,6 +29,7 @@ public class ExamplesUnitTest
                 return false;
             }
         }
+
         Assert.True(Test());
     }
 
@@ -41,7 +42,7 @@ public class ExamplesUnitTest
         var g = Group.Create(bg.Name, bg);
         var decomposition = AbelianInvariantsFactors.Reduce(g);
         Assert.True(decomposition.SequenceEqual(new[] { 7, 42 }));
-        
+
         bool Test()
         {
             try
@@ -57,6 +58,7 @@ public class ExamplesUnitTest
                 return false;
             }
         }
+
         Assert.True(Test());
     }
 
@@ -76,6 +78,7 @@ public class ExamplesUnitTest
                 return false;
             }
         }
+
         Assert.True(Test());
     }
 
@@ -97,6 +100,7 @@ public class ExamplesUnitTest
                 return false;
             }
         }
+
         Assert.True(Test());
     }
 
@@ -116,7 +120,7 @@ public class ExamplesUnitTest
                 return false;
             }
         }
+
         Assert.True(Test());
-        
     }
 }

@@ -120,7 +120,7 @@ public class GeneratorsUnitTest
 
         // gap> Size(AllAutomorphisms(AbelianGroup([4,4]))); = 96
         var n4 = Product.Generate(new Cn(4), new Cn(4));
-        var autN4 =Group.AllAutomorphisms(n4);
+        var autN4 = Group.AllAutomorphisms(n4);
         Assert.Equal(96, autN4.Count());
 
         // gap> Size(AllAutomorphisms(AbelianGroup([3,5]))); = 8

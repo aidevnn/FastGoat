@@ -67,6 +67,7 @@ public readonly struct Zn : IGroup<ZnInt>
     {
         yield return new ZnInt(this, 1);
     }
+
     public IEnumerable<ZnInt> GetElements()
     {
         yield return Neutral();

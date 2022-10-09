@@ -168,7 +168,7 @@ public static partial class Group
         var gpMap = gGensOrders.Select(e =>
                 g2ByOrders.Where(a => Filter(e.ord, a.ord)).SelectMany(a => a.elt).Select(a => (e.g, a))
                     .ToArray())
-            .ToArray(); 
+            .ToArray();
 
         var maps = new List<Dictionary<T1, T2>>() { new Dictionary<T1, T2>() };
         foreach (var tuples in gpMap)

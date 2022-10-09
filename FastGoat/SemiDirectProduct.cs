@@ -29,7 +29,7 @@ public class SemiDirectProduct<T1, T2> : ConcreteGroup<Ep2<T1, T2>>
         {
             Name = name;
         }
-        
+
         Theta = new(theta);
         List<Ep2<T1, T2>> generators = new List<Ep2<T1, T2>>();
         foreach (var e in G.GetGenerators())
@@ -46,7 +46,7 @@ public class SemiDirectProduct<T1, T2> : ConcreteGroup<Ep2<T1, T2>>
         GroupType = Group.IsCommutative(this, LongestCycles.Keys)
             ? GroupType.AbelianGroup
             : GroupType.NonAbelianGroup;
-        
+
         Ncan = Group.Generate(N.Name, this, n.Select(e => Product.Elt(e, G.Neutral())).ToArray());
         Gcan = Group.Generate(G.Name, this, g.Select(e => Product.Elt(N.Neutral(), e)).ToArray());
     }

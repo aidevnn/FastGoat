@@ -44,12 +44,12 @@ public static class GroupAction
         var c3c3 = Product.Group(new Cn(3), new Cn(3));
         var autC3C3 = Group.Aut(c3c3[1, 0], c3c3[0, 1]);
         var byOrder = autC3C3.GroupBy(a => autC3C3.ElementsOrders[a]).ToDictionary(a => a.Key, b => b.ToArray());
-        
+
         // Automorphism order divides generator order, it is a necessary condition to create 
         // a valid homomorphism but it is not a sufficient condition
         var orders1 = byOrder.Where(kp => kp.Key != 1 && oe1 % kp.Key == 0).SelectMany(kp => kp.Value).ToArray();
         var orders2 = byOrder.Where(kp => kp.Key != 1 && oe2 % kp.Key == 0).SelectMany(kp => kp.Value).ToArray();
-        
+
         var allPossibles = orders1.SelectMany(a1 => orders2.Select(a2 => (a1, a2))).ToArray();
         var pMap = (Automorphism<Ep2<ZnInt, ZnInt>> a1, Automorphism<Ep2<ZnInt, ZnInt>> a2) =>
             Group.PartialMap((e1, a1), (e2, a2));

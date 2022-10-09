@@ -56,7 +56,7 @@ public class ConcreteGroup<T> : IConcreteGroup<T> where T : struct, IElt<T>
         GroupType = Group.IsCommutative(g, LongestCycles.Keys)
             ? GroupType.AbelianGroup
             : GroupType.NonAbelianGroup;
-        
+
         PseudoGenerators = new(InternalGenerators(LongestCycles.Keys.ToArray()).uniqueGenerators);
     }
 

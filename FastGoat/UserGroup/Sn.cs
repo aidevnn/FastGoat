@@ -30,9 +30,8 @@ public struct Sn : IGroup<Perm>
     {
         for (int i = 1; i < N; ++i)
             yield return this[(i, i + 1)]; // Coxeter generators, other generators are also interesting to add
-
     }
-    
+
     public IEnumerable<Perm> GetElements()
     {
         return IntExt.GetPermutations(N).Select(CreateElement);

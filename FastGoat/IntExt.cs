@@ -170,7 +170,7 @@ namespace FastGoat
                 var a = setCoprimes.Min();
                 setGenerators.Add(a);
                 var loop = LoopPowMod(a, mod).ToArray();
-                setCoprimes.ExceptWith(loop); 
+                setCoprimes.ExceptWith(loop);
             }
 
             return setGenerators;

@@ -17,8 +17,8 @@ public class QuotientGroup<T> : ConcreteGroup<T> where T : struct, IElt<T>
         LongestCycles = Group.LongestCycles(this, Elements);
         ElementsOrders = Group.ElementsOrders(this, LongestCycles);
         GroupType = Group.IsCommutative(this, Elements) ? GroupType.AbelianGroup : GroupType.NonAbelianGroup;
-        
-        
+
+
         var (tmpElements, uniqueGenerators) = InternalGenerators(LongestCycles.Keys.ToArray());
         PseudoGenerators = new(uniqueGenerators);
     }
