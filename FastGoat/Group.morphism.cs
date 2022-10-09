@@ -162,13 +162,78 @@ public static partial class Group
         bool Filter(int e, int a) => mType == MorphismType.Homomorphism ? e % a == 0 : e == a;
 
         var g2ByOrders = g2.GroupBy(e => g2.ElementsOrders[e])
-            .Select(e => (ord: e.Key, auts: e.ToArray()))
+            .Select(e => (ord: e.Key, elt: e.ToArray()))
             .ToArray();
         var gGensOrders = gGens.Select(e => (g: e, ord: g1.ElementsOrders[e])).ToArray();
         var gpMap = gGensOrders.Select(e =>
-                g2ByOrders.Where(a => Filter(e.ord, a.ord)).SelectMany(a => a.auts).Select(a => (e.g, a))
+                g2ByOrders.Where(a => Filter(e.ord, a.ord)).SelectMany(a => a.elt).Select(a => (e.g, a))
                     .ToArray())
+            .ToArray(); 
+
+        var maps = new List<Dictionary<T1, T2>>() { new Dictionary<T1, T2>() };
+        foreach (var tuples in gpMap)
+        {
+            var tmpMaps = new List<Dictionary<T1, T2>>();
+            foreach (var e in tuples)
+            {
+                foreach (var map in maps)
+                {
+                    tmpMaps.Add(new Dictionary<T1, T2>(map) { [e.g] = e.a });
+                }
+            }
+
+            maps.Clear();
+            maps = tmpMaps.ToList();
+        }
+
+        List<Dictionary<T1, T2>> allMorphisms = new();
+        var ng = g1.Count();
+        foreach (var map in maps)
+        {
+            if (mType == MorphismType.Homomorphism)
+            {
+                var hom = Group.HomomorphismMap(g1, g2, map);
+                if (hom.Count == ng)
+                    allMorphisms.Add(hom);
+            }
+            else
+            {
+                var iso = Group.IsomorphismMap(g1, g2, map);
+                if (iso.Count == ng && iso.Values.Count() == ng)
+                    allMorphisms.Add(iso);
+            }
+        }
+
+        if (allMorphisms.Count == 0)
+        {
+            return new List<Dictionary<T1, T2>>() { new() };
+        }
+
+        return allMorphisms.Distinct().ToList();
+    }
+
+    private static List<Dictionary<T1, T2>> AllMorphismsBak<T1, T2>(IGroup<T1> bg, ConcreteGroup<T2> g2,
+        MorphismType mType = MorphismType.Homomorphism)
+        where T1 : struct, IElt<T1>
+        where T2 : struct, IElt<T2>
+    {
+        var gGens = bg.GetGenerators().ToArray();
+        ConcreteGroup<T1> g1;
+        if (bg is ConcreteGroup<T1> gi)
+            g1 = gi;
+        else
+            g1 = Group.Generate(bg, gGens);
+
+        bool Filter(int e, int a) => mType == MorphismType.Homomorphism ? e % a == 0 : e == a;
+
+        var g2ByOrders = g2.GroupBy(e => g2.ElementsOrders[e])
+            .Select(e => (ord: e.Key, elt: e.ToArray()))
             .ToArray();
+        var gGensOrders = gGens.Select(e => (g: e, ord: g1.ElementsOrders[e])).ToArray();
+        var gpMap = gGensOrders.Select(e =>
+                g2ByOrders.Where(a => Filter(e.ord, a.ord)).SelectMany(a => a.elt).Select(a => (e.g, a))
+                    .ToArray())
+            .ToArray(); 
 
         var maps = new List<Dictionary<T1, T2>>() { new Dictionary<T1, T2>() };
         foreach (var tuples in gpMap)
