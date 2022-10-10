@@ -134,4 +134,66 @@ public static class AllSubGroups
         all.UnionWith(allKer8);
         Console.WriteLine($"{g} AllSubGroups : {all.Count()}");
     }
+
+    public static void Symm5SubGroups()
+    {
+        var g = Group.Create(new Sn(5));
+        var all = new HashSet<HashSet<Perm>>(new SeqEquality<Perm>());
+        all.UnionWith(g.Select(e => Group.Generate(g, e).ToHashSet()));
+        Console.WriteLine($"Monogenics SubGroups from elements : {all.Count()}");
+        
+        var (allIm, allKer) = AllImKer(g, g);
+        all.UnionWith(allIm);
+        all.UnionWith(allKer);
+        Console.WriteLine($"All Monogenics and Normals SubGroups : {all.Count()}");
+
+        // S3 subgroups and isomorphic are added by hand
+        var s3 = Group.Generate(g, g[(1, 2)], g[(1, 2, 3)]);
+        var (allIm6, allKer6) = AllImKer(s3, g);
+        all.UnionWith(allIm6);
+        all.UnionWith(allKer6);
+        Console.WriteLine($"With S3 subgroups : {all.Count()}");
+
+        // Dihedral 8 subgroups and isomorphic are by hand
+        var d8 = Group.Generate(g, g[(1, 4), (2, 3)], g[(1, 2, 3, 4)]);
+        var (allIm8, allKer8) = AllImKer(d8, g);
+        all.UnionWith(allIm8);
+        all.UnionWith(allKer8);
+        Console.WriteLine($"With D8 subgroups : {all.Count()}");
+
+        // Dihedral 10 subgroups and isomorphic are by hand
+        var d10 = Group.Generate(g, g[(2, 5), (3, 4)], g[(1, 2, 3, 4, 5)]);
+        var (allImD10, allKerD10) = AllImKer(d10, g);
+        all.UnionWith(allImD10);
+        all.UnionWith(allKerD10);
+        Console.WriteLine($"With D10 subgroups : {all.Count()}");
+
+        // A4 subgroups and isomorphic are added by hand
+        var a4 = Group.Generate("A4", g, g[(1, 2), (3, 4)], g[(1, 2, 3)]);
+        var (allIm12, allKer12) = AllImKer(a4, g);
+        all.UnionWith(allIm12);
+        all.UnionWith(allKer12);
+        Console.WriteLine($"With A4 subgroups : {all.Count()}");
+
+        // C3 : C4 subgroups and isomorphic are added by hand
+        var sdp12 = Group.Generate(g, g[(1, 4, 5)], g[(2, 3)], g[(4, 5)]);
+        var (allIm12b, allKer12b) = AllImKer(sdp12, g);
+        all.UnionWith(allIm12b);
+        all.UnionWith(allKer12b);
+        Console.WriteLine($"With (C3 : C4) subgroups : {all.Count()}");
+
+        // C5 : C4 subgroups and isomorphic are added by hand
+        var sdp20 = Group.Generate(g, g[(2, 3, 5, 4)], g[(1, 2, 3, 4, 5)]);
+        var (allIm20, allKer20) = AllImKer(sdp20, g);
+        all.UnionWith(allIm20);
+        all.UnionWith(allKer20);
+        Console.WriteLine($"With (C5 : C4) subgroups : {all.Count()}");
+
+        // S4 isomorphic is added by hand
+        var s4 = Group.Generate("S4", g, g[(1, 2)], g[(1, 2, 3, 4)]);
+        var (allIm24, allKer24) = AllImKer(s4, g);
+        all.UnionWith(allIm24);
+        all.UnionWith(allKer24);
+        Console.WriteLine($"With S4 subgroups : {all.Count()}");
+    }
 }

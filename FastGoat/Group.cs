@@ -220,7 +220,7 @@ public static partial class Group
             throw new GroupException(GroupExceptionType.GroupDef);
 
         var generators = g1.LongestCycles.Keys.Concat(g2.LongestCycles.Keys).Distinct().ToArray();
-        return new ConcreteGroup<T>(g1.SuperGroup, generators);
+        return new ConcreteGroup<T>($"{g1.Name} x {g2.Name}", g1.SuperGroup, generators);
     }
 
     public static QuotientGroup<T> Over<T>(this ConcreteGroup<T> g, ConcreteGroup<T> h) where T : struct, IElt<T>
