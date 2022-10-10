@@ -21,15 +21,15 @@ namespace FastGoat
                     .OrderBy(a => a, comp).ToArray();
             }
 
-            AllCombinations = new Dictionary<int, int[][]>
+            AllCombinations = new Dictionary<int, bool[][]>
             {
-                [0] = new[] { Array.Empty<int>() }
+                [0] = new[] { Array.Empty<bool>() }
             };
-            for (int k = 1; k <= 4; ++k)
+            for (int k = 1; k <= 10; ++k)
             {
                 AllCombinations[k] = Enumerable.Range(0, 2)
-                    .SelectMany(c => 
-                        AllCombinations[k - 1].Select(l => l.Prepend(c).ToArray()))
+                    .SelectMany(c =>
+                        AllCombinations[k - 1].Select(l => l.Prepend(c == 1).ToArray()))
                     .ToArray();
             }
         }
@@ -123,7 +123,7 @@ namespace FastGoat
         }
 
         private static Dictionary<int, int[][]> AllPermutations { get; }
-        private static Dictionary<int, int[][]> AllCombinations { get; }
+        private static Dictionary<int, bool[][]> AllCombinations { get; }
 
         public static int Gcd(int a, int b)
         {
@@ -254,12 +254,12 @@ namespace FastGoat
             return AllPermutations[n][k];
         }
 
-        public static int[][] GetCombinations(int n)
+        public static bool[][] GetCombinations(int n)
         {
             return AllCombinations[n];
         }
 
-        public static int[] GetCombination(int n, int k)
+        public static bool[] GetCombination(int n, int k)
         {
             return AllCombinations[n][k];
         }
