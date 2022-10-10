@@ -52,7 +52,7 @@ public class GeneratorsUnitTest
         var s3G = s3.GetGenerators().ToArray();
         var gr3 = Group.Generate(s3, s3G);
         Assert.Contains(s3[(1, 2)], s3G);
-        Assert.Contains(s3[(2, 3)], s3G);
+        Assert.Contains(s3[(1, 2, 3)], s3G);
         Assert.Equal(2, s3G.Length);
         Assert.Equal(6, gr3.Count());
 
@@ -60,19 +60,16 @@ public class GeneratorsUnitTest
         var s4G = s4.GetGenerators().ToArray();
         var gr4 = Group.Generate(s4, s4G);
         Assert.Contains(s4[(1, 2)], s4G);
-        Assert.Contains(s4[(2, 3)], s4G);
-        Assert.Contains(s4[(3, 4)], s4G);
-        Assert.Equal(3, s4G.Length);
+        Assert.Contains(s4[(1, 2, 3, 4)], s4G);
+        Assert.Equal(2, s4G.Length);
         Assert.Equal(24, gr4.Count());
 
         var s5 = new Sn(5);
         var s5G = s5.GetGenerators().ToArray();
         var gr5 = Group.Generate(s5, s5G);
         Assert.Contains(s5[(1, 2)], s5G);
-        Assert.Contains(s5[(2, 3)], s5G);
-        Assert.Contains(s5[(3, 4)], s5G);
-        Assert.Contains(s5[(5, 4)], s5G);
-        Assert.Equal(4, s5G.Length);
+        Assert.Contains(s5[(1, 2, 3, 4, 5)], s5G);
+        Assert.Equal(2, s5G.Length);
         Assert.Equal(120, gr5.Count());
     }
 
