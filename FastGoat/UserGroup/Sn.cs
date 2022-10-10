@@ -28,8 +28,8 @@ public struct Sn : IGroup<Perm>
 
     public IEnumerable<Perm> GetGenerators()
     {
-        for (int i = 1; i < N; ++i)
-            yield return this[(i, i + 1)]; // Coxeter generators, other generators are also interesting to add
+        yield return this[(1, 2)];
+        yield return ComposesCycles(new Tuple2Array(Enumerable.Range(1, N).ToArray()));
     }
 
     public IEnumerable<Perm> GetElements()
