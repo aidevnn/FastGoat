@@ -95,6 +95,14 @@ public static class AllSubGroups
         Console.WriteLine($"{g} AllSubGroups : {all.Count()}");
     }
 
+    public static void AbelianSubGroupsEncore()
+    {
+        var g = Product.Generate(new Cn(2), new Cn(4), new Cn(8));
+        var (allIm, allKer) = AllImKer(g, g);
+        var all = allIm.Union(allKer).ToHashSet(new SeqEquality<Ep3<ZnInt, ZnInt, ZnInt>>());
+        Console.WriteLine($"{g} AllSubGroups : {all.Count()}");
+    }
+
     public static void Symm3SubGroups()
     {
         var g = Group.Create(new Sn(3));
