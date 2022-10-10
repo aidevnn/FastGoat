@@ -54,4 +54,15 @@ public static class EnumerableExt
         // return sq1.Count().CompareTo(sq2.Count());
         return 0;
     }
+
+}
+
+public class SeqEquality<T> : EqualityComparer<HashSet<T>> where T:IEquatable<T>
+{
+    public override bool Equals(HashSet<T>? x, HashSet<T>? y)
+    {
+        return y is not null && x is not null && x.SetEquals(y);
+    }
+
+    public override int GetHashCode(HashSet<T> obj) => (obj.Count(), typeof(T).GetHashCode()).GetHashCode();
 }
