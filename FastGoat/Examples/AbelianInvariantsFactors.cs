@@ -57,4 +57,14 @@ public static class AbelianInvariantsFactors
         var decomposition = Reduce(g);
         Console.WriteLine("{0} ~ {1}", g, decomposition.Glue(" x ", "C{0}"));
     }
+
+    public static void UnIsomorphisms()
+    {
+        for (int i = 3; i < 120; ++i)
+        {
+            var un = new Un(i);
+            var dec = Reduce(un);
+            Console.WriteLine("U{0,-3} ~ {1}", i, dec.Glue(" x ", "C{0}"));
+        }
+    }
 }

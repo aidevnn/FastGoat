@@ -202,6 +202,22 @@ namespace FastGoat
             return criteria.ToList();
         }
 
+        public static IEnumerable<int> SolveAll_a_pow_m_equal_one_mod_n(int n, int a)
+        {
+            var seq = Enumerable.Range(2, n - 2);
+            return seq.Where(m => PowMod(a, m, n) == 1);
+        }
+
+        public static IEnumerable<int> Coprimes(int n) => n.Range(1).Where(a => Gcd(a, n) == 1);
+        public static int Phi(int n) => Coprimes(n).Count();
+
+        public static List<int> Carmichael(int n)
+        {
+            var l = Coprimes(n).Select(a => SolveAll_a_pow_m_equal_one_mod_n(n, a))
+                .Aggregate((a, b) => a.Intersect(b));
+            return l.ToList();
+        }
+
         public static int Lcm(int a, int b)
         {
             return a * b / Gcd(a, b);
