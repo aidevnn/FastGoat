@@ -19,6 +19,8 @@ Console.WriteLine("Hello World");
     var c4 = new Cn(4);
     var v = Product.Generate(c2, c2);
     var c6 = new Cn(6);
+    var s3 = new Symm(3);
+    var s3c2 = Product.Generate(s3, c2);
     var s4 = new Symm(4);
     var s5 = new Symm(5);
     var s6 = new Symm(6);
@@ -33,7 +35,8 @@ Console.WriteLine("Hello World");
     DisplayGroup.HeadElementsSdp(c3c4);
     DisplayGroup.HeadElementsSdp(c3c4b); // No sense C3 : (C2 x C2)
     DisplayGroup.HeadElementsSdp(d12);
-    DisplayGroup.HeadElements(d12b);
+    DisplayGroup.HeadElements(s3c2); // S3 x C2 has sense in Symm5
+    DisplayGroup.HeadElements(d12b); // No sense D12 in Symm5
     DisplayGroup.HeadElements(d12c);
 
     Console.WriteLine(a4.IsIsomorphicTo(c3c4));
@@ -41,7 +44,8 @@ Console.WriteLine("Hello World");
     Console.WriteLine(c3c4.IsIsomorphicTo(d12b));
     Console.WriteLine(c3c4b.IsIsomorphicTo(d12b)); // No sense C3 : (C2 x C2)
     Console.WriteLine(d12.IsIsomorphicTo(d12b));
-    Console.WriteLine(d12c.IsIsomorphicTo(d12b));
+    Console.WriteLine(d12c.IsIsomorphicTo(d12b)); // No sense D12 in Symm5
+    Console.WriteLine(d12c.IsIsomorphicTo(s3c2)); // S3 x C2 has sense in Symm5
 
     var allIsos = Group.AllIsomorphisms(d12b, d12c);
     Console.WriteLine();
