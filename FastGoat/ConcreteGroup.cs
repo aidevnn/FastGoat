@@ -159,7 +159,7 @@ public class ConcreteGroup<T> : IConcreteGroup<T> where T : struct, IElt<T>
     public bool IsIsomorphicTo<Tu>(ConcreteGroup<Tu> gu) where Tu : struct, IElt<Tu>
     {
         var homs = Group.AllIsomorphisms(this, gu);
-        return homs.Count > 0;
+        return homs.Count(h => h.Count != 0) > 0;
     }
 
     public override int GetHashCode()

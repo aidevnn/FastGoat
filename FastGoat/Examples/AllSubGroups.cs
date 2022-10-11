@@ -175,12 +175,12 @@ public static class AllSubGroups
         all.UnionWith(allKer12);
         Console.WriteLine($"With A4 subgroups : {all.Count()}");
 
-        // C3 : C4 subgroups and isomorphic are added by hand
-        var sdp12 = Group.Generate(g, g[(1, 4, 5)], g[(2, 3)], g[(4, 5)]);
-        var (allIm12b, allKer12b) = AllImKer(sdp12, g);
+        // D12 subgroups and isomorphic are added by hand
+        var d12 = Group.Generate(g, g[(1, 4, 5)], g[(2, 3)], g[(4, 5)]);
+        var (allIm12b, allKer12b) = AllImKer(d12, g);
         all.UnionWith(allIm12b);
         all.UnionWith(allKer12b);
-        Console.WriteLine($"With (C3 : C4) subgroups : {all.Count()}");
+        Console.WriteLine($"With D12 subgroups : {all.Count()}");
 
         // C5 : C4 subgroups and isomorphic are added by hand
         var sdp20 = Group.Generate(g, g[(2, 3, 5, 4)], g[(1, 2, 3, 4, 5)]);
