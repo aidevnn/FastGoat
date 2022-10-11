@@ -6,19 +6,18 @@ Searching semi-direct product $C_7 \rtimes C_3$ in $\textbf{S}_7$
 
 ```csharp
 GlobalStopWatch.Restart();
-var s7 = new Sn(7); // Trivial s7
+var s7 = new Sn(7);
 var a = s7[(1, 2, 3, 4, 5, 6, 7)];
-var S7 = Group.GenerateElements(s7, s7[(1, 2)], a);
-var allC3 = S7.Where(p => (p ^ 3) == s7.Neutral()).ToArray();
+var allC3 = s7.Where(p => (p ^ 3) == s7.Neutral()).ToArray();
 var b = allC3.First(p => Group.GenerateElements(s7, a, p).Count() == 21);
 GlobalStopWatch.Stop();
 
-Console.WriteLine("|S7|={0}, |{{b in S7 with b^3 = 1}}| = {1}",S7.Count(), allC3.Count());
+Console.WriteLine("|S7|={0}, |{{b in S7 with b^3 = 1}}| = {1}",s7.Count(), allC3.Count());
 Console.WriteLine("First Solution |HK| = 21 : h = {0} and k = {1}", a, b);
 Console.WriteLine();
 
 var h = Group.Generate("H", a);
-var g21 = Group.Generate(a, b);
+var g21 = Group.Generate("G21", a, b);
 DisplayGroup.Head(g21);
 DisplayGroup.Head(g21.Over(h));
 GlobalStopWatch.Show("Group21");
@@ -28,19 +27,19 @@ will output
 
 ```dotnetcli
 |S7|=5040, |{b in S7 with b^3 = 1}| = 351
-First Solution |HK| = 21 : h = [(1 2 3 4 5 6 7)] and k = [(1 2 4)(3 6 5)]
+First Solution |HK| = 21 : h = [(1 2 3 4 5 6 7)] and k = [(2 3 5)(4 7 6)]
 
-|G| = 21
+|G21| = 21
 Type        NonAbelianGroup
 BaseGroup   S7
 
-|G/H| = 3
+|G21/H| = 3
 Type        AbelianGroup
 BaseGroup   S7
-SuperGroup  |G| = 21
+SuperGroup  |G21| = 21
 NormalGroup |H| = 7
 
-# Group21 Time:322 ms
+# Group21 Time:65 ms
 ```
 
 ## Another Example
@@ -52,23 +51,10 @@ var b = allC3.First(p => (a ^ 2) == p * a * (p ^ -1));
 Console.WriteLine("First Solution a^7 = b^3 = 1 and a^2 = b * a * b^-1 : a = {0} and b = {1}", a, b);
 ```
 
-will output
+will produce same output except
 
 ```dotnetcli
-|S7|=5040, |{b in S7 with b^3 = 1}| = 351
-First Solution a^7 = b^3 = 1 and a^2 = b * a * b^-1 : a = [(1 2 3 4 5 6 7)] and b = [(1 2 6)(4 7 5)]
-
-|G| = 21
-Type        NonAbelianGroup
-BaseGroup   S7
-
-|G/H| = 3
-Type        AbelianGroup
-BaseGroup   S7
-SuperGroup  |G| = 21
-NormalGroup |H| = 7
-
-# Group21 Time:18 ms
+# Group21 Time:9 ms
 ```
 
 ## Semidirect product using group action
@@ -76,10 +62,8 @@ NormalGroup |H| = 7
 Another way for the previous example
 ```csharp
 GlobalStopWatch.Restart();
-var z7 = new Zn(7); // Trivial Z7
-var z3 = new Zn(3); // Trivial Z3
-var c7 = Group.Generate("C7", z7[1]);
-var c3 = Group.Generate("C3", z3[1]);
+var c7 = new Cn(7);
+var c3 = new Cn(3);
 var g21 = Group.SemiDirectProd(c7, c3);
 GlobalStopWatch.Stop();
 
@@ -97,9 +81,9 @@ NormalGroup  |C7| = 7
 ActionGroup  |C3| = 3
 
 Actions
-g=0 y(g):x->x
-g=1 y(g):x->x^2
-g=2 y(g):x->x^4
+g=0 y(g) = (0->0, 1->1, 2->2, 3->3, 4->4, 5->5, 6->6)
+g=1 y(g) = (0->0, 1->2, 2->4, 3->6, 4->1, 5->3, 6->5)
+g=2 y(g) = (0->0, 1->4, 2->1, 3->5, 4->2, 5->6, 6->3)
 
 |(C7 x: C3)/N| = 3
 Type        AbelianGroup
@@ -112,9 +96,19 @@ NormalGroup |N| = 7
 
 ## References
 
-<b>Daniel Guin, Thomas Hausberger.</b> ALGÈBRE T1 Groupes, corps et théorie de Galois. EDP Sciences. <i>Premiere Partie.</i>
+[ALGÈBRE T1](https://laboutique.edpsciences.fr/produit/63/9782759803316/)
+<b>Daniel Guin, Thomas Hausberger.</b>
+ALGÈBRE T1 Groupes, corps et théorie de Galois.
+EDP Sciences.
+<i>Premiere Partie.</i>
 
-<b>Saunders MacLane, Garrett Birkhoff.</b> Algebra (3rd ed.). American Mathematical Society. <i>Chapter XII.2 Groups extensions.</i>
+[Algebra (3rd ed.)](https://bookstore.ams.org/chel-330/)
+<b>Saunders MacLane, Garrett Birkhoff.</b>
+Algebra (3rd ed.).
+American Mathematical Society.
+<i>Chapter XII.2 Groups extensions.</i>
 
 [GAP2022](https://www.gap-system.org)
-<b>The GAP Group.</b> GAP -- Groups, Algorithms, and Programming. <i>Version 4.12.0; 2022.</i>
+<b>The GAP Group.</b>
+GAP -- Groups, Algorithms, and Programming.
+<i>Version 4.12.0; 2022.</i>
