@@ -55,6 +55,14 @@ public static class EnumerableExt
         return 0;
     }
 
+    public static IEnumerable<IEnumerable<T>> AllCombinations<T>(this T[] seq)
+    {
+        if (seq.Length > IntExt.NbCombinations)
+            throw new Exception($"Max length is {IntExt.NbCombinations}");
+
+        return IntExt.GetCombinations(seq.Length)
+            .Select(comb => comb.Zip(seq).Where(e => e.First).Select(e => e.Second));
+    }
 }
 
 public class SeqEquality<T> : EqualityComparer<HashSet<T>> where T:IEquatable<T>

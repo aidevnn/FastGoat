@@ -12,7 +12,7 @@ namespace FastGoat
             {
                 [0] = new[] { Array.Empty<int>() }
             };
-            for (int k = 1; k <= 8; ++k)
+            for (int k = 1; k <= NbPermutations; ++k)
             {
                 int k0 = k;
                 AllPermutations[k] = Enumerable.Range(0, k)
@@ -25,7 +25,7 @@ namespace FastGoat
             {
                 [0] = new[] { Array.Empty<bool>() }
             };
-            for (int k = 1; k <= 10; ++k)
+            for (int k = 1; k <= NbCombinations; ++k)
             {
                 AllCombinations[k] = Enumerable.Range(0, 2)
                     .SelectMany(c =>
@@ -68,26 +68,19 @@ namespace FastGoat
         // Return a sequence of tuple (p, pow)
         // N = (p0^pow0) x (p1^pow1) x (p2^pow3) x ... x (p_i^pow_i)
         // Example : The result for N=60 is {(2,2), (3,1), (5,1)}
-        static List<(int p, int pow)> PrimesDecomposition(int n)
+        public static IEnumerable<int> PrimesDecomposition(int n)
         {
-            List<(int p, int pow)> decomp = new();
             var n0 = n;
             foreach (var p in Primes10000.Where(e => e <= n))
             {
-                var pow = 0;
                 while (n0 % p == 0)
                 {
-                    ++pow;
+                    yield return p;
                     n0 /= p;
                 }
 
-                if (pow != 0)
-                    decomp.Add((p, pow));
-
                 if (n0 == 1) break;
             }
-
-            return decomp;
         }
 
         // Partitions of an integers until N
@@ -122,6 +115,8 @@ namespace FastGoat
             return all.GroupBy(l0 => l0.Sum()).ToDictionary(a => a.Key, b => b.ToList());
         }
 
+        public const int NbPermutations = 8;
+        public const int NbCombinations = 10;
         private static Dictionary<int, int[][]> AllPermutations { get; }
         private static Dictionary<int, bool[][]> AllCombinations { get; }
 
