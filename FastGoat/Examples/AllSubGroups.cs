@@ -8,9 +8,9 @@ public static class AllSubGroups
     static (HashSet<HashSet<T>> im, HashSet<HashSet<T>> ker) AllImKer<T>(ConcreteGroup<T> g0, ConcreteGroup<T> g1)
         where T : struct, IElt<T>
     {
-        HashSet<HashSet<T>> all = new HashSet<HashSet<T>>(new SeqEquality<T>());
-        HashSet<HashSet<T>> allIm = new HashSet<HashSet<T>>(new SeqEquality<T>());
-        HashSet<HashSet<T>> allKer = new HashSet<HashSet<T>>(new SeqEquality<T>());
+        HashSet<HashSet<T>> all = new HashSet<HashSet<T>>(new SetEquality<T>());
+        HashSet<HashSet<T>> allIm = new HashSet<HashSet<T>>(new SetEquality<T>());
+        HashSet<HashSet<T>> allKer = new HashSet<HashSet<T>>(new SetEquality<T>());
         var hom = Group.AllHomomorphisms(g0, g1);
         foreach (var m in hom)
         {
@@ -27,7 +27,7 @@ public static class AllSubGroups
     {
         var allHoms = Group.AllHomomorphisms(g, g);
         var allKer = allHoms.Select(p => p.Where(kp => kp.Value.Equals(g.Neutral())).Select(kp => kp.Key).ToHashSet())
-            .ToHashSet(new SeqEquality<T>());
+            .ToHashSet(new SetEquality<T>());
         foreach (var ker in allKer.OrderBy(a0 => a0.Count))
         {
             var gKer = Group.Generate($"Ker{ker.Count}", g, ker.ToArray());
@@ -83,7 +83,7 @@ public static class AllSubGroups
     {
         var g = Product.Generate(new Cn(4), new Cn(8));
         var (allIm, allKer) = AllImKer(g, g);
-        var all = allIm.Union(allKer).ToHashSet(new SeqEquality<Ep2<ZnInt, ZnInt>>());
+        var all = allIm.Union(allKer).ToHashSet(new SetEquality<Ep2<ZnInt, ZnInt>>());
         Console.WriteLine($"{g} AllSubGroups : {all.Count()}");
     }
 
@@ -91,7 +91,7 @@ public static class AllSubGroups
     {
         var g = Product.Generate(new Cn(6), new Cn(9));
         var (allIm, allKer) = AllImKer(g, g);
-        var all = allIm.Union(allKer).ToHashSet(new SeqEquality<Ep2<ZnInt, ZnInt>>());
+        var all = allIm.Union(allKer).ToHashSet(new SetEquality<Ep2<ZnInt, ZnInt>>());
         Console.WriteLine($"{g} AllSubGroups : {all.Count()}");
     }
 
@@ -99,14 +99,14 @@ public static class AllSubGroups
     {
         var g = Product.Generate(new Cn(2), new Cn(4), new Cn(8));
         var (allIm, allKer) = AllImKer(g, g);
-        var all = allIm.Union(allKer).ToHashSet(new SeqEquality<Ep3<ZnInt, ZnInt, ZnInt>>());
+        var all = allIm.Union(allKer).ToHashSet(new SetEquality<Ep3<ZnInt, ZnInt, ZnInt>>());
         Console.WriteLine($"{g} AllSubGroups : {all.Count()}");
     }
 
     public static void Symm3SubGroups()
     {
         var g = Group.Create(new Sn(3));
-        var all = new HashSet<HashSet<Perm>>(new SeqEquality<Perm>());
+        var all = new HashSet<HashSet<Perm>>(new SetEquality<Perm>());
         all.UnionWith(g.Select(e => Group.Generate(g, e).ToHashSet()));
         Console.WriteLine($"Monogenics SubGroups from elements : {all.Count()}");
 
@@ -118,7 +118,7 @@ public static class AllSubGroups
     public static void Symm4SubGroups()
     {
         var g = Group.Create(new Sn(4));
-        var all = new HashSet<HashSet<Perm>>(new SeqEquality<Perm>());
+        var all = new HashSet<HashSet<Perm>>(new SetEquality<Perm>());
         all.UnionWith(g.Select(e => Group.Generate(g, e).ToHashSet()));
         Console.WriteLine($"Monogenics SubGroups from elements : {all.Count()}");
 
@@ -138,10 +138,10 @@ public static class AllSubGroups
     public static void Symm5SubGroups()
     {
         var g = Group.Create(new Sn(5));
-        var all = new HashSet<HashSet<Perm>>(new SeqEquality<Perm>());
+        var all = new HashSet<HashSet<Perm>>(new SetEquality<Perm>());
         all.UnionWith(g.Select(e => Group.Generate(g, e).ToHashSet()));
         Console.WriteLine($"Monogenics SubGroups from elements : {all.Count()}");
-        
+
         var (allIm, allKer) = AllImKer(g, g);
         all.UnionWith(allIm);
         all.UnionWith(allKer);
@@ -195,5 +195,8 @@ public static class AllSubGroups
         all.UnionWith(allIm24);
         all.UnionWith(allKer24);
         Console.WriteLine($"With S4 subgroups : {all.Count()}");
+
+        var allSorted = all.GroupBy(p => p.Count).ToDictionary(a => a.Key, a => a.ToList());
+        Console.WriteLine(allSorted.AscendingByKey().Select(p => $"[{p.Key}, {p.Value.Count}]").Glue());
     }
 }
