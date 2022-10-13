@@ -18,7 +18,8 @@ public static partial class Group
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
     {
-        Dictionary<T1, T2> map = new();
+        var gCount = g.Count();
+        Dictionary<T1, T2> map = new(gCount);
         if (pMap.ContainsKey(g.Neutral()) && !pMap[g.Neutral()].Equals(h.Neutral()))
             return map;
 
@@ -170,26 +171,13 @@ public static partial class Group
                     .ToArray())
             .ToArray();
 
-        var maps = new List<Dictionary<T1, T2>>() { new Dictionary<T1, T2>() };
-        foreach (var tuples in gpMap)
-        {
-            var tmpMaps = new List<Dictionary<T1, T2>>();
-            foreach (var e in tuples)
-            {
-                foreach (var map in maps)
-                {
-                    tmpMaps.Add(new Dictionary<T1, T2>(map) { [e.g] = e.a });
-                }
-            }
-
-            maps.Clear();
-            maps = tmpMaps.ToList();
-        }
-
         List<Dictionary<T1, T2>> allMorphisms = new();
         var ng = g1.Count();
-        foreach (var map in maps)
+        int nb = 0;
+        foreach (var arr in gpMap.MultiLoop())
         {
+            ++nb;
+            var map = arr.ToDictionary(t => t.g, t => t.a);
             if (mType == MorphismType.Homomorphism)
             {
                 var hom = Group.HomomorphismMap(g1, g2, map);
@@ -209,7 +197,9 @@ public static partial class Group
             return new List<Dictionary<T1, T2>>() { new() };
         }
 
-        return allMorphisms.Distinct().ToList();
+        var allM = allMorphisms.Distinct().ToList();
+        // Console.WriteLine($"{nb} {allM.Count}");
+        return allM;
     }
 
     public static List<Dictionary<T1, T2>> AllIsomorphisms<T1, T2>(IGroup<T1> bg, ConcreteGroup<T2> g2)
