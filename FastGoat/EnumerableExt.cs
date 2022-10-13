@@ -17,9 +17,31 @@ public static class EnumerableExt
         return ts.OrderBy(t => t);
     }
 
+    public static IOrderedEnumerable<IEnumerable<T>> AscendingByCount<T>(this IEnumerable<IEnumerable<T>> ts)
+    {
+        return ts.OrderBy(t => t.Count());
+    }
+
+    public static IOrderedEnumerable<KeyValuePair<T1, T2>> AscendingByKey<T1, T2>(
+        this IEnumerable<KeyValuePair<T1, T2>> ts) where T1 : IComparable<T1>
+    {
+        return ts.OrderBy(t => t.Key);
+    }
+
     public static IOrderedEnumerable<T> ThenAscending<T>(this IOrderedEnumerable<T> ts) where T : IComparable<T>
     {
         return ts.ThenBy(t => t);
+    }
+
+    public static IOrderedEnumerable<KeyValuePair<T1, T2>> ThenAscendingByKey<T1, T2>(
+        this IOrderedEnumerable<KeyValuePair<T1, T2>> ts) where T1 : IComparable<T1>
+    {
+        return ts.ThenBy(t => t.Key);
+    }
+
+    public static IOrderedEnumerable<IEnumerable<T>> ThenAscendingByCount<T>(this IOrderedEnumerable<IEnumerable<T>> ts)
+    {
+        return ts.ThenBy(t => t.Count());
     }
 
     public static IOrderedEnumerable<T> Descending<T>(this IEnumerable<T> ts) where T : IComparable<T>
@@ -27,9 +49,32 @@ public static class EnumerableExt
         return ts.OrderByDescending(t => t);
     }
 
+    public static IOrderedEnumerable<KeyValuePair<T1, T2>> DescendingByKey<T1, T2>(
+        this IEnumerable<KeyValuePair<T1, T2>> ts) where T1 : IComparable<T1>
+    {
+        return ts.OrderByDescending(t => t.Key);
+    }
+
+    public static IOrderedEnumerable<IEnumerable<T>> DescendingByCount<T>(this IEnumerable<IEnumerable<T>> ts)
+    {
+        return ts.OrderByDescending(t => t.Count());
+    }
+
     public static IOrderedEnumerable<T> ThenDescending<T>(this IOrderedEnumerable<T> ts) where T : IComparable<T>
     {
         return ts.ThenByDescending(t => t);
+    }
+
+    public static IOrderedEnumerable<KeyValuePair<T1, T2>> ThenDescendingByKey<T1, T2>(
+        this IOrderedEnumerable<KeyValuePair<T1, T2>> ts) where T1 : IComparable<T1>
+    {
+        return ts.ThenByDescending(t => t.Key);
+    }
+
+    public static IOrderedEnumerable<IEnumerable<T>> ThenDescendingByCount<T>(
+        this IOrderedEnumerable<IEnumerable<T>> ts)
+    {
+        return ts.ThenByDescending(t => t.Count());
     }
 
     public static int SequenceCompareTo<T>(this IEnumerable<T> sq1, IEnumerable<T> sq2) where T : IComparable<T>
@@ -63,9 +108,42 @@ public static class EnumerableExt
         return IntExt.GetCombinations(seq.Length)
             .Select(comb => comb.Zip(seq).Where(e => e.First).Select(e => e.Second));
     }
+
+
+    public static IEnumerable<IEnumerable<T>> MultiLoop<T>(this T[][] arrays)
+    {
+        Stack<(int r, int c)> stack = new(arrays.Length);
+        stack.Push((0, 0));
+        while (stack.Count != 0)
+        {
+            var (r, c) = stack.Peek();
+            if (c == arrays[r].Length)
+            {
+                stack.Pop();
+                if (stack.Count != 0)
+                {
+                    var (r0, c0) = stack.Pop();
+                    stack.Push((r0, c0 + 1));
+                }
+
+                continue;
+            }
+
+            if (r < arrays.Length - 1)
+            {
+                stack.Push((r + 1, 0));
+                continue;
+            }
+
+            yield return stack.Select(a => arrays[a.r][a.c]).Reverse();
+
+            stack.Pop();
+            stack.Push((r, c + 1));
+        }
+    }
 }
 
-public class SeqEquality<T> : EqualityComparer<HashSet<T>> where T:IEquatable<T>
+public class SetEquality<T> : EqualityComparer<HashSet<T>> where T : IEquatable<T>
 {
     public override bool Equals(HashSet<T>? x, HashSet<T>? y)
     {
@@ -73,4 +151,14 @@ public class SeqEquality<T> : EqualityComparer<HashSet<T>> where T:IEquatable<T>
     }
 
     public override int GetHashCode(HashSet<T> obj) => (obj.Count(), typeof(T).GetHashCode()).GetHashCode();
+}
+
+public class SequenceEquality<T> : EqualityComparer<IEnumerable<T>> where T : IEquatable<T>, IComparable<T>
+{
+    public override bool Equals(IEnumerable<T>? x, IEnumerable<T>? y)
+    {
+        return y is not null && x is not null && x.Ascending().SequenceEqual(y.Ascending());
+    }
+
+    public override int GetHashCode(IEnumerable<T> obj) => (obj.Count(), typeof(T).GetHashCode()).GetHashCode();
 }
