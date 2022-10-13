@@ -29,12 +29,26 @@ Console.WriteLine("Hello World");
         foreach (var gens in sn.SubGroupsGenerators())
         {
             var g1 = Group.Generate(sn, gens.ToArray());
-            // DisplayGroup.Head(g1);
-            Group.AllOrbits(g1, setXnk, Image);
-            // Console.WriteLine();
+            var allOrbits = Group.AllOrbits(g1, setXnk, Image);
+            if (allOrbits.Count == 1)
+            {
+                DisplayGroup.Head(g1);
+                Group.DisplayOrbx(allOrbits);
+                Console.WriteLine();
+            }
         }
+
         GlobalStopWatch.Show($"X{n}{k}");
     }
-    
+
     GlobalStopWatch.Show($"{sn}");
+}
+
+{
+    var s4 = new Symm(4);
+    Group.DisplayOrbx(s4, Group.ByConjugate(s4));
+    Console.WriteLine();
+
+    var c3c4 = Product.Generate(new Cn(3), new Cn(4));
+    Group.DisplayOrbx(c3c4, Group.ByConjugate(c3c4));
 }
