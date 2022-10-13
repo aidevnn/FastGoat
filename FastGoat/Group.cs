@@ -158,13 +158,8 @@ public static partial class Group
         return cosets;
     }
 
-    public static bool IsGroup<T>(IGroup<T> g) where T : struct, IElt<T>
+    public static T[,] CayleyTable<T>(IGroup<T> g, T[] elements) where T : struct, IElt<T>
     {
-        var elements = g.GetElements().Ascending().ToArray();
-        var group = elements.ToHashSet();
-        if (group.Count != elements.Length)
-            return false;
-
         var cayleyTable = new T[elements.Length, elements.Length];
         var lt = Enumerable.Range(0, elements.Length).ToArray();
         foreach (var i in lt)
@@ -175,9 +170,28 @@ public static partial class Group
             }
         }
 
+        return cayleyTable;
+    }
+
+    public static bool IsGroup<T>(IGroup<T> g, IEnumerable<T> elements) where T : struct, IElt<T>
+    {
+        var group = elements.ToHashSet();
+        if (!group.Contains(g.Neutral()))
+            return false;
+
+        if (group.Any(e => !group.Contains(g.Invert(e))))
+            return false;
+        
+        var cayleyTable = CayleyTable(g, group.ToArray());
+        var lt = Enumerable.Range(0, group.Count).ToArray();
         var cayleyRows = lt.Select(i0 => lt.Select(j0 => cayleyTable[i0, j0]).ToHashSet()).All(group.SetEquals);
         var cayleyCols = lt.Select(i0 => lt.Select(j0 => cayleyTable[j0, i0]).ToHashSet()).All(group.SetEquals);
         return cayleyRows && cayleyCols;
+    }
+
+    public static bool IsGroup<T>(IGroup<T> g) where T : struct, IElt<T>
+    {
+        return IsGroup(g, g.GetElements().Ascending());
     }
 
     public static ConcreteGroup<T> Create<T>(string name, IGroup<T> g) where T : struct, IElt<T>
