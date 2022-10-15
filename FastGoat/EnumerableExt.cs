@@ -6,8 +6,13 @@ public static class EnumerableExt
     {
         return string.Join(sep, ts.Select(t => string.Format(fmt, t)));
     }
+    //
+    // public static string GlueMap<T1, T2>(this IDictionary<T1, T2> map, string sep = ", ", string fmt = "{0}->{1}")
+    // {
+    //     return string.Join(sep, map.Select(kp => string.Format(fmt, kp.Key, kp.Value)));
+    // }
 
-    public static string GlueMap<T1, T2>(this IDictionary<T1, T2> map, string sep = ", ", string fmt = "{0}->{1}")
+    public static string GlueMap<T1, T2>(this IEnumerable<KeyValuePair<T1, T2>> map, string sep = ", ", string fmt = "{0}->{1}")
     {
         return string.Join(sep, map.Select(kp => string.Format(fmt, kp.Key, kp.Value)));
     }
