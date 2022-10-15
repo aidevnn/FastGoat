@@ -1,3 +1,5 @@
+using FastGoat.UserGroup;
+
 namespace FastGoat;
 
 public enum SortBy
@@ -19,12 +21,19 @@ public static class DisplayGroup
             Console.WriteLine($"SuperGroup  |{superGroup}| = {superGroup.Count()}");
         }
 
-        if (g is QuotientGroup<T> quo)
-        {
-            var normalGroup = quo.NormalSubGroup;
-            Console.WriteLine($"NormalGroup |{normalGroup}| = {normalGroup.Count()}");
-        }
+        Console.WriteLine();
+    }
 
+    public static void Head<T>(ConcreteGroup<Representative<T>> g) where T : struct, IElt<T>
+    {
+        Console.WriteLine($"|{g.Name}| = {g.Count()}");
+        Console.WriteLine($"Type        {g.GroupType}");
+        Console.WriteLine($"BaseGroup   {g.BaseGroup}");
+        
+        var g0 = (Quotient<T>)g.BaseGroup;
+        Console.WriteLine($"Group           |{g0.G}| = {g0.G.Count()}");
+        Console.WriteLine($"NormalSubGroup  |{g0.H}| = {g0.H.Count()}");
+        
         Console.WriteLine();
     }
 
@@ -52,10 +61,11 @@ public static class DisplayGroup
         Console.WriteLine();
     }
 
-    public static void Classes<T>(QuotientGroup<T> g) where T : struct, IElt<T>
+    public static void Cosets<T>(ConcreteGroup<Representative<T>> g, bool details = false) where T : struct, IElt<T>
     {
         Console.WriteLine("Cosets");
-        if (g.Representatives.Values.Count() > 40)
+        var g0 = (Quotient<T>)g.BaseGroup;
+        if (g0.G.Count() > 40)
         {
             Console.WriteLine("   ***   Too Big   ***");
             return;
@@ -66,37 +76,16 @@ public static class DisplayGroup
         var k = 0;
         var digits1 = $"{g.ElementsOrders.Count}".Length;
         var digits2 = $"{g.ElementsOrders.Values.Max()}".Length;
-        var fmt = $"({{0,{digits1}}})[{{1,{digits2}}}]";
+        var fmt = $"({{0,{digits1}}})[{{1,{digits2}}}] = {{2}}";
 
         foreach (var elt in ordered)
         {
-            Console.WriteLine(fmt, ++k, g.ElementsOrders[elt]);
-        }
-
-        Console.WriteLine();
-    }
-
-    public static void Cosets<T>(QuotientGroup<T> g) where T : struct, IElt<T>
-    {
-        Console.WriteLine("Cosets");
-        if (g.Representatives.Values.Count() > 40)
-        {
-            Console.WriteLine("   ***   Too Big   ***");
-            return;
-        }
-
-        var ordered = g.ElementsOrders.Keys.OrderBy(a => g.ElementsOrders[a]).ThenAscending();
-
-        var k = 0;
-        var digits1 = $"{g.ElementsOrders.Count}".Length;
-        var digits2 = $"{g.ElementsOrders.Values.Max()}".Length;
-        var fmt = $"({{0,{digits1}}})[{{1,{digits2}}}]";
-
-        foreach (var elt in ordered)
-        {
-            Console.WriteLine(fmt, ++k, g.ElementsOrders[elt]);
-            var set = g.Cosets[elt];
-            foreach (var elt1 in set.Ascending()) Console.WriteLine($"    {elt1}");
+            Console.WriteLine(fmt, ++k, g.ElementsOrders[elt], elt);
+            if(details)
+            {
+                var set = g0.Cosets(elt.X);
+                foreach (var elt1 in set.Ascending()) Console.WriteLine($"    {elt1}");
+            }
         }
 
         Console.WriteLine();
@@ -145,26 +134,13 @@ public static class DisplayGroup
         Table(g, sortBy);
     }
 
-    public static void HeadClasses<T>(QuotientGroup<T> g) where T : struct, IElt<T>
+    public static void HeadCosets<T>(ConcreteGroup<Representative<T>> g, bool details = false) where T : struct, IElt<T>
     {
         Head(g);
-        Classes(g);
+        Cosets(g, details);
     }
 
-    public static void HeadCosets<T>(QuotientGroup<T> g) where T : struct, IElt<T>
-    {
-        Head(g);
-        Cosets(g);
-    }
-
-    public static void HeadClassesTable<T>(QuotientGroup<T> g) where T : struct, IElt<T>
-    {
-        Head(g);
-        Classes(g);
-        Table(g, SortBy.Order);
-    }
-
-    public static void HeadCosetsTable<T>(QuotientGroup<T> g) where T : struct, IElt<T>
+    public static void HeadCosetsTable<T>(ConcreteGroup<Representative<T>> g) where T : struct, IElt<T>
     {
         Head(g);
         Cosets(g);
