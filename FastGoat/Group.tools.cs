@@ -22,7 +22,7 @@ public static partial class Group
     public static GroupAction<T, T> ByLeftCoset<T>(ConcreteGroup<T> grG, ConcreteGroup<T> grH) where T : struct, IElt<T>
     {
         var coset = Cosets(grG, grH, Coset.Left);
-        return (T g, T x) => coset[grG.Op(g, coset[x])];
+        return (T g, T x) => coset[grG.Op(g, x)];
     }
 
     public static HashSet<T1> Stabs<T1, T2>(ConcreteGroup<T1> gr, GroupAction<T1, T2> act, T2 x)
