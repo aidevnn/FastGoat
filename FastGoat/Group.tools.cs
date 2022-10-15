@@ -1,3 +1,5 @@
+using FastGoat.UserGroup;
+
 namespace FastGoat;
 
 public delegate T2 GroupAction<in T1, T2>(T1 g, T2 x) where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>;
@@ -15,6 +17,12 @@ public static partial class Group
         where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
     {
         return (T1 g, T2 x) => aut[g][x];
+    }
+
+    public static GroupAction<T, T> ByLeftCoset<T>(ConcreteGroup<T> grG, ConcreteGroup<T> grH) where T : struct, IElt<T>
+    {
+        var coset = Cosets(grG, grH, Coset.Left);
+        return (T g, T x) => coset[grG.Op(g, coset[x])];
     }
 
     public static HashSet<T1> Stabs<T1, T2>(ConcreteGroup<T1> gr, GroupAction<T1, T2> act, T2 x)
@@ -72,7 +80,7 @@ public static partial class Group
     {
         return AllOrbits(gr, gr.ToArray(), act);
     }
-    
+
     public static void DisplayOrbx<T1, T2>(Dictionary<T2, (HashSet<T1> Stabx, HashSet<T2> Orbx)> allClasses)
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
@@ -81,7 +89,7 @@ public static partial class Group
         {
             var x = kp.Key;
             var (stabx, orbx) = kp.Value;
-            Console.WriteLine($"x={x,-40} Stab(x):{stabx.Count,-4} Orb(x):{orbx.Count}");
+            Console.WriteLine($"x={x,-40} Stab(x):{stabx.Count,-4} Orb(x):{orbx.Count} {orbx.Glue(", ")}");
         }
     }
 
@@ -98,5 +106,4 @@ public static partial class Group
     {
         DisplayOrbx(gr, gr.ToArray(), act);
     }
-
 }
