@@ -12,7 +12,6 @@ public static class ActionProperties
         var opsGautN = Group.AllHomomorphisms(grG, autN);
         List<Dictionary<T2, Automorphism<T1>>> opsTransitives = new();
         List<Dictionary<T2, Automorphism<T1>>> opsFaithful = new();
-        Console.WriteLine(opsGautN.Count);
 
         // always remove neutral x = id
         HashSet<T1> fixedPointsSet = rmPoints.Append(grN.Neutral()).ToHashSet();
@@ -73,6 +72,7 @@ public static class ActionProperties
     {
         var setX = new Symm(nbPoints);
         var opsGautN = Group.AllHomomorphisms(grG, setX);
+        // TODO
     }
 
     private static Cn C2 => new Cn(2);
@@ -91,5 +91,6 @@ public static class ActionProperties
         CheckPropertiesForSemiDirectProduct(C5, C4); // Frobenius20
         CheckPropertiesForSemiDirectProduct(C7, C3, rmPoints: new[] { C7[1], C7[2], C7[4] });
         CheckPropertiesForSemiDirectProduct(C7, C6);
+        CheckPropertiesForSemiDirectProduct(C3, C4);
     }
 }
