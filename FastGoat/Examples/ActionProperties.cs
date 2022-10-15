@@ -1,3 +1,4 @@
+using FastGoat.Gp;
 using FastGoat.UserGroup;
 
 namespace FastGoat.Examples;
@@ -81,6 +82,8 @@ public static class ActionProperties
     private static Cn C5 => new Cn(5);
     private static Cn C6 => new Cn(6);
     private static Cn C7 => new Cn(7);
+    private static ConcreteGroup<Ep2<ZnInt, ZnInt>> C3_2 => Product.Generate(C3, C3);
+    private static ConcreteGroup<Ep2<ZnInt, ZnInt>> C4C2 => Product.Generate(C4, C2);
 
     public static void Examples()
     {
@@ -91,6 +94,8 @@ public static class ActionProperties
         CheckPropertiesForSemiDirectProduct(C5, C4); // Frobenius20
         CheckPropertiesForSemiDirectProduct(C7, C3, rmPoints: new[] { C7[1], C7[2], C7[4] });
         CheckPropertiesForSemiDirectProduct(C7, C6);
-        CheckPropertiesForSemiDirectProduct(C3, C4);
+        CheckPropertiesForSemiDirectProduct(C3, C4); // No faithful action
+        CheckPropertiesForSemiDirectProduct(C4, C4); // No faithful action
+        CheckPropertiesForSemiDirectProduct(C4, C4, rmPoints: C4[2]); // No faithful action but transitive
     }
 }
