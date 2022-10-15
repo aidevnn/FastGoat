@@ -1,4 +1,4 @@
-namespace FastGoat.UserGroup;
+namespace FastGoat;
 
 public enum Coset
 {

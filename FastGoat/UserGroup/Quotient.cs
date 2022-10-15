@@ -22,8 +22,6 @@ public class Quotient<T> : IGroup<Representative<T>> where T : struct, IElt<T>
         (_, PseudoGenerators) = Group.UniqueGenerators(this, lcKeys);
     }
 
-    public IEnumerable<T> Cosets(T x) => Map.Where(p => p.Value.X.Equals(x)).Select(p => p.Key).Ascending();
-
     private IEnumerable<Representative<T>> PseudoGenerators { get; }
     private Dictionary<T, Representative<T>> Map { get; }
     private HashSet<Representative<T>> Elements { get; }

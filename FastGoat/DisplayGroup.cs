@@ -83,8 +83,8 @@ public static class DisplayGroup
             Console.WriteLine(fmt, ++k, g.ElementsOrders[elt], elt);
             if(details)
             {
-                var set = g0.Cosets(elt.X);
-                foreach (var elt1 in set.Ascending()) Console.WriteLine($"    {elt1}");
+                foreach (var elt1 in elt.xH) 
+                    Console.WriteLine($"    {elt1}");
             }
         }
 
