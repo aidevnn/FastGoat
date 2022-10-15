@@ -6,21 +6,26 @@ namespace FastGoat.Examples;
 
 public static class AbelianInvariantsFactors
 {
-    public static Stack<int> Reduce<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
+    static void Reduce<T>(ConcreteGroup<T> g, Stack<int> facts) where T : struct, IElt<T>
     {
         if (g.GroupType == GroupType.NonAbelianGroup)
             throw new Exception("Only Abelian Group");
 
+        if (g.Count() == 1)
+            return;
+        
         var g0 = g;
-        Stack<int> facts = new Stack<int>();
-        while (g0.Count() != 1)
-        {
-            var p = g0.ElementsOrders.OrderByDescending(e => e.Value).ThenBy(e => e.Key).First();
-            var h = Group.Generate(g0, p.Key);
-            g0 = g0.Over(h);
-            facts.Push(p.Value);
-        }
+        var p = g0.ElementsOrders.OrderByDescending(e => e.Value).ThenBy(e => e.Key).First();
+        var h = Group.Generate($"C{p.Value}", g0, p.Key);
+        var g1 = g0.Over(h);
+        facts.Push(p.Value);
+        Reduce(g1, facts);
+    }
 
+    public static Stack<int> Reduce<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
+    {
+        Stack<int> facts = new Stack<int>();
+        Reduce(g, facts);
         return facts;
     }
 
