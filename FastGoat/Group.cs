@@ -14,7 +14,7 @@ public static partial class Group
         var e0 = p > 0 ? e : g.Invert(e);
         var p0 = p > 0 ? p : -p;
         for (var k = 0; k < p0; ++k)
-            acc = g.Op(acc, e0);
+            acc = g.Op(e0, acc);
 
         return acc;
     }
@@ -33,7 +33,7 @@ public static partial class Group
             var e1 = q.Dequeue();
             foreach (var e2 in generators)
             {
-                var e3 = bg.Op(e1, e2);
+                var e3 = bg.Op(e2, e1);
                 if (generatedElements.Add(e3))
                     q.Enqueue(e3);
             }
@@ -60,20 +60,32 @@ public static partial class Group
         var elements = new Dictionary<T, int> { [e] = p };
         while (!n.Equals(e0))
         {
-            e0 = g.Op(e0, e);
+            e0 = g.Op(e, e0);
             elements[e0] = ++p;
         }
 
         return new ReadOnlyDictionary<T, int>(elements);
     }
 
-    public static ReadOnlyDictionary<T, ReadOnlyDictionary<T, int>> LongestCycles<T>(IGroup<T> g,
-        IEnumerable<T> elements)
+    public static ReadOnlyDictionary<T, int> ElementsOrders<T>(IGroup<T> g, IEnumerable<T> elements)
+        where T : struct, IElt<T>
+    {
+        var orders = new Dictionary<T, int>();
+        foreach (var e in elements)
+        {
+            var cycle = Cycle(g, e);
+            orders[e] = cycle.Count;
+        }
+
+        return new ReadOnlyDictionary<T, int>(orders);
+    }
+
+    public static ReadOnlyDictionary<T, ReadOnlyDictionary<T, int>> LongestCycles<T>(IGroup<T> g, IEnumerable<T> elements)
         where T : struct, IElt<T>
     {
         var set = elements.Ascending().ToHashSet();
         var allCycles = new Dictionary<T, ReadOnlyDictionary<T, int>>(set.Count);
-
+        
         while (set.Count != 0)
         {
             var e0 = set.First();
@@ -81,33 +93,11 @@ public static partial class Group
             set.ExceptWith(cycle0.Keys);
             if (e0.Equals(g.Neutral()))
                 continue;
-
+        
             allCycles[e0] = cycle0;
         }
 
         return new ReadOnlyDictionary<T, ReadOnlyDictionary<T, int>>(allCycles);
-    }
-
-    public static ReadOnlyDictionary<T, int> ElementsOrders<T>(IGroup<T> g,
-        ReadOnlyDictionary<T, ReadOnlyDictionary<T, int>> longCycles)
-        where T : struct, IElt<T>
-    {
-        var orders = new Dictionary<T, int>();
-        orders[g.Neutral()] = 1;
-        foreach (var (_, cycle) in longCycles)
-        {
-            var n = cycle.Count;
-            foreach (var (e1, p) in cycle)
-            {
-                var o = n / IntExt.Gcd(n, p);
-                if (!orders.ContainsKey(e1))
-                    orders[e1] = o;
-                else if (orders[e1] != o)
-                    throw new Exception("TODO"); // TODO unexpected case
-            }
-        }
-
-        return new ReadOnlyDictionary<T, int>(orders);
     }
 
     public static bool IsCommutative<T>(IGroup<T> g, IEnumerable<T> ts) where T : struct, IElt<T>
@@ -125,37 +115,61 @@ public static partial class Group
         return true;
     }
 
-    public static Dictionary<T, ReadOnlyCollection<T>> Cosets<T>(IGroup<T> g, IGroup<T> n) where T : struct, IElt<T>
+    public static (HashSet<T> elements, List<T> uniqueGenerators) UniqueGenerators<T>(IGroup<T> g, T[] generators)
+        where T : struct, IElt<T>
     {
-        Dictionary<T, ReadOnlyCollection<T>> cosets = new();
-        List<HashSet<T>> sets = new();
-        var setH = n.ToHashSet();
-        if (!setH.IsSubsetOf(g))
-            throw new GroupException(GroupExceptionType.NotSubGroup);
-
-        cosets[g.Neutral()] = new ReadOnlyCollection<T>(setH.ToList());
-        sets.Add(setH);
-        var xH = new HashSet<T>(setH.Count);
-        foreach (var x in g)
+        HashSet<T> tmpElements = new() { g.Neutral() };
+        List<T> uniqueGenerators = new();
+        foreach (var elt in generators)
         {
-            if (x.Equals(g.Neutral()))
+            if (tmpElements.Contains(elt))
                 continue;
 
-            xH.Clear();
-            var xi = g.Invert(x);
-            xH.UnionWith(setH.Select(h => g.Op(x, h)));
-            if (xH.Any(xh => !setH.Contains(g.Op(xh, xi))))
-                throw new GroupException(GroupExceptionType.NotNormal);
+            uniqueGenerators.Add(elt);
+            tmpElements = GenerateElements(g, tmpElements, uniqueGenerators);
+        }
 
-            var x0 = xH.First();
-            if (sets.All(set => !set.Contains(x0)))
+        return (tmpElements, uniqueGenerators);
+    }
+
+    public static ReadOnlyDictionary<T, T> Cosets<T>(IGroup<T> grG, IGroup<T> grH, Comparer<T> comparer,
+        Coset coset = Coset.Both) where T : struct, IElt<T>
+    {
+        var cosets = new Dictionary<T, T>();
+        var setH = grH.ToHashSet();
+        var setG = grG.ToHashSet();
+        if (!setH.IsSubsetOf(setG))
+            throw new GroupException(GroupExceptionType.NotSubGroup);
+
+        var ng = grG.Neutral();
+        foreach (var h in setH)
+            cosets[h] = ng;
+
+        foreach (var x in grG.OrderBy(a => a, comparer))
+        {
+            if (cosets.ContainsKey(x))
+                continue;
+
+            var xi = grG.Invert(x);
+            foreach (var h in setH)
             {
-                sets.Add(xH.ToHashSet());
-                cosets[x0] = new ReadOnlyCollection<T>(xH.ToList());
+                var xh = grG.Op(x, h);
+                cosets[xh] = x;
+                if (coset == Coset.Both)
+                {
+                    if (!setH.Contains(grG.Op(xh, xi)))
+                        throw new GroupException(GroupExceptionType.NotNormal);
+                }
             }
         }
 
-        return cosets;
+        return new(cosets);
+    }
+
+    public static ReadOnlyDictionary<T, T> Cosets<T>(IGroup<T> grG, IGroup<T> grH,
+        Coset coset = Coset.Both) where T : struct, IElt<T>
+    {
+        return Cosets(grG, grH, Comparer<T>.Default, coset);
     }
 
     public static T[,] CayleyTable<T>(IGroup<T> g, T[] elements) where T : struct, IElt<T>
@@ -181,7 +195,7 @@ public static partial class Group
 
         if (group.Any(e => !group.Contains(g.Invert(e))))
             return false;
-        
+
         var cayleyTable = CayleyTable(g, group.ToArray());
         var lt = Enumerable.Range(0, group.Count).ToArray();
         var cayleyRows = lt.Select(i0 => lt.Select(j0 => cayleyTable[i0, j0]).ToHashSet()).All(group.SetEquals);
@@ -233,21 +247,16 @@ public static partial class Group
         if (g1.SuperGroup is null || g2.SuperGroup is null || !g1.SuperGroup.Equals(g2.SuperGroup))
             throw new GroupException(GroupExceptionType.GroupDef);
 
-        var generators = g1.LongestCycles.Keys.Concat(g2.LongestCycles.Keys).Distinct().ToArray();
+        var generators = g1.PseudoGenerators.Concat(g2.PseudoGenerators).Distinct().ToArray();
         return new ConcreteGroup<T>($"{g1.Name} x {g2.Name}", g1.SuperGroup, generators);
     }
 
-    public static QuotientGroup<T> Over<T>(this ConcreteGroup<T> g, ConcreteGroup<T> h) where T : struct, IElt<T>
+    public static ConcreteGroup<Representative<T>> Over<T>(this ConcreteGroup<T> g, ConcreteGroup<T> h) where T : struct, IElt<T>
     {
-        var gName = g.Name.Trim().Contains(' ') ? $"({g.Name})" : g.Name;
-        var hName = h.Name.Trim().Contains(' ') ? $"({h.Name})" : h.Name;
-        return new QuotientGroup<T>(g, h, $"{gName}/{hName}");
-    }
-
-    public static QuotientGroup<T> Over<T>(this ConcreteGroup<T> g, ConcreteGroup<T> h, string name)
-        where T : struct, IElt<T>
-    {
-        return new QuotientGroup<T>(g, h, name);
+        if (h.SuperGroup is null || !h.SuperGroup.Equals(g))
+            throw new GroupException(GroupExceptionType.NotSubGroup);
+        var quo = new Quotient<T>(g, h);
+        return new ConcreteGroup<Representative<T>>(quo);
     }
 
     public static SemiDirectProduct<T1, T2> SemiDirectProd<T1, T2>(string name, ConcreteGroup<T1> n,
