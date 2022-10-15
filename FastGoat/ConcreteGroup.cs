@@ -19,7 +19,6 @@ public class ConcreteGroup<T> : IConcreteGroup<T> where T : struct, IElt<T>
             var kp = new Dictionary<T, int> { [ne] = 1 };
             ElementsOrders = new ReadOnlyDictionary<T, int>(kp);
             var lc = new Dictionary<T, ReadOnlyDictionary<T, int>> { [ne] = ElementsOrders };
-            LongestCycles = new ReadOnlyDictionary<T, ReadOnlyDictionary<T, int>>(lc);
             GroupType = GroupType.AbelianGroup;
         }
         else
@@ -27,9 +26,8 @@ public class ConcreteGroup<T> : IConcreteGroup<T> where T : struct, IElt<T>
             var pseudo = SuperGroup?.GetGenerators().ToList() ?? g.GetGenerators().ToList();
             PseudoGenerators = new(pseudo);
             Elements = SuperGroup?.GetElements().ToHashSet() ?? new HashSet<T>(g);
-            LongestCycles = SuperGroup?.LongestCycles ?? Group.LongestCycles(g, Elements);
-            ElementsOrders = SuperGroup?.ElementsOrders ?? Group.ElementsOrders(g, LongestCycles);
-            GroupType = SuperGroup?.GroupType ?? (Group.IsCommutative(g, LongestCycles.Keys)
+            ElementsOrders = SuperGroup?.ElementsOrders ?? Group.ElementsOrders(g, Elements);
+            GroupType = SuperGroup?.GroupType ?? (Group.IsCommutative(g, PseudoGenerators)
                 ? GroupType.AbelianGroup
                 : GroupType.NonAbelianGroup);
         }
@@ -49,15 +47,14 @@ public class ConcreteGroup<T> : IConcreteGroup<T> where T : struct, IElt<T>
         if (SuperGroup is not null && generators.Any(e => !SuperGroup.Contains(e)))
             throw new GroupException(GroupExceptionType.GroupDef);
 
-        var (tmpElements, uniqueGenerators) = InternalGenerators(generators);
+        var (tmpElements, uniqueGenerators) = Group.UniqueGenerators(this, generators);
         Elements = new HashSet<T>(tmpElements);
-        LongestCycles = Group.LongestCycles(g, Elements);
-        ElementsOrders = Group.ElementsOrders(g, LongestCycles);
-        GroupType = Group.IsCommutative(g, LongestCycles.Keys)
+        ElementsOrders = Group.ElementsOrders(g, Elements);
+        GroupType = Group.IsCommutative(g, generators)
             ? GroupType.AbelianGroup
             : GroupType.NonAbelianGroup;
 
-        PseudoGenerators = new(InternalGenerators(LongestCycles.Keys.ToArray()).uniqueGenerators);
+        PseudoGenerators = new(uniqueGenerators);
     }
 
     public ConcreteGroup(IGroup<T> g, T[] generators) : this(g.Name, g, generators)
@@ -66,29 +63,13 @@ public class ConcreteGroup<T> : IConcreteGroup<T> where T : struct, IElt<T>
 
     public ReadOnlyCollection<T> PseudoGenerators { get; protected set; }
 
-    protected (HashSet<T> elements, List<T> uniqueGenerators) InternalGenerators(T[] generators)
-    {
-        HashSet<T> tmpElements = new() { this.Neutral() };
-        List<T> uniqueGenerators = new();
-        foreach (var elt in generators)
-        {
-            if (tmpElements.Contains(elt))
-                continue;
-
-            uniqueGenerators.Add(elt);
-            tmpElements = Group.GenerateElements(this, tmpElements, uniqueGenerators);
-        }
-
-        return (tmpElements, uniqueGenerators);
-    }
-
     protected HashSet<T> Elements { get; set; }
     public IGroup<T> BaseGroup { get; }
     public IConcreteGroup<T>? SuperGroup { get; }
     public GroupType GroupType { get; protected set; }
     public string Name { get; protected set; }
+    public virtual string[] Details => Array.Empty<string>();
     public ReadOnlyDictionary<T, int> ElementsOrders { get; protected set; }
-    public ReadOnlyDictionary<T, ReadOnlyDictionary<T, int>> LongestCycles { get; protected set; }
 
     public IEnumerator<T> GetEnumerator()
     {
@@ -111,8 +92,8 @@ public class ConcreteGroup<T> : IConcreteGroup<T> where T : struct, IElt<T>
     {
         if (Elements.Count == 1)
             yield return Neutral();
-        else if (LongestCycles.Count == 1)
-            yield return LongestCycles.First().Key;
+        else if (ElementsOrders.Values.Max() == Elements.Count())
+            yield return ElementsOrders.MaxBy(p => p.Value).Key;
         else if (PseudoGenerators.Count() != 0)
         {
             foreach (var e in PseudoGenerators)

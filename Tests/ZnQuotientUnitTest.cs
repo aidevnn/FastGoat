@@ -16,23 +16,23 @@ public class ZnQuotientUnitTest
         var h1 = Group.Create("H", h0);
         var h2 = Group.Generate("K", h1, h1[1, 0, 0]);
         var cosets = Group.Cosets(h1, h2);
-        Assert.Equal(4, cosets.Count);
+        Assert.Equal(8, cosets.Count);
 
         var c000 = cosets[h1[0, 0, 0]];
-        Assert.Contains(h1[0, 0, 0], c000);
-        Assert.Contains(h1[1, 0, 0], c000);
+        Assert.Equal(c000, h1[0, 0, 0]);
+        Assert.Equal(c000, cosets[h1[1, 0, 0]]);
 
         var c010 = cosets[h1[0, 1, 0]];
-        Assert.Contains(h1[0, 1, 0], c010);
-        Assert.Contains(h1[1, 1, 0], c010);
+        Assert.Equal(c010, h1[0, 1, 0]);
+        Assert.Equal(c010, cosets[h1[1, 1, 0]]);
 
         var c001 = cosets[h1[0, 0, 1]];
-        Assert.Contains(h1[0, 0, 1], c001);
-        Assert.Contains(h1[1, 0, 1], c001);
+        Assert.Equal(c001, h1[0, 0, 1]);
+        Assert.Equal(c001, cosets[h1[1, 0, 1]]);
 
         var c011 = cosets[h1[0, 1, 1]];
-        Assert.Contains(h1[0, 1, 1], c011);
-        Assert.Contains(h1[1, 1, 1], c011);
+        Assert.Equal(c011, h1[0, 1, 1]);
+        Assert.Equal(c011, cosets[h1[1, 1, 1]]);
     }
 
     [Fact]

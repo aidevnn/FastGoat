@@ -22,11 +22,10 @@ public class Un : ConcreteGroup<Automorphism<ZnInt>>
 
         Hash = (BaseGroup.Hash, "Un").GetHashCode();
         Elements = elements.ToHashSet();
-        LongestCycles = Group.LongestCycles(autCn, elements);
-        ElementsOrders = Group.ElementsOrders(autCn, LongestCycles);
-        GroupType = Group.IsCommutative(autCn, LongestCycles.Keys) ? GroupType.AbelianGroup : GroupType.NonAbelianGroup;
-
-        var (tmpElements, uniqueGenerators) = InternalGenerators(LongestCycles.Keys.ToArray());
+        ElementsOrders = Group.ElementsOrders(autCn, Elements);
+        var (tmpElements, uniqueGenerators) = Group.UniqueGenerators(this, Elements.ToArray());
         PseudoGenerators = new(uniqueGenerators);
+        GroupType = Group.IsCommutative(autCn, PseudoGenerators) ? GroupType.AbelianGroup : GroupType.NonAbelianGroup;
+
     }
 }
