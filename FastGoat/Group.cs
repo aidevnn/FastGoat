@@ -263,7 +263,8 @@ public static partial class Group
         ConcreteGroup<T2> g)
         where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
     {
-        var theta = AllOpsByAutomorphisms(g, n).FirstOrDefault(kp => kp.Values.Distinct().Count() > 1, new());
+        var allOps = AllOpsByAutomorphisms(g, n);
+        var theta = allOps.FirstOrDefault(kp => kp.Values.Distinct().Count() > 1, new());
         if (theta.Count == 0)
             throw new GroupException(GroupExceptionType.SemiDirectProductDontExist);
 
@@ -274,11 +275,7 @@ public static partial class Group
         ConcreteGroup<T2> g)
         where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
     {
-        var theta = AllOpsByAutomorphisms(g, n).FirstOrDefault(kp => kp.Values.Distinct().Count() > 1, new());
-        if (theta.Count == 0)
-            throw new GroupException(GroupExceptionType.SemiDirectProductDontExist);
-
-        return new SemiDirectProduct<T1, T2>("", n, theta, g);
+        return SemiDirectProd("", n, g);
     }
 
     public static SemiDirectProduct<T1, T2> SemiDirectProd<T1, T2>(ConcreteGroup<T1> n,

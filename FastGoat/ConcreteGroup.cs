@@ -62,7 +62,7 @@ public class ConcreteGroup<T> : IConcreteGroup<T> where T : struct, IElt<T>
     }
 
     public ReadOnlyCollection<T> PseudoGenerators { get; protected set; }
-
+    public IEnumerable<int> ElementsOrdersList() => ElementsOrders.Values.Ascending();
     protected HashSet<T> Elements { get; set; }
     public IGroup<T> BaseGroup { get; }
     public IConcreteGroup<T>? SuperGroup { get; }
@@ -139,6 +139,9 @@ public class ConcreteGroup<T> : IConcreteGroup<T> where T : struct, IElt<T>
 
     public bool IsIsomorphicTo<Tu>(ConcreteGroup<Tu> gu) where Tu : struct, IElt<Tu>
     {
+        if (!ElementsOrdersList().Ascending().SequenceEqual(gu.ElementsOrdersList().Ascending()))
+            return false;
+        
         var homs = Group.AllIsomorphisms(this, gu);
         return homs.Count(h => h.Count != 0) > 0;
     }
