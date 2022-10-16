@@ -35,44 +35,42 @@ public static class NonSplitExtension
         where T3 : struct, IElt<T3>
     {
         Console.WriteLine("1 -----> G:{0} -----> GH:{1} -----> H:{2} -----> 1", G, GH, H);
+        Console.WriteLine("G  --i--> GH");
+        Console.WriteLine("GH --p--> H");
+        Console.WriteLine("H  --s--> GH");
         var homI = Group.AllHomomorphisms(G, GH);
         var homP = Group.AllHomomorphisms(GH, H);
+        var homS = Group.AllHomomorphisms(H, GH);
 
         // Im(i)= Ker(p)
-        var allImI = homI.Select(hi => (hi, hi.Values.Distinct().Ascending().ToArray())).ToArray();
-        var allKerP = homP.Select(hp =>
-            (hp, hp.Where(p1 => p1.Value.Equals(H.Neutral())).Select(p2 => p2.Key).Ascending().ToArray())
-        ).ToArray();
-
-        var homI0 = allImI.Where(e1 => allKerP.Any(e2 => e1.Item2.SequenceEqual(e2.Item2))).Select(e1 => e1.hi)
-            .Where(e1 => e1.Values.Distinct().Count() != 1)
-            .ToArray();
-
-        var homP0 = allKerP.Where(e1 => allImI.Any(e2 => e1.Item2.SequenceEqual(e2.Item2))).Select(e1 => e1.hp)
-            .Where(e1 => e1.Values.Distinct().Count() != 1)
+        var allImI = homI.Where(hi => Group.Image(hi).Count > 1).Select(hi => (i: hi, im: Group.Image(hi))).ToArray();
+        var allKerP = homP.Where(hp => Group.Kernel(H.Neutral(), hp).Count > 1)
+            .Select(hp => (p: hp, ker: Group.Kernel(H.Neutral(), hp))).ToArray();
+        var sols = allImI
+            .SelectMany(e1 => allKerP.Where(e2 => e1.im.SetEquals(e2.ker)).Select(e2 => (e1.i, e2.p)))
             .ToArray();
 
         Console.WriteLine("Searching 1 -----> G --i--> GH --p--> H -----> 1 with Im(i)=Ker(p)");
-        Console.WriteLine("Searching a morphism 'i' from G to GH");
-        foreach (var hi in homI0)
+        foreach (var (i, p) in sols)
         {
-            Console.WriteLine(hi.GlueMap());
-        }
+            Console.WriteLine("Morphism 'i' from G to GH");
+            Console.WriteLine("    [{0}]", i.GlueMap());
+            Console.WriteLine("Morphism 'p' from GH to H");
+            Console.WriteLine("    [{0}]", p.GlueMap());
 
-        Console.WriteLine();
-        Console.WriteLine("Searching a morphism 'p' from GH to H");
-        foreach (var hi in homP0)
-        {
-            Console.WriteLine(hi.GlueMap());
-        }
 
-        Console.WriteLine();
-        Console.WriteLine("Searching if extension can split H --s--> GH with s(H)=H");
-        var allS = Group.AllHomomorphisms(H, GH);
-        foreach (var s in allS.Where(s0 =>
-                     s0.Values.Distinct().Count() != 1 && H.Select(h => s0[h]).Distinct().Count() == H.Count()))
-        {
-            Console.WriteLine("[{0}]", s.GlueMap());
+            Console.WriteLine("Isomorphism 's' from H to GH");
+            var allS = homS.Where(s0 => s0.Count == H.Count() && H.All(h => p.ContainsKey(s0[h]) && p[s0[h]].Equals(h)))
+                .ToArray();
+            foreach (var s in allS)
+            {
+                Console.WriteLine("    [{0}]", s.GlueMap());
+            }
+
+            if (allS.Length == 0)
+                Console.WriteLine("    Not Found");
+
+            Console.WriteLine();
         }
 
         Console.WriteLine("End");
@@ -91,14 +89,14 @@ public static class NonSplitExtension
     public static void SplittingDihedral()
     {
         var s4 = new Symm(4);
-        var c4 = Group.Generate("C4", s4, s4[(1, 2, 3, 4)]);
-        var c2 = Group.Generate("C2", s4, s4[(1, 3), (2, 4)]);
-        var v = Group.Generate("V", s4, s4[(1, 3), (2, 4)], s4[(1, 2), (3, 4)]);
-        var d8 = Group.Generate("D8", s4, s4[(1, 3), (2, 4)], s4[(1, 2, 3, 4)]);
+        var d8 = Group.Generate("D8", s4, s4[(1, 4), (2, 3)], s4[(1, 2, 3, 4)]);
+        var c4 = Group.Generate("C4", d8, s4[(1, 2, 3, 4)]);
+        var c2 = Group.Generate("C2", d8, s4[(1, 3), (2, 4)]);
+        var v = Group.Generate("V", d8, s4[(1, 3), (2, 4)], s4[(1, 2), (3, 4)]);
 
-        SplittingGroups(v, d8, c2);
         SplittingGroups(c2, d8, v);
         SplittingGroups(c2, d8, c4);
+        SplittingGroups(v, d8, c2);
         SplittingGroups(c4, d8, c2);
     }
 
