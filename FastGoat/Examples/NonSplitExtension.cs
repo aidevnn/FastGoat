@@ -101,6 +101,16 @@ public static class NonSplitExtension
         SplittingGroups(c7, sdp, c3);
     }
 
+    public static void SplittinDirectProduct()
+    {
+        var c12 = new Cn(12);
+        var c4 = new Cn(4);
+        var c3 = new Cn(3);
+        
+        SplittingGroups(c3, c12, c4);
+        SplittingGroups(c4, c12, c3);
+    }
+
     public static void SplittingDihedral()
     {
         var s4 = new Symm(4);
