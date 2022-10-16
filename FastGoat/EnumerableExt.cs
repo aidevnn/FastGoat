@@ -114,7 +114,6 @@ public static class EnumerableExt
             .Select(comb => comb.Zip(seq).Where(e => e.First).Select(e => e.Second));
     }
 
-
     public static IEnumerable<IEnumerable<T>> MultiLoop<T>(this T[][] arrays)
     {
         Stack<(int r, int c)> stack = new(arrays.Length);
@@ -145,6 +144,11 @@ public static class EnumerableExt
             stack.Pop();
             stack.Push((r, c + 1));
         }
+    }
+
+    public static IEnumerable<IEnumerable<T>> MultiLoop<T>(this T[] arr, int n)
+    {
+        return Enumerable.Repeat(arr, n).ToArray().MultiLoop();
     }
 }
 

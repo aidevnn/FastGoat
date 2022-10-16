@@ -175,12 +175,34 @@ public static partial class Group
         return AllMorphisms(bg, g2, MorphismType.Homomorphism);
     }
 
-    public static List<Dictionary<T2, Automorphism<T1>>> AllOpsByAutomorphisms<T1, T2>(IGroup<T2> bg, ConcreteGroup<T1> bn)
+    public static List<Dictionary<T2, Automorphism<T1>>> AllOpsByAutomorphisms<T1, T2>(IGroup<T2> bg,
+        ConcreteGroup<T1> bn)
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
     {
         var nGens = bn.GetGenerators().ToArray();
         var autN = Group.AutomorphismGroup(bn);
         return AllHomomorphisms(bg, autN);
+    }
+
+    public static HashSet<T2> Image<T1, T2>(Dictionary<T1, T2> map)
+        where T1 : struct, IElt<T1>
+        where T2 : struct, IElt<T2>
+    {
+        return map.Values.ToHashSet();
+    }
+
+    public static HashSet<T1> Kernel<T1, T2>(T2 neutral, Dictionary<T1, T2> map)
+        where T1 : struct, IElt<T1>
+        where T2 : struct, IElt<T2>
+    {
+        return map.Where(kp => kp.Value.Equals(neutral)).Select(kp => kp.Key).ToHashSet();
+    }
+
+    public static Dictionary<T1, T3> Compose<T1, T2, T3>(Dictionary<T1, T2> map1, Dictionary<T2, T3> map2)
+        where T1 : struct, IElt<T1>
+        where T2 : struct, IElt<T2>
+    {
+        return map1.Where(kp => map2.ContainsKey(kp.Value)).ToDictionary(a => a.Key, a => map2[a.Value]);
     }
 }
