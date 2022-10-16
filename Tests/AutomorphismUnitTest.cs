@@ -12,7 +12,7 @@ public class AutomorphismUnitTest
     public void Test1AutC2()
     {
         var c2 = new Cn(2);
-        var gbAut = Group.Aut(c2);
+        var gbAut = Group.AutBase(c2);
         var id2 = gbAut.Neutral();
         Assert.Equal(c2[0], id2[c2[0]]);
         Assert.Equal(c2[1], id2[c2[1]]);
@@ -23,7 +23,7 @@ public class AutomorphismUnitTest
     public void Test2AutC3()
     {
         var c3 = new Cn(3);
-        var gbAut = Group.Aut(c3);
+        var gbAut = Group.AutBase(c3);
         var id3 = gbAut.Neutral();
         var y = gbAut[(c3[1], c3[2])];
         var yi = gbAut.Invert(y);
@@ -42,7 +42,7 @@ public class AutomorphismUnitTest
     public void Test3AutC5()
     {
         var c5 = new Cn(5);
-        var gbAut = Group.Aut(c5);
+        var gbAut = Group.AutBase(c5);
         var y = gbAut[(c5[1], c5[2])];
         Assert.Equal(c5[0], y[c5[0]]);
         Assert.Equal(c5[2], y[c5[1]]);
@@ -69,7 +69,7 @@ public class AutomorphismUnitTest
     {
         var s3 = new Sn(3);
         var S3 = Group.Generate(s3[(1, 2)], s3[(1, 3)]);
-        var gbAut = Group.Aut(S3);
+        var gbAut = Group.AutBase(S3);
         var y1 = gbAut[(S3[(1, 2)], S3[(2, 3)]), (S3[(1, 3)], S3[(1, 2)])];
         var y2 = gbAut[(S3[(1, 2)], S3[(1, 3)]), (S3[(1, 3)], S3[(1, 2)])];
         var AutS3 = Group.Generate(y1, y2);
@@ -97,7 +97,7 @@ public class AutomorphismUnitTest
         {
             var un = new Un(k);
             var cn = new Cn(k);
-            var autCn = Group.Aut(cn[1]);
+            var autCn = Group.AutomorphismGroup(cn);
             var arr1 = autCn.ElementsOrders.Select(kp => kp.Value).Ascending().ToArray();
             var arr2 = un.ElementsOrders.Select(kp => kp.Value).Ascending().ToArray();
             Assert.True(arr1.SequenceEqual(arr2));
@@ -134,20 +134,20 @@ public class AutomorphismUnitTest
     [Fact]
     public void Test7GapValidation()
     {
-        var g1 = Product.Group(new Cn(3), new Cn(3));
-        var autG1 = Group.Aut(g1[1, 0], g1[0, 1]);
+        var g1 = Product.Generate(new Cn(3), new Cn(3));
+        var autG1 = Group.AutomorphismGroup(g1);
         Assert.Equal(48, autG1.Count());
 
-        var g2 = Product.Group(new Cn(2), new Cn(2), new Cn(2));
-        var autG2 = Group.Aut(g2[1, 0, 0], g2[0, 1, 0], g2[0, 0, 1]);
+        var g2 = Product.Generate(new Cn(2), new Cn(2), new Cn(2));
+        var autG2 = Group.AutomorphismGroup(g2);
         Assert.Equal(168, autG2.Count());
 
-        var g3 = Product.Group(new Cn(2), new Cn(8));
-        var autG3 = Group.Aut(g3[1, 0], g3[0, 1]);
+        var g3 = Product.Generate(new Cn(2), new Cn(8));
+        var autG3 = Group.AutomorphismGroup(g3);
         Assert.Equal(16, autG3.Count());
 
-        var g4 = Product.Group(new Cn(2), new Cn(2), new Cn(4));
-        var autG4 = Group.Aut(g4[1, 0, 0], g4[0, 1, 0], g4[0, 0, 1]);
+        var g4 = Product.Generate(new Cn(2), new Cn(2), new Cn(4));
+        var autG4 = Group.AutomorphismGroup(g4);
         Assert.Equal(192, autG4.Count());
     }
 }

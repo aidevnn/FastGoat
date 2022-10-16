@@ -41,8 +41,8 @@ public static class GroupAction
         var oe1 = c2c4.ElementsOrders[e1]; // Obvious, it is 2
         var oe2 = c2c4.ElementsOrders[e2];
 
-        var c3c3 = Product.Group(new Cn(3), new Cn(3));
-        var autC3C3 = Group.Aut(c3c3[1, 0], c3c3[0, 1]);
+        var c3c3 = Product.Generate(new Cn(3), new Cn(3));
+        var autC3C3 = Group.AutomorphismGroup(c3c3);
         var byOrder = autC3C3.GroupBy(a => autC3C3.ElementsOrders[a]).ToDictionary(a => a.Key, b => b.ToArray());
 
         // Automorphism order divides generator order, it is a necessary condition to create 

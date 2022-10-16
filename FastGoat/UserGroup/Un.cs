@@ -6,7 +6,7 @@ public class Un : ConcreteGroup<Automorphism<ZnInt>>
 {
     public Cn Cn { get; }
 
-    public Un(int n) : base($"U{n}", Group.Aut(new Cn(n)), true)
+    public Un(int n) : base($"U{n}", Group.AutBase(new Cn(n)), true)
     {
         var autCn = (AutomorphismGroup<ZnInt>)BaseGroup;
         Cn = (Cn)autCn.G;

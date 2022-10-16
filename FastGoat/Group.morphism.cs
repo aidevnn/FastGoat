@@ -81,65 +81,9 @@ public static partial class Group
         return IsomorphismMap(g, g, pMap);
     }
 
-    public static AutomorphismGroup<T> Aut<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
+    public static AutomorphismGroup<T> AutBase<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
     {
         return new AutomorphismGroup<T>(g);
-    }
-
-    public static ConcreteGroup<Automorphism<T>> Aut<T>(string name, IGroup<T> bg, T[] generators)
-        where T : struct, IElt<T>
-    {
-        var g = Generate(name, bg, generators);
-        var bgAut = Aut(g);
-        var gByOrders = g.ElementsOrders.GroupBy(kp => kp.Value)
-            .ToDictionary(a => a.Key, a => a.Select(kp => kp.Key).ToArray());
-        var gensPossibles = generators.ToDictionary(a => a, a => gByOrders[g.ElementsOrders[a]]);
-        var allTuples = gensPossibles.Select(kp => kp.Value.Select(a => (kp.Key, a))).ToArray();
-        List<Dictionary<T, T>> allMaps = new();
-        foreach (var tuples in allTuples)
-        {
-            if (allMaps.Count == 0)
-            {
-                allMaps = tuples.Select(t => new Dictionary<T, T>() { [t.Key] = t.a }).ToList();
-                continue;
-            }
-
-            List<Dictionary<T, T>> tmpMaps = new();
-            foreach (var t in tuples)
-            {
-                foreach (var map in allMaps)
-                {
-                    var map0 = new Dictionary<T, T>(map) { [t.Key] = t.a };
-                    tmpMaps.Add(map0);
-                }
-            }
-
-            allMaps.Clear();
-            allMaps.AddRange(tmpMaps);
-        }
-
-        var allAuts = allMaps.Select(pMap => AutomorphismMap(g, pMap)).Where(map => map.Count == g.Count())
-            .Select(map => new Automorphism<T>(bgAut, map))
-            .ToHashSet();
-
-        var autG = Generate($"Aut[{name}]", allAuts.First(), allAuts.Skip(1).ToArray());
-        return autG;
-    }
-
-    public static ConcreteGroup<Automorphism<T>> Aut<T>(T e, params T[] others) where T : struct, IElt<T>
-    {
-        return Aut(e.BaseGroup.Name, e, others);
-    }
-
-    public static ConcreteGroup<Automorphism<T>> Aut<T>(string name, T e, params T[] others) where T : struct, IElt<T>
-    {
-        return Aut(name, e.BaseGroup, others.Prepend(e).ToArray());
-    }
-
-    public static ConcreteGroup<Automorphism<T>> Aut<T>(IGroup<T> bg, T[] generators)
-        where T : struct, IElt<T>
-    {
-        return Aut(bg.Name, bg, generators);
     }
 
     private enum MorphismType
@@ -231,12 +175,12 @@ public static partial class Group
         return AllMorphisms(bg, g2, MorphismType.Homomorphism);
     }
 
-    public static List<Dictionary<T2, Automorphism<T1>>> AllOpsByAutomorphisms<T1, T2>(IGroup<T2> bg, IGroup<T1> bn)
+    public static List<Dictionary<T2, Automorphism<T1>>> AllOpsByAutomorphisms<T1, T2>(IGroup<T2> bg, ConcreteGroup<T1> bn)
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
     {
         var nGens = bn.GetGenerators().ToArray();
-        var autN = Group.Aut(bn, nGens);
+        var autN = Group.AutomorphismGroup(bn);
         return AllHomomorphisms(bg, autN);
     }
 }
