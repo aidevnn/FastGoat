@@ -34,6 +34,7 @@ public static class NonSplitExtension
         where T2 : struct, IElt<T2>
         where T3 : struct, IElt<T3>
     {
+        Console.WriteLine("1 -----> G:{0} -----> GH:{1} -----> H:{2} -----> 1", G, GH, H);
         var homI = Group.AllHomomorphisms(G, GH);
         var homP = Group.AllHomomorphisms(GH, H);
 
@@ -44,9 +45,11 @@ public static class NonSplitExtension
         ).ToArray();
 
         var homI0 = allImI.Where(e1 => allKerP.Any(e2 => e1.Item2.SequenceEqual(e2.Item2))).Select(e1 => e1.hi)
+            .Where(e1 => e1.Values.Distinct().Count() != 1)
             .ToArray();
 
         var homP0 = allKerP.Where(e1 => allImI.Any(e2 => e1.Item2.SequenceEqual(e2.Item2))).Select(e1 => e1.hp)
+            .Where(e1 => e1.Values.Distinct().Count() != 1)
             .ToArray();
 
         Console.WriteLine("Searching 1 -----> G --i--> GH --p--> H -----> 1 with Im(i)=Ker(p)");
@@ -71,6 +74,9 @@ public static class NonSplitExtension
         {
             Console.WriteLine("[{0}]", s.GlueMap());
         }
+
+        Console.WriteLine("End");
+        Console.WriteLine();
     }
 
     public static void SearchingQuartenion()
@@ -86,9 +92,13 @@ public static class NonSplitExtension
     {
         var s4 = new Symm(4);
         var c4 = Group.Generate("C4", s4, s4[(1, 2, 3, 4)]);
-        var c2 = Group.Generate("C4", s4, s4[(1, 3), (2, 4)]);
+        var c2 = Group.Generate("C2", s4, s4[(1, 3), (2, 4)]);
+        var v = Group.Generate("V", s4, s4[(1, 3), (2, 4)], s4[(1, 2), (3, 4)]);
         var d8 = Group.Generate("D8", s4, s4[(1, 3), (2, 4)], s4[(1, 2, 3, 4)]);
 
+        SplittingGroups(v, d8, c2);
+        SplittingGroups(c2, d8, v);
+        SplittingGroups(c2, d8, c4);
         SplittingGroups(c4, d8, c2);
     }
 
@@ -100,9 +110,12 @@ public static class NonSplitExtension
         var q8 = Group.Generate("Q8", s8, a, b);
 
         var c2 = Group.Generate("C2", s8[(1, 2)]);
-        var c4 = Group.Generate("C2", s8[(1, 2, 3, 4)]);
-        var v = Group.Generate("C2 x C2", s8[(1, 3), (2, 4)], s8[(1, 4), (2, 3)]);
+        var c4 = Group.Generate("C4", s8[(1, 2, 3, 4)]);
+        var v = Group.Generate("V", s8[(1, 3), (2, 4)], s8[(1, 4), (2, 3)]);
 
+        SplittingGroups(c2, q8, c4);
+        SplittingGroups(c4, q8, c2);
+        SplittingGroups(v, q8, c2);
         SplittingGroups(c2, q8, v);
     }
 
