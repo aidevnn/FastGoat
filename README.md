@@ -108,6 +108,11 @@ Algebra (3rd ed.).
 American Mathematical Society.
 <i>Chapter XII.2 Groups extensions.</i>
 
+[GroupNames](https://people.maths.bris.ac.uk/~matyd/GroupNames/1/C4%5E2.C2.html)
+<b>Tim Dokchitser.</b>
+Group Names.
+<i>Beta</i>
+
 [GAP2022](https://www.gap-system.org)
 <b>The GAP Group.</b>
 GAP -- Groups, Algorithms, and Programming.
