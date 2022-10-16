@@ -86,6 +86,21 @@ public static class NonSplitExtension
         SearchQuartenionInSymmetric(8);
     }
 
+    public static void SplittingSemiDirectProduct()
+    {
+        var s7 = new Symm(7);
+        var a = s7[(1, 2, 3, 4, 5, 6, 7)];
+        var b = s7[(2, 3, 5), (4, 7, 6)];
+        var sdp = Group.Generate("C7 x: C3", s7, a, b);
+        // var c7 = Group.Generate("C7", sdp, a);
+        // var c3 = Group.Generate("C3", sdp, b);
+        var c7 = new Cn(7);
+        var c3 = new Cn(3);
+        
+        SplittingGroups(c3, sdp, c7); // c3 isnot a normal subgroup
+        SplittingGroups(c7, sdp, c3);
+    }
+
     public static void SplittingDihedral()
     {
         var s4 = new Symm(4);
