@@ -33,7 +33,7 @@ public static class ActionProperties
         {
             foreach (var op in opsGautN)
             {
-                Console.WriteLine("Fixing the transitivity by removing fixing points.");
+                Console.WriteLine("Fixing the transitivity by removing points and setX cardinal divides action group order.");
                 Console.WriteLine("Group {0} Acting on Group {1}", grG.Name, grN.Name);
                 Console.WriteLine(op.Glue());
                 Group.DisplayOrbx(grG, grN.Except(fixedPointsSet).ToArray(), Group.ByAutomorphism(op));
@@ -82,6 +82,7 @@ public static class ActionProperties
     private static Cn C5 => new Cn(5);
     private static Cn C6 => new Cn(6);
     private static Cn C7 => new Cn(7);
+    private static Cn C8 => new Cn(8);
     private static ConcreteGroup<Ep2<ZnInt, ZnInt>> C3_2 => Product.Generate(C3, C3);
     private static ConcreteGroup<Ep2<ZnInt, ZnInt>> C4C2 => Product.Generate(C4, C2);
 
@@ -97,5 +98,7 @@ public static class ActionProperties
         CheckPropertiesForSemiDirectProduct(C3, C4); // No faithful action
         CheckPropertiesForSemiDirectProduct(C4, C4); // No faithful action
         CheckPropertiesForSemiDirectProduct(C4, C4, rmPoints: C4[2]); // No faithful action but transitive
+        CheckPropertiesForSemiDirectProduct(C3, C8);
+        CheckPropertiesForSemiDirectProduct(C4, C8, C4[2]);
     }
 }
