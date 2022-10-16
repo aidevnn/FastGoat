@@ -108,7 +108,7 @@ Algebra (3rd ed.).
 American Mathematical Society.
 <i>Chapter XII.2 Groups extensions.</i>
 
-[GroupNames](https://people.maths.bris.ac.uk/~matyd/GroupNames/1/C4%5E2.C2.html)
+[GroupNames](https://people.maths.bris.ac.uk/~matyd/GroupNames/index.html)
 <b>Tim Dokchitser.</b>
 Group Names.
 <i>Beta</i>
