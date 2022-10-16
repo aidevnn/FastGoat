@@ -40,34 +40,34 @@ public static class NonSplitExtension
         Console.WriteLine("H  --s--> GH");
         var homI = Group.AllHomomorphisms(G, GH);
         var homP = Group.AllHomomorphisms(GH, H);
-        var homS = Group.AllHomomorphisms(H, GH);
+        var isoS = Group.AllIsomorphisms(H, GH);
 
-        // Im(i)= Ker(p)
-        var allImI = homI.Where(hi => Group.Image(hi).Count > 1).Select(hi => (i: hi, im: Group.Image(hi))).ToArray();
-        var allKerP = homP.Where(hp => Group.Kernel(H.Neutral(), hp).Count > 1)
-            .Select(hp => (p: hp, ker: Group.Kernel(H.Neutral(), hp))).ToArray();
-        var sols = allImI
+        // Im(i) = Ker(p)
+        var allImI = homI.Select(hi => (i: hi, im: Group.Image(hi))).Where(e => e.im.Count > 1).ToArray();
+        var allKerP = homP.Select(hp => (p: hp, ker: Group.Kernel(H.Neutral(), hp))).Where(e => e.ker.Count > 1)
+            .ToArray();
+        var ImIeqKerP = allImI
             .SelectMany(e1 => allKerP.Where(e2 => e1.im.SetEquals(e2.ker)).Select(e2 => (e1.i, e2.p)))
             .ToArray();
 
         Console.WriteLine("Searching 1 -----> G --i--> GH --p--> H -----> 1 with Im(i)=Ker(p)");
-        foreach (var (i, p) in sols)
+        foreach (var (i, p) in ImIeqKerP)
         {
             Console.WriteLine("Morphism 'i' from G to GH");
             Console.WriteLine("    [{0}]", i.GlueMap());
             Console.WriteLine("Morphism 'p' from GH to H");
             Console.WriteLine("    [{0}]", p.GlueMap());
 
-
             Console.WriteLine("Isomorphism 's' from H to GH");
-            var allS = homS.Where(s0 => s0.Count == H.Count() && H.All(h => p.ContainsKey(s0[h]) && p[s0[h]].Equals(h)))
+            var allIsoS = isoS
+                .Where(s0 => s0.Count == H.Count() && H.All(h => p.ContainsKey(s0[h]) && p[s0[h]].Equals(h)))
                 .ToArray();
-            foreach (var s in allS)
+            foreach (var s in allIsoS)
             {
                 Console.WriteLine("    [{0}]", s.GlueMap());
             }
 
-            if (allS.Length == 0)
+            if (allIsoS.Length == 0)
                 Console.WriteLine("    Not Found");
 
             Console.WriteLine();
@@ -96,9 +96,23 @@ public static class NonSplitExtension
         // var c3 = Group.Generate("C3", sdp, b);
         var c7 = new Cn(7);
         var c3 = new Cn(3);
-        
+
         SplittingGroups(c3, sdp, c7); // c3 isnot a normal subgroup
         SplittingGroups(c7, sdp, c3);
+    }
+
+    public static void SplittingS3andC6()
+    {
+        var c2 = new Cn(2);
+        var c3 = new Cn(3);
+        var c6 = new Cn(6);
+        var s3 = new Symm(3);
+
+        SplittingGroups(c2, c6, c3);
+        SplittingGroups(c3, c6, c2);
+
+        SplittingGroups(c2, s3, c3); // c2 isnot a normal subgroup
+        SplittingGroups(c3, s3, c2);
     }
 
     public static void SplittinDirectProduct()
@@ -106,7 +120,7 @@ public static class NonSplitExtension
         var c12 = new Cn(12);
         var c4 = new Cn(4);
         var c3 = new Cn(3);
-        
+
         SplittingGroups(c3, c12, c4);
         SplittingGroups(c4, c12, c3);
     }
@@ -144,6 +158,27 @@ public static class NonSplitExtension
 
     public static void SplittingSmallGroup_32_32()
     {
-        // TODO
+        // https://people.maths.bris.ac.uk/~matyd/GroupNames/1/C4%5E2.C2.html
+        // Generators and relations for C42.C2
+        // G = < a,b,c | a4=b4=1, c2=b2, ab=ba, cac-1=ab2, cbc-1=a2b >
+        // G:=Group(    (1,2,3,4)(5,6,7,8)(9,10,11,12)(13,14,15,16)(17,18,19,20)(21,22,23,24)(25,26,27,28)(29,30,31,32),
+        //              (1,17,15,6)(2,18,16,7)(3,19,13,8)(4,20,14,5)(9,29,24,28)(10,30,21,25)(11,31,22,26)(12,32,23,27),
+        //              (1,26,15,31)(2,32,16,27)(3,28,13,29)(4,30,14,25)(5,12,20,23)(6,24,17,9)(7,10,18,21)(8,22,19,11) );
+
+        var s32 = new Sn(32);
+        var g1 = s32[(1, 2, 3, 4), (5, 6, 7, 8), (9, 10, 11, 12), (13, 14, 15, 16), (17, 18, 19, 20), (21, 22, 23, 24),
+            (25, 26, 27, 28), (29, 30, 31, 32)];
+        var g2 = s32[(1, 17, 15, 6), (2, 18, 16, 7), (3, 19, 13, 8), (4, 20, 14, 5), (9, 29, 24, 28), (10, 30, 21, 25),
+            (11, 31, 22, 26), (12, 32, 23, 27)];
+        var g3 = s32[(1, 26, 15, 31), (2, 32, 16, 27), (3, 28, 13, 29), (4, 30, 14, 25), (5, 12, 20, 23),
+            (6, 24, 17, 9), (7, 10, 18, 21), (8, 22, 19, 11)];
+
+        var sm3232 = Group.Generate("(C4 x C4) . C2", s32, g1, g2, g3);
+        DisplayGroup.HeadElements(sm3232);
+        
+        var c2 = new Cn(2);
+        var c4 = new Cn(4);
+        var c4c4 = Product.Generate(c4, c4);
+        SplittingGroups(c4c4, sm3232, c2); // Founding 96 non unique extensions but they never split
     }
 }
