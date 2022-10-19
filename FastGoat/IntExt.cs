@@ -126,9 +126,9 @@ namespace FastGoat
                 yield return Enumerable.Empty<int>();
             else
             {
-                for (int i = 0; i < n; i++)
+                foreach (var perm in YieldAllPermutations(n - 1))
                 {
-                    foreach (var perm in YieldAllPermutations(n - 1))
+                    for (int i = 0; i < n; i++)
                     {
                         yield return perm.Take(i).Append(n).Concat(perm.Skip(i));
                     }
