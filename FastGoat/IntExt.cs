@@ -125,15 +125,9 @@ namespace FastGoat
             if (n == 0)
                 yield return Enumerable.Empty<int>();
             else
-            {
                 foreach (var perm in YieldAllPermutations(n - 1))
-                {
                     for (int i = 0; i < n; i++)
-                    {
-                        yield return perm.Take(i).Append(n).Concat(perm.Skip(i));
-                    }
-                }
-            }
+                        yield return perm.InsertAt(i, n);
         }
 
         public static IEnumerable<IEnumerable<bool>> YieldAllCombinations(int n)

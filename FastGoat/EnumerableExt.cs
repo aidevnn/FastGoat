@@ -106,6 +106,22 @@ public static class EnumerableExt
         return 0;
     }
 
+    // x3 Faster than append concat, for permutation methods
+    public static IEnumerable<T> InsertAt<T>(this IEnumerable<T> ts, int index, T p)
+    {
+        int k = 0;
+        foreach (var t in ts)
+        {
+            if (index == k++)
+                yield return p;
+
+            yield return t;
+        }
+
+        if (index == k)
+            yield return p;
+    }
+
     public static IEnumerable<IEnumerable<T>> AllCombinations<T>(this T[] seq)
     {
         if (seq.Length > IntExt.NbCombinations)
