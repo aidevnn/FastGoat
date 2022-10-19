@@ -12,7 +12,8 @@ public static class EnumerableExt
     //     return string.Join(sep, map.Select(kp => string.Format(fmt, kp.Key, kp.Value)));
     // }
 
-    public static string GlueMap<T1, T2>(this IEnumerable<KeyValuePair<T1, T2>> map, string sep = ", ", string fmt = "{0}->{1}")
+    public static string GlueMap<T1, T2>(this IEnumerable<KeyValuePair<T1, T2>> map, string sep = ", ",
+        string fmt = "{0}->{1}")
     {
         return string.Join(sep, map.Select(kp => string.Format(fmt, kp.Key, kp.Value)));
     }
@@ -114,41 +115,35 @@ public static class EnumerableExt
             .Select(comb => comb.Zip(seq).Where(e => e.First).Select(e => e.Second));
     }
 
-    public static IEnumerable<IEnumerable<T>> MultiLoop<T>(this T[][] arrays)
+    public static IEnumerable<(T1, T2)> MultiLoop<T1, T2>(IEnumerable<T1> t1s, IEnumerable<T2> t2s)
     {
-        Stack<(int r, int c)> stack = new(arrays.Length);
-        stack.Push((0, 0));
-        while (stack.Count != 0)
+        return t1s.SelectMany(t1 => t2s.Select(t2 => (t1, t2)));
+    }
+
+    public static IEnumerable<IEnumerable<T>> MultiLoop<T>(this IEnumerable<IEnumerable<T>> enumerables)
+    {
+        if (!enumerables.Any())
+            yield return Enumerable.Empty<T>(); // on the void
+        else
         {
-            var (r, c) = stack.Peek();
-            if (c == arrays[r].Length)
+            foreach (var t in enumerables.First())
             {
-                stack.Pop();
-                if (stack.Count != 0)
+                foreach (var v in MultiLoop<T>(enumerables.Skip(1)))
                 {
-                    var (r0, c0) = stack.Pop();
-                    stack.Push((r0, c0 + 1));
+                    yield return v.Prepend(t);
                 }
-
-                continue;
             }
-
-            if (r < arrays.Length - 1)
-            {
-                stack.Push((r + 1, 0));
-                continue;
-            }
-
-            yield return stack.Select(a => arrays[a.r][a.c]).Reverse();
-
-            stack.Pop();
-            stack.Push((r, c + 1));
         }
     }
 
-    public static IEnumerable<IEnumerable<T>> MultiLoop<T>(this T[] arr, int n)
+    public static IEnumerable<IEnumerable<T>> MultiLoopWith<T>(this IEnumerable<T> ts, params IEnumerable<T>[] other)
     {
-        return Enumerable.Repeat(arr, n).ToArray().MultiLoop();
+        return MultiLoop(other.Prepend(ts));
+    }
+
+    public static IEnumerable<IEnumerable<T>> MultiLoop<T>(this IEnumerable<T> arr, int n)
+    {
+        return Enumerable.Repeat(arr, n).MultiLoop();
     }
 }
 
