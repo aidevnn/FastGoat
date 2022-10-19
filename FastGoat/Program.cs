@@ -15,11 +15,11 @@ using static FastGoat.EnumerableExt;
 Console.WriteLine("Hello World");
 
 {
-    var l0 = new[] { 1, 2, 3 };
-    var l1 = new[] { 4, 5 };
+    foreach (var e in YieldAllCombinations(4))
+        Console.WriteLine(e.Select(b => b ? 1 : 0).Glue());
 
-    foreach (var e in l0.MultiLoopWith(l1, l0))
-    {
-        Console.WriteLine(e.Glue(" "));
-    }
+    Console.WriteLine();
+    
+    foreach (var e in YieldAllPermutations(4))
+        Console.WriteLine(e.Glue());
 }
