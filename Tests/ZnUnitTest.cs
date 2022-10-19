@@ -125,4 +125,29 @@ public class ZnUnitTest
         Assert.Equal(z6[2], z6[5] + z6[3]);
         Assert.Equal(z6[2], z6[5] * 4);
     }
+
+    [Fact]
+    public void Test6Tuples()
+    {
+        var z5 = new Zn(5);
+        var z8 = new Zn(8);
+        var g1 = Product.Gp(z5, z8);
+
+        var e1 = z5[2];
+        var e2 = z8[5];
+        var ep1 = g1[2, 5];
+        var ep2 = Product.Ep(e1, e2);
+
+        Assert.Equal(g1.Gi[0], z5);
+        Assert.Equal(g1.Gi[1], z8);
+        Assert.Equal(ep1.Ei[0], e1);
+        Assert.Equal(ep1.Ei[1], e2);
+        Assert.Equal(ep1.BaseGroup, g1);
+        Assert.Equal(ep2.BaseGroup, g1);
+
+        var ep3 = g1[1, 7];
+        Assert.Equal(g1.Invert(ep1), g1[3, 3]);
+        Assert.Equal(g1.Op(ep1, ep3), g1[3, 4]);
+        Assert.Equal(g1.Times(ep1, 3), ep3);
+    }
 }

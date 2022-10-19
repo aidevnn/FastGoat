@@ -66,7 +66,7 @@ public struct Gp<T> : IGroup<Ep<T>> where T : IElt<T>
 
     public IEnumerable<Ep<T>> GetElements()
     {
-        foreach (var ep in Gi.Select(g => g.GetElements().ToArray()).ToArray().MultiLoop())
+        foreach (var ep in Gi.Select(g => g.GetElements()).MultiLoop())
             yield return new(this, ep.ToArray());
     }
 

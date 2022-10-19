@@ -43,6 +43,15 @@ public class GeneratorsUnitTest
         Assert.Contains(g3[(0, 0), 1], g3G);
         Assert.Equal(3, g3G.Length);
         Assert.Equal(125, gr3.Count());
+        
+        var g4 = Product.Gp(g0, g0);
+        var g4G = g4.GetGenerators().ToArray();
+        var gr4 = Group.Generate(g4, g4G);
+        Assert.Contains(g4[1, 0], g4G);
+        Assert.Contains(g4[0, 1], g4G);
+        Assert.Equal(2, g4G.Length);
+        Assert.Equal(25, gr4.Count());
+
     }
 
     [Fact]
