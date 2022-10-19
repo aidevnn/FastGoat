@@ -187,6 +187,22 @@ public static partial class Group
         return cayleyTable;
     }
 
+    public static bool IsGroup<T>(T[,] table) where T : struct, IElt<T>
+    {
+        var n = table.GetLength(0);
+        if (n != table.GetLength(1))
+            return false;
+
+        var lt = Enumerable.Range(0, n).ToArray();
+        var group = lt.Select(i => table[0, i]).ToHashSet();
+        if (group.Count != n)
+            return false;
+        
+        var checkRows = lt.Select(i0 => lt.Select(j0 => table[i0, j0]).ToHashSet()).All(group.SetEquals);
+        var checkCols = lt.Select(i0 => lt.Select(j0 => table[j0, i0]).ToHashSet()).All(group.SetEquals);
+        return checkRows && checkCols;
+    }
+
     public static bool IsGroup<T>(IGroup<T> g, IEnumerable<T> elements) where T : struct, IElt<T>
     {
         var group = elements.ToHashSet();
@@ -197,10 +213,7 @@ public static partial class Group
             return false;
 
         var cayleyTable = CayleyTable(g, group.ToArray());
-        var lt = Enumerable.Range(0, group.Count).ToArray();
-        var cayleyRows = lt.Select(i0 => lt.Select(j0 => cayleyTable[i0, j0]).ToHashSet()).All(group.SetEquals);
-        var cayleyCols = lt.Select(i0 => lt.Select(j0 => cayleyTable[j0, i0]).ToHashSet()).All(group.SetEquals);
-        return cayleyRows && cayleyCols;
+        return IsGroup(cayleyTable);
     }
 
     public static bool IsGroup<T>(IGroup<T> g) where T : struct, IElt<T>
