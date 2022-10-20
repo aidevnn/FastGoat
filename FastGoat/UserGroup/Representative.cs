@@ -3,7 +3,7 @@ using FastGoat;
 
 namespace FastGoat.UserGroup;
 
-public readonly struct Representative<T> : IElt<Representative<T>> where T : struct, IElt<T>
+public readonly struct Representative<T> : ILeftCoset<T>, IElt<Representative<T>> where T : struct, IElt<T>
 {
     public Representative(Quotient<T> lQuo)
     {
