@@ -4,7 +4,7 @@ public static class ToddCoxeterAlgo
 {
     public static OpsTable Run(string rels, bool details = false)
     {
-        return Run("y", "y, " + rels, details);
+        return Run("i", "i, " + rels, details);
     }
     public static OpsTable Run(string sg, string rels, bool details = false)
     {

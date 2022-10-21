@@ -32,41 +32,6 @@ public class OpsTable
     public RelatorsTable rTable { get; }
     public OpsTable? Previous { get; }
 
-    void FillClassesTable(IEnumerable<Op> ops)
-    {
-        foreach (var op in ops)
-        {
-            if (op.i == Symbol.Unknown || op.j == Symbol.Unknown)
-                continue;
-
-            var opiKey = new OpKey(op.i, op.g);
-            var opjKey = new OpKey(op.j, op.g.Invert());
-
-            var opiCheck = opsTable.ContainsKey(opiKey);
-            var opjCheck = opsTable.ContainsKey(opjKey);
-
-            if (!opiCheck && !opjCheck)
-            {
-                opsTable[opiKey] = op.j;
-                opsTable[opjKey] = op.i;
-            }
-            else if (opiCheck && opjCheck)
-            {
-                List<string> err = new();
-                if (opsTable[opiKey] != op.j)
-                    err.Add($"{opiKey}={opsTable[opiKey]} ~ {opiKey}={op.j}");
-
-                if (opsTable[opjKey] != op.i)
-                    err.Add($"{opjKey}={opsTable[opjKey]} ~ {opjKey}={op.i}");
-
-                if (err.Count != 0)
-                    throw new Exception(err.Glue(" and ", "[{0}]"));
-            }
-            else
-                throw new Exception("TO DO");
-        }
-    }
-
     public void BuildTable()
     {
         int sz = 0;
@@ -218,8 +183,8 @@ public class OpsTable
 
     public static Header CreateHeader(params string[] gens)
     {
-        // The character 'y' is reserved for neutral 
-        var gy = gens.ToList().FindAll(g => g.Contains('y'));
+        // The character 'i' is reserved for neutral subgroup
+        var gy = gens.ToList().FindAll(g => g.Contains('i'));
         if (gy.Count > 1 || (gy.Count == 1 && gy[0].Length != 1))
             throw new GroupException(GroupExceptionType.GroupDef);
         
