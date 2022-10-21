@@ -68,6 +68,8 @@ public struct Sn : IGroup<Perm>
         return p;
     }
 
+    public Perm Cycle(params int[] cycle) => ComposesCycles(new Tuple2Array(cycle));
+
     public Perm ComposesCycles(params Tuple2Array[] cycles)
     {
         Neutral().Table.CopyTo(_cache, 0);
