@@ -117,3 +117,9 @@ Group Names.
 <b>The GAP Group.</b>
 GAP -- Groups, Algorithms, and Programming.
 <i>Version 4.12.0; 2022.</i>
+
+[Paper (pdf)](http://www.math.cornell.edu/~kbrown/7350/toddcox.pdf)
+<b>Ken Brown.</b>
+Mathematics 7350.
+Cornell University.
+<i>The Todd–Coxeter procedure</i>
