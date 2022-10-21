@@ -1,4 +1,5 @@
 using System.Collections;
+using FastGoat.ToddCoxeter;
 
 namespace FastGoat.UserGroup;
 
@@ -6,16 +7,18 @@ public class WordGroup : IGroup<Word>
 {
     static readonly string alphabet = "abcdefghijklmnopqrstuvwxyz";
 
-    public WordGroup(params char[] generators)
+    public WordGroup(string relators)
     {
-        if (!generators.All(alphabet.Contains))
-            throw new GroupException(GroupExceptionType.GroupDef);
-
         Hash = Guid.NewGuid().GetHashCode();
-        Name = $"WG[{generators.Glue(",")}]";
-        Generators = generators.ToArray();
+        OpsTable = ToddCoxeterAlgo.Run(relators);
+        Generators = OpsTable.Generators();
+        Name = $"WG[{Generators.Glue(",")}]";
+        Elements = OpsTable.Words().Select(w => new Word(this, w)).ToHashSet();
     }
 
+    private HashSet<Word> Elements { get; }
+
+    private OpsTable OpsTable { get; }
     private char[] Generators { get; }
 
     public IEnumerator<Word> GetEnumerator() => GetElements().GetEnumerator();
@@ -44,21 +47,22 @@ public class WordGroup : IGroup<Word>
                 throw new GroupException(GroupExceptionType.GroupDef);
 
             var s0 = Group.ReducedWordForm2(us.Glue());
-            return new(this, s0);
+            var s1 = Rewrite(s0);
+            return new(this, s1);
         }
     }
 
-    public IEnumerable<Word> GetElements()
-    {
-        yield return Neutral();
-    }
+    public IEnumerable<char> Rewrite(IEnumerable<char> s) => OpsTable.Rewrite(s);
+
+    public IEnumerable<Word> GetElements() => Elements;
 
     public IEnumerable<Word> GetGenerators() => Generators.Select(c => new Word(this, new[] { c })).ToArray();
 
     public Word Neutral() => new(this);
-    public Word Invert(Word e) => new(this, e.Get().Revert());
 
-    public Word Op(Word e1, Word e2) => new(this, e1.Get().Add(e2.Get()));
+    public Word Invert(Word e) => new(this, Rewrite(e.Get().Revert()));
+
+    public Word Op(Word e1, Word e2) => new(this, Rewrite(e1.Get().Add(e2.Get())));
 
     public override int GetHashCode() => Hash;
     public override string ToString() => Name;

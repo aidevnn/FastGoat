@@ -117,4 +117,12 @@ public static partial class Group
         throw new GroupException(GroupExceptionType.GroupDef);
     }
 
+    public static ConcreteGroup<Word> Words(string relators)
+    {
+        return new ConcreteGroup<Word>(new WordGroup(relators));
+    }
+    public static ConcreteGroup<Word> Words(string name, string relators)
+    {
+        return new ConcreteGroup<Word>(name, new WordGroup(relators));
+    }
 }
