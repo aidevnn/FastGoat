@@ -134,6 +134,45 @@ public class OpsTable
         return " ";
     }
 
+    private Dictionary<Symbol, IEnumerable<char>> elementsTable;
+    private char[] generators;
+
+    void ChainSymbol(Symbol s, List<OpKey> chain)
+    {
+        if (s.Equals(Symbol.One))
+            return;
+
+        var prev = opsTable.First(kp => kp.Value.Equals(s));
+        chain.Add(prev.Key);
+        var s0 = prev.Key.i;
+        ChainSymbol(s0, chain);
+    }
+
+    public char[] Generators() => generators;
+    public IEnumerable<IEnumerable<char>> Words() => elementsTable.Values;
+    public void GenerateWords()
+    {
+        generators = opsTable.Keys.Select(k => k.g.GetLowerCase()).Distinct().Where(k => k != Generator.Id.Value)
+            .Ascending().ToArray();
+        var symbs = opsTable.Keys.Select(k => k.i).Distinct().Ascending().ToArray();
+        elementsTable = new();
+        foreach (var symbol in symbs)
+        {
+            List<OpKey> chain = new();
+            ChainSymbol(symbol,chain);
+            elementsTable[symbol] = chain.Select(o => o.g.Value);
+        }
+    }
+
+    public IEnumerable<char> Rewrite(IEnumerable<char> w)
+    {
+        if (!w.Select(char.ToLower).All(generators.Contains))
+            throw new GroupException(GroupExceptionType.GroupDef);
+        
+        var symbol = w.Reverse().Select(c => new Generator(c)).Aggregate(Symbol.One, (i, g) => opsTable[new OpKey(i, g)]);
+        return elementsTable[symbol];
+    }
+
     public void DisplayTable(int digits)
     {
         var fmt = $"{{0,{digits + 1}}}";
@@ -184,8 +223,8 @@ public class OpsTable
     public static Header CreateHeader(params string[] gens)
     {
         // The character 'i' is reserved for neutral subgroup
-        var gy = gens.ToList().FindAll(g => g.Contains('i'));
-        if (gy.Count > 1 || (gy.Count == 1 && gy[0].Length != 1))
+        var gi = gens.ToList().FindAll(g => g.Contains(Generator.Id.Value));
+        if (gi.Count > 1 || (gi.Count == 1 && gi[0].Length != 1))
             throw new GroupException(GroupExceptionType.GroupDef);
         
         var head = gens.Select(Group.ExpandRelator).OrderBy(w => w.Length).ThenBy(w => w)

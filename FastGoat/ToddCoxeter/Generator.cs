@@ -5,7 +5,8 @@ namespace FastGoat.ToddCoxeter;
 public struct Generator : IEquatable<Generator>, IComparable<Generator>
 {
     public static Generator Unknown = new();
-    char Value { get; }
+    public static Generator Id = new('i');
+    public char Value { get; }
     char i { get; }
     public int sgn { get; }
     public Generator(char c)
@@ -17,6 +18,8 @@ public struct Generator : IEquatable<Generator>, IComparable<Generator>
         i = char.IsLower(c) ? char.ToUpper(c) : char.ToLower(c);
         sgn = char.IsLower(c) ? 1 : -1;
     }
+
+    public char GetLowerCase() => sgn == 1 ? Value : i;
     public Generator Invert() => new(i);
     public bool Equals(Generator other) => Value == other.Value;
     public override bool Equals([NotNullWhen(true)] object? obj)

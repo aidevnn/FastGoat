@@ -4,7 +4,8 @@ public static class ToddCoxeterAlgo
 {
     public static OpsTable Run(string rels, bool details = false)
     {
-        return Run("i", "i, " + rels, details);
+        var id = Generator.Id.Value;
+        return Run($"{id}", $"{id}, {rels}", details);
     }
     public static OpsTable Run(string sg, string rels, bool details = false)
     {
@@ -45,6 +46,7 @@ public static class ToddCoxeterAlgo
             GlobalStopWatch.Show("TC");
         }
 
+        tOps.GenerateWords();
         return tOps;
     }
 }
