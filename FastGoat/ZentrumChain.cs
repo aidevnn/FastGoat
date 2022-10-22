@@ -8,8 +8,12 @@ public class ZentrumChain<T> where T : struct, IElt<T>
     {
         G = g;
         Z = Group.Zentrum(g);
+        if(Z.Count() == 1)
+            return;
+        
         var zi = g.Over(Z, $"Z{i}");
-        if (Z.Count() != 1)
+        DisplayGroup.Head(zi);
+        if (zi.Count() != 1)
         {
             Next = new ZentrumChain<Representative<T>>(zi, i + 1);
         }
