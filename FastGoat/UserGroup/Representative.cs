@@ -46,6 +46,6 @@ public readonly struct Representative<T> : ILeftCoset<T>, IElt<Representative<T>
     public override string ToString()
     {
         var hName = Quotient.H.Name;
-        return hName.Contains(' ') ? $"{X}_({hName})" : $"{X}_{hName}";
+        return $"{X}({hName})";
     }
 }
