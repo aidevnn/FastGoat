@@ -2,7 +2,8 @@ namespace FastGoat.UserGroup;
 
 public class Symm : ConcreteGroup<Perm>
 {
-    public Symm(int n) : base($"Symm{n}", new Sn(n))
+    public Symm(int n) : base($"Symm{n}",
+        n is < 8 and > 1 ? new Sn(n) : throw new GroupException(GroupExceptionType.GroupDef))
     {
         N = n;
     }
@@ -16,7 +17,7 @@ public class Symm : ConcreteGroup<Perm>
         if (N >= 3)
         {
             yield return new[] { this[(1, 2, 3)] }; // C3
-            
+
             // Symmetric or Alternate 
             yield return new[] { this[(1, 2)], this[(1, 2, 3)] }; // S3
         }
@@ -60,12 +61,12 @@ public class Symm : ConcreteGroup<Perm>
             yield return new[] { this[(1, 2)], this[(4, 5)], this[(1, 2, 3)], this[(4, 5, 6)] }; // S3 x S3
 
             // Semi-direct Product 
-            
+
             // gap>StructureDescription(Group([(4, 5, 6), (2, 3)(5, 6), (1, 2)(5, 6)]));
             yield return new[] { this[(4, 5, 6)], this[(2, 3), (5, 6)], this[(1, 2), (5, 6)] }; // (C3 x C3) : C2
-            
+
             // gap>StructureDescription(Group([(4, 5, 6), (1, 4)(2, 5, 3, 6)]));
-            yield return new[] { this[(4, 5, 6)], this[(1, 4),(2, 5, 3, 6)] }; // (C3 x C3) : C4 
+            yield return new[] { this[(4, 5, 6)], this[(1, 4), (2, 5, 3, 6)] }; // (C3 x C3) : C4 
 
 
             // Symmetric or Alternate 
