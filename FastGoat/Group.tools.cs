@@ -117,4 +117,62 @@ public static partial class Group
     {
         return g.Contains(a) && g.Contains(b) && Orbits(g, ByConjugate(g), a).Contains(b);
     }
+
+    public static ConcreteGroup<T> Commutator<T>(ConcreteGroup<T> gr) where T : struct, IElt<T>
+    {
+        var set = new HashSet<T>();
+        foreach (var x in gr)
+        {
+            var xi = gr.Invert(x);
+            foreach (var y in gr)
+            {
+                var yi = gr.Invert(y);
+                var d = gr.Op(gr.Op(x, y), gr.Op(xi, yi));
+                set.Add(d);
+            }
+        }
+
+        var com = Group.Generate($"D({gr})", gr, set.ToArray());
+        return com;
+    }
+
+    static void CommutatorsChain<T>(List<ConcreteGroup<T>> chain) where T : struct, IElt<T>
+    {
+        var gr = chain.Last();
+        var nb0 = gr.Count();
+        if (nb0 == 1)
+            return;
+
+        var comGr = Commutator(gr);
+        var nb1 = comGr.Count();
+        if (nb0 == nb1)
+            return;
+
+        chain.Add(comGr);
+        CommutatorsChain<T>(chain);
+    }
+
+    public static List<ConcreteGroup<T>> CommutatorsChain<T>(ConcreteGroup<T> gr) where T : struct, IElt<T>
+    {
+        List<ConcreteGroup<T>> chain = new() { gr };
+        CommutatorsChain(chain);
+        return chain;
+    }
+
+    public static ConcreteGroup<T> Zentrum<T>(ConcreteGroup<T> gr) where T : struct, IElt<T>
+    {
+        var set = new HashSet<T>();
+        Func<T, bool> Conj(T s, T si) => x => gr.Op(gr.Op(s, x), si).Equals(x);
+
+        foreach (var s in gr)
+        {
+            var si = gr.Invert(s);
+            var conjByS = Conj(s, si);
+            if (gr.All(conjByS))
+                set.Add(s);
+        }
+
+        return Generate($"Z({gr})", gr, set.ToArray());
+    }
+
 }
