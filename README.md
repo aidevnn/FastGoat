@@ -46,15 +46,33 @@ NormalGroup |H| = 7
 Comparing the previous results with the group presented by $\langle (a,\ b) \ | \ a^7=b^3=1,\ a^2=bab^{-1} \rangle$
 
 ```csharp
+GlobalStopWatch.Restart();
+var wg = new WordGroup("a7, b3, a2 = bab-1");
+var a = wg["a"];
+var g = Group.Create(wg);
+var n = Group.Generate("<a>", g, a);
+var quo = g.Over(n);
+GlobalStopWatch.Stop();
 
-var b = allC3.First(p => (a ^ 2) == p * a * (p ^ -1));
-Console.WriteLine("First Solution a^7 = b^3 = 1 and a^2 = b * a * b^-1 : a = {0} and b = {1}", a, b);
+DisplayGroup.Head(g);
+DisplayGroup.Head(quo);
+GlobalStopWatch.Show($"{wg}");
 ```
 
-will produce same output except
+will produce
 
 ```dotnetcli
-# Group21 Time:9 ms
+|WG[a,b]| = 21
+Type        NonAbelianGroup
+BaseGroup   WG[a,b]
+
+|WG[a,b]/<a>| = 3
+Type        AbelianGroup
+BaseGroup   WG[a,b]/<a>
+Group           |WG[a,b]| = 21
+NormalSubGroup  |<a>| = 7
+
+# WG[a,b] Time:20 ms
 ```
 
 ## Semidirect product using group action
