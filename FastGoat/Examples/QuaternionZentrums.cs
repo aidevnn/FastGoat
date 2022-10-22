@@ -39,4 +39,29 @@ public static class NilpotentGroups
         DisplayGroup.Head(gr);
         ZentrumChain(gr);
     }
+
+    public static void NilpotentIsSolvable()
+    {
+        var gr8 = new WordGroup("Q8", "a4, a2=b2, a-1=bab-1");
+        foreach (var com in Group.CommutatorsChain(gr8))
+            DisplayGroup.Head(com);
+        
+        Console.WriteLine("##############");
+        var gr16 = new WordGroup("Q16", "a8, b2=a4, bab-1=a-1");
+        foreach (var com in Group.CommutatorsChain(gr16))
+            DisplayGroup.Head(com);
+        
+        Console.WriteLine("##############");
+    }
+
+    public static void SolvableAndNotNilpotent()
+    {
+        var gr = new Symm(4);
+        foreach (var com in Group.CommutatorsChain(gr))
+            DisplayGroup.Head(com);
+
+        Console.WriteLine("##############");
+        DisplayGroup.Head(gr);
+        ZentrumChain(gr);
+    }
 }
