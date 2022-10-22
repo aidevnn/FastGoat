@@ -29,6 +29,11 @@ public static class GroupOrder18
         DisplayGroup.Head(pg);
         Console.WriteLine("Elements Orders : {0}", pg.ElementsOrdersList().Glue(", "));
         Console.WriteLine("({0}) IsIsomorphicTo ({1}) : {2}", c3s6, pg, c3s6.IsIsomorphicTo(pg));
+        
+        var wg = Group.Words("wg(C3 x S3)", "a3, b3, c2, ab=ba, ac=ca, bcbc");
+        DisplayGroup.Head(wg);
+        Console.WriteLine("Elements Orders : {0}", wg.ElementsOrdersList().Glue(", "));
+        Console.WriteLine("({0}) IsIsomorphicTo ({1}) : {2}", wg, pg, wg.IsIsomorphicTo(pg));
     }
 
     public static void D18()
