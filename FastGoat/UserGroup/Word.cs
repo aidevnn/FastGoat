@@ -3,16 +3,16 @@ namespace FastGoat.UserGroup;
 public struct Word : IElt<Word>
 {
     private string _word;
-    public WordGroup WGroup { get; }
+    public WordGroupBase WGroup { get; }
     public string Get() => _word;
-    public Word(WordGroup wg)
+    public Word(WordGroupBase wg)
     {
         WGroup = wg;
         _word = "";
         Hash = (_word, wg).GetHashCode();
     }
 
-    public Word(WordGroup wg, IEnumerable<char> letters)
+    public Word(WordGroupBase wg, IEnumerable<char> letters)
     {
         WGroup = wg;
         _word = letters.Glue();

@@ -48,15 +48,13 @@ Comparing the previous results with the group presented by $\langle (a,\ b) \ | 
 ```csharp
 GlobalStopWatch.Restart();
 var wg = new WordGroup("a7, b3, a2 = bab-1");
-var a = wg["a"];
-var g = Group.Create(wg);
-var n = Group.Generate("<a>", g, a);
-var quo = g.Over(n);
 GlobalStopWatch.Stop();
 
-DisplayGroup.Head(g);
-DisplayGroup.Head(quo);
+DisplayGroup.Head(wg);
+var n = Group.Generate("<a>", wg, wg["a"]);
+DisplayGroup.Head(wg.Over(n));
 GlobalStopWatch.Show($"{wg}");
+Console.WriteLine();
 ```
 
 will produce
