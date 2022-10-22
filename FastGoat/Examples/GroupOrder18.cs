@@ -20,6 +20,15 @@ public static class GroupOrder18
         var c3s6 = Product.Generate(new Cn(3), new Symm(3));
         DisplayGroup.Head(c3s6);
         Console.WriteLine("Elements Orders : {0}", c3s6.ElementsOrdersList().Glue(", "));
+        
+        var s6 = new Sn(6);
+        var a = s6[(1, 2, 3)];
+        var b = s6[(1, 2)];
+        var c = s6[(4, 5, 6)];
+        var pg = Group.Generate("pg(C3 x S3)", s6, a, b, c);
+        DisplayGroup.Head(pg);
+        Console.WriteLine("Elements Orders : {0}", pg.ElementsOrdersList().Glue(", "));
+        Console.WriteLine("({0}) IsIsomorphicTo ({1}) : {2}", c3s6, pg, c3s6.IsIsomorphicTo(pg));
     }
 
     public static void D18()
@@ -68,7 +77,7 @@ public static class GroupOrder18
         Console.WriteLine();
 
         var sdp2 = Group.SemiDirectProd("sdp(C3 x: S3)", new Cn(3), new Symm(3));
-        DisplayGroup.Head(sdp2);
+        DisplayGroup.HeadSdp(sdp2);
         Console.WriteLine("Elements Orders : {0}", sdp2.ElementsOrdersList().Glue(", "));
         Console.WriteLine("({0}) IsIsomorphicTo ({1}) : {2}", wg, sdp2, wg.IsIsomorphicTo(sdp2));
         Console.WriteLine();
