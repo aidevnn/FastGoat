@@ -92,6 +92,11 @@ public static class GLnp
 
         var g2 = Group.Generate("pg(C8 . (C2 x C2))", s16, p1, p2, p3);
         DisplayGroup.Head(g2);
+
+        var g3 = new WordGroup("wg(C8 . (C2 x C2))", "a8, b2, c2, bab=a3, cac=a5, cbc=a4b");
+        DisplayGroup.Head(g3);
+        
         Console.WriteLine("({0}) IsIsomorphicTo ({1}) : {2}", g1, g2, g1.IsIsomorphicTo(g2));
+        Console.WriteLine("({0}) IsIsomorphicTo ({1}) : {2}", g1, g3, g1.IsIsomorphicTo(g3));
     }
 }
