@@ -209,6 +209,14 @@ namespace FastGoat
             return criteria.FirstOrDefault();
         }
 
+        public static Dictionary<int, int> UnInvertible(int n)
+        {
+            var seq = from a in Enumerable.Range(1, n)
+                from b in Enumerable.Range(1, n)
+                select (a, b);
+            return seq.Where(i => (i.a * i.b) % n == 1).ToDictionary(i => i.a, i => i.b);
+        }
+
         // Saunders MacLane, Garrett Birkhoff. Algebra (3rd ed.) criteria
         public static List<int> SolveAll_k_pow_m_equal_one_mod_n(int n, int m)
         {
