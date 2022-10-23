@@ -23,7 +23,7 @@ public class GL : IGroup<Mat>
         for (int i = 0; i < N; ++i)
             TableNeutral[i * (N + 1)] = 1;
 
-        HashNeutral = IntExt.GenHash(N, TableNeutral);
+        HashNeutral = IntExt.GenHash(P, TableNeutral);
         Hash = (N, P).GetHashCode();
     }
 
@@ -58,7 +58,7 @@ public class GL : IGroup<Mat>
             table[at.Table[i]] = value.Table[i] % P;
         }
 
-        var hash = IntExt.GenHash(N, table);
+        var hash = IntExt.GenHash(P, table);
         return new(this, hash, table);
     }
 
@@ -70,7 +70,7 @@ public class GL : IGroup<Mat>
                 throw new GroupException(GroupExceptionType.GroupDef);
 
             var table = us.Select(i => (int)i).Select(i => i % P).ToArray();
-            var hash = IntExt.GenHash(N, table);
+            var hash = IntExt.GenHash(P, table);
             return new(this, hash, table);
         }
     }

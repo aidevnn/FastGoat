@@ -10,14 +10,14 @@ public struct Mat : IElt<Mat>
     {
         GL = gl;
         Table = GL.TableNeutral.ToArray();
-        Hash = IntExt.GenHash(GL.P, Table);
+        Hash = GL.HashNeutral;
     }
 
     public Mat(GL gl, int hash, int[] table)
     {
         GL = gl;
         Table = table.ToArray();
-        Hash = IntExt.GenHash(GL.P, Table);
+        Hash = hash;
     }
 
     public bool Equals(Mat other) => Hash == other.Hash;
