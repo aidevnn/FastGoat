@@ -47,6 +47,12 @@ public class GL : IGroup<Mat>
     public int Hash { get; }
     public string Name { get; }
 
+    public Mat Create(params int[] table)
+    {
+        var hash = IntExt.GenHash(P, table);
+        return new(this, hash, table);
+    }
+
     public Mat At(Tuple2Array at, Tuple2Array value)
     {
         if (at.Table.Length != value.Table.Length || at.Table.Any(i => i < 0 || i > N * N))
@@ -58,9 +64,11 @@ public class GL : IGroup<Mat>
             table[at.Table[i]] = value.Table[i] % P;
         }
 
-        var hash = IntExt.GenHash(P, table);
-        return new(this, hash, table);
+        return Create(table);
     }
+
+    public Mat At(Tuple2Array at, int value) =>
+        At(at, new Tuple2Array(Enumerable.Repeat(value, at.Table.Length).ToArray()));
 
     public Mat this[params ValueType[] us]
     {
@@ -126,8 +134,6 @@ public class GL : IGroup<Mat>
 
         var hash = MatrixProduct(P, N, e1.Table, e2.Table, _cache);
         return new(this, hash, _cache);
-
-        throw new GroupException(GroupExceptionType.GroupDef);
     }
 
     public override string ToString() => Name;
@@ -157,13 +163,27 @@ public class GL : IGroup<Mat>
                 for (int k = 0; k < aCols; k++)
                     sum += a[i * aCols + k] * b[k * bCols + j];
 
-                var v = c[i * aRows + j] = (sum % p);
+                var v = c[i * aRows + j] = ModP(sum);
                 hash += v * pow;
                 pow *= p;
             }
         }
 
         return hash;
+    }
+
+    public int Det(Mat e)
+    {
+        if (N == 2)
+            return Det2x2(e.Table);
+        if (N == 3)
+            return Det3x3(e.Table);
+        if (N == 4)
+            return Det4x4(e.Table);
+        if (N == 5)
+            return Det5x5(e.Table);
+
+        throw new();
     }
 
     int Det2x2(int[] mat)
@@ -308,7 +328,7 @@ public class GL : IGroup<Mat>
 
     int Inv5x5(int[] mat, int[] inv)
     {
-        var det = Det4x4(mat);
+        var det = Det5x5(mat);
         var idet = UnInvertible[det];
         var (a, b, c, d, e) = (mat[0], mat[1], mat[2], mat[3], mat[4]);
         var (f, g, h, i, j) = (mat[5], mat[6], mat[7], mat[8], mat[9]);
@@ -373,7 +393,7 @@ public class GL : IGroup<Mat>
                                 a * m * t * x - d * m * p * y + c * n * p * y + d * k * r * y - a * n * r * y -
                                 c * k * s * y +
                                 a * m * s * y) * idet);
-        var h1 = inv[7] = ModP((3 - e * i * r * u + d * j * r * u + e * h * s * u - c * j * s * u - d * h * t * u +
+        var h1 = inv[7] = ModP((-e * i * r * u + d * j * r * u + e * h * s * u - c * j * s * u - d * h * t * u +
                                 c * i * t * u + e * i * p * w - d * j * p * w - e * f * s * w + a * j * s * w +
                                 d * f * t * w -
                                 a * i * t * w - e * h * p * x + c * j * p * x + e * f * r * x - a * j * r * x -
