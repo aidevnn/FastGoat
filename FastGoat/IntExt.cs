@@ -209,6 +209,14 @@ namespace FastGoat
             return criteria.FirstOrDefault();
         }
 
+        public static int AmodP(int a, int p)
+        {
+            int r = a % p;
+            return r < 0 ? r + p : r;
+        }
+
+        public static int InvModP(int a, int p) => Enumerable.Range(1, p - 1).First(e => AmodP(e * a, p) == 1);
+
         public static Dictionary<int, int> UnInvertible(int n)
         {
             var seq = from a in Enumerable.Range(1, n)
