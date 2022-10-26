@@ -7,10 +7,11 @@ public static class ToddCoxeterAlgo
         var id = Generator.Id.Value;
         return Run($"{id}", $"{id}, {rels}", details);
     }
+
     public static OpsTable Run(string sg, string rels, bool details = false)
     {
         GlobalStopWatch.Restart();
-        
+
         var gHeader = OpsTable.CreateHeader(sg.Split(',', StringSplitOptions.TrimEntries));
         var rHeader = OpsTable.CreateHeader(rels.Split(',', StringSplitOptions.TrimEntries));
         var tOps = new OpsTable(gHeader, rHeader);

@@ -34,11 +34,12 @@ public readonly struct Automorphism<T> : IMap<T, T>, IElt<Automorphism<T>> where
     public IGroup<Automorphism<T>> BaseGroup { get; }
 
     public HashSet<T> Domain => AutMap.Keys.ToHashSet();
-    public HashSet<T> Codomain  => AutMap.Values.ToHashSet();
+    public HashSet<T> Codomain => AutMap.Values.ToHashSet();
     public bool Equals(IMap<T, T>? other) => other?.Hash == Hash;
     public int CompareTo(IMap<T, T>? other) => -other?.CompareMapTo(this) ?? 1;
     public override int GetHashCode() => Hash;
     public T this[T index] => AutMap[index];
+
     public override string ToString()
     {
         return AutMap.OrderBy(kp => kp.Key).Select(kp => $"{kp.Key}->{kp.Value}").Glue(", ");

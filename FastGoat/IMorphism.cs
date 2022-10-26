@@ -1,4 +1,3 @@
-
 namespace FastGoat;
 
 public interface IMap<T1, T2> : IEquatable<IMap<T1, T2>>, IComparable<IMap<T1, T2>>

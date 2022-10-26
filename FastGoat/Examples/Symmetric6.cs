@@ -99,7 +99,7 @@ public static class Symmetric6
                 allSubGroups.Add(g1);
             }
         }
-    
+
         GlobalStopWatch.Show($"All SubGroups of {g0.Name} : {allSubGroups.Count}");
         var allSorted = allSubGroups.GroupBy(sg => sg.Count).ToDictionary(a => a.Key, a => a.ToList());
         Console.WriteLine(allSorted.AscendingByKey().Select(p => $"[{p.Key}, {p.Value.Count}]").Glue());
@@ -110,7 +110,7 @@ public static class Symmetric6
         Console.WriteLine(g36.All(g0.Contains));
         DisplayGroup.Head(g36);
         AddToSubGroups(g36, g36, allSubGroupsE36);
-    
+
         var allSortedE36 = allSubGroupsE36.GroupBy(sg => sg.Count).ToDictionary(a => a.Key, a => a.ToList());
         Console.WriteLine(allSortedE36.AscendingByKey().Select(p => $"[{p.Key}, {p.Value.Count}]").Glue());
         var g18 = Group.Generate("E18", g0, allSubGroupsE36.First(sg => sg.Count == 18).ToArray());
@@ -118,7 +118,7 @@ public static class Symmetric6
         Console.WriteLine(g18.PseudoGenerators.Glue());
         AddToSubGroups(g18, g0, allSubGroups);
         GlobalStopWatch.Show($"All SubGroups of {g0.Name} : {allSubGroups.Count}");
-    
+
         var g16 = Group.Generate("E16", g0, g0[(1, 2, 3, 4)], g0[(1, 4), (2, 3)], g0[(5, 6)]);
         AddToSubGroups(g16, g0, allSubGroups);
         GlobalStopWatch.Show($"All SubGroups of {g0.Name} : {allSubGroups.Count}");

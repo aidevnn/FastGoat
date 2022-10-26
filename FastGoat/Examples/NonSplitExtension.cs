@@ -175,7 +175,7 @@ public static class NonSplitExtension
 
         var sm3232 = Group.Generate("(C4 x C4) . C2", s32, g1, g2, g3);
         DisplayGroup.HeadElements(sm3232);
-        
+
         var c2 = new Cn(2);
         var c4 = new Cn(4);
         var c4c4 = Product.Generate(c4, c4);

@@ -174,5 +174,4 @@ public static partial class Group
 
         return Generate($"Z({gr})", gr, set.ToArray());
     }
-
 }

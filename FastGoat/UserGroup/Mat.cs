@@ -1,4 +1,5 @@
 using System.Text;
+
 namespace FastGoat.UserGroup;
 
 public struct Mat : IElt<Mat>
@@ -29,6 +30,7 @@ public struct Mat : IElt<Mat>
     public IGroup<Mat> BaseGroup => GL;
 
     public override int GetHashCode() => Hash;
+
     public override string ToString()
     {
         var sb = new StringBuilder();

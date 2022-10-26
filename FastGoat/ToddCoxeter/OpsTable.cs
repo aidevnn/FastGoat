@@ -150,6 +150,7 @@ public class OpsTable
 
     public char[] Generators() => generators;
     public IEnumerable<IEnumerable<char>> Words() => elementsTable.Values;
+
     public void GenerateWords()
     {
         generators = opsTable.Keys.Select(k => k.g.GetLowerCase()).Distinct().Where(k => k != Generator.Id.Value)
@@ -159,7 +160,7 @@ public class OpsTable
         foreach (var symbol in symbs)
         {
             List<OpKey> chain = new();
-            ChainSymbol(symbol,chain);
+            ChainSymbol(symbol, chain);
             elementsTable[symbol] = chain.Select(o => o.g.Value);
         }
     }
@@ -168,8 +169,9 @@ public class OpsTable
     {
         if (!w.Select(char.ToLower).All(generators.Contains))
             throw new GroupException(GroupExceptionType.GroupDef);
-        
-        var symbol = w.Reverse().Select(c => new Generator(c)).Aggregate(Symbol.One, (i, g) => opsTable[new OpKey(i, g)]);
+
+        var symbol = w.Reverse().Select(c => new Generator(c))
+            .Aggregate(Symbol.One, (i, g) => opsTable[new OpKey(i, g)]);
         return elementsTable[symbol];
     }
 
@@ -226,7 +228,7 @@ public class OpsTable
         var gi = gens.ToList().FindAll(g => g.Contains(Generator.Id.Value));
         if (gi.Count > 1 || (gi.Count == 1 && gi[0].Length != 1))
             throw new GroupException(GroupExceptionType.GroupDef);
-        
+
         var head = gens.Select(Group.ExpandRelator).OrderBy(w => w.Length).ThenBy(w => w)
             .Select(w => w.Select(c => new Generator(c))).ToArray();
 

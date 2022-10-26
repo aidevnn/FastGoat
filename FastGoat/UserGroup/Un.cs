@@ -26,6 +26,5 @@ public class Un : ConcreteGroup<Automorphism<ZnInt>>
         var (tmpElements, uniqueGenerators) = Group.UniqueGenerators(this, Elements.ToArray());
         PseudoGenerators = new(uniqueGenerators);
         GroupType = Group.IsCommutative(autCn, PseudoGenerators) ? GroupType.AbelianGroup : GroupType.NonAbelianGroup;
-
     }
 }

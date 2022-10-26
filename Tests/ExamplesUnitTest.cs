@@ -143,7 +143,7 @@ public class ExamplesUnitTest
 
         Assert.True(Test());
     }
-    
+
     [Fact]
     public void Test7Group18()
     {
@@ -165,7 +165,7 @@ public class ExamplesUnitTest
 
         Assert.True(Test());
     }
-    
+
     [Fact]
     public void Test8WordGroup()
     {

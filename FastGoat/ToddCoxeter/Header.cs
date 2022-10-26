@@ -5,6 +5,7 @@ namespace FastGoat.ToddCoxeter;
 public class Header : IEnumerable<Generator>
 {
     List<Generator> head { get; }
+
     public Header(IEnumerable<IEnumerable<Generator>> gens)
     {
         List<int> seps = new() { 0 };
@@ -17,6 +18,7 @@ public class Header : IEnumerable<Generator>
         Generators = head.Union(head.Select(g => g.Invert())).ToHashSet();
         Count = head.Count;
     }
+
     public Header(Header header)
     {
         head = header.head.ToList();
@@ -24,17 +26,20 @@ public class Header : IEnumerable<Generator>
         Generators = head.ToHashSet();
         Count = head.Count;
     }
+
     public int[] Separators { get; }
     public int Count { get; }
     public HashSet<Generator> Generators { get; }
     public Generator this[int k] => head[k];
     public IEnumerator<Generator> GetEnumerator() => head.GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => head.GetEnumerator();
+
     public string Display(int digits)
     {
         var fmt = $"{{0,{digits + 1}}}";
         return " " + head.Glue("", fmt);
     }
+
     public void DisplayLineUp(int digits)
     {
         var s1 = Enumerable.Repeat('─', (digits + 1) * (head.Count + 1)).Append(' ').Glue().ToArray();
@@ -45,6 +50,7 @@ public class Header : IEnumerable<Generator>
         s1[^1] = '┘';
         Console.WriteLine(s1.Glue());
     }
+
     public void DisplayLineDown(int digits)
     {
         var s1 = Enumerable.Repeat('─', (digits + 1) * (head.Count + 1)).Append(' ').Glue().ToArray();
@@ -55,15 +61,18 @@ public class Header : IEnumerable<Generator>
         s1[^1] = '┐';
         Console.WriteLine(s1.Glue());
     }
+
     public void DisplayHead(int digits)
     {
         Console.WriteLine(Display(digits));
         DisplayLineDown(digits);
     }
+
     public void ReDisplayHead(int digits)
     {
         DisplayLineUp(digits);
         DisplayHead(digits);
     }
+
     public override string ToString() => "  " + head.Glue(" ");
 }

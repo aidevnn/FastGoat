@@ -5,6 +5,7 @@ public struct OpKey : IEquatable<OpKey>, IComparable<OpKey>
     public Generator g { get; }
     public Symbol i { get; }
     int hash { get; }
+
     public OpKey(Symbol i0, Generator g0)
     {
         i = i0;
@@ -13,6 +14,7 @@ public struct OpKey : IEquatable<OpKey>, IComparable<OpKey>
     }
 
     public bool Equals(OpKey other) => i == other.i && g == other.g;
+
     public int CompareTo(OpKey other)
     {
         var compS = i.CompareTo(other.i);

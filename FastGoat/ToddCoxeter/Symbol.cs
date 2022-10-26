@@ -7,16 +7,20 @@ public struct Symbol : IEquatable<Symbol>, IComparable<Symbol>
     public static Symbol Unknown => new();
     public static Symbol One => Unknown.Next;
     int Value { get; } = 0;
+
     public Symbol(int c)
     {
         Value = c;
     }
+
     public Symbol Next => new(Value + 1);
     public bool Equals(Symbol other) => Value == other.Value;
+
     public override bool Equals([NotNullWhen(true)] object? obj)
     {
         return base.Equals(obj);
     }
+
     public int CompareTo(Symbol other) => Value.CompareTo(other.Value);
     public override int GetHashCode() => Value;
     public override string ToString() => Value == 0 ? " " : $"{Value}";

@@ -127,7 +127,7 @@ public static class MatrixExt
         var det = ComputeDeterminant(mat);
         var invDet = IntExt.InvModP(det, p);
         var diag = MatrixExt.Diagonal(n, invDet);
-        
+
         var com = MatrixExt.Comatrix(mat);
         var tcom = MatrixExt.Transpose(com);
         var inv = MatrixExt.Dot(diag, tcom);

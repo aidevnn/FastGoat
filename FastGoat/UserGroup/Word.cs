@@ -5,6 +5,7 @@ public struct Word : IElt<Word>
     private string _word;
     public WordGroupBase WGroup { get; }
     public string Get() => _word;
+
     public Word(WordGroupBase wg)
     {
         WGroup = wg;
@@ -33,6 +34,7 @@ public struct Word : IElt<Word>
     public int Hash { get; }
     public IGroup<Word> BaseGroup => WGroup;
     public override int GetHashCode() => Hash;
+
     public override string ToString()
     {
         return _word.Length == 0 ? "()" : Group.ReducedWordForm1(_word.Glue());

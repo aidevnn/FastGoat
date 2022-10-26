@@ -20,7 +20,7 @@ public static class GroupOrder18
         var c3s6 = Product.Generate(new Cn(3), new Symm(3));
         DisplayGroup.Head(c3s6);
         Console.WriteLine("Elements Orders : {0}", c3s6.ElementsOrdersList().Glue(", "));
-        
+
         var s6 = new Sn(6);
         var a = s6[(1, 2, 3)];
         var b = s6[(1, 2)];
@@ -29,7 +29,7 @@ public static class GroupOrder18
         DisplayGroup.Head(pg);
         Console.WriteLine("Elements Orders : {0}", pg.ElementsOrdersList().Glue(", "));
         Console.WriteLine("({0}) IsIsomorphicTo ({1}) : {2}", c3s6, pg, c3s6.IsIsomorphicTo(pg));
-        
+
         var wg = Group.Words("wg(C3 x S3)", "a3, b3, c2, ab=ba, ac=ca, bcbc");
         DisplayGroup.Head(wg);
         Console.WriteLine("Elements Orders : {0}", wg.ElementsOrdersList().Glue(", "));
@@ -75,7 +75,7 @@ public static class GroupOrder18
         Console.WriteLine("Elements Orders : {0}", sdp.ElementsOrdersList().Glue(", "));
         Console.WriteLine();
 
-        var wg = Group.Words("wg(C3 x: S3)","a3, b3, c2, ab=ba, cac=a-1, cbc=b-1");
+        var wg = Group.Words("wg(C3 x: S3)", "a3, b3, c2, ab=ba, cac=a-1, cbc=b-1");
         DisplayGroup.Head(wg);
         Console.WriteLine("Elements Orders : {0}", wg.ElementsOrdersList().Glue(", "));
         Console.WriteLine("({0}) IsIsomorphicTo ({1}) : {2}", wg, sdp, wg.IsIsomorphicTo(sdp));
@@ -86,7 +86,7 @@ public static class GroupOrder18
         Console.WriteLine("Elements Orders : {0}", sdp2.ElementsOrdersList().Glue(", "));
         Console.WriteLine("({0}) IsIsomorphicTo ({1}) : {2}", wg, sdp2, wg.IsIsomorphicTo(sdp2));
         Console.WriteLine();
-    
+
         var s9 = new Sn(9);
         var a = s9[(1, 2, 3), (4, 5, 6), (7, 8, 9)];
         var b = s9[(1, 5, 8), (2, 6, 9), (3, 4, 7)];

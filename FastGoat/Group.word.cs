@@ -105,7 +105,7 @@ public static partial class Group
         {
             return ReducedWordForm2(r);
         }
-        else if(nbEq == 1)
+        else if (nbEq == 1)
         {
             var sp = r.Split('=');
             var r1 = ReducedWordForm2(sp[0]);
@@ -113,10 +113,10 @@ public static partial class Group
             var rf = r1.Add(r2.Revert());
             return rf.Glue();
         }
-        
+
         throw new GroupException(GroupExceptionType.GroupDef);
     }
 
     public static WordGroup Words(string relators) => new WordGroup(relators);
-    public static WordGroup Words(string name, string relators)=> new WordGroup(name, relators);
+    public static WordGroup Words(string name, string relators) => new WordGroup(name, relators);
 }

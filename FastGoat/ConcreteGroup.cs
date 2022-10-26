@@ -141,7 +141,7 @@ public class ConcreteGroup<T> : IConcreteGroup<T> where T : struct, IElt<T>
     {
         if (!ElementsOrdersList().Ascending().SequenceEqual(gu.ElementsOrdersList().Ascending()))
             return false;
-        
+
         var homs = Group.AllIsomorphisms(this, gu);
         return homs.Count(h => h.Count != 0) > 0;
     }

@@ -29,11 +29,11 @@ public static class DisplayGroup
         Console.WriteLine($"|{g.Name}| = {g.Count()}");
         Console.WriteLine($"Type        {g.GroupType}");
         Console.WriteLine($"BaseGroup   {g.BaseGroup}");
-        
+
         var g0 = (Quotient<T>)g.BaseGroup;
         Console.WriteLine($"Group           |{g0.G}| = {g0.G.Count()}");
         Console.WriteLine($"NormalSubGroup  |{g0.H}| = {g0.H.Count()}");
-        
+
         Console.WriteLine();
     }
 
@@ -81,9 +81,9 @@ public static class DisplayGroup
         foreach (var elt in ordered)
         {
             Console.WriteLine(fmt, ++k, g.ElementsOrders[elt], elt);
-            if(details)
+            if (details)
             {
-                foreach (var elt1 in elt.xH) 
+                foreach (var elt1 in elt.xH)
                     Console.WriteLine($"    {elt1}");
             }
         }

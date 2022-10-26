@@ -9,6 +9,7 @@ public struct Generator : IEquatable<Generator>, IComparable<Generator>
     public char Value { get; }
     char i { get; }
     public int sgn { get; }
+
     public Generator(char c)
     {
         if (!char.IsLetter(c))
@@ -22,10 +23,12 @@ public struct Generator : IEquatable<Generator>, IComparable<Generator>
     public char GetLowerCase() => sgn == 1 ? Value : i;
     public Generator Invert() => new(i);
     public bool Equals(Generator other) => Value == other.Value;
+
     public override bool Equals([NotNullWhen(true)] object? obj)
     {
         return base.Equals(obj);
     }
+
     public int CompareTo(Generator other)
     {
         var compS = sgn.CompareTo(other.sgn);
@@ -34,6 +37,7 @@ public struct Generator : IEquatable<Generator>, IComparable<Generator>
 
         return Value.CompareTo(other.Value);
     }
+
     public override int GetHashCode() => Value;
     public override string ToString() => Value == '\0' ? "?" : $"{Value}";
     public static implicit operator Generator(char c) => new(c);

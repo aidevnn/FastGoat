@@ -50,11 +50,10 @@ public class WordGroup : ConcreteGroup<Word>
             return new(WGbase, Rewrite(s0.Get()));
         }
     }
-    
+
     public override Word Neutral() => new(WGbase);
 
     public override Word Invert(Word e) => new(WGbase, Rewrite(e.Get().Revert()));
 
     public override Word Op(Word e1, Word e2) => new(WGbase, Rewrite(e1.Get().Add(e2.Get())));
-
 }

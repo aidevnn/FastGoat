@@ -80,12 +80,13 @@ public static partial class Group
         return new ReadOnlyDictionary<T, int>(orders);
     }
 
-    public static ReadOnlyDictionary<T, ReadOnlyDictionary<T, int>> LongestCycles<T>(IGroup<T> g, IEnumerable<T> elements)
+    public static ReadOnlyDictionary<T, ReadOnlyDictionary<T, int>> LongestCycles<T>(IGroup<T> g,
+        IEnumerable<T> elements)
         where T : struct, IElt<T>
     {
         var set = elements.Ascending().ToHashSet();
         var allCycles = new Dictionary<T, ReadOnlyDictionary<T, int>>(set.Count);
-        
+
         while (set.Count != 0)
         {
             var e0 = set.First();
@@ -93,7 +94,7 @@ public static partial class Group
             set.ExceptWith(cycle0.Keys);
             if (e0.Equals(g.Neutral()))
                 continue;
-        
+
             allCycles[e0] = cycle0;
         }
 
@@ -197,7 +198,7 @@ public static partial class Group
         var group = lt.Select(i => table[0, i]).ToHashSet();
         if (group.Count != n)
             return false;
-        
+
         var checkRows = lt.Select(i0 => lt.Select(j0 => table[i0, j0]).ToHashSet()).All(group.SetEquals);
         var checkCols = lt.Select(i0 => lt.Select(j0 => table[j0, i0]).ToHashSet()).All(group.SetEquals);
         return checkRows && checkCols;
@@ -264,7 +265,8 @@ public static partial class Group
         return new ConcreteGroup<T>($"{g1.Name} x {g2.Name}", g1.SuperGroup, generators);
     }
 
-    public static ConcreteGroup<Representative<T>> Over<T>(this ConcreteGroup<T> g, ConcreteGroup<T> h) where T : struct, IElt<T>
+    public static ConcreteGroup<Representative<T>> Over<T>(this ConcreteGroup<T> g, ConcreteGroup<T> h)
+        where T : struct, IElt<T>
     {
         if (h.SuperGroup is null || !h.SuperGroup.Equals(g))
             throw new GroupException(GroupExceptionType.NotSubGroup);
@@ -272,7 +274,8 @@ public static partial class Group
         return new ConcreteGroup<Representative<T>>(quo);
     }
 
-    public static ConcreteGroup<Representative<T>> Over<T>(this ConcreteGroup<T> g, ConcreteGroup<T> h, string name) where T : struct, IElt<T>
+    public static ConcreteGroup<Representative<T>> Over<T>(this ConcreteGroup<T> g, ConcreteGroup<T> h, string name)
+        where T : struct, IElt<T>
     {
         if (h.SuperGroup is null || !h.SuperGroup.Equals(g))
             throw new GroupException(GroupExceptionType.NotSubGroup);

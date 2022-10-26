@@ -4,6 +4,7 @@ public class Line
 {
     Symbol[] row { get; }
     Header header { get; }
+
     public Line(Symbol key, Header head)
     {
         row = new Symbol[head.Count + 1];
@@ -13,19 +14,23 @@ public class Line
         foreach (var k in header.Separators)
             row[k] = key;
     }
+
     public Line(Line line)
     {
         header = line.header;
         row = line.row.Select(s => s).ToArray();
         Key = line.Key;
     }
+
     public Line(Symbol key, Line line)
     {
         header = line.header;
         row = line.row.Select(s => s).ToArray();
         Key = key;
     }
+
     public int CountUnknown => row.Count(s => s == Symbol.Unknown);
+
     public void Subtitute(Symbol s0, Symbol s1)
     {
         for (int k = 0; k < row.Length; ++k)
@@ -34,6 +39,7 @@ public class Line
                 row[k] = s0;
         }
     }
+
     public (Symbol, Symbol) ApplyOp(SortedDictionary<OpKey, Symbol> opsTable, HashSet<Op> newOps)
     {
         for (int k = 0; k < header.Count; ++k)
@@ -75,8 +81,10 @@ public class Line
 
         return new();
     }
+
     public IEnumerable<Op> GetOps() => header.Select((g, k) => new Op(row[k], g, row[k + 1]));
     public Symbol Key { get; }
+
     public string Display(int digits)
     {
         var fmt = $"{{0,{digits + 1}}}";
@@ -88,6 +96,7 @@ public class Line
         var s2 = s1.Glue();
         return s2;
     }
+
     public override string ToString()
     {
         var digits = row.Max(s => s.ToString().Length);

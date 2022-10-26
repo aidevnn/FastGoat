@@ -17,11 +17,11 @@ public class ToddCoxeterUnitTest
         var gens = ta5.Generators().ToArray();
         var words = ta5.Words().Select(e => e.Glue()).ToArray();
         Assert.Single(gens);
-        Assert.Equal('a',gens[0]);
-        Assert.Contains(new [] { "", "a", "aa", "aaa", "A" }, words.Contains);
+        Assert.Equal('a', gens[0]);
+        Assert.Contains(new[] { "", "a", "aa", "aaa", "A" }, words.Contains);
         Assert.Equal("aa", ta5.Rewrite("aaaAaaaAaaa"));
     }
-    
+
     [Fact]
     public void Test2Klein()
     {
@@ -30,10 +30,10 @@ public class ToddCoxeterUnitTest
         var gens = klein.Generators().ToArray();
         var words = klein.Words().Select(e => e.Glue()).ToArray();
         Assert.Contains(new[] { 'a', 'b' }, gens.Contains);
-        Assert.Contains(new [] { "", "a", "a", "ba" }, words.Contains);
+        Assert.Contains(new[] { "", "a", "a", "ba" }, words.Contains);
         Assert.Equal("ba", klein.Rewrite("ababAbbaAb"));
     }
-    
+
     [Fact]
     public void Test3H21()
     {
@@ -44,7 +44,7 @@ public class ToddCoxeterUnitTest
         Assert.Contains(new[] { 'a', 'b' }, gens.Contains);
         Assert.Equal(21, words.Length);
     }
-    
+
     [Fact]
     public void Test4Abelian()
     {
@@ -55,7 +55,7 @@ public class ToddCoxeterUnitTest
         Assert.Contains(new[] { 'a', 'b', 'c' }, gens.Contains);
         Assert.Equal(24, words.Length);
     }
-    
+
     [Fact]
     public void Test5F20()
     {

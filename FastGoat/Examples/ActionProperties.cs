@@ -33,7 +33,8 @@ public static class ActionProperties
         {
             foreach (var op in opsGautN)
             {
-                Console.WriteLine("Fixing the transitivity by removing points and setX cardinal divides action group order.");
+                Console.WriteLine(
+                    "Fixing the transitivity by removing points and setX cardinal divides action group order.");
                 Console.WriteLine("Group {0} Acting on Group {1}", grG.Name, grN.Name);
                 Console.WriteLine(op.Glue());
                 Group.DisplayOrbx(grG, grN.Except(fixedPointsSet).ToArray(), Group.ByAutomorphism(op));
@@ -42,7 +43,8 @@ public static class ActionProperties
 
         foreach (var op in opsTransitives)
         {
-            Console.WriteLine($"############################# Transitives Group Action Over Set {{{grN.Except(fixedPointsSet).Glue(", ")}}}");
+            Console.WriteLine(
+                $"############################# Transitives Group Action Over Set {{{grN.Except(fixedPointsSet).Glue(", ")}}}");
             var sdp = Group.SemiDirectProd(grN, op, grG);
             DisplayGroup.HeadSdp(sdp);
             Console.WriteLine(sdp.ElementsOrdersList().Glue(", "));

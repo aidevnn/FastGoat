@@ -13,7 +13,7 @@ public static class AbelianInvariantsFactors
 
         if (g.Count() == 1)
             return;
-        
+
         var g0 = g;
         var p = g0.ElementsOrders.OrderByDescending(e => e.Value).ThenBy(e => e.Key).First();
         var h = Group.Generate($"C{p.Value}", g0, p.Key);

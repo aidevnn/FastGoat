@@ -4,28 +4,33 @@ public class RelatorsTable
 {
     Dictionary<Symbol, Line> table { get; }
     Header header { get; }
+
     public RelatorsTable(Header head)
     {
         table = new();
         header = head;
         table[Symbol.One] = NewLine(Symbol.One);
     }
+
     public RelatorsTable(RelatorsTable rTable)
     {
         header = rTable.header;
         table = rTable.table.ToDictionary(s => s.Key, l => new Line(l.Value));
     }
+
     public bool ContainsKey(Symbol s) => table.ContainsKey(s);
     Line NewLine(Symbol s) => new(s, header);
     public IEnumerable<Op> GetOps() => table.SelectMany(kv => kv.Value.GetOps());
     public int CountUnknown => table.Sum(r => r.Value.CountUnknown);
     public void Remove(Symbol s) => table.Remove(s);
+
     public void SubtituteRemove(Symbol s0, Symbol s1)
     {
         table.Remove(s1);
         foreach (var e in table)
             e.Value.Subtitute(s0, s1);
     }
+
     public void SubtituteWithKey(Symbol s0, Symbol s1)
     {
         if (!table.ContainsKey(s0))
@@ -40,6 +45,7 @@ public class RelatorsTable
         foreach (var e in table)
             e.Value.Subtitute(s0, s1);
     }
+
     public (Symbol, Symbol) ApplyOp(SortedDictionary<OpKey, Symbol> opsTable, HashSet<Op> newOps)
     {
         var symbols = opsTable.Values.Distinct().Ascending();
@@ -58,6 +64,7 @@ public class RelatorsTable
 
         return new();
     }
+
     public void Display(int digits)
     {
         Console.WriteLine("# Relators table");
@@ -69,6 +76,7 @@ public class RelatorsTable
             Console.WriteLine(kv.Value.Display(digits));
             ++k;
         }
+
         header.DisplayLineUp(digits);
         Console.WriteLine();
     }
