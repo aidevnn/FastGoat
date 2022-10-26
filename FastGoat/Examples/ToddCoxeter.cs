@@ -48,7 +48,7 @@ public static class ToddCoxeter
         var wg = Group.Words(gname, relators);
         DisplayGroup.HeadElementsTable(wg);
         
-        var s8 = new Symm(8);
+        var s8 = new Sn(8);
         var a = s8[(1, 2, 3, 4), (5, 6, 7, 8)];
         var b = s8[(1, 5, 3, 7), (2, 8, 4, 6)];
         var q8 = Group.Generate("Q8", s8, a, b);

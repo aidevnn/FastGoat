@@ -77,4 +77,19 @@ public class SnUnitTest
         Assert.Equal(s3[(1, 2, 3)], s3[(1, 2)] * s3[(1, 3)]);
         Assert.Equal(s3.Neutral(), s3[(1, 2, 3)] ^ 3);
     }
+
+    [Fact]
+    public void Test5Symm()
+    {
+        var s3 = new Symm(3);
+        Assert.Contains(new[]
+            {
+                s3.Neutral(),
+                s3[(1, 2)], s3[(1, 3)], s3[(2, 3)],
+                s3[(1, 2, 3)], s3[(1, 3, 2)]
+            }
+            , s3.Contains
+        );
+        Assert.Equal(3, s3.SubGroupsGenerators().Count());
+    }
 }

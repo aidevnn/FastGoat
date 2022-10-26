@@ -20,6 +20,7 @@ public struct Mat : IElt<Mat>
         Hash = hash;
     }
 
+    public Mat At(Tuple2Array at, int value) => GL.At(Table, at, value);
     public bool Equals(Mat other) => Hash == other.Hash;
 
     public int CompareTo(Mat other) => Table.SequenceCompareTo(other.Table);

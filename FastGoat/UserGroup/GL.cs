@@ -49,23 +49,26 @@ public class GL : IGroup<Mat>
 
     public Mat Create(params int[] table)
     {
-        var hash = IntExt.GenHash(P, table);
-        return new(this, hash, table);
+        var table0 = MatrixExt.ModP(P, table);
+        var hash = IntExt.GenHash(P, table0);
+        return new(this, hash, table0);
     }
 
-    public Mat At(Tuple2Array at, Tuple2Array value)
+    public Mat At(int[] table, Tuple2Array at, Tuple2Array value)
     {
-        if (at.Table.Length != value.Table.Length || at.Table.Any(i => i < 0 || i > N * N))
+        if (table.Length != N * N || at.Table.Length != value.Table.Length || at.Table.Any(i => i < 0 || i > N * N))
             throw new GroupException(GroupExceptionType.GroupDef);
 
-        var table = new int[N * N];
+        var table0 = MatrixExt.ModP(P, table);
         for (int i = 0; i < at.Table.Length; i++)
         {
-            table[at.Table[i]] = value.Table[i] % P;
+            table0[at.Table[i]] = value.Table[i] % P;
         }
 
-        return Create(table);
+        return Create(table0);
     }
+
+    public Mat At(Tuple2Array at, Tuple2Array value) => At(new int[N * N], at, value);
 
     public Mat At(Tuple2Array at, int value) =>
         At(at, new Tuple2Array(Enumerable.Repeat(value, at.Table.Length).ToArray()));

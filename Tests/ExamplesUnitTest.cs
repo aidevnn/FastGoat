@@ -113,6 +113,76 @@ public class ExamplesUnitTest
             {
                 DihedralAutomorphisms.Dn();
                 DihedralAutomorphisms.AutDn();
+                DihedralAutomorphisms.AutDnPerm();
+                return true;
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
+        }
+
+        Assert.True(Test());
+    }
+
+    [Fact]
+    public void Test6HolomorphC7()
+    {
+        bool Test()
+        {
+            try
+            {
+                HolomorphC7.Sample();
+                return true;
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
+        }
+
+        Assert.True(Test());
+    }
+    
+    [Fact]
+    public void Test7Group18()
+    {
+        bool Test()
+        {
+            try
+            {
+                GroupOrder18.Abelians18();
+                GroupOrder18.D18();
+                GroupOrder18.C3sdpS3();
+                GroupOrder18.C3xS3();
+                return true;
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
+        }
+
+        Assert.True(Test());
+    }
+    
+    [Fact]
+    public void Test8WordGroup()
+    {
+        bool Test()
+        {
+            try
+            {
+                ToddCoxeter.Frobenius20();
+                ToddCoxeter.Quaternion();
+                ToddCoxeter.Quaternion32();
+                ToddCoxeter.CyclicGroup();
+                ToddCoxeter.DiCyclic3();
+                ToddCoxeter.DiCyclic12();
+                ToddCoxeter.KleinGroup();
+                ToddCoxeter.MoreExamples();
+                ToddCoxeter.SmallGroup32_32();
+                ToddCoxeter.Symm3Group();
                 return true;
             }
             catch (Exception e)
