@@ -124,6 +124,12 @@ Algebra (3rd ed.).
 American Mathematical Society.
 <i>Chapter XII.2 Groups extensions.</i>
 
+[A Course on Finite Groups](https://link.springer.com/book/10.1007/978-1-84882-889-6)
+<b>H.E. Rose.</b>
+A Course on Finite Groups.
+Springer.
+<i>Chapter 12. Simple Groups of Order Less than 10000.</i>
+
 [GroupNames](https://people.maths.bris.ac.uk/~matyd/GroupNames/index.html)
 <b>Tim Dokchitser.</b>
 Group Names.
