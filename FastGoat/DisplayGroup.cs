@@ -193,4 +193,10 @@ public static class DisplayGroup
         Elements(p, sortBy);
         Table(p, sortBy);
     }
+
+    public static void AreIsomorphics<T1, T2>(ConcreteGroup<T1> g1, ConcreteGroup<T2> g2) where T1 : struct, IElt<T1>
+        where T2 : struct, IElt<T2>
+    {
+        Console.WriteLine("{0} IsIsomorphicTo {1} : {2}", g1, g2, g1.IsIsomorphicTo(g2));
+    }
 }
