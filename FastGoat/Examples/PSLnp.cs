@@ -56,4 +56,36 @@ public static class PSLnp
         DisplayGroup.AreIsomorphics(pg, l32);
         DisplayGroup.AreIsomorphics(l27, l32);
     }
+
+    public static void L33()
+    {
+        var gl33 = new GL(3, 3);
+        var a = gl33.At((0, 4, 8, 1), 1);
+        var b = gl33.At((2, 3, 7), (1, 2, 2));
+
+        var sl33 = Group.Generate("SL3(3)", gl33, a, b);
+        DisplayGroup.Head(sl33);
+        var zg33 = Group.Zentrum(sl33);
+        DisplayGroup.Head(zg33);
+        var l33 = sl33.Over(zg33, "L3(3)");
+        DisplayGroup.Head(l33);
+        
+        // H.E. Rose, A Course on Finite Groups, page 264
+        var sn = new Sn(13);
+        var a2 = sn[(1, 4, 6),(2, 3, 7, 10, 11, 8),(9, 13)];
+        var b2 = sn[(1, 2, 3), (4, 5, 6), (7, 8, 9), (10, 11, 12)];
+        var pg = Group.Generate("pg(PSL3(3))", a2, b2);
+        DisplayGroup.Head(pg);
+
+        var ra = l33[0, 2, 0, 1, 1, 0, 0, 0, 1];
+        var rb = l33[0, 1, 0, 0, 0, 1, 1, 0, 0];
+        Console.WriteLine("{0} order : {1}", a2, pg.ElementsOrders[a2]);
+        Console.WriteLine("{0} order : {1}", b2, pg.ElementsOrders[b2]);
+        Console.WriteLine("{0} order : {1}", ra, l33.ElementsOrders[ra]);
+        Console.WriteLine("{0} order : {1}", rb, l33.ElementsOrders[rb]);
+
+        var pMap = Group.PartialMap((a2, ra), (b2, rb));
+        var isom = Group.IsomorphismMap(pg, l33, pMap);
+        Console.WriteLine("{0} IsIsomorphicTo {1} : {2}", pg, l33, isom.Count == l33.Count());
+    }
 }
