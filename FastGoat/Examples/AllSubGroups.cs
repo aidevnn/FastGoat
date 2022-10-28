@@ -14,8 +14,8 @@ public static class AllSubGroups
         var hom = Group.AllHomomorphisms(g0, g1);
         foreach (var m in hom)
         {
-            var im = m.Values.ToHashSet();
-            var ker = m.Where(p => p.Value.Equals(g0.Neutral())).Select(p => p.Key).ToHashSet();
+            var im = m.Image().ToHashSet();
+            var ker = m.Kernel().ToHashSet();
             allIm.Add(im);
             allKer.Add(ker);
         }
@@ -26,7 +26,7 @@ public static class AllSubGroups
     static void AllNormalSubGroups<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
     {
         var allHoms = Group.AllHomomorphisms(g, g);
-        var allKer = allHoms.Select(p => p.Where(kp => kp.Value.Equals(g.Neutral())).Select(kp => kp.Key).ToHashSet())
+        var allKer = allHoms.Select(p => p.Kernel().ToHashSet())
             .ToHashSet(new SetEquality<T>());
         foreach (var ker in allKer.OrderBy(a0 => a0.Count))
         {

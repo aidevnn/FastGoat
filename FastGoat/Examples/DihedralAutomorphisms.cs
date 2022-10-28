@@ -29,7 +29,9 @@ public static class DihedralAutomorphisms
             [c2[0]] = un.Neutral(),
             [c2[1]] = un[(cn[1], cn[n - 1])]
         };
-        var d2n = Group.SemiDirectProd("D2n", cn, theta, c2);
+
+        var homTheta = Group.Hom(c2, theta);
+        var d2n = Group.SemiDirectProd("D2n", cn, homTheta, c2);
         return d2n;
     }
 

@@ -7,13 +7,13 @@ namespace FastGoat;
 public class SemiDirectProduct<T1, T2> : ConcreteGroup<Ep2<T1, T2>>
     where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
 {
-    public ReadOnlyDictionary<T2, Automorphism<T1>> Theta { get; }
+    public Homomorphism<T2, Automorphism<T1>> Theta { get; }
     public ConcreteGroup<T1> N { get; }
     public ConcreteGroup<T2> G { get; }
     public ConcreteGroup<Ep2<T1, T2>> Ncan { get; }
     public ConcreteGroup<Ep2<T1, T2>> Gcan { get; }
 
-    public SemiDirectProduct(string name, ConcreteGroup<T1> n, Dictionary<T2, Automorphism<T1>> theta,
+    public SemiDirectProduct(string name, ConcreteGroup<T1> n, Homomorphism<T2, Automorphism<T1>> theta,
         ConcreteGroup<T2> g) : base(name, Product.Group(n, g), true)
     {
         G = g;
@@ -29,7 +29,7 @@ public class SemiDirectProduct<T1, T2> : ConcreteGroup<Ep2<T1, T2>>
             Name = name;
         }
 
-        Theta = new(theta);
+        Theta = theta;
         List<Ep2<T1, T2>> generators = new List<Ep2<T1, T2>>();
         foreach (var e in G.GetGenerators())
             generators.Add(Product.Elt(N.Neutral(), e));

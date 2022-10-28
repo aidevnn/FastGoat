@@ -43,7 +43,8 @@ public static class GroupOrder18
         var autN = Group.AutomorphismGroup(n);
         var inv = autN[(n[1], n[8])];
         var theta = Group.HomomorphismMap(g, autN, new() { [g[1]] = inv });
-        var sdpD18 = Group.SemiDirectProd("sdp(D18)", n, theta, g);
+        var homTheta = Group.Hom(g, theta);
+        var sdpD18 = Group.SemiDirectProd("sdp(D18)", n, homTheta, g);
         DisplayGroup.HeadSdp(sdpD18);
         Console.WriteLine("Elements Orders : {0}", sdpD18.ElementsOrdersList().Glue(", "));
         Console.WriteLine();
@@ -70,7 +71,8 @@ public static class GroupOrder18
         var autN = Group.AutomorphismGroup(n);
         var inv = autN[(n[1, 0], n[2, 0]), (n[0, 1], n[0, 2])];
         var theta = Group.HomomorphismMap(g, autN, new() { [g[1]] = inv });
-        var sdp = Group.SemiDirectProd("sdp((C3 x C3) x: C2)", n, theta, g);
+        var homTheta = Group.Hom(g, theta);
+        var sdp = Group.SemiDirectProd("sdp((C3 x C3) x: C2)", n, homTheta, g);
         DisplayGroup.HeadSdp(sdp);
         Console.WriteLine("Elements Orders : {0}", sdp.ElementsOrdersList().Glue(", "));
         Console.WriteLine();

@@ -47,7 +47,8 @@ public static class HolomorphC7
         var u7 = new Un(7);
         var a = u7[(c7[1], c7[3])];
         var theta1 = Group.HomomorphismMap(u7, u7, new() { [a] = a });
-        var hol7 = Group.SemiDirectProd("Hol7", c7, theta1, u7);
+        var homTheta1 = Group.Hom(u7, theta1);
+        var hol7 = Group.SemiDirectProd("Hol7", c7, homTheta1, u7);
         DisplayGroup.HeadSdp(hol7);
         Console.WriteLine(hol7.ElementsOrdersList().Glue(", "));
         Console.WriteLine();

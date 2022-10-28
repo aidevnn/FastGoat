@@ -64,6 +64,7 @@ public class ConcreteGroup<T> : IGroup<T> where T : struct, IElt<T>
     public ReadOnlyCollection<T> PseudoGenerators { get; protected set; }
     public IEnumerable<int> ElementsOrdersList() => ElementsOrders.Values.Ascending();
     protected HashSet<T> Elements { get; set; }
+    public bool SetEquals(IEnumerable<T> ts) => Elements.SetEquals(ts);
     public IGroup<T> BaseGroup { get; }
     public ConcreteGroup<T>? SuperGroup { get; }
     public GroupType GroupType { get; protected set; }

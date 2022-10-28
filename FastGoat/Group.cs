@@ -271,37 +271,4 @@ public static partial class Group
         var quo = new Quotient<T>(g, h);
         return new ConcreteGroup<Coset<T>>(name, quo);
     }
-
-    public static SemiDirectProduct<T1, T2> SemiDirectProd<T1, T2>(string name, ConcreteGroup<T1> n,
-        ConcreteGroup<T2> g)
-        where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
-    {
-        var allOps = AllOpsByAutomorphisms(g, n);
-        var theta = allOps.FirstOrDefault(kp => kp.Values.Distinct().Count() > 1, new());
-        if (theta.Count == 0)
-            throw new GroupException(GroupExceptionType.SemiDirectProductDontExist);
-
-        return new SemiDirectProduct<T1, T2>(name, n, theta, g);
-    }
-
-    public static SemiDirectProduct<T1, T2> SemiDirectProd<T1, T2>(ConcreteGroup<T1> n,
-        ConcreteGroup<T2> g)
-        where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
-    {
-        return SemiDirectProd("", n, g);
-    }
-
-    public static SemiDirectProduct<T1, T2> SemiDirectProd<T1, T2>(ConcreteGroup<T1> n,
-        Dictionary<T2, Automorphism<T1>> theta, ConcreteGroup<T2> g)
-        where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
-    {
-        return new SemiDirectProduct<T1, T2>("", n, theta, g);
-    }
-
-    public static SemiDirectProduct<T1, T2> SemiDirectProd<T1, T2>(string name, ConcreteGroup<T1> n,
-        Dictionary<T2, Automorphism<T1>> theta, ConcreteGroup<T2> g)
-        where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
-    {
-        return new SemiDirectProduct<T1, T2>(name, n, theta, g);
-    }
 }

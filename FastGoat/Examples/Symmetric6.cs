@@ -11,8 +11,8 @@ public static class Symmetric6
         // Console.WriteLine($"{g0}, {g1}, allHoms:{allHoms.Count()}");
         foreach (var m in allHoms)
         {
-            var im = m.Values.ToHashSet();
-            var ker = m.Where(p => p.Value.Equals(g1.Neutral())).Select(p => p.Key).ToHashSet();
+            var im = m.Image().ToHashSet();
+            var ker = m.Kernel().ToHashSet();
             if (im.Count > 0 && im.All(g1.Contains))
                 all.Add(im);
 

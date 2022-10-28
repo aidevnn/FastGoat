@@ -2,46 +2,45 @@ namespace FastGoat.UserGroup;
 
 public readonly struct Automorphism<T> : IMap<T, T>, IElt<Automorphism<T>> where T : struct, IElt<T>
 {
-    public Dictionary<T, T> AutMap { get; }
+    public IReadOnlyDictionary<T, T> AutMap { get; }
 
     public Automorphism(AutomorphismGroup<T> aut)
     {
         AutMap = aut.G.ToDictionary(e => e, e => e);
         Hash = AutMap.OrderBy(kp => kp.Key).Aggregate(aut.G.Hash, (acc, kp) => (acc, kp.Key, kp.Value).GetHashCode());
-        BaseGroup = aut;
+        AutGroup = aut;
     }
 
-    public Automorphism(AutomorphismGroup<T> aut, Dictionary<T, T> e)
+    public Automorphism(AutomorphismGroup<T> aut, IReadOnlyDictionary<T, T> e)
     {
         AutMap = new Dictionary<T, T>(e);
         Hash = AutMap.OrderBy(kp => kp.Key).Aggregate(aut.G.Hash, (acc, kp) => (acc, kp.Key, kp.Value).GetHashCode());
-        BaseGroup = aut;
+        AutGroup = aut;
     }
 
     public bool Equals(Automorphism<T> other) => Hash == other.Hash;
 
-    public int CompareTo(Automorphism<T> other)
-    {
-        var compKey = AutMap.Keys.Ascending().SequenceCompareTo(other.AutMap.Keys.Ascending());
-        if (compKey != 0)
-            return compKey;
-
-        return AutMap.OrderBy(a => a.Key).Select(kp => kp.Value)
-            .SequenceCompareTo(other.AutMap.OrderBy(a => a.Key).Select(kp => kp.Value));
-    }
+    public int CompareTo(Automorphism<T> other) => this.CompareMapTo(other);
 
     public int Hash { get; }
-    public IGroup<Automorphism<T>> BaseGroup { get; }
+    public AutomorphismGroup<T> AutGroup { get; }
 
-    public HashSet<T> Domain => AutMap.Keys.ToHashSet();
-    public HashSet<T> Codomain => AutMap.Values.ToHashSet();
+    public ConcreteGroup<T> Domain => AutGroup.G;
+    public IEnumerable<T> Kernel()
+    {
+        var n = Domain.Neutral();
+        return AutMap.Where(kp => kp.Value.Equals(n)).Select(kp => kp.Key);
+    }
+
+    public IEnumerable<T> Image() => AutMap.Values.Distinct();
+
     public bool Equals(IMap<T, T>? other) => other?.Hash == Hash;
-    public int CompareTo(IMap<T, T>? other) => -other?.CompareMapTo(this) ?? 1;
+    public int CompareTo(IMap<T, T>? other) => other is null ? 1 : this.CompareMapTo(other);
     public override int GetHashCode() => Hash;
     public T this[T index] => AutMap[index];
 
     public override string ToString()
     {
-        return AutMap.OrderBy(kp => kp.Key).Select(kp => $"{kp.Key}->{kp.Value}").Glue(", ");
+        return AutMap.AscendingByKey().GlueMap();
     }
 }

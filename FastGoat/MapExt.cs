@@ -1,13 +1,5 @@
 namespace FastGoat;
 
-public interface IMap<T1, T2> : IElt<IMap<T1, T2>> where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
-{
-    HashSet<T1> Domain { get; }
-    HashSet<T2> Codomain { get; }
-    int Hash { get; }
-    T2 this[T1 index] { get; }
-}
-
 public static class MapExt
 {
     public static int CompareMapTo<T1, T2>(this IMap<T1, T2> map1, IMap<T1, T2> map2)

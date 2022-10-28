@@ -7,7 +7,7 @@ public static class NonSplitExtension
 {
     static void SearchQuartenionInSymmetric(int n)
     {
-        var sn = new Symm(n);
+        var sn = Group.Create(new Sn(n));
         var allC4 = sn.Where(e => sn.ElementsOrders[e] == 4).Ascending().ToArray();
 
         var query = from a in allC4
@@ -43,8 +43,8 @@ public static class NonSplitExtension
         var isoS = Group.AllIsomorphisms(H, GH);
 
         // Im(i) = Ker(p)
-        var allImI = homI.Select(hi => (i: hi, im: Group.Image(hi))).Where(e => e.im.Count > 1).ToArray();
-        var allKerP = homP.Select(hp => (p: hp, ker: Group.Kernel(H.Neutral(), hp))).Where(e => e.ker.Count > 1)
+        var allImI = homI.Select(hi => (i: hi, im: hi.Image().ToHashSet())).Where(e => e.im.Count > 1).ToArray();
+        var allKerP = homP.Select(hp => (p: hp, ker: hp.Kernel().ToHashSet())).Where(e => e.ker.Count > 1)
             .ToArray();
         var ImIeqKerP = allImI
             .SelectMany(e1 => allKerP.Where(e2 => e1.im.SetEquals(e2.ker)).Select(e2 => (e1.i, e2.p)))
@@ -54,22 +54,22 @@ public static class NonSplitExtension
         foreach (var (i, p) in ImIeqKerP)
         {
             Console.WriteLine("Morphism 'i' from G to GH");
-            Console.WriteLine("    [{0}]", i.GlueMap());
+            Console.WriteLine("    [{0}]", i);
             Console.WriteLine("Morphism 'p' from GH to H");
-            Console.WriteLine("    [{0}]", p.GlueMap());
+            Console.WriteLine("    [{0}]", p);
 
             Console.WriteLine("Isomorphism 's' from H to GH");
             var allIsoS = isoS
-                .Where(s0 => s0.Count == H.Count() && H.All(h => p.ContainsKey(s0[h]) && p[s0[h]].Equals(h)))
+                .Where(s0 => s0.Count == H.Count() && H.All(h => p.Domain.Contains(s0[h]) && p[s0[h]].Equals(h)))
                 .ToArray();
             foreach (var s in allIsoS)
             {
-                Console.WriteLine("    [{0}]", s.GlueMap());
+                Console.WriteLine("    [{0}]", s);
             }
 
             if (allIsoS.Length == 0)
                 Console.WriteLine("    Not Found");
-
+            
             Console.WriteLine();
         }
 
@@ -141,7 +141,7 @@ public static class NonSplitExtension
 
     public static void SplittingQuartenion()
     {
-        var s8 = new Symm(8);
+        var s8 = new Sn(8);
         var a = s8[(1, 2, 3, 4), (5, 6, 7, 8)];
         var b = s8[(1, 4, 3, 2), (5, 8, 7, 6)];
         var q8 = Group.Generate("Q8", s8, a, b);

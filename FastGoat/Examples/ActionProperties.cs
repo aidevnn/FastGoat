@@ -11,16 +11,15 @@ public static class ActionProperties
     {
         var autN = Group.AutomorphismGroup(grN);
         var opsGautN = Group.AllHomomorphisms(grG, autN);
-        List<Dictionary<T2, Automorphism<T1>>> opsTransitives = new();
-        List<Dictionary<T2, Automorphism<T1>>> opsFaithful = new();
+        List<Homomorphism<T2, Automorphism<T1>>> opsTransitives = new();
+        List<Homomorphism<T2, Automorphism<T1>>> opsFaithful = new();
 
         // always remove neutral x = id
         HashSet<T1> fixedPointsSet = rmPoints.Append(grN.Neutral()).ToHashSet();
 
         foreach (var op in opsGautN)
         {
-            var kerOp = op.Where(kp => kp.Value.Equals(autN.Neutral())).Select(kp => kp.Key).ToArray();
-            if (kerOp.Length == 1)
+            if (op.Kernel().Count() == 1)
                 opsFaithful.Add(op);
 
             var orbs = Group.AllOrbits(grG, grN.Except(fixedPointsSet).ToArray(),
@@ -36,7 +35,7 @@ public static class ActionProperties
                 Console.WriteLine(
                     "Fixing the transitivity by removing points and setX cardinal divides action group order.");
                 Console.WriteLine("Group {0} Acting on Group {1}", grG.Name, grN.Name);
-                Console.WriteLine(op.Glue());
+                Console.WriteLine(op);
                 Group.DisplayOrbx(grG, grN.Except(fixedPointsSet).ToArray(), Group.ByAutomorphism(op));
             }
         }
@@ -60,9 +59,10 @@ public static class ActionProperties
             Console.WriteLine();
         }
 
-        var opFirst = opsGautN.FirstOrDefault(op => op?.Values.Distinct().Count() > 1, null);
-        if (opsFaithful.Count == 0 && opsTransitives.Count == 0 && opFirst is not null)
+        var idx = opsGautN.FindIndex(op => op.Image().Count() > 1);
+        if (opsFaithful.Count == 0 && opsTransitives.Count == 0 && idx != -1)
         {
+            var opFirst = opsGautN[idx];
             Console.WriteLine("############################# First Group Action");
             var sdp = Group.SemiDirectProd(grN, opFirst, grG);
             DisplayGroup.HeadSdp(sdp);

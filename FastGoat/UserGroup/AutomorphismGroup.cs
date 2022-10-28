@@ -36,7 +36,7 @@ public class AutomorphismGroup<T> : IGroup<Automorphism<T>> where T : struct, IE
 
     public Automorphism<T> Invert(Automorphism<T> e)
     {
-        if (!Equals(e.BaseGroup))
+        if (!Equals(e.AutGroup))
             throw new GroupException(GroupExceptionType.BaseGroup);
 
         var autMap = e.AutMap.ToDictionary(kp => kp.Value, kp => kp.Key);
@@ -45,7 +45,7 @@ public class AutomorphismGroup<T> : IGroup<Automorphism<T>> where T : struct, IE
 
     public Automorphism<T> Op(Automorphism<T> e1, Automorphism<T> e2)
     {
-        if (!Equals(e1.BaseGroup) || !Equals(e2.BaseGroup))
+        if (!Equals(e1.AutGroup) || !Equals(e2.AutGroup))
             throw new GroupException(GroupExceptionType.BaseGroup);
 
         var autMap = e1.AutMap.ToDictionary(kp => kp.Key, kp => e2.AutMap[kp.Value]);

@@ -13,13 +13,7 @@ public static partial class Group
         return (T g, T x) => gr.Op(g, gr.Op(x, gr.Invert(g)));
     }
 
-    public static GroupAction<T1, T2> ByAutomorphism<T1, T2>(IDictionary<T1, IDictionary<T2, T2>> aut)
-        where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
-    {
-        return (T1 g, T2 x) => aut[g][x];
-    }
-
-    public static GroupAction<T1, T2> ByAutomorphism<T1, T2>(IDictionary<T1, Automorphism<T2>> aut)
+    public static GroupAction<T1, T2> ByAutomorphism<T1, T2>(Homomorphism<T1, Automorphism<T2>> aut)
         where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
     {
         return (T1 g, T2 x) => aut[g][x];

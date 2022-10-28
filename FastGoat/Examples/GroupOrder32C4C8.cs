@@ -17,14 +17,16 @@ public static class GroupOrder32C4C8
         var yC8C4 = U8[(C8[1], C8[5])];
         var mapC8C4 = Group.PartialMap((C4[1], yC8C4));
         var thetaC8C4 = Group.HomomorphismMap(C4, U8, mapC8C4);
-        var gC8C4 = Group.SemiDirectProd(C8, thetaC8C4, C4);
+        var homThetaC8C4 = Group.Hom(C4, thetaC8C4);
+        var gC8C4 = Group.SemiDirectProd(C8, homThetaC8C4, C4);
         DisplayGroup.HeadSdp(gC8C4);
         Console.WriteLine("Sorted Orders {0} : ({1})", gC8C4, gC8C4.ElementsOrders.Values.Ascending().Glue(", "));
 
         var yC4C8 = U4[(C4[1], C4[3])];
         var mapC4C8 = Group.PartialMap((C8[1], yC4C8));
         var thetaC4C8 = Group.HomomorphismMap(C8, U4, mapC4C8);
-        var gC3C4 = Group.SemiDirectProd(C4, thetaC4C8, C8);
+        var homThetaC4C8 = Group.Hom(C8, thetaC4C8);
+        var gC3C4 = Group.SemiDirectProd(C4, homThetaC4C8, C8);
         DisplayGroup.HeadSdp(gC3C4);
         Console.WriteLine("Sorted Orders {0} : ({1})", gC3C4, gC3C4.ElementsOrders.Values.Ascending().Glue(", "));
 
@@ -33,7 +35,7 @@ public static class GroupOrder32C4C8
 
         var homs = Group.AllHomomorphisms(gC8C4, gC3C4);
         Console.WriteLine("Homomorphisms Count = {0}", homs.Count);
-        Console.WriteLine("Isomorphisms  Count = {0}", homs.Count(h => h.Values.Distinct().Count() == h.Count));
+        Console.WriteLine("Isomorphisms  Count = {0}", homs.Count(h => h.Image().Count() == h.Count));
     }
 
     public static void NonIsomorphicAnotherExample()
@@ -42,7 +44,8 @@ public static class GroupOrder32C4C8
         var yC8C2 = U8[(C8[1], C8[5])];
         var mapC8C2 = Group.PartialMap((C2[1], yC8C2));
         var thetaC8C2 = Group.HomomorphismMap(C2, U8, mapC8C2);
-        var gC8C2 = Group.SemiDirectProd(C8, thetaC8C2, C2);
+        var homThetaC8C2 = Group.Hom(C2, thetaC8C2);
+        var gC8C2 = Group.SemiDirectProd(C8, homThetaC8C2, C2);
         DisplayGroup.HeadSdp(gC8C2);
         var oC8C2 = gC8C2.ElementsOrders.Values.Ascending().ToArray();
         Console.WriteLine("Sorted Orders {0} : ({1})", gC8C2, oC8C2.Glue(", "));
@@ -58,7 +61,7 @@ public static class GroupOrder32C4C8
 
         var homs = Group.AllHomomorphisms(gC8C2, gdC8C2);
         Console.WriteLine("Homomorphisms Count = {0}", homs.Count);
-        Console.WriteLine("Isomorphisms  Count = {0}", homs.Count(h => h.Values.Distinct().Count() == h.Count));
+        Console.WriteLine("Isomorphisms  Count = {0}", homs.Count(h => h.Image().Count() == h.Count));
     }
 
     public static void Isomorphic()
@@ -74,7 +77,7 @@ public static class GroupOrder32C4C8
 
         var homs = Group.AllHomomorphisms(C12, gC3C4);
         Console.WriteLine("Homomorphisms Count = {0}", homs.Count);
-        Console.WriteLine("Isomorphisms  Count = {0}", homs.Count(h => h.Values.Distinct().Count() == h.Count));
+        Console.WriteLine("Isomorphisms  Count = {0}", homs.Count(h => h.Image().Count() == h.Count));
     }
 
     public static void IsomorphicAnotherExample()
@@ -91,6 +94,6 @@ public static class GroupOrder32C4C8
 
         var homs = Group.AllHomomorphisms(gC4C24, gC8C12);
         Console.WriteLine("Homomorphisms Count = {0}", homs.Count);
-        Console.WriteLine("Isomorphisms  Count = {0}", homs.Count(h => h.Values.Distinct().Count() == h.Count));
+        Console.WriteLine("Isomorphisms  Count = {0}", homs.Count(h => h.Image().Count() == h.Count));
     }
 }
