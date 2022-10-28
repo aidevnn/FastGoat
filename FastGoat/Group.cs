@@ -254,22 +254,22 @@ public static partial class Group
         return new ConcreteGroup<T>($"{g1.Name} x {g2.Name}", g1.SuperGroup, generators);
     }
 
-    public static ConcreteGroup<Representative<T>> Over<T>(this ConcreteGroup<T> g, ConcreteGroup<T> h)
+    public static ConcreteGroup<Coset<T>> Over<T>(this ConcreteGroup<T> g, ConcreteGroup<T> h)
         where T : struct, IElt<T>
     {
         if (h.SuperGroup is null || !h.SuperGroup.Equals(g))
             throw new GroupException(GroupExceptionType.NotSubGroup);
         var quo = new Quotient<T>(g, h);
-        return new ConcreteGroup<Representative<T>>(quo);
+        return new ConcreteGroup<Coset<T>>(quo);
     }
 
-    public static ConcreteGroup<Representative<T>> Over<T>(this ConcreteGroup<T> g, ConcreteGroup<T> h, string name)
+    public static ConcreteGroup<Coset<T>> Over<T>(this ConcreteGroup<T> g, ConcreteGroup<T> h, string name)
         where T : struct, IElt<T>
     {
         if (h.SuperGroup is null || !h.SuperGroup.Equals(g))
             throw new GroupException(GroupExceptionType.NotSubGroup);
         var quo = new Quotient<T>(g, h);
-        return new ConcreteGroup<Representative<T>>(name, quo);
+        return new ConcreteGroup<Coset<T>>(name, quo);
     }
 
     public static SemiDirectProduct<T1, T2> SemiDirectProd<T1, T2>(string name, ConcreteGroup<T1> n,

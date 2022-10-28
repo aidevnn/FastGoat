@@ -3,16 +3,16 @@ using FastGoat;
 
 namespace FastGoat.UserGroup;
 
-public readonly struct Representative<T> : ILeftCoset<T>, IElt<Representative<T>> where T : struct, IElt<T>
+public readonly struct Coset<T> : ILeftCoset<T, Coset<T>> where T : struct, IElt<T>
 {
-    public Representative(Quotient<T> lQuo)
+    public Coset(Quotient<T> lQuo)
     {
         Quotient = lQuo;
         X = lQuo.H.Neutral();
         Hash = (lQuo.Hash, X.Hash).GetHashCode();
     }
 
-    public Representative(Quotient<T> lQuo, T x)
+    public Coset(Quotient<T> lQuo, T x)
     {
         Quotient = lQuo;
         X = x;
@@ -21,26 +21,26 @@ public readonly struct Representative<T> : ILeftCoset<T>, IElt<Representative<T>
 
     public T X { get; }
     public Quotient<T> Quotient { get; }
-    public bool Equals(Representative<T> other) => Hash == other.Hash;
+    public bool Equals(Coset<T> other) => Hash == other.Hash;
 
-    public int CompareTo(Representative<T> other) => X.CompareTo(other.X);
+    public int CompareTo(Coset<T> other) => X.CompareTo(other.X);
 
     public IEnumerable<T> xH
     {
         get
         {
-            List<T> domain = new();
+            List<T> set = new();
             foreach (var h in Quotient.H)
             {
-                domain.Add(Quotient.G.Op(X, h));
+                set.Add(Quotient.G.Op(X, h));
             }
 
-            return domain.Ascending();
+            return set.Ascending();
         }
     }
 
     public int Hash { get; }
-    public IGroup<Representative<T>> BaseGroup => Quotient;
+    public IGroup<Coset<T>> BaseGroup => Quotient;
     public override int GetHashCode() => Hash;
 
     public override string ToString()

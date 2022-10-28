@@ -24,7 +24,7 @@ public static class DisplayGroup
         Console.WriteLine();
     }
 
-    public static void Head<T>(ConcreteGroup<Representative<T>> g) where T : struct, IElt<T>
+    public static void Head<T>(ConcreteGroup<Coset<T>> g) where T : struct, IElt<T>
     {
         Console.WriteLine($"|{g.Name}| = {g.Count()}");
         Console.WriteLine($"Type        {g.GroupType}");
@@ -61,7 +61,7 @@ public static class DisplayGroup
         Console.WriteLine();
     }
 
-    public static void Cosets<T>(ConcreteGroup<Representative<T>> g, bool details = false) where T : struct, IElt<T>
+    public static void Cosets<T>(ConcreteGroup<Coset<T>> g, bool details = false) where T : struct, IElt<T>
     {
         Console.WriteLine("Cosets");
         var g0 = (Quotient<T>)g.BaseGroup;
@@ -148,13 +148,13 @@ public static class DisplayGroup
         Table(g, sortBy);
     }
 
-    public static void HeadCosets<T>(ConcreteGroup<Representative<T>> g, bool details = false) where T : struct, IElt<T>
+    public static void HeadCosets<T>(ConcreteGroup<Coset<T>> g, bool details = false) where T : struct, IElt<T>
     {
         Head(g);
         Cosets(g, details);
     }
 
-    public static void HeadCosetsTable<T>(ConcreteGroup<Representative<T>> g) where T : struct, IElt<T>
+    public static void HeadCosetsTable<T>(ConcreteGroup<Coset<T>> g) where T : struct, IElt<T>
     {
         Head(g);
         Cosets(g);
