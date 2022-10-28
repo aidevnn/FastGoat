@@ -146,9 +146,9 @@ public static class NonSplitExtension
         var b = s8[(1, 4, 3, 2), (5, 8, 7, 6)];
         var q8 = Group.Generate("Q8", s8, a, b);
 
-        var c2 = Group.Generate("C2", s8[(1, 2)]);
-        var c4 = Group.Generate("C4", s8[(1, 2, 3, 4)]);
-        var v = Group.Generate("V", s8[(1, 3), (2, 4)], s8[(1, 4), (2, 3)]);
+        var c2 = Group.Generate("C2", s8, s8[(1, 2)]);
+        var c4 = Group.Generate("C4", s8, s8[(1, 2, 3, 4)]);
+        var v = Group.Generate("V", s8, s8[(1, 3), (2, 4)], s8[(1, 4), (2, 3)]);
 
         SplittingGroups(c2, q8, c4);
         SplittingGroups(c4, q8, c2);

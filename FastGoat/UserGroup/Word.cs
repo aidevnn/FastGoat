@@ -32,7 +32,6 @@ public struct Word : IElt<Word>
     }
 
     public int Hash { get; }
-    public IGroup<Word> BaseGroup => WGroup;
     public override int GetHashCode() => Hash;
 
     public override string ToString()

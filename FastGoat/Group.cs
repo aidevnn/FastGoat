@@ -22,7 +22,6 @@ public static partial class Group
     public static HashSet<T> GenerateElements<T>(IGroup<T> bg, HashSet<T> elements, List<T> generators)
         where T : struct, IElt<T>
     {
-        var bg0 = bg.Neutral().BaseGroup;
         if (!elements.Contains(bg.Neutral()))
             throw new GroupException(GroupExceptionType.BaseGroup);
 
@@ -230,16 +229,6 @@ public static partial class Group
     public static ConcreteGroup<T> Create<T>(IGroup<T> g) where T : struct, IElt<T>
     {
         return new ConcreteGroup<T>(g);
-    }
-
-    public static ConcreteGroup<T> Generate<T>(T e, params T[] others) where T : struct, IElt<T>
-    {
-        return Generate(e.BaseGroup.Name, e, others);
-    }
-
-    public static ConcreteGroup<T> Generate<T>(string name, T e, params T[] others) where T : struct, IElt<T>
-    {
-        return new ConcreteGroup<T>(name, e.BaseGroup, others.Prepend(e).ToArray());
     }
 
     public static ConcreteGroup<T> Generate<T>(IGroup<T> g, params T[] generators) where T : struct, IElt<T>

@@ -23,9 +23,9 @@ public struct Gp<T> : IGroup<Ep<T>> where T : IElt<T>
 
     public bool Equals(IGroup<Ep<T>>? other) => other?.Hash == Hash;
     public int Hash { get; }
-    public Ep<T> Neutral() => new(this, Gi.Select(g => g.Neutral()).ToArray());
-    public Ep<T> Invert(Ep<T> e) => new(this, Gi.Select((g, i) => g.Invert(e.Ei[i])).ToArray());
-    public Ep<T> Op(Ep<T> e1, Ep<T> e2) => new(this, Gi.Select((g, i) => g.Op(e1.Ei[i], e2.Ei[i])).ToArray());
+    public Ep<T> Neutral() => new(Gi.Select(g => g.Neutral()).ToArray());
+    public Ep<T> Invert(Ep<T> e) => new(Gi.Select((g, i) => g.Invert(e.Ei[i])).ToArray());
+    public Ep<T> Op(Ep<T> e1, Ep<T> e2) => new(Gi.Select((g, i) => g.Op(e1.Ei[i], e2.Ei[i])).ToArray());
 
     public Ep<T> this[params ValueType[] us]
     {
@@ -44,7 +44,7 @@ public struct Gp<T> : IGroup<Ep<T>> where T : IElt<T>
                 throw new GroupException(GroupExceptionType.GroupDef);
 
             var ei = Gi.Select((g, i) => g[us[i]]).ToArray();
-            return new(this, ei);
+            return new(ei);
         }
     }
 
@@ -59,7 +59,7 @@ public struct Gp<T> : IGroup<Ep<T>> where T : IElt<T>
             foreach (var ei in g.GetGenerators())
             {
                 var ep = Gi.Select((g0, i0) => i != i0 ? g0.Neutral() : ei).ToArray();
-                yield return new Ep<T>(this, ep);
+                yield return new Ep<T>(ep);
             }
         }
     }
@@ -67,7 +67,7 @@ public struct Gp<T> : IGroup<Ep<T>> where T : IElt<T>
     public IEnumerable<Ep<T>> GetElements()
     {
         foreach (var ep in Gi.Select(g => g.GetElements()).MultiLoop())
-            yield return new(this, ep.ToArray());
+            yield return new(ep.ToArray());
     }
 
     public IEnumerator<Ep<T>> GetEnumerator() => GetElements().GetEnumerator();
@@ -76,9 +76,7 @@ public struct Gp<T> : IGroup<Ep<T>> where T : IElt<T>
 
 public struct Ep<T> : IElt<Ep<T>> where T : IElt<T>
 {
-    private Gp<T> Gi { get; }
     public T[] Ei { get; }
-    public IGroup<Ep<T>> BaseGroup => Gi;
 
     public Ep(T[] ei)
     {
@@ -91,28 +89,13 @@ public struct Ep<T> : IElt<Ep<T>> where T : IElt<T>
         }
 
         Hash = code.ToHashCode();
-        Gi = new(ei.Select(e => e.BaseGroup).ToArray());
-    }
-
-    public Ep(Gp<T> gi, T[] ei)
-    {
-        Ei = ei.ToArray();
-
-        HashCode code = new HashCode();
-        foreach (var e in ei)
-        {
-            code.Add(e);
-        }
-
-        Hash = code.ToHashCode();
-        Gi = gi;
     }
 
     public bool Equals(Ep<T> other) => other.Hash == Hash;
 
     public int CompareTo(Ep<T> other)
     {
-        if (!BaseGroup.Equals(other.BaseGroup) || Ei.Length != other.Ei.Length)
+        if (Ei.Length != other.Ei.Length)
             throw new GroupException(GroupExceptionType.BaseGroup);
 
         return Ei.SequenceCompareTo(other.Ei);

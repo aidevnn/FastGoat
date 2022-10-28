@@ -15,7 +15,7 @@ public static class DihedralAutomorphisms
         var a2 = Enumerable.Range(m, n / 2).Select(i => (Tuple2Array)(i, n + m - i)).ToArray();
         var cn = sn.CreateElement(an);
         var c2 = sn.ComposesCycles(a2);
-        var d2n = Group.Generate("D2n", c2, cn);
+        var d2n = Group.Generate("D2n", sn, c2, cn);
         return d2n;
     }
 

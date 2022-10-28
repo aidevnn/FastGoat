@@ -61,7 +61,7 @@ public class ZnCGroupUnitTest
     public void Test4ConcreteGroup()
     {
         var zn = new Zn(40);
-        var g0 = Group.Generate(zn[1]);
+        var g0 = Group.Generate(zn, zn[1]);
         var g1 = Group.Generate(g0, zn[10]);
         var g2 = Group.Generate(g0, zn[8]);
         var g3 = Group.Create(Product.Group(g1, g2));

@@ -43,12 +43,11 @@ namespace FastGoat.Gp;
         var Tiei = l.Select(i => $"{Ti[i]} {ei[i]}").ToArray();
         var Eiei = l.Select(i => $"{Ei[i]} = {ei[i]};").ToArray();
         var hshei = l.Select(i => $"{ei[i]}.Hash");
-        var gpkbg = l.Select(i => $"{ei[i]}.BaseGroup");
         var compi = l.Select(i => $"other.{Ei[i]}");
 
         var eli = (int i, int j) => i != j ? $"{Gi[j]}.Neutral()" : "e";
         var canfor = l.Select(i => $"foreach(var e in {Gi[i]}.GetGenerators())").ToArray();
-        var cantpl = l.Select(i => Glue(l.Select(j => eli(i, j)), ", ")).Select(s => $"new {epk}(this, {s});").ToArray();
+        var cantpl = l.Select(i => Glue(l.Select(j => eli(i, j)), ", ")).Select(s => $"new {epk}({s});").ToArray();
 #>
 
 public struct <#= gpk #> : IGroup<<#= epk #>> <#= whereTn #>
@@ -78,9 +77,9 @@ public struct <#= gpk #> : IGroup<<#= epk #>> <#= whereTn #>
 
         public bool Equals(IGroup<<#= epk #>>? other) => other?.Hash == Hash;
         public int Hash { get; }
-        public <#= epk #> Neutral() => new(this, <#= Glue(neuti, ", ") #>);
-        public <#= epk #> Invert(<#= epk #> e) => new(this, <#= Glue(invi, ", ") #>);
-        public <#= epk #> Op(<#= epk #> e1, <#= epk #> e2) => new(this, <#= Glue(opi, ", ") #>);
+        public <#= epk #> Neutral() => new(<#= Glue(neuti, ", ") #>);
+        public <#= epk #> Invert(<#= epk #> e) => new(<#= Glue(invi, ", ") #>);
+        public <#= epk #> Op(<#= epk #> e1, <#= epk #> e2) => new(<#= Glue(opi, ", ") #>);
 
         public <#= epk #> this[params ValueType[] us]
         {
@@ -111,7 +110,7 @@ public struct <#= gpk #> : IGroup<<#= epk #>> <#= whereTn #>
 <#
         }
 #>
-                return new(this, <#= Glue(ei, ", ") #>);
+                return new(<#= Glue(ei, ", ") #>);
         }
         }
 
@@ -140,7 +139,7 @@ public struct <#= gpk #> : IGroup<<#= epk #>> <#= whereTn #>
 <#
         }
 #>
-                yield return new(this, <#= Glue(ei, ", ") #>);
+                yield return new(<#= Glue(ei, ", ") #>);
         }
         public IEnumerator<<#= epk #>> GetEnumerator() => GetElements().GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetElements().GetEnumerator();
@@ -148,7 +147,6 @@ public struct <#= gpk #> : IGroup<<#= epk #>> <#= whereTn #>
 
 public struct <#= epk #> : IElt<<#= epk #>> <#= whereTn #>
 {
-        private <#= gpk #> Gp<#= k #> { get; }
 <#
         for (var i = 0; i < k; ++i)
         {
@@ -157,7 +155,6 @@ public struct <#= epk #> : IElt<<#= epk #>> <#= whereTn #>
 <#
         }
 #>
-        public IGroup<<#= epk #>> BaseGroup => Gp<#= k #>;
         public Ep<#= k #>(<#= Glue(Tiei, ", ") #>)
         {
 <#
@@ -169,29 +166,11 @@ public struct <#= epk #> : IElt<<#= epk #>> <#= whereTn #>
         }
 #>
                 Hash = (<#= Glue(hshei, ", ") #>).GetHashCode();
-                Gp<#= k #> = new(<#= Glue(gpkbg, ", ") #>);
-        }
-
-        public Ep<#= k #>(<#= gpk #> gp, <#= Glue(Tiei, ", ") #>)
-        {
-<#
-        for (var i = 0; i < k; ++i)
-        {
-#>
-                <#= Eiei[i] #>
-<#
-        }
-#>
-                Hash = (<#= Glue(hshei, ", ") #>).GetHashCode();
-                Gp<#= k #> = gp;
         }
 
         public bool Equals(<#= epk #> other) => other.Hash == Hash;
         public int CompareTo(<#= epk #> other)
         {
-                if (!BaseGroup.Equals(other.BaseGroup))
-                    throw new GroupException(GroupExceptionType.BaseGroup);
-
                 return (<#= Glue(Ei, ", ") #>).CompareTo((<#= Glue(compi, ", ") #>));
         }
         public int Hash { get; }

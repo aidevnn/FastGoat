@@ -115,6 +115,20 @@ public static class DisplayGroup
         Console.WriteLine();
     }
 
+    public static void Orders<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
+    {
+        Console.WriteLine("Elements Orders : {0}",
+            g.ElementsOrdersList().GroupBy(a => a).ToDictionary(a => a.Key, a => a.Count()).AscendingByKey()
+                .GlueMap(fmt: "[{0}]:{1}"));
+    }
+
+    public static void HeadOrders<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
+    {
+        Head(g);
+        Orders(g);
+        Console.WriteLine();
+    }
+
     public static void HeadElements<T>(ConcreteGroup<T> g, SortBy sortBy = SortBy.Order) where T : struct, IElt<T>
     {
         Head(g);

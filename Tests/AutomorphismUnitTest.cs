@@ -29,7 +29,7 @@ public class AutomorphismUnitTest
         var yi = gbAut.Invert(y);
         Assert.Equal(id3, gbAut.Op(y, yi));
 
-        var gAut = Group.Generate(y);
+        var gAut = Group.Generate(gbAut, y);
         Assert.NotEqual(3, gAut.Count());
         Assert.Contains(id3, gAut);
         Assert.Contains(y, gAut);
@@ -50,7 +50,7 @@ public class AutomorphismUnitTest
         Assert.Equal(c5[1], y[c5[3]]);
         Assert.Equal(c5[3], y[c5[4]]);
 
-        var gAut = Group.Generate(y);
+        var gAut = Group.Generate(gbAut, y);
         Assert.Equal(4, gAut.Count());
         var y2 = gbAut[(c5[1], c5[4])];
         var y3 = gbAut[(c5[1], c5[3])];
@@ -68,11 +68,11 @@ public class AutomorphismUnitTest
     public void Test4AutS3()
     {
         var s3 = new Sn(3);
-        var S3 = Group.Generate(s3[(1, 2)], s3[(1, 3)]);
+        var S3 = Group.Generate(s3, s3[(1, 2)], s3[(1, 3)]);
         var gbAut = Group.AutBase(S3);
         var y1 = gbAut[(S3[(1, 2)], S3[(2, 3)]), (S3[(1, 3)], S3[(1, 2)])];
         var y2 = gbAut[(S3[(1, 2)], S3[(1, 3)]), (S3[(1, 3)], S3[(1, 2)])];
-        var AutS3 = Group.Generate(y1, y2);
+        var AutS3 = Group.Generate(gbAut, y1, y2);
         var sdp = Group.SemiDirectProd(new Cn(3), new Cn(2));
         Assert.True(sdp.IsIsomorphicTo(AutS3));
         Assert.True(sdp.IsIsomorphicTo(S3));

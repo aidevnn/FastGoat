@@ -70,8 +70,6 @@ public class ZnUnitTest
         Assert.Equal(g1.G2, z8);
         Assert.Equal(ep1.E1, e1);
         Assert.Equal(ep1.E2, e2);
-        Assert.Equal(ep1.BaseGroup, g1);
-        Assert.Equal(ep2.BaseGroup, g1);
 
         var ep3 = g1[1, 7];
         Assert.Equal(g1.Invert(ep1), g1[3, 3]);
@@ -142,8 +140,6 @@ public class ZnUnitTest
         Assert.Equal(g1.Gi[1], z8);
         Assert.Equal(ep1.Ei[0], e1);
         Assert.Equal(ep1.Ei[1], e2);
-        Assert.Equal(ep1.BaseGroup, g1);
-        Assert.Equal(ep2.BaseGroup, g1);
 
         var ep3 = g1[1, 7];
         Assert.Equal(g1.Invert(ep1), g1[3, 3]);

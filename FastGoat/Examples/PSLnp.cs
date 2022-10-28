@@ -20,9 +20,9 @@ public static class PSLnp
         var sn = new Sn(4);
         var a4 = Group.Generate("A4", sn, sn[(1, 2, 3)], sn[(1, 2), (3, 4)]);
         DisplayGroup.Head(a4);
-        Console.WriteLine("{0} IsIsomorphicTo {1} : {2}",l23, a4, l23.IsIsomorphicTo(a4));
+        Console.WriteLine("{0} IsIsomorphicTo {1} : {2}", l23, a4, l23.IsIsomorphicTo(a4));
     }
-    
+
     public static void L27_L32()
     {
         var gl27 = new GL(2, 7);
@@ -46,13 +46,13 @@ public static class PSLnp
         DisplayGroup.Head(zg32);
         var l32 = sl32.Over(zg32, "L3(2)");
         DisplayGroup.Head(l32);
-        
+
         var sn = new Sn(7);
         var a2 = sn[(1, 2), (4, 5)];
         var b2 = sn[(2, 3, 4), (5, 6, 7)];
-        var pg = Group.Generate("pg(GL3(2))", a2, b2);
+        var pg = Group.Generate("pg(GL3(2))", sn, a2, b2);
         DisplayGroup.Head(pg);
-        
+
         DisplayGroup.AreIsomorphics(pg, l32);
         DisplayGroup.AreIsomorphics(l27, l32);
     }
@@ -69,12 +69,12 @@ public static class PSLnp
         DisplayGroup.Head(zg33);
         var l33 = sl33.Over(zg33, "L3(3)");
         DisplayGroup.Head(l33);
-        
+
         // H.E. Rose, A Course on Finite Groups, page 264
         var sn = new Sn(13);
-        var a2 = sn[(1, 4, 6),(2, 3, 7, 10, 11, 8),(9, 13)];
+        var a2 = sn[(1, 4, 6), (2, 3, 7, 10, 11, 8), (9, 13)];
         var b2 = sn[(1, 2, 3), (4, 5, 6), (7, 8, 9), (10, 11, 12)];
-        var pg = Group.Generate("pg(PSL3(3))", a2, b2);
+        var pg = Group.Generate("pg(PSL3(3))", sn, a2, b2);
         DisplayGroup.Head(pg);
 
         var ra = l33[0, 2, 0, 1, 1, 0, 0, 0, 1];

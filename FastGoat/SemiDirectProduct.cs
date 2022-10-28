@@ -14,8 +14,7 @@ public class SemiDirectProduct<T1, T2> : ConcreteGroup<Ep2<T1, T2>>
     public ConcreteGroup<Ep2<T1, T2>> Gcan { get; }
 
     public SemiDirectProduct(string name, ConcreteGroup<T1> n, Dictionary<T2, Automorphism<T1>> theta,
-        ConcreteGroup<T2> g) : base(name,
-        Product.Elt(n.Neutral(), g.Neutral()).BaseGroup, true)
+        ConcreteGroup<T2> g) : base(name, Product.Group(n, g), true)
     {
         G = g;
         N = n;

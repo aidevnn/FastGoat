@@ -3,15 +3,15 @@ using System.Collections.ObjectModel;
 
 namespace FastGoat;
 
-public class ConcreteGroup<T> : IConcreteGroup<T> where T : struct, IElt<T>
+public class ConcreteGroup<T> : IGroup<T> where T : struct, IElt<T>
 {
     public ConcreteGroup(string name, IGroup<T> g, bool singleton = false)
     {
         Name = name;
         Hash = Guid.NewGuid().GetHashCode();
         var ne = g.Neutral();
-        BaseGroup = ne.BaseGroup;
         SuperGroup = g as ConcreteGroup<T>;
+        BaseGroup = SuperGroup?.BaseGroup ?? g;
         if (singleton)
         {
             Elements = new HashSet<T> { ne };
@@ -42,8 +42,8 @@ public class ConcreteGroup<T> : IConcreteGroup<T> where T : struct, IElt<T>
         Name = name;
         Hash = Guid.NewGuid().GetHashCode();
         var ne = g.Neutral();
-        BaseGroup = ne.BaseGroup;
         SuperGroup = g as ConcreteGroup<T>;
+        BaseGroup = SuperGroup?.BaseGroup ?? g;
         if (SuperGroup is not null && generators.Any(e => !SuperGroup.Contains(e)))
             throw new GroupException(GroupExceptionType.GroupDef);
 
@@ -65,7 +65,7 @@ public class ConcreteGroup<T> : IConcreteGroup<T> where T : struct, IElt<T>
     public IEnumerable<int> ElementsOrdersList() => ElementsOrders.Values.Ascending();
     protected HashSet<T> Elements { get; set; }
     public IGroup<T> BaseGroup { get; }
-    public IConcreteGroup<T>? SuperGroup { get; }
+    public ConcreteGroup<T>? SuperGroup { get; }
     public GroupType GroupType { get; protected set; }
     public string Name { get; protected set; }
     public virtual string[] Details => Array.Empty<string>();

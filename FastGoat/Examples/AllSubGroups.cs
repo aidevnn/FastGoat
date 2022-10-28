@@ -62,14 +62,14 @@ public static class AllSubGroups
     public static void A4NotSimple()
     {
         var s4 = new Sn(4);
-        var g = Group.Generate("A4", s4[(1, 3), (2, 4)], s4[(1, 2, 3)]);
+        var g = Group.Generate("A4", s4, s4[(1, 3), (2, 4)], s4[(1, 2, 3)]);
         AllNormalSubGroups(g);
     }
 
     public static void A5Simple()
     {
         var s5 = new Sn(5);
-        var g = Group.Generate("A5", s5[(1, 3, 5)], s5[(1, 2, 3, 4, 5)]);
+        var g = Group.Generate("A5", s5, s5[(1, 3, 5)], s5[(1, 2, 3, 4, 5)]);
         AllNormalSubGroups(g);
     }
 
