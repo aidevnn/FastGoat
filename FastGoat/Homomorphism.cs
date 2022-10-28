@@ -8,7 +8,8 @@ public readonly struct Homomorphism<T1, T2> : IMap<T1, T2> where T1 : struct, IE
     {
         Domain = domGroup;
         HomMap = new Dictionary<T1, T2>(homMap);
-        Hash = HomMap.OrderBy(kp => kp.Key).Aggregate(domGroup.Hash, (acc, kp) => (acc, kp.Key, kp.Value).GetHashCode());
+        Hash = HomMap.OrderBy(kp => kp.Key)
+            .Aggregate(domGroup.Hash, (acc, kp) => (acc, kp.Key, kp.Value).GetHashCode());
     }
 
     public bool Equals(IMap<T1, T2>? other) => other?.Hash == Hash;
@@ -18,6 +19,7 @@ public readonly struct Homomorphism<T1, T2> : IMap<T1, T2> where T1 : struct, IE
     public int Count => HomMap.Count;
     public int Hash { get; }
     public ConcreteGroup<T1> Domain { get; }
+
     public IEnumerable<T1> Kernel()
     {
         var n = this[Domain.Neutral()];
@@ -29,6 +31,7 @@ public readonly struct Homomorphism<T1, T2> : IMap<T1, T2> where T1 : struct, IE
     public T2 this[T1 index] => HomMap[index];
 
     public override int GetHashCode() => Hash;
+
     public override string ToString()
     {
         return HomMap.AscendingByKey().GlueMap();

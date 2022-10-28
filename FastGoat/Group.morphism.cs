@@ -164,7 +164,8 @@ public static partial class Group
     {
         var bgAut = new AutomorphismGroup<T>(g);
         var allAut = AllAutomorphisms(g);
-        var autG = Generate($"Aut[{g.Name}]", bgAut, allAut.Select(aut => new Automorphism<T>(bgAut, aut.HomMap)).ToArray());
+        var autG = Generate($"Aut[{g.Name}]", bgAut,
+            allAut.Select(aut => new Automorphism<T>(bgAut, aut.HomMap)).ToArray());
         return autG;
     }
 
@@ -191,7 +192,7 @@ public static partial class Group
     {
         if (map.Count != g.Count())
             throw new GroupException(GroupExceptionType.GroupDef);
-        
+
         return new(g, map);
     }
 

@@ -69,7 +69,7 @@ public static class NonSplitExtension
 
             if (allIsoS.Length == 0)
                 Console.WriteLine("    Not Found");
-            
+
             Console.WriteLine();
         }
 

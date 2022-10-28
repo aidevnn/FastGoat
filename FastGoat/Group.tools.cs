@@ -19,7 +19,8 @@ public static partial class Group
         return (T1 g, T2 x) => aut[g][x];
     }
 
-    public static GroupAction<T, Coset<T>> ByLeftCoset<T>(ConcreteGroup<T> grG, ConcreteGroup<T> grH) where T : struct, IElt<T>
+    public static GroupAction<T, Coset<T>> ByLeftCoset<T>(ConcreteGroup<T> grG, ConcreteGroup<T> grH)
+        where T : struct, IElt<T>
     {
         var cosets = Cosets(grG, grH, CosetType.Left);
         return (T g, Coset<T> xH) => cosets[grG.Op(g, xH.X)];
