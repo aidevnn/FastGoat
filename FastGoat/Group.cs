@@ -132,18 +132,19 @@ public static partial class Group
         return (tmpElements, uniqueGenerators);
     }
 
-    public static ReadOnlyDictionary<T, T> Cosets<T>(IGroup<T> grG, IGroup<T> grH, Comparer<T> comparer,
-        Coset coset = Coset.Both) where T : struct, IElt<T>
+    public static Dictionary<T, Coset<T>> Cosets<T>(ConcreteGroup<T> grG, ConcreteGroup<T> grH, Comparer<T> comparer,
+        CosetType cosetType = CosetType.Both) where T : struct, IElt<T>
     {
-        var cosets = new Dictionary<T, T>();
+        var cosets = new Dictionary<T, Coset<T>>();
         var setH = grH.ToHashSet();
         var setG = grG.ToHashSet();
         if (!setH.IsSubsetOf(setG))
             throw new GroupException(GroupExceptionType.NotSubGroup);
 
         var ng = grG.Neutral();
+        var ngH = new Coset<T>(grG, grH);
         foreach (var h in setH)
-            cosets[h] = ng;
+            cosets[h] = ngH;
 
         foreach (var x in grG.OrderBy(a => a, comparer))
         {
@@ -151,11 +152,11 @@ public static partial class Group
                 continue;
 
             var xi = grG.Invert(x);
-            foreach (var h in setH)
+            var xH = new Coset<T>(grG, grH, x);
+            foreach (var xh in xH)
             {
-                var xh = grG.Op(x, h);
-                cosets[xh] = x;
-                if (coset == Coset.Both)
+                cosets[xh] = xH;
+                if (cosetType == CosetType.Both)
                 {
                     if (!setH.Contains(grG.Op(xh, xi)))
                         throw new GroupException(GroupExceptionType.NotNormal);
@@ -163,13 +164,13 @@ public static partial class Group
             }
         }
 
-        return new(cosets);
+        return cosets;
     }
 
-    public static ReadOnlyDictionary<T, T> Cosets<T>(IGroup<T> grG, IGroup<T> grH,
-        Coset coset = Coset.Both) where T : struct, IElt<T>
+    public static Dictionary<T, Coset<T>> Cosets<T>(ConcreteGroup<T> grG, ConcreteGroup<T> grH,
+        CosetType cosetType = CosetType.Both) where T : struct, IElt<T>
     {
-        return Cosets(grG, grH, Comparer<T>.Default, coset);
+        return Cosets(grG, grH, Comparer<T>.Default, cosetType);
     }
 
     public static T[,] CayleyTable<T>(IGroup<T> g, T[] elements) where T : struct, IElt<T>

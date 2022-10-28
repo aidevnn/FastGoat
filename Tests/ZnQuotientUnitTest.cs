@@ -1,4 +1,3 @@
-using System.Linq;
 using Xunit;
 using FastGoat;
 using FastGoat.Gp;
@@ -19,19 +18,19 @@ public class ZnQuotientUnitTest
         Assert.Equal(8, cosets.Count);
 
         var c000 = cosets[h1[0, 0, 0]];
-        Assert.Equal(c000, h1[0, 0, 0]);
+        Assert.Equal(c000.X, h1[0, 0, 0]);
         Assert.Equal(c000, cosets[h1[1, 0, 0]]);
 
         var c010 = cosets[h1[0, 1, 0]];
-        Assert.Equal(c010, h1[0, 1, 0]);
+        Assert.Equal(c010.X, h1[0, 1, 0]);
         Assert.Equal(c010, cosets[h1[1, 1, 0]]);
 
         var c001 = cosets[h1[0, 0, 1]];
-        Assert.Equal(c001, h1[0, 0, 1]);
+        Assert.Equal(c001.X, h1[0, 0, 1]);
         Assert.Equal(c001, cosets[h1[1, 0, 1]]);
 
         var c011 = cosets[h1[0, 1, 1]];
-        Assert.Equal(c011, h1[0, 1, 1]);
+        Assert.Equal(c011.X, h1[0, 1, 1]);
         Assert.Equal(c011, cosets[h1[1, 1, 1]]);
     }
 

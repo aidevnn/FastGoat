@@ -83,7 +83,7 @@ public static class DisplayGroup
             Console.WriteLine(fmt, ++k, g.ElementsOrders[elt], elt);
             if (details)
             {
-                foreach (var elt1 in elt.xH)
+                foreach (var elt1 in elt)
                     Console.WriteLine($"    {elt1}");
             }
         }

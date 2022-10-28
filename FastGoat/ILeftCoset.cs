@@ -1,7 +1,8 @@
 namespace FastGoat;
 
-public interface ILeftCoset<out T, U> : IElt<U> where T : struct, IElt<T> where U : struct, IElt<U>
+public interface ILeftCoset<T, U> : IEnumerable<T>, IElt<U> where T : struct, IElt<T> where U : struct, IElt<U>
 {
     T X { get; }
-    IEnumerable<T> xH { get; }
+    ConcreteGroup<T> G { get; }
+    ConcreteGroup<T> H { get; }
 }

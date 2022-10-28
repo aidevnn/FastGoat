@@ -15,3 +15,9 @@ using static FastGoat.EnumerableExt;
 //////////////////////////////////
 
 Console.WriteLine("Hello World");
+
+{
+    var cn = new Cn(40);
+    var h = Group.Generate("H", cn, cn[5]);
+    DisplayGroup.HeadCosets(cn.Over(h), details: true);
+}

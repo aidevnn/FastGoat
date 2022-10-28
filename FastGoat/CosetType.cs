@@ -1,6 +1,6 @@
 namespace FastGoat;
 
-public enum Coset
+public enum CosetType
 {
     Left,
     Both

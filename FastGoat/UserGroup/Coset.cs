@@ -5,47 +5,54 @@ namespace FastGoat.UserGroup;
 
 public readonly struct Coset<T> : ILeftCoset<T, Coset<T>> where T : struct, IElt<T>
 {
-    public Coset(Quotient<T> lQuo)
+    public Coset(ConcreteGroup<T> g, ConcreteGroup<T> h)
     {
-        Quotient = lQuo;
-        X = lQuo.H.Neutral();
-        Hash = (lQuo.Hash, X.Hash).GetHashCode();
+        G = g;
+        H = h;
+        X = H.Neutral();
+        Hash = (g.Hash, h.Hash, X.Hash).GetHashCode();
     }
 
-    public Coset(Quotient<T> lQuo, T x)
+    public Coset(ConcreteGroup<T> g, ConcreteGroup<T> h, T x)
     {
-        Quotient = lQuo;
+        G = g;
+        H = h;
         X = x;
-        Hash = (lQuo.Hash, X.Hash).GetHashCode();
+        Hash = (g.Hash, h.Hash, X.Hash).GetHashCode();
     }
 
     public T X { get; }
-    public Quotient<T> Quotient { get; }
+    public ConcreteGroup<T> G { get; }
+    public ConcreteGroup<T> H { get; }
     public bool Equals(Coset<T> other) => Hash == other.Hash;
 
     public int CompareTo(Coset<T> other) => X.CompareTo(other.X);
 
-    public IEnumerable<T> xH
+    private IEnumerable<T> xH
     {
         get
         {
             List<T> set = new();
-            foreach (var h in Quotient.H)
-            {
-                set.Add(Quotient.G.Op(X, h));
-            }
+            foreach (var h in H)
+                set.Add(G.Op(X, h));
 
             return set.Ascending();
         }
     }
 
+    public IEnumerator<T> GetEnumerator() => xH.GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
+
     public int Hash { get; }
-    public IGroup<Coset<T>> BaseGroup => Quotient;
     public override int GetHashCode() => Hash;
 
     public override string ToString()
     {
-        var hName = Quotient.H.Name;
+        var hName = H.Name;
         return $"{X}({hName})";
     }
 }

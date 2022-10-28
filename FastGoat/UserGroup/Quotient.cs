@@ -15,7 +15,7 @@ public class Quotient<T> : IGroup<Coset<T>> where T : struct, IElt<T>
         Name = $"{gName}/{hName}";
 
         var cosets = Group.Cosets(G, H);
-        Map = cosets.ToDictionary(a => a.Key, x => new Coset<T>(this, x.Value));
+        Map = Group.Cosets(G, H);
         Elements = Map.Values.ToHashSet();
         var lc = Group.LongestCycles(this, Elements);
         var lcKeys = lc.Select(kp => kp.Key).Ascending().ToArray();
