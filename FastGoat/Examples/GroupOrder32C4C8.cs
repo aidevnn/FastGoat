@@ -1,4 +1,3 @@
-using FastGoat;
 using FastGoat.Structures.CartesianProduct;
 using FastGoat.Commons;
 using FastGoat.Structures;

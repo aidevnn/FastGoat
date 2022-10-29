@@ -1,6 +1,6 @@
 using FastGoat.Commons;
 
-namespace FastGoat.ToddCoxeter;
+namespace FastGoat.UserGroup.Words.ToddCoxeter;
 
 public class RelatorsTable
 {

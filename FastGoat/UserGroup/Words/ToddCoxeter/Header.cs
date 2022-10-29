@@ -1,7 +1,7 @@
 using System.Collections;
 using FastGoat.Commons;
 
-namespace FastGoat.ToddCoxeter;
+namespace FastGoat.UserGroup.Words.ToddCoxeter;
 
 public class Header : IEnumerable<Generator>
 {

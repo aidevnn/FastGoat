@@ -1,4 +1,4 @@
-namespace FastGoat.ToddCoxeter;
+namespace FastGoat.UserGroup.Words.ToddCoxeter;
 
 public struct OpKey : IEquatable<OpKey>, IComparable<OpKey>
 {

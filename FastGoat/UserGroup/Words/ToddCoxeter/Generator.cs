@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace FastGoat.ToddCoxeter;
+namespace FastGoat.UserGroup.Words.ToddCoxeter;
 
 public struct Generator : IEquatable<Generator>, IComparable<Generator>
 {

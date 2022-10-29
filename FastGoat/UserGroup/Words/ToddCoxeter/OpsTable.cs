@@ -1,7 +1,7 @@
 using FastGoat.Commons;
 using FastGoat.Structures;
 
-namespace FastGoat.ToddCoxeter;
+namespace FastGoat.UserGroup.Words.ToddCoxeter;
 
 public class OpsTable
 {

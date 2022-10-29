@@ -1,9 +1,7 @@
 using System;
 using System.Linq;
-using FastGoat;
 using FastGoat.Commons;
 using FastGoat.Structures;
-using FastGoat.UserGroup;
 using FastGoat.UserGroup.Matrix;
 using Xunit;
 

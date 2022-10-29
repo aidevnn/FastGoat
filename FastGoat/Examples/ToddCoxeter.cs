@@ -1,10 +1,9 @@
 using FastGoat.Commons;
 using FastGoat.Structures;
-using FastGoat.ToddCoxeter;
-using FastGoat.UserGroup;
 using FastGoat.UserGroup.Integers;
 using FastGoat.UserGroup.Perms;
 using FastGoat.UserGroup.Words;
+using FastGoat.UserGroup.Words.ToddCoxeter;
 
 namespace FastGoat.Examples;
 
