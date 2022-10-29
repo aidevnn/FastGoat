@@ -216,11 +216,40 @@ public static partial class Group
         ZentrumsChain(g, chain);
     }
 
+    static void ZentrumsChainFast<T>(ConcreteGroup<T> gr, List<ConcreteGroup<T>> chain) where T : struct, IElt<T>
+    {
+        var i = chain.Count;
+        var zi = chain.Last();
+
+        T Commute(T x, T y) => gr.Op(gr.Op(x, y), gr.Op(gr.Invert(x), gr.Invert(y)));
+
+        HashSet<T> set = new(gr.Count());
+        foreach (var g in gr)
+        {
+            if (gr.All(a => zi.Contains(Commute(a, g))))
+                set.Add(g);
+        }
+
+        if (zi.SetEquals(set))
+            return;
+        
+        var zi1 = Generate($"Z{i}", gr, set.ToArray());
+        chain.Add(zi1);
+        ZentrumsChainFast(gr, chain);
+    }
+
     public static List<ConcreteGroup<T>> ZentrumsChain<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
     {
         var z0 = Group.Generate("Z0", g, g.Neutral());
         List<ConcreteGroup<T>> chain = new() { z0 };
         ZentrumsChain(g, chain);
+        return chain;
+    }
+    public static List<ConcreteGroup<T>> ZentrumsChainFast<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
+    {
+        var z0 = Group.Generate("Z0", g, g.Neutral());
+        List<ConcreteGroup<T>> chain = new() { z0 };
+        ZentrumsChainFast(g, chain);
         return chain;
     }
 }
