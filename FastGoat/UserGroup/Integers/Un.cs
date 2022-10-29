@@ -1,6 +1,6 @@
 using FastGoat.Commons;
-using FastGoat.Theory;
-using FastGoat.Theory.GenericGroup;
+using FastGoat.Structures;
+using FastGoat.Structures.GenericGroup;
 
 namespace FastGoat.UserGroup.Integers;
 

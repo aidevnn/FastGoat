@@ -11,7 +11,7 @@
     }
 #>
 using System.Collections;
-namespace FastGoat.Theory.CartesianProduct;
+namespace FastGoat.Structures.CartesianProduct;
 
 <#
     for (var k = 2; k <= 6; ++k)

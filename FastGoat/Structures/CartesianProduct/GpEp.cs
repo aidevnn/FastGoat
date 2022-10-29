@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 
-namespace FastGoat.Theory.CartesianProduct;
+namespace FastGoat.Structures.CartesianProduct;
 
 public readonly struct Gp2<T1, T2> : IGroup<Ep2<T1, T2>> where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
 {

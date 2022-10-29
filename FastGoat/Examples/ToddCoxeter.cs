@@ -1,5 +1,5 @@
 using FastGoat.Commons;
-using FastGoat.Theory;
+using FastGoat.Structures;
 using FastGoat.ToddCoxeter;
 using FastGoat.UserGroup;
 using FastGoat.UserGroup.Integers;

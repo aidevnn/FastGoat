@@ -1,7 +1,7 @@
 using System.Collections;
 using FastGoat.Commons;
 
-namespace FastGoat.Theory.CartesianProduct;
+namespace FastGoat.Structures.CartesianProduct;
 
 public struct Gp<T> : IGroup<Ep<T>> where T : struct, IElt<T>
 {

@@ -1,6 +1,6 @@
-using FastGoat.Theory.CartesianProduct;
+using FastGoat.Structures.CartesianProduct;
 
-namespace FastGoat.Theory.GenericGroup;
+namespace FastGoat.Structures.GenericGroup;
 
 public class SemiDirectProduct<T1, T2> : ConcreteGroup<Ep2<T1, T2>>
     where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>

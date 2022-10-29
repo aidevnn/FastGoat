@@ -1,4 +1,4 @@
-using FastGoat.Theory;
+using FastGoat.Structures;
 
 namespace FastGoat.Commons;
 

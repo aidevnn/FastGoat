@@ -1,7 +1,7 @@
 using System.Collections;
 using FastGoat.Commons;
 
-namespace FastGoat.Theory.GenericGroup;
+namespace FastGoat.Structures.GenericGroup;
 
 public class Quotient<T> : IGroup<Coset<T>> where T : struct, IElt<T>
 {

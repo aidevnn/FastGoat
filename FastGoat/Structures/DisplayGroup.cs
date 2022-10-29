@@ -1,7 +1,7 @@
 using FastGoat.Commons;
-using FastGoat.Theory.GenericGroup;
+using FastGoat.Structures.GenericGroup;
 
-namespace FastGoat.Theory;
+namespace FastGoat.Structures;
 
 public enum SortBy
 {

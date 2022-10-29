@@ -1,7 +1,7 @@
 using FastGoat.Commons;
-using FastGoat.Theory.GenericGroup;
+using FastGoat.Structures.GenericGroup;
 
-namespace FastGoat.Theory;
+namespace FastGoat.Structures;
 
 public delegate T2 GroupAction<in T1, T2>(T1 g, T2 x) where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>;
 

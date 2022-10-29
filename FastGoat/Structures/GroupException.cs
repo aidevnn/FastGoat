@@ -1,4 +1,4 @@
-namespace FastGoat.Theory;
+namespace FastGoat.Structures;
 
 public enum GroupExceptionType
 {

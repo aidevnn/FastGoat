@@ -1,8 +1,8 @@
 using System.Linq;
 using FastGoat;
-using FastGoat.Theory.CartesianProduct;
+using FastGoat.Structures.CartesianProduct;
 using FastGoat.Commons;
-using FastGoat.Theory;
+using FastGoat.Structures;
 using FastGoat.UserGroup;
 using FastGoat.UserGroup.Integers;
 using Xunit;

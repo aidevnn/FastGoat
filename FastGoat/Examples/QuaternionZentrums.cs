@@ -1,4 +1,4 @@
-using FastGoat.Theory;
+using FastGoat.Structures;
 using FastGoat.UserGroup.Perms;
 using FastGoat.UserGroup.Words;
 

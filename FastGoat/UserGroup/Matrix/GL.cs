@@ -1,6 +1,6 @@
 using System.Collections;
 using FastGoat.Commons;
-using FastGoat.Theory;
+using FastGoat.Structures;
 
 namespace FastGoat.UserGroup.Matrix;
 

@@ -1,4 +1,4 @@
-namespace FastGoat.Theory;
+namespace FastGoat.Structures;
 
 public interface IMap<T1, T2> : IElt<IMap<T1, T2>> where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
 {

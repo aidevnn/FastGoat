@@ -1,6 +1,6 @@
 using FastGoat.Commons;
 
-namespace FastGoat.Theory.GenericGroup;
+namespace FastGoat.Structures.GenericGroup;
 
 public readonly struct Automorphism<T> : IMap<T, T>, IElt<Automorphism<T>> where T : struct, IElt<T>
 {

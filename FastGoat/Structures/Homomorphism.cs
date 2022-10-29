@@ -1,6 +1,6 @@
 using FastGoat.Commons;
 
-namespace FastGoat.Theory;
+namespace FastGoat.Structures;
 
 public readonly struct Homomorphism<T1, T2> : IMap<T1, T2> where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
 {

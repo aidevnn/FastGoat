@@ -1,4 +1,4 @@
-namespace FastGoat.Theory.GenericGroup;
+namespace FastGoat.Structures.GenericGroup;
 
 public enum CosetType
 {

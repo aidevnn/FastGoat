@@ -1,7 +1,7 @@
 using System.Text.RegularExpressions;
 using FastGoat.Commons;
 
-namespace FastGoat.Theory;
+namespace FastGoat.Structures;
 
 public static partial class Group
 {

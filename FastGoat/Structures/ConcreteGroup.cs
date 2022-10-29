@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.ObjectModel;
 using FastGoat.Commons;
 
-namespace FastGoat.Theory;
+namespace FastGoat.Structures;
 
 public class ConcreteGroup<T> : IGroup<T> where T : struct, IElt<T>
 {

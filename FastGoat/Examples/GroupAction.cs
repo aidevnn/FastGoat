@@ -1,6 +1,6 @@
-using FastGoat.Theory.CartesianProduct;
-using FastGoat.Theory;
-using FastGoat.Theory.GenericGroup;
+using FastGoat.Structures.CartesianProduct;
+using FastGoat.Structures;
+using FastGoat.Structures.GenericGroup;
 using FastGoat.UserGroup.Integers;
 
 namespace FastGoat.Examples;

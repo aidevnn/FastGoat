@@ -1,6 +1,6 @@
 using System.Collections;
 
-namespace FastGoat.Theory.GenericGroup;
+namespace FastGoat.Structures.GenericGroup;
 
 public class AutomorphismGroup<T> : IGroup<Automorphism<T>> where T : struct, IElt<T>
 {

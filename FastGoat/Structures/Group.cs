@@ -1,8 +1,8 @@
 using System.Collections.ObjectModel;
 using FastGoat.Commons;
-using FastGoat.Theory.GenericGroup;
+using FastGoat.Structures.GenericGroup;
 
-namespace FastGoat.Theory;
+namespace FastGoat.Structures;
 
 public static partial class Group
 {

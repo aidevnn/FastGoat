@@ -1,4 +1,4 @@
-using FastGoat.Theory;
+using FastGoat.Structures;
 using FastGoat.ToddCoxeter;
 
 namespace FastGoat.UserGroup.Words;
