@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.ObjectModel;
 using FastGoat.Commons;
 
-namespace FastGoat.Structures;
+namespace FastGoat.Structures.GenericGroup;
 
 public class ConcreteGroup<T> : IGroup<T> where T : struct, IElt<T>
 {
@@ -66,6 +66,7 @@ public class ConcreteGroup<T> : IGroup<T> where T : struct, IElt<T>
     public IEnumerable<int> ElementsOrdersList() => ElementsOrders.Values.Ascending();
     protected HashSet<T> Elements { get; set; }
     public bool SetEquals(IEnumerable<T> ts) => Elements.SetEquals(ts);
+    public bool SubSetOf(IEnumerable<T> ts) => Elements.IsSubsetOf(ts);
     public IGroup<T> BaseGroup { get; }
     public ConcreteGroup<T>? SuperGroup { get; }
     public GroupType GroupType { get; protected set; }
