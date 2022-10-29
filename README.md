@@ -128,7 +128,7 @@ American Mathematical Society.
 <b>H.E. Rose.</b>
 A Course on Finite Groups.
 Springer.
-<i>Chapter 12. Simple Groups of Order Less than 10000.</i>
+<i>All Chapters.</i>
 
 [GroupNames](https://people.maths.bris.ac.uk/~matyd/GroupNames/index.html)
 <b>Tim Dokchitser.</b>

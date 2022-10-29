@@ -120,13 +120,15 @@ public static class CentralSeries
         var c9 = new Cn(9);
         
         var g1 = new WordGroup("C9 x: C3", "a9, b3, a4 = bab-1");
-        var g2 = Group.SemiDirectProd(Product.Generate(c9, c3), c3);
+        var g2 = Group.SemiDirectProd(Product.Generate(c3, c3), c3);
+        var g3 = Group.SemiDirectProd(Product.Generate(c9, c3), c3);
         var d8 = new WordGroup("D8", "a4, b2, abab");
         var d12 = new WordGroup("D12", "a6, b2, abab");
         var e24 = new WordGroup("E24", "a4, b2, c3, bab = a3, bcb = c, aca3 = c2");
 
         UpperSeriesFast(g1);
         UpperSeriesFast(g2);
+        UpperSeriesFast(g3);
         UpperSeriesFast(d8);
         UpperSeriesFast(d12);
         UpperSeriesFast(e24);

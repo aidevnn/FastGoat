@@ -216,6 +216,7 @@ public static partial class Group
         ZentrumsChain(g, chain);
     }
 
+    // H.E. Rose. A Course on Finite Groups. Problem 10.1 page 223
     static void ZentrumsChainFast<T>(ConcreteGroup<T> gr, List<ConcreteGroup<T>> chain) where T : struct, IElt<T>
     {
         var i = chain.Count;
