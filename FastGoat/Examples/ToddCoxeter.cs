@@ -4,6 +4,7 @@ using FastGoat.ToddCoxeter;
 using FastGoat.UserGroup;
 using FastGoat.UserGroup.Integers;
 using FastGoat.UserGroup.Perms;
+using FastGoat.UserGroup.Words;
 
 namespace FastGoat.Examples;
 
@@ -51,7 +52,7 @@ public static class ToddCoxeter
     {
         var gname = "Q8";
         var relators = "a4, a2=b2, b-1aba";
-        var wg = Group.Words(gname, relators);
+        var wg = new WordGroup(gname, relators);
         DisplayGroup.HeadElementsTable(wg);
 
         var s8 = new Sn(8);
@@ -61,7 +62,7 @@ public static class ToddCoxeter
         Console.WriteLine("({0}) IsIsomorphicTo ({1}) : {2}", wg, q8, wg.IsIsomorphicTo(q8));
 
         GlobalStopWatch.Restart();
-        var wg0 = Group.Words(gname, relators);
+        var wg0 = new WordGroup(gname, relators);
         GlobalStopWatch.Show($"{wg0.Name}");
 
         GlobalStopWatch.Restart();
@@ -73,14 +74,14 @@ public static class ToddCoxeter
     {
         var gname = "F20";
         var relators = "a5, b4, abababab, a2ba-1b-1";
-        var wg = Group.Words(gname, relators);
+        var wg = new WordGroup(gname, relators);
         DisplayGroup.HeadElementsTable(wg);
 
         var gr = Group.SemiDirectProd(new Cn(5), new Cn(4));
         Console.WriteLine("({0}) IsIsomorphicTo ({1}) : {2}", wg, gr, wg.IsIsomorphicTo(gr));
 
         GlobalStopWatch.Restart();
-        var wg0 = Group.Words(gname, relators);
+        var wg0 = new WordGroup(gname, relators);
         GlobalStopWatch.Show($"{wg0.Name}");
 
         GlobalStopWatch.Restart();
@@ -90,7 +91,7 @@ public static class ToddCoxeter
 
     public static void DiCyclic3()
     {
-        var wg = Group.Words("Dic3", "a6, b2=a3, bab-1=a-1");
+        var wg = new WordGroup("Dic3", "a6, b2=a3, bab-1=a-1");
         var g = Group.SemiDirectProd(new Cn(3), new Cn(4));
         DisplayGroup.HeadElements(wg);
         DisplayGroup.HeadElementsSdp(g);
@@ -101,7 +102,7 @@ public static class ToddCoxeter
     {
         var gname = "wgDic12";
         var relators = "a12, b2=a6, bab-1=a-1";
-        var wg = Group.Words(gname, relators);
+        var wg = new WordGroup(gname, relators);
         DisplayGroup.HeadElements(wg);
 
         var s8 = new Sn(8);
@@ -127,7 +128,7 @@ public static class ToddCoxeter
     {
         var gname = "wgQ32";
         var relators = "a16, b2=a8, bab-1=a-1";
-        var wg = Group.Words(gname, relators);
+        var wg = new WordGroup(gname, relators);
         DisplayGroup.HeadElements(wg);
 
         var s32 = new Sn(32);

@@ -1,7 +1,5 @@
 using System.Text.RegularExpressions;
 using FastGoat.Commons;
-using FastGoat.UserGroup;
-using FastGoat.UserGroup.Words;
 
 namespace FastGoat.Theory;
 
@@ -118,7 +116,4 @@ public static partial class Group
 
         throw new GroupException(GroupExceptionType.GroupDef);
     }
-
-    public static WordGroup Words(string relators) => new WordGroup(relators);
-    public static WordGroup Words(string name, string relators) => new WordGroup(name, relators);
 }

@@ -1,10 +1,9 @@
 using System.Collections;
 using FastGoat.Commons;
-using FastGoat.Theory;
 
 namespace FastGoat.Theory.CartesianProduct;
 
-public struct Gp<T> : IGroup<Ep<T>> where T : IElt<T>
+public struct Gp<T> : IGroup<Ep<T>> where T : struct, IElt<T>
 {
     public string Name { get; }
     public IGroup<T>[] Gi { get; }
@@ -109,17 +108,17 @@ public struct Ep<T> : IElt<Ep<T>> where T : IElt<T>
 
 public static partial class Product
 {
-    public static Gp<T> Gp<T>(params IGroup<T>[] gn) where T : IElt<T>
+    public static Gp<T> Gp<T>(params IGroup<T>[] gn) where T : struct, IElt<T>
     {
         return new(gn);
     }
 
-    public static Ep<T> Ep<T>(params T[] en) where T : IElt<T>
+    public static Ep<T> Ep<T>(params T[] en) where T : struct, IElt<T>
     {
         return new(en);
     }
 
-    public static ConcreteGroup<Ep<T>> GpGenerate<T>(params IGroup<T>[] gn) where T : IElt<T>
+    public static ConcreteGroup<Ep<T>> GpGenerate<T>(params IGroup<T>[] gn) where T : struct, IElt<T>
     {
         return new(Gp(gn));
     }

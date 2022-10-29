@@ -11,7 +11,6 @@
     }
 #>
 using System.Collections;
-using FastGoat.Theory;
 namespace FastGoat.Theory.CartesianProduct;
 
 <#
@@ -24,7 +23,7 @@ namespace FastGoat.Theory.CartesianProduct;
         var ei = l.Select(i => $"e{i + 1}").ToArray();
         var Ti = l.Select(i => $"T{i + 1}").ToArray();
         var tn = string.Join(",", Ti);
-        var whereTn = string.Join(" ", Ti.Select(t => $"where {t}:IElt<{t}>"));
+        var whereTn = string.Join(" ", Ti.Select(t => $"where {t}:struct, IElt<{t}>"));
         var gpk = $"Gp{k}<{tn}>";
         var epk = $"Ep{k}<{tn}>";
         var pigtk = l.Select(i => $"public IGroup<{Ti[i]}> {Gi[i]} {{get;}}").ToArray();

@@ -1,9 +1,8 @@
 ﻿using System.Collections;
-using FastGoat.Theory;
 
 namespace FastGoat.Theory.CartesianProduct;
 
-public readonly struct Gp2<T1, T2> : IGroup<Ep2<T1, T2>> where T1 : IElt<T1> where T2 : IElt<T2>
+public readonly struct Gp2<T1, T2> : IGroup<Ep2<T1, T2>> where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
 {
     public string Name { get; }
     public IGroup<T1> G1 { get; }
@@ -68,7 +67,7 @@ public readonly struct Gp2<T1, T2> : IGroup<Ep2<T1, T2>> where T1 : IElt<T1> whe
     IEnumerator IEnumerable.GetEnumerator() => GetElements().GetEnumerator();
 }
 
-public readonly struct Ep2<T1, T2> : IElt<Ep2<T1, T2>> where T1 : IElt<T1> where T2 : IElt<T2>
+public readonly struct Ep2<T1, T2> : IElt<Ep2<T1, T2>> where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
 {
     public T1 E1 { get; }
     public T2 E2 { get; }
@@ -95,26 +94,27 @@ public readonly struct Ep2<T1, T2> : IElt<Ep2<T1, T2>> where T1 : IElt<T1> where
 public static partial class Product
 {
     public static Gp2<T1, T2> Group<T1, T2>(IGroup<T1> g1, IGroup<T2> g2)
-        where T1 : IElt<T1> where T2 : IElt<T2>
+        where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
     {
         return new(g1, g2);
     }
 
     public static Ep2<T1, T2> Elt<T1, T2>(T1 e1, T2 e2)
-        where T1 : IElt<T1> where T2 : IElt<T2>
+        where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
     {
         return new(e1, e2);
     }
 
     public static ConcreteGroup<Ep2<T1, T2>> Generate<T1, T2>(IGroup<T1> g1, IGroup<T2> g2)
-        where T1 : IElt<T1> where T2 : IElt<T2>
+        where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
     {
         return new(Group(g1, g2));
     }
 }
 
-public readonly struct Gp3<T1, T2, T3> : IGroup<Ep3<T1, T2, T3>>
-    where T1 : IElt<T1> where T2 : IElt<T2> where T3 : IElt<T3>
+public readonly struct Gp3<T1, T2, T3> : IGroup<Ep3<T1, T2, T3>> where T1 : struct, IElt<T1>
+    where T2 : struct, IElt<T2>
+    where T3 : struct, IElt<T3>
 {
     public string Name { get; }
     public IGroup<T1> G1 { get; }
@@ -189,8 +189,9 @@ public readonly struct Gp3<T1, T2, T3> : IGroup<Ep3<T1, T2, T3>>
     IEnumerator IEnumerable.GetEnumerator() => GetElements().GetEnumerator();
 }
 
-public readonly struct Ep3<T1, T2, T3> : IElt<Ep3<T1, T2, T3>>
-    where T1 : IElt<T1> where T2 : IElt<T2> where T3 : IElt<T3>
+public readonly struct Ep3<T1, T2, T3> : IElt<Ep3<T1, T2, T3>> where T1 : struct, IElt<T1>
+    where T2 : struct, IElt<T2>
+    where T3 : struct, IElt<T3>
 {
     public T1 E1 { get; }
     public T2 E2 { get; }
@@ -219,28 +220,28 @@ public readonly struct Ep3<T1, T2, T3> : IElt<Ep3<T1, T2, T3>>
 public static partial class Product
 {
     public static Gp3<T1, T2, T3> Group<T1, T2, T3>(IGroup<T1> g1, IGroup<T2> g2, IGroup<T3> g3)
-        where T1 : IElt<T1> where T2 : IElt<T2> where T3 : IElt<T3>
+        where T1 : struct, IElt<T1> where T2 : struct, IElt<T2> where T3 : struct, IElt<T3>
     {
         return new(g1, g2, g3);
     }
 
     public static Ep3<T1, T2, T3> Elt<T1, T2, T3>(T1 e1, T2 e2, T3 e3)
-        where T1 : IElt<T1> where T2 : IElt<T2> where T3 : IElt<T3>
+        where T1 : struct, IElt<T1> where T2 : struct, IElt<T2> where T3 : struct, IElt<T3>
     {
         return new(e1, e2, e3);
     }
 
     public static ConcreteGroup<Ep3<T1, T2, T3>> Generate<T1, T2, T3>(IGroup<T1> g1, IGroup<T2> g2, IGroup<T3> g3)
-        where T1 : IElt<T1> where T2 : IElt<T2> where T3 : IElt<T3>
+        where T1 : struct, IElt<T1> where T2 : struct, IElt<T2> where T3 : struct, IElt<T3>
     {
         return new(Group(g1, g2, g3));
     }
 }
 
-public readonly struct Gp4<T1, T2, T3, T4> : IGroup<Ep4<T1, T2, T3, T4>> where T1 : IElt<T1>
-    where T2 : IElt<T2>
-    where T3 : IElt<T3>
-    where T4 : IElt<T4>
+public readonly struct Gp4<T1, T2, T3, T4> : IGroup<Ep4<T1, T2, T3, T4>> where T1 : struct, IElt<T1>
+    where T2 : struct, IElt<T2>
+    where T3 : struct, IElt<T3>
+    where T4 : struct, IElt<T4>
 {
     public string Name { get; }
     public IGroup<T1> G1 { get; }
@@ -325,10 +326,10 @@ public readonly struct Gp4<T1, T2, T3, T4> : IGroup<Ep4<T1, T2, T3, T4>> where T
     IEnumerator IEnumerable.GetEnumerator() => GetElements().GetEnumerator();
 }
 
-public readonly struct Ep4<T1, T2, T3, T4> : IElt<Ep4<T1, T2, T3, T4>> where T1 : IElt<T1>
-    where T2 : IElt<T2>
-    where T3 : IElt<T3>
-    where T4 : IElt<T4>
+public readonly struct Ep4<T1, T2, T3, T4> : IElt<Ep4<T1, T2, T3, T4>> where T1 : struct, IElt<T1>
+    where T2 : struct, IElt<T2>
+    where T3 : struct, IElt<T3>
+    where T4 : struct, IElt<T4>
 {
     public T1 E1 { get; }
     public T2 E2 { get; }
@@ -359,30 +360,30 @@ public readonly struct Ep4<T1, T2, T3, T4> : IElt<Ep4<T1, T2, T3, T4>> where T1 
 public static partial class Product
 {
     public static Gp4<T1, T2, T3, T4> Group<T1, T2, T3, T4>(IGroup<T1> g1, IGroup<T2> g2, IGroup<T3> g3, IGroup<T4> g4)
-        where T1 : IElt<T1> where T2 : IElt<T2> where T3 : IElt<T3> where T4 : IElt<T4>
+        where T1 : struct, IElt<T1> where T2 : struct, IElt<T2> where T3 : struct, IElt<T3> where T4 : struct, IElt<T4>
     {
         return new(g1, g2, g3, g4);
     }
 
     public static Ep4<T1, T2, T3, T4> Elt<T1, T2, T3, T4>(T1 e1, T2 e2, T3 e3, T4 e4)
-        where T1 : IElt<T1> where T2 : IElt<T2> where T3 : IElt<T3> where T4 : IElt<T4>
+        where T1 : struct, IElt<T1> where T2 : struct, IElt<T2> where T3 : struct, IElt<T3> where T4 : struct, IElt<T4>
     {
         return new(e1, e2, e3, e4);
     }
 
     public static ConcreteGroup<Ep4<T1, T2, T3, T4>> Generate<T1, T2, T3, T4>(IGroup<T1> g1, IGroup<T2> g2,
         IGroup<T3> g3, IGroup<T4> g4)
-        where T1 : IElt<T1> where T2 : IElt<T2> where T3 : IElt<T3> where T4 : IElt<T4>
+        where T1 : struct, IElt<T1> where T2 : struct, IElt<T2> where T3 : struct, IElt<T3> where T4 : struct, IElt<T4>
     {
         return new(Group(g1, g2, g3, g4));
     }
 }
 
-public readonly struct Gp5<T1, T2, T3, T4, T5> : IGroup<Ep5<T1, T2, T3, T4, T5>> where T1 : IElt<T1>
-    where T2 : IElt<T2>
-    where T3 : IElt<T3>
-    where T4 : IElt<T4>
-    where T5 : IElt<T5>
+public readonly struct Gp5<T1, T2, T3, T4, T5> : IGroup<Ep5<T1, T2, T3, T4, T5>> where T1 : struct, IElt<T1>
+    where T2 : struct, IElt<T2>
+    where T3 : struct, IElt<T3>
+    where T4 : struct, IElt<T4>
+    where T5 : struct, IElt<T5>
 {
     public string Name { get; }
     public IGroup<T1> G1 { get; }
@@ -477,11 +478,11 @@ public readonly struct Gp5<T1, T2, T3, T4, T5> : IGroup<Ep5<T1, T2, T3, T4, T5>>
     IEnumerator IEnumerable.GetEnumerator() => GetElements().GetEnumerator();
 }
 
-public readonly struct Ep5<T1, T2, T3, T4, T5> : IElt<Ep5<T1, T2, T3, T4, T5>> where T1 : IElt<T1>
-    where T2 : IElt<T2>
-    where T3 : IElt<T3>
-    where T4 : IElt<T4>
-    where T5 : IElt<T5>
+public readonly struct Ep5<T1, T2, T3, T4, T5> : IElt<Ep5<T1, T2, T3, T4, T5>> where T1 : struct, IElt<T1>
+    where T2 : struct, IElt<T2>
+    where T3 : struct, IElt<T3>
+    where T4 : struct, IElt<T4>
+    where T5 : struct, IElt<T5>
 {
     public T1 E1 { get; }
     public T2 E2 { get; }
@@ -515,31 +516,43 @@ public static partial class Product
 {
     public static Gp5<T1, T2, T3, T4, T5> Group<T1, T2, T3, T4, T5>(IGroup<T1> g1, IGroup<T2> g2, IGroup<T3> g3,
         IGroup<T4> g4, IGroup<T5> g5)
-        where T1 : IElt<T1> where T2 : IElt<T2> where T3 : IElt<T3> where T4 : IElt<T4> where T5 : IElt<T5>
+        where T1 : struct, IElt<T1>
+        where T2 : struct, IElt<T2>
+        where T3 : struct, IElt<T3>
+        where T4 : struct, IElt<T4>
+        where T5 : struct, IElt<T5>
     {
         return new(g1, g2, g3, g4, g5);
     }
 
     public static Ep5<T1, T2, T3, T4, T5> Elt<T1, T2, T3, T4, T5>(T1 e1, T2 e2, T3 e3, T4 e4, T5 e5)
-        where T1 : IElt<T1> where T2 : IElt<T2> where T3 : IElt<T3> where T4 : IElt<T4> where T5 : IElt<T5>
+        where T1 : struct, IElt<T1>
+        where T2 : struct, IElt<T2>
+        where T3 : struct, IElt<T3>
+        where T4 : struct, IElt<T4>
+        where T5 : struct, IElt<T5>
     {
         return new(e1, e2, e3, e4, e5);
     }
 
     public static ConcreteGroup<Ep5<T1, T2, T3, T4, T5>> Generate<T1, T2, T3, T4, T5>(IGroup<T1> g1, IGroup<T2> g2,
         IGroup<T3> g3, IGroup<T4> g4, IGroup<T5> g5)
-        where T1 : IElt<T1> where T2 : IElt<T2> where T3 : IElt<T3> where T4 : IElt<T4> where T5 : IElt<T5>
+        where T1 : struct, IElt<T1>
+        where T2 : struct, IElt<T2>
+        where T3 : struct, IElt<T3>
+        where T4 : struct, IElt<T4>
+        where T5 : struct, IElt<T5>
     {
         return new(Group(g1, g2, g3, g4, g5));
     }
 }
 
-public readonly struct Gp6<T1, T2, T3, T4, T5, T6> : IGroup<Ep6<T1, T2, T3, T4, T5, T6>> where T1 : IElt<T1>
-    where T2 : IElt<T2>
-    where T3 : IElt<T3>
-    where T4 : IElt<T4>
-    where T5 : IElt<T5>
-    where T6 : IElt<T6>
+public readonly struct Gp6<T1, T2, T3, T4, T5, T6> : IGroup<Ep6<T1, T2, T3, T4, T5, T6>> where T1 : struct, IElt<T1>
+    where T2 : struct, IElt<T2>
+    where T3 : struct, IElt<T3>
+    where T4 : struct, IElt<T4>
+    where T5 : struct, IElt<T5>
+    where T6 : struct, IElt<T6>
 {
     public string Name { get; }
     public IGroup<T1> G1 { get; }
@@ -649,12 +662,12 @@ public readonly struct Gp6<T1, T2, T3, T4, T5, T6> : IGroup<Ep6<T1, T2, T3, T4, 
     IEnumerator IEnumerable.GetEnumerator() => GetElements().GetEnumerator();
 }
 
-public readonly struct Ep6<T1, T2, T3, T4, T5, T6> : IElt<Ep6<T1, T2, T3, T4, T5, T6>> where T1 : IElt<T1>
-    where T2 : IElt<T2>
-    where T3 : IElt<T3>
-    where T4 : IElt<T4>
-    where T5 : IElt<T5>
-    where T6 : IElt<T6>
+public readonly struct Ep6<T1, T2, T3, T4, T5, T6> : IElt<Ep6<T1, T2, T3, T4, T5, T6>> where T1 : struct, IElt<T1>
+    where T2 : struct, IElt<T2>
+    where T3 : struct, IElt<T3>
+    where T4 : struct, IElt<T4>
+    where T5 : struct, IElt<T5>
+    where T6 : struct, IElt<T6>
 {
     public T1 E1 { get; }
     public T2 E2 { get; }
@@ -690,35 +703,35 @@ public static partial class Product
 {
     public static Gp6<T1, T2, T3, T4, T5, T6> Group<T1, T2, T3, T4, T5, T6>(IGroup<T1> g1, IGroup<T2> g2, IGroup<T3> g3,
         IGroup<T4> g4, IGroup<T5> g5, IGroup<T6> g6)
-        where T1 : IElt<T1>
-        where T2 : IElt<T2>
-        where T3 : IElt<T3>
-        where T4 : IElt<T4>
-        where T5 : IElt<T5>
-        where T6 : IElt<T6>
+        where T1 : struct, IElt<T1>
+        where T2 : struct, IElt<T2>
+        where T3 : struct, IElt<T3>
+        where T4 : struct, IElt<T4>
+        where T5 : struct, IElt<T5>
+        where T6 : struct, IElt<T6>
     {
         return new(g1, g2, g3, g4, g5, g6);
     }
 
     public static Ep6<T1, T2, T3, T4, T5, T6> Elt<T1, T2, T3, T4, T5, T6>(T1 e1, T2 e2, T3 e3, T4 e4, T5 e5, T6 e6)
-        where T1 : IElt<T1>
-        where T2 : IElt<T2>
-        where T3 : IElt<T3>
-        where T4 : IElt<T4>
-        where T5 : IElt<T5>
-        where T6 : IElt<T6>
+        where T1 : struct, IElt<T1>
+        where T2 : struct, IElt<T2>
+        where T3 : struct, IElt<T3>
+        where T4 : struct, IElt<T4>
+        where T5 : struct, IElt<T5>
+        where T6 : struct, IElt<T6>
     {
         return new(e1, e2, e3, e4, e5, e6);
     }
 
     public static ConcreteGroup<Ep6<T1, T2, T3, T4, T5, T6>> Generate<T1, T2, T3, T4, T5, T6>(IGroup<T1> g1,
         IGroup<T2> g2, IGroup<T3> g3, IGroup<T4> g4, IGroup<T5> g5, IGroup<T6> g6)
-        where T1 : IElt<T1>
-        where T2 : IElt<T2>
-        where T3 : IElt<T3>
-        where T4 : IElt<T4>
-        where T5 : IElt<T5>
-        where T6 : IElt<T6>
+        where T1 : struct, IElt<T1>
+        where T2 : struct, IElt<T2>
+        where T3 : struct, IElt<T3>
+        where T4 : struct, IElt<T4>
+        where T5 : struct, IElt<T5>
+        where T6 : struct, IElt<T6>
     {
         return new(Group(g1, g2, g3, g4, g5, g6));
     }

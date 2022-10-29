@@ -1,9 +1,9 @@
 using FastGoat.Theory.CartesianProduct;
 using FastGoat.Commons;
 using FastGoat.Theory;
-using FastGoat.UserGroup;
 using FastGoat.UserGroup.Integers;
 using FastGoat.UserGroup.Perms;
+using FastGoat.UserGroup.Words;
 
 namespace FastGoat.Examples;
 
@@ -34,7 +34,7 @@ public static class GroupOrder18
         Console.WriteLine("Elements Orders : {0}", pg.ElementsOrdersList().Glue(", "));
         Console.WriteLine("({0}) IsIsomorphicTo ({1}) : {2}", c3s6, pg, c3s6.IsIsomorphicTo(pg));
 
-        var wg = Group.Words("wg(C3 x S3)", "a3, b3, c2, ab=ba, ac=ca, bcbc");
+        var wg = new WordGroup("wg(C3 x S3)", "a3, b3, c2, ab=ba, ac=ca, bcbc");
         DisplayGroup.Head(wg);
         Console.WriteLine("Elements Orders : {0}", wg.ElementsOrdersList().Glue(", "));
         Console.WriteLine("({0}) IsIsomorphicTo ({1}) : {2}", wg, pg, wg.IsIsomorphicTo(pg));
@@ -62,7 +62,7 @@ public static class GroupOrder18
         Console.WriteLine("({0}) IsIsomorphicTo ({1}) : {2}", sdpD18, pgD18, sdpD18.IsIsomorphicTo(pgD18));
         Console.WriteLine();
 
-        var wg = Group.Words("wg(D18)", "a9, b2, abab");
+        var wg = new WordGroup("wg(D18)", "a9, b2, abab");
         DisplayGroup.Head(wg);
         Console.WriteLine("Elements Orders : {0}", wg.ElementsOrdersList().Glue(", "));
         Console.WriteLine("({0}) IsIsomorphicTo ({1}) : {2}", wg, pgD18, wg.IsIsomorphicTo(pgD18));
@@ -81,7 +81,7 @@ public static class GroupOrder18
         Console.WriteLine("Elements Orders : {0}", sdp.ElementsOrdersList().Glue(", "));
         Console.WriteLine();
 
-        var wg = Group.Words("wg(C3 x: S3)", "a3, b3, c2, ab=ba, cac=a-1, cbc=b-1");
+        var wg = new WordGroup("wg(C3 x: S3)", "a3, b3, c2, ab=ba, cac=a-1, cbc=b-1");
         DisplayGroup.Head(wg);
         Console.WriteLine("Elements Orders : {0}", wg.ElementsOrdersList().Glue(", "));
         Console.WriteLine("({0}) IsIsomorphicTo ({1}) : {2}", wg, sdp, wg.IsIsomorphicTo(sdp));

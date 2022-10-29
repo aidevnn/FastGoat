@@ -4,7 +4,6 @@ using FastGoat;
 using FastGoat.Examples;
 using FastGoat.Theory;
 using FastGoat.ToddCoxeter;
-using FastGoat.UserGroup;
 using FastGoat.UserGroup.Integers;
 using static FastGoat.Commons.IntExt;
 using static FastGoat.Commons.EnumerableExt;

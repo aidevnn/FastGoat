@@ -2,7 +2,6 @@ using FastGoat;
 using FastGoat.Theory.CartesianProduct;
 using FastGoat.Commons;
 using FastGoat.Theory;
-using FastGoat.UserGroup;
 using FastGoat.UserGroup.Integers;
 
 namespace FastGoat.Examples;

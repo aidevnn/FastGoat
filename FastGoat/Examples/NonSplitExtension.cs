@@ -1,7 +1,6 @@
 using FastGoat.Theory.CartesianProduct;
 using FastGoat.Commons;
 using FastGoat.Theory;
-using FastGoat.UserGroup;
 using FastGoat.UserGroup.Integers;
 using FastGoat.UserGroup.Perms;
 
