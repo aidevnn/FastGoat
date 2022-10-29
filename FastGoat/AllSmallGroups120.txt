@@ -1,0 +1,1482 @@
+gap> for k in [2..120] do
+> asm:= AllSmallGroups(k);
+> Print("Order=", k, " Count=", Size(asm), "\n");
+> for a in asm do
+> Print(StructureDescription(a), "\n");
+> od;
+> Print("\n");
+> od;
+
+Order=2 Count=1
+C2
+
+Order=3 Count=1
+C3
+
+Order=4 Count=2
+C4
+C2 x C2
+
+Order=5 Count=1
+C5
+
+Order=6 Count=2
+S3
+C6
+
+Order=7 Count=1
+C7
+
+Order=8 Count=5
+C8
+C4 x C2
+D8
+Q8
+C2 x C2 x C2
+
+Order=9 Count=2
+C9
+C3 x C3
+
+Order=10 Count=2
+D10
+C10
+
+Order=11 Count=1
+C11
+
+Order=12 Count=5
+C3 : C4
+C12
+A4
+D12
+C6 x C2
+
+Order=13 Count=1
+C13
+
+Order=14 Count=2
+D14
+C14
+
+Order=15 Count=1
+C15
+
+Order=16 Count=14
+C16
+C4 x C4
+(C4 x C2) : C2
+C4 : C4
+C8 x C2
+C8 : C2
+D16
+QD16
+Q16
+C4 x C2 x C2
+C2 x D8
+C2 x Q8
+(C4 x C2) : C2
+C2 x C2 x C2 x C2
+
+Order=17 Count=1
+C17
+
+Order=18 Count=5
+D18
+C18
+C3 x S3
+(C3 x C3) : C2
+C6 x C3
+
+Order=19 Count=1
+C19
+
+Order=20 Count=5
+C5 : C4
+C20
+C5 : C4
+D20
+C10 x C2
+
+Order=21 Count=2
+C7 : C3
+C21
+
+Order=22 Count=2
+D22
+C22
+
+Order=23 Count=1
+C23
+
+Order=24 Count=15
+C3 : C8
+C24
+SL(2,3)
+C3 : Q8
+C4 x S3
+D24
+C2 x (C3 : C4)
+(C6 x C2) : C2
+C12 x C2
+C3 x D8
+C3 x Q8
+S4
+C2 x A4
+C2 x C2 x S3
+C6 x C2 x C2
+
+Order=25 Count=2
+C25
+C5 x C5
+
+Order=26 Count=2
+D26
+C26
+
+Order=27 Count=5
+C27
+C9 x C3
+(C3 x C3) : C3
+C9 : C3
+C3 x C3 x C3
+
+Order=28 Count=4
+C7 : C4
+C28
+D28
+C14 x C2
+
+Order=29 Count=1
+C29
+
+Order=30 Count=4
+C5 x S3
+C3 x D10
+D30
+C30
+
+Order=31 Count=1
+C31
+
+Order=32 Count=51
+C32
+(C4 x C2) : C4
+C8 x C4
+C8 : C4
+(C8 x C2) : C2
+(C2 x C2 x C2) : C4
+(C8 : C2) : C2
+C2 . ((C4 x C2) : C2) = (C2 x C2) . (C4 x C2)
+(C8 x C2) : C2
+Q8 : C4
+(C4 x C4) : C2
+C4 : C8
+C8 : C4
+C8 : C4
+C4 . D8 = C4 . (C4 x C2)
+C16 x C2
+C16 : C2
+D32
+QD32
+Q32
+C4 x C4 x C2
+C2 x ((C4 x C2) : C2)
+C2 x (C4 : C4)
+(C4 x C4) : C2
+C4 x D8
+C4 x Q8
+(C2 x C2 x C2 x C2) : C2
+(C4 x C2 x C2) : C2
+(C2 x Q8) : C2
+(C4 x C2 x C2) : C2
+(C4 x C4) : C2
+(C2 x C2) . (C2 x C2 x C2)
+(C4 x C4) : C2
+(C4 x C4) : C2
+C4 : Q8
+C8 x C2 x C2
+C2 x (C8 : C2)
+(C8 x C2) : C2
+C2 x D16
+C2 x QD16
+C2 x Q16
+(C8 x C2) : C2
+C8 : (C2 x C2)
+(C2 x Q8) : C2
+C4 x C2 x C2 x C2
+C2 x C2 x D8
+C2 x C2 x Q8
+C2 x ((C4 x C2) : C2)
+(C2 x C2 x C2) : (C2 x C2)
+(C2 x Q8) : C2
+C2 x C2 x C2 x C2 x C2
+
+Order=33 Count=1
+C33
+
+Order=34 Count=2
+D34
+C34
+
+Order=35 Count=1
+C35
+
+Order=36 Count=14
+C9 : C4
+C36
+(C2 x C2) : C9
+D36
+C18 x C2
+C3 x (C3 : C4)
+(C3 x C3) : C4
+C12 x C3
+(C3 x C3) : C4
+S3 x S3
+C3 x A4
+C6 x S3
+C2 x ((C3 x C3) : C2)
+C6 x C6
+
+Order=37 Count=1
+C37
+
+Order=38 Count=2
+D38
+C38
+
+Order=39 Count=2
+C13 : C3
+C39
+
+Order=40 Count=14
+C5 : C8
+C40
+C5 : C8
+C5 : Q8
+C4 x D10
+D40
+C2 x (C5 : C4)
+(C10 x C2) : C2
+C20 x C2
+C5 x D8
+C5 x Q8
+C2 x (C5 : C4)
+C2 x C2 x D10
+C10 x C2 x C2
+
+Order=41 Count=1
+C41
+
+Order=42 Count=6
+C7 : C6
+C2 x (C7 : C3)
+C7 x S3
+C3 x D14
+D42
+C42
+
+Order=43 Count=1
+C43
+
+Order=44 Count=4
+C11 : C4
+C44
+D44
+C22 x C2
+
+Order=45 Count=2
+C45
+C15 x C3
+
+Order=46 Count=2
+D46
+C46
+
+Order=47 Count=1
+C47
+
+Order=48 Count=52
+C3 : C16
+C48
+(C4 x C4) : C3
+C8 x S3
+C24 : C2
+C24 : C2
+D48
+C3 : Q16
+C2 x (C3 : C8)
+(C3 : C8) : C2
+C4 x (C3 : C4)
+(C3 : C4) : C4
+C12 : C4
+(C12 x C2) : C2
+(C3 x D8) : C2
+(C3 : Q8) : C2
+(C3 x Q8) : C2
+C3 : Q16
+(C6 x C2) : C4
+C12 x C4
+C3 x ((C4 x C2) : C2)
+C3 x (C4 : C4)
+C24 x C2
+C3 x (C8 : C2)
+C3 x D16
+C3 x QD16
+C3 x Q16
+C2 . S4 = SL(2,3) . C2
+GL(2,3)
+A4 : C4
+C4 x A4
+C2 x SL(2,3)
+((C4 x C2) : C2) : C3
+C2 x (C3 : Q8)
+C2 x C4 x S3
+C2 x D24
+(C12 x C2) : C2
+D8 x S3
+(C4 x S3) : C2
+Q8 x S3
+(C4 x S3) : C2
+C2 x C2 x (C3 : C4)
+C2 x ((C6 x C2) : C2)
+C12 x C2 x C2
+C6 x D8
+C6 x Q8
+C3 x ((C4 x C2) : C2)
+C2 x S4
+C2 x C2 x A4
+(C2 x C2 x C2 x C2) : C3
+C2 x C2 x C2 x S3
+C6 x C2 x C2 x C2
+
+Order=49 Count=2
+C49
+C7 x C7
+
+Order=50 Count=5
+D50
+C50
+C5 x D10
+(C5 x C5) : C2
+C10 x C5
+
+Order=51 Count=1
+C51
+
+Order=52 Count=5
+C13 : C4
+C52
+C13 : C4
+D52
+C26 x C2
+
+Order=53 Count=1
+C53
+
+Order=54 Count=15
+D54
+C54
+C3 x D18
+C9 x S3
+(C3 x C3) : C6
+C9 : C6
+(C9 x C3) : C2
+((C3 x C3) : C3) : C2
+C18 x C3
+C2 x ((C3 x C3) : C3)
+C2 x (C9 : C3)
+C3 x C3 x S3
+C3 x ((C3 x C3) : C2)
+(C3 x C3 x C3) : C2
+C6 x C3 x C3
+
+Order=55 Count=2
+C11 : C5
+C55
+
+Order=56 Count=13
+C7 : C8
+C56
+C7 : Q8
+C4 x D14
+D56
+C2 x (C7 : C4)
+(C14 x C2) : C2
+C28 x C2
+C7 x D8
+C7 x Q8
+(C2 x C2 x C2) : C7
+C2 x C2 x D14
+C14 x C2 x C2
+
+Order=57 Count=2
+C19 : C3
+C57
+
+Order=58 Count=2
+D58
+C58
+
+Order=59 Count=1
+C59
+
+Order=60 Count=13
+C5 x (C3 : C4)
+C3 x (C5 : C4)
+C15 : C4
+C60
+A5
+C3 x (C5 : C4)
+C15 : C4
+S3 x D10
+C5 x A4
+C6 x D10
+C10 x S3
+D60
+C30 x C2
+
+Order=61 Count=1
+C61
+
+Order=62 Count=2
+D62
+C62
+
+Order=63 Count=4
+C7 : C9
+C63
+C3 x (C7 : C3)
+C21 x C3
+
+Order=64 Count=267
+C64
+C8 x C8
+C8 : C8
+((C8 x C2) : C2) : C2
+(C4 x C2) : C8
+(C8 x C4) : C2
+Q8 : C8
+((C8 x C2) : C2) : C2
+(C4 : C4) : C4
+(C8 : C4) : C2
+(C2 x C2) . ((C4 x C2) : C2) = (C4 x C2) . (C4 x C2)
+(C4 : C8) : C2
+(C2 x C2) . ((C4 x C2) : C2) = (C4 x C2) . (C4 x C2)
+(C2 x C2) . ((C4 x C2) : C2) = (C4 x C2) . (C4 x C2)
+C8 : C8
+C8 : C8
+(C8 x C2) : C4
+(C4 x C4) : C4
+C4 . (C4 x C4)
+(C4 : C4) : C4
+(C4 : C4) : C4
+(C4 x C2) . D8 = C4 . (C4 x C4)
+((C4 x C2) : C2) : C4
+(C8 : C2) : C4
+(C8 x C2) : C4
+C16 x C4
+C16 : C4
+C16 : C4
+(C16 x C2) : C2
+(C16 : C2) : C2
+(C16 : C2) : C2
+((C8 : C2) : C2) : C2
+(C4 x C2 x C2) : C4
+((C2 x C2 x C2) : C4) : C2
+(C2 x Q8) : C4
+(C2 . ((C4 x C2) : C2) = (C2 x C2) . (C4 x C2)) : C2
+C2 . ((C2 x C2 x C2) : C4) = (C4 x C2) . (C4 x C2)
+(C16 x C2) : C2
+Q16 : C4
+(C16 x C2) : C2
+(C16 : C2) : C2
+(C16 : C2) : C2
+C2 . ((C8 x C2) : C2) = C8 . (C4 x C2)
+C4 : C16
+C8 . D8 = C4 . (C8 x C2)
+C16 : C4
+C16 : C4
+C16 : C4
+C4 . D16 = C8 . (C4 x C2)
+C32 x C2
+C32 : C2
+D64
+QD64
+Q64
+C4 x C4 x C4
+C2 x ((C4 x C2) : C4)
+(C4 x C4) : C4
+C4 x ((C4 x C2) : C2)
+C4 x (C4 : C4)
+(C2 x ((C4 x C2) : C2)) : C2
+((C4 x C2) : C4) : C2
+((C4 x C2) : C4) : C2
+(C4 x C4) : C4
+(C4 x C4) : C4
+(C4 x C4) : C4
+(C2 x (C4 : C4)) : C2
+(C2 x ((C4 x C2) : C2)) : C2
+(C4 : C4) : C4
+((C4 x C2) : C4) : C2
+(C4 : C4) : C4
+(C2 x (C4 : C4)) : C2
+(C2 x Q8) : C4
+(C2 x C2 x D8) : C2
+((C4 x C2) : C4) : C2
+(C2 x ((C4 x C2) : C2)) : C2
+(C4 x C2) : Q8
+(C2 x (C4 : C4)) : C2
+(C2 x (C4 : C4)) : C2
+(C2 x C2 x C2) . (C2 x C2 x C2)
+((C4 x C2) : C4) : C2
+(C2 x C2 x C2) . (C2 x C2 x C2)
+(C2 x C2 x C2) . (C2 x C2 x C2)
+C8 x C4 x C2
+C2 x (C8 : C4)
+C4 x (C8 : C2)
+(C8 x C4) : C2
+C2 x ((C8 x C2) : C2)
+(C2 x (C8 : C2)) : C2
+(C8 x C2 x C2) : C2
+C2 x ((C2 x C2 x C2) : C4)
+((C4 x C4) : C2) : C2
+C2 x ((C8 : C2) : C2)
+C2 x (C2 . ((C4 x C2) : C2) = (C2 x C2) . (C4 x C2))
+(C2 x (C8 : C2)) : C2
+C2 x ((C8 x C2) : C2)
+C2 x (Q8 : C4)
+((C4 x C4) : C2) : C2
+(C2 x (C4 : C4)) : C2
+((C4 x C4) : C2) : C2
+(Q8 : C4) : C2
+C2 x ((C4 x C4) : C2)
+(C2 x (C8 : C2)) : C2
+C2 x (C4 : C8)
+(C4 : C8) : C2
+(C4 : C8) : C2
+C2 x (C8 : C4)
+C2 x (C8 : C4)
+(C8 : C4) : C2
+(C8 : C4) : C2
+C2 x (C4 . D8 = C4 . (C4 x C2))
+(C4 . D8 = C4 . (C4 x C2)) : C2
+(C8 x C4) : C2
+(C8 : C4) : C2
+(C8 x C4) : C2
+C8 x D8
+(C2 x (C8 : C2)) : C2
+(C2 x (C8 : C2)) : C2
+C4 x D16
+C4 x QD16
+C4 x Q16
+(C4 x Q8) : C2
+Q16 : C4
+(C4 x D8) : C2
+((C8 x C2) : C2) : C2
+((C8 x C2) : C2) : C2
+C8 x Q8
+C8 : Q8
+((C4 x C2 x C2) : C2) : C2
+(C2 x QD16) : C2
+((C4 x C2 x C2) : C2) : C2
+((C2 x Q8) : C2) : C2
+(C2 x Q16) : C2
+((C2 x Q8) : C2) : C2
+((C4 x C4) : C2) : C2
+((C4 x C4) : C2) : C2
+((C4 x C4) : C2) : C2
+(C4 : Q8) : C2
+((C2 x C2 x C2 x C2) : C2) : C2
+((C4 x C2 x C2) : C2) : C2
+(C2 x D16) : C2
+(C2 x QD16) : C2
+(Q8 : C4) : C2
+C4 : Q16
+((C8 x C2) : C2) : C2
+(C4 x Q8) : C2
+((C8 x C2) : C2) : C2
+((C4 x C2 x C2) : C2) : C2
+(Q8 : C4) : C2
+((C8 x C2) : C2) : C2
+((C4 x C2 x C2) : C2) : C2
+(Q8 : C4) : C2
+((C8 : C2) : C2) : C2
+(C8 : (C2 x C2)) : C2
+(C2 . ((C4 x C2) : C2) = (C2 x C2) . (C4 x C2)) : C2
+(C8 : C4) : C2
+Q8 : Q8
+(C8 : C4) : C2
+Q8 : Q8
+(C8 : C4) : C2
+(C2 x C2) . (C2 x D8) = (C4 x C2) . (C2 x C2 x C2)
+((C8 x C2) : C2) : C2
+((C8 x C2) : C2) : C2
+((C8 x C2) : C2) : C2
+(Q8 : C4) : C2
+(Q8 : C4) : C2
+(Q8 : C4) : C2
+((C8 x C2) : C2) : C2
+(C2 x C2) . (C2 x D8) = (C4 x C2) . (C2 x C2 x C2)
+(C8 x C4) : C2
+(C8 : C4) : C2
+((C8 x C2) : C2) : C2
+(C2 x C2) . (C2 x D8) = (C4 x C2) . (C2 x C2 x C2)
+(C2 x QD16) : C2
+((C4 x C4) : C2) : C2
+C4 : Q16
+((C4 x C4) : C2) : C2
+((C4 x C4) : C2) : C2
+(C4 : Q8) : C2
+C8 : Q8
+(C2 x C2) . (C2 x D8) = (C4 x C2) . (C2 x C2 x C2)
+C8 : Q8
+C8 : Q8
+C16 x C2 x C2
+C2 x (C16 : C2)
+(C16 x C2) : C2
+C2 x D32
+C2 x QD32
+C2 x Q32
+((C8 x C2) : C2) : C2
+((C8 x C2) : C2) : C2
+QD32 : C2
+C4 x C4 x C2 x C2
+C2 x C2 x ((C4 x C2) : C2)
+C2 x C2 x (C4 : C4)
+C2 x ((C4 x C4) : C2)
+C2 x C4 x D8
+C2 x C4 x Q8
+C4 x ((C4 x C2) : C2)
+(C2 x ((C4 x C2) : C2)) : C2
+(C4 x Q8) : C2
+((C4 x C4) : C2) : C2
+C2 x ((C2 x C2 x C2 x C2) : C2)
+C2 x ((C4 x C2 x C2) : C2)
+C2 x ((C2 x Q8) : C2)
+C2 x ((C4 x C2 x C2) : C2)
+(C2 x ((C4 x C2) : C2)) : C2
+C2 x ((C4 x C4) : C2)
+C2 x ((C2 x C2) . (C2 x C2 x C2))
+C2 x ((C4 x C4) : C2)
+((C4 x C4) : C2) : C2
+C2 x ((C4 x C4) : C2)
+C2 x (C4 : Q8)
+(C2 x ((C4 x C2) : C2)) : C2
+(C4 x Q8) : C2
+(C2 x C2 x D8) : C2
+(C2 x ((C4 x C2) : C2)) : C2
+((C4 x C4) : C2) : C2
+(C2 x ((C4 x C2) : C2)) : C2
+(C4 x D8) : C2
+(C4 x D8) : C2
+(C4 x D8) : C2
+(C4 x Q8) : C2
+(C4 x D8) : C2
+((C2 x Q8) : C2) : C2
+(C4 : Q8) : C2
+D8 x D8
+(C2 x ((C4 x C2) : C2)) : C2
+(C2 x ((C4 x C2) : C2)) : C2
+(C2 x ((C4 x C2) : C2)) : C2
+Q8 x D8
+(C2 x ((C4 x C2) : C2)) : C2
+((C4 x C4) : C2) : C2
+((C4 x C4) : C2) : C2
+((C4 x C4) : C2) : C2
+(C2 x (C4 : C4)) : C2
+((C4 x C4) : C2) : C2
+((C4 x C4) : C2) : C2
+Q8 : Q8
+Q8 x Q8
+(C4 x D8) : C2
+((C4 x C2 x C2) : C2) : C2
+((C4 x C4) : C2) : C2
+((C4 x C2 x C2) : C2) : C2
+(C4 : Q8) : C2
+(C2 x C2) . (C2 x C2 x C2 x C2)
+C8 x C2 x C2 x C2
+C2 x C2 x (C8 : C2)
+C2 x ((C8 x C2) : C2)
+(C2 x (C8 : C2)) : C2
+C2 x C2 x D16
+C2 x C2 x QD16
+C2 x C2 x Q16
+C2 x ((C8 x C2) : C2)
+C2 x (C8 : (C2 x C2))
+C2 x ((C2 x Q8) : C2)
+((C8 x C2) : C2) : C2
+(C2 x D16) : C2
+(C2 x QD16) : C2
+(C2 x Q16) : C2
+C4 x C2 x C2 x C2 x C2
+C2 x C2 x C2 x D8
+C2 x C2 x C2 x Q8
+C2 x C2 x ((C4 x C2) : C2)
+C2 x ((C2 x C2 x C2) : (C2 x C2))
+C2 x ((C2 x Q8) : C2)
+(C2 x ((C4 x C2) : C2)) : C2
+C2 x C2 x C2 x C2 x C2 x C2
+
+Order=65 Count=1
+C65
+
+Order=66 Count=4
+C11 x S3
+C3 x D22
+D66
+C66
+
+Order=67 Count=1
+C67
+
+Order=68 Count=5
+C17 : C4
+C68
+C17 : C4
+D68
+C34 x C2
+
+Order=69 Count=1
+C69
+
+Order=70 Count=4
+C7 x D10
+C5 x D14
+D70
+C70
+
+Order=71 Count=1
+C71
+
+Order=72 Count=50
+C9 : C8
+C72
+Q8 : C9
+C9 : Q8
+C4 x D18
+D72
+C2 x (C9 : C4)
+(C18 x C2) : C2
+C36 x C2
+C9 x D8
+C9 x Q8
+C3 x (C3 : C8)
+(C3 x C3) : C8
+C24 x C3
+((C2 x C2) : C9) : C2
+C2 x ((C2 x C2) : C9)
+C2 x C2 x D18
+C18 x C2 x C2
+(C3 x C3) : C8
+(C3 : C4) x S3
+(C3 x C3) : (C4 x C2)
+(C6 x S3) : C2
+(C6 x S3) : C2
+(C3 x C3) : Q8
+C3 x SL(2,3)
+C3 x (C3 : Q8)
+C12 x S3
+C3 x D24
+C6 x (C3 : C4)
+C3 x ((C6 x C2) : C2)
+(C3 x C3) : Q8
+C4 x ((C3 x C3) : C2)
+(C12 x C3) : C2
+C2 x ((C3 x C3) : C4)
+(C6 x C6) : C2
+C12 x C6
+C3 x C3 x D8
+C3 x C3 x Q8
+(C3 x C3) : C8
+(S3 x S3) : C2
+(C3 x C3) : Q8
+C3 x S4
+(C3 x A4) : C2
+A4 x S3
+C2 x ((C3 x C3) : C4)
+C2 x S3 x S3
+C6 x A4
+C2 x C6 x S3
+C2 x C2 x ((C3 x C3) : C2)
+C6 x C6 x C2
+
+Order=73 Count=1
+C73
+
+Order=74 Count=2
+D74
+C74
+
+Order=75 Count=3
+C75
+(C5 x C5) : C3
+C15 x C5
+
+Order=76 Count=4
+C19 : C4
+C76
+D76
+C38 x C2
+
+Order=77 Count=1
+C77
+
+Order=78 Count=6
+C13 : C6
+C2 x (C13 : C3)
+C13 x S3
+C3 x D26
+D78
+C78
+
+Order=79 Count=1
+C79
+
+Order=80 Count=52
+C5 : C16
+C80
+C5 : C16
+C8 x D10
+C40 : C2
+C40 : C2
+D80
+C5 : Q16
+C2 x (C5 : C8)
+(C5 : C8) : C2
+C4 x (C5 : C4)
+(C5 : C4) : C4
+C20 : C4
+(C20 x C2) : C2
+(C5 x D8) : C2
+(C5 : Q8) : C2
+(C5 x Q8) : C2
+C5 : Q16
+(C10 x C2) : C4
+C20 x C4
+C5 x ((C4 x C2) : C2)
+C5 x (C4 : C4)
+C40 x C2
+C5 x (C8 : C2)
+C5 x D16
+C5 x QD16
+C5 x Q16
+C5 : (C8 x C2)
+(C5 : C8) : C2
+C4 x (C5 : C4)
+C20 : C4
+C2 x (C5 : C8)
+(C5 : C8) : C2
+(C10 x C2) : C4
+C2 x (C5 : Q8)
+C2 x C4 x D10
+C2 x D40
+(C20 x C2) : C2
+D8 x D10
+(C4 x D10) : C2
+Q8 x D10
+(C4 x D10) : C2
+C2 x C2 x (C5 : C4)
+C2 x ((C10 x C2) : C2)
+C20 x C2 x C2
+C10 x D8
+C10 x Q8
+C5 x ((C4 x C2) : C2)
+(C2 x C2 x C2 x C2) : C5
+C2 x C2 x (C5 : C4)
+C2 x C2 x C2 x D10
+C10 x C2 x C2 x C2
+
+Order=81 Count=15
+C81
+C9 x C9
+(C9 x C3) : C3
+C9 : C9
+C27 x C3
+C27 : C3
+(C3 x C3 x C3) : C3
+(C9 x C3) : C3
+(C9 x C3) : C3
+C3 . ((C3 x C3) : C3) = (C3 x C3) . (C3 x C3)
+C9 x C3 x C3
+C3 x ((C3 x C3) : C3)
+C3 x (C9 : C3)
+(C9 x C3) : C3
+C3 x C3 x C3 x C3
+
+Order=82 Count=2
+D82
+C82
+
+Order=83 Count=1
+C83
+
+Order=84 Count=15
+C7 : C12
+C4 x (C7 : C3)
+C7 x (C3 : C4)
+C3 x (C7 : C4)
+C21 : C4
+C84
+C2 x (C7 : C6)
+S3 x D14
+C2 x C2 x (C7 : C3)
+C7 x A4
+(C14 x C2) : C3
+C6 x D14
+C14 x S3
+D84
+C42 x C2
+
+Order=85 Count=1
+C85
+
+Order=86 Count=2
+D86
+C86
+
+Order=87 Count=1
+C87
+
+Order=88 Count=12
+C11 : C8
+C88
+C11 : Q8
+C4 x D22
+D88
+C2 x (C11 : C4)
+(C22 x C2) : C2
+C44 x C2
+C11 x D8
+C11 x Q8
+C2 x C2 x D22
+C22 x C2 x C2
+
+Order=89 Count=1
+C89
+
+Order=90 Count=10
+C5 x D18
+C9 x D10
+D90
+C90
+C3 x C3 x D10
+C15 x S3
+C3 x D30
+C5 x ((C3 x C3) : C2)
+(C15 x C3) : C2
+C30 x C3
+
+Order=91 Count=1
+C91
+
+Order=92 Count=4
+C23 : C4
+C92
+D92
+C46 x C2
+
+Order=93 Count=2
+C31 : C3
+C93
+
+Order=94 Count=2
+D94
+C94
+
+Order=95 Count=1
+C95
+
+Order=96 Count=231
+C3 : C32
+C96
+((C4 x C2) : C4) : C3
+C16 x S3
+C3 : (C16 : C2)
+D96
+C3 : QD32
+C3 : Q32
+C4 x (C3 : C8)
+C3 : (C8 : C4)
+C3 : (C4 : C8)
+C3 : ((C4 x C4) : C2)
+C3 : ((C2 x C2 x C2) : C4)
+C3 : (C8 : C4)
+C3 : (C8 : C4)
+C3 : ((C8 x C2) : C2)
+C3 : (Q8 : C4)
+C2 x (C3 : C16)
+C3 : (C16 : C2)
+C8 x (C3 : C4)
+C3 : (C4 : C8)
+C3 : (C8 : C4)
+C3 : (Q8 : C4)
+C3 : (C8 : C4)
+C3 : (C8 : C4)
+C3 : (C4 . D8 = C4 . (C4 x C2))
+C3 : ((C8 x C2) : C2)
+C3 : ((C8 x C2) : C2)
+C3 : (C4 . D8 = C4 . (C4 x C2))
+C3 : ((C8 : C2) : C2)
+C3 : (C2 . ((C4 x C2) : C2) = (C2 x C2) . (C4 x C2))
+C3 : ((C4 x C4) : C2)
+C3 : D32
+C3 : QD32
+C3 : QD32
+C3 : Q32
+C3 : ((C8 x C2) : C2)
+C3 : ((C4 x C2) : C4)
+C3 : ((C8 x C2) : C2)
+C3 : ((C8 : C2) : C2)
+C3 : ((C2 x C2 x C2) : C4)
+C3 : (Q8 : C4)
+C3 : (C2 . ((C4 x C2) : C2) = (C2 x C2) . (C4 x C2))
+C3 : ((C4 x C4) : C2)
+C3 x ((C4 x C2) : C4)
+C24 x C4
+C3 x (C8 : C4)
+C3 x ((C8 x C2) : C2)
+C3 x ((C2 x C2 x C2) : C4)
+C3 x ((C8 : C2) : C2)
+C3 x (C2 . ((C4 x C2) : C2) = (C2 x C2) . (C4 x C2))
+C3 x ((C8 x C2) : C2)
+C3 x (Q8 : C4)
+C3 x ((C4 x C4) : C2)
+C3 x (C4 : C8)
+C3 x (C8 : C4)
+C3 x (C8 : C4)
+C3 x (C4 . D8 = C4 . (C4 x C2))
+C48 x C2
+C3 x (C16 : C2)
+C3 x D32
+C3 x QD32
+C3 x Q32
+((C4 x C4) : C3) : C2
+A4 : C8
+SL(2,3) : C4
+SL(2,3) : C4
+C2 x ((C4 x C4) : C3)
+C4 x SL(2,3)
+((C2 x C2 x C2 x C2) : C2) : C3
+((C4 x C4) : C2) : C3
+((C4 x C4) : C2) : C3
+C8 x A4
+((C8 x C2) : C2) : C3
+C4 x (C3 : Q8)
+C3 : (C4 : Q8)
+C3 : ((C2 x C2) . (C2 x C2 x C2))
+C4 x C4 x S3
+C3 : ((C4 x C4) : C2)
+C4 x D24
+C3 : ((C4 x C4) : C2)
+C3 : ((C4 x C4) : C2)
+C3 : ((C4 x C4) : C2)
+C3 : ((C4 x C4) : C2)
+C3 : ((C2 x Q8) : C2)
+C3 : ((C4 x C4) : C2)
+((C4 x C2) : C2) x S3
+C3 : (C4 x D8)
+C3 : ((C2 x C2 x C2 x C2) : C2)
+C3 : ((C4 x C2 x C2) : C2)
+C3 : ((C4 x C2 x C2) : C2)
+C3 : ((C4 x C4) : C2)
+C3 : ((C4 x C2 x C2) : C2)
+C3 : (C4 x Q8)
+C3 : (C4 : Q8)
+C3 : ((C2 x C2) . (C2 x C2 x C2))
+C3 : ((C2 x C2) . (C2 x C2 x C2))
+(C4 : C4) x S3
+C3 : ((C4 x C4) : C2)
+C3 : (C4 x D8)
+C3 : ((C4 x C2 x C2) : C2)
+C3 : ((C4 x C2 x C2) : C2)
+C3 : ((C2 x Q8) : C2)
+C3 : ((C2 x Q8) : C2)
+C3 : ((C4 x C4) : C2)
+C2 x C8 x S3
+C2 x (C24 : C2)
+C3 : ((C8 x C2) : C2)
+C2 x (C24 : C2)
+C2 x D48
+C3 : ((C8 x C2) : C2)
+C2 x (C3 : Q16)
+(C8 : C2) x S3
+C3 : ((C8 x C2) : C2)
+C3 : (C8 : (C2 x C2))
+C3 : ((C2 x Q8) : C2)
+D16 x S3
+C3 : (C8 : (C2 x C2))
+C3 : ((C8 x C2) : C2)
+QD16 x S3
+C3 : (C8 : (C2 x C2))
+C3 : ((C2 x Q8) : C2)
+C3 : ((C8 x C2) : C2)
+Q16 x S3
+C3 : ((C2 x Q8) : C2)
+C3 : ((C8 x C2) : C2)
+C2 x C2 x (C3 : C8)
+C2 x ((C3 : C8) : C2)
+C2 x C4 x (C3 : C4)
+C2 x ((C3 : C4) : C4)
+C3 : ((C2 x Q8) : C2)
+C2 x (C12 : C4)
+C3 : ((C4 x C4) : C2)
+C2 x ((C12 x C2) : C2)
+C4 x ((C6 x C2) : C2)
+C3 : ((C4 x C2 x C2) : C2)
+C3 : ((C4 x C2 x C2) : C2)
+C2 x ((C3 x D8) : C2)
+C3 : (C8 : (C2 x C2))
+C2 x ((C3 : Q8) : C2)
+D8 x (C3 : C4)
+C3 : ((C4 x C2 x C2) : C2)
+C3 : ((C4 x C4) : C2)
+C3 : ((C2 x C2 x C2 x C2) : C2)
+C3 : ((C4 x C2 x C2) : C2)
+C3 : ((C4 x C2 x C2) : C2)
+C3 : ((C4 x C4) : C2)
+C2 x ((C3 x Q8) : C2)
+C3 : ((C2 x Q8) : C2)
+C2 x (C3 : Q16)
+C3 : (C4 : Q8)
+Q8 x (C3 : C4)
+C3 : ((C2 x Q8) : C2)
+C3 : ((C4 x C4) : C2)
+C3 : ((C8 x C2) : C2)
+C3 : (C8 : (C2 x C2))
+C3 : ((C8 x C2) : C2)
+C3 : ((C2 x Q8) : C2)
+C2 x ((C6 x C2) : C4)
+C3 : ((C2 x C2 x C2 x C2) : C2)
+C12 x C4 x C2
+C6 x ((C4 x C2) : C2)
+C6 x (C4 : C4)
+C3 x ((C4 x C4) : C2)
+C12 x D8
+C12 x Q8
+C3 x ((C2 x C2 x C2 x C2) : C2)
+C3 x ((C4 x C2 x C2) : C2)
+C3 x ((C2 x Q8) : C2)
+C3 x ((C4 x C2 x C2) : C2)
+C3 x ((C4 x C4) : C2)
+C3 x ((C2 x C2) . (C2 x C2 x C2))
+C3 x ((C4 x C4) : C2)
+C3 x ((C4 x C4) : C2)
+C3 x (C4 : Q8)
+C24 x C2 x C2
+C6 x (C8 : C2)
+C3 x ((C8 x C2) : C2)
+C6 x D16
+C6 x QD16
+C6 x Q16
+C3 x ((C8 x C2) : C2)
+C3 x (C8 : (C2 x C2))
+C3 x ((C2 x Q8) : C2)
+A4 : Q8
+C4 x S4
+(C4 x A4) : C2
+C2 x (C2 . S4 = SL(2,3) . C2)
+C2 x GL(2,3)
+(C2 x SL(2,3)) : C2
+(C2 . S4 = SL(2,3) . C2) : C2
+(((C4 x C2) : C2) : C3) : C2
+(((C4 x C2) : C2) : C3) : C2
+C2 x (A4 : C4)
+(C2 x C2 x A4) : C2
+C2 x C4 x A4
+D8 x A4
+C2 x C2 x SL(2,3)
+Q8 x A4
+C2 x (((C4 x C2) : C2) : C3)
+((C2 x C2 x C2) : (C2 x C2)) : C3
+((C2 x Q8) : C2) : C3
+(C2 x C2 x Q8) : C3
+((C2 x C2 x C2) : (C2 x C2)) : C3
+C2 x C2 x (C3 : Q8)
+C2 x C2 x C4 x S3
+C2 x C2 x D24
+C2 x ((C12 x C2) : C2)
+C2 x D8 x S3
+C2 x ((C4 x S3) : C2)
+C3 : ((C2 x C2 x C2) : (C2 x C2))
+C2 x Q8 x S3
+C2 x ((C4 x S3) : C2)
+C3 : ((C2 x Q8) : C2)
+((C4 x C2) : C2) x S3
+C3 : ((C2 x C2 x C2) : (C2 x C2))
+C3 : ((C2 x Q8) : C2)
+C2 x C2 x C2 x (C3 : C4)
+C2 x C2 x ((C6 x C2) : C2)
+C12 x C2 x C2 x C2
+C2 x C6 x D8
+C2 x C6 x Q8
+C6 x ((C4 x C2) : C2)
+C3 x ((C2 x C2 x C2) : (C2 x C2))
+C3 x ((C2 x Q8) : C2)
+C2 x C2 x S4
+((C2 x C2 x C2 x C2) : C3) : C2
+C2 x C2 x C2 x A4
+C2 x ((C2 x C2 x C2 x C2) : C3)
+C2 x C2 x C2 x C2 x S3
+C6 x C2 x C2 x C2 x C2
+
+Order=97 Count=1
+C97
+
+Order=98 Count=5
+D98
+C98
+C7 x D14
+(C7 x C7) : C2
+C14 x C7
+
+Order=99 Count=2
+C99
+C33 x C3
+
+Order=100 Count=16
+C25 : C4
+C100
+C25 : C4
+D100
+C50 x C2
+C5 x (C5 : C4)
+(C5 x C5) : C4
+C20 x C5
+C5 x (C5 : C4)
+(C5 x C5) : C4
+(C5 x C5) : C4
+(C5 x C5) : C4
+D10 x D10
+C10 x D10
+C2 x ((C5 x C5) : C2)
+C10 x C10
+
+Order=101 Count=1
+C101
+
+Order=102 Count=4
+C17 x S3
+C3 x D34
+D102
+C102
+
+Order=103 Count=1
+C103
+
+Order=104 Count=14
+C13 : C8
+C104
+C13 : C8
+C13 : Q8
+C4 x D26
+D104
+C2 x (C13 : C4)
+C13 : D8
+C52 x C2
+C13 x D8
+C13 x Q8
+C2 x (C13 : C4)
+C2 x C2 x D26
+C26 x C2 x C2
+
+Order=105 Count=2
+C5 x (C7 : C3)
+C105
+
+Order=106 Count=2
+D106
+C106
+
+Order=107 Count=1
+C107
+
+Order=108 Count=45
+C27 : C4
+C108
+(C2 x C2) : C27
+D108
+C54 x C2
+C3 x (C9 : C4)
+C9 x (C3 : C4)
+((C3 x C3) : C3) : C4
+(C9 : C3) : C4
+(C9 x C3) : C4
+((C3 x C3) : C3) : C4
+C36 x C3
+C4 x ((C3 x C3) : C3)
+C4 x (C9 : C3)
+((C3 x C3) : C3) : C4
+S3 x D18
+((C3 x C3) : C3) : (C2 x C2)
+C9 x A4
+(C2 x C2) : (C9 : C3)
+C3 x ((C2 x C2) : C9)
+(C2 x C2) : (C9 : C3)
+(C2 x C2) : ((C3 x C3) : C3)
+C6 x D18
+C18 x S3
+C2 x ((C3 x C3) : C6)
+C2 x (C9 : C6)
+C2 x ((C9 x C3) : C2)
+C2 x (((C3 x C3) : C3) : C2)
+C18 x C6
+C2 x C2 x ((C3 x C3) : C3)
+C2 x C2 x (C9 : C3)
+C3 x C3 x (C3 : C4)
+C3 x ((C3 x C3) : C4)
+(C3 x C3 x C3) : C4
+C12 x C3 x C3
+C3 x ((C3 x C3) : C4)
+(C3 x C3 x C3) : C4
+C3 x S3 x S3
+((C3 x C3) : C2) x S3
+(C3 x C3 x C3) : (C2 x C2)
+C3 x C3 x A4
+C3 x C6 x S3
+C6 x ((C3 x C3) : C2)
+C2 x ((C3 x C3 x C3) : C2)
+C6 x C6 x C3
+
+Order=109 Count=1
+C109
+
+Order=110 Count=6
+C11 : C10
+C2 x (C11 : C5)
+C11 x D10
+C5 x D22
+D110
+C110
+
+Order=111 Count=2
+C37 : C3
+C111
+
+Order=112 Count=43
+C7 : C16
+C112
+C8 x D14
+C7 : (C8 : C2)
+C7 : QD16
+D112
+C7 : Q16
+C2 x (C7 : C8)
+C7 : (C8 : C2)
+C4 x (C7 : C4)
+C7 : (C4 : C4)
+C7 : (C4 : C4)
+C7 : ((C4 x C2) : C2)
+C7 : D16
+C7 : QD16
+C7 : QD16
+C7 : Q16
+C7 : ((C4 x C2) : C2)
+C28 x C4
+C7 x ((C4 x C2) : C2)
+C7 x (C4 : C4)
+C56 x C2
+C7 x (C8 : C2)
+C7 x D16
+C7 x QD16
+C7 x Q16
+C2 x (C7 : Q8)
+C2 x C4 x D14
+C2 x D56
+C7 : ((C4 x C2) : C2)
+D8 x D14
+C7 : ((C4 x C2) : C2)
+Q8 x D14
+C7 : ((C4 x C2) : C2)
+C2 x C2 x (C7 : C4)
+C2 x ((C14 x C2) : C2)
+C28 x C2 x C2
+C14 x D8
+C14 x Q8
+C7 x ((C4 x C2) : C2)
+C2 x ((C2 x C2 x C2) : C7)
+C2 x C2 x C2 x D14
+C14 x C2 x C2 x C2
+
+Order=113 Count=1
+C113
+
+Order=114 Count=6
+C19 : C6
+C2 x (C19 : C3)
+C19 x S3
+C3 x D38
+D114
+C114
+
+Order=115 Count=1
+C115
+
+Order=116 Count=5
+C29 : C4
+C116
+C29 : C4
+D116
+C58 x C2
+
+Order=117 Count=4
+C13 : C9
+C117
+C3 x (C13 : C3)
+C39 x C3
+
+Order=118 Count=2
+D118
+C118
+
+Order=119 Count=1
+C119
+
+Order=120 Count=47
+C5 x (C3 : C8)
+C3 x (C5 : C8)
+C3 : (C5 : C8)
+C120
+SL(2,5)
+C3 x (C5 : C8)
+C3 : (C5 : C8)
+(C3 : C4) x D10
+S3 x (C5 : C4)
+C3 : (C4 x D10)
+C3 : ((C10 x C2) : C2)
+C3 : D40
+C3 : ((C10 x C2) : C2)
+C3 : (C5 : Q8)
+C5 x SL(2,3)
+C3 x (C5 : Q8)
+C12 x D10
+C3 x D40
+C6 x (C5 : C4)
+C3 x ((C10 x C2) : C2)
+C5 x (C3 : Q8)
+C20 x S3
+C5 x D24
+C10 x (C3 : C4)
+C5 x ((C6 x C2) : C2)
+C3 : (C5 : Q8)
+C4 x D30
+D120
+C2 x (C15 : C4)
+C3 : ((C10 x C2) : C2)
+C60 x C2
+C15 x D8
+C15 x Q8
+S5
+C2 x A5
+S3 x (C5 : C4)
+C5 x S4
+C5 : S4
+A4 x D10
+C6 x (C5 : C4)
+C2 x (C15 : C4)
+C2 x S3 x D10
+C10 x A4
+C2 x C6 x D10
+C2 x C10 x S3
+C2 x C2 x D30
+C30 x C2 x C2
