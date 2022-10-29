@@ -114,44 +114,71 @@ public static partial class Group
         return g.Contains(a) && g.Contains(b) && Orbits(g, ByConjugate(g), a).Contains(b);
     }
 
-    public static ConcreteGroup<T> Commutator<T>(ConcreteGroup<T> gr) where T : struct, IElt<T>
+    public static ConcreteGroup<T> Commutator<T>(string name, ConcreteGroup<T> grG, ConcreteGroup<T> grH, ConcreteGroup<T> grK)
+        where T : struct, IElt<T>
     {
+        if (!grH.SubSetOf(grG) || !grK.SubSetOf(grG))
+            throw new GroupException(GroupExceptionType.NotSubGroup);
+        
         var set = new HashSet<T>();
-        foreach (var x in gr)
+        foreach (var x in grH)
         {
-            var xi = gr.Invert(x);
-            foreach (var y in gr)
+            var xi = grG.Invert(x);
+            foreach (var y in grK)
             {
-                var yi = gr.Invert(y);
-                var d = gr.Op(gr.Op(x, y), gr.Op(xi, yi));
+                var yi = grG.Invert(y);
+                var d = grG.Op(grG.Op(x, y), grG.Op(xi, yi));
                 set.Add(d);
             }
         }
 
-        var com = Group.Generate($"D({gr})", gr, set.ToArray());
+        var com = Generate(name, grG, set.ToArray());
         return com;
     }
 
-    static void CommutatorsChain<T>(List<ConcreteGroup<T>> chain) where T : struct, IElt<T>
+    public static ConcreteGroup<T> Commutator<T>(ConcreteGroup<T> grG, ConcreteGroup<T> grH, ConcreteGroup<T> grK)
+        where T : struct, IElt<T>
     {
-        var gr = chain.Last();
-        var nb0 = gr.Count();
-        if (nb0 == 1)
+        return Commutator($"[{grH}, {grK}]", grG, grH, grK);
+    }
+
+    static void CommutatorsChain<T>(ConcreteGroup<T> gr, List<ConcreteGroup<T>> chain) where T : struct, IElt<T>
+    {
+        var i = chain.Count;
+        var di = chain.Last();
+        var di1 = Commutator($"D{i}", gr, di, gr);
+        if (di.SetEquals(di1))
             return;
 
-        var comGr = Commutator(gr);
-        var nb1 = comGr.Count();
-        if (nb0 == nb1)
-            return;
-
-        chain.Add(comGr);
-        CommutatorsChain<T>(chain);
+        chain.Add(di1);
+        CommutatorsChain<T>(gr, chain);
     }
 
     public static List<ConcreteGroup<T>> CommutatorsChain<T>(ConcreteGroup<T> gr) where T : struct, IElt<T>
     {
-        List<ConcreteGroup<T>> chain = new() { gr };
-        CommutatorsChain(chain);
+        var d0 = Create("D0", gr);
+        List<ConcreteGroup<T>> chain = new() { d0 };
+        CommutatorsChain(gr, chain);
+        return chain;
+    }
+
+    static void DerivedChain<T>(List<ConcreteGroup<T>> chain) where T : struct, IElt<T>
+    {
+        var i = chain.Count;
+        var gr = chain.Last();
+        var comGr = Commutator($"G({i})", gr, gr, gr);
+        if (gr.SetEquals(comGr))
+            return;
+
+        chain.Add(comGr);
+        DerivedChain<T>(chain);
+    }
+
+    public static List<ConcreteGroup<T>> DerivedChain<T>(ConcreteGroup<T> gr) where T : struct, IElt<T>
+    {
+        var g0 = Create("G0", gr);
+        List<ConcreteGroup<T>> chain = new() { g0 };
+        DerivedChain(chain);
         return chain;
     }
 
@@ -169,5 +196,31 @@ public static partial class Group
         }
 
         return Generate($"Z({gr})", gr, set.ToArray());
+    }
+    
+    static void ZentrumsChain<T>(ConcreteGroup<T> g, List<ConcreteGroup<T>> chain) where T : struct, IElt<T>
+    {
+        var i = chain.Count;
+        var zi = chain.Last();
+
+        var quo = g.Over(zi);
+        var zQuo = Zentrum(quo);
+        var naturalMap = AllHomomorphisms(g, quo).First(h => zi.SetEquals(h.Kernel()));
+        var preImag = naturalMap.HomMap.Where(kp => zQuo.Contains(kp.Value)).Select(kp => kp.Key).ToArray();
+        var zi1 = Generate($"Z{i}", g, preImag);
+
+        if (zi1.SetEquals(zi))
+            return;
+
+        chain.Add(zi1);
+        ZentrumsChain(g, chain);
+    }
+
+    public static List<ConcreteGroup<T>> ZentrumsChain<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
+    {
+        var z0 = Group.Generate("Z0", g, g.Neutral());
+        List<ConcreteGroup<T>> chain = new() { z0 };
+        ZentrumsChain(g, chain);
+        return chain;
     }
 }

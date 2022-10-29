@@ -1,4 +1,5 @@
 using FastGoat.Structures;
+using FastGoat.Structures.GenericGroup;
 using FastGoat.UserGroup.Perms;
 using FastGoat.UserGroup.Words;
 
@@ -45,12 +46,12 @@ public static class NilpotentGroups
     public static void NilpotentIsSolvable()
     {
         var gr8 = new WordGroup("Q8", "a4, a2=b2, a-1=bab-1");
-        foreach (var com in Group.CommutatorsChain(gr8))
+        foreach (var com in Group.DerivedChain(gr8))
             DisplayGroup.Head(com);
 
         Console.WriteLine("##############");
         var gr16 = new WordGroup("Q16", "a8, b2=a4, bab-1=a-1");
-        foreach (var com in Group.CommutatorsChain(gr16))
+        foreach (var com in Group.DerivedChain(gr16))
             DisplayGroup.Head(com);
 
         Console.WriteLine("##############");
@@ -59,7 +60,7 @@ public static class NilpotentGroups
     public static void SolvableAndNotNilpotent()
     {
         var gr = new Symm(4);
-        foreach (var com in Group.CommutatorsChain(gr))
+        foreach (var com in Group.DerivedChain(gr))
             DisplayGroup.Head(com);
 
         Console.WriteLine("##############");
