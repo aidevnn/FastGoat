@@ -1,5 +1,4 @@
-using System.CodeDom;
-using System.Net;
+using FastGoat.Commons;
 using FastGoat.Theory;
 using FastGoat.Theory.GenericGroup;
 using FastGoat.UserGroup.Integers;
@@ -13,9 +12,9 @@ public static class DihedralAutomorphisms
     {
         int m = (n % 2) == 0 ? 1 : 2;
         var sn = new Sn(n);
-        var an = Enumerable.Range(1, n).Select(i => (i % n) + 1).ToArray();
+        var an = Enumerable.Range(1, n).ToArray();
         var a2 = Enumerable.Range(m, n / 2).Select(i => (Tuple2Array)(i, n + m - i)).ToArray();
-        var cn = sn.CreateElement(an);
+        var cn = sn.Cycle(an);
         var c2 = sn.ComposesCycles(a2);
         var d2n = Group.Generate("D2n", sn, c2, cn);
         return d2n;

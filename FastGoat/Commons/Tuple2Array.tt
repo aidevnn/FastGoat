@@ -3,7 +3,7 @@
 <#@ assembly name="System.Core" #>
 <#@ import namespace="System.Collections.Generic" #>
 <#@ import namespace="System.Linq" #>
-namespace FastGoat;
+namespace FastGoat.Commons;
 
 public class Tuple2Array
 {

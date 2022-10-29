@@ -1,6 +1,4 @@
-﻿using FastGoat.Commons;
-
-namespace FastGoat;
+﻿namespace FastGoat.Commons;
 
 public class Tuple2Array
 {
