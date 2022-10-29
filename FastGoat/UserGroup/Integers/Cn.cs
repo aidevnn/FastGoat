@@ -1,4 +1,5 @@
 using FastGoat.Structures;
+using FastGoat.Structures.GenericGroup;
 
 namespace FastGoat.UserGroup.Integers;
 

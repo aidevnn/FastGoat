@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using FastGoat.Structures.GenericGroup;
 
 namespace FastGoat.Structures.CartesianProduct;
 

@@ -1,6 +1,7 @@
 using FastGoat.Structures.CartesianProduct;
 using FastGoat.Commons;
 using FastGoat.Structures;
+using FastGoat.Structures.GenericGroup;
 using FastGoat.UserGroup.Integers;
 using FastGoat.UserGroup.Perms;
 

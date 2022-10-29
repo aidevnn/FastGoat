@@ -259,8 +259,8 @@ public static partial class Group
     public static ConcreteGroup<Coset<T>> Over<T>(this ConcreteGroup<T> g, ConcreteGroup<T> h)
         where T : struct, IElt<T>
     {
-        if (h.SuperGroup is null || !h.SuperGroup.Equals(g))
-            throw new GroupException(GroupExceptionType.NotSubGroup);
+        // if (h.SuperGroup is null || !h.SuperGroup.Equals(g))
+        //     throw new GroupException(GroupExceptionType.NotSubGroup);
         var quo = new Quotient<T>(g, h);
         return new ConcreteGroup<Coset<T>>(quo);
     }
