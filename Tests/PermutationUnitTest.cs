@@ -1,5 +1,6 @@
 using System.Linq;
 using FastGoat;
+using FastGoat.Commons;
 using Xunit;
 
 namespace Tests;

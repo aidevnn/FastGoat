@@ -1,9 +1,11 @@
 using System;
 using System.Linq;
 using FastGoat;
+using FastGoat.Theory.CartesianProduct;
 using FastGoat.Examples;
-using FastGoat.Gp;
+using FastGoat.Theory;
 using FastGoat.UserGroup;
+using FastGoat.UserGroup.Integers;
 using Xunit;
 
 namespace Tests;

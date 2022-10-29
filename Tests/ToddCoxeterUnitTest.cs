@@ -1,8 +1,11 @@
 using System;
 using System.Linq;
 using FastGoat;
+using FastGoat.Commons;
+using FastGoat.Theory;
 using FastGoat.ToddCoxeter;
 using FastGoat.UserGroup;
+using FastGoat.UserGroup.Words;
 using Xunit;
 
 namespace Tests;

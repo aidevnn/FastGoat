@@ -1,3 +1,6 @@
+using FastGoat.Commons;
+using FastGoat.Theory;
+
 namespace FastGoat.ToddCoxeter;
 
 public class OpsTable
@@ -16,6 +19,9 @@ public class OpsTable
         sgTable = new(sgHeader);
         rTable = new(relHeader);
         opsTable = new();
+
+        generators = Array.Empty<char>();
+        elementsTable = new();
     }
 
     public OpsTable(OpsTable table)
@@ -26,6 +32,9 @@ public class OpsTable
         sgTable = new(table.sgTable);
         rTable = new(table.rTable);
         opsTable = new(table.opsTable);
+
+        generators = Array.Empty<char>();
+        elementsTable = new();
     }
 
     public SubGroupTable sgTable { get; }

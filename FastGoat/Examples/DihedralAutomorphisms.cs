@@ -1,7 +1,10 @@
 using System.CodeDom;
 using System.Net;
-using FastGoat.Gp;
+using FastGoat.Theory;
+using FastGoat.Theory.GenericGroup;
 using FastGoat.UserGroup;
+using FastGoat.UserGroup.Integers;
+using FastGoat.UserGroup.Perms;
 
 namespace FastGoat.Examples;
 

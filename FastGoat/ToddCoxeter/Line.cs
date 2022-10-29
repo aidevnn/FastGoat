@@ -1,3 +1,5 @@
+using FastGoat.Commons;
+
 namespace FastGoat.ToddCoxeter;
 
 public class Line

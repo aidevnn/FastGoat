@@ -1,4 +1,5 @@
 using System.Collections;
+using FastGoat.Commons;
 
 namespace FastGoat.ToddCoxeter;
 

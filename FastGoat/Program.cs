@@ -2,11 +2,12 @@
 using System.Diagnostics;
 using FastGoat;
 using FastGoat.Examples;
-using FastGoat.Gp;
+using FastGoat.Theory;
 using FastGoat.ToddCoxeter;
 using FastGoat.UserGroup;
-using static FastGoat.IntExt;
-using static FastGoat.EnumerableExt;
+using FastGoat.UserGroup.Integers;
+using static FastGoat.Commons.IntExt;
+using static FastGoat.Commons.EnumerableExt;
 
 //////////////////////////////////
 //                              //
@@ -15,9 +16,3 @@ using static FastGoat.EnumerableExt;
 //////////////////////////////////
 
 Console.WriteLine("Hello World");
-
-{
-    var cn = new Cn(40);
-    var h = Group.Generate("H", cn, cn[5]);
-    DisplayGroup.HeadCosets(cn.Over(h), details: true);
-}

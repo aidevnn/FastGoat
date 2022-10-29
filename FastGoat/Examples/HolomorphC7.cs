@@ -1,5 +1,10 @@
-using FastGoat.Gp;
+using FastGoat.Theory.CartesianProduct;
+using FastGoat.Commons;
+using FastGoat.Theory;
+using FastGoat.Theory.GenericGroup;
 using FastGoat.UserGroup;
+using FastGoat.UserGroup.Integers;
+using FastGoat.UserGroup.Words;
 
 namespace FastGoat.Examples;
 

@@ -1,7 +1,9 @@
 using System.Linq;
 using FastGoat;
-using FastGoat.Gp;
+using FastGoat.Commons;
+using FastGoat.Theory;
 using FastGoat.UserGroup;
+using FastGoat.UserGroup.Perms;
 using Xunit;
 
 namespace Tests;

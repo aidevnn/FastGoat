@@ -1,7 +1,10 @@
 using System;
 using System.Linq;
 using FastGoat;
+using FastGoat.Commons;
+using FastGoat.Theory;
 using FastGoat.UserGroup;
+using FastGoat.UserGroup.Matrix;
 using Xunit;
 
 namespace Tests;

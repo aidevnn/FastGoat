@@ -1,4 +1,7 @@
+using FastGoat.Theory;
 using FastGoat.UserGroup;
+using FastGoat.UserGroup.Matrix;
+using FastGoat.UserGroup.Perms;
 
 namespace FastGoat.Examples;
 
