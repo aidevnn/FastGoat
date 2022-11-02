@@ -145,8 +145,8 @@ public class ConcreteGroup<T> : IGroup<T> where T : struct, IElt<T>
         if (!ElementsOrdersList().Ascending().SequenceEqual(gu.ElementsOrdersList().Ascending()))
             return false;
 
-        var homs = Group.AllIsomorphisms(this, gu);
-        return homs.Count(h => h.Count != 0) > 0;
+        var isos = Group.AllMorphisms(this, gu, Group.MorphismType.Isomorphism);
+        return isos.Any(h => h.Count != 0);
     }
 
     public override int GetHashCode()

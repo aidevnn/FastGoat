@@ -100,9 +100,7 @@ public class AutomorphismUnitTest
             var un = new Un(k);
             var cn = new Cn(k);
             var autCn = Group.AutomorphismGroup(cn);
-            var arr1 = autCn.ElementsOrders.Select(kp => kp.Value).Ascending().ToArray();
-            var arr2 = un.ElementsOrders.Select(kp => kp.Value).Ascending().ToArray();
-            Assert.True(arr1.SequenceEqual(arr2));
+            Assert.True(un.IsIsomorphicTo(autCn));
         }
     }
 
@@ -125,10 +123,7 @@ public class AutomorphismUnitTest
                 var autCmXCn = Group.AutomorphismGroup(gmn);
                 var umn = Product.Generate(um, un);
                 Assert.Equal(um.Count() * un.Count(), autCmXCn.Count());
-                var arr1 = autCmXCn.ElementsOrders.Select(kp => kp.Value).Ascending().ToArray();
-                var arr2 = umn.ElementsOrders.Select(kp => kp.Value).Ascending().ToArray();
-                Assert.True(arr1.SequenceEqual(arr2));
-                // Assert.True(umn.IsIsomorphicTo(autCmXCn)); // costly
+                Assert.True(umn.IsIsomorphicTo(autCmXCn));
             }
         }
     }

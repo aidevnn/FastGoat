@@ -115,7 +115,7 @@ public static partial class Group
             .ToArray();
 
         var ng = g1.Count();
-        Console.WriteLine(gpMap.Aggregate(1, (acc, b) => acc * b.Length));
+        // Console.WriteLine(gpMap.Aggregate(1, (acc, b) => acc * b.Length));
         foreach (var arr in gpMap.MultiLoop())
         {
             var map = arr.ToDictionary(t => t.g, t => t.a);
