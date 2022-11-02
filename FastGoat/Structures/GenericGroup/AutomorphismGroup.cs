@@ -52,6 +52,15 @@ public class AutomorphismGroup<T> : IGroup<Automorphism<T>> where T : struct, IE
         return new Automorphism<T>(this, autMap);
     }
 
+    public Automorphism<T> Create(Homomorphism<T, T> hom)
+    {
+        var autMap = hom.HomMap;
+        if (autMap.Count != G.Count())
+            throw new GroupException(GroupExceptionType.GroupDef);
+
+        return new Automorphism<T>(this, autMap);
+    }
+
     public Automorphism<T> this[params ValueType[] us]
     {
         get
