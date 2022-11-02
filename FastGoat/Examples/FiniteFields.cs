@@ -28,6 +28,8 @@ public static class FiniteFields
 
         var elt2pow = Group.Cycle(aut, fb).ToDictionary(e => e.Key[one], e => e.Value);
         var pow2elt = elt2pow.ToDictionary(e => e.Value, e => e.Key);
+
+        var characteristic = primes.SelectMany(x => x).Distinct().First();
     
         T Mul(T a1, T a2)
         {
@@ -49,8 +51,21 @@ public static class FiniteFields
             return e0.Equals(e1);
         }
 
+        bool CheckFpSpace(int k, T a1, T a2)
+        {
+            var ka1 = gr.Times(a1, k);
+            var ka2 = gr.Times(a2, k);
+            var e0 = Mul(a1, a2);
+            var ke0 = gr.Times(e0, k);
+            var e1 = Mul(a1, ka2);
+            var e2 = Mul(ka1, a2);
+            return ke0.Equals(e1) && ke0.Equals(e2);
+        }
+
         Console.WriteLine("Multiplication Table of F{0}", gr.Count());
         var distrib = true;
+        var fpspace = true;
+        var fps = Enumerable.Range(0, characteristic).ToArray();
         foreach (var e1 in gr)
         {
             foreach (var e2 in gr)
@@ -59,6 +74,9 @@ public static class FiniteFields
                 if (distrib)
                     distrib &= gr.All(m => CheckDistributivity(m, e1, e2));
 
+                if (fpspace)
+                    fpspace &= fps.All(k => CheckFpSpace(k, e1, e2));
+                
                 if (verbose)
                     Console.WriteLine("{0} x {1} = {2}", e1, e2, e3);
             }
@@ -68,6 +86,7 @@ public static class FiniteFields
         }
 
         Console.WriteLine("Check Distributivity {0}", distrib ? "Pass" : "Fail");
+        Console.WriteLine("Check Fp-Space       {0}", fpspace ? "Pass" : "Fail");
 
         if (verbose)
             Console.WriteLine();
@@ -111,8 +130,8 @@ public static class FiniteFields
         MultiplicationTable(Product.Generate(c2, c2));
         MultiplicationTable(Product.Generate(c2, c2, c2));
         MultiplicationTable(Product.Generate(c3, c3));
-        MultiplicationTable(Product.Generate(c3, c3, c3)); // 70sec
-        MultiplicationTable(Product.Generate(c5, c5)); // 32sec
+        MultiplicationTable(Product.Generate(c3, c3, c3));
+        MultiplicationTable(Product.Generate(c5, c5));
         MultiplicationTable(Product.Generate(c2, c3)); // throw exception
     }
 
