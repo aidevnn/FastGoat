@@ -130,6 +130,15 @@ public static class DisplayGroup
         Console.WriteLine();
     }
 
+    public static void HeadSdpOrders<T1, T2>(SemiDirectProduct<T1, T2> g) 
+        where T1 : struct, IElt<T1>
+        where T2 : struct, IElt<T2>
+    {
+        HeadSdp(g);
+        Orders(g);
+        Console.WriteLine();
+    }
+
     public static void HeadElements<T>(ConcreteGroup<T> g, SortBy sortBy = SortBy.Order) where T : struct, IElt<T>
     {
         Head(g);
