@@ -19,23 +19,27 @@ public static class FiniteFields
         if (primes.All(x => x.Count() != 1) || primes.SelectMany(x => x).Distinct().Count() != 1)
             throw new GroupException(GroupExceptionType.GroupDef);
         
+        var zero = gr.Neutral();
+        var one = gr.GetGenerators().Aggregate(gr.Op);
         var aut = Group.AutBase(gr);
         var n = gr.Count() - 1;
         var fb = Group.AllMorphisms(gr, gr, Group.MorphismType.Isomorphism).Select(aut.Create)
             .First(e => Group.Cycle(aut, e).Count == n);
 
-        var zero = gr.Neutral();
-        var one = gr.GetGenerators().Aggregate(gr.Op);
-        var pows = Group.Cycle(aut, fb).ToDictionary(e => e.Key[one], e => e.Value);
+        var elt2pow = Group.Cycle(aut, fb).ToDictionary(e => e.Key[one], e => e.Value);
+        var pow2elt = elt2pow.ToDictionary(e => e.Value, e => e.Key);
     
         T Mul(T a1, T a2)
         {
-            if (a1.Equals(gr.Neutral()) || a2.Equals(gr.Neutral()))
-                return gr.Neutral();
+            if (a1.Equals(zero) || a2.Equals(zero))
+                return zero;
 
-            var i = pows[a1];
-            var j = pows[a2];
-            return aut.Times(fb, i + j)[one];
+            var i = elt2pow[a1];
+            var j = elt2pow[a2];
+            
+            // return aut.Times(fb, i + j)[one];
+            var k = (i + j) % n;
+            return pow2elt[k == 0 ? n : k];
         }
 
         bool CheckDistributivity(T m, T a1, T a2)
@@ -57,7 +61,6 @@ public static class FiniteFields
 
                 if (verbose)
                     Console.WriteLine("{0} x {1} = {2}", e1, e2, e3);
-
             }
 
             if (verbose)
@@ -66,7 +69,8 @@ public static class FiniteFields
 
         Console.WriteLine("Check Distributivity {0}", distrib ? "Pass" : "Fail");
 
-        Console.WriteLine();
+        if (verbose)
+            Console.WriteLine();
     }
 
     public static void Fp()
@@ -117,11 +121,17 @@ public static class FiniteFields
         var c2 = new Cn(2);
         var c3 = new Cn(3);
         var c5 = new Cn(5);
+
+        MultiplicationTable(new Cn(19), verbose: false); // starting up
         
+        GlobalStopWatch.Time("F19", () => MultiplicationTable(new Cn(19), verbose: false));
         GlobalStopWatch.Time("F8", () => MultiplicationTable(Product.Generate(c2, c2, c2), verbose: false));
         GlobalStopWatch.Time("F9", () => MultiplicationTable(Product.Generate(c3, c3), verbose: false));
-        GlobalStopWatch.Time("F19", () => MultiplicationTable(new Cn(19), verbose: false));
         GlobalStopWatch.Time("F25", () => MultiplicationTable(Product.Generate(c5, c5), verbose: false));
         GlobalStopWatch.Time("F27", () => MultiplicationTable(Product.Generate(c3, c3, c3), verbose: false));
+        GlobalStopWatch.Time("F16", () => MultiplicationTable(Product.Generate(c2, c2, c2, c2), verbose: false));
+        GlobalStopWatch.Time("F125", () => MultiplicationTable(Product.Generate(c5, c5, c5), verbose: false));
+        GlobalStopWatch.Time("F81", () => MultiplicationTable(Product.Generate(c3, c3, c3, c3), verbose: false));
+        GlobalStopWatch.Time("F32", () => MultiplicationTable(Product.Generate(c2, c2, c2, c2, c2), verbose: false));
     }
 }
