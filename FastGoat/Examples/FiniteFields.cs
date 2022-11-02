@@ -26,7 +26,7 @@ public static class FiniteFields
 
         var zero = gr.Neutral();
         var one = gr.GetGenerators().Aggregate(gr.Op);
-        var pows = Enumerable.Range(0, n).Select(i => (i, aut.Times(fb, i)[one])).ToDictionary(e => e.Item2, e => e.i);
+        var pows = Group.Cycle(aut, fb).ToDictionary(e => e.Key[one], e => e.Value);
     
         T Mul(T a1, T a2)
         {
@@ -76,7 +76,7 @@ public static class FiniteFields
         MultiplicationTable(new Cn(5));
         MultiplicationTable(new Cn(7));
         MultiplicationTable(new Cn(19));
-        // MultiplicationTable(new Cn(8)); // throw exception
+        MultiplicationTable(new Cn(8)); // throw exception
     }
 
     public static void FpWhyNot()
