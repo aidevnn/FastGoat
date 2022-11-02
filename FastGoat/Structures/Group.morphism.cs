@@ -85,13 +85,13 @@ public static partial class Group
         return new AutomorphismGroup<T>(g);
     }
 
-    private enum MorphismType
+    public enum MorphismType
     {
         Homomorphism,
         Isomorphism
     }
 
-    private static List<Homomorphism<T1, T2>> AllMorphisms<T1, T2>(IGroup<T1> bg, ConcreteGroup<T2> g2,
+    public static IEnumerable<Homomorphism<T1, T2>> AllMorphisms<T1, T2>(IGroup<T1> bg, ConcreteGroup<T2> g2,
         MorphismType mType = MorphismType.Homomorphism)
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
@@ -114,42 +114,31 @@ public static partial class Group
                     .ToArray())
             .ToArray();
 
-        List<Homomorphism<T1, T2>> allMorphisms = new();
         var ng = g1.Count();
-        int nb = 0;
+        Console.WriteLine(gpMap.Aggregate(1, (acc, b) => acc * b.Length));
         foreach (var arr in gpMap.MultiLoop())
         {
-            ++nb;
             var map = arr.ToDictionary(t => t.g, t => t.a);
             if (mType == MorphismType.Homomorphism)
             {
                 var hom = Group.HomomorphismMap(g1, g2, map);
                 if (hom.Count == ng)
-                    allMorphisms.Add(new(g1, hom));
+                    yield return new(g1, hom);
             }
             else
             {
                 var iso = Group.IsomorphismMap(g1, g2, map);
                 if (iso.Count == ng && iso.Values.Count() == ng)
-                    allMorphisms.Add(new(g1, iso));
+                    yield return new(g1, iso);
             }
         }
-
-        if (allMorphisms.Count == 0)
-        {
-            return new List<Homomorphism<T1, T2>>();
-        }
-
-        var allM = allMorphisms.Distinct().ToList();
-        // Console.WriteLine($"{nb} {allM.Count}");
-        return allM;
     }
 
     public static List<Homomorphism<T1, T2>> AllIsomorphisms<T1, T2>(IGroup<T1> bg, ConcreteGroup<T2> g2)
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
     {
-        return AllMorphisms(bg, g2, MorphismType.Isomorphism);
+        return AllMorphisms(bg, g2, MorphismType.Isomorphism).ToList();
     }
 
     public static List<Homomorphism<T, T>> AllAutomorphisms<T>(ConcreteGroup<T> g)
@@ -172,7 +161,7 @@ public static partial class Group
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
     {
-        return AllMorphisms(bg, g2, MorphismType.Homomorphism);
+        return AllMorphisms(bg, g2).ToList();
     }
 
     public static List<Homomorphism<T2, Automorphism<T1>>> AllOpsByAutomorphisms<T1, T2>(IGroup<T2> bg,
