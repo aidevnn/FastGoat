@@ -161,6 +161,19 @@ public static class EnumerableExt
     {
         return Enumerable.Repeat(arr, n).MultiLoop();
     }
+
+    public static IEnumerable<(T1 t1, T2 t2)> Grid2D<T1, T2>(this IEnumerable<T1> first, IEnumerable<T2> second)
+    {
+        foreach (var t1 in first)
+        {
+            foreach (var t2 in second)
+            {
+                yield return (t1, t2);
+            }
+        }
+    }
+
+    public static IEnumerable<(T t1, T t2)> Grid2D<T>(this T[] seq) => seq.Grid2D(seq);
 }
 
 public class SetEquality<T> : EqualityComparer<HashSet<T>> where T : IEquatable<T>
