@@ -137,23 +137,46 @@ namespace FastGoat.Commons
 
         public static int Gcd(int a, int b)
         {
-            if (a < 0 && b < 0)
-                return Gcd(-a, -b);
-            if (a * b < 0)
-                if (a < 0)
-                    return Gcd(-a, b);
-                else
-                    return Gcd(a, -b);
-
-            if (a < b)
-                return Gcd(b, a);
-
             if (b == 0)
-                return a;
+                return a < 0 ? -a : a;
 
             var q = a / b;
             var r = a - b * q;
             return Gcd(b, r);
+        }
+
+        public static (int x, int y) Bezout(int a, int b)
+        {
+            if (b == 0)
+            {
+                var x = a < 0 ? -1 : 1;
+                return (x, 0);
+            }
+
+            var q = a / b;
+            var (x0, y0) = Bezout(b, a - b * q);
+            return (y0, x0 - y0 * q);
+        }
+
+        public static (int x, int y) BezoutVerbose(int a, int b)
+        {
+            if (b == 0)
+            {
+                var x = a < 0 ? -1 : 1;
+                Console.WriteLine($"End  {new { a, b, x, y = 0 }}");
+                return (x, 0);
+            }
+            
+            // gcd = a.x1 + b.y1
+            // gcd = b.x0 + r.y0
+            // gcd = b.x0 + (a-bq).y0
+            // gcd = a.y0 + b(x0-q.y0)
+            
+            var q = a / b;
+            var r = a - b * q;
+            var (x0, y0) = BezoutVerbose(b, r);
+            Console.WriteLine($"Step {new { a, b, q, r, x = y0, y = x0 - y0 * q }}");
+            return (y0, x0 - y0 * q);
         }
 
         public static int PowMod(int a, int exp, int mod)
@@ -177,21 +200,6 @@ namespace FastGoat.Commons
             }
 
             return set;
-        }
-
-        public static IEnumerable<int> PowModSubGroups(int mod)
-        {
-            var setCoprimes = Enumerable.Range(2, mod - 2).Where(i => Gcd(i, mod) == 1).ToHashSet();
-            HashSet<int> setGenerators = new();
-            while (setCoprimes.Count != 0)
-            {
-                var a = setCoprimes.Min();
-                setGenerators.Add(a);
-                var loop = LoopPowMod(a, mod).ToArray();
-                setCoprimes.ExceptWith(loop);
-            }
-
-            return setGenerators;
         }
 
         // Saunders MacLane, Garrett Birkhoff. Algebra (3rd ed.) criteria
@@ -244,7 +252,8 @@ namespace FastGoat.Commons
 
         public static List<int> Carmichael(int n)
         {
-            var l = Coprimes(n).Select(a => SolveAll_a_pow_m_equal_one_mod_n(n, a))
+            var l = Coprimes(n)
+                .Select(a => SolveAll_a_pow_m_equal_one_mod_n(n, a))
                 .Aggregate((a, b) => a.Intersect(b));
             return l.ToList();
         }
@@ -252,33 +261,6 @@ namespace FastGoat.Commons
         public static int Lcm(int a, int b)
         {
             return a * b / Gcd(a, b);
-        }
-
-        public static List<(int a, int b, int q, int r, int x, int y)> BezoutDetails(int a, int b)
-        {
-            List<(int a, int b, int q, int r, int x, int y)> seq = new();
-            if (a < 1 || b < 1)
-                return seq;
-
-            int x = 0, y = 1;
-            while (b != 0)
-            {
-                // gcd = ax+by
-                // gcd = bx+ry
-                // gcd = bx+(a-bq)y
-                // gcd = ay + b(x-qy)
-
-                var q = a / b;
-                var r = a - b * q;
-                seq.Add((a, b, q, r, y, x - q * y));
-                a = b;
-                b = r;
-                var tmp = y;
-                y = x - q * y;
-                x = tmp;
-            }
-
-            return seq;
         }
 
         public static int[] Range(this int a, int start = 0)
