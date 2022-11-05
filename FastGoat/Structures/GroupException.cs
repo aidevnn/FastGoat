@@ -7,7 +7,8 @@ public enum GroupExceptionType
     NotSubGroup,
     NotNormal,
     OnlyCyclicGroups,
-    SemiDirectProductDontExist
+    SemiDirectProductDontExist,
+    NotIrreductiblePolynom
 }
 
 public class GroupException : Exception
@@ -27,6 +28,7 @@ public class GroupException : Exception
             GroupExceptionType.OnlyCyclicGroups =>
                 "Only cyclic groups are allowed at this time for semi-direct product",
             GroupExceptionType.SemiDirectProductDontExist => "Semi-direct product does not exists",
+            GroupExceptionType.NotIrreductiblePolynom => "Polynom must be monic irreductible",
             _ => "Unexpected error"
         };
     }

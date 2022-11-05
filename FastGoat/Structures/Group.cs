@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using FastGoat.Commons;
 using FastGoat.Structures.GenericGroup;
+using FastGoat.UserGroup.Polynoms;
 
 namespace FastGoat.Structures;
 
@@ -272,5 +273,14 @@ public static partial class Group
             throw new GroupException(GroupExceptionType.NotSubGroup);
         var quo = new Quotient<T>(g, h);
         return new ConcreteGroup<Coset<T>>(name, quo);
+    }
+
+    public static ConcreteGroup<FpPolynom> Galois(int q)
+    {
+        var cnPoly = PolynomExt.Get(q);
+        var p = cnPoly.pm.p;
+        var poly = new FpPolynom(p, 'x', cnPoly.coefs.ToArray());
+        var gf = new GFp($"GF({poly})", ('x', p), cnPoly.coefs);
+        return new ConcreteGroup<FpPolynom>(gf);
     }
 }
