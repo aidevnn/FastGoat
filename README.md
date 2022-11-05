@@ -145,3 +145,8 @@ GAP -- Groups, Algorithms, and Programming.
 Mathematics 7350.
 Cornell University.
 <i>The Todd–Coxeter procedure</i>
+
+[Conway polynomials](http://www.math.rwth-aachen.de/~Frank.Luebeck/data/ConwayPol/index.html)
+<b>Frank Lübeck.</b>
+Conway polynomials for finite fields
+<i>Online data</i>
