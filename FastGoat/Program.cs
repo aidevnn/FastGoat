@@ -20,8 +20,11 @@ using static FastGoat.Commons.EnumerableExt;
 Console.WriteLine("Hello World");
 
 {
+    DisplayGroup.HeadElements(Group.Galois(2));
+    DisplayGroup.HeadElements(Group.Galois(4));
+    DisplayGroup.HeadElements(Group.Galois(8));
     DisplayGroup.HeadElements(Group.Galois(16));
-    DisplayGroup.HeadElements(Group.Galois(32));
-    DisplayGroup.HeadElements(Group.Galois(9));
-    DisplayGroup.HeadElements(Group.Galois(7));
+    DisplayGroup.HeadElements(Group.Galois(3));
+    DisplayGroup.HeadElements(Group.Galois('a', 9));
+    DisplayGroup.HeadElements(Group.Galois('X', 27));
 }

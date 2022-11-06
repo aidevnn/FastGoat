@@ -275,12 +275,17 @@ public static partial class Group
         return new ConcreteGroup<Coset<T>>(name, quo);
     }
 
-    public static ConcreteGroup<FpPolynom> Galois(int q)
+    public static ConcreteGroup<FpPolynom> Galois(char x, int q)
     {
         var cnPoly = PolynomExt.Get(q);
         var p = cnPoly.pm.p;
-        var poly = new FpPolynom(p, 'x', cnPoly.coefs.ToArray());
-        var gf = new GFp($"GF({poly})", ('x', p), cnPoly.coefs);
+        var poly = new FpPolynom(p, x, cnPoly.coefs.ToArray());
+        var gf = new GFp($"GF({poly})", (x, p), cnPoly.coefs);
         return new ConcreteGroup<FpPolynom>(gf);
+    }
+    
+    public static ConcreteGroup<FpPolynom> Galois(int q)
+    {
+        return Galois('x', q);
     }
 }
