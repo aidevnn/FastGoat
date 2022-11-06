@@ -78,8 +78,9 @@ public class GFp : IGroup<FpPolynom>
 
     public FpPolynom Invert(FpPolynom e)
     {
-        var (x, _) = FpPolynom.Bezout(e, Poly);
-        return e.DivideBy(Poly).rem;
+        var (x, y) = FpPolynom.Bezout(e, Poly);
+        var gcd = e * x + y * Poly;
+        return (x / gcd).DivideBy(Poly).rem;
     }
 
     public FpPolynom Op(FpPolynom e1, FpPolynom e2)
