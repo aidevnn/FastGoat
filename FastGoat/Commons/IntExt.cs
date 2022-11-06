@@ -185,7 +185,7 @@ namespace FastGoat.Commons
             for (var k = 0; k < exp; ++k)
                 a0 = a0 * a % mod;
 
-            return a0;
+            return AmodP(a0, mod);
         }
 
         public static IEnumerable<int> LoopPowMod(int a, int mod)
@@ -249,6 +249,7 @@ namespace FastGoat.Commons
 
         public static IEnumerable<int> Coprimes(int n) => n.Range(1).Where(a => Gcd(a, n) == 1);
         public static int Phi(int n) => Coprimes(n).Count();
+        public static IEnumerable<int> Dividors(int n) => Enumerable.Range(1, n / 2).Where(i => i != n && n % i == 0);
 
         public static List<int> Carmichael(int n)
         {

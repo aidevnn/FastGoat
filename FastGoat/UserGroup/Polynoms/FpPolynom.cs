@@ -22,9 +22,16 @@ public struct FpPolynom : IElt<FpPolynom>
         Hash = Coefs.Aggregate((P, X).GetHashCode(), (acc, a) => (acc, a).GetHashCode());
     }
 
-    public static FpPolynom Fpx(int p, char x) => new(p, x, new[] { 0, 1 });
-    public static FpPolynom One(int p, char x) => new(p, x, new[] { 1 });
-    public static FpPolynom Zero(int p, char x) => new(p, x, new[] { 0 });
+    public FpPolynom(int p, int[] coefs)
+    {
+        if (!IntExt.Primes10000.Contains(p))
+            throw new GroupException(GroupExceptionType.GroupDef);
+
+        X = 'x';
+        P = p;
+        Coefs = coefs;
+        Hash = Coefs.Aggregate((P, X).GetHashCode(), (acc, a) => (acc, a).GetHashCode());
+    }
 
     public FpPolynom(int p, char x, int[] coefs)
     {
@@ -36,6 +43,13 @@ public struct FpPolynom : IElt<FpPolynom>
         Coefs = coefs;
         Hash = Coefs.Aggregate((P, X).GetHashCode(), (acc, a) => (acc, a).GetHashCode());
     }
+
+    public static FpPolynom Fpx(int p) => new(p, 'x', new[] { 0, 1 });
+    public static FpPolynom One(int p) => new(p, 'x', new[] { 1 });
+    public static FpPolynom Zero(int p) => new(p, 'x', new[] { 0 });
+    public static FpPolynom Fpx(int p, char x) => new(p, x, new[] { 0, 1 });
+    public static FpPolynom One(int p, char x) => new(p, x, new[] { 1 });
+    public static FpPolynom Zero(int p, char x) => new(p, x, new[] { 0 });
 
     public int CoefMax => Coefs.Last();
     public int Degree => Coefs.Length - 1;

@@ -26,9 +26,6 @@ public class GFp : IGroup<FpPolynom>
         var seq = Enumerable.Range(1, P - 1).Select(a => polynom.Select((e, i) => e * (int)Math.Pow(a, i)).Sum())
             .ToArray();
 
-        if (polynom.Length > 2 && seq.Any(s => IntExt.AmodP(s, P) == 0))
-            throw new GroupException(GroupExceptionType.NotIrreductiblePolynom);
-
         Poly = new FpPolynom(P, X, polynom);
         M = polynom.Length - 1;
 
