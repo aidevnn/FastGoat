@@ -32,7 +32,7 @@ public class ZnUnitTest
         var z7 = new Zn(7);
         var e1 = z7[3];
         var e2 = z7[6];
-        Assert.Equal(e1.BaseGroup, z7);
+        Assert.Equal(e1.P, z7.Mod);
         Assert.Equal(e1, z7[10]);
         Assert.Equal(z7.Invert(e1), z7[4]);
         Assert.Equal(z7.Op(e1, e2), z7[2]);

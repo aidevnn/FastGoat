@@ -29,23 +29,23 @@ public readonly struct Zn : IGroup<ZnInt>
 
     public ZnInt Neutral()
     {
-        return new(this, 0);
+        return new(Mod, 0);
     }
 
     public ZnInt Invert(ZnInt e)
     {
-        if (Mod != e.Zn.Mod)
+        if (Mod != e.P)
             throw new GroupException(GroupExceptionType.BaseGroup);
 
-        return new ZnInt(this, -e.K);
+        return e.Opp();
     }
 
     public ZnInt Op(ZnInt e1, ZnInt e2)
     {
-        if (Mod != e1.Zn.Mod || Mod != e2.Zn.Mod)
+        if (Mod != e1.P || Mod != e2.P)
             throw new GroupException(GroupExceptionType.BaseGroup);
 
-        return new ZnInt(this, e1.K + e2.K);
+        return e1.Add(e2);
     }
 
     public ZnInt this[params ValueType[] us]
@@ -55,7 +55,7 @@ public readonly struct Zn : IGroup<ZnInt>
             try
             {
                 var u = Convert.ToInt32(us[0]);
-                return new ZnInt(this, u);
+                return new ZnInt(Mod, u);
             }
             catch
             {
@@ -66,7 +66,7 @@ public readonly struct Zn : IGroup<ZnInt>
 
     public IEnumerable<ZnInt> GetGenerators()
     {
-        yield return new ZnInt(this, 1);
+        yield return new ZnInt(Mod, 1);
     }
 
     public IEnumerable<ZnInt> GetElements()
