@@ -22,12 +22,11 @@ Console.WriteLine("Hello World");
 
 {
     var a = Ring.QPolynomial('a');
-    var p = a.Pow(2) + 1;
+    var p = a.Pow(2) + 5; // a*a-2, a*a+5
     Console.WriteLine(p);
 
-    var (x, a1, k) = Ring.ExtPolynomial(p, 'x');
-    var x_ai = Enumerable.Range(0, k + 1).Select(e => x - a1.Pow(e)).ToArray();
-    Console.WriteLine(x_ai.Glue("; "));
-
-    Console.WriteLine(x_ai.Aggregate((xi, xj) => xi * xj));
+    var (x, a1) = Ring.ExtPolynomial(p, 'x');
+    Console.WriteLine(x - a1);
+    Console.WriteLine(x + a1);
+    Console.WriteLine((x - a1) * (x + a1));
 }
