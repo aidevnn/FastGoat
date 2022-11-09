@@ -79,4 +79,5 @@ public struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<Rational>
     public static Rational operator *(Rational a, Rational b) => a.Mul(b);
     public static Rational operator /(Rational a, Rational b) => a.Div(b).quo;
     public static Rational operator /(Rational a, int b) => new Rational(a.Num, a.Denom * b);
+    public static Rational operator *(int a, Rational b) => new Rational(a * b.Num, b.Denom);
 }

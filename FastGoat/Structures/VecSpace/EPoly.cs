@@ -42,6 +42,12 @@ public readonly struct EPoly<K> : IVsElt<K, EPoly<K>>, IElt<EPoly<K>>, IRingElt<
 
     public EPoly<K> Zero => new(F, F.Zero);
     public EPoly<K> One => new(F, F.One);
+    public EPoly<K> X => new(F, F.X);
+    public T Eval<T>(T e) where T : struct, IElt<T>, IRingElt<T>, IVsElt<K, T>
+    {
+        return Poly.Coefs.Select((e0, i0) => e.Pow(i0).KMul(e0)).Aggregate((e0, e1) => e0.Add(e1));
+    }
+
     public EPoly<K> Add(EPoly<K> e)
     {
         return new(F, Poly.Add(e.Poly).Div(F).rem);

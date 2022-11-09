@@ -1,5 +1,4 @@
 using FastGoat.Commons;
-using FastGoat.UserGroup.Integers;
 
 namespace FastGoat.Structures.VecSpace;
 
@@ -149,6 +148,16 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
         return Enumerable.Repeat(pi, k).Aggregate((a, b) => a.Mul(b));
     }
 
+    public K Eval(K e)
+    {
+        return Coefs.Select((e0, i0) => e.Pow(i0).Mul(e0)).Aggregate((e0, e1) => e0.Add(e1));
+    }
+
+    public T Eval<T>(T e) where T : struct, IElt<T>, IRingElt<T>, IVsElt<K, T>
+    {
+        return Coefs.Select((e0, i0) => e.Pow(i0).KMul(e0)).Aggregate((e0, e1) => e0.Add(e1));
+    }
+
     public (KPoly<K> quo, KPoly<K> rem) Div(KPoly<K> e)
     {
         if (e.IsZero())
@@ -174,7 +183,7 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
 
         return (new(x, KZero, quo.TrimSeq().ToArray()), new(x, KZero, rem.TrimSeq().ToArray()));
     }
-    
+
     public override int GetHashCode() => Hash;
 
     public override string ToString()
