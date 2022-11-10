@@ -7,41 +7,33 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
     where T : struct, IElt<T>
 {
     private SortedList<Monom<T>, K> Coefs { get; }
-    public IEnumerable<T> Indeterminates { get; }
+
+    public IEnumerable<T> Indeterminates =>
+        Coefs.Keys.SelectMany(m => m.Indeterminates).Distinct().Ascending().ToArray();
     public K KZero { get; }
 
-    public Polynomial(IEnumerable<T> indeterminates, K zero)
+    public Polynomial(K scalar)
     {
-        if (!zero.IsZero() || !indeterminates.Any())
-            throw new GroupException(GroupExceptionType.GroupDef);
-
-        KZero = zero;
-        Indeterminates = indeterminates;
-        Coefs = new() { [new()] = zero };
+        KZero = scalar.Zero;
+        Coefs = new() { [new()] = scalar };
         Hash = Coefs.Aggregate(0, (acc, a) => (acc, (a.Key.Hash, a.Value.Hash)).GetHashCode());
     }
 
-    private Polynomial(IEnumerable<T> indeterminates, K zero, SortedList<Monom<T>, K> coefs)
+    public Polynomial(T x, K scalar)
+    {
+        KZero = scalar.Zero;
+        Coefs = new() { [new(x)] = scalar };
+        Hash = Coefs.Aggregate(0, (acc, a) => (acc, (a.Key.Hash, a.Value.Hash)).GetHashCode());
+    }
+
+    private Polynomial(K zero, SortedList<Monom<T>, K> coefs)
     {
         if (!zero.IsZero())
             throw new GroupException(GroupExceptionType.GroupDef);
 
         KZero = zero;
-        Indeterminates = indeterminates;
         Coefs = coefs.Count != 0 ? coefs : new() { [new()] = zero };
         Hash = Coefs.Aggregate(0, (acc, a) => (acc, (a.Key.Hash, a.Value.Hash)).GetHashCode());
-    }
-
-    public Polynomial<K, T>[] Xi()
-    {
-        List<Polynomial<K, T>> list = new();
-        foreach (var xi in Indeterminates)
-        {
-            var m = new Monom<T>(xi);
-            var poly = new Polynomial<K, T>(Indeterminates, KZero, new() { [m] = KZero.One });
-            list.Add(poly);
-        }
-        return list.ToArray();
     }
 
     public bool Equals(Polynomial<K, T> other) => Hash == other.Hash;
@@ -57,14 +49,11 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
 
     public bool IsZero() => Coefs.All(a=>a.Key.Equals(new()) && a.Value.IsZero());
 
-    public Polynomial<K, T> Zero => new(Indeterminates, KZero);
-    public Polynomial<K, T> One => new(Indeterminates, KZero, new() { [new()] = KZero.One });
+    public Polynomial<K, T> Zero => new(KZero);
+    public Polynomial<K, T> One => new(KZero.One);
 
     public Polynomial<K, T> Add(Polynomial<K, T> e)
     {
-        if (!Indeterminates.Equals(e.Indeterminates))
-            throw new GroupException(GroupExceptionType.GroupDef);
-        
         SortedList<Monom<T>, K> coefs = new(Coefs);
         foreach (var kp in e.Coefs)
         {
@@ -76,14 +65,11 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
         foreach (var a in coefs.Where(a => a.Value.IsZero()).ToArray())
             coefs.Remove(a.Key);
 
-        return new(Indeterminates, KZero, coefs);
+        return new(KZero, coefs);
     }
 
     public Polynomial<K, T> Sub(Polynomial<K, T> e)
     {
-        if (!Indeterminates.Equals(e.Indeterminates))
-            throw new GroupException(GroupExceptionType.GroupDef);
-
         SortedList<Monom<T>, K> coefs = new(Coefs);
         foreach (var kp in e.Coefs)
         {
@@ -95,20 +81,17 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
         foreach (var a in coefs.Where(a => a.Value.IsZero()).ToArray())
             coefs.Remove(a.Key);
 
-        return new(Indeterminates, KZero, coefs);
+        return new(KZero, coefs);
     }
 
     public Polynomial<K, T> Opp()
     {
         SortedList<Monom<T>, K> coefs = new(Coefs.ToDictionary(a=>a.Key,a=>a.Value.Opp()));
-        return new(Indeterminates, KZero, coefs);
+        return new(KZero, coefs);
     }
 
     public Polynomial<K, T> Mul(Polynomial<K, T> e)
     {
-        if (!Indeterminates.Equals(e.Indeterminates))
-            throw new GroupException(GroupExceptionType.GroupDef);
-
         SortedList<Monom<T>, K> coefs = new();
         foreach (var m0 in Coefs)
         {
@@ -126,21 +109,19 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
         foreach (var a in coefs.Where(a => a.Value.IsZero()).ToArray())
             coefs.Remove(a.Key);
 
-        return new(Indeterminates, KZero, coefs);
+        return new(KZero, coefs);
     }
 
     public (Polynomial<K, T> quo, Polynomial<K, T> rem) Div(Polynomial<K, T> e)
     {
-        if (!Indeterminates.Equals(e.Indeterminates))
-            throw new GroupException(GroupExceptionType.GroupDef);
-
         if (e.IsZero())
             throw new DivideByZeroException();
 
+        // Groebner Basis is out of the scope of this project
         if (e.Coefs.Keys.SelectMany(a => a.Indeterminates).Distinct().Count() > 1)
             throw new GroupException(GroupExceptionType.GroupDef);
         
-        var rem = new Polynomial<K, T>(Indeterminates, KZero, new(Coefs));
+        var rem = new Polynomial<K, T>(KZero, new(Coefs));
         var coefs = new Stack<KeyValuePair<Monom<T>, K>>(rem.Coefs.Reverse());
         SortedList<Monom<T>, K> quo = new();
         var em = e.Coefs.First();
@@ -159,13 +140,13 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
             if (!qr.rem.IsZero())
                 break;
 
-            var p = new Polynomial<K, T>(Indeterminates, KZero, new() { [m] = qr.quo });
+            var p = new Polynomial<K, T>(KZero, new() { [m] = qr.quo });
             rem = rem.Sub(e.Mul(p));
             quo[m] = qr.quo;
             coefs = new Stack<KeyValuePair<Monom<T>, K>>(rem.Coefs.Reverse());
         }
 
-        return (new(Indeterminates, KZero, quo), rem);
+        return (new(KZero, quo), rem);
     }
 
     public Polynomial<K, T> KMul(K k)
@@ -174,16 +155,16 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
         foreach (var a in coefs.Where(a => a.Value.IsZero()).ToArray())
             coefs.Remove(a.Key);
         
-        return new(Indeterminates, KZero, coefs);
+        return new(KZero, coefs);
     }
 
     public Polynomial<K, T> Mul(int k)
     {
-        SortedList<Monom<T>, K> coefs = new(Coefs.ToDictionary(a => a.Key, a => a.Value.Mul(k)));
-        foreach (var a in coefs.Where(a => a.Value.IsZero()).ToArray())
-            coefs.Remove(a.Key);
+        if (k == 0)
+            return new(KZero);
         
-        return new(Indeterminates, KZero, coefs);
+        SortedList<Monom<T>, K> coefs = new(Coefs.ToDictionary(a => a.Key, a => a.Value.Mul(k)));
+        return new(KZero, coefs);
     }
 
     public Polynomial<K, T> Pow(int k)

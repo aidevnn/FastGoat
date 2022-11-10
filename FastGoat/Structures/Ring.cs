@@ -36,34 +36,32 @@ public static class Ring
     public static Polynomial<K, Xi>[] Polynomial<K>(K zero, char x0, params char[] xi)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
-        return new Polynomial<K, Xi>(xi.Prepend(x0).Select(c => new Xi(c)), zero).Xi();
+        return xi.Prepend(x0).Select(c => Polynomial(c, zero)).ToArray();
     }
 
     public static Polynomial<K, Xi> Polynomial<K>(char x1, K zero)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
-        return Polynomial(zero, x1)[0];
+        return new Polynomial<K, Xi>(new Xi(x1), zero.One);
     }
 
     public static Polynomial<K, Xi> Polynomial<K>(K zero)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
-        return Polynomial(zero, 'X')[0];
+        return Polynomial('X', zero);
     }
 
     public static (Polynomial<K, Xi> x1, Polynomial<K, Xi> x2) Polynomial<K>(char x1, char x2, K zero)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
-        var xi = Polynomial(zero, x1, x2);
-        return (xi[0], xi[1]);
+        return (Polynomial(x1, zero), Polynomial(x2, zero));
     }
 
     public static (Polynomial<K, Xi> x1, Polynomial<K, Xi> x2, Polynomial<K, Xi> x3) 
         Polynomial<K>(char x1, char x2, char x3, K zero)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
-        var xi = Polynomial(zero, x1, x2, x3);
-        return (xi[0], xi[1], xi[2]);
+        return (Polynomial(x1, zero), Polynomial(x2, zero), Polynomial(x3, zero));
     }
 
 }
