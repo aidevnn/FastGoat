@@ -4,7 +4,7 @@ using FastGoat.UserGroup.Integers;
 
 namespace FastGoat.Structures;
 
-public static class Ring
+public static partial class Ring
 {
     public static IEnumerable<T> TrimSeq<T>(this IEnumerable<T> seq) where T : struct, IElt<T>, IRingElt<T>
     {
@@ -33,10 +33,22 @@ public static class Ring
         return (y0, x0.Add(q.Mul(y0).Opp()));
     }
 
+    public static Polynomial<K, Xi>[] Polynomial<K>(K zero, char[] xi)
+        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
+    {
+        return xi.Select(c => Polynomial(c, zero)).ToArray();
+    }
+
     public static Polynomial<K, Xi>[] Polynomial<K>(K zero, char x0, params char[] xi)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
-        return xi.Prepend(x0).Select(c => Polynomial(c, zero)).ToArray();
+        return Polynomial(zero, xi.Prepend(x0).ToArray());
+    }
+
+    public static Polynomial<K, Xi> PolynomialZero<K>(K k0)
+        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
+    {
+        return new Polynomial<K, Xi>(k0.Zero);
     }
 
     public static Polynomial<K, Xi> Polynomial<K>(char x1, K zero)

@@ -107,7 +107,8 @@ public readonly struct Monom<T> : IElt<Monom<T>> where T : struct, IElt<T>
 
     public override string ToString()
     {
-        var s = Content.Select(kp => kp.Value == 1 ? $"{kp.Key}" : $"{kp.Key}{kp.Value}").Glue("");
+        var sep = Monom.ShowStar ? "*" : "";
+        var s = Content.Select(kp => kp.Value == 1 ? $"{kp.Key}" : $"{kp.Key}{kp.Value}").Glue(sep);
         for (int i = 0; i < 10; i++)
             s = s.Replace($"{i}", $"{superscripts[i]}");
 
@@ -115,4 +116,9 @@ public readonly struct Monom<T> : IElt<Monom<T>> where T : struct, IElt<T>
     }
 
     private static string superscripts = "⁰¹²³⁴⁵⁶⁷⁸⁹";
+}
+
+public static class Monom
+{
+    public static bool ShowStar = false;
 }
