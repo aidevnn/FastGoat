@@ -2,7 +2,8 @@ using FastGoat.Commons;
 
 namespace FastGoat.Structures.VecSpace;
 
-public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Polynomial<K, T>>, IRingElt<Polynomial<K, T>>
+public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Polynomial<K, T>>,
+    IRingElt<Polynomial<K, T>>
     where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     where T : struct, IElt<T>
 {
@@ -10,6 +11,7 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
 
     public IEnumerable<T> Indeterminates =>
         Coefs.Keys.SelectMany(m => m.Indeterminates).Distinct().Ascending().ToArray();
+
     public K KZero { get; }
 
     public Polynomial(K scalar)
@@ -54,7 +56,7 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
 
     public int Hash { get; }
 
-    public bool IsZero() => Coefs.All(a=>a.Key.Equals(new()) && a.Value.IsZero());
+    public bool IsZero() => Coefs.All(a => a.Key.Equals(new()) && a.Value.IsZero());
 
     public Polynomial<K, T> Zero => new(KZero);
     public Polynomial<K, T> One => new(KZero.One);
@@ -81,7 +83,9 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
 
         return Substitue(m.Coefs.First().Key.Indeterminates.First(), poly);
     }
-    public Polynomial<K, T> Substitue(Polynomial<K, T> m, K scalar)=> Substitue(m, new Polynomial<K, T>(scalar));
+
+    public Polynomial<K, T> Substitue(Polynomial<K, T> m, K scalar) => Substitue(m, new Polynomial<K, T>(scalar));
+
     public Polynomial<K, T> Add(Polynomial<K, T> e)
     {
         SortedList<Monom<T>, K> coefs = new(Coefs);
@@ -116,7 +120,7 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
 
     public Polynomial<K, T> Opp()
     {
-        SortedList<Monom<T>, K> coefs = new(Coefs.ToDictionary(a=>a.Key,a=>a.Value.Opp()));
+        SortedList<Monom<T>, K> coefs = new(Coefs.ToDictionary(a => a.Key, a => a.Value.Opp()));
         return new(KZero, coefs);
     }
 
@@ -129,7 +133,7 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
             {
                 var m2 = m0.Key.Mul(m1.Key);
                 var a = m0.Value.Mul(m1.Value);
-                
+
                 coefs[m2] = coefs.ContainsKey(m2)
                     ? coefs[m2].Add(a)
                     : a;
@@ -150,7 +154,7 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
         // Groebner Basis is out of the scope of this project
         if (e.Coefs.Keys.SelectMany(a => a.Indeterminates).Distinct().Count() > 1)
             throw new GroupException(GroupExceptionType.GroupDef);
-        
+
         var rem = new Polynomial<K, T>(KZero, new(Coefs));
         var coefs = new Stack<KeyValuePair<Monom<T>, K>>(rem.Coefs.Reverse());
         SortedList<Monom<T>, K> quo = new();
@@ -162,7 +166,7 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
                 break;
 
             var mnm = am.Key.Div(em.Key);
-            if(!mnm.HasValue)
+            if (!mnm.HasValue)
                 continue;
 
             var m = mnm.Value;
@@ -184,7 +188,7 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
         SortedList<Monom<T>, K> coefs = new(Coefs.ToDictionary(a => a.Key, a => a.Value.Mul(k)));
         foreach (var a in coefs.Where(a => a.Value.IsZero()).ToArray())
             coefs.Remove(a.Key);
-        
+
         return new(KZero, coefs);
     }
 
@@ -192,7 +196,7 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
     {
         if (k == 0)
             return new(KZero);
-        
+
         SortedList<Monom<T>, K> coefs = new(Coefs.ToDictionary(a => a.Key, a => a.Value.Mul(k)));
         return new(KZero, coefs);
     }
@@ -211,16 +215,17 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
     public override string ToString()
     {
         var one = KZero.One;
+
         string Str(Monom<T> m, K k)
         {
             var sm = $"{m}";
             if (k.Equals(one))
                 return string.IsNullOrEmpty(sm) ? "1" : sm;
-            
+
             if (k.Equals(one.Opp()))
                 return string.IsNullOrEmpty(sm) ? "-1" : $"-{sm}";
 
-            return string.IsNullOrEmpty(sm) ?$"{k}" : $"{k}·{sm}";
+            return string.IsNullOrEmpty(sm) ? $"{k}" : $"{k}·{sm}";
         }
 
         return Coefs.Select(kp => Str(kp.Key, kp.Value)).Glue(" + ");
@@ -230,14 +235,13 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
     public static Polynomial<K, T> operator -(Polynomial<K, T> a, Polynomial<K, T> b) => a.Sub(b);
     public static Polynomial<K, T> operator *(Polynomial<K, T> a, Polynomial<K, T> b) => a.Mul(b);
     public static Polynomial<K, T> operator /(Polynomial<K, T> a, Polynomial<K, T> b) => a.Div(b).quo;
-    
+
     public static Polynomial<K, T> operator -(Polynomial<K, T> a) => a.Opp();
     public static Polynomial<K, T> operator *(int a, Polynomial<K, T> b) => b.Mul(a);
     public static Polynomial<K, T> operator /(Polynomial<K, T> a, int k) => a.KMul(a.KZero.One.Mul(k).Inv());
-    
+
     public static Polynomial<K, T> operator +(Polynomial<K, T> a, int b) => a.Add(a.One.Mul(b));
     public static Polynomial<K, T> operator +(int b, Polynomial<K, T> a) => a.Add(a.One.Mul(b));
     public static Polynomial<K, T> operator -(Polynomial<K, T> a, int b) => a.Sub(a.One.Mul(b));
     public static Polynomial<K, T> operator -(int b, Polynomial<K, T> a) => a.One.Mul(b).Sub(a);
-
 }

@@ -52,7 +52,7 @@ public class AutomorphismGroup<T> : IGroup<Automorphism<T>> where T : struct, IE
         return new Automorphism<T>(this, autMap);
     }
 
-    public Automorphism<T> Create(IReadOnlyDictionary<T,T> autMap)
+    public Automorphism<T> Create(IReadOnlyDictionary<T, T> autMap)
     {
         if (autMap.Count != G.Count())
             throw new GroupException(GroupExceptionType.GroupDef);

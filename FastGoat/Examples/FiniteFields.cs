@@ -175,11 +175,11 @@ public static class FiniteFields
         Console.WriteLine("Candidate for F{0}", gr.Count());
         var gFq = gr.Except(new[] { zero }).Ascending().First(e => FqCycle(e).Count() == n + 1);
         Console.WriteLine("Primitive element a   = {0}", gFq);
-            
+
         var cycle = FqCycle(gFq).Take(dim + 1).ToArray();
         for (int j = 2; j < dim + 1; ++j)
             Console.WriteLine("                  a^{0} = {1}", j, cycle[j]);
-            
+
         var vectors = Product.GpGenerate(Enumerable.Repeat(cn, dim + 1).Cast<IGroup<ZnInt>>().ToArray());
         var minPoly = vectors.Where(v =>
                 !v.Equals(vectors.Neutral()) &&
@@ -223,7 +223,7 @@ public static class FiniteFields
         MinPoly(7, matrixForm);
         MinPoly(11, matrixForm);
         MinPoly(13, matrixForm);
-        
+
         MinPoly(4, matrixForm);
         MinPoly(9, matrixForm);
         MinPoly(25, matrixForm);

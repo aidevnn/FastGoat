@@ -76,11 +76,11 @@ public static class PolynomialOperations
         var fi = i.Pow(2) + 1;
         var fa = a.Pow(2) - 2;
         var p = (x - a) * (x + a) * (x - i) * (x + i);
-    
+
         Console.WriteLine(p);
         Console.WriteLine(p.Div(f));
         Console.WriteLine("#");
-        
+
         Console.WriteLine(p.Div(fi).rem.Div(f));
         Console.WriteLine(p.Div(fi).rem.Div(fa).rem.Div(f));
 
@@ -88,14 +88,14 @@ public static class PolynomialOperations
         Console.WriteLine(p.Div(fa).rem.Div(f));
         Console.WriteLine(p.Div(fa).rem.Div(fi).rem.Div(f));
     }
-    
+
     public static void Qexpr()
     {
         var (x, a) = Ring.Polynomial('X', 'a', Rational.KZero());
         var f = x.Pow(2) - 2 * x - 2;
         var fa = a.Pow(2) - 3;
         var p = (x - (1 + a)) * (x - (1 - a));
-        
+
         Console.WriteLine(p);
         Console.WriteLine(p.Div(f));
         Console.WriteLine(p.Div(fa).rem.Div(f));

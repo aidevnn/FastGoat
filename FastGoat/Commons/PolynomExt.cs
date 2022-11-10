@@ -19,15 +19,15 @@ public static class PolynomExt
             All[p][m] = coefs;
         }
     }
-    
+
     private static Dictionary<int, Dictionary<int, int[]>> All;
-    
+
     public static ((int p, int m) pm, int[] coefs) Get(int q)
     {
         var pm = IntExt.PrimesDecomposition(q).ToArray();
         if (pm.Distinct().Count() != 1)
             throw new();
-        
+
         var p = pm[0];
         var m = pm.Length;
         return ((p, m), All[p][m]);
@@ -36,7 +36,7 @@ public static class PolynomExt
     public static string PolyStr(char x, string prev, int n, int v)
     {
         if (v == 0) return prev;
-        
+
         int sgn = v < 0 ? -1 : 1;
         int va = v < 0 ? -v : v;
         var xs = n == 0 ? "" : n == 1 ? $"{x}" : $"{x}^{n}";
@@ -58,7 +58,7 @@ public static class PolynomExt
 
         return stack.Reverse().ToArray();
     }
-    
+
     static void AddInPlace(int p, int start, int[] acc, int[] m, int factor = 1)
     {
         for (int i = 0; i < m.Length; i++)
@@ -95,7 +95,7 @@ public static class PolynomExt
         return TrimPoly(acc);
     }
 
-    public static (int[] quo,int[] rem) DivPoly(int p, int[] a, int[] b)
+    public static (int[] quo, int[] rem) DivPoly(int p, int[] a, int[] b)
     {
         if (a.Length >= b.Length)
         {

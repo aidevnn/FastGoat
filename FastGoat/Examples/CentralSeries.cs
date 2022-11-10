@@ -80,7 +80,7 @@ public static class CentralSeries
     public static void NonAbelianOrder24()
     {
         var gl = new GL(2, 3);
-        
+
         var s4 = new Symm(4);
         var e24 = new WordGroup("E24", "a4, b2, c3, bab = a3, bcb = c, aca3 = c2");
         var sl23 = Group.Generate("SL23", gl, gl[1, 1, 0, 1], gl[0, 1, 2, 0]);
@@ -89,7 +89,7 @@ public static class CentralSeries
         DisplayGroup.HeadOrders(e24);
         DisplayGroup.HeadOrders(sl23);
         DisplayGroup.HeadOrders(c3q8);
-        
+
         Chains(s4);
         Chains(e24);
         Chains(sl23);
@@ -102,7 +102,7 @@ public static class CentralSeries
         GlobalStopWatch.Restart();
         foreach (var g in Group.ZentrumsChain(gr))
             DisplayGroup.Head(g);
-        
+
         GlobalStopWatch.Show("Definition");
         Console.WriteLine("######## Fast");
         GlobalStopWatch.Restart();
@@ -118,7 +118,7 @@ public static class CentralSeries
     {
         var c3 = new Cn(3);
         var c9 = new Cn(9);
-        
+
         var g1 = new WordGroup("C9 x: C3", "a9, b3, a4 = bab-1");
         var g2 = Group.SemiDirectProd(Product.Generate(c3, c3), c3);
         var g3 = Group.SemiDirectProd(Product.Generate(c9, c3), c3);

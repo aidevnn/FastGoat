@@ -48,7 +48,7 @@ public static class ConwayPolynoms
         var cnPoly = irreductibles.MinBy(ConwayWord);
         // foreach (var pi in irreductibles.OrderBy(ConwayWord))
         //     Console.WriteLine($"{pi} => {ConwayWord(pi)}");
-        
+
         return cnPoly;
     }
 
@@ -87,7 +87,7 @@ public static class ConwayPolynoms
             .Select(c => c.Length < n ? c.Concat(new int[n - c.Length]).ToArray() : c).ToArray();
         var listEp = list.Select(c => Product.Ep(c.Select(i => cn[i]).ToArray())).ToArray();
         var pmap = listEp.SkipLast(1).Select((e, i) => (e, listEp[(i + 1) % q])).ToDictionary(e => e.e, e => e.Item2);
-        
+
         var fbMap = Group.AutomorphismMap(gr, pmap);
         var aut = Group.AutBase(gr);
         var fb = aut.Create(fbMap);
@@ -166,19 +166,19 @@ public static class ConwayPolynoms
         MyPoly(2, 3);
         MyPoly(2, 4);
         MyPoly(2, 5);
-        
+
         MyPoly(3, 1);
         MyPoly(3, 2);
         MyPoly(3, 2);
         MyPoly(3, 3);
         MyPoly(3, 4); // My Poly     p=3 n=4 : 2 + 2x + x^4 ### Conway Poly p=3 n=4 : 2 + 2x^3 + x^4
         MyPoly(3, 5);
-        
+
         MyPoly(5, 1);
         MyPoly(5, 2);
         MyPoly(5, 3);
         MyPoly(5, 4); // My Poly     p=5 n=4 : 2 + 3x + x^2 + x^4 ### Conway Poly p=5 n=4 : 2 + 4x + 4x^2 + x^4
-        
+
         MyPoly(7, 1);
         MyPoly(7, 2);
         MyPoly(7, 3); // My Poly     p=7 n=3 : 2 + 3x + x^3 ### Conway Poly p=7 n=3 : 4 + 6x^2 + x^3
@@ -200,7 +200,6 @@ public static class ConwayPolynoms
 
     public static void Bench()
     {
-        
         GlobalStopWatch.Time("F8", () => AutomorphismFromPoly(2, 3, verbose: false));
         GlobalStopWatch.Time("F9", () => AutomorphismFromPoly(3, 2, verbose: false));
         GlobalStopWatch.Time("F25", () => AutomorphismFromPoly(5, 2, verbose: false));
@@ -209,6 +208,5 @@ public static class ConwayPolynoms
         GlobalStopWatch.Time("F125", () => AutomorphismFromPoly(5, 3, verbose: false));
         GlobalStopWatch.Time("F81", () => AutomorphismFromPoly(3, 4, verbose: false));
         GlobalStopWatch.Time("F32", () => AutomorphismFromPoly(2, 5, verbose: false));
-
     }
 }

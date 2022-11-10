@@ -69,11 +69,10 @@ public static partial class Ring
         return (Polynomial(x1, zero), Polynomial(x2, zero));
     }
 
-    public static (Polynomial<K, Xi> x1, Polynomial<K, Xi> x2, Polynomial<K, Xi> x3) 
+    public static (Polynomial<K, Xi> x1, Polynomial<K, Xi> x2, Polynomial<K, Xi> x3)
         Polynomial<K>(char x1, char x2, char x3, K zero)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
         return (Polynomial(x1, zero), Polynomial(x2, zero), Polynomial(x3, zero));
     }
-
 }

@@ -29,7 +29,7 @@ public struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<Rational>
     {
         if (denom == 0)
             throw new GroupException(GroupExceptionType.GroupDef);
-        
+
         var gcd = IntExt.Gcd(num, denom);
         Num = denom > 0 ? num / gcd : -num / gcd;
         Denom = denom > 0 ? denom / gcd : -denom / gcd;
@@ -51,11 +51,12 @@ public struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<Rational>
 
     public Rational Mul(Rational e) => new(Num * e.Num, Denom * e.Denom);
     public Rational Mul(int k) => new(Num * k, Denom);
+
     public Rational Pow(int k)
     {
         if (k == 0)
             return One;
-        
+
         if (k < 0)
             return Inv().Pow(-k);
 
@@ -63,6 +64,7 @@ public struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<Rational>
         var denom = (int)Math.Pow(Denom, k);
         return new(num, denom);
     }
+
     public (Rational quo, Rational rem) Div(Rational e)
     {
         if (e.IsZero())
@@ -70,7 +72,7 @@ public struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<Rational>
 
         return (new(Num * e.Denom, Denom * e.Num), new(0));
     }
-    
+
     public Rational Inv() => new(Denom, Num);
 
     public override int GetHashCode() => Hash;

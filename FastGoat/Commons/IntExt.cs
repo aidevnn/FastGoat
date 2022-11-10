@@ -166,12 +166,12 @@ namespace FastGoat.Commons
                 Console.WriteLine($"End  {new { a, b, x, y = 0 }}");
                 return (x, 0);
             }
-            
+
             // gcd = a.x1 + b.y1
             // gcd = b.x0 + r.y0
             // gcd = b.x0 + (a-bq).y0
             // gcd = a.y0 + b(x0-q.y0)
-            
+
             var q = a / b;
             var r = a - b * q;
             var (x0, y0) = BezoutVerbose(b, r);

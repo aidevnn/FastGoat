@@ -114,12 +114,13 @@ public static partial class Group
         return g.Contains(a) && g.Contains(b) && Orbits(g, ByConjugate(g), a).Contains(b);
     }
 
-    public static ConcreteGroup<T> Commutator<T>(string name, ConcreteGroup<T> grG, ConcreteGroup<T> grH, ConcreteGroup<T> grK)
+    public static ConcreteGroup<T> Commutator<T>(string name, ConcreteGroup<T> grG, ConcreteGroup<T> grH,
+        ConcreteGroup<T> grK)
         where T : struct, IElt<T>
     {
         if (!grH.SubSetOf(grG) || !grK.SubSetOf(grG))
             throw new GroupException(GroupExceptionType.NotSubGroup);
-        
+
         var set = new HashSet<T>();
         foreach (var x in grH)
         {
@@ -197,7 +198,7 @@ public static partial class Group
 
         return Generate($"Z({gr})", gr, set.ToArray());
     }
-    
+
     static void ZentrumsChain<T>(ConcreteGroup<T> g, List<ConcreteGroup<T>> chain) where T : struct, IElt<T>
     {
         var i = chain.Count;
@@ -233,7 +234,7 @@ public static partial class Group
 
         if (zi.SetEquals(set))
             return;
-        
+
         var zi1 = Generate($"Z{i}", gr, set.ToArray());
         chain.Add(zi1);
         ZentrumsChainFast(gr, chain);
@@ -246,6 +247,7 @@ public static partial class Group
         ZentrumsChain(g, chain);
         return chain;
     }
+
     public static List<ConcreteGroup<T>> ZentrumsChainFast<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
     {
         var z0 = Group.Generate("Z0", g, g.Neutral());

@@ -106,5 +106,4 @@ public readonly struct ZnInt : IElt<ZnInt>, IRingElt<ZnInt>, IFieldElt<ZnInt>
     public static ZnInt operator *(ZnInt a, int k) => new(a.P, k * a.K);
     public static ZnInt operator *(int k, ZnInt a) => new(a.P, k * a.K);
     public static ZnInt operator /(ZnInt a, int k) => a.Mul(new ZnInt(a.P, k).Inv());
-    
 }

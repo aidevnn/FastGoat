@@ -81,7 +81,7 @@ public struct FpPolynom : IElt<FpPolynom>
     {
         if (X != b.X)
             throw new GroupException(GroupExceptionType.BaseGroup);
-        
+
         var qr = PolynomExt.DivPoly(P, Coefs, b.Coefs);
         var quo = new FpPolynom(P, X, qr.quo);
         var rem = new FpPolynom(P, X, qr.rem);
@@ -128,7 +128,7 @@ public struct FpPolynom : IElt<FpPolynom>
     {
         if (a.X != b.X)
             throw new GroupException(GroupExceptionType.BaseGroup);
-        
+
         return new FpPolynom(a.P, a.X, PolynomExt.AddPoly(a.P, a.Coefs, b.Coefs));
     }
 
@@ -161,7 +161,7 @@ public struct FpPolynom : IElt<FpPolynom>
         if (b.Degree == 0 && b.CoefMax == 0)
             return (new(a.P, a.X, new[] { 1 }), b);
 
-        
+
         var (quo, rem) = a.DivideBy(b);
         var (x0, y0) = Bezout(b, rem);
         return (y0, x0 - y0 * quo);

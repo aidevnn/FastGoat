@@ -283,7 +283,7 @@ public static partial class Group
         var gf = new GFp($"GF({poly})", (x, p), cnPoly.coefs);
         return new ConcreteGroup<FpPolynom>(gf);
     }
-    
+
     public static ConcreteGroup<FpPolynom> Galois(int q)
     {
         return Galois('x', q);

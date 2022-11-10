@@ -17,7 +17,7 @@ public readonly struct Xi : IElt<Xi>
     {
         if (!char.IsLetter(c))
             throw new ArgumentException();
-        
+
         xi = c;
         Hash = xi;
     }

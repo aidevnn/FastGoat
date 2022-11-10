@@ -33,12 +33,13 @@ public class StaticExtUnittest
             }
         }
     }
-    
+
     [Fact]
     public void Test2BezoutGcd()
     {
         var zn = new Zn(3 * 5 * 17);
         var seq = Group.Generate(zn, zn[3]).Grid2D(Group.Generate(zn, zn[5]));
+
         bool TestBz(int a, int b)
         {
             var d = IntExt.Gcd(a, b);
