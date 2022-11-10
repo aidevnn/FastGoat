@@ -9,6 +9,8 @@ public struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<Rational>
     public int Num { get; }
     public int Denom { get; }
 
+    public static Rational KZero() => new Rational(0, 1);
+
     public Rational()
     {
         Num = 1;

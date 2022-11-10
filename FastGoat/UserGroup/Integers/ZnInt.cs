@@ -8,6 +8,8 @@ public readonly struct ZnInt : IElt<ZnInt>, IRingElt<ZnInt>, IFieldElt<ZnInt>
     public int P { get; }
     public int K { get; }
 
+    public static ZnInt KZero(int p = 0) => new ZnInt(p, 0);
+
     public ZnInt(int p, int k)
     {
         P = p;
