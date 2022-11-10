@@ -26,6 +26,13 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
         Hash = Coefs.Aggregate(0, (acc, a) => (acc, (a.Key.Hash, a.Value.Hash)).GetHashCode());
     }
 
+    private Polynomial(Monom<T> m, K scalar)
+    {
+        KZero = scalar.Zero;
+        Coefs = new() { [m] = scalar };
+        Hash = Coefs.Aggregate(0, (acc, a) => (acc, (a.Key.Hash, a.Value.Hash)).GetHashCode());
+    }
+
     private Polynomial(K zero, SortedList<Monom<T>, K> coefs)
     {
         if (!zero.IsZero())
@@ -52,6 +59,29 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
     public Polynomial<K, T> Zero => new(KZero);
     public Polynomial<K, T> One => new(KZero.One);
 
+    public Polynomial<K, T> Substitue(T t, Polynomial<K, T> poly)
+    {
+        var acc = Zero;
+        var m = new Monom<T>(t);
+        foreach (var coef in Coefs)
+        {
+            var m0 = coef.Key.Remove(t);
+            acc = acc.Add(poly.Pow(m0.n).Mul(new Polynomial<K, T>(m0.m, coef.Value)));
+        }
+
+        return acc;
+    }
+
+    public Polynomial<K, T> Substitue(T t, K scalar) => Substitue(t, new Polynomial<K, T>(scalar));
+
+    public Polynomial<K, T> Substitue(Polynomial<K, T> m, Polynomial<K, T> poly)
+    {
+        if (m.Coefs.Count != 1 || m.Coefs.First().Key.Degree != 1)
+            throw new GroupException(GroupExceptionType.GroupDef);
+
+        return Substitue(m.Coefs.First().Key.Indeterminates.First(), poly);
+    }
+    public Polynomial<K, T> Substitue(Polynomial<K, T> m, K scalar)=> Substitue(m, new Polynomial<K, T>(scalar));
     public Polynomial<K, T> Add(Polynomial<K, T> e)
     {
         SortedList<Monom<T>, K> coefs = new(Coefs);

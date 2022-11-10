@@ -76,6 +76,19 @@ public readonly struct Monom<T> : IElt<Monom<T>> where T : struct, IElt<T>
         return new(content);
     }
 
+    public (int n, Monom<T> m) Remove(T t)
+    {
+        var content = new SortedList<T, int>(Content);
+        if (content.ContainsKey(t))
+        {
+            var i = content[t];
+            content.Remove(t);
+            return (i, new(content));
+        }
+
+        return (0, new(content));
+    }
+
     public bool Equals(Monom<T> other) => Hash == other.Hash;
 
     public int CompareTo(Monom<T> other)
@@ -97,7 +110,7 @@ public readonly struct Monom<T> : IElt<Monom<T>> where T : struct, IElt<T>
         var s = Content.Select(kp => kp.Value == 1 ? $"{kp.Key}" : $"{kp.Key}{kp.Value}").Glue("");
         for (int i = 0; i < 10; i++)
             s = s.Replace($"{i}", $"{superscripts[i]}");
-        
+
         return s;
     }
 
