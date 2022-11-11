@@ -1,4 +1,4 @@
-using FastGoat.Commons;
+using System.Numerics;
 using FastGoat.Structures;
 
 namespace FastGoat.UserGroup.Integers;
@@ -6,8 +6,8 @@ namespace FastGoat.UserGroup.Integers;
 public struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<Rational>
 {
     public int P => 0;
-    public int Num { get; }
-    public int Denom { get; }
+    public BigInteger Num { get; }
+    public BigInteger Denom { get; }
 
     public static Rational KZero() => new Rational(0, 1);
 
@@ -18,19 +18,19 @@ public struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<Rational>
         Hash = (Num, Denom).GetHashCode();
     }
 
-    public Rational(int num)
+    public Rational(BigInteger num)
     {
         Num = num;
         Denom = 1;
         Hash = (Num, Denom).GetHashCode();
     }
 
-    public Rational(int num, int denom)
+    public Rational(BigInteger num, BigInteger denom)
     {
         if (denom == 0)
             throw new GroupException(GroupExceptionType.GroupDef);
 
-        var gcd = IntExt.Gcd(num, denom);
+        var gcd = BigInteger.GreatestCommonDivisor(num, denom);
         Num = denom > 0 ? num / gcd : -num / gcd;
         Denom = denom > 0 ? denom / gcd : -denom / gcd;
         Hash = (Num, Denom).GetHashCode();
@@ -60,8 +60,8 @@ public struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<Rational>
         if (k < 0)
             return Inv().Pow(-k);
 
-        var num = (int)Math.Pow(Num, k);
-        var denom = (int)Math.Pow(Denom, k);
+        var num = BigInteger.Pow(Num, k);
+        var denom = BigInteger.Pow(Denom, k);
         return new(num, denom);
     }
 
@@ -82,6 +82,6 @@ public struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<Rational>
     public static Rational operator -(Rational a, Rational b) => a.Sub(b);
     public static Rational operator *(Rational a, Rational b) => a.Mul(b);
     public static Rational operator /(Rational a, Rational b) => a.Div(b).quo;
-    public static Rational operator /(Rational a, int b) => new Rational(a.Num, a.Denom * b);
-    public static Rational operator *(int a, Rational b) => new Rational(a * b.Num, b.Denom);
+    public static Rational operator /(Rational a, int b) => new(a.Num, a.Denom * b);
+    public static Rational operator *(int a, Rational b) => new(a * b.Num, b.Denom);
 }
