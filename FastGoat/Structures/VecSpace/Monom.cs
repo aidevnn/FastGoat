@@ -76,6 +76,21 @@ public readonly struct Monom<T> : IElt<Monom<T>> where T : struct, IElt<T>
         return new(content);
     }
 
+    public (int n, Monom<T> m) D(T t)
+    {
+        if (Content.ContainsKey(t))
+        {
+            var m = Div(new(t));
+            if (m.HasValue)
+            {
+                var n = Content[t];
+                return (n, m.Value);
+            }
+        }
+
+        return (0, new());
+    }
+
     public (int n, Monom<T> m) Remove(T t)
     {
         var content = new SortedList<T, int>(Content);
@@ -88,6 +103,8 @@ public readonly struct Monom<T> : IElt<Monom<T>> where T : struct, IElt<T>
 
         return (0, new(content));
     }
+
+    public int DegreeOf(T t) => Content.ContainsKey(t) ? Content[t] : 0;
 
     public bool Equals(Monom<T> other) => Hash == other.Hash;
 

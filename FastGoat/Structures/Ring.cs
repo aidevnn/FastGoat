@@ -32,6 +32,13 @@ public static partial class Ring
         var (x0, y0) = Bezout(b, r);
         return (y0, x0.Add(q.Mul(y0).Opp()));
     }
+    
+    public static Monom<Xi> Xi(char c) => new Monom<Xi>(new Xi(c));
+
+    public static Monom<T> Monom<T>(T e) where T : struct, IElt<T>
+    {
+        return new Monom<T>(e);
+    }
 
     public static Polynomial<K, Xi>[] Polynomial<K>(K zero, char[] xi)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>

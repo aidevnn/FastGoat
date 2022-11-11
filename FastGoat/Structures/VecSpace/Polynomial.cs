@@ -102,6 +102,41 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
         return new(KZero, coefs);
     }
 
+    public Polynomial<K, T> D(T t)
+    {
+        var derivate = Zero;
+        foreach (var coef in Coefs)
+        {
+            var (n, m) = coef.Key.D(t);
+            if (n != 0)
+            {
+                derivate = derivate.Add(new(KZero, new() { [m] = coef.Value.Mul(n) }));
+            }
+        }
+
+        return derivate;
+    }
+
+    public Polynomial<K, T> D(Polynomial<K, T> m)
+    {
+        if (m.Coefs.Count != 1 || m.Coefs.First().Key.Degree != 1)
+            throw new GroupException(GroupExceptionType.GroupDef);
+
+        return D(m.Coefs.First().Key.Indeterminates.First());
+    }
+
+    public int DegreeOf(T t) => Coefs.Max(e => e.Key.DegreeOf(t));
+
+    public Polynomial<K, T> CoefMax(T t)
+    {
+        var n = DegreeOf(t);
+        var xi = new Monom<T>(t, n);
+        var k0 = KZero;
+        return Coefs.Where(e => e.Key.Div(xi).HasValue)
+            .Select(e => new Polynomial<K, T>(k0, new() { [e.Key.Div(xi).Value] = e.Value }))
+            .Aggregate((a, b) => a.Add(b));
+    }
+
     public Polynomial<K, T> Sub(Polynomial<K, T> e)
     {
         SortedList<Monom<T>, K> coefs = new(Coefs);
@@ -178,6 +213,8 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
             rem = rem.Sub(e.Mul(p));
             quo[m] = qr.quo;
             coefs = new Stack<KeyValuePair<Monom<T>, K>>(rem.Coefs.Reverse());
+            if (rem.IsZero())
+                break;
         }
 
         return (new(KZero, quo), rem);
