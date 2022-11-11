@@ -170,4 +170,28 @@ public static class SymbolicMatrix
         // Direct method
         Console.WriteLine("Disc = {0}", Ring.Discriminant(f, X));
     }
+    
+    public static void QuarticDiscriminant()
+    {
+        var x = Ring.Polynomial(ZnInt.KZero());
+        var (a, b, c) = Ring.Polynomial('a', 'b', 'c', ZnInt.KZero());
+        var (d, e) = Ring.Polynomial('d', 'e', ZnInt.KZero());
+        var X = x.Indeterminates.First();
+        var f = a * x.Pow(4) + b * x.Pow(3) + c * x.Pow(2) + d * x + e;
+        var g = f.D(X);
+        var S = Ring.SylvesterMatrix(f, X, g, X);
+        var am = f.CoefMax(X);
+        var n = f.DegreeOf(X);
+        var s = (int)Math.Pow(-1, n * (n - 1) / 2);
+        
+        Console.WriteLine($"f({X})  = {f}");
+        Console.WriteLine($"f'({X}) = {g}");
+        Console.WriteLine("Sylvester Matrix f, f'");
+        Ring.DisplayMatrix(S);
+        Console.WriteLine("Det = {0}", Ring.Determinant(S, f.Zero).Div(am).quo.Mul(s));
+        
+        // Direct method
+        Console.WriteLine("Disc = {0}", Ring.Discriminant(f, X));
+    }
+
 }
