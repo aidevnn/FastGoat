@@ -127,6 +127,8 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
 
     public int DegreeOf(T t) => Coefs.Max(e => e.Key.DegreeOf(t));
 
+    public Polynomial<K, T> Monic() => IsZero() ? this : this.KMul(Coefs.First().Value.Inv());
+
     public Polynomial<K, T> CoefMax(T t)
     {
         var n = DegreeOf(t);
