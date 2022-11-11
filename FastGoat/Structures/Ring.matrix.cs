@@ -1,4 +1,5 @@
 using FastGoat.Commons;
+using FastGoat.Structures.VecSpace;
 
 namespace FastGoat.Structures;
 
@@ -151,5 +152,102 @@ public static partial class Ring
         }
 
         Console.WriteLine();
+    }
+
+    public static Polynomial<K, T>[] PolyBase<K, T>(K zero, T t, int n)
+        where T : struct, IElt<T>
+        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
+    {
+        var ft = new Polynomial<K, T>(t, zero.One);
+        var seq = new Stack<Polynomial<K, T>>(new[] { ft.One });
+        while (seq.Count <= n)
+        {
+            var f0 = seq.Peek().Mul(ft);
+            seq.Push(f0);
+        }
+
+        return seq.ToArray();
+    }
+
+    public static (SortedList<Polynomial<K, T>, Polynomial<K, T>>, SortedList<int, Polynomial<K, T>>)
+        Decompose<K, T>(Polynomial<K, T> f, T ft)
+        where T : struct, IElt<T>
+        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
+    {
+        var n = f.DegreeOf(ft);
+        var baseFt = PolyBase(f.KZero, ft, n);
+        var rem = f;
+        var coefs = new SortedList<Polynomial<K, T>, Polynomial<K, T>>();
+        var bs = new SortedList<int, Polynomial<K, T>>();
+        foreach (var b in baseFt)
+        {
+            bs[b.DegreeOf(ft)] = b;
+            var qr = rem.Div(b);
+            if (!qr.quo.IsZero())
+                coefs[b] = qr.quo;
+            else
+                coefs[b] = f.Zero;
+
+            rem = qr.rem;
+            if (rem.IsZero())
+                break;
+        }
+
+        return (coefs, bs);
+    }
+
+    public static Polynomial<K, T>[,] SylvesterMatrix<K, T>(Polynomial<K, T> f, T ft, Polynomial<K, T> g, T gt)
+        where T : struct, IElt<T>
+        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
+    {
+        if (!f.Zero.Equals(g.Zero))
+            throw new GroupException(GroupExceptionType.GroupDef);
+
+        var (decF, bsF) = Decompose(f, ft);
+        var (decG, bsG) = Decompose(g, gt);
+        var m = decF.First().Key.DegreeOf(ft);
+        var n = decG.First().Key.DegreeOf(gt);
+        var S = new Polynomial<K, T>[m + n , m + n];
+        for (int i = 0; i < m + n; i++)
+        {
+            for (int j = 0; j < m + n; j++)
+            {
+                if (i < n)
+                {
+                    if (j < i || j > i + m)
+                        S[i, j] = f.Zero;
+                    else
+                    {
+                        var mnm = bsF[m - j + i];
+                        S[i, j] = decF[mnm];
+                    }
+                }
+                else
+                {
+                    var i0 = i - n;
+                    if (j < i0 || j > i0 + n)
+                        S[i, j] = f.Zero;
+                    else
+                    {
+                        var mnm = bsG[n - j + i0];
+                        S[i, j] = decG[mnm];
+                    }
+                }
+            }
+        }
+
+        return S;
+    }
+
+    public static Polynomial<K, T> Discriminant<K, T>(Polynomial<K, T> f, T X)
+        where T : struct, IElt<T>
+        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
+    {
+        var g = f.D(X);
+        var S = SylvesterMatrix(f, X, g, X);
+        var am = f.CoefMax(X);
+        var n = f.DegreeOf(X);
+        var s = (int)Math.Pow(-1, n * (n - 1) / 2);
+        return Determinant(S, f.Zero).Div(am).quo.Mul(s);
     }
 }

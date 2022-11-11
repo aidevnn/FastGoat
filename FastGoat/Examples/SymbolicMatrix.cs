@@ -115,4 +115,59 @@ public static class SymbolicMatrix
         Console.WriteLine("Det = {0}", Ring.Determinant(mat, z0));
         Console.WriteLine();
     }
+
+    public static void SylvesterMatrix()
+    {
+        var x = Ring.Polynomial(ZnInt.KZero());
+        var X = x.Indeterminates.First();
+        var f = 2 * x.Pow(2) + 3 * x + 1;
+        var g = 7 * x.Pow(2) + x + 3;
+        var S = Ring.SylvesterMatrix(f, X, g, X);
+        Console.WriteLine("Det = {0}", Ring.Determinant(S, f.Zero));
+        Ring.DisplayMatrix(S);
+    }
+
+    public static void QuadraticDiscriminant()
+    {
+        var x = Ring.Polynomial(ZnInt.KZero());
+        var (a, b, c) = Ring.Polynomial('a', 'b', 'c', ZnInt.KZero());
+        var X = x.Indeterminates.First();
+        var f = a * x.Pow(2) + b * x + c;
+        var g = f.D(X);
+        var S = Ring.SylvesterMatrix(f, X, g, X);
+        var am = f.CoefMax(X);
+        var n = f.DegreeOf(X);
+        var s = (int)Math.Pow(-1, n * (n - 1) / 2);
+        
+        Console.WriteLine($"f({X})  = {f}");
+        Console.WriteLine($"f'({X}) = {g}");
+        Console.WriteLine("Sylvester Matrix f, f'");
+        Ring.DisplayMatrix(S);
+        Console.WriteLine("Det = {0}", Ring.Determinant(S, f.Zero).Div(am).quo.Mul(s));
+        
+        // Direct method
+        Console.WriteLine("Disc = {0}", Ring.Discriminant(f, X));
+    }
+
+    public static void CubicDiscriminant()
+    {
+        var x = Ring.Polynomial(ZnInt.KZero());
+        var (p, q) = Ring.Polynomial('p', 'q', ZnInt.KZero());
+        var X = x.Indeterminates.First();
+        var f = x.Pow(3) + p * x + q;
+        var g = f.D(X);
+        var S = Ring.SylvesterMatrix(f, X, g, X);
+        var am = f.CoefMax(X);
+        var n = f.DegreeOf(X);
+        var s = (int)Math.Pow(-1, n * (n - 1) / 2);
+        
+        Console.WriteLine($"f({X})  = {f}");
+        Console.WriteLine($"f'({X}) = {g}");
+        Console.WriteLine("Sylvester Matrix f, f'");
+        Ring.DisplayMatrix(S);
+        Console.WriteLine("Det = {0}", Ring.Determinant(S, f.Zero).Div(am).quo.Mul(s));
+        
+        // Direct method
+        Console.WriteLine("Disc = {0}", Ring.Discriminant(f, X));
+    }
 }
