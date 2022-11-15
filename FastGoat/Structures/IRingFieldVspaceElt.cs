@@ -21,7 +21,8 @@ public interface IFieldElt<T> : IEquatable<T>, IComparable<T> where T : IElt<T>,
 }
 
 public interface IVsElt<K, T> : IEquatable<T>, IComparable<T>
-    where T : IElt<T>, IRingElt<T>, IVsElt<K, T> where K : IElt<K>, IRingElt<K>, IFieldElt<K>, new()
+    where T : IElt<T>, IRingElt<T>, IVsElt<K, T> 
+    where K : IElt<K>, IRingElt<K>, IFieldElt<K>
 {
     int P { get; }
     T KMul(K k);

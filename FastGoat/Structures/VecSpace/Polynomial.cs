@@ -52,7 +52,7 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
         return Coefs.Select(kp => (kp.Key, kp.Value)).SequenceCompareTo(other.Coefs.Select(kp => (kp.Key, kp.Value)));
     }
 
-    public int P => 0;
+    public int P => KZero.P;
 
     public int Hash { get; }
 
@@ -254,17 +254,17 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
     public override string ToString()
     {
         var one = KZero.One;
-
+        var sep = (Monom.Display & MonomDisplay.Star) == MonomDisplay.Star ? "*" : "·"; 
         string Str(Monom<T> m, K k)
         {
             var sm = $"{m}";
             if (k.Equals(one))
                 return string.IsNullOrEmpty(sm) ? "1" : sm;
 
-            if (k.Equals(one.Opp()))
+            if (k.Equals(one.Opp()) && one.P == 0)
                 return string.IsNullOrEmpty(sm) ? "-1" : $"-{sm}";
 
-            return string.IsNullOrEmpty(sm) ? $"{k}" : $"{k}·{sm}";
+            return string.IsNullOrEmpty(sm) ? $"{k}" : $"{k}{sep}{sm}";
         }
 
         return Coefs.Select(kp => Str(kp.Key, kp.Value)).Glue(" + ");

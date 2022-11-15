@@ -6,7 +6,7 @@ namespace FastGoat.Structures;
 
 public static partial class Ring
 {
-    public static IEnumerable<T> TrimSeq<T>(this IEnumerable<T> seq) where T : struct, IElt<T>, IRingElt<T>
+    public static IEnumerable<T> TrimSeq<T>(this IEnumerable<T> seq) where T : IElt<T>, IRingElt<T>
     {
         var stack = new Stack<T>(seq);
         while (stack.Count != 0 && stack.Peek().IsZero())
@@ -15,7 +15,7 @@ public static partial class Ring
         return stack.Reverse();
     }
 
-    public static T Gcd<T>(T a, T b) where T : struct, IElt<T>, IRingElt<T>
+    public static T Gcd<T>(T a, T b) where T : IElt<T>, IRingElt<T>
     {
         if (b.IsZero())
             return a.CompareTo(a.Opp()) == -1 ? a.Opp() : a;
@@ -23,7 +23,7 @@ public static partial class Ring
         return Gcd(b, a.Div(b).rem);
     }
 
-    public static (T x, T y) Bezout<T>(T a, T b) where T : struct, IElt<T>, IRingElt<T>
+    public static (T x, T y) Bezout<T>(T a, T b) where T : IElt<T>, IRingElt<T>
     {
         if (b.IsZero())
             return a.CompareTo(a.Opp()) == -1 ? (a.One.Opp(), a.Zero) : (a.One, a.Zero);
@@ -81,5 +81,21 @@ public static partial class Ring
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
         return (Polynomial(x1, zero), Polynomial(x2, zero), Polynomial(x3, zero));
+    }
+
+    public static (int d, Polynomial<ZnInt, Xi> poly)[] ConwayPolys(int p)
+    {
+        var all = PolynomExt.GetAll(p);
+        var x = Polynomial(ZnInt.KZero(p));
+        return all.Select(e => (e.d, e.coefs.Select((a, i) => a * x.Pow(i)).Aggregate((a, b) => a.Add(b)))).ToArray();
+    }
+
+    public static KPoly<Rational> QX(char c = 'X')
+    {
+        return new KPoly<Rational>(c);
+    }
+    public static KPoly<ZnInt> ZX(char c = 'X', int p = 0)
+    {
+        return new KPoly<ZnInt>(c, ZnInt.KZero(p));
     }
 }

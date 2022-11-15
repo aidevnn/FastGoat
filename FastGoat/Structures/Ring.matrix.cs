@@ -23,7 +23,7 @@ public static partial class Ring
         return A;
     }
 
-    public static T[,] Matrix<T>(int rows, T t0, params int[] coefs) where T : IRingElt<T>, IElt<T>
+    public static T[,] Matrix<T>(int rows, T t0, params int[] coefs) where T : IElt<T>, IRingElt<T>, IFieldElt<T>
     {
         return Matrix(rows, coefs.Select(c => t0.One.Mul(c)).ToArray());
     }
@@ -34,7 +34,7 @@ public static partial class Ring
         return Matrix(n, coefs);
     }
 
-    public static T[,] Dot<T>(T[,] A, T[,] B, T t0) where T : IRingElt<T>, IElt<T>
+    public static T[,] Dot<T>(T[,] A, T[,] B, T t0) where T :  IElt<T>, IRingElt<T>
     {
         var rowsA = A.GetLength(0);
         var colsAB = A.GetLength(1);
@@ -57,6 +57,26 @@ public static partial class Ring
         }
 
         return C;
+    }
+
+    public static void Dot<T>(T[,] A, T[,] B, T[,] C, T t0) where T :  IElt<T>, IRingElt<T>, IFieldElt<T>
+    {
+        if (A.GetLength(1) != B.GetLength(0) || A.GetLength(0) != C.GetLength(0) || B.GetLength(1) != C.GetLength(1))
+            throw new ArgumentException();
+
+        var rowsA = C.GetLength(0);
+        var colsAB = A.GetLength(1);
+        for (int i = 0; i < rowsA; i++)
+        {
+            for (int j = 0; j < colsAB; j++)
+            {
+                var sum = t0.Zero;
+                for (int k = 0; k < colsAB; k++)
+                    sum = sum.Add(A[i, k].Mul(B[k, j]));
+
+                C[i, j] = sum;
+            }
+        }
     }
 
     public static T[,] Cofactor<T>(T[,] A, int row, int col) where T : IElt<T>, IRingElt<T>
@@ -182,6 +202,12 @@ public static partial class Ring
         foreach (var b in baseFt)
         {
             bs[b.DegreeOf(ft)] = b;
+            if (rem.IsZero())
+            {
+                coefs[b] = f.Zero;
+                continue;
+            }
+            
             var qr = rem.Div(b);
             if (!qr.quo.IsZero())
                 coefs[b] = qr.quo;
@@ -189,8 +215,6 @@ public static partial class Ring
                 coefs[b] = f.Zero;
 
             rem = qr.rem;
-            if (rem.IsZero())
-                break;
         }
 
         return (coefs, bs);
@@ -244,10 +268,15 @@ public static partial class Ring
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
         var g = f.D(X);
+        if (g.IsZero())
+            return f.Zero;
+        
         var S = SylvesterMatrix(f, X, g, X);
         var am = f.CoefMax(X);
         var n = f.DegreeOf(X);
-        var s = (int)Math.Pow(-1, n * (n - 1) / 2);
-        return Determinant(S, f.Zero).Div(am).quo.Mul(s);
+        var n0 = (int)(n * (n - 1) / 2);
+        var s = n0 % 2 == 0 ? 1 : -1;
+        var det = Determinant(S, f.Zero);
+        return det.Div(am).quo.Mul(s);
     }
 }

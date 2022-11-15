@@ -124,7 +124,13 @@ public readonly struct Monom<T> : IElt<Monom<T>> where T : struct, IElt<T>
 
     public override string ToString()
     {
-        var sep = Monom.ShowStar ? "*" : "";
+        var sep = (Monom.Display & MonomDisplay.Star) == MonomDisplay.Star ? "*" : "";
+        if ((Monom.Display & MonomDisplay.Caret) == MonomDisplay.Caret)
+            return Content.Select(kp => kp.Value == 1 ? $"{kp.Key}" : $"{kp.Key}^{kp.Value}").Glue(sep);
+        
+        if ((Monom.Display & MonomDisplay.PowFct) == MonomDisplay.PowFct)
+            return Content.Select(kp => kp.Value == 1 ? $"{kp.Key}" : $"{kp.Key}.Pow({kp.Value})").Glue(sep);
+        
         var s = Content.Select(kp => kp.Value == 1 ? $"{kp.Key}" : $"{kp.Key}{kp.Value}").Glue(sep);
         for (int i = 0; i < 10; i++)
             s = s.Replace($"{i}", $"{superscripts[i]}");
@@ -135,7 +141,19 @@ public readonly struct Monom<T> : IElt<Monom<T>> where T : struct, IElt<T>
     private static string superscripts = "⁰¹²³⁴⁵⁶⁷⁸⁹";
 }
 
+[Flags]
+public enum MonomDisplay
+{
+    Caret = 1,
+    Superscript = 2,
+    PowFct = 4,
+    Star = 8,
+    Default = Superscript,
+    StarSuperscript = Star|Superscript,
+    StarCaret=Star|Caret,
+    StarPowFct = Star|PowFct
+}
 public static class Monom
 {
-    public static bool ShowStar = false;
+    public static MonomDisplay Display = MonomDisplay.Default;
 }

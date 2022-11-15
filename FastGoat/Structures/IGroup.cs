@@ -1,6 +1,6 @@
 namespace FastGoat.Structures;
 
-public interface IGroup<T> : IEnumerable<T>, IEquatable<IGroup<T>> where T : struct, IElt<T>
+public interface IGroup<T> : IEnumerable<T>, IEquatable<IGroup<T>> where T : IElt<T>
 {
     int Hash { get; }
     string Name { get; }
