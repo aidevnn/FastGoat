@@ -24,7 +24,7 @@ public readonly struct Coset<T> : ILeftCoset<T, Coset<T>> where T : struct, IElt
     public T X { get; }
     public ConcreteGroup<T> G { get; }
     public ConcreteGroup<T> H { get; }
-    public bool Equals(Coset<T> other) => Hash == other.Hash;
+    public bool Equals(Coset<T> other) => X.Equals(other.X);
 
     public int CompareTo(Coset<T> other) => X.CompareTo(other.X);
 
