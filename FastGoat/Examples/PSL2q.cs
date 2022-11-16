@@ -1,3 +1,4 @@
+using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.CartesianProduct;
 using FastGoat.UserGroup.Integers;
@@ -8,6 +9,51 @@ namespace FastGoat.Examples;
 
 public static class PSL2q
 {
+    static void L2pCompute(int p)
+    {
+        var gl = new GL(2, p);
+        var x = (p - 2).Range(2).First(i => IntExt.PowMod(i, p - 1, p) == 1);
+        var xp = IntExt.PowMod(x, p - 2, p);
+        
+        // SL(2,q) generators from H.E. Rose, page 271, Problem 12.5
+        var a = gl[x, 0, 0, xp];
+        var b = gl[p - 1, 1, p - 1, 0];
+        
+        var SL2q = Group.Generate($"SL(2,{p})", gl, a, b);
+        var z = Group.Zentrum(SL2q);
+        var L2q = SL2q.Over(z, $"L2({p})");
+        DisplayGroup.Head(L2q);
+    }
+
+    static void L2qCompute(int q)
+    {
+        var gl = new GLnq(2, q);
+        if (gl.Fq.M == 1)
+            return;
+        var x = gl.Fq['x'];
+        
+        // SL(2,q) generators from H.E. Rose, page 271, Problem 12.5
+        var a = gl[x, 0, 0, x.Pow(q - 2)];
+        var b = gl[q - 1, 1, q - 1, 0];
+        
+        var SL2q = Group.Generate($"SL(2,{q})", gl, a, b);
+        var z = Group.Zentrum(SL2q);
+        var L2q = SL2q.Over(z, $"L2({q})");
+        DisplayGroup.Head(L2q);
+    }
+
+    public static void L2p()
+    {
+        foreach (var p in IntExt.Primes10000.Where(p => p is > 3 and < 54))
+            L2pCompute(p);
+    }
+
+    public static void L2q()
+    {
+        foreach (var q in new[] { 4, 8, 9, 16, 25, 27, 32, 49 })
+            L2qCompute(q);
+    }
+
     public static void L2_4()
     {
         var gl = new GLnq(2, 4);
@@ -60,7 +106,7 @@ public static class PSL2q
 
         var gl2_9 = Group.Generate(gl, a, b);
         DisplayGroup.HeadOrders(gl2_9); // |Gl(2, F9)| = 5760
-        
+
         var a1 = gl['x', 0, 0, ('x', 7)];
         var sl2_9 = Group.Generate("SL2(9)", gl, a1, b);
         DisplayGroup.HeadOrders(sl2_9); // |SL2(9)| = 720
@@ -72,7 +118,7 @@ public static class PSL2q
         var zg2_9 = Group.Zentrum(sl2_9);
         var l2_9 = sl2_9.Over(zg2_9, "L2(9)");
         DisplayGroup.HeadOrders(l2_9);
-        
+
         var a6 = Group.Generate("A6", s6, s6[(4, 5, 6)], s6[(1, 2, 3, 4, 5)]);
         DisplayGroup.HeadOrders(a6);
 
@@ -122,11 +168,10 @@ public static class PSL2q
         var b = gl[2, 1, 2, 0];
         var sl2_27 = Group.Generate("SL2(27)", gl, a, b);
         DisplayGroup.HeadOrders(sl2_27); // |SL2(27)| = 19656
-        
+
         var zg2_27 = Group.Zentrum(sl2_27);
         DisplayGroup.Head(zg2_27); // |Z(SL2(27))| = 2
         var l2_27 = sl2_27.Over(zg2_27, "L2(27)");
         DisplayGroup.Head(l2_27); // |L2(27)| = 9828
     }
-
 }
