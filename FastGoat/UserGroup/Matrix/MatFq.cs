@@ -17,7 +17,7 @@ public struct MatFq : IElt<MatFq>
         Hash = hash;
     }
 
-    public bool Equals(MatFq other) => Hash == other.Hash;
+    public bool Equals(MatFq other) => Table.SequenceEqual(other.Table);
 
     public int CompareTo(MatFq other) => Table.SequenceCompareTo(other.Table);
 

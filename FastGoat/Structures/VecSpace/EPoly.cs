@@ -1,3 +1,5 @@
+using FastGoat.UserGroup.Integers;
+
 namespace FastGoat.Structures.VecSpace;
 
 public readonly struct EPoly<K> : IVsElt<K, EPoly<K>>, IElt<EPoly<K>>, IRingElt<EPoly<K>>, IFieldElt<EPoly<K>>
@@ -16,7 +18,7 @@ public readonly struct EPoly<K> : IVsElt<K, EPoly<K>>, IElt<EPoly<K>>, IRingElt<
         Hash = (Poly.Hash, f.Hash).GetHashCode();
     }
 
-    private EPoly(KPoly<K> f, KPoly<K> poly)
+    public EPoly(KPoly<K> f, KPoly<K> poly)
     {
         F = f;
         Poly = poly;
@@ -30,7 +32,7 @@ public readonly struct EPoly<K> : IVsElt<K, EPoly<K>>, IElt<EPoly<K>>, IRingElt<
         Hash = (Poly.Hash, f.Hash).GetHashCode();
     }
 
-    public bool Equals(EPoly<K> other) => Hash == other.Hash;
+    public bool Equals(EPoly<K> other) => Poly.Equals(other.Poly); // Avoid collisions
 
     public int CompareTo(EPoly<K> other) => Poly.CompareTo(other.Poly);
 
@@ -110,4 +112,6 @@ public readonly struct EPoly<K> : IVsElt<K, EPoly<K>>, IElt<EPoly<K>>, IRingElt<
 
     public static EPoly<K> operator /(EPoly<K> a, K b) => a.KMul(b.Inv());
     public static EPoly<K> operator /(EPoly<K> a, int b) => a.KMul(a.KOne.Mul(b).Inv());
+
+    public static implicit operator EPoly<K>(int k) => new EPoly<K>(new KPoly<K>('x'), new KPoly<K>('x').One * k);
 }

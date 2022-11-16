@@ -58,7 +58,7 @@ public class KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<KPoly<K>>
         }
     }
 
-    public bool Equals(KPoly<K> other) => Hash == other.Hash;
+    public bool Equals(KPoly<K> other) => Coefs.SequenceEqual(other.Coefs); // Avoid collisions
 
     public int CompareTo(KPoly<K> other)
     {

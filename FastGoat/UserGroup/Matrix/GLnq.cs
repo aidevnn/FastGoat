@@ -15,7 +15,7 @@ public class GLnq : IGroup<MatFq>
 
     public GLnq(int n, int q)
     {
-        if (n < 1 || n > 3)
+        if (n < 1 || n > 4)
             throw new GroupException(GroupExceptionType.GroupDef);
 
         N = n;
@@ -41,6 +41,23 @@ public class GLnq : IGroup<MatFq>
 
     public int Hash { get; }
     public string Name { get; }
+
+    public MatFq this[params EPoly<ZnInt>[] coefs]
+    {
+        get
+        {
+            var table = coefs.Length >= N * N
+                ? coefs.Take(N * N).ToArray()
+                : coefs.Concat(Enumerable.Repeat(Fq.Zero, N * N - coefs.Length)).ToArray();
+
+            var table0 = table.Select(e => e.Poly.Coefs.Select(ei => new ZnInt(Fq.P, ei.K)).ToArray())
+                .Select(e => new EPoly<ZnInt>(Fq.F, new KPoly<ZnInt>(Fq.F.x, ZnInt.KZero(Fq.P), e)))
+                .ToArray();
+
+            var hash = table0.Aggregate(0, (acc, a) => a.GetHashCode() + Fq.Q * acc);
+            return new(this, hash, table0);
+        }
+    }
 
     public MatFq this[params ValueType[] us]
     {
