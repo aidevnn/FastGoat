@@ -85,19 +85,13 @@ public static class SylowSubGroups
     private static List<ConcreteGroup<Mat>> KleinSubGroups()
     {
         var g0 = Product.Generate(new Cn(2), new Cn(2));
-        var isos = Group.AllIsomorphisms(g0, GL23mat).Select(e => e.Image().ToHashSet())
-            .ToHashSet(new SetEquality<Mat>());
-        var allKleins = isos.Select((s, i) => Group.Generate($"Klein[{i}]", GL23mat, s.ToArray())).ToList();
-        return allKleins;
+        return Group.IsomorphicsSubgroupsAll(GL23mat, g0, "Klein");
     }
 
     private static List<ConcreteGroup<Mat>> Symm3SubGroups()
     {
         var g0 = new Symm(3);
-        var isos = Group.AllIsomorphisms(g0, GL23mat).Select(e => e.Image().ToHashSet())
-            .ToHashSet(new SetEquality<Mat>());
-        var allKleins = isos.Select((s, i) => Group.Generate($"Symm3[{i}]", GL23mat, s.ToArray())).ToList();
-        return allKleins;
+        return Group.IsomorphicsSubgroupsAll(GL23mat, g0, "Symm3");
     }
 
     private static List<ConcreteGroup<Mat>> SylowPSubgroups()
@@ -110,21 +104,14 @@ public static class SylowSubGroups
     private static List<ConcreteGroup<Mat>> Dihedral8SubGroups()
     {
         var d8 = Group.SemiDirectProd(new Cn(4), new Cn(2));
-        var isos = Group.AllIsomorphisms(d8, GL23mat).Select(e => e.Image().ToHashSet())
-            .ToHashSet(new SetEquality<Mat>());
-
-        var allD8 = isos.Select((s, i) => Group.Generate($"D8[{i}]", GL23mat, s.ToArray())).ToList();
-        return allD8;
+        var d80 = Group.IsomorphicSubgroup(GL23mat, d8, "D8");
+        return Group.SubGroupsConjugates(GL23mat, d80);
     }
 
     private static List<ConcreteGroup<Mat>> Order12Subgroups()
     {
         var h12u = Group.Generate("H12", GL23mat, GL23mat[2, 1, 0, 1], GL23mat[1, 2, 0, 1], GL23mat[1, 1, 0, 2]);
-        var isos = Group.AllIsomorphisms(h12u, GL23mat).Select(hom => hom.Image().ToHashSet())
-            .ToHashSet(new SetEquality<Mat>());
-
-        var allH12 = isos.Select((s, i) => Group.Generate($"H12[{i}]", GL23mat, s.ToArray())).ToList();
-        return allH12;
+        return Group.SubGroupsConjugates(GL23mat, h12u);
     }
 
     public static void ShowGL32Elements()
@@ -144,10 +131,21 @@ public static class SylowSubGroups
 
     public static void ShowSymm3SubGroups()
     {
-        foreach (var subgroup in Symm3SubGroups())
+        var all = Symm3SubGroups();
+        foreach (var subgroup in all)
         {
             DisplayGroup.HeadElements(subgroup);
         }
+
+        var g1 = all[0];
+        var conj0 = Group.SubGroupsConjugates(GL23mat, g1);
+        Console.WriteLine($"Nb Conjugates  for {all[0]} : {conj0.Count}");
+        
+        var g2 = all.First(g => conj0.All(g0 => !g.SetEquals(g0)));
+        var conj1 = Group.SubGroupsConjugates(GL23mat, g2);
+        
+        Console.WriteLine($"Nb Conjugates  for {g2} : {conj1.Count}");
+        Console.WriteLine($"Nb Isomorphics for {all[0]} : {all.Count}");
     }
 
     public static void ShowQuaternion()
