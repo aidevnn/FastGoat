@@ -113,6 +113,40 @@ public static partial class Group
     {
         return g.Contains(a) && g.Contains(b) && Orbits(g, ByConjugate(g), a).Contains(b);
     }
+    
+    public static List<ConcreteGroup<T>> SubGroupsConjugates<T>(ConcreteGroup<T> g, ConcreteGroup<T> h) where T : struct, IElt<T>
+    {
+        if (!h.SubSetOf(g))
+            throw new GroupException(GroupExceptionType.NotSubGroup);
+        
+        var all = new HashSet<HashSet<T>>(new SetEquality<T>());
+        foreach (var s in g)
+        {
+            var si = g.Invert(s);
+            var set = h.Select(x => g.Op(s, g.Op(x, si))).ToHashSet();
+            all.Add(set);
+        }
+
+        return all.Select((set, i) => Generate($"{h.Name}[{i}]", g, set.ToArray())).ToList();
+    }
+
+    public static ConcreteGroup<T1>? IsomorphicSubgroup<T1, T2>(ConcreteGroup<T1> g, ConcreteGroup<T2> sg, string name)
+        where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
+    {
+        var iso = Group.AllMorphisms(sg, g, MorphismType.Isomorphism).FirstOrDefault();
+        if (iso.HomMap is null)
+            return null;
+        
+        return Generate($"{name}", g, iso.Image().ToArray());
+    }
+
+    public static List<ConcreteGroup<T1>> IsomorphicsSubgroupsAll<T1, T2>(ConcreteGroup<T1> g, ConcreteGroup<T2> sg, string name)
+        where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
+    {
+        var isos = Group.AllIsomorphisms(sg, g).Select(h => h.Image().ToHashSet()).ToHashSet(new SetEquality<T1>());
+        return isos.Select((h, i) => Group.Generate($"{name}[{i}]", g, h.ToArray())).ToList();
+    }
+
 
     public static ConcreteGroup<T> Commutator<T>(string name, ConcreteGroup<T> grG, ConcreteGroup<T> grH,
         ConcreteGroup<T> grK)
