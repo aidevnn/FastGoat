@@ -47,6 +47,8 @@ public class SemiDirectProduct<T1, T2> : ConcreteGroup<Ep2<T1, T2>>
         Gcan = Group.Generate(G.Name, this, g.Select(e => Product.Elt(N.Neutral(), e)).ToArray());
     }
 
+    public bool IsFaithFull() => Theta.Kernel().Count() == 1;
+
     public Ep2<T1, T2> Act(T1 en, T2 eg)
     {
         if (!N.Contains(en) || !G.Contains(eg))

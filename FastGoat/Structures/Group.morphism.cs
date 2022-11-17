@@ -210,9 +210,13 @@ public static partial class Group
         where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
     {
         var allOps = AllOpsByAutomorphisms(g, n);
-        var idx = allOps.FindIndex(kp => kp.Image().Count() > 1);
+        var idx = allOps.FindIndex(kp => kp.Image().Count() > 1 && kp.Kernel().Count() == 1); // First faithfull action
         if (idx == -1)
-            throw new GroupException(GroupExceptionType.SemiDirectProductDontExist);
+        {
+            idx = allOps.FindIndex(kp => kp.Image().Count() > 1); // First non faithfull action
+            if (idx == -1)
+                throw new GroupException(GroupExceptionType.SemiDirectProductDontExist);
+        }
 
         var theta = allOps[idx];
         return new SemiDirectProduct<T1, T2>(name, n, theta, g);

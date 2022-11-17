@@ -6,6 +6,7 @@ using FastGoat.UserGroup.Integers;
 using FastGoat.UserGroup.Matrix;
 using FastGoat.UserGroup.Perms;
 using FastGoat.UserGroup.Words;
+using FastGoat.UserGroup.Words.ToddCoxeter;
 
 namespace FastGoat.Examples;
 
@@ -43,8 +44,9 @@ public static class SylowSubGroups
             foreach (var kp1 in kp0.GroupBy(g => g.GroupType))
             {
                 Console.WriteLine($"  {kp1.Key}");
-                foreach (var g in kp1.OrderBy(g => g.Name))
-                    Console.WriteLine($"    {g.Name}");
+                Console.WriteLine($"    {kp1.OrderBy(g => g.Name).Glue(", ")}");
+                // foreach (var g in kp1.OrderBy(g => g.Name))
+                //     Console.WriteLine($"    {g.Name}");
             }
         }
 

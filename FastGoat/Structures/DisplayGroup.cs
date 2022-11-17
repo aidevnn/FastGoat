@@ -182,7 +182,8 @@ public static class DisplayGroup
         Console.WriteLine($"ActionGroup  |{p.G}| = {p.G.Count()}");
 
         Console.WriteLine();
-        Console.WriteLine("Actions");
+        var faithfull = p.IsFaithFull() ? "FaithFull" : "Not FaithFull";
+        Console.WriteLine($"Action {faithfull}");
 
         var ordered = p.G.ElementsOrders.Keys.Ascending().ThenBy(a => p.G.ElementsOrders[a]).ToArray();
         foreach (var g in ordered)
