@@ -190,7 +190,7 @@ public class SequenceEquality<T> : EqualityComparer<IEnumerable<T>> where T : IE
 {
     public override bool Equals(IEnumerable<T>? x, IEnumerable<T>? y)
     {
-        return y is not null && x is not null && x.Ascending().SequenceEqual(y.Ascending());
+        return y is not null && x is not null && x.SequenceEqual(y);
     }
 
     public override int GetHashCode(IEnumerable<T> obj) => (obj.Count(), typeof(T).GetHashCode()).GetHashCode();
