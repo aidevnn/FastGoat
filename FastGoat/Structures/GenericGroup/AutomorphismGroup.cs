@@ -48,7 +48,7 @@ public class AutomorphismGroup<T> : IGroup<Automorphism<T>> where T : struct, IE
         if (!Equals(e1.AutGroup) || !Equals(e2.AutGroup))
             throw new GroupException(GroupExceptionType.BaseGroup);
 
-        var autMap = e1.AutMap.ToDictionary(kp => kp.Key, kp => e2.AutMap[kp.Value]);
+        var autMap = e2.AutMap.ToDictionary(kp => kp.Key, kp => e1.AutMap[kp.Value]);
         return new Automorphism<T>(this, autMap);
     }
 
