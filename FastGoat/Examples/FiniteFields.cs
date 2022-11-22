@@ -251,7 +251,7 @@ public static class FiniteFields
         MultiplicationTable(c5);
 
         var s11 = new Sn(11);
-        var c11 = Group.Generate("C11", s11, s11.Cycle(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11));
+        var c11 = Group.Generate("C11", s11, s11[(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)]);
         MultiplicationTable(c11);
 
         // Ambiguous notation

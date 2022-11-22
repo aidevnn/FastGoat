@@ -9,7 +9,7 @@ public static class MathieuGroup
     public static void M11()
     {
         var s11 = new Sn(11);
-        var a = s11.Cycle(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
+        var a = s11[(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)];
         var b = s11[(3, 7, 11, 8), (4, 10, 5, 6)];
         var m11 = Group.Generate("M11", s11, a, b);
         DisplayGroup.Head(m11);
@@ -18,7 +18,7 @@ public static class MathieuGroup
     public static void M12()
     {
         var s12 = new Sn(12);
-        var a = s12.Cycle(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
+        var a = s12[(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)];
         var b = s12[(3, 7, 11, 8), (4, 10, 5, 6)];
         var c = s12[(1, 12), (2, 11), (3, 6), (4, 8), (5, 9), (7, 10)];
         var m12 = Group.Generate("M12", s12, a, b, c);

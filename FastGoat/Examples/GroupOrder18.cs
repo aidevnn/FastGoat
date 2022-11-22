@@ -54,7 +54,7 @@ public static class GroupOrder18
         Console.WriteLine();
 
         var s9 = new Sn(9);
-        var a = s9.Cycle(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        var a = s9[(1, 2, 3, 4, 5, 6, 7, 8, 9)];
         var b = s9[(2, 9), (3, 8), (4, 7), (5, 6)];
         var pgD18 = Group.Generate("pg(D18)", s9, a, b);
         DisplayGroup.Head(pgD18);
