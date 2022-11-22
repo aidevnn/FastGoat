@@ -32,6 +32,7 @@ public class WordGroup : ConcreteGroup<Word>
     }
 
     public WordGroupBase WGbase { get; }
+    public string Definition => WGbase.Definition;
     private OpsTable OpsTable { get; }
     public IEnumerable<char> Rewrite(IEnumerable<char> s) => OpsTable.Rewrite(s);
 
