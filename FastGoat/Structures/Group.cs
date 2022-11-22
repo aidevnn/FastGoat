@@ -1,7 +1,10 @@
 using System.Collections.ObjectModel;
 using FastGoat.Commons;
+using FastGoat.Structures.CartesianProduct;
 using FastGoat.Structures.GenericGroup;
+using FastGoat.UserGroup.Integers;
 using FastGoat.UserGroup.Polynoms;
+using FastGoat.UserGroup.Words;
 
 namespace FastGoat.Structures;
 
@@ -288,4 +291,67 @@ public static partial class Group
     {
         return Galois('x', q);
     }
+    
+    public static List<WordGroup> Frobenius(int o)
+    {
+        var ms = IntExt.Dividors(o).Where(d => d > 1 && d % 2 == 1).ToArray();
+    
+        List<WordGroup> all = new();
+        foreach (var m in ms)
+        {
+            var n = o / m;
+            var rs = m.Range().Where(r => IntExt.Gcd(m, n * (r - 1)) == 1 && IntExt.PowMod(r, n, m) == 1).ToArray();
+            foreach (var r in rs)
+            {
+                var wg = new WordGroup($"Frob({m},{n},{r})" ,$"a{m}, b{n}, b-1ab = a{r}");
+                if (all.Any(g => g.IsIsomorphicTo(wg)))
+                    continue;
+
+                all.Add(wg);
+            }
+        }
+
+        return all;
+    }
+
+    public static ConcreteGroup<Ep2<ZnInt, ZnInt>> MetaCyclicSdp(int m, int n, int r)
+    {
+        var cm = new Cn(m);
+        var cn = new Cn(n);
+        var autCm = AutBase(cm);
+        var g1 = autCm[(cm[1], cm[r])];
+        var aut = Generate(autCm, g1);
+        var pMap = PartialMap((cn[0], autCm.Neutral()), (cn[1], g1));
+        var theta = Hom(cn, HomomorphismMap(cn, aut, pMap));
+        return SemiDirectProd($"Frob({m},{n},{r})" ,cm, theta, cn);
+    }
+
+    public static int[] MetaCyclicGetR(int m, int n)
+    {
+        return m.Range().Where(r => IntExt.Gcd(m, n * (r - 1)) == 1 && IntExt.PowMod(r, n, m) == 1).ToArray();
+    }
+    public static List<ConcreteGroup<Ep2<ZnInt,ZnInt>>> FrobeniusSdp(int order)
+    {
+        var ms = IntExt.Dividors(order).Where(d => d > 1 && d % 2 == 1).ToArray();
+    
+        List<ConcreteGroup<Ep2<ZnInt,ZnInt>>> all = new();
+        foreach (var m in ms)
+        {
+            var n = order / m;
+            var rs = MetaCyclicGetR(m, n);
+            foreach (var r in rs)
+            {
+                var sdp = MetaCyclicSdp(m, n, r);
+                if (all.Any(g => g.IsIsomorphicTo(sdp)))
+                    continue;
+
+                all.Add(sdp);
+            }
+        }
+
+        return all;
+    }
+
+    public static WordGroup DiCyclic(int n) => new WordGroup($"Q{n}", $"a{n} = b2, b2 = abab");
+
 }
