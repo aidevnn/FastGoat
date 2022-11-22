@@ -81,18 +81,11 @@ public struct Ep<T> : IElt<Ep<T>> where T : IElt<T>
 
     public Ep(T[] ei)
     {
-        Ei = ei.ToArray();
-
-        HashCode code = new HashCode();
-        foreach (var e in ei)
-        {
-            code.Add(e);
-        }
-
-        Hash = code.ToHashCode();
+        Ei = ei;
+        Hash = ei.Aggregate(0, (acc, e) => (acc, e).GetHashCode());
     }
 
-    public bool Equals(Ep<T> other) => other.Hash == Hash;
+    public bool Equals(Ep<T> other) => Ei.SequenceEqual(other.Ei);
 
     public int CompareTo(Ep<T> other)
     {

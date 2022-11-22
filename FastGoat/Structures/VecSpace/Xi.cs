@@ -5,11 +5,21 @@ namespace FastGoat.Structures.VecSpace;
 
 public readonly struct Xi : IElt<Xi>
 {
-    private char xi { get; }
+    public char xi { get; }
 
     public Xi()
     {
         xi = 'X';
+        Hash = xi;
+    }
+
+    public Xi(int i)
+    {
+        var c = (char)('a' + i);
+        if (!char.IsLetter(c))
+            throw new ArgumentException();
+
+        xi = c;
         Hash = xi;
     }
 

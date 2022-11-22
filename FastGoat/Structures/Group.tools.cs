@@ -83,7 +83,7 @@ public static partial class Group
         return AllOrbits(gr, gr.ToArray(), act);
     }
 
-    public static void DisplayOrbx<T1, T2>(Dictionary<T2, (HashSet<T1> Stabx, HashSet<T2> Orbx)> allClasses)
+    public static void DisplayOrbx<T1, T2>(Dictionary<T2, (HashSet<T1> Stabx, HashSet<T2> Orbx)> allClasses, bool details = false)
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
     {
@@ -91,16 +91,19 @@ public static partial class Group
         {
             var x = kp.Key;
             var (stabx, orbx) = kp.Value;
-            Console.WriteLine($"x={x,-40} Stab(x):{stabx.Count,-4} Orb(x):{orbx.Count} {orbx.Glue(", ")}");
+            if(details)
+                Console.WriteLine($"x = {x,-40} Stab(x):{stabx.Count,-4} Orb(x):{orbx.Count}   {orbx.Glue(", ")}");
+            else
+                Console.WriteLine($"x = {x,-40} Stab(x):{stabx.Count,-4} Orb(x):{orbx.Count}");
         }
     }
 
     public static void DisplayOrbx<T1, T2>(ConcreteGroup<T1> gr,
-        T2[] set, GroupAction<T1, T2> act)
+        T2[] set, GroupAction<T1, T2> act, bool details = false)
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
     {
-        DisplayOrbx(AllOrbits(gr, set, act));
+        DisplayOrbx(AllOrbits(gr, set, act), details);
     }
 
     public static void DisplayOrbx<T>(ConcreteGroup<T> gr, GroupAction<T, T> act)
