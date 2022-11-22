@@ -21,3 +21,13 @@ using static FastGoat.Commons.EnumerableExt;
 //////////////////////////////////
 
 Console.WriteLine("Hello World");
+
+{
+    for (int i = 1; i <= 100; i++)
+    {
+        foreach (var g in Group.FrobeniusSdp(i))
+        {
+            DisplayGroup.HeadOrders(g);
+        }
+    }
+}
