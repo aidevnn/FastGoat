@@ -3,6 +3,7 @@ using FastGoat.Structures;
 using FastGoat.Structures.CartesianProduct;
 using FastGoat.Structures.GenericGroup;
 using FastGoat.UserGroup.Integers;
+using FastGoat.UserGroup.Matrix;
 using FastGoat.UserGroup.Perms;
 using FastGoat.UserGroup.Words;
 
@@ -67,4 +68,154 @@ public static partial class FG
     }
 
     public static WordGroup DihedralWg(int n) => new($"D{2 * n}", $"a{n}, b2, abab");
+    
+    public static List<WordGroup> Frobenius(int o)
+    {
+        var ms = IntExt.Dividors(o).Where(d => d > 1 && d % 2 == 1).ToArray();
+    
+        List<WordGroup> all = new();
+        foreach (var m in ms)
+        {
+            var n = o / m;
+            var rs = m.Range().Where(r => IntExt.Gcd(m, n * (r - 1)) == 1 && IntExt.PowMod(r, n, m) == 1).ToArray();
+            foreach (var r in rs)
+            {
+                var wg = new WordGroup($"Frob({m},{n},{r})" ,$"a{m}, b{n}, b-1ab = a{r}");
+                if (all.Any(g => g.IsIsomorphicTo(wg)))
+                    continue;
+
+                all.Add(wg);
+            }
+        }
+
+        return all;
+    }
+
+    public static ConcreteGroup<Ep2<ZnInt, ZnInt>> MetaCyclicSdp(int m, int n, int r)
+    {
+        var cm = new Cn(m);
+        var cn = new Cn(n);
+        var autCm = Group.AutBase(cm);
+        var g1 = autCm[(cm[1], cm[r])];
+        var aut = Group.Generate(autCm, g1);
+        var pMap = Group.PartialMap((cn[0], autCm.Neutral()), (cn[1], g1));
+        var theta = Group.Hom(cn, Group.HomomorphismMap(cn, aut, pMap));
+        return Group.SemiDirectProd($"Frob({m},{n},{r})" ,cm, theta, cn);
+    }
+
+    public static int[] FrobeniusGetR(int m, int n)
+    {
+        return m.Range().Where(r => IntExt.Gcd(m, n * (r - 1)) == 1 && IntExt.PowMod(r, n, m) == 1).ToArray();
+    }
+    public static List<ConcreteGroup<Ep2<ZnInt,ZnInt>>> FrobeniusSdp(int order)
+    {
+        var ms = IntExt.Dividors(order).Where(d => d > 1 && d % 2 == 1).ToArray();
+    
+        List<ConcreteGroup<Ep2<ZnInt,ZnInt>>> all = new();
+        foreach (var m in ms)
+        {
+            var n = order / m;
+            var rs = FrobeniusGetR(m, n);
+            foreach (var r in rs)
+            {
+                var sdp = MetaCyclicSdp(m, n, r);
+                if (all.Any(g => g.IsIsomorphicTo(sdp)))
+                    continue;
+
+                all.Add(sdp);
+            }
+        }
+
+        return all;
+    }
+
+    public static WordGroup DiCyclic(int n) => new WordGroup($"Dic{n}", $"a{n} = b2, b2 = abab");
+
+    public static ConcreteGroup<Mat> Quaternion(int k)
+    {
+        var m = Math.Log2(k);
+        if (Math.Abs(m - 3.0) < 1e-5)
+        {
+            var gl = new GL(2, 3);
+            return Group.Generate("Q8", gl, gl[2, 2, 2, 1], gl[0, 1, 2, 0]);
+        }
+
+        if (Math.Abs(m - 4.0) < 1e-5)
+        {
+            var gl = new GL(2, 7);
+            return Group.Generate("Q16", gl, gl[0, 1, 6, 3], gl[6, 1, 5, 1]);
+        }
+
+        if (Math.Abs(m - 5.0) < 1e-5)
+        {
+            var gl = new GL(2, 17);
+            return Group.Generate("Q32", gl, gl[14, 0, 0, 11], gl[0, 16, 1, 0]);
+        }
+
+        if (Math.Abs(m - 6.0) < 1e-5)
+        {
+            var gl = new GL(2, 31);
+            return Group.Generate("Q64", gl, gl[16, 12, 12, 11], gl[0, 1, 30, 0]);
+        }
+
+        if (Math.Abs(m - 7.0) < 1e-5)
+        {
+            var gl = new GL(2, 193);
+            return Group.Generate("Q128", gl, gl[78, 38, 155, 78], gl[71, 13, 13, 122]);
+        }
+
+        throw new GroupException(GroupExceptionType.GroupDef);
+    }
+    
+    public enum DiCyclicGroupType
+    {
+        Quaternions, Even, Odd 
+    }
+
+    public static DiCyclicGroupType GetDiCyclicType(int n)
+    {
+        var k = IntExt.PrimesDecomposition(n).Count(i => i == 2);
+        var m = n / (1 << k);
+        
+        if (k == 0)
+            return DiCyclicGroupType.Odd;
+
+        if (m != 1)
+            return DiCyclicGroupType.Even;
+
+        return DiCyclicGroupType.Quaternions;
+    }
+
+    public static dynamic DiCyclicSdp(int n)
+    {
+        var k = IntExt.PrimesDecomposition(n).Count(i => i == 2);
+
+        if (k != 0)
+        {
+            var m = n / (1 << k);
+            var q = Quaternion(1 << (k + 2));
+            if (m == 1)
+                return q;
+
+            var cm = new Cn(m);
+            var autCm = Group.AutBase(cm);
+            var a0 = autCm[(cm[1], cm[m - 1])];
+            var aut0 = Group.Generate(autCm, a0);
+
+            var qi = q.GetGenerators().OrderBy(e => q.ElementsOrders[e]).ToArray();
+            var pMap0 = Group.PartialMap((qi[1], aut0.Neutral()), (qi[0], a0));
+            var theta0 = Group.Hom(q, Group.HomomorphismMap(q, aut0, pMap0));
+            return Group.SemiDirectProd($"Dic{n}", cm, theta0, q);
+        }
+
+        var cn = new Cn(n);
+        var autCn = Group.AutBase(cn);
+        var a1 = autCn[(cn[1], cn[n - 1])];
+        var aut1 = Group.Generate(autCn, a1);
+        
+        var c4 = new Cn(4);
+        var pMap1 = Group.PartialMap((c4[1], a1));
+        var theta1 = Group.Hom(c4, Group.HomomorphismMap(c4, aut1, pMap1));
+        return Group.SemiDirectProd($"Dic{n}", cn, theta1, c4);
+    }
 }
