@@ -23,11 +23,25 @@ using static FastGoat.Commons.EnumerableExt;
 Console.WriteLine("Hello World");
 
 {
-    for (int i = 1; i <= 100; i++)
+    for (int i = 2; i < 51; i++)
     {
-        foreach (var g in Group.FrobeniusSdp(i))
-        {
-            DisplayGroup.HeadOrders(g);
-        }
+        Console.WriteLine($"Go{i}");
+        var dicn = Group.DiCyclicSdp(i);
+        DisplayGroup.HeadOrders(dicn);
+    }
+}
+
+{
+    for (int i = 2; i < 51; i++)
+    {
+        var g1 = Group.DiCyclicSdp(i);
+        var g2 = Group.DiCyclic(i);
+        if (g1.IsIsomorphicTo(g2))
+            continue;
+        
+        DisplayGroup.AreIsomorphics(g2, g1); 
+        DisplayGroup.HeadOrders(g1);
+        DisplayGroup.HeadOrders(g2);
+        // Dic30 && Dic42 errors
     }
 }

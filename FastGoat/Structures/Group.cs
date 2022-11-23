@@ -3,6 +3,7 @@ using FastGoat.Commons;
 using FastGoat.Structures.CartesianProduct;
 using FastGoat.Structures.GenericGroup;
 using FastGoat.UserGroup.Integers;
+using FastGoat.UserGroup.Matrix;
 using FastGoat.UserGroup.Polynoms;
 using FastGoat.UserGroup.Words;
 
@@ -352,6 +353,68 @@ public static partial class Group
         return all;
     }
 
-    public static WordGroup DiCyclic(int n) => new WordGroup($"Q{n}", $"a{n} = b2, b2 = abab");
+    public static WordGroup DiCyclic(int n) => new WordGroup($"Dic{n}", $"a{n} = b2, b2 = abab");
 
+    public static ConcreteGroup<Mat> Quaternion(int k)
+    {
+        var m = Math.Log2(k);
+        if (Math.Abs(m - 3.0) < 1e-5)
+        {
+            var gl = new GL(2, 3);
+            return Generate("Q8", gl, gl[2, 2, 2, 1], gl[0, 1, 2, 0]);
+        }
+
+        if (Math.Abs(m - 4.0) < 1e-5)
+        {
+            var gl = new GL(2, 7);
+            return Generate("Q16", gl, gl[0, 1, 6, 3], gl[6, 1, 5, 1]);
+        }
+
+        if (Math.Abs(m - 5.0) < 1e-5)
+        {
+            var gl = new GL(2, 17);
+            return Generate("Q32", gl, gl[14, 0, 0, 11], gl[0, 16, 1, 0]);
+        }
+
+        if (Math.Abs(m - 6.0) < 1e-5)
+        {
+            var gl = new GL(2, 31);
+            return Generate("Q64", gl, gl[16, 12, 12, 11], gl[0, 1, 30, 0]);
+        }
+
+        if (Math.Abs(m - 7.0) < 1e-5)
+        {
+            var gl = new GL(2, 193);
+            return Generate("Q128", gl, gl[78, 38, 155, 78], gl[71, 13, 13, 122]);
+        }
+
+        throw new GroupException(GroupExceptionType.GroupDef);
+    }
+
+    public static ConcreteGroup<Ep2<ZnInt, Mat>> DiCyclicSdp(int n)
+    {
+        var k = IntExt.PrimesDecomposition(n).Count(i => i == 2);
+
+        if (k != 0)
+        {
+            var m = n / (1 << k);
+            var cm = new Cn(m);
+            var q = Quaternion(1 << (k + 2));
+            if (m == 1)
+                return Create($"Dic{n}", Product.Group(new Cn(1), q));
+
+            return SemiDirectProd($"Dic{n}", cm, q);
+        }
+        
+        var gl = new GL(2, 3);
+        var g1 = Generate("C4", gl, gl[0, 1, 2, 0]);
+        
+        var cn = new Cn(n);
+        var autCn = AutBase(cn);
+        var a = autCn[(cn[1], cn[n - 1])];
+        var aut = Generate(autCn, a);
+        var pMap = PartialMap((gl[0, 1, 2, 0], a));
+        var theta = Hom(g1, HomomorphismMap(g1, aut, pMap));
+        return SemiDirectProd($"Dic{n}", cn, theta, g1);
+    }
 }
