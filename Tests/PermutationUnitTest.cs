@@ -16,7 +16,7 @@ public class PermutationUnitTest
         Tuple2Array c5 = (8, 6, 2, 3, 5);
         Tuple2Array c6 = (2, 9, 3, 1, 5, 4);
         Tuple2Array c7 = (2, 8, 6, 11, 3, 5, 0);
-        Tuple2Array c8 = (2, 8, 6, 11, 3, 10, 5, 8, 0);
+        Tuple2Array c8 = ((2, 8, 6, 11), (3, 10, 5, 8, 0));
         Tuple2Array c9 = (2, (1, 7), 5);
 
         Assert.Single(c1.Table);
@@ -94,5 +94,27 @@ public class PermutationUnitTest
         Assert.Equal(720, IntExt.GetPermutations(6).Length);
         Assert.Equal(5040, IntExt.GetPermutations(7).Length);
         Assert.Equal(40320, IntExt.GetPermutations(8).Length);
+    }
+
+    [Fact]
+    public void Test5ComposeCycles()
+    {
+        var t0 = Tuple2Array.ComplexTuples((1, 2, 3, 4, 5));
+        var t1 = Tuple2Array.ComplexTuples(((1, 2), (3, 4, 5)));
+        var t2 = Tuple2Array.ComplexTuples(((1), (2, 3, 4)));
+        var t3 = Tuple2Array.ComplexTuples(((1, 5), ((2, 3), (4, 6, 7))));
+
+        Assert.Single(t0);
+
+        Assert.Equal(2, t1.Length);
+        Assert.Equal(2, t1[0].Table.Length);
+        Assert.Equal(3, t1[1].Table.Length);
+
+        Assert.Equal(2, t2.Length);
+        Assert.Single(t2[0].Table);
+        Assert.Equal(3, t2[1].Table.Length);
+
+        Assert.Single(t3);
+        Assert.Equal(2, t3[0].Table.Length);
     }
 }
