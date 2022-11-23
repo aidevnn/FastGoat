@@ -12,7 +12,8 @@ public static class ToddCoxeterAlgo
 
     public static OpsTable Run(string sg, string rels, bool details = false)
     {
-        GlobalStopWatch.Restart();
+        if (details)
+            GlobalStopWatch.Restart();
 
         var gHeader = OpsTable.CreateHeader(sg.Split(',', StringSplitOptions.TrimEntries));
         var rHeader = OpsTable.CreateHeader(rels.Split(',', StringSplitOptions.TrimEntries));

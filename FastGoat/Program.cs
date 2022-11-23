@@ -31,17 +31,18 @@ Console.WriteLine("Hello World");
 }
 
 {
+    GlobalStopWatch.Restart();
     for (int i = 2; i < 51; i++)
     {
         Console.WriteLine($"Go{i}");
-        var g1 = Group.DiCyclicSdp(i);
+        var g1 = Group.DiCyclicSdp(i); // dynamic type
         var g2 = Group.DiCyclic(i);
-        if (g1.IsIsomorphicTo(g2))
+        if (g2.IsIsomorphicTo(g1))
             continue;
         
         DisplayGroup.AreIsomorphics(g2, g1); 
         DisplayGroup.HeadOrders(g1);
         DisplayGroup.HeadOrders(g2);
-        // Dic30 && Dic42 errors
     }
+    GlobalStopWatch.Show("DiCyclic Order <= 200"); // Time:133652 ms
 }

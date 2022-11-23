@@ -421,17 +421,25 @@ public static partial class Group
             if (m == 1)
                 return q;
 
-            return SemiDirectProd($"Dic{n}", new Cn(m), q);
+            var cm = new Cn(m);
+            var autCm = AutBase(cm);
+            var a0 = autCm[(cm[1], cm[m - 1])];
+            var aut0 = Generate(autCm, a0);
+
+            var qi = q.GetGenerators().OrderBy(e => q.ElementsOrders[e]).ToArray();
+            var pMap0 = PartialMap((qi[1], aut0.Neutral()), (qi[0], a0));
+            var theta0 = Hom(q, HomomorphismMap(q, aut0, pMap0));
+            return SemiDirectProd($"Dic{n}", cm, theta0, q);
         }
 
-        var c4 = new Cn(4);
-        
         var cn = new Cn(n);
         var autCn = AutBase(cn);
-        var a = autCn[(cn[1], cn[n - 1])];
-        var aut = Generate(autCn, a);
-        var pMap = PartialMap((c4[1], a));
-        var theta = Hom(c4, HomomorphismMap(c4, aut, pMap));
-        return SemiDirectProd($"Dic{n}", cn, theta, c4);
+        var a1 = autCn[(cn[1], cn[n - 1])];
+        var aut1 = Generate(autCn, a1);
+        
+        var c4 = new Cn(4);
+        var pMap1 = PartialMap((c4[1], a1));
+        var theta1 = Hom(c4, HomomorphismMap(c4, aut1, pMap1));
+        return SemiDirectProd($"Dic{n}", cn, theta1, c4);
     }
 }
