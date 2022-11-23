@@ -4,7 +4,7 @@ using FastGoat.Structures.GenericGroup;
 
 namespace FastGoat.Structures.CartesianProduct;
 
-public struct Gp<T> : IGroup<Ep<T>> where T : struct, IElt<T>
+public readonly struct Gp<T> : IGroup<Ep<T>> where T : struct, IElt<T>
 {
     public string Name { get; }
     public IGroup<T>[] Gi { get; }
