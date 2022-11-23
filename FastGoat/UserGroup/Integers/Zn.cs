@@ -11,7 +11,7 @@ public readonly struct Zn : IGroup<ZnInt>
 
     public Zn(int mod)
     {
-        if (mod < 1)
+        if (mod < 2)
             throw new GroupException(GroupExceptionType.GroupDef);
 
         Mod = mod;

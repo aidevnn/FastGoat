@@ -25,7 +25,6 @@ Console.WriteLine("Hello World");
 {
     for (int i = 2; i < 51; i++)
     {
-        Console.WriteLine($"Go{i}");
         var dicn = Group.DiCyclicSdp(i);
         DisplayGroup.HeadOrders(dicn);
     }
@@ -34,6 +33,7 @@ Console.WriteLine("Hello World");
 {
     for (int i = 2; i < 51; i++)
     {
+        Console.WriteLine($"Go{i}");
         var g1 = Group.DiCyclicSdp(i);
         var g2 = Group.DiCyclic(i);
         if (g1.IsIsomorphicTo(g2))

@@ -390,31 +390,48 @@ public static partial class Group
 
         throw new GroupException(GroupExceptionType.GroupDef);
     }
+    
+    public enum DiCyclicGroupType
+    {
+        Quaternions, Even, Odd 
+    }
 
-    public static ConcreteGroup<Ep2<ZnInt, Mat>> DiCyclicSdp(int n)
+    public static DiCyclicGroupType GetDiCyclicType(int n)
+    {
+        var k = IntExt.PrimesDecomposition(n).Count(i => i == 2);
+        var m = n / (1 << k);
+        
+        if (k == 0)
+            return DiCyclicGroupType.Odd;
+
+        if (m != 1)
+            return DiCyclicGroupType.Even;
+
+        return DiCyclicGroupType.Quaternions;
+    }
+
+    public static dynamic DiCyclicSdp(int n)
     {
         var k = IntExt.PrimesDecomposition(n).Count(i => i == 2);
 
         if (k != 0)
         {
             var m = n / (1 << k);
-            var cm = new Cn(m);
             var q = Quaternion(1 << (k + 2));
             if (m == 1)
-                return Create($"Dic{n}", Product.Group(new Cn(1), q));
+                return q;
 
-            return SemiDirectProd($"Dic{n}", cm, q);
+            return SemiDirectProd($"Dic{n}", new Cn(m), q);
         }
-        
-        var gl = new GL(2, 3);
-        var g1 = Generate("C4", gl, gl[0, 1, 2, 0]);
+
+        var c4 = new Cn(4);
         
         var cn = new Cn(n);
         var autCn = AutBase(cn);
         var a = autCn[(cn[1], cn[n - 1])];
         var aut = Generate(autCn, a);
-        var pMap = PartialMap((gl[0, 1, 2, 0], a));
-        var theta = Hom(g1, HomomorphismMap(g1, aut, pMap));
-        return SemiDirectProd($"Dic{n}", cn, theta, g1);
+        var pMap = PartialMap((c4[1], a));
+        var theta = Hom(c4, HomomorphismMap(c4, aut, pMap));
+        return SemiDirectProd($"Dic{n}", cn, theta, c4);
     }
 }
