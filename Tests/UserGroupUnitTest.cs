@@ -54,4 +54,43 @@ public class UserGroupUnitTest
         Assert.Equal(12, FG.PermGroup(4, ((1, 2), (3, 4)), (1, 2, 3)).Count());
         Assert.Equal("S3", FG.PermGroup("S3", 3, (1, 2), (1, 2, 3)).Name);
     }
+
+    [Fact]
+    public void Test5Frobenius()
+    {
+        var f20 = FG.Frobenius(20);
+        Assert.Equal(2, f20.Count);
+        Assert.Equal(20, f20[0].Count());
+        Assert.Equal(20, f20[1].Count());
+        
+        var f20sdp = FG.FrobeniusSdp(20);
+        Assert.True(f20[0].IsIsomorphicTo(f20sdp[0]));
+        Assert.True(f20[1].IsIsomorphicTo(f20sdp[1]));
+        
+        var f21 = FG.Frobenius(21);
+        Assert.Single(f21);
+        Assert.Equal(21, f21[0].Count());
+
+        var f21sdp = FG.FrobeniusSdp(21);
+        Assert.True(f21[0].IsIsomorphicTo(f21sdp[0]));
+    }
+
+    [Fact]
+    public void Test6DiCyclic()
+    {
+        var d2 = FG.DiCyclic(2);
+        var d2sdp = FG.DiCyclicSdp(2);
+        Assert.Equal(8, d2.Count());
+        Assert.True(d2.IsIsomorphicTo(d2sdp));
+
+        var d3 = FG.DiCyclic(3);
+        var d3sdp = FG.DiCyclicSdp(3);
+        Assert.Equal(12, d3.Count());
+        Assert.True(d3.IsIsomorphicTo(d3sdp));
+
+        var d5 = FG.DiCyclic(5);
+        var d5sdp = FG.DiCyclicSdp(5);
+        Assert.Equal(20, d5.Count());
+        Assert.True(d5.IsIsomorphicTo(d5sdp));
+    }
 }
