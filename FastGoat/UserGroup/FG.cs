@@ -222,11 +222,33 @@ public static partial class FG
     public static WordGroup SemiDihedral(int n)
     {
         var n1 = 1 << (n - 1);
-        var n2 = (1 << (n - 2)) + 1;
+        var n2 = (1 << (n - 2)) - 1;
         return new WordGroup($"QD{n1 * 2}", $"a{n1}, b2, bab = a{n2}");
     }
 
     public static SemiDirectProduct<ZnInt, ZnInt> SemiDihedralSdp(int n)
+    {
+        var n1 = 1 << (n - 1);
+        var n2 = (1 << (n - 2)) - 1;
+
+        var cn = new Cn(n1);
+        var c2 = new Cn(2);
+        var autCn = Group.AutBase(cn);
+        var y = autCn[(cn[1], cn[n2])];
+        var aut = Group.Generate(autCn, y);
+        var pMap = Group.PartialMap((c2[1], y));
+        var theta = Group.Hom(c2, Group.HomomorphismMap(c2, aut, pMap));
+        return Group.SemiDirectProd($"QD{n1 * 2}", cn, theta, c2);
+    }
+    
+    public static WordGroup ModularMax(int n)
+    {
+        var n1 = 1 << (n - 1);
+        var n2 = (1 << (n - 2)) + 1;
+        return new WordGroup($"QD{n1 * 2}", $"a{n1}, b2, bab = a{n2}");
+    }
+
+    public static SemiDirectProduct<ZnInt, ZnInt> ModularMaxSdp(int n)
     {
         var n1 = 1 << (n - 1);
         var n2 = (1 << (n - 2)) + 1;

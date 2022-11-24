@@ -25,13 +25,13 @@ public class UserGroupUnitTest
     {
         Assert.Equal(3, FG.Alternate(3).Count());
         Assert.Equal(6, FG.Symmetric(3).Count());
-        
+
         Assert.Equal(12, FG.Alternate(4).Count());
         Assert.Equal(24, FG.Symmetric(4).Count());
-        
+
         Assert.Equal(60, FG.Alternate(5).Count());
         Assert.Equal(120, FG.Symmetric(5).Count());
-        
+
         Assert.Equal(360, FG.Alternate(6).Count());
         Assert.Equal(720, FG.Symmetric(6).Count());
     }
@@ -62,11 +62,11 @@ public class UserGroupUnitTest
         Assert.Equal(2, f20.Count);
         Assert.Equal(20, f20[0].Count());
         Assert.Equal(20, f20[1].Count());
-        
+
         var f20sdp = FG.FrobeniusSdp(20);
         Assert.True(f20[0].IsIsomorphicTo(f20sdp[0]));
         Assert.True(f20[1].IsIsomorphicTo(f20sdp[1]));
-        
+
         var f21 = FG.Frobenius(21);
         Assert.Single(f21);
         Assert.Equal(21, f21[0].Count());
@@ -102,8 +102,14 @@ public class UserGroupUnitTest
             var qd = FG.SemiDihedral(n);
             var qdSdp = FG.SemiDihedralSdp(n);
             var order = 1 << n;
-            Assert.Equal(order,qd.Count());
+            Assert.Equal(order, qd.Count());
             Assert.True(qdSdp.IsIsomorphicTo(qd));
+
+            var mm = FG.ModularMax(n);
+            var mmsdp = FG.ModularMaxSdp(n);
+            Assert.Equal(order, mm.Count());
+            Assert.True(mmsdp.IsIsomorphicTo(mm));
+            Assert.False(mmsdp.IsIsomorphicTo(qdSdp));
         }
     }
 }
