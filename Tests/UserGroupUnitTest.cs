@@ -93,4 +93,17 @@ public class UserGroupUnitTest
         Assert.Equal(20, d5.Count());
         Assert.True(d5.IsIsomorphicTo(d5sdp));
     }
+
+    [Fact]
+    public void Test7SemiDihedral()
+    {
+        for (int n = 3; n <= 6; n++)
+        {
+            var qd = FG.SemiDihedral(n);
+            var qdSdp = FG.SemiDihedralSdp(n);
+            var order = 1 << n;
+            Assert.Equal(order,qd.Count());
+            Assert.True(qdSdp.IsIsomorphicTo(qd));
+        }
+    }
 }
