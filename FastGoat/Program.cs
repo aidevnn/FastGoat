@@ -22,3 +22,7 @@ using static FastGoat.Commons.EnumerableExt;
 //////////////////////////////////
 
 Console.WriteLine("Hello World");
+
+{
+    DisplayGroup.HeadElements(FG.Galois(16));
+}

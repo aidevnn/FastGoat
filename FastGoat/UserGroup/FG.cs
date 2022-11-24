@@ -265,6 +265,9 @@ public static partial class FG
         return Group.SemiDirectProd($"QD{n1 * 2}", cn, theta, c2);
     }
 
-    public static ConcreteGroup<EPoly<ZnInt>> Galois(int q) => new ConcreteGroup<EPoly<ZnInt>>(new Fq(q));
-
+    public static ConcreteGroup<EPoly<ZnInt>> Galois(int q)
+    {
+        var fq = new Fq(q);
+        return Group.Generate(fq, fq['x']);
+    }
 }
