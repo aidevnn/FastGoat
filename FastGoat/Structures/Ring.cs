@@ -1,6 +1,5 @@
 using FastGoat.Commons;
 using FastGoat.Structures.VecSpace;
-using FastGoat.UserGroup.Integers;
 
 namespace FastGoat.Structures;
 
@@ -81,21 +80,5 @@ public static partial class Ring
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
         return (Polynomial(x1, zero), Polynomial(x2, zero), Polynomial(x3, zero));
-    }
-
-    public static (int d, Polynomial<ZnInt, Xi> poly)[] ConwayPolys(int p)
-    {
-        var all = PolynomExt.GetAll(p);
-        var x = Polynomial(ZnInt.KZero(p));
-        return all.Select(e => (e.d, e.coefs.Select((a, i) => a * x.Pow(i)).Aggregate((a, b) => a.Add(b)))).ToArray();
-    }
-
-    public static KPoly<Rational> QX(char c = 'X')
-    {
-        return new KPoly<Rational>(c);
-    }
-    public static KPoly<ZnInt> ZX(char c = 'X', int p = 0)
-    {
-        return new KPoly<ZnInt>(c, ZnInt.KZero(p));
     }
 }

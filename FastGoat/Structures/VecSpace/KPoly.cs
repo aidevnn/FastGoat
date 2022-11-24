@@ -1,5 +1,4 @@
 using FastGoat.Commons;
-using FastGoat.UserGroup.Integers;
 
 namespace FastGoat.Structures.VecSpace;
 

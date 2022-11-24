@@ -1,6 +1,5 @@
 using FastGoat.Commons;
 using FastGoat.Structures.GenericGroup;
-using FastGoat.UserGroup.Words;
 
 namespace FastGoat.Structures;
 
@@ -22,9 +21,6 @@ public static class DisplayGroup
             var superGroup = g.SuperGroup;
             Console.WriteLine($"SuperGroup  |{superGroup}| = {superGroup.Count()}");
         }
-        
-        if(g is WordGroup wg)
-            Console.WriteLine($"Definition  {wg.Definition}");
 
         Console.WriteLine();
     }

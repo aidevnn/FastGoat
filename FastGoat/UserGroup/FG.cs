@@ -2,9 +2,11 @@ using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.CartesianProduct;
 using FastGoat.Structures.GenericGroup;
+using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup.Integers;
 using FastGoat.UserGroup.Matrix;
 using FastGoat.UserGroup.Perms;
+using FastGoat.UserGroup.Polynoms;
 using FastGoat.UserGroup.Words;
 
 namespace FastGoat.UserGroup;
@@ -262,4 +264,7 @@ public static partial class FG
         var theta = Group.Hom(c2, Group.HomomorphismMap(c2, aut, pMap));
         return Group.SemiDirectProd($"QD{n1 * 2}", cn, theta, c2);
     }
+
+    public static ConcreteGroup<EPoly<ZnInt>> Galois(int q) => new ConcreteGroup<EPoly<ZnInt>>(new Fq(q));
+
 }

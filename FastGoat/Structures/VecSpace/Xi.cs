@@ -1,5 +1,3 @@
-using System.Collections;
-using System.IO.IsolatedStorage;
 
 namespace FastGoat.Structures.VecSpace;
 
