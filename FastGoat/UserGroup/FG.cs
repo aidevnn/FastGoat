@@ -270,4 +270,6 @@ public static partial class FG
         var fq = new Fq(q);
         return Group.Generate(fq, fq['x']);
     }
+
+    public static EPoly<ZnInt> FqX(int q) => new Fq(q)['x'];
 }

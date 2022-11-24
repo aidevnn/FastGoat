@@ -25,4 +25,6 @@ Console.WriteLine("Hello World");
 
 {
     DisplayGroup.HeadElements(FG.Galois(16));
+    var x = FG.FqX(27);
+    Console.WriteLine(x.Pow(3) + 3 * x);
 }
