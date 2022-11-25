@@ -169,6 +169,7 @@ public static class SymbolicMatrix
         
         // Direct method
         Console.WriteLine("Disc = {0}", Ring.Discriminant(f, X));
+        // Disc = -4*p³ + -27*q²
     }
     
     public static void CubicDiscriminantLong()

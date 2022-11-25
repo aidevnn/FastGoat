@@ -57,10 +57,13 @@ public class KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<KPoly<K>>
         }
     }
 
-    public bool Equals(KPoly<K> other) => Coefs.SequenceEqual(other.Coefs); // Avoid collisions
+    public bool Equals(KPoly<K>? other) => other is not null && Coefs.SequenceEqual(other.Coefs); // Avoid collisions
 
-    public int CompareTo(KPoly<K> other)
+    public int CompareTo(KPoly<K>? other)
     {
+        if (other is null)
+            return 1;
+        
         var compDegree = Degree.CompareTo(other.Degree);
         if (compDegree != 0)
             return compDegree;
@@ -82,6 +85,8 @@ public class KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<KPoly<K>>
     public KPoly<K> Zero => new(x, KZero, new[] { KZero });
     public KPoly<K> One => new(x, KZero, new[] { KOne });
     public KPoly<K> X => new(x, KZero, new[] { KZero, KOne });
+
+    public KPoly<K> Derivative => new(x, KZero, Coefs.Select((e, i) => e.Mul(i)).Skip(1).TrimSeq().ToArray());
 
     public KPoly<K> Add(KPoly<K> e)
     {

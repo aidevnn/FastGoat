@@ -24,7 +24,10 @@ using static FastGoat.Commons.EnumerableExt;
 Console.WriteLine("Hello World");
 
 {
-    DisplayGroup.HeadElements(FG.Galois(16));
-    var x = FG.FqX(27);
-    Console.WriteLine(x.Pow(3) + 3 * x);
+    var x = FG.QPoly();
+    Console.WriteLine(Ring.Discriminant(x.Pow(2) + 3 * x - 5));
+    Console.WriteLine(Ring.Discriminant(x.Pow(3) + 4 * x + 12));
+    Console.WriteLine(Ring.Discriminant(x.Pow(4) + 3 * x.Pow(2) + 1));
+    Console.WriteLine(Ring.Discriminant(x.Pow(12) + x.Pow(11) - x.Pow(9) - 2 * x.Pow(8) + x.Pow(5) + x.Pow(4)));
+    Console.WriteLine(Ring.Discriminant(x.Pow(12) - 3 * x.Pow(7) + 4));
 }
