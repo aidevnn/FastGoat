@@ -135,6 +135,8 @@ namespace FastGoat.Commons
             return new[] { false, true }.MultiLoop(n);
         }
 
+        public static int Pow(this int n, int m) => (int)Math.Pow(n, m);
+
         public static int Gcd(int a, int b)
         {
             if (b == 0)
