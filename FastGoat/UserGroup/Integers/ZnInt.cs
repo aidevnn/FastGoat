@@ -99,11 +99,16 @@ public readonly struct ZnInt : IElt<ZnInt>, IRingElt<ZnInt>, IFieldElt<ZnInt>
     public static bool operator !=(ZnInt a, ZnInt b) => !a.Equals(b);
 
     public static ZnInt operator +(ZnInt a, ZnInt b) => a.Add(b);
+    public static ZnInt operator +(int a, ZnInt b) => b.Add(b.One.Mul(a));
+    public static ZnInt operator +(ZnInt a, int b) => a.Add(a.One.Mul(b));
     public static ZnInt operator -(ZnInt a) => a.Opp();
     public static ZnInt operator -(ZnInt a, ZnInt b) => a + (-b);
+    public static ZnInt operator -(int a, ZnInt b) => a + (-b);
+    public static ZnInt operator -(ZnInt a, int b) => a + (-b);
     public static ZnInt operator *(ZnInt a, ZnInt b) => a.Mul(b);
-    public static ZnInt operator /(ZnInt a, ZnInt b) => a.Mul(b.Inv());
-    public static ZnInt operator *(ZnInt a, int k) => new(a.P, k * a.K);
-    public static ZnInt operator *(int k, ZnInt a) => new(a.P, k * a.K);
-    public static ZnInt operator /(ZnInt a, int k) => a.Mul(new ZnInt(a.P, k).Inv());
+    public static ZnInt operator *(ZnInt a, int b) => a.Mul(b);
+    public static ZnInt operator *(int a, ZnInt b) => b.Mul(a);
+    public static ZnInt operator /(ZnInt a, ZnInt b) => a.Div(b).quo;
+    public static ZnInt operator /(ZnInt a, int b) => a.Div(a.One.Mul(b)).quo;
+    public static ZnInt operator /(int a, ZnInt b) => b.Inv().Mul(a);
 }

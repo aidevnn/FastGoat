@@ -209,26 +209,23 @@ public class KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<KPoly<K>>
     }
 
     public static KPoly<K> operator +(KPoly<K> a, KPoly<K> b) => a.Add(b);
-    public static KPoly<K> operator -(KPoly<K> a, KPoly<K> b) => a.Sub(b);
+    public static KPoly<K> operator +(int a, KPoly<K> b) => b.Add(b.One.Mul(a));
+    public static KPoly<K> operator +(KPoly<K> a, int b) => a.Add(a.One.Mul(b));
     public static KPoly<K> operator -(KPoly<K> a) => a.Opp();
+    public static KPoly<K> operator -(KPoly<K> a, KPoly<K> b) => a + (-b);
+    public static KPoly<K> operator -(int a, KPoly<K> b) => a + (-b);
+    public static KPoly<K> operator -(KPoly<K> a, int b) => a + (-b);
     public static KPoly<K> operator *(KPoly<K> a, KPoly<K> b) => a.Mul(b);
-    public static KPoly<K> operator /(KPoly<K> a, KPoly<K> b) => a.Div(b).quo;
-
-    public static KPoly<K> operator +(KPoly<K> a, K b) => a.Add(new(a.x, b));
-    public static KPoly<K> operator +(K b, KPoly<K> a) => a.Add(new(a.x, b));
-    public static KPoly<K> operator +(KPoly<K> a, int b) => a.Add(new(a.x, a.KOne.Mul(b)));
-    public static KPoly<K> operator +(int b, KPoly<K> a) => a.Add(new(a.x, a.KOne.Mul(b)));
-
-    public static KPoly<K> operator -(KPoly<K> a, K b) => a.Sub(new(a.x, b));
-    public static KPoly<K> operator -(K b, KPoly<K> a) => new KPoly<K>(a.x, b).Sub(a);
-    public static KPoly<K> operator -(KPoly<K> a, int b) => a.Sub(new(a.x, a.KOne.Mul(b)));
-    public static KPoly<K> operator -(int b, KPoly<K> a) => new KPoly<K>(a.x, a.KOne.Mul(b)).Sub(a);
-
-    public static KPoly<K> operator *(KPoly<K> a, K b) => a.KMul(b);
-    public static KPoly<K> operator *(K b, KPoly<K> a) => a.KMul(b);
     public static KPoly<K> operator *(KPoly<K> a, int b) => a.Mul(b);
-    public static KPoly<K> operator *(int b, KPoly<K> a) => a.Mul(b);
+    public static KPoly<K> operator *(int a, KPoly<K> b) => b.Mul(a);
+    public static KPoly<K> operator /(KPoly<K> a, KPoly<K> b) => a.Div(b).quo;
+    public static KPoly<K> operator /(KPoly<K> a, int b) => a.Div(a.One.Mul(b)).quo;
 
+    public static KPoly<K> operator +(KPoly<K> a, K b) => a + a.One.KMul(b);
+    public static KPoly<K> operator +(K a, KPoly<K> b) => b.One.KMul(a) + b;
+    public static KPoly<K> operator -(KPoly<K> a, K b) => a - a.One.KMul(b);
+    public static KPoly<K> operator -(K a, KPoly<K> b) => b.One.KMul(a) - b;
+    public static KPoly<K> operator *(KPoly<K> a, K b) => a.KMul(b);
+    public static KPoly<K> operator *(K a, KPoly<K> b) => b.KMul(a);
     public static KPoly<K> operator /(KPoly<K> a, K b) => a.KMul(b.Inv());
-    public static KPoly<K> operator /(KPoly<K> a, int b) => a.KMul(a.KOne.Mul(b).Inv());
 }

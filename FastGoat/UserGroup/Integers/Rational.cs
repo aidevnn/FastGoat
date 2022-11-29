@@ -79,9 +79,16 @@ public struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<Rational>
     public override string ToString() => IsZero() ? "0" : Denom == 1 ? $"{Num}" : $"{Num}/{Denom}";
 
     public static Rational operator +(Rational a, Rational b) => a.Add(b);
-    public static Rational operator -(Rational a, Rational b) => a.Sub(b);
+    public static Rational operator +(int a, Rational b) => b.Add(b.One.Mul(a));
+    public static Rational operator +(Rational a, int b) => a.Add(a.One.Mul(b));
+    public static Rational operator -(Rational a) => a.Opp();
+    public static Rational operator -(Rational a, Rational b) => a + (-b);
+    public static Rational operator -(int a, Rational b) => a + (-b);
+    public static Rational operator -(Rational a, int b) => a + (-b);
     public static Rational operator *(Rational a, Rational b) => a.Mul(b);
+    public static Rational operator *(Rational a, int b) => a.Mul(b);
+    public static Rational operator *(int a, Rational b) => b.Mul(a);
     public static Rational operator /(Rational a, Rational b) => a.Div(b).quo;
-    public static Rational operator /(Rational a, int b) => new(a.Num, a.Denom * b);
-    public static Rational operator *(int a, Rational b) => new(a * b.Num, b.Denom);
+    public static Rational operator /(Rational a, int b) => a.Div(a.One.Mul(b)).quo;
+    public static Rational operator /(int a, Rational b) => b.Inv().Mul(a);
 }

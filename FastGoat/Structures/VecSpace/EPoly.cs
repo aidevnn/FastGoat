@@ -87,30 +87,33 @@ public readonly struct EPoly<K> : IVsElt<K, EPoly<K>>, IElt<EPoly<K>>, IRingElt<
     }
 
     public static implicit operator EPoly<K>(KPoly<K> e) => new(e.One, e);
-    
+
     public static EPoly<K> operator +(EPoly<K> a, EPoly<K> b) => a.Add(b);
-    public static EPoly<K> operator -(EPoly<K> a, EPoly<K> b) => a.Sub(b);
+    public static EPoly<K> operator +(int a, EPoly<K> b) => b.Add(b.One.Mul(a));
+    public static EPoly<K> operator +(EPoly<K> a, int b) => a.Add(a.One.Mul(b));
     public static EPoly<K> operator -(EPoly<K> a) => a.Opp();
+    public static EPoly<K> operator -(EPoly<K> a, EPoly<K> b) => a + (-b);
+    public static EPoly<K> operator -(int a, EPoly<K> b) => a + (-b);
+    public static EPoly<K> operator -(EPoly<K> a, int b) => a + (-b);
     public static EPoly<K> operator *(EPoly<K> a, EPoly<K> b) => a.Mul(b);
-    public static EPoly<K> operator /(EPoly<K> a, EPoly<K> b) => a.Div(b).quo;
-
-    public static EPoly<K> operator +(EPoly<K> a, K b) => a.Add(new(a.F, b));
-    public static EPoly<K> operator +(K b, EPoly<K> a) => a.Add(new(a.F, b));
-    public static EPoly<K> operator +(EPoly<K> a, int b) => a.Add(new(a.F, a.KOne.Mul(b)));
-    public static EPoly<K> operator +(int b, EPoly<K> a) => a.Add(new(a.F, a.KOne.Mul(b)));
-
-    public static EPoly<K> operator -(EPoly<K> a, K b) => a.Sub(new(a.F, b));
-    public static EPoly<K> operator -(K b, EPoly<K> a) => new EPoly<K>(a.F, b).Sub(a);
-    public static EPoly<K> operator -(EPoly<K> a, int b) => a.Sub(new(a.F, a.KOne.Mul(b)));
-    public static EPoly<K> operator -(int b, EPoly<K> a) => new EPoly<K>(a.F, a.KOne.Mul(b)).Sub(a);
-
-    public static EPoly<K> operator *(EPoly<K> a, K b) => a.KMul(b);
-    public static EPoly<K> operator *(K b, EPoly<K> a) => a.KMul(b);
     public static EPoly<K> operator *(EPoly<K> a, int b) => a.Mul(b);
-    public static EPoly<K> operator *(int b, EPoly<K> a) => a.Mul(b);
+    public static EPoly<K> operator *(int a, EPoly<K> b) => b.Mul(a);
+    public static EPoly<K> operator /(EPoly<K> a, EPoly<K> b) => a.Div(b).quo;
+    public static EPoly<K> operator /(EPoly<K> a, int b) => a.Div(a.One.Mul(b)).quo;
+    public static EPoly<K> operator /(int a, EPoly<K> b) => b.Inv().Mul(a);
 
+    public static EPoly<K> operator +(EPoly<K> a, K b) => a + a.One.KMul(b);
+    public static EPoly<K> operator +(K a, EPoly<K> b) => b.One.KMul(a) + b;
+    public static EPoly<K> operator -(EPoly<K> a, K b) => a - a.One.KMul(b);
+    public static EPoly<K> operator -(K a, EPoly<K> b) => b.One.KMul(a) - b;
+    public static EPoly<K> operator *(EPoly<K> a, K b) => a.KMul(b);
+    public static EPoly<K> operator *(K a, EPoly<K> b) => b.KMul(a);
     public static EPoly<K> operator /(EPoly<K> a, K b) => a.KMul(b.Inv());
-    public static EPoly<K> operator /(EPoly<K> a, int b) => a.KMul(a.KOne.Mul(b).Inv());
-
-    public static implicit operator EPoly<K>(int k) => new EPoly<K>(new KPoly<K>('x'), new KPoly<K>('x').One * k);
+    public static EPoly<K> operator /(K a, EPoly<K> b) => b.Inv().KMul(a);
+    
+    public static implicit operator EPoly<K>(int k)
+    {
+        var x = new KPoly<K>('x');
+        return new EPoly<K>(x, x.One * k);
+    }
 }

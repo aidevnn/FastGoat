@@ -271,16 +271,23 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
     }
 
     public static Polynomial<K, T> operator +(Polynomial<K, T> a, Polynomial<K, T> b) => a.Add(b);
-    public static Polynomial<K, T> operator -(Polynomial<K, T> a, Polynomial<K, T> b) => a.Sub(b);
-    public static Polynomial<K, T> operator *(Polynomial<K, T> a, Polynomial<K, T> b) => a.Mul(b);
-    public static Polynomial<K, T> operator /(Polynomial<K, T> a, Polynomial<K, T> b) => a.Div(b).quo;
-
-    public static Polynomial<K, T> operator -(Polynomial<K, T> a) => a.Opp();
-    public static Polynomial<K, T> operator *(int a, Polynomial<K, T> b) => b.Mul(a);
-    public static Polynomial<K, T> operator /(Polynomial<K, T> a, int k) => a.KMul(a.KZero.One.Mul(k).Inv());
-
+    public static Polynomial<K, T> operator +(int a, Polynomial<K, T> b) => b.Add(b.One.Mul(a));
     public static Polynomial<K, T> operator +(Polynomial<K, T> a, int b) => a.Add(a.One.Mul(b));
-    public static Polynomial<K, T> operator +(int b, Polynomial<K, T> a) => a.Add(a.One.Mul(b));
-    public static Polynomial<K, T> operator -(Polynomial<K, T> a, int b) => a.Sub(a.One.Mul(b));
-    public static Polynomial<K, T> operator -(int b, Polynomial<K, T> a) => a.One.Mul(b).Sub(a);
+    public static Polynomial<K, T> operator -(Polynomial<K, T> a) => a.Opp();
+    public static Polynomial<K, T> operator -(Polynomial<K, T> a, Polynomial<K, T> b) => a + (-b);
+    public static Polynomial<K, T> operator -(int a, Polynomial<K, T> b) => a + (-b);
+    public static Polynomial<K, T> operator -(Polynomial<K, T> a, int b) => a + (-b);
+    public static Polynomial<K, T> operator *(Polynomial<K, T> a, Polynomial<K, T> b) => a.Mul(b);
+    public static Polynomial<K, T> operator *(Polynomial<K, T> a, int b) => a.Mul(b);
+    public static Polynomial<K, T> operator *(int a, Polynomial<K, T> b) => b.Mul(a);
+    public static Polynomial<K, T> operator /(Polynomial<K, T> a, Polynomial<K, T> b) => a.Div(b).quo;
+    public static Polynomial<K, T> operator /(Polynomial<K, T> a, int b) => a.Div(a.One.Mul(b)).quo;
+
+    public static Polynomial<K, T> operator +(Polynomial<K, T> a, K b) => a + a.One.KMul(b);
+    public static Polynomial<K, T> operator +(K a, Polynomial<K, T> b) => b.One.KMul(a) + b;
+    public static Polynomial<K, T> operator -(Polynomial<K, T> a, K b) => a - a.One.KMul(b);
+    public static Polynomial<K, T> operator -(K a, Polynomial<K, T> b) => b.One.KMul(a) - b;
+    public static Polynomial<K, T> operator *(Polynomial<K, T> a, K b) => a.KMul(b);
+    public static Polynomial<K, T> operator *(K a, Polynomial<K, T> b) => b.KMul(a);
+    public static Polynomial<K, T> operator /(Polynomial<K, T> a, K b) => a.KMul(b.Inv());
 }
