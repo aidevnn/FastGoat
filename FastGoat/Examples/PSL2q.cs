@@ -1,6 +1,7 @@
 using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.CartesianProduct;
+using FastGoat.UserGroup;
 using FastGoat.UserGroup.Integers;
 using FastGoat.UserGroup.Matrix;
 using FastGoat.UserGroup.Perms;
@@ -74,6 +75,8 @@ public static class PSL2q
         DisplayGroup.Head(zg2_4);
         var l2_4 = sl2_4.Over(zg2_4, "L2(4)");
         DisplayGroup.Head(l2_4);
+
+        DisplayGroup.AreIsomorphics(l2_4, FG.Alternate(5));
     }
 
     public static void L2_8()
@@ -119,10 +122,7 @@ public static class PSL2q
         var l2_9 = sl2_9.Over(zg2_9, "L2(9)");
         DisplayGroup.HeadOrders(l2_9);
 
-        var a6 = Group.Generate("A6", s6, s6[(4, 5, 6)], s6[(1, 2, 3, 4, 5)]);
-        DisplayGroup.HeadOrders(a6);
-
-        DisplayGroup.AreIsomorphics(l2_9, a6);
+        DisplayGroup.AreIsomorphics(l2_9, FG.Alternate(6));
     }
 
     public static void L2_16()
