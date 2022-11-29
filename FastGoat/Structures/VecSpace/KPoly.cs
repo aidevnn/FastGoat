@@ -124,6 +124,19 @@ public class KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<KPoly<K>>
         return new(x, KZero, coefs.TrimSeq().ToArray());
     }
 
+    public void InPlaceAddProd(KPoly<K> a, KPoly<K> b)
+    {
+        if (a.Degree + b.Degree > Degree)
+            throw new GroupException(GroupExceptionType.GroupDef);
+        
+        for (int i = 0; i <= a.Degree; i++)
+        {
+            var ai = a[i];
+            for (int j = 0; j <= b.Degree; j++)
+                Coefs[i + j] = Coefs[i + j].Add(ai.Mul(b[j]));
+        }
+    }
+
     public KPoly<K> KMul(K k)
     {
         var coefs = Coefs.Select(e => e.Mul(k)).TrimSeq().ToArray();

@@ -42,31 +42,29 @@ public class GLnq : IGroup<MatFq>
     public int Hash { get; }
     public string Name { get; }
 
-    public MatFq this[params EPoly<ZnInt>[] coefs]
-    {
-        get
-        {
-            var table = coefs.Length >= N * N
-                ? coefs.Take(N * N).ToArray()
-                : coefs.Concat(Enumerable.Repeat(Fq.Zero, N * N - coefs.Length)).ToArray();
-
-            var table0 = table.Select(e => e.Poly.Coefs.Select(ei => new ZnInt(Fq.P, ei.K)).ToArray())
-                .Select(e => new EPoly<ZnInt>(Fq.F, new KPoly<ZnInt>(Fq.F.x, ZnInt.KZero(Fq.P), e)))
-                .ToArray();
-
-            var hash = table0.Aggregate(0, (acc, a) => a.GetHashCode() + Fq.Q * acc);
-            return new(this, hash, table0);
-        }
-    }
-
     public MatFq this[params ValueType[] us]
     {
         get
         {
             var us0 = Enumerable.Range(0, N * N).Select(i => i < us.Length ? us[i] : 0).ToArray();
-            var table = us0.Select(i => Fq[i]).ToArray();
-            var hash = table.Aggregate(0, (acc, a) => a.GetHashCode() + Fq.Q * acc);
-            return new(this, hash, table);
+            if (us0.Any(u => u is EPoly<ZnInt>))
+            {
+                var table0 = us0.Select(u => u is EPoly<ZnInt> u0 ? u0 : (int)u)
+                    .Select(e => e.Poly.Coefs.Select(ei => new ZnInt(Fq.P, ei.K)).ToArray())
+                    .Select(e => new EPoly<ZnInt>(Fq.F, new KPoly<ZnInt>(Fq.F.x, ZnInt.KZero(Fq.P), e)))
+                    .ToArray();
+
+                var hash = table0.Aggregate(0, (acc, a) => a.GetHashCode() + Fq.Q * acc);
+                return new(this, hash, table0);
+            }
+            else if (us0.All(u => u is int || u is char || u is ValueTuple<char, int>))
+            {
+                var table = us0.Select(i => Fq[i]).ToArray();
+                var hash = table.Aggregate(0, (acc, a) => a.GetHashCode() + Fq.Q * acc);
+                return new(this, hash, table);                
+            }
+
+            throw new GroupException(GroupExceptionType.GroupDef);
         }
     }
 
@@ -95,6 +93,7 @@ public class GLnq : IGroup<MatFq>
     public MatFq Op(MatFq e1, MatFq e2)
     {
         var dot = MatrixProduct(N, e1.Table, e2.Table);
+        // var dot = Dot(e1.Table, e2.Table); // TO DO 
         var hash = dot.Aggregate(0, (acc, a0) => a0.GetHashCode() + Fq.Q * acc);
         return new(this, hash, dot);
     }
@@ -127,6 +126,20 @@ public class GLnq : IGroup<MatFq>
         throw new ArgumentException();
     }
 
+    EPoly<ZnInt>[] Dot(EPoly<ZnInt>[] mat0, EPoly<ZnInt>[] mat1)
+    {
+        if (N == 2)
+            return Dot2x2(mat0, mat1);
+        if (N == 3)
+            return Dot3x3(mat0, mat1);
+        if (N == 4)
+            return Dot4x4(mat0, mat1);
+        if (N == 5)
+            return Dot5x5(mat0, mat1);
+
+        throw new ArgumentException();
+    }
+
     EPoly<ZnInt>[] MatrixProduct(int aRows, EPoly<ZnInt>[] a, EPoly<ZnInt>[] b)
     {
         var aCols = a.Length / aRows;
@@ -136,16 +149,18 @@ public class GLnq : IGroup<MatFq>
             throw new Exception();
 
         var c = new EPoly<ZnInt>[a.Length];
+        var maxDegree = a.Max(e => e.Poly.Degree) + b.Max(e => e.Poly.Degree) + 1;
+        var sum0 = new KPoly<ZnInt>(Fq.F.x, Fq.F.KZero, Enumerable.Repeat(Fq.F.KZero, maxDegree).ToArray());
         int hash = 0;
         for (int i = 0; i < aRows; i++)
         {
             for (int j = 0; j < bCols; j++)
             {
-                var sum = Fq.Zero;
+                var sum = new KPoly<ZnInt>(Fq.F.x, Fq.F.KZero, Enumerable.Repeat(Fq.F.KZero, maxDegree).ToArray());
                 for (int k = 0; k < aCols; k++)
-                    sum = sum + a[i * aCols + k] * b[k * bCols + j];
+                    sum.InPlaceAddProd(a[i * aCols + k].Poly, b[k * bCols + j].Poly);
 
-                c[i * aRows + j] = sum;
+                c[i * aRows + j] = new(Fq.F, new KPoly<ZnInt>(Fq.F.x, Fq.F.KZero,sum.Coefs.TrimSeq().ToArray()).Div(Fq.F).rem);
             }
         }
 
@@ -452,5 +467,123 @@ public class GLnq : IGroup<MatFq>
                   idet;
 
         return inv;
+    }
+
+    public EPoly<ZnInt>[] Dot2x2(EPoly<ZnInt>[] mat0, EPoly<ZnInt>[] mat1)
+    {
+        var (a, b) = (mat0[0], mat0[1]);
+        var (c, d) = (mat0[2], mat0[3]);
+
+        var (A, B) = (mat1[0], mat1[1]);
+        var (C, D) = (mat1[2], mat1[3]);
+
+        var mat = new EPoly<ZnInt>[4];
+        mat[0] = A * a + C * b;
+        mat[1] = B * a + D * b;
+        mat[2] = A * c + C * d;
+        mat[3] = B * c + D * d;
+
+        return mat;
+    }
+
+    EPoly<ZnInt>[] Dot3x3(EPoly<ZnInt>[] mat0, EPoly<ZnInt>[] mat1)
+    {
+        var (a, b, c) = (mat0[0], mat0[1], mat0[2]);
+        var (d, e, f) = (mat0[3], mat0[4], mat0[5]);
+        var (g, h, i) = (mat0[6], mat0[7], mat0[8]);
+
+        var (A, B, C) = (mat1[0], mat1[1], mat1[2]);
+        var (D, E, F) = (mat1[3], mat1[4], mat1[5]);
+        var (G, H, I) = (mat1[6], mat1[7], mat1[8]);
+
+        var mat = new EPoly<ZnInt>[9];
+        mat[0] = A * a + D * b + G * c;
+        mat[1] = B * a + E * b + H * c;
+        mat[2] = C * a + F * b + I * c;
+        mat[3] = A * d + D * e + G * f;
+        mat[4] = B * d + E * e + H * f;
+        mat[5] = C * d + F * e + I * f;
+        mat[6] = A * g + D * h + G * i;
+        mat[7] = B * g + E * h + H * i;
+        mat[8] = C * g + F * h + I * i;
+
+        return mat;
+    }
+
+    EPoly<ZnInt>[] Dot4x4(EPoly<ZnInt>[] mat0, EPoly<ZnInt>[] mat1)
+    {
+        var (a, b, c, d) = (mat0[0], mat0[1], mat0[2], mat0[3]);
+        var (e, f, g, h) = (mat0[4], mat0[5], mat0[6], mat0[7]);
+        var (i, j, k, l) = (mat0[8], mat0[9], mat0[10], mat0[11]);
+        var (m, n, o, p) = (mat0[12], mat0[13], mat0[14], mat0[15]);
+
+        var (A, B, C, D) = (mat1[0], mat1[1], mat1[2], mat1[3]);
+        var (E, F, G, H) = (mat1[4], mat1[5], mat1[6], mat1[7]);
+        var (I, J, K, L) = (mat1[8], mat1[9], mat1[10], mat1[11]);
+        var (M, N, O, P) = (mat1[12], mat1[13], mat1[14], mat1[15]);
+
+        var mat = new EPoly<ZnInt>[16];
+        mat[0] = A * a + E * b + I * c + M * d;
+        mat[1] = B * a + F * b + J * c + N * d;
+        mat[2] = C * a + G * b + K * c + O * d;
+        mat[3] = D * a + H * b + L * c + P * d;
+        mat[4] = A * e + E * f + I * g + M * h;
+        mat[5] = B * e + F * f + J * g + N * h;
+        mat[6] = C * e + G * f + K * g + O * h;
+        mat[7] = D * e + H * f + L * g + P * h;
+        mat[8] = A * i + E * j + I * k + M * l;
+        mat[9] = B * i + F * j + J * k + N * l;
+        mat[10] = C * i + G * j + K * k + O * l;
+        mat[11] = D * i + H * j + L * k + P * l;
+        mat[12] = A * m + E * n + I * o + M * p;
+        mat[13] = B * m + F * n + J * o + N * p;
+        mat[14] = C * m + G * n + K * o + O * p;
+        mat[15] = D * m + H * n + L * o + P * p;
+
+        return mat;
+    }
+
+    EPoly<ZnInt>[] Dot5x5(EPoly<ZnInt>[] mat0, EPoly<ZnInt>[] mat1)
+    {
+        var (a, b, c, d, e) = (mat0[0], mat0[1], mat0[2], mat0[3], mat0[4]);
+        var (f, g, h, i, j) = (mat0[5], mat0[6], mat0[7], mat0[8], mat0[9]);
+        var (k, l, m, n, o) = (mat0[10], mat0[11], mat0[12], mat0[13], mat0[14]);
+        var (p, q, r, s, t) = (mat0[15], mat0[16], mat0[17], mat0[18], mat0[19]);
+        var (u, v, w, x, y) = (mat0[20], mat0[21], mat0[22], mat0[23], mat0[24]);
+
+        var (A, B, C, D, E) = (mat1[0], mat1[1], mat1[2], mat1[3], mat1[4]);
+        var (F, G, H, I, J) = (mat1[5], mat1[6], mat1[7], mat1[8], mat1[9]);
+        var (K, L, M, N, O) = (mat1[10], mat1[11], mat1[12], mat1[13], mat1[14]);
+        var (P, Q, R, S, T) = (mat1[15], mat1[16], mat1[17], mat1[18], mat1[19]);
+        var (U, V, W, X, Y) = (mat1[20], mat1[21], mat1[22], mat1[23], mat1[24]);
+
+        var mat = new EPoly<ZnInt>[25];
+        mat[0] = A * a + F * b + K * c + P * d + U * e;
+        mat[1] = B * a + G * b + L * c + Q * d + V * e;
+        mat[2] = C * a + H * b + M * c + R * d + W * e;
+        mat[3] = D * a + I * b + N * c + S * d + X * e;
+        mat[4] = E * a + J * b + O * c + T * d + Y * e;
+        mat[5] = A * f + F * g + K * h + P * i + U * j;
+        mat[6] = B * f + G * g + L * h + Q * i + V * j;
+        mat[7] = C * f + H * g + M * h + R * i + W * j;
+        mat[8] = D * f + I * g + N * h + S * i + X * j;
+        mat[9] = E * f + J * g + O * h + T * i + Y * j;
+        mat[10] = A * k + F * l + K * m + P * n + U * o;
+        mat[11] = B * k + G * l + L * m + Q * n + V * o;
+        mat[12] = C * k + H * l + M * m + R * n + W * o;
+        mat[13] = D * k + I * l + N * m + S * n + X * o;
+        mat[14] = E * k + J * l + O * m + T * n + Y * o;
+        mat[15] = A * p + F * q + K * r + P * s + U * t;
+        mat[16] = B * p + G * q + L * r + Q * s + V * t;
+        mat[17] = C * p + H * q + M * r + R * s + W * t;
+        mat[18] = D * p + I * q + N * r + S * s + X * t;
+        mat[19] = E * p + J * q + O * r + T * s + Y * t;
+        mat[20] = A * u + F * v + K * w + P * x + U * y;
+        mat[21] = B * u + G * v + L * w + Q * x + V * y;
+        mat[22] = C * u + H * v + M * w + R * x + W * y;
+        mat[23] = D * u + I * v + N * w + S * x + X * y;
+        mat[24] = E * u + J * v + O * w + T * x + Y * y;
+
+        return mat;
     }
 }
