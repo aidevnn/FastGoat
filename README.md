@@ -150,3 +150,9 @@ Cornell University.
 <b>Frank Lübeck.</b>
 Conway polynomials for finite fields
 <i>Online data</i>
+
+[AECF](https://hal.archives-ouvertes.fr/AECF/)
+<b>Alin Bostan, Frédéric Chyzak, Marc Giusti, Romain Lebreton, Grégoire Lecerf, Bruno Salvy, Éric Schost.</b>
+Algorithmes Efficaces en Calcul Formel.
+Édition web 1.1
+<i>Chapitre IV Factorisation des polynômes.</i>
