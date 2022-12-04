@@ -25,11 +25,11 @@ public interface IRingElt<T> : IEquatable<T>, IComparable<T> where T : IElt<T>, 
     static abstract T operator *(T a, int b);
     static abstract T operator /(T a, T b);
     static abstract T operator /(T a, int b);
+    int P { get; }
 }
 
 public interface IFieldElt<T> : IEquatable<T>, IComparable<T> where T : IElt<T>, IRingElt<T>, IFieldElt<T>
 {
-    int P { get; }
     T Inv();
     static abstract T operator /(int a, T b);
 }
@@ -38,7 +38,6 @@ public interface IVsElt<K, T> : IEquatable<T>, IComparable<T>
     where T : IElt<T>, IRingElt<T>, IVsElt<K, T>
     where K : IElt<K>, IRingElt<K>, IFieldElt<K>
 {
-    int P { get; }
     T KMul(K k);
     static abstract T operator +(T a, K b);
     static abstract T operator +(K a, T b);

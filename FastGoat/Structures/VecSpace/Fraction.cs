@@ -8,7 +8,10 @@ public readonly struct Fraction<T> : IElt<Fraction<T>>, IRingElt<Fraction<T>>, I
 
     public Fraction(T scalar)
     {
-        P = 0;
+        P = scalar.P;
+        
+        // Console.WriteLine($"Check {typeof(T).GetProperties().Any(p => p.Name == "P")}"); // Reflection fashion
+        
         Num = scalar;
         Denom = Num.One;
         Hash = (Num.Hash, Denom.Hash).GetHashCode();
@@ -16,7 +19,7 @@ public readonly struct Fraction<T> : IElt<Fraction<T>>, IRingElt<Fraction<T>>, I
 
     public Fraction(T num, T denom)
     {
-        P = 0;
+        P = num.P;
         if (denom.IsZero())
             throw new DivideByZeroException();
 

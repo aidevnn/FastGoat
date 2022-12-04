@@ -16,7 +16,7 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
     {
         KZero = new K().Zero;
         KOne = new K().One;
-        P = 0;
+        P = KZero.P;
         x = x0;
         Coefs = new[] { KZero, KOne };
         Hash = Coefs.Aggregate(0, (acc, a) => (acc, a.Hash).GetHashCode());
