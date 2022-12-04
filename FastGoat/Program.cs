@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
+using System.Linq.Expressions;
 using FastGoat.Commons;
 using FastGoat.Examples;
 using FastGoat.Structures;
@@ -15,6 +17,7 @@ using FastGoat.UserGroup.Words.ToddCoxeter;
 using static FastGoat.Commons.IntExt;
 using static FastGoat.Commons.EnumerableExt;
 using System.Numerics;
+using System.Threading.Channels;
 
 //////////////////////////////////
 //                              //
