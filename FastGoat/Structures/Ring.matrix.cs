@@ -165,6 +165,13 @@ public static partial class Ring
             (A[i, k], A[j, k]) = (A[j, k].Opp(), A[i, k]);
     }
 
+    private static void MulRows<K>(int i, K a, K[,] A) where K : IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var cols = A.GetLength(1);
+        for (int k = 0; k < cols; k++)
+            A[i, k] *= a;
+    }
+
     private static void CombineRows<K>(int i, int j, K a, K[,] A) where K : IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var cols = A.GetLength(1);
@@ -172,7 +179,108 @@ public static partial class Ring
             A[i, k] = A[i, k].Add(A[j, k].Mul(a));
     }
 
-    public static K DeterminantByPivot<K>(K[,] A, bool details = false) where K : IElt<K>, IRingElt<K>, IFieldElt<K>
+    private static T[,] CloneMatrix<T>(T[,] A)
+    {
+        var m = A.GetLength(0);
+        var n = A.GetLength(1);
+        var B = new T[m, n];
+        for (int i = 0; i < m; i++)
+        for (int j = 0; j < n; j++)
+            B[i, j] = A[i, j];
+
+        return B;
+    }
+
+    public static (K[,] P, K[,] A0) ReducedRowsEchelonForm<K>(K[,] A, bool details = true) where K : IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var m = A.GetLength(0);
+        var n = A.GetLength(1);
+        if (m == 0 || n == 0)
+            throw new ArgumentException();
+
+        var k0 = A[0, 0];
+
+        var A0 = CloneMatrix(A);
+        var P = Diagonal(k0.One, n);
+
+        for (int k = 0; k < n; k++)
+        {
+            var pivotFound = true;
+            if (A0[k, k].IsZero())
+            {
+                pivotFound = false;
+                var i = 0;
+                for (i = k + 1; i < n; i++)
+                {
+                    if (!A0[i, k].IsZero())
+                    {
+                        SwapRows(i, k, A0);
+                        SwapRows(i, k, P);
+                        pivotFound = true;
+                        
+                        Console.WriteLine($"Swap {i} {k}");
+                        Console.WriteLine("Matrix A'");
+                        DisplayMatrix(A0);
+                        Console.WriteLine("Matrix P");
+                        DisplayMatrix(P);
+                        
+                        break;
+                    }
+                }
+            }
+            
+            if(!pivotFound)
+                continue;
+            
+            if (details)
+            {
+                Console.WriteLine($"Pivot L{k}");
+                var a = A0[k, k];
+                MulRows(k, a.Inv(), A0);
+                MulRows(k, a.Inv(), P);
+                Console.WriteLine("Matrix A'");
+                DisplayMatrix(A0);
+                Console.WriteLine("Matrix P");
+                DisplayMatrix(P);
+            }
+
+            for (int i = 0; i < n; i++)
+            {
+                if (i == k)
+                    continue;
+                
+                var b = A0[i, k];
+                if (b.IsZero())
+                    continue;
+
+                var a0 = b.Opp();
+                CombineRows(i, k, a0, A0);
+                CombineRows(i, k, a0, P);
+                if (details)
+                {
+                    Console.WriteLine($"L{i} <- L{i} + {a0} L{k}");
+                    Console.WriteLine("Matrix A'");
+                    DisplayMatrix(A0);
+                    Console.WriteLine("Matrix P");
+                    DisplayMatrix(P);
+                }
+            }
+        }
+
+        if (details)
+        {
+            Console.WriteLine("Final Matrix A'");
+            DisplayMatrix(A0);
+            Console.WriteLine("Final Matrix P");
+            DisplayMatrix(P);
+            
+        }
+
+        return (P, A0);
+    }
+
+    public static K DeterminantByPivot<K>(K[,] A, bool details = false)
+        where K : IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var dim = A.GetLength(0);
         if (dim == 0)
@@ -211,7 +319,7 @@ public static partial class Ring
             var a = A0[k, k];
             if (details)
                 Console.WriteLine($"Pivot L{k}");
-            
+
             for (int i = k + 1; i < dim; i++)
             {
                 var b = A0[i, k];
@@ -352,7 +460,7 @@ public static partial class Ring
         var det = Determinant(S, f.Zero);
         return det.Div(am).quo.Mul(s);
     }
-    
+
     public static K[,] SylvesterMatrix<K>(KPoly<K> f, KPoly<K> g)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
@@ -403,5 +511,4 @@ public static partial class Ring
         var det = DeterminantByPivot(S);
         return det.Mul(s).Mul(am.Inv());
     }
-
 }
