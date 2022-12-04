@@ -3,13 +3,12 @@ using FastGoat.Structures;
 
 namespace FastGoat.UserGroup.Integers;
 
-public struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<Rational>
+public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<Rational>
 {
     public int P => 0;
     public BigInteger Num { get; }
     public BigInteger Denom { get; }
-
-    public static Rational KZero() => new Rational(0, 1);
+    public static Rational KZero() => new(0, 1);
 
     public Rational()
     {

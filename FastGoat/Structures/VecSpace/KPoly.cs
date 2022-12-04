@@ -2,7 +2,7 @@ using FastGoat.Commons;
 
 namespace FastGoat.Structures.VecSpace;
 
-public class KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<KPoly<K>>
+public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<KPoly<K>>
     where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
 {
     public K[] Coefs { get; }
@@ -57,13 +57,10 @@ public class KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<KPoly<K>>
         }
     }
 
-    public bool Equals(KPoly<K>? other) => other is not null && Coefs.SequenceEqual(other.Coefs); // Avoid collisions
+    public bool Equals(KPoly<K> other) => Coefs.SequenceEqual(other.Coefs); // Avoid collisions
 
-    public int CompareTo(KPoly<K>? other)
+    public int CompareTo(KPoly<K> other)
     {
-        if (other is null)
-            return 1;
-        
         var compDegree = Degree.CompareTo(other.Degree);
         if (compDegree != 0)
             return compDegree;
@@ -83,10 +80,12 @@ public class KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<KPoly<K>>
     public bool IsZero() => Degree == 0 && Coefs[0].IsZero();
 
     public KPoly<K> Zero => new(x, KZero, new[] { KZero });
+    public KPoly<K> ZeroExtended(int degree) => new(x, KZero, Enumerable.Repeat(KZero, degree + 1).ToArray());
     public KPoly<K> One => new(x, KZero, new[] { KOne });
     public KPoly<K> X => new(x, KZero, new[] { KZero, KOne });
 
     public KPoly<K> Derivative => new(x, KZero, Coefs.Select((e, i) => e.Mul(i)).Skip(1).TrimSeq().ToArray());
+    public KPoly<K> Substitute(KPoly<K> f) => Coefs.Select((k, i) => k * f.Pow(i)).Aggregate((a, b) => a + b);
 
     public KPoly<K> Add(KPoly<K> e)
     {
@@ -124,16 +123,25 @@ public class KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<KPoly<K>>
         return new(x, KZero, coefs.TrimSeq().ToArray());
     }
 
+    public void InPlaceAdd(KPoly<K> a)
+    {
+        if (a.Degree > Degree)
+            throw new GroupException(GroupExceptionType.GroupDef);
+
+        for (int i = 0; i <= a.Degree; i++)
+            Coefs[i] += a[i];
+    }
+
     public void InPlaceAddProd(KPoly<K> a, KPoly<K> b)
     {
         if (a.Degree + b.Degree > Degree)
             throw new GroupException(GroupExceptionType.GroupDef);
-        
+
         for (int i = 0; i <= a.Degree; i++)
         {
             var ai = a[i];
             for (int j = 0; j <= b.Degree; j++)
-                Coefs[i + j] = Coefs[i + j].Add(ai.Mul(b[j]));
+                Coefs[i + j] += ai * b[j];
         }
     }
 
@@ -188,37 +196,14 @@ public class KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<KPoly<K>>
 
         return (new(x, KZero, quo.TrimSeq().ToArray()), new(x, KZero, rem.TrimSeq().ToArray()));
     }
-    
+
     public override int GetHashCode() => Hash;
 
     public override string ToString()
     {
-        string Str(K e, int i, char x0)
-        {
-            if (i == 0) return $"{e}";
-
-            if (e.Equals(e.One))
-            {
-                if (i == 1) return $"{x0}";
-                return $"{x0}^{i}";
-            }
-
-            if (e.P == 0 && e.Equals(e.One.Opp()))
-            {
-                if (i == 1) return $"-{x0}";
-                return $"-{x0}^{i}";
-            }
-
-            if (i == 1) return $"{e}*{x0}";
-            return $"{e}*{x0}^{i}";
-        }
-
-        if (IsZero())
-            return "0";
-
-        var x0 = x;
-        return Coefs.Select((e, i) => (e, i)).Reverse().Where(e => !e.e.IsZero())
-            .Select(e => Str(e.e, e.i, x0)).Select(e => e.Contains('+') ? $"({e})" : e).Glue(" + ");
+        var xi = Ring.Polynomial(x, KZero);
+        var fx = Coefs.Select((k, i) => k * xi.Pow(i)).Aggregate((a, b) => a + b);
+        return $"{fx}";
     }
 
     public static KPoly<K> operator +(KPoly<K> a, KPoly<K> b) => a.Add(b);

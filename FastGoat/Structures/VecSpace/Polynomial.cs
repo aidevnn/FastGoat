@@ -264,7 +264,9 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
             if (k.Equals(one.Opp()) && one.P == 0)
                 return string.IsNullOrEmpty(sm) ? "-1" : $"-{sm}";
 
-            return string.IsNullOrEmpty(sm) ? $"{k}" : $"{k}{sep}{sm}";
+            var k0 = $"{k}";
+            k0 = k0.Contains('+') ? $"({k0})" : k0;
+            return string.IsNullOrEmpty(sm) ? $"{k}" : $"{k0}{sep}{sm}";
         }
 
         return Coefs.Select(kp => Str(kp.Key, kp.Value)).Glue(" + ");

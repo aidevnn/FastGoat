@@ -147,6 +147,14 @@ namespace FastGoat.Commons
             return Gcd(b, r);
         }
 
+        public static int Gcd(int[] arr)
+        {
+            if (!arr.Any())
+                return 0;
+
+            return Gcd(arr.First(), Gcd(arr.Skip(1).ToArray()));
+        }
+
         public static (int x, int y) Bezout(int a, int b)
         {
             if (b == 0)
@@ -264,6 +272,11 @@ namespace FastGoat.Commons
         public static int Lcm(int a, int b)
         {
             return a * b / Gcd(a, b);
+        }
+
+        public static int Lcm(int[] arr)
+        {
+            return arr.Aggregate((a, b) => a * b) / Gcd(arr);
         }
 
         public static int[] Range(this int a, int start = 0)

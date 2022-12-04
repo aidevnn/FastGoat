@@ -20,9 +20,18 @@ public readonly struct Fraction<T> : IElt<Fraction<T>>, IRingElt<Fraction<T>>, I
         if (denom.IsZero())
             throw new DivideByZeroException();
 
-        var gcd = Ring.Gcd(num, denom);
-        Num = num.Div(gcd).quo;
-        Denom = denom.Div(gcd).quo;
+        var (q, r) = num.Div(denom);
+        if (r.IsZero())
+        {
+            Num = q;
+            Denom = q.One;
+        }
+        else
+        {
+            var gcd = Ring.Gcd(num, denom);
+            Num = num.Div(gcd).quo;
+            Denom = denom.Div(gcd).quo;
+        }
         Hash = (Num.Hash, Denom.Hash).GetHashCode();
     }
 
