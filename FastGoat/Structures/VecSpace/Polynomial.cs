@@ -13,6 +13,7 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
         Coefs.Keys.SelectMany(m => m.Indeterminates).Distinct().Ascending().ToArray();
 
     public K KZero { get; }
+    public K KOne => KZero.One;
 
     public Polynomial(K scalar)
     {
@@ -60,6 +61,7 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
 
     public Polynomial<K, T> Zero => new(KZero);
     public Polynomial<K, T> One => new(KZero.One);
+    public Polynomial<K, T> LeadingCoeff => IsZero() ? One : new(Coefs.Last().Value);
 
     public Polynomial<K, T> Substitue(T t, Polynomial<K, T> poly)
     {

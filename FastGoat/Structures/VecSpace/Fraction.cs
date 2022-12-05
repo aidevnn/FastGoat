@@ -32,15 +32,26 @@ public readonly struct Fraction<T> : IElt<Fraction<T>>, IRingElt<Fraction<T>>, I
         else
         {
             var gcd = Ring.Gcd(num, denom);
-            Num = num.Div(gcd).quo;
-            Denom = denom.Div(gcd).quo;
+            var num0 = num.Div(gcd).quo;
+            var denom0 = denom.Div(gcd).quo;
+            var c = denom0.LeadingCoeff;
+            Num = num0 / c;
+            Denom = denom0 / c;
         }
+        Hash = (Num.Hash, Denom.Hash).GetHashCode();
+    }
+
+    public Fraction((T num, T denom) e)
+    {
+        P = e.num.P;
+        Num = e.num;
+        Denom = e.denom;
         Hash = (Num.Hash, Denom.Hash).GetHashCode();
     }
 
     public Fraction<T> Zero => new(Num.Zero);
     public Fraction<T> One => new(Num.One);
-
+    public Fraction<T> LeadingCoeff => One;
     public bool Equals(Fraction<T> other) => Num.Equals(other.Num) && Denom.Equals(other.Denom);
 
     public int CompareTo(Fraction<T> other) => (Num.Mul(other.Denom)).CompareTo(other.Num.Mul(Denom));

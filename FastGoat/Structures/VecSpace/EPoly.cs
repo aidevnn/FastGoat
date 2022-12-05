@@ -47,11 +47,13 @@ public readonly struct EPoly<K> : IVsElt<K, EPoly<K>>, IElt<EPoly<K>>, IRingElt<
 
     public int Hash { get; }
     public bool IsZero() => Poly.IsZero();
+    public K this[int idx] => Poly[idx];
 
     public K KZero => F.KZero;
     public K KOne => F.KOne;
     public EPoly<K> Zero => new(F, F.Zero);
     public EPoly<K> One => new(F, F.One);
+    public  EPoly<K> LeadingCoeff => new(F, F.LeadingCoeff);
     public EPoly<K> Add(EPoly<K> e)
     {
         return new(F, Poly.Add(e.Poly).Div(F).rem);

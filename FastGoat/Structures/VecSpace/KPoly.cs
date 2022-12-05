@@ -8,14 +8,13 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
     public K[] Coefs { get; }
     public int Degree { get; }
     public K KZero { get; }
-    public K KOne { get; }
+    public K KOne => KZero.One;
     public int P { get; }
     public char x { get; }
 
     public KPoly(char x0)
     {
         KZero = new K().Zero;
-        KOne = new K().One;
         P = KZero.P;
         x = x0;
         Coefs = new[] { KZero, KOne };
@@ -26,7 +25,6 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
     public KPoly(char x0, K k0)
     {
         KZero = k0.Zero;
-        KOne = k0.One;
         P = k0.P;
         x = x0;
         Coefs = new[] { k0 };
@@ -37,7 +35,6 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
     public KPoly(char x0, K kZero, K[] coefs)
     {
         KZero = kZero.Zero;
-        KOne = kZero.One;
         P = kZero.P;
         x = x0;
 
@@ -84,6 +81,7 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
     public KPoly<K> One => new(x, KZero, new[] { KOne });
     public KPoly<K> X => new(x, KZero, new[] { KZero, KOne });
 
+    public KPoly<K> LeadingCoeff => IsZero() ? One : new(x, KZero, new[] { Coefs.Last() });
     public KPoly<K> Derivative => new(x, KZero, Coefs.Select((e, i) => e.Mul(i)).Skip(1).TrimSeq().ToArray());
     public KPoly<K> Substitute(KPoly<K> f) => Coefs.Select((k, i) => k * f.Pow(i)).Aggregate((a, b) => a + b);
 

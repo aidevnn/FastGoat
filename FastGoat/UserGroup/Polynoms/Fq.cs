@@ -13,13 +13,14 @@ public struct Fq : IGroup<EPoly<ZnInt>>
     public int M { get; }
     public KPoly<ZnInt> F { get; }
     private EPoly<ZnInt> X { get; }
-    public Fq(int q)
+
+    public Fq(int q, char x = 'x')
     {
         Q = q;
         ((int p, int m), int[] coefs) = PolynomExt.Get(Q);
         P = p;
         M = m;
-        F = new('x', ZnInt.KZero(p), coefs.Select(i => new ZnInt(p, i)).ToArray());
+        F = new(x, ZnInt.KZero(p), coefs.Select(i => new ZnInt(p, i)).ToArray());
         Hash = (Q, "fq").GetHashCode();
         Name = $"F{Q}";
         X = new(F);
@@ -50,10 +51,12 @@ public struct Fq : IGroup<EPoly<ZnInt>>
             throw new GroupException(GroupExceptionType.GroupDef);
         }
     }
+
     public IEnumerable<EPoly<ZnInt>> GetElements()
     {
         yield return Neutral();
     }
+
     public IEnumerable<EPoly<ZnInt>> GetGenerators()
     {
         yield return X;

@@ -89,7 +89,7 @@ public static class PolynomialFactorization
         return L;
     }
 
-    static (KPoly<K> c, int q) DeflateP<K>(KPoly<K> f) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    static (KPoly<K> c, int p) DeflateP<K>(KPoly<K> f) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var p = f.KZero.P;
         if (p == 0)
@@ -98,7 +98,7 @@ public static class PolynomialFactorization
         var d = f.Degree;
         var decomp = IntExt.PrimesDecomposition(d).ToArray();
         if (!decomp.Contains(p))
-            return (f, 0);
+            return (f, 1);
 
         var q = decomp.Count(i => i == p);
         var xi = q.Range(1).Select(i => p.Pow(i)).ToArray();
@@ -109,10 +109,11 @@ public static class PolynomialFactorization
             return (new KPoly<K>(f.x, f.KZero, coefs), p);
         }
 
-        return (f, 0);
+        return (f, 1);
     }
 
-    static IEnumerable<(KPoly<K> g, int q, int m)> GianniTrager<K>(KPoly<K> f, int q)
+    // Page 334, Book ACFE, 18.4 Factorisation séparable
+    static IEnumerable<(KPoly<K> g, int q, int m)> GianniTrager<K>(KPoly<K> f, int q = 1)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         if (f.Degree != 0)
@@ -127,9 +128,9 @@ public static class PolynomialFactorization
             var gi = sff.Aggregate(f.One, (acc, a) => acc * a.g.Pow(a.i));
             var c = f / gi;
             var cf = DeflateP(c);
-            if (cf.q != 0)
+            if (cf.p != 1)
             {
-                foreach (var l in GianniTrager(cf.c, cf.q * q))
+                foreach (var l in GianniTrager(cf.c, cf.p * q))
                 {
                     yield return l;
                 }
@@ -204,6 +205,16 @@ public static class PolynomialFactorization
         Console.WriteLine();
     }
 
+    static void CheckIrreductibility((KPoly<ZnInt> g, int q, int m)[] fSep)
+    {
+        var digits = fSep.Max(e => e.g.ToString().Length);
+        var fmt = $"{{0,-{digits}}} IsIrreductible : {{1}}";
+        foreach (var e in fSep)
+            Console.WriteLine(fmt, e.g, IsIrreductibleFp(e.g));
+
+        Console.WriteLine();
+    }
+
     public static void SquareFreeFactorizationQ()
     {
         Monom.Display = MonomDisplay.Superscript;
@@ -246,18 +257,20 @@ public static class PolynomialFactorization
             var x = FG.ZPoly(3);
             var f = x.Pow(2) * (x + 1).Pow(3) * (x + 2).Pow(4);
             Console.WriteLine(f);
-            var l = GianniTrager(f, 1).ToArray();
+            var l = GianniTrager(f).ToArray();
             Console.WriteLine(l.Glue("\n"));
             CheckSeparability(f, l);
+            CheckIrreductibility(l);
         }
 
         {
             var x = FG.ZPoly(2);
             var f = x.Pow(2) * (x + 1).Pow(3) * (x.Pow(2) + 1).Pow(4);
             Console.WriteLine(f);
-            var l = GianniTrager(f, 1).ToArray();
+            var l = GianniTrager(f).ToArray();
             Console.WriteLine(l.Glue("\n"));
             CheckSeparability(f, l);
+            CheckIrreductibility(l);
         }
 
         {
@@ -265,9 +278,23 @@ public static class PolynomialFactorization
             // F = (X + 2T)7 (X3 + 2T)3 (X6 + T)
             var f = (x + 2 * t).Pow(7) * (x.Pow(3) + 2 * t).Pow(3) * (x.Pow(6) + t);
             Console.WriteLine(f);
-            var l = GianniTrager(f, 1).ToArray();
+            var l = GianniTrager(f).ToArray();
             Console.WriteLine(l.Glue("\n"));
             CheckSeparability(f, l);
         }
+
+        {
+            Monom.Display = MonomDisplay.StarPowFct;
+            var x = FG.ZPoly(3);
+            // x15 + 2x14 + 2x12 + x11 + 2x10 + 2x8 + x7 + 2x6 + 2x4
+            var f = x.Pow(15) + 2 * x.Pow(14) + 2 * x.Pow(12) + x.Pow(11) + 2 * x.Pow(10) + 2 * x.Pow(8) + x.Pow(7) +
+                    2 * x.Pow(6) + 2 * x.Pow(4);
+            Console.WriteLine(f);
+            var l = GianniTrager(f).ToArray();
+            Console.WriteLine(l.Glue("\n"));
+            CheckSeparability(f, l);
+            CheckIrreductibility(l);
+        }
+
     }
 }

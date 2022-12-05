@@ -271,5 +271,5 @@ public static partial class FG
         return Group.Generate(fq, fq['x']);
     }
 
-    public static EPoly<ZnInt> FqX(int q) => new Fq(q)['x'];
+    public static EPoly<ZnInt> FqX(int q, char x = 'x') => new Fq(q, x)[x];
 }

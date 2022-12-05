@@ -1,3 +1,4 @@
+using System.Text;
 using FastGoat.Commons;
 using FastGoat.Structures.VecSpace;
 
@@ -34,14 +35,15 @@ public static partial class Ring
         return Matrix(n, coefs);
     }
 
-    public static T[,] Dot<T>(T[,] A, T[,] B, T t0) where T : IElt<T>, IRingElt<T>
+    public static T[,] Dot<T>(T[,] A, T[,] B) where T : IElt<T>, IRingElt<T>
     {
         var rowsA = A.GetLength(0);
         var colsAB = A.GetLength(1);
-        if (colsAB != B.GetLength(0))
+        if (colsAB != B.GetLength(0) || rowsA * colsAB == 0)
             throw new ArgumentException();
 
         var colsB = B.GetLength(1);
+        var t0 = A[0, 0];
         var C = new T[rowsA, colsB];
 
         for (int i = 0; i < rowsA; i++)
@@ -191,92 +193,111 @@ public static partial class Ring
         return B;
     }
 
-    public static (K[,] P, K[,] A0) ReducedRowsEchelonForm<K>(K[,] A, bool details = true) where K : IElt<K>, IRingElt<K>, IFieldElt<K>
+    public static (K[,] P, K[,] A0) ReducedRowsEchelonForm<K>(K[,] A)
+        where K : IElt<K>, IRingElt<K>, IFieldElt<K>
     {
-        var m = A.GetLength(0);
-        var n = A.GetLength(1);
+        var (m, n) = (A.GetLength(0), A.GetLength(1));
         if (m == 0 || n == 0)
             throw new ArgumentException();
 
-        var k0 = A[0, 0];
-
         var A0 = CloneMatrix(A);
-        var P = Diagonal(k0.One, n);
+        var P = Diagonal(A[0, 0].One, m);
 
-        for (int k = 0; k < n; k++)
+        int i = 0, j = 0;
+        while (i < m && j < n)
         {
             var pivotFound = true;
-            if (A0[k, k].IsZero())
+            if (A0[i, j].IsZero())
             {
                 pivotFound = false;
-                var i = 0;
-                for (i = k + 1; i < n; i++)
+                for (int i0 = i + 1; i0 < m; i0++)
                 {
-                    if (!A0[i, k].IsZero())
+                    if (!A0[i0, j].IsZero())
                     {
-                        SwapRows(i, k, A0);
-                        SwapRows(i, k, P);
+                        SwapRows(i0, i, A0);
+                        SwapRows(i0, i, P);
                         pivotFound = true;
-                        
-                        Console.WriteLine($"Swap {i} {k}");
-                        Console.WriteLine("Matrix A'");
-                        DisplayMatrix(A0);
-                        Console.WriteLine("Matrix P");
-                        DisplayMatrix(P);
-                        
                         break;
                     }
                 }
             }
-            
-            if(!pivotFound)
-                continue;
-            
-            if (details)
+
+            if (!pivotFound)
             {
-                Console.WriteLine($"Pivot L{k}");
-                var a = A0[k, k];
-                MulRows(k, a.Inv(), A0);
-                MulRows(k, a.Inv(), P);
-                Console.WriteLine("Matrix A'");
-                DisplayMatrix(A0);
-                Console.WriteLine("Matrix P");
-                DisplayMatrix(P);
+                ++j;
+                continue;
             }
 
-            for (int i = 0; i < n; i++)
+            var a = A0[i, j];
+            MulRows(i, a.Inv(), A0);
+            MulRows(i, a.Inv(), P);
+            for (int i0 = 0; i0 < m; i0++)
             {
-                if (i == k)
+                if (i0 == i)
                     continue;
-                
-                var b = A0[i, k];
+
+                var b = A0[i0, j];
                 if (b.IsZero())
                     continue;
 
                 var a0 = b.Opp();
-                CombineRows(i, k, a0, A0);
-                CombineRows(i, k, a0, P);
-                if (details)
-                {
-                    Console.WriteLine($"L{i} <- L{i} + {a0} L{k}");
-                    Console.WriteLine("Matrix A'");
-                    DisplayMatrix(A0);
-                    Console.WriteLine("Matrix P");
-                    DisplayMatrix(P);
-                }
+                CombineRows(i0, i, a0, A0);
+                CombineRows(i0, i, a0, P);
             }
-        }
 
-        if (details)
-        {
-            Console.WriteLine("Final Matrix A'");
-            DisplayMatrix(A0);
-            Console.WriteLine("Final Matrix P");
-            DisplayMatrix(P);
-            
+            ++i;
+            ++j;
         }
 
         return (P, A0);
+    }
+
+    // wikipedia
+    public static K[,] ToReducedRowEchelonForm<K>(K[,] M0)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var M = CloneMatrix(M0);
+        var lead = 0;
+        var rowCount = M.GetLength(0);
+        var columnCount = M.GetLength(1);
+        for (int r = 0; r < rowCount; r++)
+        {
+            if (columnCount <= lead)
+                return M;
+
+            var i = r;
+            while (M[i, lead].IsZero())
+            {
+                ++i;
+                if (rowCount == i)
+                {
+                    i = r;
+                    ++lead;
+                    if (columnCount == lead)
+                        return M;
+                }
+            }
+
+            if (i != r) SwapRows(i, r, M);
+            MulRows(r, M[r, lead].Inv(), M);
+            for (int j = 0; j < rowCount; j++)
+            {
+                if (j != r)
+                    CombineRows(j, r, M[j, lead].Opp(), M);
+            }
+
+            ++lead;
+        }
+
+        return M;
+    }
+
+
+    public static (KMatrix<K> P, KMatrix<K> A0) ReducedRowsEchelonForm<K>(KMatrix<K> A)
+        where K : IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var e = ReducedRowsEchelonForm(A.Coefs);
+        return (new(e.P), new(e.A0));
     }
 
     public static K DeterminantByPivot<K>(K[,] A, bool details = false)
@@ -339,20 +360,46 @@ public static partial class Ring
         return dim.Range().Select(k => A0[k, k]).Aggregate((a, b) => a.Mul(b));
     }
 
-    public static void DisplayMatrix<T>(T[,] mat, string sep = ", ")
+    public static string Matrix2String<T>(T[,] mat, string sep = ", ")
     {
         var rows = mat.GetLength(0);
         var cols = mat.GetLength(1);
         var rgCols = cols.Range();
+        if (MatrixDisplayForm == MatrixDisplay.Bracket)
+        {
+            List<string> s = new();
+            for (int i = 0; i < rows; i++)
+            {
+                var i0 = i;
+                s.Add(rgCols.Select(j => mat[i0, j]).Glue(","));
+            }
+
+            return $"{{{s.Glue(",", "{{ {0} }}")}}}";
+        }
+
         var digits = rgCols.Select(j => rows.Range().Max(i => $"{mat[i, j]}".Length)).Max();
         var fmt = $"{{0,{digits}}}";
+        StringBuilder sb = new();
         for (int i = 0; i < rows; i++)
         {
             var i0 = i;
-            Console.WriteLine("[{0}]", rgCols.Select(j => mat[i0, j]).Glue(sep, fmt));
+            sb.AppendLine($"[{rgCols.Select(j => mat[i0, j]).Glue(sep, fmt)}]");
         }
 
-        Console.WriteLine();
+        return sb.ToString();
+    }
+
+    public enum MatrixDisplay
+    {
+        Bracket,
+        Table
+    }
+
+    public static MatrixDisplay MatrixDisplayForm { get; set; } = MatrixDisplay.Table;
+
+    public static void DisplayMatrix<T>(T[,] mat, string sep = ", ")
+    {
+        Console.WriteLine(Matrix2String(mat, sep));
     }
 
     public static Polynomial<K, T>[] PolyBase<K, T>(K zero, T t, int n)

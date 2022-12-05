@@ -23,7 +23,7 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
         Denom = 1;
         Hash = (Num, Denom).GetHashCode();
     }
-
+    
     public Rational(BigInteger num, BigInteger denom)
     {
         if (denom == 0)
@@ -43,6 +43,7 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
     public bool IsZero() => Num == 0;
     public Rational Zero => new(0, 1);
     public Rational One => new(1, 1);
+    public Rational LeadingCoeff => One;
     public Rational Add(Rational e) => new(Num * e.Denom + e.Num * Denom, Denom * e.Denom);
     public Rational Sub(Rational e) => new(Num * e.Denom - e.Num * Denom, Denom * e.Denom);
 

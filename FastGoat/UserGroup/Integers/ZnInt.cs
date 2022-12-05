@@ -22,6 +22,7 @@ public readonly struct ZnInt : IElt<ZnInt>, IRingElt<ZnInt>, IFieldElt<ZnInt>
         return other.Hash == Hash;
     }
 
+    public ZnInt LeadingCoeff => One;
     public int CompareTo(ZnInt other)
     {
         if (P != other.P)

@@ -1,0 +1,294 @@
+using FastGoat.Commons;
+
+namespace FastGoat.Structures.VecSpace;
+
+public struct KMatrix<K> : IVsElt<K, KMatrix<K>>, IElt<KMatrix<K>>, IRingElt<KMatrix<K>>, IFieldElt<KMatrix<K>>
+    where K : IElt<K>, IRingElt<K>, IFieldElt<K>
+{
+    public K[,] Coefs { get; }
+    public int M { get; }
+    public int N { get; }
+    public (int m, int n) Dim => (M, N);
+
+    public KMatrix(K scalar, int m, int n)
+    {
+        Coefs = new K[m, n];
+        M = m;
+        N = n;
+        for (int i = 0; i < m; i++)
+        {
+            for (int j = 0; j < n; j++)
+            {
+                Coefs[i, j] = scalar;
+            }
+        }
+
+        P = scalar.P;
+        KZero = scalar.Zero;
+        Hash = (M, N, P).GetHashCode();
+    }
+
+    public KMatrix(K[,] coefs)
+    {
+        M = coefs.GetLength(0);
+        N = coefs.GetLength(1);
+        Coefs = new K[M, N];
+        for (int i = 0; i < M; i++)
+        {
+            for (int j = 0; j < N; j++)
+            {
+                Coefs[i, j] = coefs[i, j];
+            }
+        }
+
+        KZero = Coefs[0, 0].Zero;
+        P = Coefs[0, 0].P;
+        Hash = (M, N, P).GetHashCode();
+    }
+
+    public K KZero { get; }
+    public K KOne => KZero.One;
+
+    public KMatrix<K> LeadingCoeff => One;
+    public K this[int i, int j] => Coefs[i, j];
+
+    public bool Equals(KMatrix<K> other)
+    {
+        if (!Dim.Equals(other.Dim))
+            return false;
+
+        for (int i = 0; i < M; i++)
+        {
+            for (int j = 0; j < N; j++)
+            {
+                if (!Coefs[i, j].Equals(other[i, j]))
+                    return false;
+            }
+        }
+
+        return true;
+    }
+
+    public int CompareTo(KMatrix<K> other)
+    {
+        var compMN = (M * N).CompareTo(other.M * other.N);
+        if (compMN != 0)
+            return compMN;
+
+        var compM = M.CompareTo(other.M);
+        if (compM != 0)
+            return compM;
+
+        for (int i = 0; i < M; i++)
+        {
+            for (int j = 0; j < N; j++)
+            {
+                var comp = Coefs[i, j].CompareTo(other[i, j]);
+                if (comp != 0)
+                    return comp;
+            }
+        }
+
+        return 0;
+    }
+
+    public KMatrix<K> T => new(Ring.Transpose(Coefs));
+
+    public KMatrix<K> KMul(K k)
+    {
+        var coefs = new K[M, N];
+        for (int i = 0; i < M; i++)
+        {
+            for (int j = 0; j < N; j++)
+            {
+                coefs[i, j] = k * Coefs[i, j];
+            }
+        }
+
+        return new(coefs);
+    }
+
+    public int Hash { get; }
+
+    public bool IsZero()
+    {
+        for (int i = 0; i < M; i++)
+        {
+            for (int j = 0; j < N; j++)
+            {
+                if (!Coefs[i, j].IsZero())
+                    return false;
+            }
+        }
+
+        return true;
+    }
+
+    public KMatrix<K> Zero => new(KZero, M, N);
+    public KMatrix<K> One => new(Ring.Diagonal(KOne, M));
+
+    public KMatrix<K> Add(KMatrix<K> e)
+    {
+        if (!Dim.Equals(e.Dim))
+            throw new GroupException(GroupExceptionType.GroupDef);
+
+        var coefs = new K[M, N];
+        for (int i = 0; i < M; i++)
+        {
+            for (int j = 0; j < N; j++)
+            {
+                coefs[i, j] = Coefs[i, j] + e[i, j];
+            }
+        }
+
+        return new(coefs);
+    }
+
+    public KMatrix<K> Sub(KMatrix<K> e)
+    {
+        if (!Dim.Equals(e.Dim))
+            throw new GroupException(GroupExceptionType.GroupDef);
+
+        var coefs = new K[M, N];
+        for (int i = 0; i < M; i++)
+        {
+            for (int j = 0; j < N; j++)
+            {
+                coefs[i, j] = Coefs[i, j] - e[i, j];
+            }
+        }
+
+        return new(coefs);
+    }
+
+    public KMatrix<K> Opp()
+    {
+        var coefs = new K[M, N];
+        for (int i = 0; i < M; i++)
+        {
+            for (int j = 0; j < N; j++)
+            {
+                coefs[i, j] = Coefs[i, j].Opp();
+            }
+        }
+
+        return new(coefs);
+    }
+
+    public KMatrix<K> Mul(KMatrix<K> e) => new(Ring.Dot(Coefs, e.Coefs));
+
+    public (KMatrix<K> quo, KMatrix<K> rem) Div(KMatrix<K> e)
+    {
+        throw new GroupException(GroupExceptionType.GroupDef);
+    }
+
+    public KMatrix<K> Mul(int k)
+    {
+        var coefs = new K[M, N];
+        for (int i = 0; i < M; i++)
+        {
+            for (int j = 0; j < N; j++)
+            {
+                coefs[i, j] = Coefs[i, j] * k;
+            }
+        }
+
+        return new(coefs);
+    }
+    
+    public int P { get; }
+    public KMatrix<K> Inv()
+    {
+        var e = Ring.ReducedRowsEchelonForm(Coefs);
+        return new(e.P);
+    }
+
+    public KMatrix<K> Pow(int k)
+    {
+        if (M != N)
+            throw new GroupException(GroupExceptionType.GroupDef);
+        
+        if (k == 0)
+            return One;
+
+        if (k < 0)
+            return Inv().Pow(-k);
+
+        var pi = this;
+        return Enumerable.Repeat(pi, k).Aggregate((a, b) => a.Mul(b));
+    }
+
+    public (int nullity, K[][] nullSpaceGens) NullSpace()
+    {
+        var e = Ring.ReducedRowsEchelonForm(T);
+        var rgM = M.Range();
+        var rgN = N.Range();
+        var nullRows = rgN.Where(i => rgM.All(j => e.A0[i, j].IsZero())).ToArray();
+        var nullity = nullRows.Length;
+        var ep = e.P.T;
+        var nullSpaceGens = nullRows.Select(j => rgN.Select(i => ep[i, j]).ToArray()).ToArray();
+        return (nullity, nullSpaceGens);
+    }
+
+    public K Det => Ring.DeterminantByPivot(Coefs);
+
+    public override int GetHashCode() => Hash;
+    public override string ToString()
+    {
+        return Ring.Matrix2String(Coefs);
+    }
+
+    public static KMatrix<K> operator +(KMatrix<K> a, KMatrix<K> b) => a.Add(b);
+
+    public static KMatrix<K> operator +(int a, KMatrix<K> b) => b.KOne.Mul(a) + b;
+
+    public static KMatrix<K> operator +(KMatrix<K> a, int b) => a + a.KOne.Mul(b);
+
+    public static KMatrix<K> operator -(KMatrix<K> a, KMatrix<K> b) => a.Sub(b);
+
+    public static KMatrix<K> operator -(int a, KMatrix<K> b) => b.KOne.Mul(a) - b;
+
+    public static KMatrix<K> operator -(KMatrix<K> a, int b)=> a - a.KOne.Mul(b);
+
+    public static KMatrix<K> operator *(KMatrix<K> a, KMatrix<K> b) => a.Mul(b);
+
+    public static KMatrix<K> operator *(int a, KMatrix<K> b) => b.Mul(a);
+
+    public static KMatrix<K> operator *(KMatrix<K> a, int b) => a.Mul(b);
+
+    public static KMatrix<K> operator /(KMatrix<K> a, KMatrix<K> b)
+    {
+        throw new GroupException(GroupExceptionType.GroupDef);
+    }
+
+    public static KMatrix<K> operator /(KMatrix<K> a, int b)
+    {
+        var coefs = new K[a.M, a.N];
+        for (int i = 0; i < a.M; i++)
+        {
+            for (int j = 0; j < a.N; j++)
+            {
+                coefs[i, j] = a.Coefs[i, j] / b;
+            }
+        }
+
+        return new(coefs);
+    }
+
+    public static KMatrix<K> operator /(int a, KMatrix<K> b) => b.Inv().Mul(a);
+    
+    public static KMatrix<K> operator +(KMatrix<K> a, K b) => a.Add(new(b, a.M, a.N));
+
+    public static KMatrix<K> operator +(K a, KMatrix<K> b) => b.Add(new(a, b.M, b.N));
+
+    public static KMatrix<K> operator -(KMatrix<K> a, K b) => a.Sub(new(b, a.M, a.N));
+
+    public static KMatrix<K> operator -(K a, KMatrix<K> b) => new KMatrix<K>(a, b.M, b.N).Sub(b);
+
+    public static KMatrix<K> operator *(KMatrix<K> a, K b) => a.KMul(b);
+
+    public static KMatrix<K> operator *(K a, KMatrix<K> b) => b.KMul(a);
+
+    public static KMatrix<K> operator /(KMatrix<K> a, K b) => a.KMul(b.Inv());
+
+}

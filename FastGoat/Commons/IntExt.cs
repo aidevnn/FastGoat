@@ -279,9 +279,9 @@ namespace FastGoat.Commons
             return arr.Aggregate((a, b) => a * b) / Gcd(arr);
         }
 
-        public static int[] Range(this int a, int start = 0)
+        public static int[] Range(this int a, int start = 0, int step = 1)
         {
-            return Enumerable.Range(start, a).ToArray();
+            return Enumerable.Range(0, a).Select(i => start + i * step).ToArray();
         }
 
         public static int[][] GetPermutations(int n)
