@@ -260,15 +260,15 @@ public static partial class FG
         var autCn = Group.AutBase(cn);
         var y = autCn[(cn[1], cn[n2])];
         var aut = Group.Generate(autCn, y);
-        var pMap = Group.PartialMap((c2[1], a1: y));
+        var pMap = Group.PartialMap((c2[1], y));
         var theta = Group.Hom(c2, Group.HomomorphismMap(c2, aut, pMap));
         return Group.SemiDirectProd($"QD{n1 * 2}", cn, theta, c2);
     }
 
-    public static ConcreteGroup<EPoly<ZnInt>> Galois(int q)
+    public static ConcreteGroup<EPoly<ZnInt>> Galois(int q, char x = 'x')
     {
-        var fq = new Fq(q);
-        return Group.Generate(fq, fq['x']);
+        var fq = new Fq(q, x);
+        return Group.Generate(fq, fq[x]);
     }
 
     public static EPoly<ZnInt> FqX(int q, char x = 'x') => new Fq(q, x)[x];

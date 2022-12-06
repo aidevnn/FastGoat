@@ -48,7 +48,7 @@ public static partial class Ring
 
         for (int i = 0; i < rowsA; i++)
         {
-            for (int j = 0; j < colsAB; j++)
+            for (int j = 0; j < colsB; j++)
             {
                 var sum = t0.Zero;
                 for (int k = 0; k < colsAB; k++)

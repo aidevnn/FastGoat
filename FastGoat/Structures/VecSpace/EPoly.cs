@@ -70,8 +70,7 @@ public readonly struct EPoly<K> : IVsElt<K, EPoly<K>>, IElt<EPoly<K>>, IRingElt<
 
     public (EPoly<K> quo, EPoly<K> rem) Div(EPoly<K> e)
     {
-        var (q, r) = Poly.Div(e.Poly);
-        return (new(F, q.Div(F).rem), new(F, r.Div(F).rem));
+        return (this * e.Inv(), Zero);
     }
 
     public EPoly<K> Mul(int k) => new(F, Poly.Mul(k));

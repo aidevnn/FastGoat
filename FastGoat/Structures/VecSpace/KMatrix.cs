@@ -71,13 +71,9 @@ public struct KMatrix<K> : IVsElt<K, KMatrix<K>>, IElt<KMatrix<K>>, IRingElt<KMa
 
     public int CompareTo(KMatrix<K> other)
     {
-        var compMN = (M * N).CompareTo(other.M * other.N);
-        if (compMN != 0)
-            return compMN;
-
-        var compM = M.CompareTo(other.M);
-        if (compM != 0)
-            return compM;
+        var compDim = Dim.CompareTo(other.Dim);
+        if (compDim != 0)
+            return compDim;
 
         for (int i = 0; i < M; i++)
         {
@@ -218,16 +214,28 @@ public struct KMatrix<K> : IVsElt<K, KMatrix<K>>, IElt<KMatrix<K>>, IRingElt<KMa
         return Enumerable.Repeat(pi, k).Aggregate((a, b) => a.Mul(b));
     }
 
-    public (int nullity, K[][] nullSpaceGens) NullSpace()
+    public (int nullity, KMatrix<K>) NullSpace()
     {
         var e = Ring.ReducedRowsEchelonForm(T);
         var rgM = M.Range();
         var rgN = N.Range();
         var nullRows = rgN.Where(i => rgM.All(j => e.A0[i, j].IsZero())).ToArray();
         var nullity = nullRows.Length;
+        if (nullity == 0)
+            return (0, new(KZero, M, 0));
+
+        var coeffs = new K[N, nullity];
         var ep = e.P.T;
-        var nullSpaceGens = nullRows.Select(j => rgN.Select(i => ep[i, j]).ToArray()).ToArray();
-        return (nullity, nullSpaceGens);
+        for (int k = 0; k < nullity; k++)
+        {
+            var j = nullRows[k];
+            foreach (var i in rgN)
+            {
+                coeffs[i, k] = ep[i, j];
+            }
+        }
+        
+        return (nullity, new(coeffs));
     }
 
     public K Det => Ring.DeterminantByPivot(Coefs);
