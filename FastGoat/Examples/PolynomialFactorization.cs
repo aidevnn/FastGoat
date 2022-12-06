@@ -4,6 +4,7 @@ using FastGoat.Structures;
 using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup;
 using FastGoat.UserGroup.Integers;
+using FastGoat.UserGroup.Polynoms;
 
 namespace FastGoat.Examples;
 
@@ -15,6 +16,16 @@ public static class PolynomialFactorization
     {
         var coefs = (n + 1).Range().Select(i => rnd.Next(-p, p + 1) * scalar.One).TrimSeq().ToArray();
         return new KPoly<K>('x', scalar, coefs);
+    }
+
+    static KPoly<K> RandPolySep<K>(K scalar, int p, int n) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        while (true)
+        {
+            var f = RandPoly(scalar, p, n);
+            if (f.Degree > 1 && !Ring.Discriminant(f).IsZero())
+                return f.Monic;
+        }
     }
 
     static KPoly<ZnInt> ProdIrr(int p, int d)
@@ -215,6 +226,69 @@ public static class PolynomialFactorization
         Console.WriteLine();
     }
 
+    static EPoly<K>[] CanonicalBase<K>(KPoly<K> f) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var x = new EPoly<K>(f);
+        return f.Degree.Range().Select(i => x.Pow(i)).ToArray();
+    }
+
+    static KMatrix<K> BerlekampMatrix<K>(KPoly<K> f, int q)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var baseCan = CanonicalBase(f);
+        var n = baseCan.Length;
+        var M = new K[n, n];
+        var polys = baseCan.Select(g => g.Pow(q) - g).ToArray();
+        foreach (var (i, j) in n.Range().Grid2D(n.Range()))
+        {
+            M[i, j] = polys[j][i];
+        }
+
+        return new(M);
+    }
+
+    static KPoly<K>[] FrobeniusKernel<K>(KPoly<K> f, int q)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var baseCan = CanonicalBase(f);
+        var bm = BerlekampMatrix(f, q);
+        var (nt, ns) = bm.NullSpace();
+        var (m, n) = ns.Dim;
+        var polys = n.Range().Select(j => m.Range().Select(i => ns[i, j] * baseCan[i]).Aggregate((a, b) => a + b).Poly)
+            .ToArray();
+        return polys;
+    }
+
+    static IEnumerable<KPoly<EPoly<ZnInt>>> Firr(KPoly<EPoly<ZnInt>> f, Fq fq)
+    {
+        var q = fq.Q;
+        var a0 = fq.GetGenerators().First();
+        var polys = FrobeniusKernel(f, q);
+        if (polys.Length > 1)
+        {
+            var fqa = (q - 1).Range(1).Select(i => a0.Pow(i)).ToArray();
+            foreach (var (g, a) in polys.Where(g => g.Degree > 0).Grid2D(fqa))
+            {
+                var g_a = g - a;
+                var gcd = Ring.Gcd(f, g_a).Monic;
+                if (gcd.Degree != 0)
+                {
+                    foreach (var f1 in Firr(gcd, fq))
+                        yield return f1;
+
+                    foreach (var f1 in Firr(f / gcd, fq))
+                        yield return f1;
+
+                    break;
+                }
+            }
+        }
+        else
+        {
+            yield return f;
+        }
+    }
+
     public static void SquareFreeFactorizationQ()
     {
         Monom.Display = MonomDisplay.Superscript;
@@ -295,6 +369,33 @@ public static class PolynomialFactorization
             CheckSeparability(f, l);
             CheckIrreductibility(l);
         }
+    }
 
+    public static void Separable2IrreductibleFp()
+    {
+        Monom.Display = MonomDisplay.StarCaret;
+    
+        for (int i = 0; i < 10; ++i)
+        {
+            var p = IntExt.Primes10000[rnd.Next(5)]; // 2, 3, 5, 7, 11
+            var d = rnd.Next((int)(Math.Log(30) / Math.Log(p))) + 1; // p^d < 30 => 4, 8, 9, 16, 25, 27
+            var fq = new Fq(p.Pow(d), 'a');
+            Console.WriteLine($"{fq} with {fq.F} = 0");
+            var n = 2 + rnd.Next(7);
+            var f = RandPolySep(fq.One, p, n);
+            Console.WriteLine($"f = {f} mod ({p})");
+        
+            var firr = Firr(f, fq).Order().ToArray();
+            var prod = firr.Aggregate((a, b) => a * b);
+
+            Console.WriteLine($"Disc(f) = {Ring.Discriminant(f)} mod ({p})");
+            Console.WriteLine($"Fact(f) = {firr.Glue("*", "({0})")} mod ({p})");
+            if (firr.Length > 1)
+                Console.WriteLine($"f = Fact(f) : {prod.Equals(f)}");
+            else
+                Console.WriteLine("f is irreductible");
+        
+            Console.WriteLine();
+        }
     }
 }
