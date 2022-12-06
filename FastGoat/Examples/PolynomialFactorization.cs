@@ -14,8 +14,29 @@ public static class PolynomialFactorization
 
     static KPoly<K> RandPoly<K>(K scalar, int p, int n) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
-        var coefs = (n + 1).Range().Select(i => rnd.Next(-p, p + 1) * scalar.One).TrimSeq().ToArray();
+        var coefs = n.Range().Select(i => rnd.Next(-p, p + 1) * scalar.One).TrimSeq().Append(scalar.One).ToArray();
         return new KPoly<K>('x', scalar, coefs);
+    }
+
+    static KPoly<K> RandPoly<K>(K scalar, int p, int[] degrees) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        Dictionary<int, int> maxSep = new() { [2] = 3, [3] = 2, [5] = 1 };
+
+        KPoly<K> RandPolyDegSep(K s0, int p0, int n0)
+        {
+            var f = RandPoly(s0, p0, n0);
+            if (maxSep.ContainsKey(p0) && n0 <= 3 && rnd.Next(2) == 0)
+                f = f.Substitute(f.X.Pow(p * rnd.Next(1, maxSep[p0] + 1)));
+
+            return f;
+        }
+
+        while (true)
+        {
+            var f = degrees.Select(n => RandPolyDegSep(scalar, p, n)).Aggregate((a, b) => a * b).Monic;
+            if (f.Degree > 1)
+                return f;
+        }
     }
 
     static KPoly<K> RandPolySep<K>(K scalar, int p, int n) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
@@ -259,24 +280,31 @@ public static class PolynomialFactorization
         return polys;
     }
 
-    static IEnumerable<KPoly<EPoly<ZnInt>>> Firr(KPoly<EPoly<ZnInt>> f, Fq fq)
+    static IEnumerable<KPoly<K>> Firr<K>(KPoly<K> f, K a0)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
-        var q = fq.Q;
-        var a0 = fq.GetGenerators().First();
-        var polys = FrobeniusKernel(f, q);
+        var acc = a0.One;
+        var q = 0;
+        do
+        {
+            acc *= a0;
+            ++q;
+        } while (!acc.Equals(a0.One));
+
+        var polys = FrobeniusKernel(f, q + 1);
         if (polys.Length > 1)
         {
-            var fqa = (q - 1).Range(1).Select(i => a0.Pow(i)).ToArray();
+            var fqa = q.Range(1).Select(i => a0.Pow(i)).ToArray();
             foreach (var (g, a) in polys.Where(g => g.Degree > 0).Grid2D(fqa))
             {
                 var g_a = g - a;
                 var gcd = Ring.Gcd(f, g_a).Monic;
                 if (gcd.Degree != 0)
                 {
-                    foreach (var f1 in Firr(gcd, fq))
+                    foreach (var f1 in Firr(gcd, a0))
                         yield return f1;
 
-                    foreach (var f1 in Firr(f / gcd, fq))
+                    foreach (var f1 in Firr(f / gcd, a0))
                         yield return f1;
 
                     break;
@@ -287,6 +315,41 @@ public static class PolynomialFactorization
         {
             yield return f;
         }
+    }
+
+    static List<(KPoly<K> g, int q, int m)> FirrFsep<K>(KPoly<K> f, K a0)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        List<(KPoly<K> g, int q, int m)> all = new();
+        foreach (var (g, q, m) in GianniTrager(f))
+            all.AddRange(Firr(g, a0).Select(g0 => (g0, q, m)));
+
+        return all;
+    }
+
+    static void DisplayFactorization<K>(KPoly<K> f, K a0)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var p = f.P;
+        var x = f.X;
+        Console.WriteLine($"f = {f} mod ({p})");
+        Console.WriteLine($"Disc(f) = {Ring.Discriminant(f)} mod ({p})");
+        var firrm = FirrFsep(f, a0);
+        List<(KPoly<K> g, int m)> all = new();
+        foreach (var (g, q, m) in firrm)
+        {
+            var xq = x.Pow(q);
+            all.Add((g.Substitute(xq), m));
+        }
+
+        string Display(KPoly<K> g, int m) => m == 1 ? $"({g})" : $"({g})^{m}";
+        var prod = all.Aggregate(x.One, (acc, gm) => acc * gm.g.Pow(gm.m));
+        var fact = all.OrderBy(e => e.g.Pow(e.m)).Select(e => Display(e.g, e.m)).Glue(" * ");
+        Console.WriteLine($"Decomposition = {firrm.Glue(", ", "{{{0}}}")}");
+        Console.WriteLine($"Fact(f) = {fact} mod ({p})");
+        Console.WriteLine($"f = Fact(f) : {prod.Equals(f)}");
+
+        Console.WriteLine();
     }
 
     public static void SquareFreeFactorizationQ()
@@ -374,18 +437,20 @@ public static class PolynomialFactorization
     public static void Separable2IrreductibleFp()
     {
         Monom.Display = MonomDisplay.StarCaret;
-    
-        for (int i = 0; i < 10; ++i)
+
+        for (int i = 0; i < 20; ++i)
         {
-            var p = IntExt.Primes10000[rnd.Next(5)]; // 2, 3, 5, 7, 11
-            var d = rnd.Next((int)(Math.Log(30) / Math.Log(p))) + 1; // p^d < 30 => 4, 8, 9, 16, 25, 27
+            var p = IntExt.Primes10000[rnd.Next(10)]; // 2, 3, 5, 7, 11, 13, 17, 19, 23, 29
+            var d = rnd.Next((int)(Math.Log(50) / Math.Log(p))) + 1; // p^d < 30 => 4, 8, 9, 16, 25, 27, 32, 49
             var fq = new Fq(p.Pow(d), 'a');
+            var gf = FG.Galois(p.Pow(d), 'a');
+            var a0 = gf.GetGenerators().First();
             Console.WriteLine($"{fq} with {fq.F} = 0");
             var n = 2 + rnd.Next(7);
             var f = RandPolySep(fq.One, p, n);
             Console.WriteLine($"f = {f} mod ({p})");
-        
-            var firr = Firr(f, fq).Order().ToArray();
+
+            var firr = Firr(f, a0).Order().ToArray();
             var prod = firr.Aggregate((a, b) => a * b);
 
             Console.WriteLine($"Disc(f) = {Ring.Discriminant(f)} mod ({p})");
@@ -394,8 +459,53 @@ public static class PolynomialFactorization
                 Console.WriteLine($"f = Fact(f) : {prod.Equals(f)}");
             else
                 Console.WriteLine("f is irreductible");
-        
+
             Console.WriteLine();
+        }
+    }
+
+    public static void FactorizationFp()
+    {
+        Monom.Display = MonomDisplay.StarCaret;
+
+        for (int j = 0; j < 20; j++)
+        {
+            var p = IntExt.Primes10000[rnd.Next(5)]; // 2, 3, 5, 7, 11
+            var a0 = new Un(p).GetGenerators().First()[new ZnInt(p, 1)];
+            var n = 2 + rnd.Next(11);
+            var degrees = IntExt.Partitions32[n].Where(l => l.All(i => i != 1)).OrderBy(i => rnd.NextDouble()).First()
+                .ToArray();
+            var f = RandPoly(ZnInt.KZero(p), p, degrees);
+            DisplayFactorization(f, a0);
+        }
+    }
+    public static void FactorizationFp2()
+    {
+        Monom.Display = MonomDisplay.StarCaret;
+
+        {
+            var p = 3;
+            var a0 = new Un(p).GetGenerators().First()[new ZnInt(p, 1)];
+            var x = FG.ZPoly(p);
+            var f = x.Pow(2) * (x + 1).Pow(3) * (x + 2).Pow(4);
+            DisplayFactorization(f, a0);
+        }
+
+        {
+            var p = 2;
+            var a0 = new Un(p).GetGenerators().First()[new ZnInt(p, 1)];
+            var x = FG.ZPoly(p);
+            var f = x.Pow(2) * (x + 1).Pow(3) * (x.Pow(2) + 1).Pow(4);
+            DisplayFactorization(f, a0);
+        }
+
+        {
+            var p = 3;
+            var a0 = new Un(p).GetGenerators().First()[new ZnInt(p, 1)];
+            var x = FG.ZPoly(p);
+            var f = x.Pow(15) + 2 * x.Pow(14) + 2 * x.Pow(12) + x.Pow(11) + 2 * x.Pow(10) + 2 * x.Pow(8) + x.Pow(7) +
+                    2 * x.Pow(6) + 2 * x.Pow(4);
+            DisplayFactorization(f, a0);
         }
     }
 }
