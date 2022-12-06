@@ -75,7 +75,17 @@ public readonly struct EPoly<K> : IVsElt<K, EPoly<K>>, IElt<EPoly<K>>, IRingElt<
 
     public EPoly<K> Mul(int k) => new(F, Poly.Mul(k));
 
-    public EPoly<K> Pow(int k) => new(F, Poly.Pow(k).Div(F).rem);
+    public EPoly<K> Pow(int k)
+    {
+        if (k == 0)
+            return One;
+
+        if (k < 0)
+            return Inv().Pow(-k);
+
+        var pi = this;
+        return Enumerable.Repeat(pi, k).Aggregate((a, b) => a.Mul(b));
+    }
 
     public override int GetHashCode() => Hash;
 
