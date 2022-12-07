@@ -558,4 +558,23 @@ public static partial class Ring
         var det = DeterminantByPivot(S);
         return det.Mul(s).Mul(am.Inv());
     }
+
+    public static (KMatrix<K> O, KMatrix<K> U) GramSchmidt<K>(KMatrix<K> A)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var n = A.M;
+        var vs = new KMatrix<K>[n];
+        var u = Diagonal(A.KOne, n);
+        for (int i = 0; i < n; i++)
+        {
+            vs[i] = A.GetCol(i);
+            for (int j = 0; j < i; j++)
+            {
+                var uij = u[i, j] = ((A.GetCol(i).T * vs[j]) / (vs[j].T * vs[j]))[0, 0];
+                vs[i] -= uij * vs[j];
+            }
+        }
+
+        return (KMatrix<K>.MergeSameRows(vs), new(u));
+    }
 }
