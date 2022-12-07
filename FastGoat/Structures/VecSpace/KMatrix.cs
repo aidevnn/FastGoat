@@ -173,10 +173,7 @@ public struct KMatrix<K> : IVsElt<K, KMatrix<K>>, IElt<KMatrix<K>>, IRingElt<KMa
 
     public KMatrix<K> Mul(KMatrix<K> e) => new(Ring.Dot(Coefs, e.Coefs));
 
-    public (KMatrix<K> quo, KMatrix<K> rem) Div(KMatrix<K> e)
-    {
-        throw new GroupException(GroupExceptionType.GroupDef);
-    }
+    public (KMatrix<K> quo, KMatrix<K> rem) Div(KMatrix<K> e) => (Mul(e.Inv()), Zero);
 
     public KMatrix<K> Mul(int k)
     {
@@ -191,8 +188,9 @@ public struct KMatrix<K> : IVsElt<K, KMatrix<K>>, IElt<KMatrix<K>>, IRingElt<KMa
 
         return new(coefs);
     }
-    
+
     public int P { get; }
+
     public KMatrix<K> Inv()
     {
         var e = Ring.ReducedRowsEchelonForm(Coefs);
@@ -203,7 +201,7 @@ public struct KMatrix<K> : IVsElt<K, KMatrix<K>>, IElt<KMatrix<K>>, IRingElt<KMa
     {
         if (M != N)
             throw new GroupException(GroupExceptionType.GroupDef);
-        
+
         if (k == 0)
             return One;
 
@@ -234,16 +232,84 @@ public struct KMatrix<K> : IVsElt<K, KMatrix<K>>, IElt<KMatrix<K>>, IRingElt<KMa
                 coeffs[i, k] = ep[i, j];
             }
         }
-        
+
         return (nullity, new(coeffs));
     }
 
     public K Det => Ring.DeterminantByPivot(Coefs);
 
     public override int GetHashCode() => Hash;
+
     public override string ToString()
     {
         return Ring.Matrix2String(Coefs);
+    }
+
+    public KMatrix<K> GetRow(int i)
+    {
+        var r = new K[1, N];
+        for (int j = 0; j < M; j++)
+            r[0, j] = Coefs[i, j];
+
+        return new(r);
+    }
+
+    public KMatrix<K> GetCol(int j)
+    {
+        var c = new K[M, 1];
+        for (int i = 0; i < M; i++)
+            c[i, 0] = Coefs[i, j];
+
+        return new(c);
+    }
+
+    public KMatrix<K> DotT(KMatrix<K> m) => Mul(m.T);
+    public KMatrix<K> TDot(KMatrix<K> m) => T.Mul(m);
+
+    public static KMatrix<K> MergeSameRows(params KMatrix<K>[] matrices)
+    {
+        var m = matrices[0].M;
+        if (matrices.Any(m0 => m0.M != m))
+            throw new ArgumentException();
+
+        var n = matrices.Sum(m0 => m0.N);
+        var mat0 = new K[m, n];
+        var j = 0;
+        foreach (var mat in matrices)
+        {
+            for (int j0 = 0; j0 < mat.N; j0++, j++)
+            {
+                for (int i = 0; i < m; i++)
+                {
+                    mat0[i, j] = mat[i, j0];
+                }
+            }
+        }
+
+        return new(mat0);
+    }
+
+    public static KMatrix<K> MergeSameCols(params KMatrix<K>[] matrices)
+    {
+        var n = matrices[0].N;
+        if (matrices.Any(m0 => m0.N != n))
+            throw new ArgumentException();
+
+        var m = matrices.Sum(m0 => m0.M);
+        var mat0 = new K[m, n];
+        var i = 0;
+        foreach (var mat in matrices)
+        {
+            for (int i0 = 0; i0 < mat.M; i0++, i++)
+            {
+                for (int j = 0; j < m; j++)
+                {
+                    mat0[i, j] = mat[i0, j];
+                }
+            }
+        }
+
+        return new(mat0);
     }
 
     public static KMatrix<K> operator +(KMatrix<K> a, KMatrix<K> b) => a.Add(b);
@@ -256,7 +322,7 @@ public struct KMatrix<K> : IVsElt<K, KMatrix<K>>, IElt<KMatrix<K>>, IRingElt<KMa
 
     public static KMatrix<K> operator -(int a, KMatrix<K> b) => b.KOne.Mul(a) - b;
 
-    public static KMatrix<K> operator -(KMatrix<K> a, int b)=> a - a.KOne.Mul(b);
+    public static KMatrix<K> operator -(KMatrix<K> a, int b) => a - a.KOne.Mul(b);
 
     public static KMatrix<K> operator *(KMatrix<K> a, KMatrix<K> b) => a.Mul(b);
 
@@ -264,10 +330,7 @@ public struct KMatrix<K> : IVsElt<K, KMatrix<K>>, IElt<KMatrix<K>>, IRingElt<KMa
 
     public static KMatrix<K> operator *(KMatrix<K> a, int b) => a.Mul(b);
 
-    public static KMatrix<K> operator /(KMatrix<K> a, KMatrix<K> b)
-    {
-        throw new GroupException(GroupExceptionType.GroupDef);
-    }
+    public static KMatrix<K> operator /(KMatrix<K> a, KMatrix<K> b) => a.Div(b).quo;
 
     public static KMatrix<K> operator /(KMatrix<K> a, int b)
     {
@@ -284,7 +347,7 @@ public struct KMatrix<K> : IVsElt<K, KMatrix<K>>, IElt<KMatrix<K>>, IRingElt<KMa
     }
 
     public static KMatrix<K> operator /(int a, KMatrix<K> b) => b.Inv().Mul(a);
-    
+
     public static KMatrix<K> operator +(KMatrix<K> a, K b) => a.Add(new(b, a.M, a.N));
 
     public static KMatrix<K> operator +(K a, KMatrix<K> b) => b.Add(new(a, b.M, b.N));
