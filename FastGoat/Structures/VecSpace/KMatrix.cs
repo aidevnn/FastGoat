@@ -263,6 +263,9 @@ public struct KMatrix<K> : IVsElt<K, KMatrix<K>>, IElt<KMatrix<K>>, IRingElt<KMa
         return new(c);
     }
 
+    public KMatrix<K>[] Rows => M.Range().Select(GetRow).ToArray();
+    public KMatrix<K>[] Cols => N.Range().Select(GetCol).ToArray();
+
     public KMatrix<K> DotT(KMatrix<K> m) => Mul(m.T);
     public KMatrix<K> TDot(KMatrix<K> m) => T.Mul(m);
 

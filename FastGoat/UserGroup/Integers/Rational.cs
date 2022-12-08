@@ -35,6 +35,12 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
         Hash = (Num, Denom).GetHashCode();
     }
 
+    public void Deconstruct(out BigInteger num, out BigInteger denom)
+    {
+        num = Num;
+        denom = Denom;
+    }
+
     public bool Equals(Rational other) => Hash == other.Hash;
 
     public int CompareTo(Rational other) => (Num * other.Denom).CompareTo(other.Num * Denom);
@@ -78,6 +84,7 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
     public override int GetHashCode() => Hash;
     public override string ToString() => IsZero() ? "0" : Denom == 1 ? $"{Num}" : $"{Num}/{Denom}";
 
+    public static Rational Abs(Rational e) => new(BigInteger.Abs(e.Num), e.Denom);
     public static Rational operator +(Rational a, Rational b) => a.Add(b);
     public static Rational operator +(int a, Rational b) => b.Add(b.One.Mul(a));
     public static Rational operator +(Rational a, int b) => a.Add(a.One.Mul(b));

@@ -365,7 +365,7 @@ public static partial class Ring
         var rows = mat.GetLength(0);
         var cols = mat.GetLength(1);
         var rgCols = cols.Range();
-        if (MatrixDisplayForm == MatrixDisplay.Bracket)
+        if (MatrixDisplayForm != MatrixDisplay.Table)
         {
             List<string> s = new();
             for (int i = 0; i < rows; i++)
@@ -374,7 +374,15 @@ public static partial class Ring
                 s.Add(rgCols.Select(j => mat[i0, j]).Glue(","));
             }
 
-            return $"{{{s.Glue(",", "{{ {0} }}")}}}";
+            if (MatrixDisplayForm == MatrixDisplay.CurlyBracket)
+                return $"{{{s.Glue(",", "{{ {0} }}")}}}";
+            else
+            {
+                if (rows != 1)
+                    return $"[{s.Glue(",", "[ {0} ]")}]";
+                else
+                    return $"[{s[0]}]";
+            }
         }
 
         var digits = rgCols.Select(j => rows.Range().Max(i => $"{mat[i, j]}".Length)).Max();
@@ -391,7 +399,8 @@ public static partial class Ring
 
     public enum MatrixDisplay
     {
-        Bracket,
+        CurlyBracket,
+        SquareBracket,
         Table
     }
 
