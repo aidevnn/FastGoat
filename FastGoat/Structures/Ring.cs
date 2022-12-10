@@ -22,6 +22,17 @@ public static partial class Ring
         return Gcd(b, a.Div(b).rem);
     }
 
+    public static T Gcd<T>(T[] arr)where T : IElt<T>, IRingElt<T>
+    {
+        if (arr.Length == 0)
+            throw new ArgumentException();
+        
+        if (arr.Length == 1)
+            return arr[0];
+
+        return Gcd(arr.First(), Gcd(arr.Skip(1).ToArray()));
+    }
+
     public static (T x, T y) Bezout<T>(T a, T b) where T : IElt<T>, IRingElt<T>
     {
         if (b.IsZero())
@@ -32,7 +43,7 @@ public static partial class Ring
         return (y0, x0.Add(q.Mul(y0).Opp()));
     }
     
-    public static Monom<Xi> Xi(char c) => new Monom<Xi>(new Xi(c));
+    public static Monom<Xi> Xi(char c, int n = 1) => new Monom<Xi>(new Xi(c), n);
 
     public static Monom<T> Monom<T>(T e) where T : struct, IElt<T>
     {

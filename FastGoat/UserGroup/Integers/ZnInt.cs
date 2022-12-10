@@ -72,22 +72,53 @@ public readonly struct ZnInt : IElt<ZnInt>, IRingElt<ZnInt>, IFieldElt<ZnInt>
 
     public (ZnInt quo, ZnInt rem) Div(ZnInt e)
     {
-        var ek = P == 0 ? e.K : e.K % P;
-        if (ek == 0)
+        if (e.IsZero())
             throw new DivideByZeroException();
 
-        var q = P == 0 ? K / ek : K * IntExt.InvModP(ek, P);
-        var r = K - q * ek;
-        return (new(P, q), new(P, r));
+        if (IsZero())
+            return (Zero, Zero);
+        
+        if (P == 0)
+        {
+            var (q, r) = Int32.DivRem(K, e.K);
+            return (new(P, q), new(P, r));
+        }
+        else
+        {
+            var (x, y) = IntExt.Bezout(e.K, P);
+            var gcd = e.K * x + P * y;
+            if (x % gcd != 0)
+            {
+                var (q, r) = Int32.DivRem(K, e.K);
+                return (new(P, q), new(P, r)); // not uniq result
+            }
+            else
+            {
+                var inv = (x / gcd) % P;
+                var q = new ZnInt(P, inv * K);
+                var r = new ZnInt(P, K - q.K * e.K);
+                return (q, r); // r = 0 always
+            }
+        }
     }
 
     public ZnInt Inv()
     {
         if (P == 0)
+        {
+            if (K == 1)
+                return new(0, 1);
+            if (K == -1)
+                return new(0, -1);
+            
             throw new DivideByZeroException();
+        }
 
         var (x, y) = IntExt.Bezout(K, P);
         var gcd = K * x + P * y;
+        if (x % gcd != 0)
+            throw new DivideByZeroException();
+        
         return new(P, x / gcd);
     }
 

@@ -253,10 +253,11 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
 
     public override int GetHashCode() => Hash;
 
-    public override string ToString()
+    public string GetString(bool reverse = false)
     {
         var one = KZero.One;
-        var sep = (Monom.Display & MonomDisplay.Star) == MonomDisplay.Star ? "*" : "·"; 
+        var sep = (Monom.Display & MonomDisplay.Star) == MonomDisplay.Star ? "*" : "·";
+
         string Str(Monom<T> m, K k)
         {
             var sm = $"{m}";
@@ -271,8 +272,13 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
             return string.IsNullOrEmpty(sm) ? $"{k}" : $"{k0}{sep}{sm}";
         }
 
+        if (reverse)
+            return Coefs.Reverse().Select(kp => Str(kp.Key, kp.Value)).Glue(" + ");
+        
         return Coefs.Select(kp => Str(kp.Key, kp.Value)).Glue(" + ");
     }
+
+    public override string ToString() => GetString();
 
     public static Polynomial<K, T> operator +(Polynomial<K, T> a, Polynomial<K, T> b) => a.Add(b);
     public static Polynomial<K, T> operator +(int a, Polynomial<K, T> b) => b.Add(b.One.Mul(a));

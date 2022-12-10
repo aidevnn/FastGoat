@@ -54,6 +54,7 @@ public readonly struct EPoly<K> : IVsElt<K, EPoly<K>>, IElt<EPoly<K>>, IRingElt<
     public EPoly<K> Zero => new(F, F.Zero);
     public EPoly<K> One => new(F, F.One);
     public  EPoly<K> LeadingCoeff => new(F, F.LeadingCoeff);
+    public EPoly<K> Derivative => new(F, Poly.Derivative.Div(F).rem);
     public EPoly<K> Add(EPoly<K> e)
     {
         return new(F, Poly.Add(e.Poly).Div(F).rem);

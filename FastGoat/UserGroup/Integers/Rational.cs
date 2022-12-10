@@ -80,6 +80,7 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
     }
 
     public Rational Inv() => new(Denom, Num);
+    public static implicit operator double(Rational e) => (double)e.Num / (double)e.Denom;
 
     public override int GetHashCode() => Hash;
     public override string ToString() => IsZero() ? "0" : Denom == 1 ? $"{Num}" : $"{Num}/{Denom}";
