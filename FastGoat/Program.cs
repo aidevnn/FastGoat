@@ -27,152 +27,89 @@ using System.Threading.Channels;
 //////////////////////////////////
 
 Console.WriteLine("Hello World");
-Random rnd = new Random();
 
-KMatrix<Rational> RandMatrixRational(int n)
+int FirstPrime(KPoly<Rational> f)
 {
-    var m = new KMatrix<Rational>(Rational.KZero(), n, n);
-    while (true)
+    var disc = Ring.Discriminant(f);
+    return Primes10000.First(p => disc.Num % p != 0);
+}
+
+double Nu(KPoly<Rational> f)
+{
+    var n = f.Degree;
+    var norm = f.Coefs.Select(e => Double.Abs(e)).Sum();
+    return Double.Sqrt(n + 1) * Double.Pow(2, n) * norm;
+}
+
+(int p, int s) PSigma(KPoly<Rational> f)
+{
+    var p = FirstPrime(f);
+    var nu = Nu(f);
+    var s = 1;
+    while (double.Pow(p, s) <= 2 * nu)
     {
-        var m0 = Ring.Matrix(n, Rational.KZero(), (n * n).Range().Select(i => rnd.Next(n + 1)).ToArray());
-        m = new(m0);
-        if (!m.Det.IsZero())
-            return m;
-    }
-}
-
-Rational RoundDefault(Rational e)
-{
-    var (num, denom) = e;
-    var (q, r) = BigInteger.DivRem(num, denom);
-    var rs = r.Sign;
-    var r0 = r * rs * 2;
-    if (r0 < denom)
-        return new(q, 1);
-
-    return new(q + rs, 1);
-}
-
-Rational SquareNorm2(KMatrix<Rational> v)
-{
-    if (v.M == 1)
-        return (v * v.T)[0, 0];
-    else if (v.N == 1)
-        return (v.T * v)[0, 0];
-
-    throw new ArgumentException();
-}
-
-void SwapRows<T>(int i, int j, T[,] A)
-{
-    var cols = A.GetLength(1);
-    for (int k = 0; k < cols; k++)
-        (A[i, k], A[j, k]) = (A[j, k], A[i, k]);
-}
-
-Rational Round(Rational e)
-{
-    var (num, denom) = e;
-    var (q, r) = BigInteger.DivRem(num, denom);
-    var rs = r.Sign;
-    var r0 = r * rs * 2;
-    if (r0 < denom || (r0 == denom && BigInteger.IsEvenInteger(q)))
-        return new(q, 1);
-
-    return new(q + rs, 1);
-}
-
-KMatrix<Rational> LLL(KMatrix<Rational> v)
-{
-    var n = v.N;
-    var w = v.Cols;
-    var (Ws, M) = Ring.GramSchmidt(v);
-    var v0 = new KMatrix<Rational>(Ws.Coefs);
-    var ws = Ws.Cols;
-    // Console.WriteLine((M * KMatrix<Rational>.MergeSameRows(ws).T).Equals(KMatrix<Rational>.MergeSameRows(w).T));
-    var N = M.Coefs;
-    int i = 1;
-    while (i < n)
-    {
-        for (int j = i - 1; j >= 0; j--)
-        {
-            var ruij = Round(N[i, j]);
-            w[i] -= ruij * w[j];
-            for (int k = 0; k <= j; k++)
-            {
-                N[i, k] -= ruij * N[j, k];
-            }
-        }
-
-        if (i >= 1)
-        {
-            var wsip2 = SquareNorm2(ws[i - 1]);
-            var wsi2 = SquareNorm2(ws[i]);
-            if (wsip2.CompareTo(2 * wsi2) > 0)
-            {
-                var a = N[i, i - 1];
-                var b = a * wsip2 / (wsi2 + a.Pow(2) * wsip2);
-                (ws[i - 1], ws[i]) = (ws[i] + a * ws[i - 1], ws[i - 1] - b * (ws[i] + a * ws[i - 1]));
-                (w[i - 1], w[i]) = (w[i], w[i - 1]);
-                SwapRows(i - 1, i, N);
-                for (int k = i - 1; k < n; k++)
-                {
-                    (N[k, i - 1], N[k, i]) = (b * N[k, i - 1] + (1 - a * b) * N[k, i], N[k, i - 1] - a * N[k, i]);
-                }
-
-                i--;
-            }
-            else
-            {
-                i++;
-            }
-        }
-        else
-        {
-            i++;
-        }
+        ++s;
     }
 
-    // var B = KMatrix<Rational>.MergeSameRows(w);
-    // var Bs = KMatrix<Rational>.MergeSameRows(ws);
-    // Console.WriteLine("M * Ws.T = W.T {0}", (M * Bs.T).Equals(B.T));
-    // var seq = n.Range().Grid2D(n.Range()).Where(e => e.t1 <= e.t2).ToArray();
-    // Console.WriteLine(
-    //     $"Norms Prop Before : {seq.All(e => SquareNorm2(v.GetCol(e.t1)).CompareTo(2.Pow(e.t2 - 1) * SquareNorm2(v0.GetCol(e.t2))) < 1)}");
-    // Console.WriteLine(
-    //     $"Norms Prop After  : {seq.All(e => SquareNorm2(w[e.t1]).CompareTo(2.Pow(e.t2 - 1) * SquareNorm2(ws[e.t2])) < 1)}");
-    return KMatrix<Rational>.MergeSameRows(w);
+    return (p, s);
 }
 
+KPoly<Padic> PadicPoly(int p, int o, char x = 'x') => new KPoly<Padic>(x, new Padic(p, o)).X;
+
+KPoly<Rational> Padic2QPoly(KPoly<Padic> f) =>
+    new(f.x, Rational.KZero(), f.Coefs.Select(e => new Rational(e.ToBigInt)).ToArray());
+
+KPoly<Padic> QPoly2Padic(KPoly<Rational> f, int p, int o)
 {
-    var m = Ring.Matrix(2, Rational.KZero(), 6, 8, 4, 4);
-    var A = new KMatrix<Rational>(m);
-    Console.WriteLine("Matrix A and LLL(A)");
-    Console.WriteLine(A);
-    Console.WriteLine(LLL(A));
+    var coefs = f.Coefs.Select(e => Padic.Convert(p, o, e.Num)).ToArray();
+    return new(f.x, new Padic(p, o), coefs);
 }
 
+KPoly<ZnInt> QPoly2ZPoly(KPoly<Rational> f, int p)
 {
-    var m = Ring.Matrix(3, Rational.KZero(), 1, -1, 3, 1, 0, 5, 1, 2, 6);
-    var A = new KMatrix<Rational>(m);
-    Console.WriteLine("Matrix A and LLL(A)");
-    Console.WriteLine(A);
-    Console.WriteLine(LLL(A));
+    var coefs = f.Coefs.Select(e => new ZnInt(p, (int)e.Num)).ToArray();
+    return new(f.x, ZnInt.KZero(p), coefs);
 }
 
-for (int k = 0; k < 20; ++k)
+KPoly<Padic> Resize(KPoly<Padic> f, int o0) =>
+    new(f.x, f.KZero.Resize(o0), f.Coefs.Select(e => e.Resize(o0)).ToArray());
+
 {
-    var n = rnd.Next(10) + 2;
-    Ring.MatrixDisplayForm = Ring.MatrixDisplay.SquareBracket;
-    var A = RandMatrixRational(n);
-    var detA = Rational.Abs(A.Det);
-    var B = LLL(A);
-    var detB = Rational.Abs(B.Det);
-    Console.WriteLine("Matrix A");
-    Console.WriteLine(A);
-    Console.WriteLine("LLL(A)");
-    Console.WriteLine(B);
-    Console.WriteLine();
-    Console.WriteLine("|Det(A)| = {0}; |Det(LLL(A))| = {1} {2}", detA, detB, detA.Equals(detB));
-    Console.WriteLine("LLL(A) = LLL(LLL(A)) {0}", LLL(B).Equals(B));
+    var x = FG.QPoly();
+    // var f = x.Pow(4) - 1; // AECF example 21.2, page 387
+    var f = x.Pow(4) + -x.Pow(3) + -x.Pow(2) + 2*x + 4;
+    // var f = x.Pow(2) - 1;
+    // var f = x.Pow(12) - 50 * x.Pow(10) + 753 * x.Pow(8) - 4520 * x.Pow(6) + 10528 * x.Pow(4) - 6720 * x.Pow(2) + 576;
+    // var f = x.Pow(8) - 40 * x.Pow(6) + 352 * x.Pow(4) - 960 * x.Pow(2) + 576; // bug 
+    var (p, o) = PSigma(f);
+    
+    var padicZero = new Padic(p, 1);
+    var a0 = (new Un(p)).GetGenerators().First()[new(p, 1)];
+    var f0 = QPoly2Padic(f, p, 1);
+    Console.WriteLine(f);
+    Console.WriteLine(f0);
+    Console.WriteLine($"Prime P = {p}; Disc={Ring.Discriminant(f)}; Sigma = {o}");
+    var firr0 = PolynomialFactorization.Firr(f0, a0 + padicZero);
+    var all = new List<KPoly<Padic>>(firr0);
+    var o0 = 1;
+    while (o0 <= o)
+    {
+        Console.WriteLine();
+        Console.WriteLine(all.Order().Glue("\n"));
+        var tmp = new List<KPoly<Padic>>();
+        o0 *= 2;
+        var fa = QPoly2Padic(f, p, o0);
+        foreach (var g in all)
+        {
+            var gi = Resize(g, o0);
+            var dgi = new EPoly<Padic>(gi, gi.Derivative);
+            var fi = new EPoly<Padic>(gi, fa.Div(gi).rem);
+            var dfi = new EPoly<Padic>(gi, fa.Derivative.Div(gi).rem);
+            var ri = (dgi * fi / dfi).Poly;
+            tmp.Add(gi + ri);
+        }
+
+        all.Clear();
+        all = tmp.ToList();
+    }
 }
