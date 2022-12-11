@@ -173,18 +173,38 @@ public static class PolynomialFactorizationPart2
         Console.WriteLine();
         for (int j = 0; j < 20; j++)
         {
-            var p = IntExt.Primes10000[PolynomialFactorization.rnd.Next(5)]; // 2, 3, 5, 7, 11
+            var amp = PolynomialFactorization.rnd.Next(2, 20);
             var n = 2 + PolynomialFactorization.rnd.Next(9);
             var degrees = IntExt.Partitions32[n].Where(l => l.All(i => i != 1) && l.Count > 1)
                 .OrderBy(i => PolynomialFactorization.rnd.NextDouble())
                 .FirstOrDefault(new int[] { 2, 3, 4 }.ToList())
                 .ToArray();
-            var f = degrees.Select(ni => PolynomialFactorization.RandPolySep(Rational.KZero(), p, ni))
+            var f = degrees.Select(ni => PolynomialFactorization.RandPolySep(Rational.KZero(), amp, ni))
                 .Aggregate((a, b) => a * b);
-            if (Ring.Discriminant(f).IsZero())
+            if (Ring.Discriminant(f).IsZero()) // Separable polynomial
                 continue;
 
             FirrZ(f);
+            
+            /***
+             *  Examples of outputs
+             * 
+                f = x^10 + 2*x^9 + -16*x^8 + -37*x^7 + 9*x^6 + 45*x^5 + 3*x^4 + -52*x^3 + 78*x^2 + 72*x
+                Disc(f) = 257105672455356040159406627011584 = 2^10 * 3^18 * 7^2 * 13^3 * 17^6 * 61^2 * 97^1 * 691^1
+                Prime P = 5; Sigma = 9; P^o=1953125 Nu=264905.46
+                f = x^10 + 2*x^9 + -1*x^8 + -2*x^7 + -1*x^6 + -2*x^4 + -2*x^3 + -2*x^2 + 2*x mod 5
+                Fact(f) = (x)*(x + 1)*(x + -2)*(x + -1)*(x^2 + x + 2)*(x^4 + -2*x^3 + -2*x^2 + 2*x + -2) mod 5
+                Fact(f) = (x + -4)*(x)*(x^2 + x + -3)*(x^2 + 2*x + 2)*(x^4 + 3*x^3 + -2*x^2 + 2*x + 3) in Z[X]
+                
+                f = x^8 + 5*x^7 + -12*x^6 + -32*x^5 + 49*x^4 + 141*x^3 + -38*x^2 + 66*x + -180
+                Disc(f) = -4434699027240545536534118400 = -1^1 * 2^19 * 3^7 * 5^2 * 7^2 * 17^2 * 23^2 * 131^2 * 1097^2
+                #### Prime 7 and Sigma 7 wont work ####
+                Prime P = 11; Sigma = 6; P^o=1771561 Nu=138240.00
+                f = x^8 + 5*x^7 + -1*x^6 + x^5 + 5*x^4 + -2*x^3 + -5*x^2 + -4 mod 11
+                Fact(f) = (x + -5)*(x + -1)*(x^2 + 4*x + 5)*(x^4 + -4*x^3 + 5*x^2 + -2*x + -5) mod 11
+                Fact(f) = (x + -1)*(x + 6)*(x^2 + 4*x + 5)*(x^4 + -4*x^3 + 5*x^2 + -2*x + 6) in Z[X]
+
+             */
         }
     }
 }
