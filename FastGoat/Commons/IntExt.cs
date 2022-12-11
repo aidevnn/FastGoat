@@ -1,3 +1,5 @@
+using System.Numerics;
+
 namespace FastGoat.Commons
 {
     public static class IntExt
@@ -81,6 +83,30 @@ namespace FastGoat.Commons
 
                 if (n0 == 1) break;
             }
+        }
+
+        public static IEnumerable<int> PrimesDecompositionBigInt(BigInteger n)
+        {
+            var n0 = n;
+            foreach (var p in Primes10000.Where(e => e <= n))
+            {
+                while (n0 % p == 0)
+                {
+                    yield return p;
+                    n0 /= p;
+                }
+
+                if (n0 == 1) break;
+            }
+        }
+
+        public static Dictionary<int, int> PrimesDec(BigInteger n)
+        {
+            var dec = PrimesDecompositionBigInt(BigInteger.Abs(n));
+            var dico=dec.GroupBy(e => e).ToDictionary(e => e.Key, e => e.Count());
+            if (n < 0)
+                dico[-1] = 1;
+            return dico;
         }
 
         // Partitions of an integers until N
@@ -279,9 +305,11 @@ namespace FastGoat.Commons
             return arr.Aggregate((a, b) => a * b) / Gcd(arr);
         }
 
-        public static int[] Range(this int a, int start = 0, int step = 1)
+        public static int[] Range(this int a, int start = 0, int step = 1) => a.SeqLazy(start, step).ToArray();
+
+        public static IEnumerable<int> SeqLazy(this int a, int start = 0, int step = 1)
         {
-            return Enumerable.Range(0, a).Select(i => start + i * step).ToArray();
+            return Enumerable.Range(0, a).Select(i => start + i * step);
         }
 
         public static int[][] GetPermutations(int n)

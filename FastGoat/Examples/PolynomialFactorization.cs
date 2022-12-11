@@ -10,7 +10,7 @@ namespace FastGoat.Examples;
 
 public static class PolynomialFactorization
 {
-    private static Random rnd = new Random();
+    public static Random rnd = new Random();
 
     static KPoly<K> RandPoly<K>(K scalar, int p, int n) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
@@ -18,7 +18,7 @@ public static class PolynomialFactorization
         return new KPoly<K>('x', scalar, coefs);
     }
 
-    static KPoly<K> RandPoly<K>(K scalar, int p, int[] degrees) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    public static KPoly<K> RandPoly<K>(K scalar, int p, int[] degrees) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         Dictionary<int, int> maxSep = new() { [2] = 3, [3] = 2, [5] = 1 };
 
@@ -444,8 +444,7 @@ public static class PolynomialFactorization
 
         return KMatrix<Rational>.MergeSameRows(w);
     }
-
-
+    
     public static void SquareFreeFactorizationQ()
     {
         Monom.Display = MonomDisplay.Superscript;

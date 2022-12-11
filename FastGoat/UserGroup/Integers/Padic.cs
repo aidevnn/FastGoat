@@ -1,12 +1,22 @@
 using System.Numerics;
+using System.Security.Cryptography;
 using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.VecSpace;
 
 namespace FastGoat.UserGroup.Integers;
 
+public enum PadicDisplayForm
+{
+    Serie,
+    UnsignedInteger,
+    SignedInteger,
+    Number
+}
+
 public struct Padic : IVsElt<ZnInt, Padic>, IElt<Padic>, IRingElt<Padic>, IFieldElt<Padic>
 {
+    public static PadicDisplayForm DisplayForm = PadicDisplayForm.SignedInteger;
     public ZnInt[] Coefs { get; }
     public int O { get; }
     public int P { get; }
@@ -266,6 +276,25 @@ public struct Padic : IVsElt<ZnInt, Padic>, IElt<Padic>, IRingElt<Padic>, IField
         }
     }
 
+    public BigInteger ToSignedBigInt
+    {
+        get
+        {
+            var acc = BigInteger.Zero;
+            var ppow = BigInteger.One;
+            foreach (var z in Coefs)
+            {
+                acc += z.K*ppow;
+                ppow *= P;
+            }
+
+            if (acc > ppow / 2)
+                return acc - ppow;
+
+            return acc;
+        }
+    }
+
     public static IEnumerable<Padic> Generate(int p, int o)
     {
         var e0 = new Padic(p, o);
@@ -339,7 +368,29 @@ public struct Padic : IVsElt<ZnInt, Padic>, IElt<Padic>, IRingElt<Padic>, IField
     {
         var xi = Ring.Polynomial('p', KZero);
         var pO = Ring.Xi('p', O);
-        var fx = Coefs.Select((k, i) => k * xi.Pow(i)).Aggregate((a, b) => a + b).GetString(reverse: true);
-        return $"{fx} + O({pO})";
+        if (DisplayForm == PadicDisplayForm.Serie)
+        {
+            var fx = Coefs.Select((k, i) => k * xi.Pow(i)).Aggregate((a, b) => a + b).GetString(reverse: true);
+            return $"{fx} + O({pO})";
+        }
+        else if(DisplayForm == PadicDisplayForm.Number)
+        {
+            var pstr = pO.ToString().Replace("p", $"{P}");
+            var trim = Coefs.TrimSeq().ToArray();
+            if (trim.Length == 0)
+                return $"[0({pstr})]";
+            else
+            {
+                return $"[{trim.Glue()}({pstr})]";
+            }
+        }
+        else if(DisplayForm== PadicDisplayForm.UnsignedInteger)
+        {
+            return $"{ToBigInt}";
+        }
+        else
+        {
+            return $"{ToSignedBigInt}";
+        }
     }
 }

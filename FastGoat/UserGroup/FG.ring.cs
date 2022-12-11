@@ -9,6 +9,7 @@ public static partial class FG
 {
     public static KPoly<ZnInt> ZPoly(int p, char x = 'x') => new KPoly<ZnInt>(x, ZnInt.KZero(p)).X;
     public static KPoly<Rational> QPoly(char x = 'x') => new KPoly<Rational>(x);
+    public static KPoly<Padic> PadicPoly(int p, int o, char x = 'x') => new KPoly<Padic>(x, new Padic(p, o)).X;
 
     public static KPoly<K> KPoly<K>(char x, K scalar) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
