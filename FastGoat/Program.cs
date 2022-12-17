@@ -22,67 +22,40 @@ using System.Numerics;
 //////////////////////////////////
 
 Console.WriteLine("Hello World");
-Random rnd = new();
 
 {
-    var p = 3;
-    var o = 3;
-    var rg = p.Pow(o).Range();
+    Console.WriteLine("P-Adic Rationals");
+    var q1 = new Rational(313, 3000);
+    var q2 = new Rational(-313, 3000);
+    var q3 = new Rational(53, 3750);
+    var q4 = new Rational(-61, 2250);
+    foreach (var q in new[] { q1, q2, q3, q4 })
+        Console.WriteLine("{0} = {1}", q, Padic.Convert(5, 7, q));
+    
+    foreach (var q in new[] { q1, q2, q3, q4 })
+        Console.WriteLine("{0} = {1}", q, Padic.Convert(3, 5, q));
+    
+    // 313/3000 = [2244.343434(5⁷)]
+    // -313/3000 = [3200.10101(5⁷)]
+    // 53/3750 = [32404.040404(5⁷)]
+    // -61/2250 = [3423.411033(5⁷)]
+    // 313/3000 = [12.1111(3⁵)]
+    // -313/3000 = [20.1111(3⁵)]
+    // 53/3750 = [10.1202(3⁵)]
+    // -61/2250 = [222(3⁵)]
 
-    foreach (var e1 in rg)
-    {
-        var z1 = new ZnBInt(p, e1, o);
-        var pa1 = new Padic(p, o, e1);
-        var znb1 = z1.K;
-        var panb1 = pa1.ToBigInteger();
+    // gap> fam:=PurePadicNumberFamily(5,7);;
+    // gap> PadicNumber(fam, 313/3000);PadicNumber(fam, -313/3000);PadicNumber(fam, 53/3750);PadicNumber(fam, -61/2250);
+    // 2244.343(5)
+    // 3200.101(5)
+    // 32404.04(5)
+    // 3423.411(5)
+    //
+    // gap> fam:=PurePadicNumberFamily(3,5);;
+    // gap> PadicNumber(fam, 313/3000);PadicNumber(fam, -313/3000);PadicNumber(fam, 53/3750);PadicNumber(fam, -61/2250);
+    // 12.111(3)
+    // 20.111(3)
+    // 10.12(3)
+    // 222(3)
 
-        Console.WriteLine($"{e1} => {z1.PadicNumericString()} {pa1}");
-
-        if (panb1 != znb1)
-        {
-            Console.WriteLine("#####################");
-            throw new Exception();
-        }
-
-        if (z1.Opp().K != pa1.Opp().ToBigInteger())
-        {
-            Console.WriteLine("######### OPP ##########");
-            throw new Exception();
-        }
-
-        if (z1.K % p != 0 && z1.Inv().K != pa1.Inv().ToBigInteger())
-        {
-            Console.WriteLine("######### INV ##########");
-            throw new Exception();
-        }
-    }
-
-    foreach (var (e1, e2) in rg.Grid2D(rg))
-    {
-        var z1 = new ZnBInt(p, e1, o);
-        var z2 = new ZnBInt(p, e2, o);
-        var pa1 = new Padic(p, o, e1);
-        var pa2 = new Padic(p, o, e2);
-
-        var z3 = z1.Add(z2);
-        var z4 = z1.Mul(z2);
-
-        var pa3 = pa1.Add(pa2);
-        var pa4 = pa1.Mul(pa2);
-
-        if (z3.K != pa3.ToBigInteger())
-        {
-            Console.WriteLine("######### ADD ##########");
-            throw new Exception();
-        }
-
-        if (z4.K != pa4.ToBigInteger())
-        {
-            Console.WriteLine("######### Mul ##########");
-            throw new Exception();
-        }
-    }
-
-    Console.WriteLine("######### PASS ##########");
-    Console.WriteLine(new ZnBInt.Infos(p, o));
 }

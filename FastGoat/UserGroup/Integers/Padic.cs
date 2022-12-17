@@ -390,7 +390,7 @@ public readonly struct Padic : IEquatable<Padic>, IComparable<Padic>
         var o1 = Int32.Max(denom.O, o);
         var num = new Padic(p, o1, num0);
         denom = denom.Resize(o1);
-        Console.WriteLine($"num={r.Num.Sign}*{num} denom={denom}");
+        
         if (r.Num >= 0)
             return num.CompleteDivision(denom).Resize(o);
 
