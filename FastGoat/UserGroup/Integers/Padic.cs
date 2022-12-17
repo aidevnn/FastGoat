@@ -1,8 +1,6 @@
 using System.Numerics;
-using System.Security.Cryptography;
 using FastGoat.Commons;
 using FastGoat.Structures;
-using FastGoat.Structures.VecSpace;
 
 namespace FastGoat.UserGroup.Integers;
 
@@ -14,383 +12,391 @@ public enum PadicDisplayForm
     Number
 }
 
-public struct Padic : IVsElt<ZnInt, Padic>, IElt<Padic>, IRingElt<Padic>, IFieldElt<Padic>
+public readonly struct Padic : IEquatable<Padic>, IComparable<Padic>
 {
-    public static PadicDisplayForm DisplayForm = PadicDisplayForm.SignedInteger;
-    public ZnInt[] Coefs { get; }
-    public int O { get; }
+    public static PadicDisplayForm DisplayForm { get; } = PadicDisplayForm.Number;
+    private Dictionary<int, int> Digits { get; }
     public int P { get; }
+    public int O { get; }
+    public int Emin => Digits.Count == 0 ? 0 : Int32.Min(0, Digits.Keys.Min());
+    public int Emax => Digits.Count == 0 ? 0 : Int32.Max(0, Digits.Keys.Max());
+
+    public Padic()
+    {
+        Digits = new();
+        P = 2;
+        O = 1;
+    }
 
     public Padic(int p, int o)
     {
-        O = o;
+        Digits = new();
         P = p;
-        Coefs = Enumerable.Repeat(ZnInt.KZero(p), O).ToArray();
-        Hash = Coefs.Aggregate(ZnInt.KZero(P).Hash, (acc, a) => (acc, a.Hash).GetHashCode());
-        Valuation = 1;
+        O = o;
     }
 
-    public Padic(ZnInt[] coefs)
+    private Padic((int p, int o) e, int capacity)
     {
-        O = coefs.Length;
-        P = coefs[0].P;
-        Coefs = coefs;
-        Valuation = Coefs.Select((z, i) => (z, i)).FirstOrDefault(e => !e.Item1.IsZero(), (ZnInt.KZero(P), 0)).Item2;
-        Hash = Coefs.Aggregate(ZnInt.KZero(P).Hash, (acc, a) => (acc, a.Hash).GetHashCode());
+        Digits = new(capacity);
+        P = e.p;
+        O = e.o;
     }
 
-    public bool Equals(Padic other) => P == other.P && Coefs.SequenceEqual(other.Coefs);
-
-    public bool EqualsApproxOne()
+    public Padic(int p, int o, BigInteger v)
     {
-        var e0 = KOne;
-        return Coefs[0].Equals(e0) && Coefs.Skip(1).SkipLast(1).All(e => e.IsZero());
+        var p0 = Convert(p, v);
+        Digits = p0.Digits;
+        P = p;
+        O = o;
     }
 
-    public int CompareTo(Padic other) => Coefs.Reverse().SequenceCompareTo(other.Coefs.Reverse());
+    public Padic(Padic c)
+    {
+        Digits = new(c.Digits);
+        P = c.P;
+        O = c.O;
+    }
 
     public Padic Resize(int o)
     {
-        var coefs = Enumerable.Repeat(ZnInt.KZero(P), o).ToArray();
-        for (int i = 0; i < Int32.Min(o, O); i++)
-            coefs[i] = Coefs[i];
-
-        return new(coefs);
+        var a = new Padic(P, o);
+        for (int i = Emin; i <= o; i++)
+            a[i] = this[i];
+        return a;
     }
 
-    public ZnInt KZero => new(P, 0);
-    public ZnInt KOne => new(P, 1);
-    public int Hash { get; }
-    public bool IsZero() => Coefs.All(e => e.IsZero());
+    public int Valuation => -FirstCoeff().r;
 
-    public Padic Zero => new(P, O);
+    public (int r, int Coeff) FirstCoeff()
+    {
+        for (int r = Emin; r < O; ++r)
+        {
+            var v = this[r];
+            if (v != 0)
+                return (r, v);
+        }
 
-    public Padic One
+        return (0, 0);
+    }
+
+    public Padic Normalized => Shift(Valuation);
+
+    public (int E, int H, Padic Sci) ScientificForm()
+    {
+        var e = Digits.Count == 0 ? 0 : Digits.Keys.Min();
+        var a = new Padic(P, O - e);
+        for (int i = e; i < O; i++)
+            a[i - e] = this[i];
+
+        var h = Digits.Count == 0 ? 0 : a.Digits.Keys.Max();
+        return (e, h, a);
+    }
+
+    public bool IsInteger() => Emin == 0;
+
+    public Padic IntegerPart
     {
         get
         {
-            var coefs = Enumerable.Repeat(ZnInt.KZero(P), O).ToArray();
-            coefs[0] = new ZnInt(P, 1);
-            return new(coefs);
+            var a = new Padic((P, O), O);
+            for (int i = 0; i < O; i++)
+                a[i] = this[i];
+
+            return a;
         }
     }
 
-    public ZnInt this[int index] => index >= 0 && index < O ? Coefs[index] : KZero;
-
-    public Padic Add(Padic e)
+    public Padic FloatingPart
     {
-        var coefs = Enumerable.Repeat(ZnInt.KZero(P), O).ToArray();
-        var carry = 0;
-        for (int i = 0; i < O; i++)
+        get
         {
-            var k = Coefs[i].K + e.Coefs[i].K + carry;
-            var z = coefs[i] = new ZnInt(P, k);
-            carry = (k - z.K) / P;
-        }
+            var a = new Padic((P, O), O);
+            for (int i = Emin; i < 0; i++)
+                a[i] = this[i];
 
-        return new(coefs);
+            return a;
+        }
     }
 
-    public Padic Sub(Padic e)
+    public Padic Shift(int k)
     {
-        var coefs = Enumerable.Repeat(ZnInt.KZero(P), O).ToArray();
-        var carry = 0;
-        for (int i = 0; i < O; i++)
+        var a = new Padic(P, O);
+        for (int i = Emin; i < O; i++)
+            a[i - k] = this[i];
+
+        return a;
+    }
+
+    public BigInteger ToBigInteger()
+    {
+        var (e, _, s) = ScientificForm();
+        var acc = BigInteger.Zero;
+        var pow = BigInteger.Pow(P, e);
+        for (int i = 0; i < s.O; i++)
         {
-            var k0 = Coefs[i].K;
-            var k1 = e.Coefs[i].K + carry;
-            if (k0 >= k1)
+            acc += s[i] * pow;
+            pow *= P;
+        }
+
+        return acc;
+    }
+
+    public bool IsZero() => Digits.Count == 0;
+
+    public Padic Zero => new(P, O);
+
+    public Padic One => new(P, O, 1);
+
+    public Padic Add(Padic other)
+    {
+        if (P != other.P || O != other.O)
+            throw new ArgumentException();
+
+        var e = Int32.Min(Emin, other.Emin);
+        var add = new Padic((P, O), O - e);
+        var carry = 0;
+        for (int i = e; i < O; i++)
+        {
+            var s = this[i] + other[i] + carry;
+            if (s < P)
             {
-                var k = k0 - k1;
-                var z = coefs[i] = new ZnInt(P, k);
-                carry = (k - z.K) / P;
+                add[i] = s;
+                carry = 0;
             }
             else
             {
-                var k = P + k0 - k1;
-                var z = coefs[i] = new ZnInt(P, k);
-                carry = (P + k - z.K) / P;
+                add[i] = s - P;
+                carry = 1;
             }
         }
 
-        return new(coefs);
+        return add;
     }
 
-    public Padic Opp() => Zero - this;
-
-    public Padic Mul(Padic e)
+    public Padic Sub(Padic other)
     {
-        var coefs = Enumerable.Repeat(ZnInt.KZero(P), O).ToArray();
-        var carry = 0;
-        for (int i = 0; i < O; i++)
-        {
-            var sum = carry;
-            for (int k0 = 0; k0 <= i; k0++)
-            {
-                var k1 = i - k0;
-                sum += Coefs[k0].K * e.Coefs[k1].K;
-            }
+        if (P != other.P || O != other.O)
+            throw new ArgumentException();
 
-            var e0 = coefs[i] = new ZnInt(P, sum);
-            carry = (sum - e0.K) / P;
+        var e = Int32.Min(Emin, other.Emin);
+        var sub = new Padic((P, O), O - e);
+        var carry = 0;
+        for (int i = e; i < O; i++)
+        {
+            var s = this[i] - (other[i] + carry);
+            if (s >= 0)
+            {
+                sub[i] = s;
+                carry = 0;
+            }
+            else
+            {
+                sub[i] = s + P;
+                carry = 1;
+            }
         }
 
-        return new(coefs);
+        return sub;
+    }
+
+    public Padic Opp() => Zero.Sub(this);
+
+    public Padic Mul(Padic other)
+    {
+        if (P != other.P || O != other.O)
+            throw new ArgumentException();
+
+        var e = Emin + other.Emin;
+        var mul = new Padic((P, O), O - e);
+        var carry = 0;
+        for (int k = e; k < O; k++)
+        {
+            var sum = carry;
+            for (int i = Emin; i < O; i++)
+                sum += this[i] * other[k - i];
+
+            var r = mul[k] = sum % P;
+            carry = (sum - r) / P;
+        }
+
+        return mul;
     }
 
     public Padic Mul(int k)
     {
-        var coefs = Enumerable.Repeat(ZnInt.KZero(P), O).ToArray();
+        var e = new Padic(P, O, k);
+        return Mul(e);
+    }
+
+    public (Padic quo, Padic rem) Div(Padic other)
+    {
+        if (P != other.P || O != other.O)
+            throw new ArgumentException();
+
+        var a0 = CompleteDivision(other);
+        var quo = a0.IntegerPart;
+        var rem = Sub(quo.Mul(other));
+        return (quo, rem);
+    }
+
+    public Padic CompleteDivision(Padic other)
+    {
+        if (P != other.P || O != other.O)
+            throw new ArgumentException();
+
+        var (v1, h1, n1) = other.ScientificForm();
+        var o1 = O + Int32.Abs(v1) + 2;
+        n1 = n1.Resize(o1);
+        var a0 = new Padic(this).Resize(o1);
+        var quo = new Padic(P, n1.O);
+
+        var e1 = IntExt.InvModP(n1[0], P);
+        while (!a0.IsZero())
+        {
+            var (v0, n0) = a0.FirstCoeff();
+            var c0 = (n0 * e1) % P;
+            quo[v0] = c0;
+            a0 = a0.SubMul(n1, c0, v0);
+            // a0 = a0.Sub(n1.Mul(c0).Shift(v0));
+        }
+
+        return quo.Shift(v1).Resize(O);
+    }
+
+    private Padic SubMul(Padic other, int k, int s)
+    {
+        var submul = new Padic(P, O);
+        var e = Emin;
         var carry = 0;
-        for (int i = 0; i < O; i++)
+        for (int i = e; i < O; i++)
         {
-            var k0 = Coefs[i].K * k + carry;
-            var z = coefs[i] = new ZnInt(P, k0);
-            carry = (k0 - z.K) / P;
+            var sum = this[i] - (other[i - s] * k + carry);
+            var r0 = sum % P;
+            var r = submul[i] = r0 < 0 ? P + r0 : r0;
+            var c0 = (sum - r) / P;
+            carry = c0 < 0 ? -c0 : c0;
         }
 
-        return new(coefs);
+        return submul;
     }
 
-    public (Padic quo, Padic rem) Div(Padic e)
+    public Padic Inv() => One.CompleteDivision(this);
+
+    public bool Equals(Padic other)
     {
-        if (e.IsZero())
-            throw new DivideByZeroException();
-        
-        var e0 = e.Trimed;
-        var coefs = Enumerable.Repeat(ZnInt.KZero(P), O).ToArray();
-        var rem = new Padic(Coefs);
-        var b0 = e0[0].Inv();
-        for (int i = 0; i < O && !rem.IsZero(); i++)
+        if (P != other.P || O != other.O || Emin != other.Emin)
+            return false;
+
+        for (int i = Emin; i < O; i++)
         {
-            var a0 = rem[0] * b0;
-            coefs[i] = a0;
-            rem = (rem - a0 * e0).Shift();
+            if (this[i] != other[i])
+                return false;
         }
 
-        var e1 = new Padic(coefs).Shift(e.Valuation);
-        var r = Sub(e * e1);
-        return (e1, r);
+        return true;
     }
 
-    public Padic Pow(int k)
+    public int CompareTo(Padic other)
     {
-        if (k == 0)
-            return One;
+        if (P != other.P || O != other.O)
+            throw new ArgumentException();
 
-        if (k < 0)
-            throw new GroupException(GroupExceptionType.GroupDef);
+        var e = Int32.Min(Emin, other.Emin);
+        for (int i = O - 1; i >= e; i--)
+        {
+            var comp = this[i].CompareTo(other[i]);
+            if (comp != 0)
+                return comp;
+        }
 
-        var pi = this;
-        return Enumerable.Repeat(pi, k).Aggregate((a, b) => a.Mul(b));
+        return 0;
     }
 
-    public Padic Inv()
+    public override int GetHashCode()
     {
-        var qr = One.Div(this);
-        if (qr.rem.IsZero())
-            return qr.quo;
+        var acc = P;
+        for (int i = Emin; i < O; i++)
+            acc = (acc, this[i]).GetHashCode();
 
-        throw new DivideByZeroException();
+        return acc;
     }
 
-    public Padic KMul(ZnInt k) => Mul(k.K);
-
-    public int Valuation { get; }
-
-    public Padic Trimed
+    public int this[int i]
     {
         get
         {
-            var coefs = Enumerable.Repeat(ZnInt.KZero(P), O).ToArray();
-            for (int i = Valuation, j = 0; i < O; i++, j++)
-                coefs[j] = Coefs[i];
+            if (Digits.ContainsKey(i))
+                return Digits[i];
 
-            return new(coefs);
+            return 0;
+        }
+        private set
+        {
+            if (i > O + 2)
+                return;
+
+            if (value == 0)
+                Digits.Remove(i);
+            else
+                Digits[i] = value;
         }
     }
-
-    public Padic Shift(int s = 1)
-    {
-        if (s == 0)
-            return new(Coefs);
-        else if (s > 0)
-        {
-            var coefs = Enumerable.Repeat(ZnInt.KZero(P), O).ToArray();
-            for (int i = s; i < O; i++)
-                coefs[i - s] = Coefs[i];
-
-            return new(coefs);
-        }
-        else
-        {
-            var coefs = Enumerable.Repeat(ZnInt.KZero(P), O).ToArray();
-            for (int i = -s; i < O; i++)
-                coefs[i] = Coefs[i + s];
-
-            return new(coefs);
-        }
-    }
-
-    public Padic PpowV
-    {
-        get
-        {
-            if (IsZero())
-                return Zero;
-
-            var v = Valuation;
-            var z0 = KZero;
-            var coefs = Coefs.Select((e, i) => i == v ? e.One : z0).ToArray();
-            return new(coefs);
-        }
-    }
-
-    public Padic LeadingCoeff
-    {
-        get
-        {
-            if (IsZero())
-                return Zero;
-
-            var v = Valuation;
-            var z0 = KZero;
-            var coefs = Coefs.Select((e, i) => i == v ? e : z0).ToArray();
-            return new(coefs);
-        }
-    }
-
-    public BigInteger ToBigInt
-    {
-        get
-        {
-            var acc = BigInteger.Zero;
-            var ppow = BigInteger.One;
-            foreach (var z in Coefs)
-            {
-                acc += z.K*ppow;
-                ppow *= P;
-            }
-
-            return acc;
-        }
-    }
-
-    public BigInteger ToSignedBigInt
-    {
-        get
-        {
-            var acc = BigInteger.Zero;
-            var ppow = BigInteger.One;
-            foreach (var z in Coefs)
-            {
-                acc += z.K*ppow;
-                ppow *= P;
-            }
-
-            if (acc > ppow / 2)
-                return acc - ppow;
-
-            return acc;
-        }
-    }
-
-    public static IEnumerable<Padic> Generate(int p, int o)
-    {
-        var e0 = new Padic(p, o);
-        var e1 = e0.One;
-        do
-        {
-            yield return e0;
-            e0 += e1;
-        } while (!e0.IsZero());
-    }
-
-    public static Padic Convert(int p, int o, BigInteger a)
-    {
-        var coefs = Enumerable.Repeat(ZnInt.KZero(p), o).ToArray();
-        var a0 = a;
-        var i = 0;
-        while (i < o && !a0.IsZero)
-        {
-            var r = (int)BigInteger.Remainder(a0, p);
-            var z = coefs[i] = new ZnInt(p, r);
-            a0 = (a0 - z.K) / p;
-            ++i;
-        }
-
-        return new(coefs);
-    }
-
-    public static Padic operator +(Padic a, Padic b) => a.Add(b);
-
-    public static Padic operator +(int a, Padic b) => b.Add(b.One.Mul(a));
-
-    public static Padic operator +(Padic a, int b) => a.Add(a.One.Mul(b));
-
-    public static Padic operator -(Padic a) => a.Opp();
-
-    public static Padic operator -(Padic a, Padic b) => a.Sub(b);
-
-    public static Padic operator -(int a, Padic b) => b.Sub(b.One.Mul(a));
-
-    public static Padic operator -(Padic a, int b) => a.Sub(a.One.Mul(b));
-
-    public static Padic operator *(Padic a, Padic b) => a.Mul(b);
-
-    public static Padic operator *(int a, Padic b) => b.Mul(a);
-
-    public static Padic operator *(Padic a, int b) => a.Mul(b);
-
-    public static Padic operator /(Padic a, Padic b) => a.Div(b).quo;
-
-    public static Padic operator /(Padic a, int b) => a / (a.One * b);
-
-    public static Padic operator /(int a, Padic b) => (a * b.One) / b;
-
-    public static Padic operator +(Padic a, ZnInt b) => a + b.K;
-
-    public static Padic operator +(ZnInt a, Padic b) => a.K + b;
-
-    public static Padic operator -(Padic a, ZnInt b) => a - b.K;
-
-    public static Padic operator -(ZnInt a, Padic b) => a.K - b;
-
-    public static Padic operator *(Padic a, ZnInt b) => a * b.K;
-
-    public static Padic operator *(ZnInt a, Padic b) => a.K * b;
-
-    public static Padic operator /(Padic a, ZnInt b) => a / b.K;
-
-    public override int GetHashCode() => Hash;
 
     public override string ToString()
     {
-        var xi = Ring.Polynomial('p', KZero);
-        var pO = Ring.Xi('p', O);
-        if (DisplayForm == PadicDisplayForm.Serie)
+        var pstr = Ring.Xi('p', O).ToString().Replace("p", $"{P}");
+        var s = "";
+
+        if (IsZero())
+            return $"[0({pstr})]";
+
+        for (int i = Emin; i <= Int32.Min(O - 1, Emax); i++)
         {
-            var fx = Coefs.Select((k, i) => k * xi.Pow(i)).Aggregate((a, b) => a + b).GetString(reverse: true);
-            return $"{fx} + O({pO})";
+            var sep = P < 10 ? "" : "'";
+            sep = i == 1 ? "." : sep;
+            sep = i == Emin ? "" : sep;
+            s = $"{this[i]}" + sep + s;
         }
-        else if(DisplayForm == PadicDisplayForm.Number)
-        {
-            var pstr = pO.ToString().Replace("p", $"{P}");
-            var trim = Coefs.TrimSeq().ToArray();
-            if (trim.Length == 0)
-                return $"[0({pstr})]";
-            else
-            {
-                return $"[{trim.Glue()}({pstr})]";
-            }
-        }
-        else if(DisplayForm== PadicDisplayForm.UnsignedInteger)
-        {
-            return $"{ToBigInt}";
-        }
-        else
-        {
-            return $"{ToSignedBigInt}";
-        }
+
+        s = s.Reverse().Glue();
+        return $"[{s}({pstr})]";
     }
+
+    public static Padic Convert(int p, BigInteger v)
+    {
+        var Digits = new Dictionary<int, int>() { [0] = 0 };
+        var v0 = v < 0 ? -v : v;
+        var i = 0;
+        while (v0 != 0)
+        {
+            var r = v0 % p;
+            Digits[i] = r < 0 ? (int)(r + p) : (int)r;
+            v0 = (v0 - r) / p;
+            ++i;
+        }
+
+        var o = Digits.Keys.Max();
+        var a = new Padic(p, o + 1);
+        for (int j = 0; j <= o; j++)
+            a[j] = Digits[j];
+
+        return v < 0 ? a.Opp() : a;
+    }
+
+    public static Padic Convert(int p, int o, Rational r)
+    {
+        var num0 = r.Num >= 0 ? r.Num : -r.Num;
+        var denom = Convert(p, r.Denom);
+        var o1 = Int32.Max(denom.O, o);
+        var num = new Padic(p, o1, num0);
+        denom = denom.Resize(o1);
+        Console.WriteLine($"num={r.Num.Sign}*{num} denom={denom}");
+        if (r.Num >= 0)
+            return num.CompleteDivision(denom).Resize(o);
+
+        return num.CompleteDivision(denom).Opp().Resize(o);
+    }
+
+    public static Padic Convert(int p, int o, (BigInteger num, BigInteger denom) e) =>
+        Convert(p, o, new Rational(e.num, e.denom));
 }
