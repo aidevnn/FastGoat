@@ -181,6 +181,22 @@ namespace FastGoat.Commons
             return Gcd(arr.First(), Gcd(arr.Skip(1).ToArray()));
         }
 
+        // wikipedia
+        public static (BigInteger Xa, BigInteger Xb, BigInteger Gcd) BezoutBigInt(BigInteger a, BigInteger b)
+        {
+            var (r0, x0, y0, r1, x1, y1) = (a, BigInteger.One, BigInteger.Zero, b, BigInteger.Zero, BigInteger.One);
+            while (!r1.IsZero)
+            {
+                var q = r0 / r1;
+                (r0, x0, y0, r1, x1, y1) = (r1, x1, y1, r0 - q * r1, x0 - q * x1, y0 - q * y1);
+            }
+
+            if (r0 > 0)
+                return (x0, y0, r0);
+
+            return (-x0, -y0, -r0);
+        }
+        
         public static (int x, int y) Bezout(int a, int b)
         {
             if (b == 0)

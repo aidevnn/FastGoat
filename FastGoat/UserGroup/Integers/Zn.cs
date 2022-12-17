@@ -34,7 +34,7 @@ public readonly struct Zn : IGroup<ZnInt>
 
     public ZnInt Invert(ZnInt e)
     {
-        if (Mod != e.P)
+        if (Mod != e.Mod)
             throw new GroupException(GroupExceptionType.BaseGroup);
 
         return e.Opp();
@@ -42,7 +42,7 @@ public readonly struct Zn : IGroup<ZnInt>
 
     public ZnInt Op(ZnInt e1, ZnInt e2)
     {
-        if (Mod != e1.P || Mod != e2.P)
+        if (Mod != e1.Mod || Mod != e2.Mod)
             throw new GroupException(GroupExceptionType.BaseGroup);
 
         return e1.Add(e2);

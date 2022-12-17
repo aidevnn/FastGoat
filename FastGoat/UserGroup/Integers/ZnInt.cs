@@ -5,16 +5,17 @@ namespace FastGoat.UserGroup.Integers;
 
 public readonly struct ZnInt : IElt<ZnInt>, IRingElt<ZnInt>, IFieldElt<ZnInt>
 {
-    public int P { get; }
+    public int Mod { get; }
     public int K { get; }
+    public int P => Mod;
 
-    public static ZnInt KZero(int p = 0) => new ZnInt(p, 0);
+    public static ZnInt KZero(int m = 0) => new(m, 0);
 
-    public ZnInt(int p, int k)
+    public ZnInt(int m, int k)
     {
-        P = p;
-        K = P == 0 ? k : IntExt.AmodP(k, P);
-        Hash = (K, P).GetHashCode();
+        Mod = m;
+        K = Mod == 0 ? k : IntExt.AmodP(k, Mod);
+        Hash = (K, Mod).GetHashCode();
     }
 
     public bool Equals(ZnInt other)
@@ -25,7 +26,7 @@ public readonly struct ZnInt : IElt<ZnInt>, IRingElt<ZnInt>, IFieldElt<ZnInt>
     public ZnInt LeadingCoeff => One;
     public int CompareTo(ZnInt other)
     {
-        if (P != other.P)
+        if (Mod != other.Mod)
             throw new GroupException(GroupExceptionType.BaseGroup);
 
         return K.CompareTo(other.K);
@@ -40,23 +41,23 @@ public readonly struct ZnInt : IElt<ZnInt>, IRingElt<ZnInt>, IFieldElt<ZnInt>
 
     public override string ToString()
     {
-        var digits = $"{P}".Length;
+        var digits = $"{Mod}".Length;
         var fmt = $"{{0,{digits}}}";
         return string.Format(fmt, K);
     }
 
     public bool IsZero() => K == 0;
-    public ZnInt Zero => new(P, 0);
-    public ZnInt One => new(P, 1);
+    public ZnInt Zero => new(Mod, 0);
+    public ZnInt One => new(Mod, 1);
 
-    public ZnInt Add(ZnInt e) => new(P, K + e.K);
+    public ZnInt Add(ZnInt e) => new(Mod, K + e.K);
 
-    public ZnInt Sub(ZnInt e) => new(P, K - e.K);
+    public ZnInt Sub(ZnInt e) => new(Mod, K - e.K);
 
-    public ZnInt Opp() => new(P, -K);
+    public ZnInt Opp() => new(Mod, -K);
 
-    public ZnInt Mul(ZnInt e) => new(P, K * e.K);
-    public ZnInt Mul(int k) => new(P, K * k);
+    public ZnInt Mul(ZnInt e) => new(Mod, K * e.K);
+    public ZnInt Mul(int k) => new(Mod, K * k);
 
     public ZnInt Pow(int k)
     {
@@ -66,8 +67,8 @@ public readonly struct ZnInt : IElt<ZnInt>, IRingElt<ZnInt>, IFieldElt<ZnInt>
         if (k < 0)
             return Inv().Pow(-k);
 
-        var r = P != 0 ? IntExt.PowMod(K, k, P) : (int)Math.Pow(K, k);
-        return new(P, r);
+        var r = Mod != 0 ? IntExt.PowMod(K, k, Mod) : (int)Math.Pow(K, k);
+        return new(Mod, r);
     }
 
     public (ZnInt quo, ZnInt rem) Div(ZnInt e)
@@ -78,25 +79,25 @@ public readonly struct ZnInt : IElt<ZnInt>, IRingElt<ZnInt>, IFieldElt<ZnInt>
         if (IsZero())
             return (Zero, Zero);
         
-        if (P == 0)
+        if (Mod == 0)
         {
             var (q, r) = Int32.DivRem(K, e.K);
-            return (new(P, q), new(P, r));
+            return (new(Mod, q), new(Mod, r));
         }
         else
         {
-            var (x, y) = IntExt.Bezout(e.K, P);
-            var gcd = e.K * x + P * y;
+            var (x, y) = IntExt.Bezout(e.K, Mod);
+            var gcd = e.K * x + Mod * y;
             if (x % gcd != 0)
             {
                 var (q, r) = Int32.DivRem(K, e.K);
-                return (new(P, q), new(P, r)); // not uniq result
+                return (new(Mod, q), new(Mod, r)); // not uniq result
             }
             else
             {
-                var inv = (x / gcd) % P;
-                var q = new ZnInt(P, inv * K);
-                var r = new ZnInt(P, K - q.K * e.K);
+                var inv = (x / gcd) % Mod;
+                var q = new ZnInt(Mod, inv * K);
+                var r = new ZnInt(Mod, K - q.K * e.K);
                 return (q, r); // r = 0 always
             }
         }
@@ -104,7 +105,7 @@ public readonly struct ZnInt : IElt<ZnInt>, IRingElt<ZnInt>, IFieldElt<ZnInt>
 
     public ZnInt Inv()
     {
-        if (P == 0)
+        if (Mod == 0)
         {
             if (K == 1)
                 return new(0, 1);
@@ -114,12 +115,12 @@ public readonly struct ZnInt : IElt<ZnInt>, IRingElt<ZnInt>, IFieldElt<ZnInt>
             throw new DivideByZeroException();
         }
 
-        var (x, y) = IntExt.Bezout(K, P);
-        var gcd = K * x + P * y;
+        var (x, y) = IntExt.Bezout(K, Mod);
+        var gcd = K * x + Mod * y;
         if (x % gcd != 0)
             throw new DivideByZeroException();
         
-        return new(P, x / gcd);
+        return new(Mod, x / gcd);
     }
 
     public override bool Equals(object? obj)

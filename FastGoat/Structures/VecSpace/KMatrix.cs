@@ -321,6 +321,8 @@ public struct KMatrix<K> : IVsElt<K, KMatrix<K>>, IElt<KMatrix<K>>, IRingElt<KMa
 
     public static KMatrix<K> operator +(KMatrix<K> a, int b) => a + a.KOne.Mul(b);
 
+    public static KMatrix<K> operator -(KMatrix<K> a) => a.Opp();
+
     public static KMatrix<K> operator -(KMatrix<K> a, KMatrix<K> b) => a.Sub(b);
 
     public static KMatrix<K> operator -(int a, KMatrix<K> b) => b.KOne.Mul(a) - b;
