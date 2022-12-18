@@ -42,13 +42,13 @@ public static class PolynomialFactorizationPart2
     static KPoly<Rational> ZPoly2QPoly(KPoly<ZnBInt> f) =>
         new(f.x, Rational.KZero(), f.Coefs.Select(e => new Rational(e.K * 2 <= e.Mod ? e.K : e.K - e.Mod)).ToArray());
 
-    static KPoly<ZnBInt> QPoly2ZnInt(KPoly<Rational> f, ZnBInt.Infos po)
+    static KPoly<ZnBInt> QPoly2ZnInt(KPoly<Rational> f, Modulus po)
     {
         var coefs = f.Coefs.Select(e => new ZnBInt(po, e.Num)).ToArray();
         return new(f.x, po.Zero, coefs);
     }
 
-    static KPoly<ZnBInt> ZPoly2ZnInt(KPoly<ZnBInt> f, ZnBInt.Infos po) =>
+    static KPoly<ZnBInt> ZPoly2ZnInt(KPoly<ZnBInt> f, Modulus po) =>
         new(f.x, po.Zero, f.Coefs.Select(e => new ZnBInt(po, e.K)).ToArray());
 
     static KPoly<Rational>[] HenselLifting(KPoly<Rational> f, int p, int o)

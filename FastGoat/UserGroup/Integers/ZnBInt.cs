@@ -6,41 +6,14 @@ namespace FastGoat.UserGroup.Integers;
 
 public struct ZnBInt : IElt<ZnBInt>, IRingElt<ZnBInt>, IFieldElt<ZnBInt>
 {
-    public readonly struct Infos
-    {
-        public int P { get; }
-        public int O { get; }
-        public BigInteger Mod { get; }
-
-        public Infos()
-        {
-            P = 2;
-            O = 1;
-            Mod = 2;
-        }
-
-        public Infos(int p, int o)
-        {
-            P = p;
-            O = o;
-            Mod = BigInteger.Pow(P, O);
-        }
-
-        public static Infos operator ++(Infos i) => new Infos(i.P, i.O + 1);
-        public ZnBInt Zero => new(this, 0);
-        public override int GetHashCode() => (P, O).GetHashCode();
-
-        public override string ToString() => $"{P}^{O} = {Mod}";
-    }
-
     public BigInteger Mod => Details.Mod;
     public BigInteger K { get; }
     public static ZnBInt KZero(int mod, int o = 1) => new(mod, 0, o);
-    public Infos Details { get; }
+    public Modulus Details { get; }
 
     public int P => Details.P;
 
-    public ZnBInt(int mod, int k, int o = 1)
+    public ZnBInt(int mod, BigInteger k, int o = 1)
     {
         Details = new(mod, o);
         var k0 = BigInteger.Remainder(k, Details.Mod);
@@ -48,7 +21,7 @@ public struct ZnBInt : IElt<ZnBInt>, IRingElt<ZnBInt>, IFieldElt<ZnBInt>
         Hash = (K, Details).GetHashCode();
     }
 
-    public ZnBInt(Infos details, BigInteger k)
+    public ZnBInt(Modulus details, BigInteger k)
     {
         Details = details;
         var k0 = BigInteger.Remainder(k, details.Mod);
@@ -169,14 +142,14 @@ public struct ZnBInt : IElt<ZnBInt>, IRingElt<ZnBInt>, IFieldElt<ZnBInt>
         s = s.Reverse().Glue();
         return $"[{s}({pstr})]";
     }
-
+    
     public static IEnumerable<ZnBInt> Generate(int mod, int o = 1)
     {
         for (int k = 0; k < mod.Pow(o); ++k)
             yield return KZero(mod, o) * k;
     }
 
-    public static (ZnBInt trunc, ZnBInt rem) Truncate(ZnBInt z, Infos details)
+    public static (ZnBInt trunc, ZnBInt rem) Truncate(ZnBInt z, Modulus details)
     {
         var k0 = z.K % details.Mod;
         if (k0 * 2 > details.Mod)
