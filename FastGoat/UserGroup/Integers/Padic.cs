@@ -146,6 +146,7 @@ public readonly struct Padic : IEquatable<Padic>, IComparable<Padic>
     public Padic Zero => new(P, O);
 
     public Padic One => new(P, O, 1);
+    public Padic Ppow(int k) => new Padic(P, O, P).Pow(k);
 
     public Padic Add(Padic other)
     {
@@ -282,6 +283,18 @@ public readonly struct Padic : IEquatable<Padic>, IComparable<Padic>
 
     public Padic Inv() => One.CompleteDivision(this);
 
+    public Padic Pow(int k)
+    {
+        if (k == 0)
+            return One;
+
+        if (k < 0)
+            return Inv().Pow(-k);
+
+        var a = this;
+        return Enumerable.Repeat(a, k).Aggregate(One, (acc, e) => acc.Mul(e));
+    }
+
     public bool Equals(Padic other)
     {
         if (P != other.P || O != other.O || Emin != other.Emin)
@@ -399,4 +412,17 @@ public readonly struct Padic : IEquatable<Padic>, IComparable<Padic>
 
     public static Padic Convert(int p, int o, (BigInteger num, BigInteger denom) e) =>
         Convert(p, o, new Rational(e.num, e.denom));
+    
+    public static Padic Convert(int p, int v, params int[] coefs)
+    {
+        if (coefs.Length == 0 || !IntExt.Primes10000.Contains(p) || coefs[0] % p == 0)
+            throw new ArgumentException();
+
+        var o = coefs.Length;
+        var k = coefs.Reverse().Aggregate(BigInteger.Zero, (acc, i) => acc * p + new ZnInt(p, i).K);
+        var a = new Padic(p, o, k);
+        var pv = new Padic(p, o, BigInteger.Pow(p, Int32.Abs(v)));
+        return v > 0 ? a.Mul(pv) : a.CompleteDivision(pv);
+    }
+
 }
