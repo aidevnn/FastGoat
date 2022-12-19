@@ -4,9 +4,9 @@ using FastGoat.Structures;
 
 namespace FastGoat.UserGroup.Integers;
 
-public readonly struct QpAdic : IElt<QpAdic>, IRingElt<QpAdic>, IFieldElt<QpAdic>
+public readonly struct PadicGAP : IElt<PadicGAP>, IRingElt<PadicGAP>, IFieldElt<PadicGAP>
 {
-    public static QpAdic KZero(int p, int o) => new(p, o);
+    public static PadicGAP KZero(int p, int o) => new(p, o);
     public Modulus Details { get; }
     public Valuation Val { get; }
     public BigInteger K { get; }
@@ -16,7 +16,7 @@ public readonly struct QpAdic : IElt<QpAdic>, IRingElt<QpAdic>, IFieldElt<QpAdic
     public (int, int, BigInteger, Valuation) POKV => (P, O, K, Val);
     public int Sign => K * 2 > Mod ? -1 : 1;
 
-    public QpAdic(int p, int o)
+    public PadicGAP(int p, int o)
     {
         if (o < 1 || !IntExt.Primes10000.Contains(p))
             throw new ArgumentException($"p={p} must be prime and o={o} must be greater than 1.");
@@ -26,7 +26,7 @@ public readonly struct QpAdic : IElt<QpAdic>, IRingElt<QpAdic>, IFieldElt<QpAdic
         K = BigInteger.Zero;
     }
 
-    public QpAdic(int p, int o, BigInteger k)
+    public PadicGAP(int p, int o, BigInteger k)
     {
         if (o < 1 || !IntExt.Primes10000.Contains(p))
             throw new ArgumentException($"p={p} must be prime and o={o} must be greater than 1.");
@@ -43,7 +43,7 @@ public readonly struct QpAdic : IElt<QpAdic>, IRingElt<QpAdic>, IFieldElt<QpAdic
         }
     }
 
-    public QpAdic(int p, int o, BigInteger k, int v)
+    public PadicGAP(int p, int o, BigInteger k, int v)
     {
         if (o < 1 || !IntExt.Primes10000.Contains(p))
             throw new ArgumentException($"p={p} must be prime and o={o} must be greater than 1.");
@@ -61,23 +61,23 @@ public readonly struct QpAdic : IElt<QpAdic>, IRingElt<QpAdic>, IFieldElt<QpAdic
         }
     }
 
-    public QpAdic(int p, int o, Rational r)
+    public PadicGAP(int p, int o, Rational r)
     {
-        var qp = new QpAdic(p, o, r.Num) / new QpAdic(p, o, r.Denom);
+        var qp = new PadicGAP(p, o, r.Num) / new PadicGAP(p, o, r.Denom);
         Details = qp.Details;
         K = qp.K;
         Val = qp.Val;
     }
 
-    public QpAdic(int p, int o, (BigInteger num, BigInteger denom) r)
+    public PadicGAP(int p, int o, (BigInteger num, BigInteger denom) r)
     {
-        var qp = new QpAdic(p, o, new Rational(r.num, r.denom));
+        var qp = new PadicGAP(p, o, new Rational(r.num, r.denom));
         Details = qp.Details;
         K = qp.K;
         Val = qp.Val;
     }
     
-    private QpAdic(Modulus details, BigInteger k, Valuation v)
+    private PadicGAP(Modulus details, BigInteger k, Valuation v)
     {
         Details = details;
         if (k.IsZero)
@@ -91,9 +91,9 @@ public readonly struct QpAdic : IElt<QpAdic>, IRingElt<QpAdic>, IFieldElt<QpAdic
 
     public int Hash => POKV.GetHashCode();
     
-    public bool Equals(QpAdic other) => POKV.Equals(other.POKV);
+    public bool Equals(PadicGAP other) => POKV.Equals(other.POKV);
 
-    public int CompareTo(QpAdic other)
+    public int CompareTo(PadicGAP other)
     {
         var sign = Sign;
         var compSign = sign.CompareTo(other.Sign);
@@ -109,11 +109,11 @@ public readonly struct QpAdic : IElt<QpAdic>, IRingElt<QpAdic>, IFieldElt<QpAdic
 
     public bool IsZero() => K.IsZero;
 
-    public QpAdic Zero => new QpAdic(Details, 0, new());
-    public QpAdic One => new QpAdic(Details, 1, new(0));
-    public QpAdic Ppow(int k) => new QpAdic(P, O, 1, k);
+    public PadicGAP Zero => new PadicGAP(Details, 0, new());
+    public PadicGAP One => new PadicGAP(Details, 1, new(0));
+    public PadicGAP Ppow(int k) => new PadicGAP(P, O, 1, k);
 
-    public QpAdic Add(QpAdic other)
+    public PadicGAP Add(PadicGAP other)
     {
         if (!Details.Equals(other.Details))
             throw new ArgumentException($"Elements must have the same structure.");
@@ -148,10 +148,10 @@ public readonly struct QpAdic : IElt<QpAdic>, IRingElt<QpAdic>, IFieldElt<QpAdic
         }
     }
 
-    public QpAdic Opp() => new(P, O, new ZnBInt(Details, K).Opp().K, Val.V);
-    public QpAdic Sub(QpAdic other) => Add(other.Opp());
+    public PadicGAP Opp() => new(P, O, new ZnBInt(Details, K).Opp().K, Val.V);
+    public PadicGAP Sub(PadicGAP other) => Add(other.Opp());
 
-    public QpAdic Mul(QpAdic other)
+    public PadicGAP Mul(PadicGAP other)
     {
         if (!Details.Equals(other.Details))
             throw new ArgumentException($"Elements must have the same structure.");
@@ -166,13 +166,13 @@ public readonly struct QpAdic : IElt<QpAdic>, IRingElt<QpAdic>, IFieldElt<QpAdic
         return new(P, O, k, v.V);
     }
 
-    public QpAdic Inv() => new(P, O, new ZnBInt(Details, K).Inv().K, -Val.V);
+    public PadicGAP Inv() => new(P, O, new ZnBInt(Details, K).Inv().K, -Val.V);
 
-    public (QpAdic quo, QpAdic rem) Div(QpAdic other) => (Mul(other.Inv()), Zero);
+    public (PadicGAP quo, PadicGAP rem) Div(PadicGAP other) => (Mul(other.Inv()), Zero);
 
-    public QpAdic Mul(int k) => K.IsZero ? this : new(P, O, k * K, Val.V);
+    public PadicGAP Mul(int k) => K.IsZero ? this : new(P, O, k * K, Val.V);
 
-    public QpAdic Pow(int k)
+    public PadicGAP Pow(int k)
     {
         if (k == 0)
             return One;
@@ -186,9 +186,9 @@ public readonly struct QpAdic : IElt<QpAdic>, IRingElt<QpAdic>, IFieldElt<QpAdic
         return new(P, O, new ZnBInt(Details, K).Pow(k).K, k * Val.V);
     }
 
-    public QpAdic LeadingCoeff => One;
+    public PadicGAP LeadingCoeff => One;
     public Rational Norm => Val.IsInfinity ? new(0) : new Rational(P).Pow(-Val.V);
-    public QpAdic Normalized => new(Details, K, new(0));
+    public PadicGAP Normalized => new(Details, K, new(0));
 
     public SortedList<int, int> Digits()
     {
@@ -214,7 +214,7 @@ public readonly struct QpAdic : IElt<QpAdic>, IRingElt<QpAdic>, IFieldElt<QpAdic
 
     public (int exp, BigInteger n) ToSignedBigInteger => K.IsZero ? (0, 0) : (Val.V, K * 2 > Mod ? K : K - Mod);
 
-    public static QpAdic Convert(int p, int v, params int[] coefs)
+    public static PadicGAP Convert(int p, int v, params int[] coefs)
     {
         if (coefs.Length == 0 || !IntExt.Primes10000.Contains(p) || coefs[0] % p == 0)
             throw new ArgumentException();
@@ -224,40 +224,40 @@ public readonly struct QpAdic : IElt<QpAdic>, IRingElt<QpAdic>, IFieldElt<QpAdic
         return new(p, o, k, v);
     }
 
-    public static QpAdic operator +(QpAdic a, QpAdic b) => a.Add(b);
+    public static PadicGAP operator +(PadicGAP a, PadicGAP b) => a.Add(b);
 
-    public static QpAdic operator +(int a, QpAdic b) => b.One.Mul(a).Add(b);
+    public static PadicGAP operator +(int a, PadicGAP b) => b.One.Mul(a).Add(b);
 
-    public static QpAdic operator +(QpAdic a, int b) => a.Add(a.One.Mul(b));
+    public static PadicGAP operator +(PadicGAP a, int b) => a.Add(a.One.Mul(b));
 
-    public static QpAdic operator -(QpAdic a) => a.Opp();
+    public static PadicGAP operator -(PadicGAP a) => a.Opp();
 
-    public static QpAdic operator -(QpAdic a, QpAdic b) => a.Sub(b);
+    public static PadicGAP operator -(PadicGAP a, PadicGAP b) => a.Sub(b);
 
-    public static QpAdic operator -(int a, QpAdic b) => b.One.Mul(a).Sub(b);
+    public static PadicGAP operator -(int a, PadicGAP b) => b.One.Mul(a).Sub(b);
 
-    public static QpAdic operator -(QpAdic a, int b) => a.Sub(a.One.Mul(b));
+    public static PadicGAP operator -(PadicGAP a, int b) => a.Sub(a.One.Mul(b));
 
-    public static QpAdic operator *(QpAdic a, QpAdic b) => a.Mul(b);
+    public static PadicGAP operator *(PadicGAP a, PadicGAP b) => a.Mul(b);
 
-    public static QpAdic operator *(int a, QpAdic b) => b.Mul(a);
+    public static PadicGAP operator *(int a, PadicGAP b) => b.Mul(a);
 
-    public static QpAdic operator *(QpAdic a, int b) => a.Mul(b);
+    public static PadicGAP operator *(PadicGAP a, int b) => a.Mul(b);
 
-    public static QpAdic operator /(QpAdic a, QpAdic b) => a.Div(b).quo;
+    public static PadicGAP operator /(PadicGAP a, PadicGAP b) => a.Div(b).quo;
 
-    public static QpAdic operator /(QpAdic a, int b) => a.Div(a.One.Mul(b)).quo;
+    public static PadicGAP operator /(PadicGAP a, int b) => a.Div(a.One.Mul(b)).quo;
 
-    public static QpAdic operator /(int a, QpAdic b) => b.Inv().Mul(a);
+    public static PadicGAP operator /(int a, PadicGAP b) => b.Inv().Mul(a);
     
-    public static QpAdic operator +(QpAdic a, Rational b) => a.Add(new(a.P, a.O, b));
-    public static QpAdic operator +(Rational a, QpAdic b) => new QpAdic(b.P, b.O, a).Add(b);
-    public static QpAdic operator -(QpAdic a, Rational b) => a.Sub(new(a.P, a.O, b));
-    public static QpAdic operator -(Rational a, QpAdic b) => new QpAdic(b.P, b.O, a).Sub(b);
-    public static QpAdic operator *(QpAdic a, Rational b) => a.Mul(new QpAdic(a.P, a.O, b));
-    public static QpAdic operator *(Rational a, QpAdic b) => new QpAdic(b.P, b.O, a).Mul(b);
-    public static QpAdic operator /(QpAdic a, Rational b) => a.Div(new QpAdic(a.P, a.O, b)).quo;
-    public static QpAdic operator /(Rational a, QpAdic b) => new QpAdic(b.P, b.O, a).Div(b).quo;
+    public static PadicGAP operator +(PadicGAP a, Rational b) => a.Add(new(a.P, a.O, b));
+    public static PadicGAP operator +(Rational a, PadicGAP b) => new PadicGAP(b.P, b.O, a).Add(b);
+    public static PadicGAP operator -(PadicGAP a, Rational b) => a.Sub(new(a.P, a.O, b));
+    public static PadicGAP operator -(Rational a, PadicGAP b) => new PadicGAP(b.P, b.O, a).Sub(b);
+    public static PadicGAP operator *(PadicGAP a, Rational b) => a.Mul(new PadicGAP(a.P, a.O, b));
+    public static PadicGAP operator *(Rational a, PadicGAP b) => new PadicGAP(b.P, b.O, a).Mul(b);
+    public static PadicGAP operator /(PadicGAP a, Rational b) => a.Div(new PadicGAP(a.P, a.O, b)).quo;
+    public static PadicGAP operator /(Rational a, PadicGAP b) => new PadicGAP(b.P, b.O, a).Div(b).quo;
     
     public override int GetHashCode() => POKV.GetHashCode();
 
@@ -277,10 +277,10 @@ public readonly struct QpAdic : IElt<QpAdic>, IRingElt<QpAdic>, IFieldElt<QpAdic
             var sep = P < 10 ? "" : "'";
             sep = i == 1 ? "." : sep;
             sep = i == Start ? "" : sep;
-            s = $"{Table[i]}" + sep + s;
+            s = s + sep + $"{Table[i]}";
         }
 
-        s = s.Reverse().Glue();
+        s = s.Glue();
         return $"[{s}{pstr}]";
     }
 }
