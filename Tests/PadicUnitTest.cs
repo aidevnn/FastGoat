@@ -10,6 +10,7 @@ public class PadicUnitTest
     [Fact]
     public void Test1ThrowException()
     {
+        Assert.Throws<ArgumentException>(() => Valuation.Infinity.V);
         Assert.Throws<ArgumentException>(() => ZnBInt.KZero(1));
         Assert.Throws<ArgumentException>(() => new QpAdic(6, 5));
         Assert.Throws<ArgumentException>(() => new QpAdic(3, -5));
@@ -45,19 +46,22 @@ public class PadicUnitTest
     [Fact]
     public void Test3PadicIntegers()
     {
+        var a0 = new QpAdic(5, 3);
         var a1 = new QpAdic(5, 3, 101);
         var a2 = new QpAdic(5, 3, 75);
         var a3 = new QpAdic(5, 3, 15);
         var a4 = a3 / 125; 
 
+        Assert.Equal(0, a0.K);
         Assert.Equal(101, a1.K);
-        Assert.Equal(0, a1.V);
         Assert.Equal(3, a2.K);
-        Assert.Equal(2, a2.V);
         Assert.Equal(3, a3.K);
-        Assert.Equal(1, a3.V);
         Assert.Equal(3, a4.K);
-        Assert.Equal(-2, a4.V);
+        Assert.True(a0.Val.IsInfinity);
+        Assert.Equal(new Valuation(0), a1.Val);
+        Assert.Equal(new Valuation(2), a2.Val);
+        Assert.Equal(new Valuation(1), a3.Val);
+        Assert.Equal(new Valuation(-2), a4.Val);
 
         Assert.Equal(a1.Zero, (a1 + a1.Opp()));
         Assert.Equal(a1.One, (a1 * a1.Inv()));
@@ -79,7 +83,7 @@ public class PadicUnitTest
         var a6 = new QpAdic(5, 7, new Rational(21, 9) - new Rational(15, 11));
         var a7 = new QpAdic(5, 7, new Rational(21, 9) * new Rational(15, 11));
         var a8 = new QpAdic(5, 7, new Rational(21, 9) / new Rational(15, 11));
-
+        
         Assert.Equal(a1 / 9, a2);
         Assert.Equal(a2.Normalized, a2 * a2.Norm);
         Assert.Equal(a5, a3 + a4);
