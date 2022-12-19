@@ -1,8 +1,9 @@
 using System.Numerics;
 using FastGoat.Commons;
 using FastGoat.Structures;
+using FastGoat.UserGroup.Integers;
 
-namespace FastGoat.UserGroup.Integers;
+namespace FastGoat.UserGroup.Padic;
 
 public readonly struct PadicGAP : IElt<PadicGAP>, IRingElt<PadicGAP>, IFieldElt<PadicGAP>
 {

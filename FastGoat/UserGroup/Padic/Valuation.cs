@@ -1,7 +1,7 @@
 using System.Numerics;
 using FastGoat.Commons;
 
-namespace FastGoat.UserGroup.Integers;
+namespace FastGoat.UserGroup.Padic;
 
 public readonly struct Valuation : IEquatable<Valuation>, IComparable<Valuation>,
     IComparisonOperators<Valuation, Valuation, bool>

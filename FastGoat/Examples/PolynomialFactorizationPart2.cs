@@ -4,6 +4,7 @@ using FastGoat.Structures;
 using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup;
 using FastGoat.UserGroup.Integers;
+using FastGoat.UserGroup.Padic;
 
 namespace FastGoat.Examples;
 

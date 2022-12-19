@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace FastGoat.UserGroup.Integers;
+namespace FastGoat.UserGroup.Padic;
 
 public readonly struct Modulus : IEquatable<Modulus>
 {

@@ -2,7 +2,7 @@ using System.Numerics;
 using FastGoat.Commons;
 using FastGoat.Structures;
 
-namespace FastGoat.UserGroup.Integers;
+namespace FastGoat.UserGroup.Padic;
 
 public struct ZnBInt : IElt<ZnBInt>, IRingElt<ZnBInt>, IFieldElt<ZnBInt>
 {

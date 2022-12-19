@@ -1,6 +1,7 @@
 using System;
 using FastGoat.Structures;
 using FastGoat.UserGroup.Integers;
+using FastGoat.UserGroup.Padic;
 using Xunit;
 
 namespace Tests;
