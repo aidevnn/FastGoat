@@ -156,3 +156,9 @@ Conway polynomials for finite fields
 Algorithmes Efficaces en Calcul Formel.
 Édition web 1.1
 <i>Chapitre IV Factorisation des polynômes.</i>
+
+[hal-01444183](https://hal.archives-ouvertes.fr/hal-01444183)
+<b>Xavier Caruso<b>
+Computations with p-adic numbers. Journées Nationales de Calcul Formel, In press,
+Les cours du CIRM.
+<i>Several implementations of p-adic numbers</i>
