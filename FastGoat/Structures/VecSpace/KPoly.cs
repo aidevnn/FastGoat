@@ -85,6 +85,16 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
     public KPoly<K> Derivative => new(x, KZero, Coefs.Select((e, i) => e.Mul(i)).Skip(1).TrimSeq().ToArray());
     public KPoly<K> Substitute(KPoly<K> f) => Coefs.Select((k, i) => k * f.Pow(i)).Aggregate((a, b) => a + b);
 
+    public KPoly<EPoly<K>> Substitute(KPoly<EPoly<K>> f)
+    {
+        var poly = new KPoly<EPoly<K>>(f.x, f.KZero, Coefs.Select(k => k * f.KOne).ToArray());
+        return poly.Substitute(f);
+    }
+    public KPoly<FracPoly<K>> Substitute(KPoly<FracPoly<K>> f)
+    {
+        var poly = new KPoly<FracPoly<K>>(f.x, f.KZero, Coefs.Select(k => k * f.KOne).ToArray());
+        return poly.Substitute(f);
+    }
     public KPoly<K> Add(KPoly<K> e)
     {
         var maxDegree = Math.Max(Degree, e.Degree);

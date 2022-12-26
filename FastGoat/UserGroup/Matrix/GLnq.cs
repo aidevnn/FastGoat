@@ -49,7 +49,10 @@ public class GLnq : IGroup<MatFq>
             var us0 = Enumerable.Range(0, N * N).Select(i => i < us.Length ? us[i] : 0).ToArray();
             if (us0.Any(u => u is EPoly<ZnInt>))
             {
-                var table0 = us0.Select(u => u is EPoly<ZnInt> u0 ? u0 : (int)u)
+                var table0 = us0.Select(u =>
+                        u is EPoly<ZnInt> u0 ? u0 :
+                        u is int u1 ? new EPoly<ZnInt>(Fq.F, Fq.F.One.Mul(u1)) :
+                        throw new GroupException(GroupExceptionType.GroupDef))
                     .Select(e => e.Poly.Coefs.Select(ei => new ZnInt(Fq.P, ei.K)).ToArray())
                     .Select(e => new EPoly<ZnInt>(Fq.F, new KPoly<ZnInt>(Fq.F.x, ZnInt.KZero(Fq.P), e)))
                     .ToArray();
@@ -61,7 +64,7 @@ public class GLnq : IGroup<MatFq>
             {
                 var table = us0.Select(i => Fq[i]).ToArray();
                 var hash = table.Aggregate(0, (acc, a) => a.GetHashCode() + Fq.Q * acc);
-                return new(this, hash, table);                
+                return new(this, hash, table);
             }
 
             throw new GroupException(GroupExceptionType.GroupDef);
@@ -160,7 +163,8 @@ public class GLnq : IGroup<MatFq>
                 for (int k = 0; k < aCols; k++)
                     sum.InPlaceAddProd(a[i * aCols + k].Poly, b[k * bCols + j].Poly);
 
-                c[i * aRows + j] = new(Fq.F, new KPoly<ZnInt>(Fq.F.x, Fq.F.KZero,sum.Coefs.TrimSeq().ToArray()).Div(Fq.F).rem);
+                c[i * aRows + j] = new(Fq.F,
+                    new KPoly<ZnInt>(Fq.F.x, Fq.F.KZero, sum.Coefs.TrimSeq().ToArray()).Div(Fq.F).rem);
             }
         }
 

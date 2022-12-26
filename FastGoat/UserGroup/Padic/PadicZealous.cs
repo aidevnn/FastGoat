@@ -214,7 +214,7 @@ public readonly struct PadicZealous : IElt<PadicZealous>, IRingElt<PadicZealous>
     }
 
     public PadicZealous LeadingCoeff => One;
-    public Rational Norm => Val==N ? new(0) : new Rational(P).Pow(-Val);
+    public Rational Norm => Val == N ? new(0) : new Rational(P).Pow(-Val);
     public PadicZealous Normalized => new(P, N, 0, S, Mod);
 
     public SortedList<int, int> Digits()

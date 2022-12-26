@@ -294,7 +294,7 @@ public static partial class Ring
 
 
     public static (KMatrix<K> P, KMatrix<K> A0) ReducedRowsEchelonForm<K>(KMatrix<K> A)
-        where K : IElt<K>, IRingElt<K>, IFieldElt<K>
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var e = ReducedRowsEchelonForm(A.Coefs);
         return (new(e.P), new(e.A0));
@@ -585,5 +585,44 @@ public static partial class Ring
         }
 
         return (KMatrix<K>.MergeSameRows(vs), new(u));
+    }
+
+    public static KMatrix<K> ToMatrix<K>(this KPoly<K> f, int n) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        if (n < f.Degree)
+            throw new ArgumentException();
+
+        var mat = new KMatrix<K>(f.KZero, n + 1, n + 1);
+        for (int i = 0; i <= n; i++)
+        {
+            mat.Coefs[i, n] = f[i];
+            if (i < n)
+                mat.Coefs[1 + i, i] = f.KOne;
+        }
+
+        return mat;
+    }
+
+    public static KMatrix<K> ToMatrix<K>(this KPoly<K> f) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        return f.ToMatrix(f.Degree);
+    }
+
+    public static KMatrix<FracPoly<K>> ToKPolyMatrix<K>(this FracPoly<K> f0, int n)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        if (!f0.Denom.Equals(f0.One.Num) || n < f0.Num.Degree)
+            throw new ArgumentException();
+
+        var f = f0.Num;
+        var mat = new KMatrix<FracPoly<K>>(f0.Zero, n + 1, n + 1);
+        for (int i = 0; i <= n; i++)
+        {
+            mat.Coefs[i, n] = f[i] * f0.One;
+            if (i < n)
+                mat.Coefs[1 + i, i] = f0.One;
+        }
+
+        return mat;
     }
 }

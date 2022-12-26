@@ -48,13 +48,21 @@ public readonly struct EPoly<K> : IVsElt<K, EPoly<K>>, IElt<EPoly<K>>, IRingElt<
     public int Hash { get; }
     public bool IsZero() => Poly.IsZero();
     public K this[int idx] => Poly[idx];
+    public int Degree => Poly.Degree;
 
     public K KZero => F.KZero;
     public K KOne => F.KOne;
     public EPoly<K> Zero => new(F, F.Zero);
     public EPoly<K> One => new(F, F.One);
+    public EPoly<K> X => new(F);
     public  EPoly<K> LeadingCoeff => new(F, F.LeadingCoeff);
     public EPoly<K> Derivative => new(F, Poly.Derivative.Div(F).rem);
+    public EPoly<K> Substitute(KPoly<K> f) => new(F, Poly.Substitute(f).Div(F).rem);
+
+    public FracPoly<K> Substitute(FracPoly<K> f)
+    {
+        return Poly.Coefs.Select((k, i) => k * f.Pow(i)).Aggregate(f.Zero, (acc, a) => acc + a);
+    }
     public EPoly<K> Add(EPoly<K> e)
     {
         return new(F, Poly.Add(e.Poly).Div(F).rem);
@@ -88,6 +96,9 @@ public readonly struct EPoly<K> : IVsElt<K, EPoly<K>>, IElt<EPoly<K>>, IRingElt<
         return Enumerable.Repeat(pi, k).Aggregate((a, b) => a.Mul(b));
     }
 
+    public KPoly<EPoly<K>> ToKPoly(char x) => new(x, this);
+    public FracPoly<EPoly<K>> ToFracPoly(char x) => new(ToKPoly(x));
+
     public override int GetHashCode() => Hash;
 
     public override string ToString()
@@ -97,8 +108,6 @@ public readonly struct EPoly<K> : IVsElt<K, EPoly<K>>, IElt<EPoly<K>>, IRingElt<
         
         return $"{Poly}";
     }
-
-    public static implicit operator EPoly<K>(KPoly<K> e) => new(e.One, e);
 
     public static EPoly<K> operator +(EPoly<K> a, EPoly<K> b) => a.Add(b);
     public static EPoly<K> operator +(int a, EPoly<K> b) => b.Add(b.One.Mul(a));
@@ -123,9 +132,13 @@ public readonly struct EPoly<K> : IVsElt<K, EPoly<K>>, IElt<EPoly<K>>, IRingElt<
     public static EPoly<K> operator /(EPoly<K> a, K b) => a.KMul(b.Inv());
     public static EPoly<K> operator /(K a, EPoly<K> b) => b.Inv().KMul(a);
     
-    public static implicit operator EPoly<K>(int k)
-    {
-        var x = new KPoly<K>('x');
-        return new EPoly<K>(x, x.One * k);
-    }
+    public static EPoly<K> operator +(EPoly<K> a, KPoly<K> b) => a + new EPoly<K>(a.F, b.Div(a.F).rem);
+    public static EPoly<K> operator +(KPoly<K> a, EPoly<K> b) => new EPoly<K>(b.F, a.Div(b.F).rem) + b;
+    public static EPoly<K> operator -(EPoly<K> a, KPoly<K> b) => a - new EPoly<K>(a.F, b.Div(a.F).rem);
+    public static EPoly<K> operator -(KPoly<K>  a, EPoly<K> b) => new EPoly<K>(b.F, a.Div(b.F).rem) - b;
+    public static EPoly<K> operator *(EPoly<K> a, KPoly<K> b) => a * new EPoly<K>(a.F, b.Div(a.F).rem);
+    public static EPoly<K> operator *(KPoly<K> a, EPoly<K> b) => new EPoly<K>(b.F, a.Div(b.F).rem) * b;
+    public static EPoly<K> operator /(EPoly<K> a,  KPoly<K> b) => a.Mul(new EPoly<K>(a.F, b.Div(a.F).rem).Inv());
+    public static EPoly<K> operator /(KPoly<K> a, EPoly<K> b) => new EPoly<K>(b.F, a.Div(b.F).rem)*b.Inv();
+
 }

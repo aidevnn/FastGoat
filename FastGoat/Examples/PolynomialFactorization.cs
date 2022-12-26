@@ -18,7 +18,8 @@ public static class PolynomialFactorization
         return new KPoly<K>('x', scalar, coefs);
     }
 
-    public static KPoly<K> RandPoly<K>(K scalar, int p, int[] degrees) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    public static KPoly<K> RandPoly<K>(K scalar, int p, int[] degrees)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         Dictionary<int, int> maxSep = new() { [2] = 3, [3] = 2, [5] = 1 };
 
@@ -77,7 +78,7 @@ public static class PolynomialFactorization
         }
     }
 
-    static List<(KPoly<K> g, int q, int i)> MusserSFF<K>(KPoly<K> f)
+    public static List<(KPoly<K> g, int q, int i)> MusserSFF<K>(KPoly<K> f)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var L = new List<(KPoly<K>, int, int)>();
@@ -98,7 +99,8 @@ public static class PolynomialFactorization
         return L;
     }
 
-    static List<(KPoly<K> g, int q, int i)> YunSFF<K>(KPoly<K> f) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    public static List<(KPoly<K> g, int q, int i)> YunSFF<K>(KPoly<K> f)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var L = new List<(KPoly<K>, int, int)>();
         var l = 1;
@@ -294,7 +296,7 @@ public static class PolynomialFactorization
         var polys = FrobeniusKernel(f, q + 1);
         if (polys.Length > 1)
         {
-            var fqa = q.Range(1).Select(i => a0.Pow(i)).ToArray();
+            var fqa = q.Range(1).Select(a0.Pow).ToArray();
             foreach (var (g, a) in polys.Where(g => g.Degree > 0).Grid2D(fqa))
             {
                 var g_a = g - a;
@@ -444,7 +446,7 @@ public static class PolynomialFactorization
 
         return KMatrix<Rational>.MergeSameRows(w);
     }
-    
+
     public static void SquareFreeFactorizationQ()
     {
         Monom.Display = MonomDisplay.Superscript;
@@ -491,6 +493,7 @@ public static class PolynomialFactorization
             Console.WriteLine(l.Glue("\n"));
             CheckSeparability(f, l);
             CheckIrreductibility(l);
+            Console.WriteLine(Ring.Discriminant(f));
         }
 
         {

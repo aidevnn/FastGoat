@@ -15,30 +15,59 @@ public static partial class FG
         return new KPoly<K>(x, scalar).X;
     }
 
+    public static FracPoly<K> KFracPoly<K>(char x, K scalar) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        return new FracPoly<K>(x, scalar).X;
+    }
+
     public static EPoly<K> EPoly<K>(KPoly<K> f) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         return new(f);
     }
 
-    public static Fraction<KPoly<K>> FracPoly<K>(char x, K scalar) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    public static EPoly<K> EPoly<K>(KPoly<K> f, char x) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
-        var x0 = KPoly(x, scalar);
-        var t0 = new Fraction<KPoly<K>>(scalar.P, x0);
-        return t0;
+        return new(new KPoly<K>(x, f.KZero, f.Coefs));
     }
 
-    public static Fraction<KPoly<Rational>> QFracPoly(char x = 'x') => FracPoly(x, Rational.KZero());
+    public static EPoly<K> EPoly<K>(K scalar, char x, params K[] coefs)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var coefs0 = coefs.Reverse().SkipWhile(i => i.IsZero()).Reverse().ToArray();
+        if (coefs0.Length < 2)
+            throw new GroupException(GroupExceptionType.GroupDef);
 
-    public static Fraction<KPoly<ZnInt>> ZFracPoly(int p, char x = 'x') => FracPoly(x, ZnInt.KZero(p));
+        var f = new KPoly<K>(x, scalar.Zero, coefs0);
+        return new EPoly<K>(f);
+    }
 
-    public static (KPoly<Fraction<KPoly<ZnInt>>> x, Fraction<KPoly<ZnInt>> t) FpT_Poly(int p, (char x, char t) xt)
+    public static EPoly<K> EPoly<K>(K scalar, char x, params int[] coefs)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        return EPoly(scalar, x, coefs.Select(i => i * scalar.One).ToArray());
+    }
+
+    public static EPoly<Rational> EQPoly(char x, params int[] coefs) => EPoly(Rational.KZero(), x, coefs);
+
+    public static FracPoly<Rational> QFracPoly(char x = 'x') => KFracPoly(x, Rational.KZero());
+
+    public static FracPoly<ZnInt> ZFracPoly(int p, char x = 'x') => KFracPoly(x, ZnInt.KZero(p));
+
+    public static (KPoly<FracPoly<ZnInt>> x, FracPoly<ZnInt> t) FpT_Poly(int p, (char x, char t) xt)
     {
         var t = ZPoly(p, xt.t);
-        var t0 = new Fraction<KPoly<ZnInt>>(t.P, t);
+        var t0 = new FracPoly<ZnInt>(t);
         return (KPoly(xt.x, t0), t0);
     }
 
-    public static (KPoly<Fraction<KPoly<ZnInt>>> x, Fraction<KPoly<ZnInt>>t) FpT_Poly(int p) => FpT_Poly(p, ('x', 't'));
+    public static (KPoly<FracPoly<Rational>> X, FracPoly<Rational> T) QT_Poly(char x, char t)
+    {
+        var t0 = QPoly(t);
+        var t1 = new FracPoly<Rational>(t0);
+        return (KPoly(x, t1), t1);
+    }
+
+    public static (KPoly<FracPoly<ZnInt>> x, FracPoly<ZnInt> t) FpT_Poly(int p) => FpT_Poly(p, ('x', 't'));
 
     public static (KPoly<EPoly<ZnInt>> x, EPoly<ZnInt> a) FqX_Poly(int q, (char x, char a) xa)
     {

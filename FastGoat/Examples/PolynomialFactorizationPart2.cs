@@ -26,7 +26,7 @@ public static class PolynomialFactorizationPart2
         var primes = IntExt.Primes10000.Except(discPrimes).ToArray();
         var nu = Nu(f);
 
-        var rg = f.Degree.Range(2).SkipLast(2).ToArray();
+        var rg = f.Degree.Range(1).SkipLast(1).ToArray();
         var all = primes.Take(50).Grid2D(rg)
             .Select(e => (s: e.t2, p: e.t1, pow: float.Pow(e.t1, e.t2)))
             .Where(e => e.pow > 2 * nu).OrderBy(e => e.pow)
@@ -137,7 +137,7 @@ public static class PolynomialFactorizationPart2
     }
 
 
-    static KPoly<Rational>[] FirrZ(KPoly<Rational> f)
+    public static KPoly<Rational>[] FirrZ(KPoly<Rational> f)
     {
         Console.WriteLine($"f = {f}");
         var discQ = Ring.Discriminant(f).Num;

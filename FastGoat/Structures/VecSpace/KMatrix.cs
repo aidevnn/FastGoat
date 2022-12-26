@@ -3,7 +3,7 @@ using FastGoat.Commons;
 namespace FastGoat.Structures.VecSpace;
 
 public struct KMatrix<K> : IVsElt<K, KMatrix<K>>, IElt<KMatrix<K>>, IRingElt<KMatrix<K>>, IFieldElt<KMatrix<K>>
-    where K : IElt<K>, IRingElt<K>, IFieldElt<K>
+    where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
 {
     public K[,] Coefs { get; }
     public int M { get; }
@@ -351,6 +351,16 @@ public struct KMatrix<K> : IVsElt<K, KMatrix<K>>, IElt<KMatrix<K>>, IRingElt<KMa
         return new(coefs);
     }
 
+    public KMatrix<EPoly<K>> ToEMatrix(KPoly<K> f)
+    {
+        var m0 = new EPoly<K>[M, N];
+        for (int i = 0; i < M; i++)
+        for (int j = 0; j < N; j++)
+            m0[i, j] = new(f, this[i, j] * f.One);
+
+        return new(m0);
+    }
+
     public static KMatrix<K> operator /(int a, KMatrix<K> b) => b.Inv().Mul(a);
 
     public static KMatrix<K> operator +(KMatrix<K> a, K b) => a.Add(new(b, a.M, a.N));
@@ -367,4 +377,31 @@ public struct KMatrix<K> : IVsElt<K, KMatrix<K>>, IElt<KMatrix<K>>, IRingElt<KMa
 
     public static KMatrix<K> operator /(KMatrix<K> a, K b) => a.KMul(b.Inv());
 
+    public static KMatrix<FracPoly<K>> operator +(KMatrix<K> m, KMatrix<FracPoly<K>> a)
+    {
+        if (!a.Dim.Equals(m.Dim))
+            throw new ArgumentOutOfRangeException();
+
+        var m0 = new FracPoly<K>[a.M, a.N];
+        for (int i = 0; i < a.M; i++)
+        for (int j = 0; j < a.N; j++)
+            m0[i, j] = m[i, j] + a[i, j];
+
+        return new(m0);
+    }
+
+    public static KMatrix<FracPoly<K>> operator +(KMatrix<FracPoly<K>> a, KMatrix<K> m) => m + a;
+    public static KMatrix<FracPoly<K>> operator -(KMatrix<K> m, KMatrix<FracPoly<K>> a) => m + a.Opp();
+    public static KMatrix<FracPoly<K>> operator -(KMatrix<FracPoly<K>> a, KMatrix<K> m) => a + m.Opp();
+    public static KMatrix<FracPoly<K>> operator *(KMatrix<K> m, FracPoly<K> a)
+    {
+        var m0 = new FracPoly<K>[m.M, m.N];
+        for (int i = 0; i < m.M; i++)
+        for (int j = 0; j < m.N; j++)
+            m0[i, j] = m[i, j] * a;
+
+        return new(m0);
+    }
+
+    public static KMatrix<FracPoly<K>> operator *(FracPoly<K> a, KMatrix<K> m) => m * a;
 }
