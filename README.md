@@ -162,3 +162,9 @@ Algorithmes Efficaces en Calcul Formel.
 Computations with p-adic numbers. Journées Nationales de Calcul Formel, In press,
 Les cours du CIRM.
 <i>Several implementations of p-adic numbers</i>
+
+[Algebraic Factoring](https://dl.acm.org/doi/10.1145/800205.806338)
+<b>Barry Trager</b>
+Algebraic Factoring and Rational Function Integration
+Laboratory for Computer Science, HIT
+<i>Norms and Algebraic Factoring</i>
