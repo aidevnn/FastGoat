@@ -20,24 +20,31 @@ public static class PolynomialFactorizationPart2
     static IEnumerable<(int p, int s)> PSigma(KPoly<Rational> f)
     {
         var discPrimes = IntExt.PrimesDecompositionBigInt(Ring.Discriminant(f).Num)
-            .Concat(IntExt.PrimesDecomposition(f.Degree))
+            // .Concat(IntExt.PrimesDecomposition(f.Degree))
             // .Concat(f.Coefs.SelectMany(e => IntExt.PrimesDecompositionBigInt(e.Num)))
             .Distinct();
+
         var primes = IntExt.Primes10000.Except(discPrimes).ToArray();
         var nu = Nu(f);
-
-        var rg = f.Degree.Range(1).SkipLast(1).ToArray();
+        
+        var rg = f.Degree.Range(1).ToArray();
         var all = primes.Take(50).Grid2D(rg)
             .Select(e => (s: e.t2, p: e.t1, pow: float.Pow(e.t1, e.t2)))
             .Where(e => e.pow > 2 * nu).OrderBy(e => e.pow)
             .ToArray();
-
+        
         foreach (var (s, p, _) in all)
         {
             yield return (p, s);
         }
-
+        
         throw new ArgumentException("Prime not found");
+    }
+
+    static void PSigma2(KPoly<Rational> f)
+    {
+        var discPrimes = IntExt.PrimesDecompositionBigInt(Ring.Discriminant(f).Num).Distinct();
+        var p = IntExt.Primes10000.Except(discPrimes).First();
     }
 
     static KPoly<Rational> ZPoly2QPoly(KPoly<ZnBInt> f) =>
@@ -136,6 +143,48 @@ public static class PolynomialFactorizationPart2
         return listIrr.ToArray();
     }
 
+    public static KPoly<Rational>[] FirrQ(KPoly<Rational> f)
+    {
+        var m0 = f[f.Degree];
+        var f0 = f.Monic;
+        var denoms = f.Monic.Coefs.Select(e => e.Denom).Distinct().Where(e => !e.IsOne).ToArray();
+        if (denoms.Length == 0)
+            denoms = new[] { BigInteger.One, };
+
+        var gcd = IntExt.GcdBigInt(denoms);
+        var lcm = denoms.Select(e => e / gcd).Aggregate(BigInteger.One, (acc, a) => acc * a);
+        var ct = new Rational(lcm) * new Rational(gcd);
+        var f1 = f0 * ct;
+        var c = f1[f1.Degree];
+        var f2 = c.Pow(f1.Degree - 1) * f1.Substitute(f1.X / c);
+
+        if (!c.Equals(c.One))
+        {
+            Console.WriteLine($"f0 = {f}");
+            Console.WriteLine($"Monic f = {f2}");
+        }
+
+        var firr = FirrZ(f2);
+
+        if (!c.Equals(c.One))
+        {
+            var firr0 = firr.Select(g => g.Substitute(g.X * c).Monic).ToArray();
+            var m = m0 * ct.Inv() * c.Pow(f1.Degree - 1).Inv() *
+                    firr.Select(g => g.Substitute(g.X * c)[g.Degree]).Aggregate(new Rational(1), (acc, a) => a * acc);
+
+            Console.WriteLine("Finalize");
+            if (!m.Equals(m.One))
+                Console.WriteLine("Fact(f0) = {0}*{1} in Z[X]", m, firr0.Order().Glue("*", "({0})"));
+            else
+                Console.WriteLine("Fact(f0) = {0} in Z[X]", firr0.Order().Glue("*", "({0})"));
+
+            Console.WriteLine();
+
+            return firr0;
+        }
+
+        return firr;
+    }
 
     public static KPoly<Rational>[] FirrZ(KPoly<Rational> f)
     {
@@ -179,7 +228,7 @@ public static class PolynomialFactorizationPart2
         FirrZ((X.Pow(3) + 3 * X.Pow(2) + -2) * (X.Pow(3) + -5 * X.Pow(2) + 2 * X + -4));
 
         FirrZ(X.Pow(6) + 5 * X.Pow(5) + 3 * X.Pow(4) + -7 * X.Pow(3) + -3 * X.Pow(2) + 7 * X + -2);
-        
+
         // FirrZ(X.Pow(12) + 5 * X.Pow(11) + -202 * X.Pow(10) + -155 * X.Pow(9) + 11626 * X.Pow(8) + -37275 * X.Pow(7)
         //       + -33479 * X.Pow(6) + 547100 * X.Pow(5) + -560012 * X.Pow(4) + -616520 * X.Pow(3) + 351876 * X.Pow(2)
         //       + 146520 * X + -56160); // Bug

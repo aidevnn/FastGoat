@@ -17,7 +17,7 @@ public struct Fq : IGroup<EPoly<ZnInt>>
     public Fq(int q, char x = 'x')
     {
         Q = q;
-        ((int p, int m), int[] coefs) = PolynomExt.Get(Q);
+        ((int p, int m), int[] coefs) = PolynomExt.GetConwayPoly(Q);
         P = p;
         M = m;
         F = new(x, ZnInt.KZero(p), coefs.Select(i => new ZnInt(p, i)).ToArray());

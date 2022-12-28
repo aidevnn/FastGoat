@@ -55,7 +55,7 @@ public static class ConwayPolynoms
     static void MyPoly(int p, int n)
     {
         var cnPoly = GetPoly(p, n);
-        var g = PolynomExt.Get((int)Math.Pow(p, n));
+        var g = PolynomExt.GetConwayPoly((int)Math.Pow(p, n));
         var cnPoly0 = new FpPolynom(p, g.coefs);
 
         var gf = new GFp($"GF({cnPoly})", ('x', p), cnPoly.Coefs);

@@ -45,58 +45,60 @@ public static partial class Ring
     
     public static Monom<Xi> Xi(char c, int n = 1) => new Monom<Xi>(new Xi(c), n);
 
-    public static Monom<T> Monom<T>(T e) where T : struct, IElt<T>
+    public static Indeterminates<Xi> Indeterminates(params string[] xs) => new(xs.Select(s => new Xi(s)).ToArray());
+
+    public static Indeterminates<Xi> Indeterminates(params char[] xs) =>
+        Indeterminates(xs.Select(c => c.ToString()).ToArray());
+    public static Polynomial<K, Xi> Polynomial<K>(K zero, Indeterminates<Xi> indeterminates)
+        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
-        return new Monom<T>(e);
+        return new(indeterminates, zero);
+    }
+    public static Polynomial<K, Xi>[] Polynomial<K>(K zero, string[] xi)
+        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
+    {
+        var indeterminates = Indeterminates(xi);
+        return xi.Select(c => new Polynomial<K,Xi>(new Monom<Xi>(indeterminates, new(c), 1), zero.One)).ToArray();
     }
 
     public static Polynomial<K, Xi>[] Polynomial<K>(K zero, char[] xi)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
-        return xi.Select(c => Polynomial(c, zero)).ToArray();
+        return Polynomial(zero, xi.Select(c => $"{c}").ToArray());
     }
 
-    public static Polynomial<K, Xi>[] Polynomial<K>(K zero, char x0, params char[] xi)
+    public static Polynomial<K, Xi>[] Polynomial<K>(K zero, string x0, params string[] xi)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
         return Polynomial(zero, xi.Prepend(x0).ToArray());
     }
 
-    public static Polynomial<K, Xi> PolynomialZero<K>(K k0)
-        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
-    {
-        return new Polynomial<K, Xi>(k0.Zero);
-    }
-
-    public static Polynomial<K, Xi> Polynomial<K>(char x1, K zero)
-        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
-    {
-        return new Polynomial<K, Xi>(new Xi(x1), zero.One);
-    }
-
     public static Polynomial<K, Xi> Polynomial<K>(K zero)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
-        return Polynomial('X', zero);
+        return Polynomial(zero, "X")[0];
     }
 
-    public static (Polynomial<K, Xi> x1, Polynomial<K, Xi> x2) Polynomial<K>(char x1, char x2, K zero)
+    public static (Polynomial<K, Xi> x1, Polynomial<K, Xi> x2) Polynomial<K>(string x1, string x2, K zero)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
-        return (Polynomial(x1, zero), Polynomial(x2, zero));
+        var polys = Polynomial(zero, x1, x2);
+        return (polys[0], polys[1]);
     }
 
     public static (Polynomial<K, Xi> x1, Polynomial<K, Xi> x2, Polynomial<K, Xi> x3)
-        Polynomial<K>(char x1, char x2, char x3, K zero)
+        Polynomial<K>(string x1, string x2, string x3, K zero)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
-        return (Polynomial(x1, zero), Polynomial(x2, zero), Polynomial(x3, zero));
+        var polys = Polynomial(zero, x1, x2, x3);
+        return (polys[0], polys[1], polys[2]);
     }
     
     public static (Polynomial<K, Xi> x1, Polynomial<K, Xi> x2, Polynomial<K, Xi> x3, Polynomial<K, Xi> x4)
-        Polynomial<K>(char x1, char x2, char x3, char x4, K zero)
+        Polynomial<K>(string x1, string x2, string x3, string x4, K zero)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
-        return (Polynomial(x1, zero), Polynomial(x2, zero), Polynomial(x3, zero), Polynomial(x4, zero));
+        var polys = Polynomial(zero, x1, x2, x3, x4);
+        return (polys[0], polys[1], polys[2], polys[3]);
     }
 }

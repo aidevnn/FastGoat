@@ -466,8 +466,8 @@ public static partial class Ring
 
         var (decF, bsF) = Decompose(f, ft);
         var (decG, bsG) = Decompose(g, gt);
-        var m = decF.First().Key.DegreeOf(ft);
-        var n = decG.First().Key.DegreeOf(gt);
+        var m = decF.Last().Key.DegreeOf(ft);
+        var n = decG.Last().Key.DegreeOf(gt);
         var S = new Polynomial<K, T>[m + n, m + n];
         for (int i = 0; i < m + n; i++)
         {

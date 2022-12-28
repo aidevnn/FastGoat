@@ -209,7 +209,7 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
 
     public override string ToString()
     {
-        var xi = Ring.Polynomial(x, KZero);
+        var xi = Ring.Polynomial(KZero, $"{x}")[0];
         var fx = Coefs.Select((k, i) => k * xi.Pow(i)).Aggregate((a, b) => a + b);
         return $"{fx}";
     }

@@ -32,11 +32,26 @@ public static class AlgebraicFactorization
         return KMatrix<K>.MergeSameRows(vs);
     }
 
-    static void CharacPoly<K>(EPoly<K> b) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    static  KMatrix<FracPoly<EPoly<K>>> MatrixEndo<K>(EPoly<K> b) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var x = FG.KFracPoly('x', b);
         var mb = Endo(b).ToEMatrix(b.F);
         var P = mb - x * mb.One;
+        return P;
+    }
+
+    public static (EPoly<K> Tr, EPoly<K> Norm) TraceNorm<K>(EPoly<K> b)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var mb = Endo(b).ToEMatrix(b.F);
+        var norm = mb.Det;
+        var tr = mb.Trace;
+        return (tr, norm);
+    }
+
+    public static void CharacPoly<K>(EPoly<K> b) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var P = MatrixEndo(b);
 
         Console.WriteLine($"With {b.F} = 0");
         Console.WriteLine($"X0 = {b}");
@@ -52,7 +67,7 @@ public static class AlgebraicFactorization
         Console.WriteLine();
     }
 
-    static KPoly<K> Norm<K>(KPoly<EPoly<K>> A, char c = 'x') where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    public static KPoly<K> Norm<K>(KPoly<EPoly<K>> A, char c = 'x') where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var n = A.Degree;
         var g0 = A[0].F;
@@ -81,7 +96,8 @@ public static class AlgebraicFactorization
         var sep2 = sep.Select(e => (e.i, e.g.Substitute(norm.X.Pow(e.q))))
             .Select(e => e.i == 1 ? $"({e.Item2})" : $"({e.Item2})^{e.i}").Glue(" * ");
 
-        Console.WriteLine($"Norm(P) = f = {sep2} = [{norm}]");
+        var pow = sep.Select(e => norm.X.Pow(e.q)).Glue(fmt: "({0})");
+        Console.WriteLine($"Norm(P) = f = {sep2} = [{norm}]{pow}");
 
         var f2 = norm.Coefs.Select((e, i) => (A.KOne * e) * A.X.Pow(i)).Aggregate((a, b) => a + b);
         var (q, r) = f2.Div(A);
@@ -90,7 +106,7 @@ public static class AlgebraicFactorization
     }
 
     // Barry Trager, Algebraic Factoring
-    static (int s, KPoly<EPoly<K>> g, KPoly<K> r) SqfrNorm<K>(KPoly<EPoly<K>> f, char c = 'X')
+    public static (int s, KPoly<EPoly<K>> g, KPoly<K> r) SqfrNorm<K>(KPoly<EPoly<K>> f, char c = 'X')
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var a = f[0].X;
@@ -116,7 +132,7 @@ public static class AlgebraicFactorization
     }
 
     // Barry Trager, Algebraic Factoring
-    static List<(KPoly<EPoly<Rational>> hi, int i, int q)> AlgebraicFactors(KPoly<EPoly<Rational>> f, char c = 'X')
+    public static List<(KPoly<EPoly<Rational>> hi, int i, int q)> AlgebraicFactors(KPoly<EPoly<Rational>> f, char c = 'X')
     {
         Console.WriteLine("############# START Algebraic Factors #############");
         var (s, g, r) = SqfrNorm(f);
@@ -129,7 +145,7 @@ public static class AlgebraicFactorization
         var k = 0;
         foreach (var (h0, q, i) in sepFactors)
         {
-            var hs = PolynomialFactorizationPart2.FirrZ(h0);
+            var hs = PolynomialFactorizationPart2.FirrQ(h0);
             foreach (var h1 in hs)
             {
                 var h2 = h1.Substitute(x);
@@ -144,7 +160,8 @@ public static class AlgebraicFactorization
         }
 
         var prod = L.Aggregate(g.One, (acc, h) => acc * h.hi);
-        Console.WriteLine(new { prod });
+        var seq = L.Select(h => h.hi).Glue(" * ", "({0})");
+        Console.WriteLine($"{prod} = {seq}");
         Console.WriteLine("#############  END  Algebraic Factors #############");
         Console.WriteLine();
 
@@ -195,11 +212,13 @@ public static class AlgebraicFactorization
 
     public static void AlgFactorization()
     {
+        Monom.Display = MonomDisplay.Caret;
         {
             var i = FG.EQPoly('i', 1, 0, 1);
             var x = FG.KPoly('x', i);
             var A = x.Pow(4) - x.Pow(2) - 2;
             AlgebraicFactors(A);
+            // x^4 + -x^2 + -2 = (x + -i) * (x + i) * (x^2 + -2)
         }
 
         {
@@ -208,7 +227,9 @@ public static class AlgebraicFactorization
             var f = x.Pow(3) - 3 * x - 1;
             Console.WriteLine($"f={f}; A = f/(x-a) = {f.Div(x - a)}");
             var A = f / (x - a);
-            AlgebraicFactors(A);
+            AlgebraicFactors(f);
+            // x^3 + -3·x + -1 = (x + a^2 + -2) * (x + -a) * (x + -a^2 + a + 2)
+
         }
 
         {
@@ -216,6 +237,7 @@ public static class AlgebraicFactorization
             var x = FG.KPoly('x', a);
             var A = x.Pow(2) - 5;
             AlgebraicFactors(A);
+            // x^2 + -5 = (x + 2·a^3 + 2·a^2 + 1) * (x + -2·a^3 + -2·a^2 + -1)
         }
         
         {
@@ -223,6 +245,16 @@ public static class AlgebraicFactorization
             var x = FG.KPoly('x', a);
             var A = x.Pow(3) + 3 * x.Pow(2) + 3 * x - 1;
             AlgebraicFactors(A);
+            // x^3 + 3·x^2 + 3·x + -1 = (x + -a + 1) * (x^2 + (a + 2)·x + a^2 + a + 1)
         }
+        
+        {
+            var i = FG.EQPoly('i', 1, 0, 1);
+            var x = FG.KPoly('x', i);
+            var A = x.Pow(4) + 25 * x.Pow(2) + 50 * x + 25;
+            AlgebraicFactors(A);
+            // x^4 + 25·x^2 + 50·x + 25 = (x^2 + -5·i·x + -5·i) * (x^2 + 5·i·x + 5·i)
+        }
+
     }
 }

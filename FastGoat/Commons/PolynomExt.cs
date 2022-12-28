@@ -4,8 +4,8 @@ public static class PolynomExt
 {
     static PolynomExt()
     {
-        All = new();
-        foreach (var str in Table)
+        AllConwayPolys = new();
+        foreach (var str in ConwayPolysTable)
         {
             var split = str.Split(':');
             var pm = split[0].Split(',').Select(int.Parse).ToArray();
@@ -13,16 +13,16 @@ public static class PolynomExt
 
             var p = pm[0];
             var m = pm[1];
-            if (!All.ContainsKey(p))
-                All[p] = new();
+            if (!AllConwayPolys.ContainsKey(p))
+                AllConwayPolys[p] = new();
 
-            All[p][m] = coefs;
+            AllConwayPolys[p][m] = coefs;
         }
     }
 
-    private static Dictionary<int, Dictionary<int, int[]>> All;
+    private static readonly Dictionary<int, Dictionary<int, int[]>> AllConwayPolys;
 
-    public static ((int p, int m) pm, int[] coefs) Get(int q)
+    public static ((int p, int m) pm, int[] coefs) GetConwayPoly(int q)
     {
         var pm = IntExt.PrimesDecomposition(q).ToArray();
         if (pm.Distinct().Count() != 1)
@@ -30,12 +30,12 @@ public static class PolynomExt
 
         var p = pm[0];
         var m = pm.Length;
-        return ((p, m), All[p][m]);
+        return ((p, m), AllConwayPolys[p][m]);
     }
 
     public static (int d, int[] coefs)[] GetAll(int p)
     {
-        return All[p].Select(e => (e.Key, e.Value)).ToArray();
+        return AllConwayPolys[p].Select(e => (e.Key, e.Value)).ToArray();
     }
 
     public static string PolyStr(char x, string prev, int n, int v)
@@ -124,7 +124,7 @@ public static class PolynomExt
     }
 
     // http://www.math.rwth-aachen.de/~Frank.Luebeck/data/ConwayPol/index.html
-    static readonly string[] Table = new[]
+    static readonly string[] ConwayPolysTable = new[]
     {
         "2,1:1,1",
         "2,2:1,1,1",

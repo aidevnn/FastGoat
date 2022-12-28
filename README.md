@@ -1,5 +1,5 @@
 # FastGoat
-What C# can do for studying Finite Groups, abelians or not, quotient groups, cartesian products, direct products, semi-direct products and many more...
+What C# can do for studying Finite Groups, abelians or not, quotient groups, direct products or semi-direct products, homomorphisms, automorphisms group, with minimalistic manipulations for rings, fields, numbers, polynomials factoring, field extensions, algebraics numbers and many more...
 
 ## Example
 Searching semi-direct product $C_7 \rtimes C_3$ in $\textbf{S}_7$
@@ -116,7 +116,7 @@ NormalGroup |N| = 7
 <b>Daniel Guin, Thomas Hausberger.</b>
 ALGÈBRE T1 Groupes, corps et théorie de Galois.
 EDP Sciences.
-<i>Premiere Partie.</i>
+<i>All Chapters.</i>
 
 [Algebra (3rd ed.)](https://bookstore.ams.org/chel-330/)
 <b>Saunders MacLane, Garrett Birkhoff.</b>
@@ -166,5 +166,5 @@ Les cours du CIRM.
 [Algebraic Factoring](https://dl.acm.org/doi/10.1145/800205.806338)
 <b>Barry Trager</b>
 Algebraic Factoring and Rational Function Integration
-Laboratory for Computer Science, HIT
+Laboratory for Computer Science, MIT
 <i>Norms and Algebraic Factoring</i>

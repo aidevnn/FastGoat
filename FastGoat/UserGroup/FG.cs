@@ -13,6 +13,30 @@ namespace FastGoat.UserGroup;
 
 public static partial class FG
 {
+    private static Dictionary<int, KPoly<Rational>> CyclotomicPolynomials { get; }
+
+    static FG()
+    {
+        var x = QPoly('X');
+        CyclotomicPolynomials = new() { [1] = x - 1 };
+    }
+
+    public static KPoly<Rational> CyclotomicPolynomial(int k)
+    {
+        if (CyclotomicPolynomials.ContainsKey(k))
+            return CyclotomicPolynomials[k];
+
+        var x = QPoly('X');
+        var divs = IntExt.Dividors(k);
+        var prod = x.One;
+        foreach (var k0 in divs)
+            prod *= CyclotomicPolynomial(k0); // Recursion
+        
+        var poly = x.Pow(k) - 1;
+        var phi = CyclotomicPolynomials[k] = poly / prod; // Memoization
+        return phi;
+    }
+    
     public static ConcreteGroup<Perm> Symmetric(int n) => new Symm(n);
 
     public static ConcreteGroup<Perm> Alternate(int n)

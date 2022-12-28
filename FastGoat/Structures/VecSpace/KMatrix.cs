@@ -238,6 +238,21 @@ public struct KMatrix<K> : IVsElt<K, KMatrix<K>>, IElt<KMatrix<K>>, IRingElt<KMa
 
     public K Det => Ring.DeterminantByPivot(Coefs);
 
+    public K Trace
+    {
+        get
+        {
+            if (M != N)
+                throw new ArgumentException();
+
+            var acc = KZero;
+            for (int i = 0; i < M; i++)
+                acc += Coefs[i, i];
+
+            return acc;
+        }
+    }
+
     public override int GetHashCode() => Hash;
 
     public override string ToString()
