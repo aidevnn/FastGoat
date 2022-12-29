@@ -198,7 +198,7 @@ public static class PolynomialFactorizationPart2
             {
                 return HenselLifting(f, p, o);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 Console.WriteLine($"#### Prime {p} and Sigma {o} wont work ####");
             }

@@ -131,11 +131,6 @@ public static class EnumerableExt
             .Select(comb => comb.Zip(seq).Where(e => e.First).Select(e => e.Second));
     }
 
-    public static IEnumerable<(T1, T2)> MultiLoop<T1, T2>(IEnumerable<T1> t1s, IEnumerable<T2> t2s)
-    {
-        return t1s.SelectMany(t1 => t2s.Select(t2 => (t1, t2)));
-    }
-
     public static IEnumerable<IEnumerable<T>> MultiLoop<T>(this IEnumerable<IEnumerable<T>> enumerables)
     {
         if (!enumerables.Any())
@@ -174,6 +169,22 @@ public static class EnumerableExt
     }
 
     public static IEnumerable<(T t1, T t2)> Grid2D<T>(this T[] seq) => seq.Grid2D(seq);
+    
+    public static IEnumerable<(T1 t1, T2 t2, T3 t3)> Grid3D<T1, T2, T3>(this IEnumerable<T1> first, IEnumerable<T2> second,IEnumerable<T3> third)
+    {
+        foreach (var t1 in first)
+        {
+            foreach (var t2 in second)
+            {
+                foreach (var t3 in third)
+                {
+                    yield return (t1, t2, t3);
+                }
+            }
+        }
+    }
+    
+    public static IEnumerable<(T t1, T t2, T t3)> Grid3D<T>(this T[] seq) => Grid3D(seq, seq, seq);
 }
 
 public class SetEquality<T> : EqualityComparer<HashSet<T>> where T : IEquatable<T>

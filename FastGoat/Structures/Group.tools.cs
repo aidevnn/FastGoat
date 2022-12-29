@@ -133,12 +133,12 @@ public static partial class Group
         return all.Select((set, i) => Generate($"{h.Name}[{i}]", g, set.ToArray())).ToList();
     }
 
-    public static ConcreteGroup<T1>? IsomorphicSubgroup<T1, T2>(ConcreteGroup<T1> g, ConcreteGroup<T2> sg, string name)
+    public static ConcreteGroup<T1> IsomorphicSubgroup<T1, T2>(ConcreteGroup<T1> g, ConcreteGroup<T2> sg, string name)
         where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
     {
         var iso = Group.AllMorphisms(sg, g, MorphismType.Isomorphism).FirstOrDefault();
         if (iso.HomMap is null)
-            return null;
+            throw new GroupException(GroupExceptionType.GroupDef);
         
         return Generate($"{name}", g, iso.Image().ToArray());
     }

@@ -197,6 +197,15 @@ namespace FastGoat.Commons
             return GcdBigInt(arr.First(), GcdBigInt(arr.Skip(1).ToArray()));
         }
 
+        public static BigInteger LcmBigInt(BigInteger a, BigInteger b) => (a * b) / BigInteger.GreatestCommonDivisor(a, b);
+        public static BigInteger LcmBigInt(BigInteger[] arr)
+        {
+            if (!arr.Any())
+                return 1;
+
+            return LcmBigInt(arr.First(), LcmBigInt(arr.Skip(1).ToArray()));
+        }
+
         // wikipedia
         public static (BigInteger Xa, BigInteger Xb, BigInteger Gcd) BezoutBigInt(BigInteger a, BigInteger b)
         {

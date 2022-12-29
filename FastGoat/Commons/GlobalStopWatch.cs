@@ -22,4 +22,13 @@ public static class GlobalStopWatch
         sw.Stop();
         Console.WriteLine($"# {label} Time:{sw.ElapsedMilliseconds} ms");
     }
+
+    private static int ct = 0;
+
+    public static void InfiniteLoopBreaker(int n)
+    {
+        ++ct;
+        if (ct > n)
+            throw new ArgumentException("################## Infinite Loop breaker");
+    }
 }

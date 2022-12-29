@@ -7,7 +7,7 @@ using FastGoat.UserGroup.Integers;
 
 namespace FastGoat.UserGroup.Polynoms;
 
-file readonly struct CyclotomicGroupBase<K> : IGroup<EPoly<K>> where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+public readonly struct CyclotomicGroupBase<K> : IGroup<EPoly<K>> where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
 {
     public int N { get; }
     private EPoly<K> Zeta { get; }
@@ -77,14 +77,31 @@ file readonly struct CyclotomicGroupBase<K> : IGroup<EPoly<K>> where K : struct,
 
 public class NthRootQ : ConcreteGroup<EPoly<Rational>>
 {
-    public NthRootQ(int n) : base(new CyclotomicGroupBase<Rational>(Rational.KZero(), n, "Q"))
+    public NthRootQ(int n) : this(new CyclotomicGroupBase<Rational>(Rational.KZero(), n, "Q"))
     {
     }
+
+    private NthRootQ(CyclotomicGroupBase<Rational> cg) : base(cg)
+    {
+        CG = cg;
+    }
+    public CyclotomicGroupBase<Rational> CG { get; }
+    public int N => CG.N;
+
+    public EPoly<Rational>[] PrimitivesRoots() => ElementsOrders.Where(e => e.Value == N).Select(e => e.Key).ToArray();
 }
 
 public class NthRootFq : ConcreteGroup<EPoly<EPoly<ZnInt>>>
 {
-    public NthRootFq(int n, int q) : base(new CyclotomicGroupBase<EPoly<ZnInt>>(FG.FqX(q, 'α'), n, $"F{q}"))
+    public NthRootFq(int n, int q) : this(new CyclotomicGroupBase<EPoly<ZnInt>>(FG.FqX(q, 'α'), n, $"F{q}"))
     {
     }
+    
+    private NthRootFq(CyclotomicGroupBase<EPoly<ZnInt>> cg) : base(cg)
+    {
+        CG = cg;
+    }
+    public CyclotomicGroupBase<EPoly<ZnInt>> CG { get; }
+    public int N => CG.N;
+    public EPoly<EPoly<ZnInt>>[] PrimitivesRoots() => ElementsOrders.Where(e => e.Value == N).Select(e => e.Key).ToArray();
 }

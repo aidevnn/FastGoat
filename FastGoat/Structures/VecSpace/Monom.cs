@@ -74,8 +74,17 @@ public readonly struct Monom<T> : IElt<Monom<T>> where T : struct, IElt<T>
         Indeterminates = indeterminates;
         Content = content;
         Degree = content.Sum(e => e.Value);
-        Hash = content.Aggregate(Indeterminates.Hash, (acc, a) => (acc, (a.Key, a.Value)).GetHashCode());
+        Hash = Indeterminates.Hash;
+        foreach (var t in Indeterminates)
+        {
+            if(!content.ContainsKey(t))
+                continue;
+
+            Hash = (Hash, (t.Hash, content[t])).GetHashCode();
+        }
     }
+
+    public bool IsOne => Content.Count == 0;
 
     public Monom<T> Mul(Monom<T> g)
     {
@@ -175,7 +184,7 @@ public readonly struct Monom<T> : IElt<Monom<T>> where T : struct, IElt<T>
     {
         var sep = (Monom.Display & MonomDisplay.Star) == MonomDisplay.Star ? "*" :
             (Monom.Display & MonomDisplay.Dot) == MonomDisplay.Dot ? "." : "";
-        
+
         if ((Monom.Display & MonomDisplay.Caret) == MonomDisplay.Caret)
             return Content.OrderBy(e => e.Key).Select(kp => kp.Value == 1 ? $"{kp.Key}" : $"{kp.Key}^{kp.Value}")
                 .Glue(sep);
@@ -200,6 +209,42 @@ public readonly struct Monom<T> : IElt<Monom<T>> where T : struct, IElt<T>
     }
 
     private static string superscripts = "⁰¹²³⁴⁵⁶⁷⁸⁹";
+
+
+    public static Monom<T> Gcd(Monom<T> a, Monom<T> b)
+    {
+        if (!a.Indeterminates.Equals(b.Indeterminates))
+            throw new ArgumentException();
+
+        var content = a.Indeterminates.Select(e => (e, k: Int32.Min(a[e], b[e]))).Where(e => e.k != 0)
+            .ToDictionary(e => e.e, e => e.k);
+
+        return new(a.Indeterminates, content);
+    }
+
+    public static (Monom<T> pa, Monom<T>pb) Reduce(Monom<T> a, Monom<T> b)
+    {
+        if (!a.Indeterminates.Equals(b.Indeterminates))
+            throw new ArgumentException();
+
+        var da = new Dictionary<T, int>();
+        var db = new Dictionary<T, int>();
+        foreach (var t in a.Indeterminates)
+        {
+            var at = a[t];
+            var bt = b[t];
+            var mx = Int32.Max(at, bt);
+            if (mx == 0 || at == bt)
+                continue;
+
+            if (mx == bt)
+                da[t] = mx - at;
+            else
+                db[t] = mx - bt;
+        }
+
+        return (new(a.Indeterminates, da), new(a.Indeterminates, db));
+    }
 }
 
 [Flags]

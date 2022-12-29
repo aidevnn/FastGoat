@@ -34,6 +34,11 @@ public readonly struct Valuation : IEquatable<Valuation>, IComparable<Valuation>
     public bool Equals(Valuation other) =>
         (IsInfinity && other.IsInfinity) || (!IsInfinity && !other.IsInfinity && v == other.v);
 
+    public override bool Equals(object? obj)
+    {
+        return obj is Valuation other && Equals(other);
+    }
+
     public int CompareTo(Valuation other)
     {
         if (Equals(other))

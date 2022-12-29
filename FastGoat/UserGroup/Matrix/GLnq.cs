@@ -154,7 +154,6 @@ public class GLnq : IGroup<MatFq>
         var c = new EPoly<ZnInt>[a.Length];
         var maxDegree = a.Max(e => e.Poly.Degree) + b.Max(e => e.Poly.Degree) + 1;
         var sum0 = new KPoly<ZnInt>(Fq.F.x, Fq.F.KZero, Enumerable.Repeat(Fq.F.KZero, maxDegree).ToArray());
-        int hash = 0;
         for (int i = 0; i < aRows; i++)
         {
             for (int j = 0; j < bCols; j++)

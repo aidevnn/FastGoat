@@ -411,11 +411,11 @@ public static partial class Ring
         Console.WriteLine(Matrix2String(mat, sep));
     }
 
-    public static Polynomial<K, T>[] PolyBase<K, T>(K zero, T t, int n)
+    public static Polynomial<K, T>[] PolyBase<K, T>(Polynomial<K, T> f, T t, int n)
         where T : struct, IElt<T>
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
-        var ft = new Polynomial<K, T>(t, zero.One);
+        var ft = new Polynomial<K, T>(new Monom<T>(f.Indeterminates, t), f.KOne);
         var seq = new Stack<Polynomial<K, T>>(new[] { ft.One });
         while (seq.Count <= n)
         {
@@ -432,7 +432,7 @@ public static partial class Ring
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
         var n = f.DegreeOf(ft);
-        var baseFt = PolyBase(f.KZero, ft, n);
+        var baseFt = PolyBase(f, ft, n);
         var rem = f;
         var coefs = new SortedList<Polynomial<K, T>, Polynomial<K, T>>();
         var bs = new SortedList<int, Polynomial<K, T>>();

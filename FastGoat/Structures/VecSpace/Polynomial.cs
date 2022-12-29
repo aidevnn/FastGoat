@@ -76,7 +76,20 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
     public Polynomial<K, T> One => new(Indeterminates, KZero.One);
     public Polynomial<K, T> LeadingCoeff => IsZero() ? One : new(Indeterminates, Coefs.Last().Value);
 
-    public (Polynomial<K, T> lc, Polynomial<K, T> lm, Polynomial<K, T> lt) LeadingDetails
+    public Polynomial<K, T> Substitute(Polynomial<K, T> f, T xi)
+    {
+        var poly = Zero;
+        foreach (var (m, c) in Coefs)
+        {
+            var (n, m1) = m.Remove(xi);
+            var p0 = new Polynomial<K, T>(m1, c);
+            poly += p0 * f.Pow(n);
+        }
+
+        return poly;
+    }
+
+    public (K lc, Monom<T> lm, Polynomial<K, T> lt) LeadingDetails
     {
         get
         {
@@ -85,10 +98,7 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
 
             var kp = Coefs.Last();
             var lt = new SortedList<Monom<T>, K>() { [kp.Key] = kp.Value };
-            var lm = new SortedList<Monom<T>, K>() { [kp.Key] = KOne };
-            var lc = new SortedList<Monom<T>, K>() { [new(Indeterminates)] = kp.Value };
-            return (new(Indeterminates, KZero, lc), new(Indeterminates, KZero, lm),
-                new(Indeterminates, KZero, lt));
+            return (kp.Value, kp.Key, new(Indeterminates, KZero, lt));
         }
     }
 
@@ -133,16 +143,18 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
 
     public int DegreeOf(T t) => Coefs.Max(e => e.Key.DegreeOf(t));
 
-    public Polynomial<K, T> Monic() => IsZero() ? this : this.KMul(Coefs.First().Value.Inv());
+    public Polynomial<K, T> Monic() => IsZero() ? this : this.KMul(LeadingDetails.lc.Inv());
 
     public Polynomial<K, T> CoefMax(T t)
     {
         var n = DegreeOf(t);
         var xi = new Monom<T>(Indeterminates, t, n);
         var k0 = KZero;
-        return Coefs.Where(e => e.Key.Div(xi).HasValue)
-            .Select(e => new Polynomial<K, T>(xi.Indeterminates, k0, new() { [e.Key.Div(xi).Value] = e.Value }))
-            .Aggregate((a, b) => a.Add(b));
+        var coefMax = Coefs.Select(e => (e, Monom<T>.Reduce(e.Key, xi))).Where(e => e.Item2.pa.IsOne)
+            .Select(e => new Polynomial<K, T>(xi.Indeterminates, k0, new() { [e.Item2.pb] = e.e.Value }))
+            .Aggregate(Zero, (acc, a) => acc + a);
+        
+        return coefMax;
     }
 
     public Polynomial<K, T> Sub(Polynomial<K, T> e)
@@ -222,13 +234,14 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
         {
             var (alm, alc) = (rem.Coefs.Keys[k], rem.Coefs.Values[k]);
             var mnm = alm.Div(elm);
-            if (!mnm.HasValue)
+            var (mnm0, mnm1) = Monom<T>.Reduce(alm, elm);
+            if (!mnm0.IsOne)
             {
                 --k;
                 continue;
             }
-            
-            var m = mnm.Value;
+
+            var m = mnm1; //mnm.Value;
             var (q, r) = alc.Div(elc);
             if (!r.IsZero())
                 break;
@@ -242,45 +255,7 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
         
         return (new(Indeterminates, KZero, quo), rem);
     }
-    
-    public (Polynomial<K, T> quo, Polynomial<K, T> rem) DivBak(Polynomial<K, T> e)
-    {
-        if (e.IsZero())
-            throw new DivideByZeroException();
 
-        if (e.Coefs.Keys.SelectMany(a => a.ContentIndeterminates).Distinct().Count() > 1)
-            throw new GroupException(GroupExceptionType.GroupDef);
-
-        var rem = new Polynomial<K, T>(Indeterminates, KZero, new(Coefs));
-        var coefs = new Stack<KeyValuePair<Monom<T>, K>>(rem.Coefs);
-        SortedList<Monom<T>, K> quo = new();
-        var em = e.Coefs.Last();
-        while (coefs.Count != 0)
-        {
-            var am = coefs.Pop();
-            if (am.Key.Degree < em.Key.Degree)
-                break;
-
-            var mnm = am.Key.Div(em.Key);
-            if (!mnm.HasValue)
-                continue;
-
-            var m = mnm.Value;
-            var qr = am.Value.Div(em.Value);
-            if (!qr.rem.IsZero())
-                break;
-
-            var p = new Polynomial<K, T>(Indeterminates, KZero, new() { [m] = qr.quo });
-            rem = rem.Sub(e.Mul(p));
-            quo[m] = qr.quo;
-            coefs = new Stack<KeyValuePair<Monom<T>, K>>(rem.Coefs);
-            if (rem.IsZero())
-                break;
-        }
-
-        return (new(Indeterminates, KZero, quo), rem);
-    }
-    
     public Polynomial<K, T> KMul(K k)
     {
         SortedList<Monom<T>, K> coefs = new(Coefs.ToDictionary(a => a.Key, a => a.Value.Mul(k)));
