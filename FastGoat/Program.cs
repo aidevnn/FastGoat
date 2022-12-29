@@ -27,66 +27,132 @@ using FastGoat.UserGroup.Padic;
 
 Console.WriteLine("Hello World");
 
-
+Polynomial<Rational, Xi> Simplify(Polynomial<Rational, Xi> f)
 {
-    Monom.Display = MonomDisplay.DotSuperscript;
-    var (x1, x2, x3, x4) = Ring.Polynomial("X1", "X2", "X3", "X4", ZnInt.KZero());
-    var lt = new[] { x1, x2 * x4, x3 };
-    
-    x1.Indeterminates.SetOrder(MonomOrder.Lex);
-    Console.WriteLine(lt.Order().Glue(" < ", "{0,5}"));
-    x1.Indeterminates.SetOrder(MonomOrder.RevLex);
-    Console.WriteLine(lt.Order().Glue(" < ", "{0,5}"));
-    Console.WriteLine();
+    var gcdNum = IntExt.GcdBigInt(f.Coefs.Where(c => !c.Value.IsZero()).Select(c => c.Value.Num).ToArray());
+    var gcdDenom = IntExt.GcdBigInt(f.Coefs.Where(c => !c.Value.IsZero()).Select(c => c.Value.Denom).ToArray());
+    var r = new Rational(gcdDenom, gcdNum);
+    return f * r;
 }
 
-{
-    Monom.Display = MonomDisplay.DotSuperscript;
-    var n = 3;
-    var xs = Ring.Polynomial(ZnInt.KZero(), n.Range(1).Select(i => $"X{i}").ToArray());
-    var lt = Partitions32[n].Select(l => l.Concat(Enumerable.Repeat(0, n - l.Count)).ToArray())
-        .SelectMany(l => GetPermutations(n).Select(p => p.Select(i => l[i - 1]).ToArray()))
-        .Distinct(new SequenceEquality<int>())
-        .Select(l => l.Select((c, i) => xs[i].Pow(c)).Aggregate((a, b) => a * b)).ToArray();
-    
-    xs[0].Indeterminates.SetOrder(MonomOrder.GrLex);
-    Console.WriteLine(lt.Order().Glue(" < ", "{0,8}"));
-    xs[0].Indeterminates.SetOrder(MonomOrder.GrevLex);
-    Console.WriteLine(lt.Order().Glue(" < ", "{0,8}"));
-    Console.WriteLine();
-}
+//
+// {
+//     var (X, Y, Z, T) = Ring.Polynomial("X", "Y", "Z", "T", Rational.KZero());
+//     X.Indeterminates.SetOrder(MonomOrder.Lex);
+//     var g1 = 2 * X * Y - X * Z;
+//     var g2 = X.Pow(2);
+//     var g3 = X.Pow(2) * Z;
+//     Console.WriteLine(new { g1, g2, g3 });
+//     Console.WriteLine("X * g1 - 2 * Y * g = -g3 , X * Z * g1 - 2 * Y * g3 = -Z * g3 , Z * g2 - g3 = 0");
+//     Console.WriteLine($"{X * g1 - 2 * Y * g2} = {-g3} , {X * Z * g1 - 2 * Y * g3} = {-Z * g3} , {Z * g2 - g3}");
+//
+//     SyzygieLcm(g1, g2);
+//     SyzygieLcm(g1, g3);
+//     SyzygieLcm(g2, g3);
+// }
 
 {
-    var (x, y) = Ring.Polynomial("X", "Y", Rational.KZero());
-    var f = y * x.Pow(2) - x;
-    var g1 = y * x - 1;
-    var g2 = x.Pow(2);
-    Console.WriteLine(new { f, g1, g2 });
+    Monom.Display = MonomDisplay.StarCaret;
+    var xis = Ring.Polynomial(Rational.KZero(), "x", "y", "z");
+    var x = xis[0];
+    x.Indeterminates.SetOrder(MonomOrder.Lex);
     Console.WriteLine(x.Indeterminates);
-    Console.WriteLine(f.Div(g1));
-    Console.WriteLine(f.Div(g2));
+    var all = 3.Range().Grid3D().Select(e => xis[0].Pow(e.t1) * xis[1].Pow(e.t2) * xis[2].Pow(e.t3)).Ascending().ToArray();
+    Console.WriteLine(all.Glue(", "));
+}
+
+{
+    Monom.Display = MonomDisplay.StarCaret;
+    var xis = Ring.Polynomial(Rational.KZero(), "x", "y", "z");
+    var x = xis[0];
+    x.Indeterminates.SetOrder(MonomOrder.GrLex);
+    Console.WriteLine(x.Indeterminates);
+    var all = 3.Range().Grid3D().Select(e => xis[0].Pow(e.t1) * xis[1].Pow(e.t2) * xis[2].Pow(e.t3)).Ascending().ToArray();
+    Console.WriteLine(all.Glue(", "));
+}
+
+{
+    Monom.Display = MonomDisplay.StarCaret;
+    var xis = Ring.Polynomial(Rational.KZero(), "x", "y", "z");
+    var x = xis[0];
+    x.Indeterminates.SetOrder(MonomOrder.GrevLex);
+    Console.WriteLine(x.Indeterminates);
+    var all = 3.Range().Grid3D().Select(e => xis[0].Pow(e.t1) * xis[1].Pow(e.t2) * xis[2].Pow(e.t3)).Ascending().ToArray();
+    Console.WriteLine(all.Glue(", "));
+}
+
+{
+    var (X, Y) = Ring.Polynomial("X", "Y", Rational.KZero());
+    var f = X.Pow(4) + 3 * X - 7 * X * Y.Pow(2) - 3;
+    var g = Y.Pow(3) + X * Y - Y + 2;
+    var h = f * g + 4 * X * Y.Pow(2) - X * X * Y + 5;
+    Console.WriteLine(h);
+    var (x1, x2) = (X.Indeterminates[0], X.Indeterminates[1]);
+    Console.WriteLine(X.Indeterminates);
+    Console.WriteLine(h.CoefMax(x1));
+    Console.WriteLine(h.CoefMax(x2));
+    Console.WriteLine(f.LeadingDetails);
+    Console.WriteLine(g.LeadingDetails);
+    Console.WriteLine(h.LeadingDetails);
+    Console.WriteLine();
+
+    Console.WriteLine(h.Div(f));
+    Console.WriteLine(h.Div(g));
+}
+
+{
+    var (X, Y, Z, T) = Ring.Polynomial("X", "Y", "Z", "T", Rational.KZero());
+    X.Indeterminates.SetOrder(MonomOrder.Lex);
+    // X + Y - Z, X2 - 2T2 , Y2 - 5T2
+    var (p1, p2, p3) = (X + Y - Z, X.Pow(2) - 2 * T.Pow(2), Y.Pow(2) - 5 * T.Pow(2));
+    var bs = Ring.GroebnerBase(p1, p2, p3);
+    Console.WriteLine(bs.Select(Simplify).Glue("; "));
     Console.WriteLine();
 }
 
 {
-    var x = Ring.Polynomial(Rational.KZero());
-    var ords = new[] { MonomOrder.Lex, MonomOrder.GrLex, MonomOrder.RevLex, MonomOrder.GrevLex };
-    
-    foreach (var o in ords)
-    {
-        x.Indeterminates.SetOrder(o);
-        Console.WriteLine(x.Indeterminates);
-        var X = x.Indeterminates[0];
-        var f = 2 * x.Pow(3) + 3 * x + 1;
-        var g = 7 * x.Pow(2) + x + 3;
-        var h = f * g;
-        Console.WriteLine(new { f, g, h });
-        Console.WriteLine(new { ldf = f.LeadingDetails, ldg = g.LeadingDetails, ldh = h.LeadingDetails });
-        Console.WriteLine(h.Div(g));
-        Console.WriteLine(h.Div(f));
-        Console.WriteLine(f.D(X));
-        Console.WriteLine(g.D(X));
-        Console.WriteLine(f.Div(x.Pow(2)));
-        Console.WriteLine();
-    }
+    var (X, Y, Z, T) = Ring.Polynomial("X", "Y", "Z", "T", Rational.KZero());
+    X.Indeterminates.SetOrder(MonomOrder.Lex);
+    var (p1, p2, p3) = (X + Y - Z, X.Pow(2) - 2 * T.Pow(2), Y.Pow(2) - 6 * T.Pow(2));
+    var bs = Ring.GroebnerBase(p1, p2, p3);
+    Console.WriteLine(bs.Select(Simplify).Glue("; "));
+    Console.WriteLine();
+}
+
+{
+    var (X, Y, Z, T) = Ring.Polynomial("X", "Y", "Z", "T", Rational.KZero());
+    X.Indeterminates.SetOrder(MonomOrder.Lex);
+    var (p1, p2, p3) = (X + Y - Z, X.Pow(2) + T.Pow(2), Y.Pow(2) - 2 * T.Pow(2));
+    var bs = Ring.GroebnerBase(p1, p2, p3);
+    Console.WriteLine(bs.Select(Simplify).Glue("; "));
+    Console.WriteLine();
+}
+
+{
+    var (X, Y, Z, T) = Ring.Polynomial("X", "Y", "Z", "T", Rational.KZero());
+    X.Indeterminates.SetOrder(MonomOrder.Lex);
+    var (p1, p2, p3) = (X + Y - Z, X.Pow(2) + 1, Y.Pow(2) - 2);
+    var bs = Ring.GroebnerBase(p1, p2, p3);
+    Console.WriteLine(bs.Select(Simplify).Glue("; "));
+    Console.WriteLine();
+}
+
+{
+    var (X, Y, Z, T) = Ring.Polynomial("X", "Y", "Z", "T", Rational.KZero());
+    X.Indeterminates.SetOrder(MonomOrder.Lex);
+    var (p1, p2, p3) = (X + Y - Z, X.Pow(4) + X.Pow(3) + X.Pow(2) + X + 1, Y.Pow(2) - 5);
+    var bs = Ring.GroebnerBase(p1, p2, p3);
+    Console.WriteLine(bs.Select(Simplify).Glue("\n"));
+    Console.WriteLine();
+}
+
+{
+    Monom.Display = MonomDisplay.StarCaret;
+    var (X, Y, Z, T) = Ring.Polynomial("x", "y", "z", "t", Rational.KZero());
+    X.Indeterminates.SetOrder(MonomOrder.Lex);
+    var (p1, p2, p3) = (X + Y - Z, X.Pow(4) + X.Pow(3) + X.Pow(2) + X + 1, Y.Pow(2) - 5);
+    var bs = Ring.MinimalGroebnerBase(p1, p2, p3);
+    Console.WriteLine("[{0}]", bs.Order().Select(Simplify).Glue(", "));
+    Console.WriteLine("[{0}]", bs.OrderDescending().Select(Simplify).Glue(", "));
+    Console.WriteLine();
 }
