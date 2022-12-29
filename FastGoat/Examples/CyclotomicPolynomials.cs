@@ -27,24 +27,17 @@ public static class CyclotomicPolynomials
         }
     }
 
-    public static void First20NthRootFq()
+    public static void First20NthRootF8()
     {
-        // for (int q = 9; q <= 9; q++)
-        foreach (var q in new[] { 4, 8 })
+        for (int n = 3; n <= 22; n++)
         {
-            if (IntExt.PrimesDecomposition(q).Distinct().Count() > 1)
+            if (IntExt.Gcd(n, 2) != 1)
                 continue;
 
-            for (int n = 45; n <= 45; n++)
-            {
-                if (IntExt.Gcd(q, n) != 1)
-                    continue;
-
-                var unq = new NthRootFq(n, q);
-                DisplayGroup.HeadElements(unq);
-                DisplayGroup.AreIsomorphics(unq, new Cn(n)); // TODO fix fail for n = 2
-                Console.WriteLine();
-            }
+            var unq = new NthRootFq(n, 8);
+            DisplayGroup.HeadElements(unq);
+            DisplayGroup.AreIsomorphics(unq, new Cn(n)); // TODO fix fail for n = 2
+            Console.WriteLine();
         }
     }
 }

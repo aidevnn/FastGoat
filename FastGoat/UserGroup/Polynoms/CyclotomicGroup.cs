@@ -26,11 +26,11 @@ file readonly struct CyclotomicGroupBase<K> : IGroup<EPoly<K>> where K : struct,
         var nm = name;
         Name = $"U{n}({nm})";
         var poly = FG.CyclotomicPolynomial(n);
-        Poly = new KPoly<K>('x', scalar, poly.Coefs.Select(c => ((int)c.Num) * scalar.One).ToArray());
+        Poly = new KPoly<K>('ζ', scalar, poly.Coefs.Select(c => ((int)c.Num) * scalar.One).ToArray());
         Hash = ("CF", p, Poly.Hash).GetHashCode();
 
         var q = IntExt.UnInvertible(n).First(e => n == 2 || e.Key != 1).Value;
-        var x = FG.EPoly(Poly, 'ζ');
+        var x = FG.EPoly(Poly);
         Zeta = x.Pow(q);
     }
 
@@ -68,7 +68,7 @@ file readonly struct CyclotomicGroupBase<K> : IGroup<EPoly<K>> where K : struct,
 
     public EPoly<K> Neutral() => Zeta.One;
 
-    public EPoly<K> Invert(EPoly<K> e) => e.Inv();
+    public EPoly<K> Invert(EPoly<K> e) => 1 / e;
 
     public EPoly<K> Op(EPoly<K> e1, EPoly<K> e2) => e1 * e2;
     public override int GetHashCode() => Hash;
