@@ -116,8 +116,8 @@ public static partial class Ring
         return (pi, pj, Sij);
     }
 
-    // Algorithm Buchberger
-    public static Polynomial<K, Xi>[] GroebnerBase<K>(params Polynomial<K, Xi>[] bs)
+    // Algorithm Buchberger to build a Groebner Basis
+    public static Polynomial<K, Xi>[] GroebnerBasis<K>(params Polynomial<K, Xi>[] bs)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var g = bs.ToList();
@@ -128,10 +128,10 @@ public static partial class Ring
         {
             var g0 = g.ToList();
             var s = g.Grid2D(g).Where(e => !e.t1.Equals(e.t2)).Select(e => Syzygie(e.t1, e.t2).Sij).Where(e => !e.IsZero()).ToArray();
-            foreach (var f in s)
+            foreach (var f in s.Order())
             {
                 var r = g.Aggregate(f, (acc, f0) => acc.Div(f0).rem);
-                if (!r.IsZero())
+                if (!r.IsZero() && g.All(f0 => !r.Div(f0).rem.IsZero()))
                     g.Add(r);
             }
 
@@ -139,24 +139,39 @@ public static partial class Ring
                 break;
         }
 
-
         return g.ToArray();
     }
 
-    public static Polynomial<K, Xi>[] MinimalGroebnerBase<K>(params Polynomial<K, Xi>[] bs)
+    public static Polynomial<K, Xi>[] ReducedGroebnerBasis<K>(params Polynomial<K, Xi>[] bs)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
-        var g = GroebnerBase(bs).ToList();
+        var g = GroebnerBasis(bs).Select(f => f.Monic()).Distinct().OrderDescending().ToList();
+        var allLT = g.ToDictionary(f => f, f => f.LeadingDetails.lt);
+
         while (true)
         {
-            var g0 = g.ToList();
+            var lt = allLT.ToList();
+            var bag = new List<Polynomial<K, Xi>>();
+            foreach (var e1 in lt)
+            {
+                if (allLT.Any(e2 => !e1.Key.Equals(e2.Key) && e2.Value.Div(e1.Value).rem.IsZero()))
+                    bag.Add(e1.Key);
+            }
+
+            bag.ForEach(f => allLT.Remove(f));
+            if (lt.Count == allLT.Count)
+                break;
+        }
+
+        while (true)
+        {
+            var g0 = g.OrderDescending().ToList();
             foreach (var f in g.OrderDescending())
             {
                 var r = g0.Where(f0 => !f0.Equals(f)).Aggregate(f, (acc, f0) => acc.Div(f0).rem);
                 if (r.IsZero())
                 {
                     g0.Remove(f);
-                    break;
                 }
             }
 
@@ -166,6 +181,6 @@ public static partial class Ring
             g = g0.ToList();
         }
 
-        return g.Order().ToArray();
+        return g.OrderDescending().ToArray();
     }
 }
