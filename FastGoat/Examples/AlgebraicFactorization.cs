@@ -32,7 +32,7 @@ public static class AlgebraicFactorization
         return KMatrix<K>.MergeSameRows(vs);
     }
 
-    static  KMatrix<FracPoly<EPoly<K>>> MatrixEndo<K>(EPoly<K> b) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    static KMatrix<FracPoly<EPoly<K>>> MatrixEndo<K>(EPoly<K> b) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var x = FG.KFracPoly('x', b);
         var mb = Endo(b).ToEMatrix(b.F);
@@ -229,7 +229,6 @@ public static class AlgebraicFactorization
             var A = f / (x - a);
             AlgebraicFactors(f);
             // x^3 + -3·x + -1 = (x + a^2 + -2) * (x + -a) * (x + -a^2 + a + 2)
-
         }
 
         {
@@ -239,7 +238,7 @@ public static class AlgebraicFactorization
             AlgebraicFactors(A);
             // x^2 + -5 = (x + 2·a^3 + 2·a^2 + 1) * (x + -2·a^3 + -2·a^2 + -1)
         }
-        
+
         {
             var a = FG.EQPoly('a', -2, 0, 0, 1);
             var x = FG.KPoly('x', a);
@@ -247,7 +246,7 @@ public static class AlgebraicFactorization
             AlgebraicFactors(A);
             // x^3 + 3·x^2 + 3·x + -1 = (x + -a + 1) * (x^2 + (a + 2)·x + a^2 + a + 1)
         }
-        
+
         {
             var i = FG.EQPoly('i', 1, 0, 1);
             var x = FG.KPoly('x', i);
@@ -255,6 +254,5 @@ public static class AlgebraicFactorization
             AlgebraicFactors(A);
             // x^4 + 25·x^2 + 50·x + 25 = (x^2 + -5·i·x + -5·i) * (x^2 + 5·i·x + 5·i)
         }
-
     }
 }

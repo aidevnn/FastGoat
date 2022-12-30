@@ -8,7 +8,7 @@ public static class PadicExt
     {
         if (n.IsZero)
             return (0, 0);
-        
+
         var n0 = n;
         var v = 0;
         while (!n0.IsOne)
@@ -16,7 +16,7 @@ public static class PadicExt
             var (q, r) = BigInteger.DivRem(n0, p);
             if (r != 0)
                 break;
-            
+
             ++v;
             n0 = q;
         }
@@ -24,7 +24,7 @@ public static class PadicExt
         return (v, n0);
     }
 
-    public static  (int val, BigInteger nb) AddValuation(int p, BigInteger n, int val)
+    public static (int val, BigInteger nb) AddValuation(int p, BigInteger n, int val)
     {
         var (v0, n0) = GetValuation(p, n);
         return (v0 + val, n0);

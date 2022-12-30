@@ -138,13 +138,13 @@ public static class SymbolicMatrix
         var am = f.CoefMax(X);
         var n = f.DegreeOf(X);
         var s = (n * (n - 1) / 2) % 2 == 0 ? 1 : -1;
-        
+
         Console.WriteLine($"f({X})  = {f}");
         Console.WriteLine($"f'({X}) = {g}");
         Console.WriteLine("Sylvester Matrix f, f'");
         Ring.DisplayMatrix(S);
         Console.WriteLine("Det = {0}", Ring.Determinant(S, f.Zero).Div(am).quo.Mul(s));
-        
+
         // Direct method
         Console.WriteLine("Disc = {0}", Ring.Discriminant(f, X));
     }
@@ -159,18 +159,18 @@ public static class SymbolicMatrix
         var am = f.CoefMax(X);
         var n = f.DegreeOf(X);
         var s = (n * (n - 1) / 2) % 2 == 0 ? 1 : -1;
-        
+
         Console.WriteLine($"f({X})  = {f}");
         Console.WriteLine($"f'({X}) = {g}");
         Console.WriteLine("Sylvester Matrix f, f'");
         Ring.DisplayMatrix(S);
         Console.WriteLine("Det = {0}", Ring.Determinant(S, f.Zero).Div(am).quo.Mul(s));
-        
+
         // Direct method
         Console.WriteLine("Disc = {0}", Ring.Discriminant(f, X));
         // Disc = -4*p³ + -27*q²
     }
-    
+
     public static void CubicDiscriminantLong()
     {
         var ps = Ring.Polynomial(ZnInt.KZero(), "xabcd".ToArray());
@@ -182,16 +182,16 @@ public static class SymbolicMatrix
         var am = f.CoefMax(X);
         var n = f.DegreeOf(X);
         var s = (n * (n - 1) / 2) % 2 == 0 ? 1 : -1;
-        
+
         Console.WriteLine($"f({X})  = {f}");
         Console.WriteLine($"f'({X}) = {g}");
         Console.WriteLine("Sylvester Matrix f, f'");
         Ring.DisplayMatrix(S);
         Console.WriteLine("Det = {0}", Ring.Determinant(S, f.Zero).Div(am).quo.Mul(s));
-        
+
         // Direct method
         Console.WriteLine("Disc = {0}", Ring.Discriminant(f, X));
-        
+
         // https://en.wikipedia.org/wiki/Discriminant#Degree_3
         // Disc = -27·a²*d² + 18·a*b*c*d + -4·a*c³ + -4·b³*d + b²*c²
     }
@@ -207,22 +207,20 @@ public static class SymbolicMatrix
         var am = f.CoefMax(X);
         var n = f.DegreeOf(X);
         var s = (n * (n - 1) / 2) % 2 == 0 ? 1 : -1;
-        
+
         Console.WriteLine($"f({X})  = {f}");
         Console.WriteLine($"f'({X}) = {g}");
         Console.WriteLine("Sylvester Matrix f, f'");
         Ring.DisplayMatrix(S);
         Console.WriteLine("Det = {0}", Ring.Determinant(S, f.Zero).Div(am).quo.Mul(s));
-        
+
         // Direct method
         Console.WriteLine("Disc = {0}", Ring.Discriminant(f, X));
-        
+
         // https://en.wikipedia.org/wiki/Discriminant#Degree_4
         // Disc = 256·a³*e³ + -192·a²*b*d*e² + -128·a²*c²*e² + 144·a²*c*d²*e +
         // -27·a²*d⁴ + 144·a*b²*c*e² + -6·a*b²*d²*e + -80·a*b*c²*d*e +
         // 18·a*b*c*d³ + 16·a*c⁴*e + -4·a*c³*d² + -27·b⁴*e² + 18·b³*c*d*e +
         // -4·b³*d³ + -4·b²*c³*e + b²*c²*d²
     }
-
-
 }

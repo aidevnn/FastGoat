@@ -31,7 +31,7 @@ public readonly struct PadicGAP : IElt<PadicGAP>, IRingElt<PadicGAP>, IFieldElt<
     {
         if (o < 1 || !IntExt.Primes10000.Contains(p))
             throw new ArgumentException($"p={p} must be prime and o={o} must be greater than 1.");
-        
+
         Details = new(p, o);
         if (k.IsZero)
             Val = new();
@@ -77,7 +77,7 @@ public readonly struct PadicGAP : IElt<PadicGAP>, IRingElt<PadicGAP>, IFieldElt<
         K = qp.K;
         Val = qp.Val;
     }
-    
+
     private PadicGAP(Modulus details, BigInteger k, Valuation v)
     {
         Details = details;
@@ -91,7 +91,7 @@ public readonly struct PadicGAP : IElt<PadicGAP>, IRingElt<PadicGAP>, IFieldElt<
     }
 
     public int Hash => POKV.GetHashCode();
-    
+
     public bool Equals(PadicGAP other) => POKV.Equals(other.POKV);
 
     public int CompareTo(PadicGAP other)
@@ -121,10 +121,10 @@ public readonly struct PadicGAP : IElt<PadicGAP>, IRingElt<PadicGAP>, IFieldElt<
 
         if (Val.IsInfinity)
             return other;
-        
+
         if (other.Val.IsInfinity)
             return this;
-        
+
         if (Val <= other.Val)
         {
             var o = other.Val - Val;
@@ -159,7 +159,7 @@ public readonly struct PadicGAP : IElt<PadicGAP>, IRingElt<PadicGAP>, IFieldElt<
 
         if (K.IsZero || other.K.IsZero)
             return Zero;
-        
+
         var v = Val + other.Val;
         var z1 = new ZnBInt(Details, K);
         var z2 = new ZnBInt(other.Details, other.K);
@@ -180,7 +180,7 @@ public readonly struct PadicGAP : IElt<PadicGAP>, IRingElt<PadicGAP>, IFieldElt<
 
         if (K.IsZero)
             return this;
-        
+
         if (k < 0)
             return Inv().Pow(-k);
 
@@ -200,7 +200,7 @@ public readonly struct PadicGAP : IElt<PadicGAP>, IRingElt<PadicGAP>, IFieldElt<
         var v = Val.V;
         for (int i = Int32.Min(0, v); i < Int32.Max(0, v + O); i++)
             table[i] = 0;
-        
+
         var a0 = K;
         for (int i = v; i < v + O; ++i)
         {
@@ -250,7 +250,7 @@ public readonly struct PadicGAP : IElt<PadicGAP>, IRingElt<PadicGAP>, IFieldElt<
     public static PadicGAP operator /(PadicGAP a, int b) => a.Div(a.One.Mul(b)).quo;
 
     public static PadicGAP operator /(int a, PadicGAP b) => b.Inv().Mul(a);
-    
+
     public static PadicGAP operator +(PadicGAP a, Rational b) => a.Add(new(a.P, a.O, b));
     public static PadicGAP operator +(Rational a, PadicGAP b) => new PadicGAP(b.P, b.O, a).Add(b);
     public static PadicGAP operator -(PadicGAP a, Rational b) => a.Sub(new(a.P, a.O, b));
@@ -259,7 +259,7 @@ public readonly struct PadicGAP : IElt<PadicGAP>, IRingElt<PadicGAP>, IFieldElt<
     public static PadicGAP operator *(Rational a, PadicGAP b) => new PadicGAP(b.P, b.O, a).Mul(b);
     public static PadicGAP operator /(PadicGAP a, Rational b) => a.Div(new PadicGAP(a.P, a.O, b)).quo;
     public static PadicGAP operator /(Rational a, PadicGAP b) => new PadicGAP(b.P, b.O, a).Div(b).quo;
-    
+
     public override int GetHashCode() => POKV.GetHashCode();
 
     public override string ToString()

@@ -408,6 +408,7 @@ public struct KMatrix<K> : IVsElt<K, KMatrix<K>>, IElt<KMatrix<K>>, IRingElt<KMa
     public static KMatrix<FracPoly<K>> operator +(KMatrix<FracPoly<K>> a, KMatrix<K> m) => m + a;
     public static KMatrix<FracPoly<K>> operator -(KMatrix<K> m, KMatrix<FracPoly<K>> a) => m + a.Opp();
     public static KMatrix<FracPoly<K>> operator -(KMatrix<FracPoly<K>> a, KMatrix<K> m) => a + m.Opp();
+
     public static KMatrix<FracPoly<K>> operator *(KMatrix<K> m, FracPoly<K> a)
     {
         var m0 = new FracPoly<K>[m.M, m.N];

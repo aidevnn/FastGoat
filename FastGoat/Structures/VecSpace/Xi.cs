@@ -1,4 +1,3 @@
-
 namespace FastGoat.Structures.VecSpace;
 
 public readonly struct Xi : IElt<Xi>
@@ -34,7 +33,7 @@ public readonly struct Xi : IElt<Xi>
     {
         if (expr.Length == 0)
             throw new ArgumentException();
-        
+
         xi = expr;
         Hash = xi.GetHashCode();
     }

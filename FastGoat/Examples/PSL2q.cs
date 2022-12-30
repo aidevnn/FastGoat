@@ -15,11 +15,11 @@ public static class PSL2q
         var gl = new GL(2, p);
         var x = (p - 2).Range(2).First(i => IntExt.PowMod(i, p - 1, p) == 1);
         var xp = IntExt.PowMod(x, p - 2, p);
-        
+
         // SL(2,q) generators from H.E. Rose, page 271, Problem 12.5
         var a = gl[x, 0, 0, xp];
         var b = gl[p - 1, 1, p - 1, 0];
-        
+
         var SL2q = Group.Generate($"SL(2,{p})", gl, a, b);
         var z = Group.Zentrum(SL2q);
         var L2q = SL2q.Over(z, $"L2({p})");
@@ -32,11 +32,11 @@ public static class PSL2q
         if (gl.Fq.M == 1)
             return;
         var x = gl.Fq['x'];
-        
+
         // SL(2,q) generators from H.E. Rose, page 271, Problem 12.5
         var a = gl[x, 0, 0, x.Pow(q - 2)];
         var b = gl[q - 1, 1, q - 1, 0];
-        
+
         var SL2q = Group.Generate($"SL(2,{q})", gl, a, b);
         var z = Group.Zentrum(SL2q);
         var L2q = SL2q.Over(z, $"L2({q})");

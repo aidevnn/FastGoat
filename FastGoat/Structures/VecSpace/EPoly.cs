@@ -1,4 +1,3 @@
-
 namespace FastGoat.Structures.VecSpace;
 
 public readonly struct EPoly<K> : IVsElt<K, EPoly<K>>, IElt<EPoly<K>>, IRingElt<EPoly<K>>, IFieldElt<EPoly<K>>
@@ -36,6 +35,7 @@ public readonly struct EPoly<K> : IVsElt<K, EPoly<K>>, IElt<EPoly<K>>, IRingElt<
     public int CompareTo(EPoly<K> other) => Poly.CompareTo(other.Poly);
 
     public int P => F.P;
+
     public EPoly<K> Inv()
     {
         var (x, y) = Ring.Bezout(Poly, F);
@@ -55,7 +55,7 @@ public readonly struct EPoly<K> : IVsElt<K, EPoly<K>>, IElt<EPoly<K>>, IRingElt<
     public EPoly<K> Zero => new(F, F.Zero);
     public EPoly<K> One => new(F, F.One);
     public EPoly<K> X => new(F);
-    public  EPoly<K> LeadingCoeff => new(F, F.LeadingCoeff);
+    public EPoly<K> LeadingCoeff => new(F, F.LeadingCoeff);
     public EPoly<K> Derivative => new(F, Poly.Derivative.Div(F).rem);
     public EPoly<K> Substitute(KPoly<K> f) => new(F, Poly.Substitute(f).Div(F).rem);
 
@@ -63,6 +63,7 @@ public readonly struct EPoly<K> : IVsElt<K, EPoly<K>>, IElt<EPoly<K>>, IRingElt<
     {
         return Poly.Coefs.Select((k, i) => k * f.Pow(i)).Aggregate(f.Zero, (acc, a) => acc + a);
     }
+
     public EPoly<K> Add(EPoly<K> e)
     {
         return new(F, Poly.Add(e.Poly).Div(F).rem);
@@ -105,7 +106,7 @@ public readonly struct EPoly<K> : IVsElt<K, EPoly<K>>, IElt<EPoly<K>>, IRingElt<
     {
         if (IsZero())
             return "0";
-        
+
         return $"{Poly}";
     }
 
@@ -131,14 +132,13 @@ public readonly struct EPoly<K> : IVsElt<K, EPoly<K>>, IElt<EPoly<K>>, IRingElt<
     public static EPoly<K> operator *(K a, EPoly<K> b) => b.KMul(a);
     public static EPoly<K> operator /(EPoly<K> a, K b) => a.KMul(b.Inv());
     public static EPoly<K> operator /(K a, EPoly<K> b) => b.Inv().KMul(a);
-    
+
     public static EPoly<K> operator +(EPoly<K> a, KPoly<K> b) => a + new EPoly<K>(a.F, b.Div(a.F).rem);
     public static EPoly<K> operator +(KPoly<K> a, EPoly<K> b) => new EPoly<K>(b.F, a.Div(b.F).rem) + b;
     public static EPoly<K> operator -(EPoly<K> a, KPoly<K> b) => a - new EPoly<K>(a.F, b.Div(a.F).rem);
-    public static EPoly<K> operator -(KPoly<K>  a, EPoly<K> b) => new EPoly<K>(b.F, a.Div(b.F).rem) - b;
+    public static EPoly<K> operator -(KPoly<K> a, EPoly<K> b) => new EPoly<K>(b.F, a.Div(b.F).rem) - b;
     public static EPoly<K> operator *(EPoly<K> a, KPoly<K> b) => a * new EPoly<K>(a.F, b.Div(a.F).rem);
     public static EPoly<K> operator *(KPoly<K> a, EPoly<K> b) => new EPoly<K>(b.F, a.Div(b.F).rem) * b;
-    public static EPoly<K> operator /(EPoly<K> a,  KPoly<K> b) => a.Mul(new EPoly<K>(a.F, b.Div(a.F).rem).Inv());
-    public static EPoly<K> operator /(KPoly<K> a, EPoly<K> b) => new EPoly<K>(b.F, a.Div(b.F).rem)*b.Inv();
-
+    public static EPoly<K> operator /(EPoly<K> a, KPoly<K> b) => a.Mul(new EPoly<K>(a.F, b.Div(a.F).rem).Inv());
+    public static EPoly<K> operator /(KPoly<K> a, EPoly<K> b) => new EPoly<K>(b.F, a.Div(b.F).rem) * b.Inv();
 }

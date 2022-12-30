@@ -91,7 +91,7 @@ public static partial class Group
         {
             var x = kp.Key;
             var (stabx, orbx) = kp.Value;
-            if(details)
+            if (details)
                 Console.WriteLine($"x = {x,-40} Stab(x):{stabx.Count,-4} Orb(x):{orbx.Count}   {orbx.Glue(", ")}");
             else
                 Console.WriteLine($"x = {x,-40} Stab(x):{stabx.Count,-4} Orb(x):{orbx.Count}");
@@ -116,12 +116,12 @@ public static partial class Group
     {
         return g.Contains(a) && g.Contains(b) && Orbits(g, ByConjugate(g), a).Contains(b);
     }
-    
+
     public static List<ConcreteGroup<T>> SubGroupsConjugates<T>(ConcreteGroup<T> g, ConcreteGroup<T> h) where T : struct, IElt<T>
     {
         if (!h.SubSetOf(g))
             throw new GroupException(GroupExceptionType.NotSubGroup);
-        
+
         var all = new HashSet<HashSet<T>>(new SetEquality<T>());
         foreach (var s in g)
         {
@@ -139,7 +139,7 @@ public static partial class Group
         var iso = Group.AllMorphisms(sg, g, MorphismType.Isomorphism).FirstOrDefault();
         if (iso.HomMap is null)
             throw new GroupException(GroupExceptionType.GroupDef);
-        
+
         return Generate($"{name}", g, iso.Image().ToArray());
     }
 

@@ -52,9 +52,9 @@ public static class MathieuGroup
         var z = Group.Zentrum(SL34);
         var L34 = SL34.Over(z, "L3(4)");
         DisplayGroup.Head(L34);
-        
+
         DisplayGroup.AreIsomorphics(m21, L34);
-        
+
         // |M21| = 20160
         // Type        NonAbelianGroup
         // BaseGroup   S21

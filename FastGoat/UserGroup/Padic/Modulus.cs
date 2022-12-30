@@ -19,7 +19,7 @@ public readonly struct Modulus : IEquatable<Modulus>
     {
         if (p < 2 || o < 1)
             throw new ArgumentException($"p={p} must be greater than 2 and o={o} must be greater than 1.");
-        
+
         P = p;
         O = o;
         Mod = BigInteger.Pow(P, O);

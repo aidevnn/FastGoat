@@ -169,8 +169,9 @@ public static class EnumerableExt
     }
 
     public static IEnumerable<(T t1, T t2)> Grid2D<T>(this T[] seq) => seq.Grid2D(seq);
-    
-    public static IEnumerable<(T1 t1, T2 t2, T3 t3)> Grid3D<T1, T2, T3>(this IEnumerable<T1> first, IEnumerable<T2> second,IEnumerable<T3> third)
+
+    public static IEnumerable<(T1 t1, T2 t2, T3 t3)> Grid3D<T1, T2, T3>(this IEnumerable<T1> first, IEnumerable<T2> second,
+        IEnumerable<T3> third)
     {
         foreach (var t1 in first)
         {
@@ -183,7 +184,7 @@ public static class EnumerableExt
             }
         }
     }
-    
+
     public static IEnumerable<(T t1, T t2, T t3)> Grid3D<T>(this T[] seq) => Grid3D(seq, seq, seq);
 }
 

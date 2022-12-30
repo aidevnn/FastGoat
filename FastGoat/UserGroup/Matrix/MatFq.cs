@@ -23,6 +23,7 @@ public struct MatFq : IElt<MatFq>
 
     public int Hash { get; }
     public override int GetHashCode() => Hash;
+
     public override string ToString()
     {
         return $"[{Table.Glue("; ", GLnq.Fmt)}]";

@@ -119,11 +119,11 @@ public class PadicUnitTest
         Assert.Equal(a1.One, (a1 * a1.Inv()));
         Assert.Equal(new PadicZealous(5, 3, 51), a1 + a2);
         Assert.Equal(new PadicZealous(5, 3, 26), a1 - a2);
-        Assert.Equal(new PadicZealous(5, 3, 53) * 25, a1 * a2); 
+        Assert.Equal(new PadicZealous(5, 3, 53) * 25, a1 * a2);
         Assert.Equal(new PadicZealous(5, 3, 117) / 25, a1 / a2);
         Assert.Equal(new PadicZealous(5, 3, 76), a1.Pow(2));
     }
-    
+
     [Fact]
     public void Test6PadicZealousRational()
     {

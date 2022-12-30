@@ -7,7 +7,7 @@
         <LangVersion>11</LangVersion>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="dotnet-t4-project-tool" Version="2.2.1" />
+        <PackageReference Include="dotnet-t4-project-tool" Version="2.2.1"/>
     </ItemGroup>
     <ItemGroup>
         <None Update="Gp\GpEp.tt">

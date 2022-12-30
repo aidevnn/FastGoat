@@ -23,7 +23,7 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
         Denom = 1;
         Hash = (Num, Denom).GetHashCode();
     }
-    
+
     public Rational(BigInteger num, BigInteger denom)
     {
         if (denom == 0)

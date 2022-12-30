@@ -153,7 +153,7 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
         var coefMax = Coefs.Select(e => (e, Monom<T>.Reduce(e.Key, xi))).Where(e => e.Item2.pa.IsOne)
             .Select(e => new Polynomial<K, T>(xi.Indeterminates, k0, new() { [e.Item2.pb] = e.e.Value }))
             .Aggregate(Zero, (acc, a) => acc + a);
-        
+
         return coefMax;
     }
 
@@ -217,7 +217,7 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
 
         return new(Indeterminates, KZero, coefs);
     }
-    
+
     public (Polynomial<K, T> quo, Polynomial<K, T> rem) Div(Polynomial<K, T> e)
     {
         if (e.IsZero())
@@ -228,12 +228,12 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
 
         var rem = new Polynomial<K, T>(Indeterminates, KZero, new(Coefs));
         var (elm, elc) = e.Coefs.Last();
-        int k = rem.Coefs.Count -1;
+        int k = rem.Coefs.Count - 1;
         SortedList<Monom<T>, K> quo = new();
         while (k >= 0)
         {
             var (alm, alc) = (rem.Coefs.Keys[k], rem.Coefs.Values[k]);
-            var mnm = alm.Div(elm);
+            // var mnm = alm.Div(elm);
             var (mnm0, mnm1) = Monom<T>.Reduce(alm, elm);
             if (!mnm0.IsOne)
             {
@@ -245,14 +245,14 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
             var (q, r) = alc.Div(elc);
             if (!r.IsZero())
                 break;
-            
+
             rem = rem.InPlaceSubMul(e, q, m);
             k = rem.Coefs.Count - 1;
             quo[m] = q;
             if (rem.IsZero())
                 break;
         }
-        
+
         return (new(Indeterminates, KZero, quo), rem);
     }
 
@@ -264,7 +264,7 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
 
         return new(Indeterminates, KZero, coefs);
     }
-    
+
     public Polynomial<K, T> Mul(int k)
     {
         if (k == 0)
@@ -273,7 +273,7 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
         SortedList<Monom<T>, K> coefs = new(Coefs.ToDictionary(a => a.Key, a => a.Value.Mul(k)));
         return new(Indeterminates, KZero, coefs);
     }
-    
+
     public Polynomial<K, T> Pow(int k)
     {
         if (k < 0)
@@ -282,7 +282,7 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
         var pi = this;
         return Enumerable.Repeat(pi, k).Aggregate(One, (a, b) => a.Mul(b));
     }
-    
+
     public override int GetHashCode() => Hash;
 
     public string GetString(bool reverse = false)

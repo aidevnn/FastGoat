@@ -82,7 +82,7 @@ public static class UnitaryGroup
 
         var u4_2 = Group.Generate("U4(2)", gl44, a, b);
         DisplayGroup.HeadOrders(u4_2);
-        
+
         var gl43 = new GL(4, 3);
         var a1 = gl43[
             2, 0, 0, 0,

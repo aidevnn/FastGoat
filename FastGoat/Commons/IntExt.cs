@@ -103,7 +103,7 @@ namespace FastGoat.Commons
         public static Dictionary<int, int> PrimesDec(BigInteger n)
         {
             var dec = PrimesDecompositionBigInt(BigInteger.Abs(n));
-            var dico=dec.GroupBy(e => e).ToDictionary(e => e.Key, e => e.Count());
+            var dico = dec.GroupBy(e => e).ToDictionary(e => e.Key, e => e.Count());
             if (n < 0)
                 dico[-1] = 1;
             return dico;
@@ -198,6 +198,7 @@ namespace FastGoat.Commons
         }
 
         public static BigInteger LcmBigInt(BigInteger a, BigInteger b) => (a * b) / BigInteger.GreatestCommonDivisor(a, b);
+
         public static BigInteger LcmBigInt(BigInteger[] arr)
         {
             if (!arr.Any())
@@ -221,7 +222,7 @@ namespace FastGoat.Commons
 
             return (-x0, -y0, -r0);
         }
-        
+
         public static (int x, int y) Bezout(int a, int b)
         {
             if (b == 0)

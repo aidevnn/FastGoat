@@ -24,6 +24,7 @@ public readonly struct ZnInt : IElt<ZnInt>, IRingElt<ZnInt>, IFieldElt<ZnInt>
     }
 
     public ZnInt LeadingCoeff => One;
+
     public int CompareTo(ZnInt other)
     {
         if (Mod != other.Mod)
@@ -78,7 +79,7 @@ public readonly struct ZnInt : IElt<ZnInt>, IRingElt<ZnInt>, IFieldElt<ZnInt>
 
         if (IsZero())
             return (Zero, Zero);
-        
+
         if (Mod == 0)
         {
             var (q, r) = Int32.DivRem(K, e.K);
@@ -111,7 +112,7 @@ public readonly struct ZnInt : IElt<ZnInt>, IRingElt<ZnInt>, IFieldElt<ZnInt>
                 return new(0, 1);
             if (K == -1)
                 return new(0, -1);
-            
+
             throw new DivideByZeroException();
         }
 
@@ -119,7 +120,7 @@ public readonly struct ZnInt : IElt<ZnInt>, IRingElt<ZnInt>, IFieldElt<ZnInt>
         var gcd = K * x + Mod * y;
         if (x % gcd != 0)
             throw new DivideByZeroException();
-        
+
         return new(Mod, x / gcd);
     }
 

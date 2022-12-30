@@ -20,7 +20,7 @@ public class WordGroupBase : IGroup<Word>
 
     private char[] Generators { get; }
     public string Definition => $"< ({Generators.Glue(",")}) | {Relators.Replace(" ", "").Replace(",", ", ").Replace("=", " = ")} >";
- 
+
     public IEnumerator<Word> GetEnumerator() => GetElements().GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator() => GetElements().GetEnumerator();

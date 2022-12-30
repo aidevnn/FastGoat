@@ -50,7 +50,7 @@ public struct ZnBInt : IElt<ZnBInt>, IRingElt<ZnBInt>, IFieldElt<ZnBInt>
     {
         if (e.IsZero())
             throw new DivideByZeroException();
-        
+
         var gcd0 = BigInteger.GreatestCommonDivisor(K, e.K);
         var e0 = K / gcd0;
         var e1 = e.K / gcd0;
@@ -142,7 +142,7 @@ public struct ZnBInt : IElt<ZnBInt>, IRingElt<ZnBInt>, IFieldElt<ZnBInt>
         s = s.Reverse().Glue();
         return $"[{s}({pstr})]";
     }
-    
+
     public static IEnumerable<ZnBInt> Generate(int mod, int o = 1)
     {
         for (int k = 0; k < mod.Pow(o); ++k)

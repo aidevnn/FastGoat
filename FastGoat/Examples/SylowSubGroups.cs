@@ -52,7 +52,7 @@ public static class SylowSubGroups
 
         Console.WriteLine();
         Console.WriteLine($"Total : {all.Count}");
-        
+
         // var checkUniqness = all.Select(e => e.ToHashSet()).ToHashSet(new SetEquality<Mat>());
         // Console.WriteLine(checkUniqness.Count); == 55
     }
@@ -140,10 +140,10 @@ public static class SylowSubGroups
         var g1 = all[0];
         var conj0 = Group.SubGroupsConjugates(GL23mat, g1);
         Console.WriteLine($"Nb Conjugates  for {all[0]} : {conj0.Count}");
-        
+
         var g2 = all.First(g => conj0.All(g0 => !g.SetEquals(g0)));
         var conj1 = Group.SubGroupsConjugates(GL23mat, g2);
-        
+
         Console.WriteLine($"Nb Conjugates  for {g2} : {conj1.Count}");
         Console.WriteLine($"Nb Isomorphics for {all[0]} : {all.Count}");
     }

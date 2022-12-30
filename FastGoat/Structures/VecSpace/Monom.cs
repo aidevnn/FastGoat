@@ -77,7 +77,7 @@ public readonly struct Monom<T> : IElt<Monom<T>> where T : struct, IElt<T>
         Hash = Indeterminates.Hash;
         foreach (var t in Indeterminates)
         {
-            if(!content.ContainsKey(t))
+            if (!content.ContainsKey(t))
                 continue;
 
             Hash = (Hash, (t.Hash, content[t])).GetHashCode();
@@ -100,38 +100,31 @@ public readonly struct Monom<T> : IElt<Monom<T>> where T : struct, IElt<T>
         return new(Indeterminates, content);
     }
 
-    public Monom<T>? Div(Monom<T> g)
+    public (bool, Monom<T>) Div(Monom<T> g)
     {
-        var content = new Dictionary<T, int>(Content);
-        foreach (var kp in g.Content)
+        var content = new Dictionary<T, int>();
+        foreach (var t in Indeterminates)
         {
-            if (content.ContainsKey(kp.Key))
-            {
-                var e = content[kp.Key] -= kp.Value;
-                if (e < 0)
-                    return null;
+            var m = this[t] - g[t];
+            if (m < 0)
+                return (false, new(Indeterminates));
 
-                if (e == 0)
-                    content.Remove(kp.Key);
-            }
-            else
-            {
-                return null;
-            }
+            if (m > 0)
+                content[t] = m;
         }
 
-        return new(Indeterminates, content);
+        return (true, new(Indeterminates, content));
     }
 
     public (int n, Monom<T> m) D(T t)
     {
         if (Content.ContainsKey(t))
         {
-            var m = Div(new(Indeterminates, t));
-            if (m.HasValue)
+            var (b, m) = Div(new(Indeterminates, t));
+            if (b)
             {
                 var n = Content[t];
-                return (n, m.Value);
+                return (n, m);
             }
         }
 

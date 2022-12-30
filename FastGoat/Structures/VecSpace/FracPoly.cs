@@ -27,7 +27,7 @@ public readonly struct FracPoly<K> : IVsElt<K, FracPoly<K>>, IElt<FracPoly<K>>, 
     {
         if (num.P != denom.P || num.x != denom.x)
             throw new GroupException(GroupExceptionType.GroupDef);
-        
+
         if (denom.IsZero())
             throw new DivideByZeroException();
 
@@ -80,7 +80,7 @@ public readonly struct FracPoly<K> : IVsElt<K, FracPoly<K>>, IElt<FracPoly<K>>, 
 
     public int P { get; }
     public FracPoly<K> Zero => new(Num.Zero);
-    public FracPoly<K> One  => new(Num.One);
+    public FracPoly<K> One => new(Num.One);
     public FracPoly<K> X => new(Num.X);
 
     public FracPoly<K> Add(FracPoly<K> e) => new(Num.Mul(e.Denom).Add(e.Num.Mul(Denom)), Denom.Mul(e.Denom));
@@ -96,11 +96,12 @@ public readonly struct FracPoly<K> : IVsElt<K, FracPoly<K>>, IElt<FracPoly<K>>, 
     public (FracPoly<K> quo, FracPoly<K> rem) Div(FracPoly<K> e) =>
         (new FracPoly<K>(Num * e.Denom, Denom * e.Num), Zero);
 
-    public FracPoly<K> Mul(int k)=> new(k * Num, Denom);
+    public FracPoly<K> Mul(int k) => new(k * Num, Denom);
 
     public FracPoly<K> Pow(int k) => new(Num.Pow(k), Denom.Pow(k));
 
     public override int GetHashCode() => Hash;
+
     public override string ToString()
     {
         if (Denom.Equals(Denom.One))
@@ -150,5 +151,4 @@ public readonly struct FracPoly<K> : IVsElt<K, FracPoly<K>>, IElt<FracPoly<K>>, 
     public static FracPoly<K> operator *(K a, FracPoly<K> b) => new(a * b.Num, b.Denom);
 
     public static FracPoly<K> operator /(FracPoly<K> a, K b) => new(a.Num, a.Denom * b);
-
 }

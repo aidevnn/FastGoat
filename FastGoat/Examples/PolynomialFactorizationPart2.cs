@@ -26,18 +26,18 @@ public static class PolynomialFactorizationPart2
 
         var primes = IntExt.Primes10000.Except(discPrimes).ToArray();
         var nu = Nu(f);
-        
+
         var rg = f.Degree.Range(1).ToArray();
         var all = primes.Take(50).Grid2D(rg)
             .Select(e => (s: e.t2, p: e.t1, pow: float.Pow(e.t1, e.t2)))
             .Where(e => e.pow > 2 * nu).OrderBy(e => e.pow)
             .ToArray();
-        
+
         foreach (var (s, p, _) in all)
         {
             yield return (p, s);
         }
-        
+
         throw new ArgumentException("Prime not found");
     }
 
