@@ -165,6 +165,12 @@ Les cours du CIRM.
 
 [Algebraic Factoring](https://dl.acm.org/doi/10.1145/800205.806338)
 <b>Barry Trager</b>
-Algebraic Factoring and Rational Function Integration
+Algebraic Factoring and Rational Function Integration.
 Laboratory for Computer Science, MIT
 <i>Norms and Algebraic Factoring</i>
+
+[Bases de Gröbner](https://www.cristal.univ-lille.fr/jncf2015/files/lecture-notes/faugere.pdf)
+<b>Jean-Charles Faugere</b>
+Résolution des systèmes polynômiaux en utilisant les bases de Gröbner.
+INRIA (POLSYS) / UPMC / CNRS/ LIP6.
+<i>(JNCF) 2015</i>
