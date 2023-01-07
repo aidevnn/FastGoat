@@ -365,6 +365,43 @@ public static partial class Ring
         var rows = mat.GetLength(0);
         var cols = mat.GetLength(1);
         var rgCols = cols.Range();
+        var digits = rgCols.Select(j => rows.Range().Max(i => $"{mat[i, j]}".Length)).Max();
+        var fmt = $"{{0,{digits}}}";
+        StringBuilder sb = new();
+        var lt = new List<string>();
+        for (int i = 0; i < rows; i++)
+        {
+            var i0 = i;
+            var s0 = rgCols.Select(j => mat[i0, j]).Glue(sep, fmt);
+            if (MatrixDisplayForm == MatrixDisplay.CurlyBracket)
+                lt.Add($"{{ {s0} }}");
+            else
+                lt.Add($"[{s0}]");
+        }
+
+        if (MatrixDisplayForm == MatrixDisplay.Table)
+        {
+            lt = lt.Prepend("").ToList();
+            sb.AppendJoin('\n', lt);
+            return sb.ToString();
+        }
+        else
+        {
+            sb.AppendJoin(',', lt);
+            if (MatrixDisplayForm == MatrixDisplay.CurlyBracket)
+                return $"{{ {sb} }}";
+            else
+                return $"[{sb}]";
+        }
+    }
+
+    public static string Matrix2StringBak<T>(T[,] mat, string sep = ", ")
+    {
+        var rows = mat.GetLength(0);
+        var cols = mat.GetLength(1);
+        var rgCols = cols.Range();
+        var digits = rgCols.Select(j => rows.Range().Max(i => $"{mat[i, j]}".Length)).Max();
+        var fmt = $"{{0,{digits}}}";
         if (MatrixDisplayForm != MatrixDisplay.Table)
         {
             List<string> s = new();
@@ -375,18 +412,16 @@ public static partial class Ring
             }
 
             if (MatrixDisplayForm == MatrixDisplay.CurlyBracket)
-                return $"{{{s.Glue(",", "{{ {0} }}")}}}";
+                return $"{{{s.Glue(",", $"{{ {fmt} }}")}}}";
             else
             {
                 if (rows != 1)
-                    return $"[{s.Glue(",", "[ {0} ]")}]";
+                    return $"[{s.Glue(",", $"[ {fmt} ]")}]";
                 else
-                    return $"[{s[0]}]";
+                    return string.Format($"[{fmt}]", s[0]);
             }
         }
 
-        var digits = rgCols.Select(j => rows.Range().Max(i => $"{mat[i, j]}".Length)).Max();
-        var fmt = $"{{0,{digits}}}";
         StringBuilder sb = new();
         for (int i = 0; i < rows; i++)
         {
@@ -424,6 +459,13 @@ public static partial class Ring
         }
 
         return seq.ToArray();
+    }
+
+    public static Polynomial<K, T>[] PolyBase<K, T>(Polynomial<K, T> f, T t)
+        where T : struct, IElt<T>
+        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
+    {
+        return PolyBase(f, t, f.DegreeOf(t));
     }
 
     public static (SortedList<Polynomial<K, T>, Polynomial<K, T>>, SortedList<int, Polynomial<K, T>>)
@@ -515,6 +557,13 @@ public static partial class Ring
         var s = n0 % 2 == 0 ? 1 : -1;
         var det = Determinant(S, f.Zero);
         return det.Div(am).quo.Mul(s);
+    }
+
+    public static Polynomial<K, T> Discriminant<K, T>(Polynomial<K, T> f, Polynomial<K, T> X)
+        where T : struct, IElt<T>
+        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
+    {
+        return Discriminant(f, X.ExtractIndeterminate);
     }
 
     public static K[,] SylvesterMatrix<K>(KPoly<K> f, KPoly<K> g)

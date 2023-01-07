@@ -1,4 +1,5 @@
 using FastGoat.Commons;
+using Microsoft.VisualBasic;
 
 namespace FastGoat.Structures.VecSpace;
 
@@ -53,7 +54,8 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
 
     public int CompareTo(Polynomial<K, T> other)
     {
-        return Coefs.Select(kp => (kp.Key, kp.Value)).SequenceCompareTo(other.Coefs.Select(kp => (kp.Key, kp.Value)));
+        return Coefs.OrderByDescending(kp => kp.Key).Select(kp => (kp.Key, kp.Value))
+            .SequenceCompareTo(other.Coefs.OrderByDescending(kp => kp.Key).Select(kp => (kp.Key, kp.Value)));
     }
 
     public int P => KZero.P;
@@ -76,6 +78,18 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
     public Polynomial<K, T> One => new(Indeterminates, KZero.One);
     public Polynomial<K, T> LeadingCoeff => IsZero() ? One : new(Indeterminates, Coefs.Last().Value);
 
+    public T ExtractIndeterminate
+    {
+        get
+        {
+            var (lc, lm, lt) = LeadingDetails;
+            if (!lc.Equals(lc.One) || lm.Degree != 1 || !lt.Equals(this))
+                throw new ArgumentException($"second argument must be monomial");
+
+            return Indeterminates.First(xi => lm[xi] == 1);
+        }
+    }
+
     public Polynomial<K, T> Substitute(Polynomial<K, T> f, T xi)
     {
         var poly = Zero;
@@ -88,6 +102,15 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
 
         return poly;
     }
+
+    public Polynomial<K, T> Substitute(Polynomial<K, T> f, Polynomial<K, T> xi) => Substitute(f, xi.ExtractIndeterminate);
+
+    public Polynomial<K, T> Substitute(K k, T xi) => Substitute(k * One, xi);
+    public Polynomial<K, T> Substitute(K k, Polynomial<K, T> xi) => Substitute(k * One, xi);
+
+    public Polynomial<K, T> Substitute(int k, T xi) => Substitute(k * One, xi);
+    public Polynomial<K, T> Substitute(int k, Polynomial<K, T> xi) => Substitute(k * One, xi);
+    public Indeterminates<T> Xi => Indeterminates;
 
     public (K lc, Monom<T> lm, Polynomial<K, T> lt) LeadingDetails
     {
@@ -141,7 +164,7 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
         return D(m.Coefs.First().Key.Indeterminates.First());
     }
 
-    public int DegreeOf(T t) => Coefs.Max(e => e.Key.DegreeOf(t));
+    public int DegreeOf(T t) => Coefs.Max(e => e.Key[t]);
 
     public Polynomial<K, T> Monic() => IsZero() ? this : this.KMul(LeadingDetails.lc.Inv());
 
@@ -308,6 +331,32 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
             return Coefs.Reverse().Select(kp => Str(kp.Key, kp.Value)).Glue(" + ");
 
         return Coefs.Select(kp => Str(kp.Key, kp.Value)).Glue(" + ");
+    }
+
+    public int NbIndeterminates
+    {
+        get
+        {
+            var nb = 0;
+            foreach (var x in Indeterminates)
+            {
+                if (Coefs.Keys.Any(m => m[x] != 0))
+                    ++nb;
+            }
+
+            return nb;
+        }
+    }
+
+    public K this[Monom<T> idx]
+    {
+        get
+        {
+            if (!Coefs.ContainsKey(idx))
+                return KZero;
+
+            return Coefs[idx];
+        }
     }
 
     public override string ToString() => GetString(true);

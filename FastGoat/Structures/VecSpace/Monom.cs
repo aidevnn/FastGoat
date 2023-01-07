@@ -49,13 +49,22 @@ public readonly struct Monom<T> : IElt<Monom<T>> where T : struct, IElt<T>
         if (!indeterminates.Contains(s))
             throw new ArgumentException();
 
-        if (n < 1)
+        if (n < 0)
             throw new GroupException(GroupExceptionType.BaseGroup);
-
-        Indeterminates = indeterminates;
-        Content = new() { [s] = n };
-        Degree = n;
-        Hash = (Indeterminates.Hash, (s.Hash, n)).GetHashCode();
+        else if (n == 0)
+        {
+            Content = new();
+            Degree = 0;
+            Indeterminates = indeterminates;
+            Hash = Indeterminates.Hash;
+        }
+        else
+        {
+            Indeterminates = indeterminates;
+            Content = new() { [s] = n };
+            Degree = n;
+            Hash = (Indeterminates.Hash, (s.Hash, n)).GetHashCode();
+        }
     }
 
     public Monom(T s, int n)
@@ -88,13 +97,27 @@ public readonly struct Monom<T> : IElt<Monom<T>> where T : struct, IElt<T>
 
     public Monom<T> Mul(Monom<T> g)
     {
-        var content = new Dictionary<T, int>(Content);
-        foreach (var kp in g.Content)
+        var content = new Dictionary<T, int>();
+        foreach (var kp in Indeterminates)
         {
-            if (content.ContainsKey(kp.Key))
-                content[kp.Key] += kp.Value;
-            else
-                content[kp.Key] = kp.Value;
+            var m = g[kp] + this[kp];
+            if (m != 0)
+                content[kp] = m;
+        }
+
+        return new(Indeterminates, content);
+    }
+
+    public Monom<T> Pow(int k)
+    {
+        if (k < 0) throw new Exception();
+
+        var content = new Dictionary<T, int>();
+        foreach (var kp in Indeterminates)
+        {
+            var m = k * this[kp];
+            if (m != 0)
+                content[kp] = m;
         }
 
         return new(Indeterminates, content);
@@ -143,8 +166,6 @@ public readonly struct Monom<T> : IElt<Monom<T>> where T : struct, IElt<T>
 
         return (0, new(Indeterminates, content));
     }
-
-    public int DegreeOf(T t) => Content.ContainsKey(t) ? Content[t] : 0;
 
     public bool Equals(Monom<T> other) => Hash == other.Hash;
 

@@ -58,6 +58,7 @@ public readonly struct EPoly<K> : IVsElt<K, EPoly<K>>, IElt<EPoly<K>>, IRingElt<
     public EPoly<K> LeadingCoeff => new(F, F.LeadingCoeff);
     public EPoly<K> Derivative => new(F, Poly.Derivative.Div(F).rem);
     public EPoly<K> Substitute(KPoly<K> f) => new(F, Poly.Substitute(f).Div(F).rem);
+    public EPoly<K> Substitute(EPoly<K> f) => new(f.F, Poly.Substitute(f.Poly).Div(f.F).rem);
 
     public FracPoly<K> Substitute(FracPoly<K> f)
     {
@@ -132,7 +133,6 @@ public readonly struct EPoly<K> : IVsElt<K, EPoly<K>>, IElt<EPoly<K>>, IRingElt<
     public static EPoly<K> operator *(K a, EPoly<K> b) => b.KMul(a);
     public static EPoly<K> operator /(EPoly<K> a, K b) => a.KMul(b.Inv());
     public static EPoly<K> operator /(K a, EPoly<K> b) => b.Inv().KMul(a);
-
     public static EPoly<K> operator +(EPoly<K> a, KPoly<K> b) => a + new EPoly<K>(a.F, b.Div(a.F).rem);
     public static EPoly<K> operator +(KPoly<K> a, EPoly<K> b) => new EPoly<K>(b.F, a.Div(b.F).rem) + b;
     public static EPoly<K> operator -(EPoly<K> a, KPoly<K> b) => a - new EPoly<K>(a.F, b.Div(a.F).rem);

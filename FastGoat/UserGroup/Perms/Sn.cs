@@ -21,7 +21,7 @@ public struct Sn : IGroup<Perm>
     public Sn(int n)
     {
         if (n < 2)
-            throw new GroupException(GroupExceptionType.GroupDef); // "Seventh Sky is the limit."
+            throw new GroupException(GroupExceptionType.GroupDef);
 
         N = Hash = n;
         _cache = new int[n];

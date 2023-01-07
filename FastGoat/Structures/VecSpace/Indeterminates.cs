@@ -3,7 +3,7 @@ using FastGoat.Commons;
 
 namespace FastGoat.Structures.VecSpace;
 
-public class Indeterminates<T> : IEnumerable<T> where T : IElt<T>
+public class Indeterminates<T> : IEnumerable<T>, IEquatable<Indeterminates<T>> where T : IElt<T>
 {
     public T[] Content { get; private set; }
 
@@ -54,7 +54,7 @@ public class Indeterminates<T> : IEnumerable<T> where T : IElt<T>
 
     public void Permute(int[] perm)
     {
-        if (IntExt.CheckTable(Content.Length, perm))
+        if (Enumerable.Range(0, Content.Length).SequenceEqual(perm.Order()))
         {
             var cont = perm.Select(i => Content[i]).ToArray();
             Content = cont;
@@ -80,5 +80,20 @@ public class Indeterminates<T> : IEnumerable<T> where T : IElt<T>
 
     public T this[int index] => Content[index];
     public override int GetHashCode() => Hash;
-    public override string ToString() => $"[{Content.Glue(",")}]({Order})";
+    public override string ToString() => $"[{this.Glue(",")}]({Order})";
+
+    public bool Equals(Indeterminates<T>? other)
+    {
+        if (ReferenceEquals(null, other)) return false;
+        if (ReferenceEquals(this, other)) return true;
+        return Content.Equals(other.Content) && Graded == other.Graded && Reverse == other.Reverse && Hash == other.Hash;
+    }
+
+    public override bool Equals(object? obj)
+    {
+        if (ReferenceEquals(null, obj)) return false;
+        if (ReferenceEquals(this, obj)) return true;
+        if (obj.GetType() != this.GetType()) return false;
+        return Equals((Indeterminates<T>)obj);
+    }
 }
