@@ -2,6 +2,7 @@ using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup.Integers;
+using FastGoat.UserGroup.Matrix;
 
 namespace FastGoat.UserGroup;
 
@@ -30,15 +31,30 @@ public static partial class FG
         return new(new KPoly<K>(x, f.KZero, f.Coefs));
     }
 
-    public static EPoly<K> EPoly<K>(K scalar, char x, params K[] coefs)
+    public static KPoly<K> KPoly<K>(char x, params K[] coefs)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var coefs0 = coefs.Reverse().SkipWhile(i => i.IsZero()).Reverse().ToArray();
         if (coefs0.Length < 2)
             throw new GroupException(GroupExceptionType.GroupDef);
 
-        var f = new KPoly<K>(x, scalar.Zero, coefs0);
-        return new EPoly<K>(f);
+        return new KPoly<K>(x, coefs[0].Zero, coefs0);
+    }
+
+    public static KPoly<K> KPoly<K>(K scalar, char x, params int[] coefs)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var coefs0 = coefs.Reverse().SkipWhile(i => i == 0).Select(i => scalar.One * i).Reverse().ToArray();
+        if (coefs0.Length < 2)
+            throw new GroupException(GroupExceptionType.GroupDef);
+
+        return new KPoly<K>(x, scalar.Zero, coefs0);
+    }
+
+    public static EPoly<K> EPoly<K>(K scalar, char x, params K[] coefs)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        return new EPoly<K>(KPoly(x, coefs));
     }
 
     public static (KPoly<EPoly<K>> X, KPoly<EPoly<K>> c) EPolyXC<K>(KPoly<K> f, char c, char x = 'X')
@@ -49,10 +65,28 @@ public static partial class FG
         return (x0, c0 * x0.One);
     }
 
+    public static (KPoly<EPoly<K>> X, KPoly<EPoly<K>> c) EPolyXC<K>(KPoly<K> f)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        return EPolyXC(f, f.x);
+    }
+
+    public static (KPoly<EPoly<K>> X, KPoly<EPoly<K>> c) EPolyXC<K>(char x, params K[] coefs)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        return EPolyXC(KPoly(x, coefs), x);
+    }
+
+    public static (KPoly<EPoly<K>> X, KPoly<EPoly<K>> c) EPolyXC<K>(K scalar, char x, params int[] coefs)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        return EPolyXC(KPoly(scalar, x, coefs), x);
+    }
+
     public static EPoly<K> EPoly<K>(K scalar, char x, params int[] coefs)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
-        return EPoly(scalar, x, coefs.Select(i => i * scalar.One).ToArray());
+        return EPoly(KPoly(scalar, x, coefs));
     }
 
     public static EPoly<Rational> EQPoly(char x, params int[] coefs) => EPoly(Rational.KZero(), x, coefs);
@@ -84,4 +118,47 @@ public static partial class FG
     }
 
     public static (KPoly<EPoly<ZnInt>> x, EPoly<ZnInt> a) FqX_Poly(int q) => FqX_Poly(q, ('x', 'a'));
+
+    public static GLn<K> GLnK<K>(int n, K scalar) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        return new GLn<K>(n, scalar);
+    }
+    
+    public static GLn<K> GLnK<K>(string name, int n, K scalar) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        return new GLn<K>(name, n, scalar);
+    }
+
+    public static EPolynomial<Rational>[] NumberFieldQ(Polynomial<Rational, Xi>[] basis)
+    {
+        var e0 = basis[0];
+        var polyBasis = new PolynomialBasis<Rational, Xi>(e0.Indeterminates, basis);
+        return e0.Indeterminates.Select(xi => new Polynomial<Rational, Xi>(new Monom<Xi>(e0.Indeterminates, xi, 1), e0.KOne))
+            .Select(xi => new EPolynomial<Rational>(xi, polyBasis)).ToArray();
+    }
+
+    public static EPolynomial<Rational> NumberFieldQ(Polynomial<Rational, Xi> e0) => NumberFieldQ(new[] { e0 })[0];
+
+    public static (EPolynomial<Rational>, EPolynomial<Rational>) NumberFieldQ(Polynomial<Rational, Xi> e0, Polynomial<Rational, Xi> e1)
+    {
+        var nbf = NumberFieldQ(new[] { e0, e1 });
+        return (nbf[0], nbf[1]);
+    }
+
+    public static EPolynomial<Rational> NumberFieldQ(KPoly<Rational> e, string x)
+    {
+        var (_, t) = Ring.Polynomial(x, "_t_", Rational.KZero());
+        var a = e.ToPolynomial(t.Indeterminates, t.Indeterminates[0]);
+        return NumberFieldQ(a);
+    }
+    
+    public static (EPolynomial<Rational>, EPolynomial<Rational>) NumberFieldQ((KPoly<Rational>, string) e0,
+        (KPoly<Rational>, string) e1)
+    {
+        var (_, _, t) = Ring.Polynomial(e0.Item2, e1.Item2, "_t_", Rational.KZero());
+        var a = e0.Item1.ToPolynomial(t.Indeterminates, t.Indeterminates[0]);
+        var b = e1.Item1.ToPolynomial(t.Indeterminates, t.Indeterminates[1]);
+        var nbf = NumberFieldQ(new[] { a, b });
+        return (nbf[0], nbf[1]);
+    }
 }
