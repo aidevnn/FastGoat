@@ -31,7 +31,7 @@ public static partial class Ring
         return f;
     }
 
-    static Polynomial<K, Xi> TotalReduction<K>(Polynomial<K, Xi> p, Polynomial<K, Xi>[] bs)
+    public static Polynomial<K, Xi> TotalReduction<K>(Polynomial<K, Xi> p, Polynomial<K, Xi>[] bs)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var f0 = p.Zero;
@@ -40,7 +40,7 @@ public static partial class Ring
         {
             f = Reduction(f, bs);
             if (f.IsZero())
-                return f;
+                return f0;
 
             var lt = f.LeadingDetails.lt;
             f0 += lt;
@@ -89,7 +89,8 @@ public static partial class Ring
 
     // Jean-Charles Faugere version of Buchberger algorithm for Grobner Basis
     // Jean-Charles Faugere version of Buchberger algorithm for Groebner Basis
-    static Polynomial<K, Xi>[] BuchbergerAlgorithm<K>(params Polynomial<K, Xi>[] f) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    static Polynomial<K, Xi>[] BuchbergerAlgorithm<K>(params Polynomial<K, Xi>[] f)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var m = f.Length;
         var g = f.ToList();
@@ -126,12 +127,28 @@ public static partial class Ring
     public static Polynomial<K, Xi>[] ReducedGrobnerBasis<K>(params Polynomial<K, Xi>[] f)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
-        return ReducedBasis(GrobnerBasis(f)).ToArray();
+        return ReducedBasis(GrobnerBasis(f)).Order().ToArray();
     }
 
     public static Polynomial<K, Xi>[] ReducedGroebnerBasis<K>(params Polynomial<K, Xi>[] f)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
-        return ReducedBasis(GrobnerBasis(f)).ToArray();
+        return ReducedBasis(GrobnerBasis(f)).Order().ToArray();
     }
+
+    public static Polynomial<K, Xi> LcmPolynomial<K>(Polynomial<K, Xi> a, Polynomial<K, Xi> b)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var ti = a.Indeterminates.Last();
+        var da = a.DegreeOf(ti);
+        var db = b.DegreeOf(ti);
+        if (da != 0 && db != 0)
+            throw new ArgumentException();
+
+        var mnm = new Monom<Xi>(a.Indeterminates, ti, 1);
+        var t = new Polynomial<K, Xi>(mnm, a.KOne);
+        var gb = ReducedGrobnerBasis(t * a, (1 - t) * b);
+        return gb.Last().Monic();
+    }
+
 }

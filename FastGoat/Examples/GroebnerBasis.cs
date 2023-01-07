@@ -91,4 +91,45 @@ public static class GroebnerBasis
             Console.WriteLine();
         }
     }
+
+    public static void LCMexample1()
+    {
+        var (x, y, t) = Ring.Polynomial("x", "y", "t", Rational.KZero());
+        var (e1, e2) = ( x.Pow(2) * y, x * y.Pow(2));
+        var (p1, p2) = (t * e1, (1 - t) * e2);
+        Console.WriteLine($"ReducedGrobnerBasis[{p1}, {p2}]{p1.Indeterminates}");
+        var bs1 = Ring.ReducedGrobnerBasis(p1, p2);
+        Console.WriteLine(bs1.Glue("\n"));
+        Console.WriteLine();
+
+        var lcm = Ring.LcmPolynomial(e1, e2);
+        var gcd = e1 * e2 / lcm;
+        var (f1, f2) = (e1.Div(gcd), e2.Div(gcd));
+        Console.WriteLine(new { e1, e2, lcm, gcd, f1, f2 });
+    }
+
+    public static void LCMexample2()
+    {
+        var (x, y, t) = Ring.Polynomial("x", "y", "t", Rational.KZero());
+
+        var (e1, e2) = ((x + y).Pow(4) * (x.Pow(2) + y).Pow(2) * (x - 5 * y), (x + y) * (x.Pow(2) + y).Pow(3) * (x + 3 * y));
+        var (p1, p2) = (t * e1, (1 - t) * e2);
+        Console.WriteLine($"ReducedGrobnerBasis[{p1}, {p2}]{p1.Indeterminates}");
+        var bs1 = Ring.ReducedGrobnerBasis(p1, p2);
+        Console.WriteLine(bs1.Glue("\n"));
+        Console.WriteLine();
+
+        var lcm = Ring.LcmPolynomial(e1, e2);
+        var gcd = e1 * e2 / lcm;
+        var (f1, f2) = (e1.Div(gcd), e2.Div(gcd));
+        var (g1, g2) = ((x + y).Pow(3) *  (x - 5 * y), (x.Pow(2) + y) * (x + 3 * y));
+        Console.WriteLine(new { e1 });
+        Console.WriteLine(new { e2 });
+        Console.WriteLine(new { lcm });
+        Console.WriteLine(new { gcd });
+        Console.WriteLine(new { f1 });
+        Console.WriteLine(new { g1 });
+        Console.WriteLine(new { f2 });
+        Console.WriteLine(new { g2 });
+    }
 }

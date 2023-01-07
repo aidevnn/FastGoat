@@ -174,3 +174,9 @@ Laboratory for Computer Science, MIT
 Résolution des systèmes polynômiaux en utilisant les bases de Gröbner.
 INRIA (POLSYS) / UPMC / CNRS/ LIP6.
 <i>(JNCF) 2015</i>
+
+[Ideals](https://doi.org/10.1007/978-3-319-16721-3_11)
+<b>David A. Cox, John Little, Donal O’Shea</b>
+Ideals, Varieties, and Algorithms.
+Springer. 4th Edition.
+<i>Chapter 5. Polynomial and Rational Functions on a Variety</i>
