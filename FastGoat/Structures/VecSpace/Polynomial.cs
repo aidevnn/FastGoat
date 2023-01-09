@@ -82,11 +82,11 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
     {
         get
         {
-            var (lc, lm, lt) = LeadingDetails;
-            if (!lc.Equals(lc.One) || lm.Degree != 1 || !lt.Equals(this))
-                throw new ArgumentException($"second argument must be monomial");
+            if (NbIndeterminates != 1)
+                throw new ArgumentException("Not univariate polynomial");
 
-            return Indeterminates.First(xi => lm[xi] == 1);
+            var coefs = Coefs.Keys.First(m => m.Degree > 0);
+            return Indeterminates.First(xi => coefs[xi] > 0);
         }
     }
 

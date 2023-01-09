@@ -148,7 +148,8 @@ public readonly struct EPolynomial<K> : IVsElt<K, EPolynomial<K>>, IElt<EPolynom
         Polynomial<K, Xi> denom)
     {
         var (q, r) = num.Div(denom);
-        if (r.IsZero())
+        var r0 = basis.Rem(r);
+        if (r0.IsZero())
         {
             var q0 = basis.Rem(q);
             return (q0, q0.One);

@@ -83,10 +83,10 @@ public static class GLnK
         var m0 = gl[i, 0, 0, -i];
         var m1 = gl[0, 1, -1, 0];
     
-        var g1 = Group.Generate("D8a", gl, m0, m1);
+        var g1 = Group.Generate("Q8a", gl, m0, m1);
         DisplayGroup.HeadElements(g1);
     
-        DisplayGroup.AreIsomorphics(g1, FG.Dihedral(4));
+        DisplayGroup.AreIsomorphics(g1, FG.Quaternion(8));
     }
 
     public static void ExampleDicyclic4()
@@ -125,7 +125,10 @@ public static class GLnK
         DisplayGroup.HeadElements(g1);
         var g2 = Group.Generate("G24", gl, m0, m1, m2);
         DisplayGroup.HeadElements(g2);
-    
-        DisplayGroup.AreIsomorphics(g2, Group.SemiDirectProd(new Cn(3), FG.Quaternion(8)));
+
+        var sdp = Group.SemiDirectProd(new Cn(3), FG.Quaternion(8));
+        DisplayGroup.HeadOrders(g2);
+        DisplayGroup.HeadSdpOrders(sdp);
+        DisplayGroup.AreIsomorphics(g2, sdp);
     }
 }

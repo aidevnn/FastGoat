@@ -89,7 +89,7 @@ public class NthRootQ : ConcreteGroup<EPoly<Rational>>
     public CyclotomicGroupBase<Rational> CG { get; }
     public int N => CG.N;
 
-    public EPoly<Rational>[] PrimitivesRoots() => ElementsOrders.Where(e => e.Value == N).Select(e => e.Key).ToArray();
+    public EPoly<Rational>[] PrimitivesRoots() => ElementsOrders.Where(e => e.Value == N).Select(e => e.Key).Order().ToArray();
 }
 
 public class NthRootFq : ConcreteGroup<EPoly<EPoly<ZnInt>>>
@@ -105,5 +105,5 @@ public class NthRootFq : ConcreteGroup<EPoly<EPoly<ZnInt>>>
 
     public CyclotomicGroupBase<EPoly<ZnInt>> CG { get; }
     public int N => CG.N;
-    public EPoly<EPoly<ZnInt>>[] PrimitivesRoots() => ElementsOrders.Where(e => e.Value == N).Select(e => e.Key).ToArray();
+    public EPoly<EPoly<ZnInt>>[] PrimitivesRoots() => ElementsOrders.Where(e => e.Value == N).Select(e => e.Key).Order().ToArray();
 }

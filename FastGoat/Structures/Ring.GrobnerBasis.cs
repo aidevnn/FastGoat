@@ -145,10 +145,18 @@ public static partial class Ring
         if (da != 0 && db != 0)
             throw new ArgumentException();
 
+        // Console.WriteLine(new { a, b });
+        // if (a.NbIndeterminates <= 1 || b.NbIndeterminates <= 1)
+        //     throw new ArgumentException();
+
         var mnm = new Monom<Xi>(a.Indeterminates, ti, 1);
         var t = new Polynomial<K, Xi>(mnm, a.KOne);
+        var ord = a.Indeterminates.Order;
+        a.Indeterminates.SetOrder(MonomOrder.GrLex);
         var gb = ReducedGrobnerBasis(t * a, (1 - t) * b);
-        return gb.Last().Monic();
+        var lcm = gb.Last().Monic();
+        a.Indeterminates.SetOrder(ord);
+        return lcm;
     }
 
 }

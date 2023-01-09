@@ -41,20 +41,38 @@ public static partial class FG
         return new KPoly<K>(x, coefs[0].Zero, coefs0);
     }
 
-    public static KPoly<K> KPoly<K>(K scalar, char x, params int[] coefs)
+    private static KPoly<K> KPoly<K>(char x, K scalar, dynamic[] coefs)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
-        var coefs0 = coefs.Reverse().SkipWhile(i => i == 0).Select(i => scalar.One * i).Reverse().ToArray();
-        if (coefs0.Length < 2)
+        var coefs0 = new List<K>();
+        var cs = coefs[0] is Array a ? a : coefs;
+        foreach (var c in cs)
+        {
+            if (c is int c0)
+                coefs0.Add(c0 * scalar.One);
+            else if (c is K c1)
+                coefs0.Add(c1);
+            else
+                throw new ArgumentException();
+        }
+
+        var coefs1 = coefs0.Reverse<K>().SkipWhile(i => i.IsZero()).Reverse().ToArray();
+        if (coefs1.Length < 2)
             throw new GroupException(GroupExceptionType.GroupDef);
 
-        return new KPoly<K>(x, scalar.Zero, coefs0);
+        return new KPoly<K>(x, scalar.Zero, coefs1);
     }
 
-    public static EPoly<K> EPoly<K>(K scalar, char x, params K[] coefs)
+    public static KPoly<K> KPoly<K>(K scalar, char x, params dynamic[] coefs)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
-        return new EPoly<K>(KPoly(x, coefs));
+        return KPoly(x, scalar, coefs);
+    }
+
+    public static EPoly<K> EPoly<K>(K scalar, char x, params dynamic[] coefs)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        return new EPoly<K>(KPoly(x, scalar, coefs));
     }
 
     public static (KPoly<EPoly<K>> X, KPoly<EPoly<K>> c) EPolyXC<K>(KPoly<K> f, char c, char x = 'X')
@@ -142,7 +160,11 @@ public static partial class FG
     public static (EPolynomial<Rational>, EPolynomial<Rational>) NumberFieldQ(Polynomial<Rational, Xi> e0, Polynomial<Rational, Xi> e1)
     {
         var nbf = NumberFieldQ(new[] { e0, e1 });
-        return (nbf[0], nbf[1]);
+        var x0 = e0.ExtractIndeterminate;
+        var i0 = e0.Indeterminates.ToList().FindIndex(xi => xi.Equals(x0));
+        var x1 = e1.ExtractIndeterminate;
+        var i1 = e0.Indeterminates.ToList().FindIndex(xi => xi.Equals(x1));
+        return (nbf[i0], nbf[i1]);
     }
 
     public static EPolynomial<Rational> NumberFieldQ(KPoly<Rational> e, string x)
