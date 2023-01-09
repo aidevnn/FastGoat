@@ -127,7 +127,7 @@ American Mathematical Society.
 [A Course on Finite Groups](https://link.springer.com/book/10.1007/978-1-84882-889-6)
 <b>H.E. Rose.</b>
 A Course on Finite Groups.
-Springer.
+Springer. 2009.
 <i>All Chapters.</i>
 
 [GroupNames](https://people.maths.bris.ac.uk/~matyd/GroupNames/index.html)
@@ -160,13 +160,13 @@ Algorithmes Efficaces en Calcul Formel.
 [hal-01444183](https://hal.archives-ouvertes.fr/hal-01444183)
 <b>Xavier Caruso</b>
 Computations with p-adic numbers. Journées Nationales de Calcul Formel, In press,
-Les cours du CIRM.
+Les cours du CIRM. 2017.
 <i>Several implementations of p-adic numbers</i>
 
 [Algebraic Factoring](https://dl.acm.org/doi/10.1145/800205.806338)
 <b>Barry Trager</b>
 Algebraic Factoring and Rational Function Integration.
-Laboratory for Computer Science, MIT
+Laboratory for Computer Science, MIT. 1976.
 <i>Norms and Algebraic Factoring</i>
 
 [Bases de Gröbner](https://www.cristal.univ-lille.fr/jncf2015/files/lecture-notes/faugere.pdf)
@@ -175,8 +175,8 @@ Résolution des systèmes polynômiaux en utilisant les bases de Gröbner.
 INRIA (POLSYS) / UPMC / CNRS/ LIP6.
 <i>(JNCF) 2015</i>
 
-[Ideals](https://doi.org/10.1007/978-3-319-16721-3_11)
+[Ideals, Varieties, and Algorithms](https://doi.org/10.1007/978-3-319-16721-3)
 <b>David A. Cox, John Little, Donal O’Shea</b>
 Ideals, Varieties, and Algorithms.
-Springer. 4th Edition.
+Springer. 4th Edition. 2015.
 <i>Chapter 5. Polynomial and Rational Functions on a Variety</i>
