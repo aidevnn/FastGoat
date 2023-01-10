@@ -6,7 +6,7 @@ namespace FastGoat.Commons
     {
         static IntExt()
         {
-            Primes10000 = new(AllPrimes(10000));
+            Primes10000 = new(AllPrimes(10000000));
             Partitions32 = IntPartitions(32);
 
             var comp = Comparer<int[]>.Create((a, b) => a.SequenceCompareTo(b));
@@ -103,6 +103,10 @@ namespace FastGoat.Commons
         public static Dictionary<int, int> PrimesDec(BigInteger n)
         {
             var dec = PrimesDecompositionBigInt(BigInteger.Abs(n));
+            var prod = dec.Aggregate(BigInteger.One, (acc, a) => acc * a);
+            if (prod != BigInteger.Abs(n))
+                throw new Exception($"Primes10000 decomposition incomplete n/p={BigInteger.Abs(n) / prod} n={n}");
+            
             var dico = dec.GroupBy(e => e).ToDictionary(e => e.Key, e => e.Count());
             if (n < 0)
                 dico[-1] = 1;

@@ -158,6 +158,7 @@ public static class AlgebraicFactorization
         var prod = L.Aggregate(g.One, (acc, h) => acc * h.hi);
         var seq = L.Select(h => h.hi).Glue(" * ", "({0})");
         Console.WriteLine($"{prod} = {seq}");
+        Console.WriteLine($"Is equal {f.Substitute(g.X).Equals(prod)}");
         Console.WriteLine("#############  END  Algebraic Factors #############");
         Console.WriteLine();
 
@@ -186,6 +187,69 @@ public static class AlgebraicFactorization
         var a = (-gcd[0]) / gcd[1];
         var b = y - s * a;
         return (r, a.Poly, b.Poly);
+    }
+
+    static KPoly<EPoly<Rational>> Resolve(List<KPoly<Rational>> minPolys, KPoly<EPoly<Rational>> f, List<EPoly<Rational>> roots)
+    {
+        if (f.Degree == 0)
+            return f;
+
+        var i = minPolys.Count;
+        var (r0, a0, b0) = PrimitiveElt(f);
+        var L0 = PolynomialFactorizationPart2.FirrQ(r0);
+        var r1 = L0[0];
+        var (x1, y0) = FG.EPolyXC(r1, (char)(f[0].Poly.x + 1));
+        var xa0 = a0.Substitute(y0)[0];
+        var xb0 = b0.Substitute(y0)[0];
+        var f0 = new KPoly<EPoly<Rational>>(x1.x, x1.KZero,
+            f.Coefs.Select(k => new EPoly<Rational>(xa0.F, k.Substitute(xa0).Poly)).ToArray());
+        var f1 = f0 / (x1 - xb0);
+        if (f1.Degree == 0)
+        {
+            var xb = (-f[0]) / f[1];
+            roots.Add(xb);
+            Console.WriteLine("MinPolys");
+            Console.WriteLine(minPolys.Glue("\n"));
+            Console.WriteLine("Roots");
+            Console.WriteLine(roots.Glue("\n"));
+            Console.WriteLine();
+
+            return f1;
+        }
+
+
+        minPolys.Add(r1);
+        var tmp = roots.Select(s => s.Substitute(xa0)).ToList();
+        roots.Clear();
+        roots.AddRange(tmp);
+        roots.Add(xb0);
+        Console.WriteLine($"f{i} = {f} => f{i + 1} = {f1}");
+
+        return f1;
+    }
+
+    public static void SplittingField(KPoly<Rational> f)
+    {
+        var (x, a) = FG.EPolyXC(f, 'a');
+        var f0 = f.Substitute(x);
+        var minPolys = new List<KPoly<Rational>>() { f };
+        var roots = new List<EPoly<Rational>>() { a[0] };
+        Console.WriteLine($"f0 = {f}");
+        var tmp = f0 / (x - a);
+
+        while (tmp.Degree > 0)
+        {
+            tmp = Resolve(minPolys, tmp, roots);
+        }
+
+        var mp = minPolys.Last();
+        var mp0 = roots.Last().F;
+        Console.WriteLine(new { mp, mp0 });
+        var X = FG.KPoly('X', roots.Last());
+        var f1 = roots.Select(r => X - r).Aggregate(X.One, (acc, xi) => acc * xi);
+        Console.WriteLine($"prod = {f1}");
+        Console.WriteLine($"f = {f}");
+        Console.WriteLine();
     }
 
     public static void MinimalPolynomials()
@@ -336,5 +400,30 @@ public static class AlgebraicFactorization
             Console.WriteLine(new[] { $"r = {r}", $"a = {a}", $"b = {b}" }.Glue("\n"));
             Console.WriteLine();
         }
+    }
+
+    public static void SplittingFieldCubicPolynomial()
+
+    {
+        var x = FG.QPoly('y');
+        
+        SplittingField(x.Pow(2) - 3 * x - 3);
+        SplittingField(x.Pow(2) + x + 1);
+        SplittingField(x.Pow(2) + 2 * x - 5);
+        
+        SplittingField(x.Pow(3) - 2);
+        SplittingField(x.Pow(3) - 3);
+        SplittingField(x.Pow(3) - 3 * x - 1);
+        SplittingField(x.Pow(3) - 2 * x + 2);
+        SplittingField(x.Pow(3) + 2 * x.Pow(2) - x - 1);
+        SplittingField(x.Pow(3) + 4 * x.Pow(2) + 3 * x + 1);
+        SplittingField(x.Pow(3) - x + 1);
+        
+        SplittingField(x.Pow(4) - 2);
+        SplittingField(x.Pow(4) + 4 * x.Pow(2) + 2);
+        SplittingField(x.Pow(4) - 4 * x.Pow(2) + 2);
+        SplittingField(x.Pow(4) + x.Pow(3) + x.Pow(2) + x + 1);
+        
+        // SplittingField(x.Pow(4) + 3*x.Pow(3) - x.Pow(2) + x + 1); // wont work
     }
 }
