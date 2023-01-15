@@ -83,6 +83,14 @@ public static partial class FG
         return (x0, c0 * x0.One);
     }
 
+    public static (KPoly<EPoly<K>> X,EPoly<K> c) EPolyXc<K>(KPoly<K> f, char c, char x = 'X')
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var c0 = EPoly(f, c);
+        var x0 = KPoly(x, c0);
+        return (x0, c0);
+    }
+
     public static (KPoly<EPoly<K>> X, KPoly<EPoly<K>> c) EPolyXC<K>(KPoly<K> f)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
@@ -99,6 +107,12 @@ public static partial class FG
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         return EPolyXC(KPoly(scalar, x, coefs), x);
+    }
+
+    public static (KPoly<EPoly<K>> X, KPoly<EPoly<K>> c) EPolyXC<K>(K scalar, char a, char b, params int[] coefs)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        return EPolyXC(KPoly(scalar, a, coefs), a, b);
     }
 
     public static EPoly<K> EPoly<K>(K scalar, char x, params int[] coefs)

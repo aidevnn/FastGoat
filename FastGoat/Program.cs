@@ -16,6 +16,7 @@ using static FastGoat.Commons.IntExt;
 using static FastGoat.Commons.EnumerableExt;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics.Arm;
 using System.Xml;
 using FastGoat.UserGroup.Padic;
 

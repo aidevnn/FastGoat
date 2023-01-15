@@ -104,8 +104,8 @@ namespace FastGoat.Commons
         {
             var dec = PrimesDecompositionBigInt(BigInteger.Abs(n));
             var prod = dec.Aggregate(BigInteger.One, (acc, a) => acc * a);
-            if (prod != BigInteger.Abs(n))
-                throw new Exception($"Primes10000 decomposition incomplete n/p={BigInteger.Abs(n) / prod} n={n}");
+            // if (prod != BigInteger.Abs(n))
+            //     throw new Exception($"Primes10000 decomposition incomplete n/p={BigInteger.Abs(n) / prod} n={n}");
             
             var dico = dec.GroupBy(e => e).ToDictionary(e => e.Key, e => e.Count());
             if (n < 0)

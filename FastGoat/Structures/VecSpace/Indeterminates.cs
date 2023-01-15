@@ -1,3 +1,4 @@
+using System.CodeDom;
 using System.Collections;
 using FastGoat.Commons;
 
@@ -29,6 +30,18 @@ public class Indeterminates<T> : IEnumerable<T>, IEquatable<Indeterminates<T>> w
 
     public Indeterminates(params T[] arr) : this(arr, true, false)
     {
+    }
+
+    public Indeterminates(MonomOrder order, params T[] arr)
+    {
+        Content = arr.ToArray();
+        if (Content.Length == 0)
+            throw new ArgumentException();
+
+        // if(Content.Distinct().Count() != arr.Count()) {} // TODO warning
+
+        SetOrder(order);
+        Hash = Content.Aggregate(0, (acc, a) => (acc, a.Hash).GetHashCode());
     }
 
     public MonomOrder Order =>
@@ -96,4 +109,25 @@ public class Indeterminates<T> : IEnumerable<T>, IEquatable<Indeterminates<T>> w
         if (obj.GetType() != this.GetType()) return false;
         return Equals((Indeterminates<T>)obj);
     }
+    
+    public void Deconstruct(out T a, out T b)
+    {
+        (a, b) = (this[0], this[1]);
+    }
+
+    public void Deconstruct(out T a, out T b, out T c)
+    {
+        (a, b, c) = (this[0], this[1], this[2]);
+    }
+
+    public void Deconstruct(out T a, out T b, out T c, out T d)
+    {
+        (a, b, c, d) = (this[0], this[1], this[2], this[3]);
+    }
+
+    public void Deconstruct(out T a, out T b, out T c, out T d, out T e)
+    {
+        (a, b, c, d, e) = (this[0], this[1], this[2], this[3], this[4]);
+    }
+
 }

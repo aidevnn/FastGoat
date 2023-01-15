@@ -22,6 +22,9 @@ public static partial class Ring
 
         if (a.CompareTo(b) == -1)
         {
+            if(a.IsZero())
+                return b.CompareTo(b.Opp()) == -1 ? b.Opp() : b;
+            
             var a0 = b.Div(a).rem;
             if (a0.Equals(b))
             {
@@ -78,6 +81,13 @@ public static partial class Ring
         return xi.Select(c => new Polynomial<K, Xi>(new Monom<Xi>(indeterminates, new(c), 1), scalar.One)).ToArray();
     }
 
+    public static Polynomial<K, Xi>[] Polynomial<K>(K scalar, MonomOrder order, string[] xi)
+        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
+    {
+        var indeterminates = new Indeterminates<Xi>(order, xi.Select(x => new Xi(x)).ToArray());
+        return xi.Select(c => new Polynomial<K, Xi>(new Monom<Xi>(indeterminates, new(c), 1), scalar.One)).ToArray();
+    }
+
     public static Polynomial<K, Xi>[] Polynomial<K>(K scalar, char[] xi)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
@@ -102,37 +112,38 @@ public static partial class Ring
         return Polynomial("X", scalar);
     }
 
-    public static (Polynomial<K, Xi> x1, Polynomial<K, Xi> x2) Polynomial<K>(string x1, string x2, K scalar)
+    public static (Polynomial<K, Xi> x1, Polynomial<K, Xi> x2)
+        Polynomial<K>(string x1, string x2, K scalar, MonomOrder order = MonomOrder.GrLex)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
-        var polys = Polynomial(scalar, x1, x2);
+        var polys = Polynomial(scalar, order, new[] { x1, x2 });
         return (polys[0], polys[1]);
     }
 
     public static (Polynomial<K, Xi> x1, Polynomial<K, Xi> x2, Polynomial<K, Xi> x3)
-        Polynomial<K>(string x1, string x2, string x3, K scalar)
+        Polynomial<K>(string x1, string x2, string x3, K scalar, MonomOrder order = MonomOrder.GrLex)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
-        var polys = Polynomial(scalar, x1, x2, x3);
+        var polys = Polynomial(scalar, order, new[] { x1, x2, x3 });
         return (polys[0], polys[1], polys[2]);
     }
 
-    public static (Polynomial<K, Xi> x1, Polynomial<K, Xi> x2, Polynomial<K, Xi> x3, Polynomial<K, Xi> x4)
-        Polynomial<K>(string x1, string x2, string x3, string x4, K scalar)
+    public static (Polynomial<K, Xi> x1, Polynomial<K, Xi> x2, Polynomial<K, Xi> x3, Polynomial<K, Xi> x4) Polynomial<K>(string x1,
+        string x2, string x3, string x4, K scalar, MonomOrder order = MonomOrder.GrLex)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
-        var polys = Polynomial(scalar, x1, x2, x3, x4);
+        var polys = Polynomial(scalar, order, new[] { x1, x2, x3, x4 });
         return (polys[0], polys[1], polys[2], polys[3]);
     }
 
     public static (Polynomial<K, Xi> x1, Polynomial<K, Xi> x2, Polynomial<K, Xi> x3, Polynomial<K, Xi> x4, Polynomial<K, Xi> x5)
-        Polynomial<K>(string x1, string x2, string x3, string x4, string x5, K scalar)
+        Polynomial<K>(string x1, string x2, string x3, string x4, string x5, K scalar, MonomOrder order = MonomOrder.GrLex)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
-        var polys = Polynomial(scalar, x1, x2, x3, x4, x5);
+        var polys = Polynomial(scalar, order, new[] { x1, x2, x3, x4, x5 });
         return (polys[0], polys[1], polys[2], polys[3], polys[4]);
     }
-    
+
     public static KPoly<K> ToKPoly<K>(this Polynomial<K, Xi> f, Xi x)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
@@ -152,5 +163,23 @@ public static partial class Ring
     {
         var mnm = new Monom<Xi>(indeterminates, xi, 1);
         return f.Coefs.Select((k, i) => new Polynomial<K, Xi>(mnm.Pow(i), k)).Aggregate((a, b) => a + b);
+    }
+
+    public static Polynomial<K, Xi> ToPolynomial<K>(this KPoly<K> f, Polynomial<K, Xi> x)
+        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
+    {
+        return f.Coefs.Select((k, i) => k * x.Pow(i)).Aggregate(x.Zero, (a, b) => a + b);
+    }
+
+    public static Polynomial<EPoly<K>, Xi> ToPolynomial<K>(this KPoly<K> f, Polynomial<EPoly<K>, Xi> x)
+        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
+    {
+        return f.Coefs.Select((k, i) => k * x.KOne * x.Pow(i)).Aggregate(x.Zero, (a, b) => a + b);
+    }
+
+    public static KPoly<EPoly<K>> SubstituteP0b<K>(this KPoly<EPoly<K>> P, KPoly<EPoly<K>> s, EPoly<K> a)
+        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
+    {
+        return P.Coefs.Select((c, i) => c.Poly.Substitute(a) * s.Pow(i)).Aggregate(s.Zero, (acc, c) => acc + c);
     }
 }

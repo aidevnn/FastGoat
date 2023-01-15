@@ -50,6 +50,16 @@ public static class PolynomialFactorization
         }
     }
 
+    public static KPoly<K> RandPolySepStrict<K>(K scalar, int p, int n) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        while (true)
+        {
+            var f = RandPoly(scalar, p, n);
+            if (f.Degree == n && !Ring.Discriminant(f).IsZero())
+                return f.Monic;
+        }
+    }
+
     static KPoly<ZnInt> ProdIrr(int p, int d)
     {
         var x = FG.ZPoly(p);
@@ -121,6 +131,16 @@ public static class PolynomialFactorization
         }
 
         return L;
+    }
+
+    public static List<(KPoly<K> g, int q, int i)> YunSFFDetails<K>(KPoly<K> f)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var sep = YunSFF(f);
+        Console.WriteLine($"Square Free Factors of F = {f}");
+        Console.WriteLine(sep.Glue("\n"));
+        Console.WriteLine();
+        return sep;
     }
 
     static (KPoly<K> c, int p) DeflateP<K>(KPoly<K> f) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>

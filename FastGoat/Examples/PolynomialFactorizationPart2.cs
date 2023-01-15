@@ -17,28 +17,35 @@ public static class PolynomialFactorizationPart2
         return Double.Sqrt(n + 1) * Double.Pow(2, n) * norm;
     }
 
-    static IEnumerable<(int p, int s)> PSigma(KPoly<Rational> f)
+    static IEnumerable<(int p, int s)> PSigma(KPoly<Rational> f, bool details = false)
     {
-        var discPrimes = IntExt.PrimesDecompositionBigInt(Ring.Discriminant(f).Num)
-            // .Concat(IntExt.PrimesDecomposition(f.Degree))
-            // .Concat(f.Coefs.SelectMany(e => IntExt.PrimesDecompositionBigInt(e.Num)))
-            .Distinct();
+        var discPrimes = IntExt.PrimesDecompositionBigInt(BigInteger.Abs(Ring.Discriminant(f).Num))
+            .Distinct().ToArray();
 
+        if (details)
+            Console.WriteLine($"discPrimes = {discPrimes.Glue("; ")}");
         var primes = IntExt.Primes10000.Except(discPrimes).ToArray();
         var nu = Nu(f);
 
-        var rg = f.Degree.Range(1).ToArray();
-        var all = primes.Take(50).Grid2D(rg)
-            .Select(e => (s: e.t2, p: e.t1, pow: float.Pow(e.t1, e.t2)))
-            .Where(e => e.pow > 2 * nu).OrderBy(e => e.pow)
+        var deg = f.Degree + 3;
+        var rg = deg.Range(1).ToArray();
+        // var all = primes.Take(20).Grid2D(rg)
+        //     .Select(e => (s: e.t2, p: e.t1, pow: float.Pow(e.t1, e.t2)))
+        //     .Where(e => e.pow > 2 * nu).OrderBy(e => e.p)
+        //     .ToArray();
+        
+        var all = primes.Take(50).Select(p => (p, s: (int)(Double.Log(2 * nu) / Double.Log(p)) + 1))
             .ToArray();
 
-        foreach (var (s, p, _) in all)
+        if (details)
+            Console.WriteLine($"nu={nu} prime first = {primes.First()} all = {all.Length}");
+        
+        foreach (var (p, s) in all)
         {
             yield return (p, s);
         }
 
-        throw new ArgumentException("Prime not found");
+        // throw new ArgumentException("Prime not found");
     }
 
     static void PSigma2(KPoly<Rational> f)
@@ -59,7 +66,7 @@ public static class PolynomialFactorizationPart2
     static KPoly<ZnBInt> ZPoly2ZnInt(KPoly<ZnBInt> f, Modulus po) =>
         new(f.x, po.Zero, f.Coefs.Select(e => new ZnBInt(po, e.K)).ToArray());
 
-    static KPoly<Rational>[] HenselLifting(KPoly<Rational> f, int p, int o)
+    static KPoly<Rational>[] HenselLifting(KPoly<Rational> f, int p, int o, bool details = false)
     {
         if (!f.Coefs.Last().Equals(f.KOne) || f.Coefs.Any(c => !c.Denom.IsOne))
             throw new ArgumentException();
@@ -133,17 +140,21 @@ public static class PolynomialFactorizationPart2
         {
             throw new Exception();
         }
+        
+        var listIrr0 = listIrr.OrderBy(q => new KPoly<Rational>(q.x, q.KZero, q.Coefs.Select(Rational.Abs).ToArray())).ToArray();
+        if (details)
+        {
+            Console.WriteLine($"Prime P = {p}; Sigma = {o}; P^o={BigInteger.Pow(p, o)} 2*Nu={2*nu,0:0.00}");
+            Console.WriteLine($"f = {f0} mod {p}");
+            Console.WriteLine("Fact(f) = {0} mod {1}", firr0.Order().Glue("*", "({0})"), p);
+            Console.WriteLine("Fact(f) = {0} in Z[X]", listIrr0.Glue("*", "({0})"));
+            Console.WriteLine();
+        }
 
-        Console.WriteLine($"Prime P = {p}; Sigma = {o}; P^o={BigInteger.Pow(p, o)} Nu={nu,0:0.00}");
-        Console.WriteLine($"f = {f0} mod {p}");
-        Console.WriteLine("Fact(f) = {0} mod {1}", firr0.Order().Glue("*", "({0})"), p);
-        Console.WriteLine("Fact(f) = {0} in Z[X]", listIrr.Order().Glue("*", "({0})"));
-        Console.WriteLine();
-
-        return listIrr.ToArray();
+        return listIrr0;
     }
 
-    public static KPoly<Rational>[] FirrQ(KPoly<Rational> f)
+    public static KPoly<Rational>[] FirrQ(KPoly<Rational> f, bool details = false)
     {
         var m0 = f[f.Degree];
         var f0 = f.Monic;
@@ -158,7 +169,7 @@ public static class PolynomialFactorizationPart2
         var c = f1[f1.Degree];
         var f2 = c.Pow(f1.Degree - 1) * f1.Substitute(f1.X / c);
 
-        if (!c.Equals(c.One))
+        if (!c.Equals(c.One) && details)
         {
             Console.WriteLine($"f0 = {f}");
             Console.WriteLine($"Monic f = {f2}");
@@ -171,14 +182,16 @@ public static class PolynomialFactorizationPart2
             var firr0 = firr.Select(g => g.Substitute(g.X * c).Monic).ToArray();
             var m = m0 * ct.Inv() * c.Pow(f1.Degree - 1).Inv() *
                     firr.Select(g => g.Substitute(g.X * c)[g.Degree]).Aggregate(new Rational(1), (acc, a) => a * acc);
+            if(details)
+            {
+                Console.WriteLine("Finalize");
+                if (!m.Equals(m.One))
+                    Console.WriteLine("Fact(f0) = {0}*{1} in Z[X]", m, firr0.Order().Glue("*", "({0})"));
+                else
+                    Console.WriteLine("Fact(f0) = {0} in Z[X]", firr0.Order().Glue("*", "({0})"));
 
-            Console.WriteLine("Finalize");
-            if (!m.Equals(m.One))
-                Console.WriteLine("Fact(f0) = {0}*{1} in Z[X]", m, firr0.Order().Glue("*", "({0})"));
-            else
-                Console.WriteLine("Fact(f0) = {0} in Z[X]", firr0.Order().Glue("*", "({0})"));
-
-            Console.WriteLine();
+                Console.WriteLine();
+            }
 
             return firr0;
         }
@@ -186,25 +199,71 @@ public static class PolynomialFactorizationPart2
         return firr;
     }
 
-    public static KPoly<Rational>[] FirrZ(KPoly<Rational> f)
+    public static bool EisensteinCriterion(KPoly<Rational> f, bool details = false)
     {
-        Console.WriteLine($"f = {f}");
+        var a0 = f[0];
+        var an = f.Coefs.Last();
+        var ai = f.Coefs.SkipLast(1).Where(ai => !ai.IsZero()).ToArray();
+        var pi = ai.Length == 0
+            ? Array.Empty<int>()
+            : ai.Select(a => IntExt.PrimesDecompositionBigInt(BigInteger.Abs(a.Num)).Distinct())
+                .Aggregate((a, b) => a.Intersect(b)).ToArray();
+        
+        if (details)
+            Console.WriteLine($"Common Primes {pi.Glue("; ")}");
+        
+        if (pi.Length == 0)
+            return false;
+        else
+        {
+            foreach (var p in pi)
+            {
+                if (an % p != 0 && a0 % (p * p) != 0)
+                {
+                    if (details)
+                    {
+                        Console.WriteLine($"Irreductibility for Eisenstein Criterion for p = {p}");
+                        Console.WriteLine($"Fact(f) = {f}");
+                        Console.WriteLine();
+                    }
+                    
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public static KPoly<Rational>[] FirrZ(KPoly<Rational> f, bool details = false)
+    {
         var discQ = Ring.Discriminant(f).Num;
         var discDecomp = IntExt.PrimesDec(discQ);
-        Console.WriteLine($"Disc(f) = {discQ} = {discDecomp.AscendingByKey().GlueMap(" * ", "{0}^{1}")}");
+        if (details)
+        {
+            Console.WriteLine($"f = {f}");
+            Console.WriteLine($"Disc(f) = {discQ} ~ {discDecomp.AscendingByKey().GlueMap(" * ", "{0}^{1}")}");
+        }
+
+        if (EisensteinCriterion(f, details))
+        {
+            return new[] { f };
+        }
+        
         foreach (var (p, o) in PSigma(f))
         {
             try
             {
-                return HenselLifting(f, p, o);
+                return HenselLifting(f, p, o, details);
             }
             catch (Exception)
             {
-                Console.WriteLine($"#### Prime {p} and Sigma {o} wont work ####");
+                if (details)
+                    Console.WriteLine($"#### Prime {p} and Sigma {o} wont work ####");
             }
         }
 
-        return Array.Empty<KPoly<Rational>>();
+        return new[] { f };
     }
 
     public static void IrreductibleFactorizationZ()
@@ -249,7 +308,7 @@ public static class PolynomialFactorizationPart2
             if (Ring.Discriminant(f).IsZero()) // Separable polynomial
                 continue;
 
-            FirrZ(f);
+            FirrZ(f, details: true);
 
             /***
              *  Examples of outputs

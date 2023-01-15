@@ -72,7 +72,7 @@ public static class AlgebraicFactorization
         var n = A.Degree;
         var g0 = A[0].F;
         var x = FG.KFracPoly(c, A.KZero.Poly.KZero);
-        var y = FG.KPoly('y', x.Zero);
+        var y = FG.KPoly(A.x, x.Zero);
         var ga = y.Zero;
         for (int i = 0; i <= n; i++)
         {
@@ -82,7 +82,7 @@ public static class AlgebraicFactorization
         }
 
         var ug = new KPoly<FracPoly<K>>(y.x, y.KZero, g0.Coefs.Select(k => k * y.KOne).ToArray());
-        var res = Ring.DeterminantByPivot(Ring.SylvesterMatrix(ug, ga));
+        var res = Ring.FastResultant(ug, ga);
         return res.Num;
     }
 
@@ -112,8 +112,10 @@ public static class AlgebraicFactorization
         var a = f[0].X;
         var x = f.X;
         var g = f.Substitute(x);
+        // Console.WriteLine($"SqfrNorm({f})");
         for (int s = 0; s < 50; s++)
         {
+            // Console.WriteLine($"s={s} Norm({g})");
             var r = Norm(g, c);
             if (Ring.Gcd(r, r.Derivative).Degree == 0)
                 return (s, g, r);
@@ -129,7 +131,7 @@ public static class AlgebraicFactorization
     {
         Console.WriteLine("############# START Algebraic Factors #############");
         var (s, g, r) = SqfrNorm(f);
-        var sepFactors = PolynomialFactorization.YunSFF(r);
+        var sepFactors = PolynomialFactorization.YunSFFDetails(r);
         var L = new List<(KPoly<EPoly<Rational>> hi, int i, int q)>();
         var x = g.X;
         var a = g[0].X;
@@ -165,6 +167,25 @@ public static class AlgebraicFactorization
         return L;
     }
 
+    public static EPoly<K> GcdPrimElt<K>(KPoly<EPoly<K>> A, KPoly<EPoly<K>> newX)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        if (A.IsZero())
+            return newX[0].Zero;
+
+        var y = newX[0].X;
+        var p0 = A[0].X.F.Substitute(newX);
+        var g0 = newX.Zero;
+        for (int i = 0; i <= A.Degree; i++)
+        {
+            var g1 = A[i].Poly.Substitute(newX);
+            g0 += g1 * y.Pow(i);
+        }
+
+        var gcd = Ring.Gcd(p0, g0);
+        return (-gcd[0]) / gcd[1];
+    }
+
     // Barry Trager, Algebraic Factoring
     public static (KPoly<K> r, KPoly<K> a, KPoly<K> b) PrimitiveElt<K>(KPoly<EPoly<K>> f)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
@@ -172,84 +193,9 @@ public static class AlgebraicFactorization
         var (s, g, r) = SqfrNorm(f, 'y');
         var y = FG.EPoly(r, 'y');
         var x = FG.KPoly('x', y);
-
-        var g0 = x.Zero;
-        for (int i = 0; i <= g.Degree; i++)
-        {
-            var c = g[i].Poly;
-            var g1 = c.Coefs.Select((k, i0) => (k * x.KOne) * x.Pow(i0)).Aggregate(x.Zero, (acc, xi) => acc + xi);
-            g0 += g1 * y.Pow(i);
-        }
-
-        var p0 = f[0].F.Coefs.Select((k, i0) => (k * x.KOne) * x.Pow(i0)).Aggregate(x.Zero, (acc, xi) => acc + xi);
-        var gcd = Ring.Gcd(g0, p0);
-
-        var a = (-gcd[0]) / gcd[1];
+        var a = GcdPrimElt(g, x);
         var b = y - s * a;
         return (r, a.Poly, b.Poly);
-    }
-
-    static KPoly<EPoly<Rational>> Resolve(List<KPoly<Rational>> minPolys, KPoly<EPoly<Rational>> f, List<EPoly<Rational>> roots)
-    {
-        if (f.Degree == 0)
-            return f;
-
-        var i = minPolys.Count;
-        var (r0, a0, b0) = PrimitiveElt(f);
-        var L0 = PolynomialFactorizationPart2.FirrQ(r0);
-        var r1 = L0[0];
-        var (x1, y0) = FG.EPolyXC(r1, (char)(f[0].Poly.x + 1));
-        var xa0 = a0.Substitute(y0)[0];
-        var xb0 = b0.Substitute(y0)[0];
-        var f0 = new KPoly<EPoly<Rational>>(x1.x, x1.KZero,
-            f.Coefs.Select(k => new EPoly<Rational>(xa0.F, k.Substitute(xa0).Poly)).ToArray());
-        var f1 = f0 / (x1 - xb0);
-        if (f1.Degree == 0)
-        {
-            var xb = (-f[0]) / f[1];
-            roots.Add(xb);
-            Console.WriteLine("MinPolys");
-            Console.WriteLine(minPolys.Glue("\n"));
-            Console.WriteLine("Roots");
-            Console.WriteLine(roots.Glue("\n"));
-            Console.WriteLine();
-
-            return f1;
-        }
-
-
-        minPolys.Add(r1);
-        var tmp = roots.Select(s => s.Substitute(xa0)).ToList();
-        roots.Clear();
-        roots.AddRange(tmp);
-        roots.Add(xb0);
-        Console.WriteLine($"f{i} = {f} => f{i + 1} = {f1}");
-
-        return f1;
-    }
-
-    public static void SplittingField(KPoly<Rational> f)
-    {
-        var (x, a) = FG.EPolyXC(f, 'a');
-        var f0 = f.Substitute(x);
-        var minPolys = new List<KPoly<Rational>>() { f };
-        var roots = new List<EPoly<Rational>>() { a[0] };
-        Console.WriteLine($"f0 = {f}");
-        var tmp = f0 / (x - a);
-
-        while (tmp.Degree > 0)
-        {
-            tmp = Resolve(minPolys, tmp, roots);
-        }
-
-        var mp = minPolys.Last();
-        var mp0 = roots.Last().F;
-        Console.WriteLine(new { mp, mp0 });
-        var X = FG.KPoly('X', roots.Last());
-        var f1 = roots.Select(r => X - r).Aggregate(X.One, (acc, xi) => acc * xi);
-        Console.WriteLine($"prod = {f1}");
-        Console.WriteLine($"f = {f}");
-        Console.WriteLine();
     }
 
     public static void MinimalPolynomials()
@@ -347,83 +293,73 @@ public static class AlgebraicFactorization
             // x^4 + 4 = (x + -a) * (x + a) * (x + a + 2) * (x + -a + -2)
         }
     }
-    
+
+    public static (KPoly<K> minPoly, KPoly<K> a, KPoly<K> b) PrimEltGb<K>(KPoly<EPoly<K>> f)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var d = ((char)(f[0].F.x + 1)).ToString();
+        var (X, Y, T) = Ring.Polynomial("X", "Y", d, f.KZero.KZero, MonomOrder.Lex);
+        var (x, y, t) = Y.Indeterminates;
+        var P = f.Coefs.Select((k, i) => k.Poly.ToPolynomial(Y) * X.Pow(i)).Aggregate(X.Zero, (acc, xi) => acc + xi);
+        var M = f[0].F.ToPolynomial(Y);
+        for (int s = 1; s < 50; s++)
+        {
+            var PM = X + s * Y - T;
+            var gb = Ring.ReducedGrobnerBasis(P, M, PM);
+            if (gb.Length != 3)
+                continue;
+
+            var (ft, fy, fx) = (gb[0], gb[1], gb[2]);
+            if (fx.DegreeOf(y) == 0 && fx.DegreeOf(x) == 1)
+            {
+                var r = FG.KPoly('y', f.KZero.KZero);
+                var minPoly = ft.ToKPoly(t).Substitute(r);
+                var rx = (X - fx).ToKPoly(t).Substitute(r);
+                var ry = (Y - fy).ToKPoly(t).Substitute(r);
+                return (minPoly, ry, rx);
+            }
+        }
+
+        throw new Exception();
+    }
+
     public static void PrimitiveEltExamples()
     {
         {
-            var (a, b, y) = Ring.Polynomial("a", "b", "y", Rational.KZero());
-            y.Indeterminates.SetOrder(MonomOrder.Lex);
-            var (p1, p2, p3) = (a.Pow(2) - 2, b.Pow(2) - 3, a + b - y);
-            var gb = Ring.ReducedGrobnerBasis(p1, p2, p3);
-            Console.WriteLine(gb.Glue("\n"));
+            var (b, _) = FG.EPolyXC(Rational.KZero(), 'a', 'b', -2, 0, 1);
+            var f = b.Pow(2) - 3;
+            var (r0, a0, b0) = PrimitiveElt(f);
+            Console.WriteLine($"With {b[0].F} = 0 and {f} = 0");
+            Console.WriteLine($"Trager Primitive element y with Q(y) = Q(a,b)");
+            Console.WriteLine(new[] { "SqfrNorm", $"{r0} = 0", $"a = {a0}", $"b = {b0}" }.Glue("\n"));
+            var (r1, a1, b1) = PrimEltGb(f);
+            Console.WriteLine(new[] { "Grobner Basis", $"{r1} = 0", $"a = {a1}", $"b = {b1}" }.Glue("\n"));
             Console.WriteLine();
         }
 
         {
-            var (x, _) = FG.EPolyXC(Rational.KZero(), 'a', -2, 0, 1);
-            var f = x.Pow(2) - 3;
-            var (r, a, b) = PrimitiveElt(f);
-            Console.WriteLine(new[] { $"r = {r}", $"a = {a}", $"b = {b}" }.Glue("\n"));
-            Console.WriteLine();
-        }
-        
-        {
-            var (a, b, y) = Ring.Polynomial("a", "b", "y", Rational.KZero());
-            y.Indeterminates.SetOrder(MonomOrder.Lex);
-            var (p1, p2, p3) = (a.Pow(3) + a + 1, b.Pow(3) - b.Pow(2) + 4 * b - 3, a + b - y);
-            var gb = Ring.ReducedGrobnerBasis(p1, p2, p3);
-            Console.WriteLine(gb.Glue("\n"));
+            var (b, _) = FG.EPolyXC(Rational.KZero(), 'a', 'b', 1, 1, 0, 1);
+            var f = b.Pow(3) - b.Pow(2) + 4 * b - 3;
+            var (r0, a0, b0) = PrimitiveElt(f);
+            Console.WriteLine($"With {b[0].F} = 0 and {f} = 0");
+            Console.WriteLine($"Primitive element y with Q(y) = Q(a,b)");
+            Console.WriteLine(new[] { "Trager SqfrNorm", $"{r0} = 0", $"a = {a0}", $"b = {b0}" }.Glue("\n"));
+            var (r1, a1, b1) = PrimEltGb(f);
+            Console.WriteLine(new[] { "Grobner Basis", $"{r1} = 0", $"a = {a1}", $"b = {b1}" }.Glue("\n"));
             Console.WriteLine();
         }
 
         {
-            var (x, _) = FG.EPolyXC(Rational.KZero(), 'a', 1, 1, 0, 1);
-            var f = x.Pow(3) - x.Pow(2) + 4 * x - 3;
-            var (r, a, b) = PrimitiveElt(f);
-            Console.WriteLine(new[] { $"r = {r}", $"a = {a}", $"b = {b}" }.Glue("\n"));
-            Console.WriteLine();
-        }
-
-        {
-            var (a, b, y) = Ring.Polynomial("a", "b", "y", Rational.KZero());
-            y.Indeterminates.SetOrder(MonomOrder.Lex);
-            var (p1, p2, p3) = (a.Pow(4) + a.Pow(3) + a.Pow(2) + a + 1, b.Pow(2) - 5, a + b - y);
-            var gb = Ring.ReducedGrobnerBasis(p1, p2, p3);
-            Console.WriteLine(gb.Glue("\n"));
-            Console.WriteLine();
-        }
-
-        {
-            var (x, _) = FG.EPolyXC(Rational.KZero(), 'a', 1, 1, 1, 1, 1);
-            var f = x.Pow(2) - 5;
-            var (r, a, b) = PrimitiveElt(f);
-            Console.WriteLine(new[] { $"r = {r}", $"a = {a}", $"b = {b}" }.Glue("\n"));
+            var (b, _) = FG.EPolyXC(Rational.KZero(), 'a', 'b', 1, 1, 1, 1, 1);
+            var f = b.Pow(2) - 5;
+            var (r0, a0, b0) = PrimitiveElt(f);
+            Console.WriteLine($"With {b[0].F} = 0 and {f} = 0");
+            Console.WriteLine($"Primitive element y with Q(y) = Q(a,b)");
+            Console.WriteLine(new[] { "Trager SqfrNorm", $"{r0} = 0", $"a = {a0}", $"b = {b0}" }.Glue("\n"));
+            var (r1, a1, b1) = PrimEltGb(f);
+            Console.WriteLine(new[] { "Grobner Basis", $"{r1} = 0", $"a = {a1}", $"b = {b1}" }.Glue("\n"));
             Console.WriteLine();
         }
     }
 
-    public static void SplittingFieldCubicPolynomial()
-
-    {
-        var x = FG.QPoly('y');
-        
-        SplittingField(x.Pow(2) - 3 * x - 3);
-        SplittingField(x.Pow(2) + x + 1);
-        SplittingField(x.Pow(2) + 2 * x - 5);
-        
-        SplittingField(x.Pow(3) - 2);
-        SplittingField(x.Pow(3) - 3);
-        SplittingField(x.Pow(3) - 3 * x - 1);
-        SplittingField(x.Pow(3) - 2 * x + 2);
-        SplittingField(x.Pow(3) + 2 * x.Pow(2) - x - 1);
-        SplittingField(x.Pow(3) + 4 * x.Pow(2) + 3 * x + 1);
-        SplittingField(x.Pow(3) - x + 1);
-        
-        SplittingField(x.Pow(4) - 2);
-        SplittingField(x.Pow(4) + 4 * x.Pow(2) + 2);
-        SplittingField(x.Pow(4) - 4 * x.Pow(2) + 2);
-        SplittingField(x.Pow(4) + x.Pow(3) + x.Pow(2) + x + 1);
-        
-        // SplittingField(x.Pow(4) + 3*x.Pow(3) - x.Pow(2) + x + 1); // wont work
-    }
 }

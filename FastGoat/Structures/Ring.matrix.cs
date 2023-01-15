@@ -160,28 +160,28 @@ public static partial class Ring
         return B;
     }
 
-    private static void SwapRows<T>(int i, int j, T[,] A) where T : IElt<T>, IRingElt<T>
+    public static void SwapRows<T>(int i, int j, T[,] A) where T : IElt<T>, IRingElt<T>
     {
         var cols = A.GetLength(1);
         for (int k = 0; k < cols; k++)
             (A[i, k], A[j, k]) = (A[j, k].Opp(), A[i, k]);
     }
 
-    private static void MulRows<K>(int i, K a, K[,] A) where K : IElt<K>, IRingElt<K>, IFieldElt<K>
+    public static void MulRows<K>(int i, K a, K[,] A) where K : IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var cols = A.GetLength(1);
         for (int k = 0; k < cols; k++)
             A[i, k] *= a;
     }
 
-    private static void CombineRows<K>(int i, int j, K a, K[,] A) where K : IElt<K>, IRingElt<K>, IFieldElt<K>
+    public static void CombineRows<K>(int i, int j, K a, K[,] A) where K : IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var cols = A.GetLength(1);
         for (int k = 0; k < cols; k++)
             A[i, k] = A[i, k].Add(A[j, k].Mul(a));
     }
 
-    private static T[,] CloneMatrix<T>(T[,] A)
+    public static T[,] CloneMatrix<T>(T[,] A)
     {
         var m = A.GetLength(0);
         var n = A.GetLength(1);
@@ -191,6 +191,12 @@ public static partial class Ring
             B[i, j] = A[i, j];
 
         return B;
+    }
+
+    public static KMatrix<K> ToKMatrix<K>(this K[,] mat)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        return new(mat);
     }
 
     public static (K[,] P, K[,] A0) ReducedRowsEchelonForm<K>(K[,] A)
@@ -300,6 +306,74 @@ public static partial class Ring
         return (new(e.P), new(e.A0));
     }
 
+    public static (K[,] P, K[,] R) RowsEchelonForm<K>(K[,] A, bool details = false)
+        where K : IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var (m, n) = (A.GetLength(0), A.GetLength(1));
+        if (m == 0 || n == 0 || m > n)
+            throw new ArgumentException();
+    
+
+        // Console.WriteLine(new { dim });
+        var A0 = CloneMatrix(A);
+        var P = Diagonal(A[0, 0].One, m);
+
+        for (int k = 0; k < m; k++)
+        {
+            // Console.WriteLine(new { k, dim });
+            if (A0[k, k].IsZero())
+            {
+                var i = 0;
+                for (i = k + 1; i < m; i++)
+                {
+                    if (!A0[i, k].IsZero())
+                        break;
+                }
+
+                if (i == m)
+                    continue;
+
+                SwapRows(i, k, A0);
+                SwapRows(i, k, P);
+                if (details)
+                {
+                    Console.WriteLine($"Swap {i} {k}");
+                    DisplayMatrix(A0);
+                }
+            }
+
+            var a = A0[k, k];
+            if (details)
+                Console.WriteLine($"Pivot L{k}");
+
+            for (int i = k + 1; i < m; i++)
+            {
+                var b = A0[i, k];
+                if (b.IsZero())
+                    continue;
+
+                var a0 = b.Mul(a.Inv()).Opp();
+                CombineRows(i, k, a0, A0);
+                CombineRows(i, k, a0, P);
+                if (details)
+                {
+                    Console.WriteLine($"L{i} <- L{i} + {a0} L{k}");
+                    DisplayMatrix(A0);
+                }
+            }
+        }
+
+        // DisplayMatrix(A0);
+        return (P, A0);
+    }
+
+    public static (KMatrix<K> P, KMatrix<K> R) RowsEchelonForm<K>(KMatrix<K> mat)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var (P, R) = RowsEchelonForm(mat.Coefs);
+        return (new(P), new(R));
+    }
+
     public static K DeterminantByPivot<K>(K[,] A, bool details = false)
         where K : IElt<K>, IRingElt<K>, IFieldElt<K>
     {
@@ -310,6 +384,7 @@ public static partial class Ring
         if (dim != A.GetLength(1))
             return A[0, 0].Zero;
 
+        // Console.WriteLine(new { dim });
         var A0 = new K[dim, dim];
         for (int i = 0; i < dim; i++)
         for (int j = 0; j < dim; j++)
@@ -317,6 +392,7 @@ public static partial class Ring
 
         for (int k = 0; k < dim; k++)
         {
+            // Console.WriteLine(new { k, dim });
             if (A0[k, k].IsZero())
             {
                 var i = 0;
@@ -357,6 +433,7 @@ public static partial class Ring
             }
         }
 
+        // DisplayMatrix(A0);
         return dim.Range().Select(k => A0[k, k]).Aggregate((a, b) => a.Mul(b));
     }
 
@@ -366,13 +443,14 @@ public static partial class Ring
         var cols = mat.GetLength(1);
         var rgCols = cols.Range();
         var digits = rgCols.Select(j => rows.Range().Max(i => $"{mat[i, j]}".Length)).Max();
+        var digitsByCols = rgCols.Select(j => rows.Range().Max(i => $"{mat[i, j]}".Length)).Select(d => $"{{0,{d}}}").ToArray();
         var fmt = $"{{0,{digits}}}";
         StringBuilder sb = new();
         var lt = new List<string>();
         for (int i = 0; i < rows; i++)
         {
             var i0 = i;
-            var s0 = rgCols.Select(j => mat[i0, j]).Glue(sep, fmt);
+            var s0 = rgCols.Select(j => string.Format(digitsByCols[j], mat[i0, j])).Glue(sep);
             if (MatrixDisplayForm == MatrixDisplay.CurlyBracket)
                 lt.Add($"{{ {s0} }}");
             else
@@ -381,7 +459,7 @@ public static partial class Ring
 
         if (MatrixDisplayForm == MatrixDisplay.Table)
         {
-            lt = lt.Prepend("").ToList();
+            // lt = lt.Prepend("").ToList();
             sb.AppendJoin('\n', lt);
             return sb.ToString();
         }
@@ -393,43 +471,6 @@ public static partial class Ring
             else
                 return $"[{sb}]";
         }
-    }
-
-    public static string Matrix2StringBak<T>(T[,] mat, string sep = ", ")
-    {
-        var rows = mat.GetLength(0);
-        var cols = mat.GetLength(1);
-        var rgCols = cols.Range();
-        var digits = rgCols.Select(j => rows.Range().Max(i => $"{mat[i, j]}".Length)).Max();
-        var fmt = $"{{0,{digits}}}";
-        if (MatrixDisplayForm != MatrixDisplay.Table)
-        {
-            List<string> s = new();
-            for (int i = 0; i < rows; i++)
-            {
-                var i0 = i;
-                s.Add(rgCols.Select(j => mat[i0, j]).Glue(","));
-            }
-
-            if (MatrixDisplayForm == MatrixDisplay.CurlyBracket)
-                return $"{{{s.Glue(",", $"{{ {fmt} }}")}}}";
-            else
-            {
-                if (rows != 1)
-                    return $"[{s.Glue(",", $"[ {fmt} ]")}]";
-                else
-                    return string.Format($"[{fmt}]", s[0]);
-            }
-        }
-
-        StringBuilder sb = new();
-        for (int i = 0; i < rows; i++)
-        {
-            var i0 = i;
-            sb.AppendLine($"[{rgCols.Select(j => mat[i0, j]).Glue(sep, fmt)}]");
-        }
-
-        return sb.ToString();
     }
 
     public enum MatrixDisplay
@@ -602,19 +643,46 @@ public static partial class Ring
         return S;
     }
 
+    public static K Resultant<K>(KPoly<K> f, KPoly<K> g)
+        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
+    {
+        return DeterminantByPivot(SylvesterMatrix(f, g));
+    }
+
     public static K Discriminant<K>(KPoly<K> f) where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
         var g = f.Derivative;
         if (g.IsZero())
             return f.KZero;
 
-        var S = SylvesterMatrix(f, g);
         var am = f.Coefs.Last();
         var n = f.Degree;
         var n0 = (int)(n * (n - 1) / 2);
         var s = n0 % 2 == 0 ? 1 : -1;
-        var det = DeterminantByPivot(S);
+        var det = FastResultant(f, g);
         return det.Mul(s).Mul(am.Inv());
+    }
+    
+    public static K FastResultant<K>(KPoly<K> A, KPoly<K> B)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var (f, g, s) = (A.KOne, A.KOne, A.KOne);
+        while (B.Degree > 0)
+        {
+            var d = A.Degree - B.Degree;
+            var bDeg = B.Coefs.Last().Pow(d + 1);
+            var R = (bDeg * A).Div(B).rem; // Pseudo remainders, AECF
+            if ((A.Degree * B.Degree) % 2 == 1)
+                s = -s;
+
+            A = B;
+            B = R / (f * g.Pow(d));
+            f = A.Coefs.Last();
+            g = f.Pow(d) / g.Pow(d - 1);
+        }
+
+        var dA = A.Degree;
+        return ((s * B.Pow(dA)) / g.Pow(dA - 1))[0];
     }
 
     public static (KMatrix<K> O, KMatrix<K> U) GramSchmidt<K>(KMatrix<K> A)
@@ -648,6 +716,30 @@ public static partial class Ring
             if (i < n)
                 mat.Coefs[1 + i, i] = f.KOne;
         }
+
+        return mat;
+    }
+
+    public static KMatrix<K> ToHMatrix<K>(this KPoly<K> f, int n) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        if (n < f.Degree)
+            throw new ArgumentException();
+
+        var mat = new KMatrix<K>(f.KZero, 1, n + 1);
+        for (int i = 0; i <= n; i++)
+            mat.Coefs[0, i] = f[i];
+
+        return mat;
+    }
+
+    public static KMatrix<K> ToVMatrix<K>(this KPoly<K> f, int n) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        if (n < f.Degree)
+            throw new ArgumentException();
+
+        var mat = new KMatrix<K>(f.KZero, n + 1, 1);
+        for (int i = 0; i <= n; i++)
+            mat.Coefs[i, 0] = f[i];
 
         return mat;
     }
