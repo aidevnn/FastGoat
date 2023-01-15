@@ -167,7 +167,7 @@ public static class AlgebraicFactorization
         return L;
     }
 
-    public static EPoly<K> GcdPrimElt<K>(KPoly<EPoly<K>> A, KPoly<EPoly<K>> newX)
+    public static EPoly<K> AlphaPrimElt<K>(KPoly<EPoly<K>> A, KPoly<EPoly<K>> newX)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         if (A.IsZero())
@@ -193,7 +193,7 @@ public static class AlgebraicFactorization
         var (s, g, r) = SqfrNorm(f, 'y');
         var y = FG.EPoly(r, 'y');
         var x = FG.KPoly('x', y);
-        var a = GcdPrimElt(g, x);
+        var a = AlphaPrimElt(g, x);
         var b = y - s * a;
         return (r, a.Poly, b.Poly);
     }
@@ -323,6 +323,109 @@ public static class AlgebraicFactorization
         throw new Exception();
     }
 
+    // Barry Trager, Algebraic Factoring
+    public static void SplittingField(KPoly<Rational> P)
+    {
+        var (X, y) = FG.EPolyXc(P, 'a');
+        var P0 = P.Substitute(X);
+        var roots = new List<EPoly<Rational>>();
+        var polys = new List<KPoly<EPoly<Rational>>>() { P0 };
+        var minPoly = P;
+        var b = y;
+        EPoly<Rational> new_y;
+        var idx = 0;
+
+        Console.WriteLine($"Polynomial P = {P0}");
+
+        while (true)
+        {
+            var BPoly = X.Zero;
+            var p0 = polys[idx].SubstituteP0b(X, b);
+            polys[idx] = p0 / (X - b);
+            roots.Add(b);
+            var (k, new_s) = (0, 0);
+            var newFactors = new List<KPoly<EPoly<Rational>>>();
+
+            foreach (var pi in polys)
+            {
+                var (s, g, R) = SqfrNorm(pi);
+                var L = PolynomialFactorizationPart2.FirrQ(R);
+                foreach (var qj in L.Order())
+                {
+                    var f = Ring.Gcd(g, qj.Substitute(X));
+                    if (qj.Degree > minPoly.Degree)
+                    {
+                        minPoly = qj;
+                        idx = k;
+                        new_s = s;
+                        BPoly = f;
+                    }
+
+                    g /= f;
+                    f = f.Substitute(X + s * y);
+                    if (f.Degree == 1)
+                    {
+                        var r0 = -f[0] / f[1];
+                        roots.Add(r0);
+                    }
+                    else
+                    {
+                        newFactors.Add(f);
+                        ++k;
+                    }
+                }
+            }
+
+            (X, new_y) = FG.EPolyXc(minPoly, 'a');
+            var a = AlphaPrimElt(BPoly, X);
+            b = new_y - new_s * a;
+
+            if (newFactors.Count == 0)
+            {
+                Console.WriteLine($"With {new_y.F} = 0");
+                roots.Println("Roots");
+                Console.WriteLine();
+                return;
+            }
+
+            roots = roots.Select(r => r.Substitute(a)).ToList();
+            polys = newFactors.Select(f => f.SubstituteP0b(X, a)).ToList();
+            y = new_y;
+        }
+    }
+
+    // Barry Trager, Algebraic Factoring
+    public static void Resolvent(KPoly<Rational> P)
+    {
+        var (X, y) = FG.EPolyXc(P, 'a');
+        var Poly = P.Substitute(X);
+        var minPoly = P;
+        var b = y;
+        var roots = new List<EPoly<Rational>>();
+        while (true)
+        {
+            Poly = Poly / (X - b);
+            roots.Add(b);
+            if (Poly.Degree == 1)
+            {
+                roots.Add(-Poly[0] / Poly[1]);
+                Console.WriteLine($"A Resolvant for [P({P.x}) = {P}] is [R({minPoly.x}) = {minPoly}]");
+                roots.Println("Roots");
+                Console.WriteLine("Prod = {0}", roots.Select(r => X - r).Aggregate((ri, rj) => ri * rj));
+                
+                return;
+            }
+
+            var (s, g, R) = SqfrNorm(Poly);
+            (X, y) = FG.EPolyXc(R, 'a');
+            var a = AlphaPrimElt(g, X);
+            b = y - s * a;
+            Poly = Poly.SubstituteP0b(X, a);
+            minPoly = R;
+            roots = roots.Select(r => r.Substitute(a)).ToList();
+        }
+    }
+
     public static void PrimitiveEltExamples()
     {
         {
@@ -362,4 +465,29 @@ public static class AlgebraicFactorization
         }
     }
 
+    public static void SplittingFieldCubicPolynomial()
+    {
+        var x = FG.QPoly();
+
+        SplittingField(x.Pow(2) - 3);
+        SplittingField(x.Pow(2) - 3 * x - 3);
+        SplittingField(x.Pow(2) + x + 1);
+        SplittingField(x.Pow(2) + 2 * x - 5);
+        
+        SplittingField(x.Pow(3) - 2);
+        SplittingField(x.Pow(3) - 3);
+        SplittingField(x.Pow(3) - 3 * x - 1);
+        SplittingField(x.Pow(3) - 2 * x + 2);
+        SplittingField(x.Pow(3) + 2 * x.Pow(2) - x - 1);
+        SplittingField(x.Pow(3) + 4 * x.Pow(2) + 3 * x + 1);
+        SplittingField(x.Pow(3) - x + 1);
+        
+        SplittingField(x.Pow(4) + 4 * x.Pow(2) + 2);
+        SplittingField(x.Pow(4) - 4 * x.Pow(2) + 2);
+        SplittingField(x.Pow(4) + x.Pow(3) + x.Pow(2) + x + 1);
+        SplittingField(x.Pow(4) - 2);
+        SplittingField(x.Pow(4) + 2);
+
+        // SplittingField(x.Pow(4) + 3*x.Pow(3) - x.Pow(2) + x + 1); // wont work
+    }
 }
