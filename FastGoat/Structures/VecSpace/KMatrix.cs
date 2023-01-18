@@ -69,6 +69,29 @@ public struct KMatrix<K> : IVsElt<K, KMatrix<K>>, IElt<KMatrix<K>>, IRingElt<KMa
         return true;
     }
 
+    public KMatrix<K> Extract(int rStart, int rNb, int cStart, int cNb)
+    {
+        if (rStart < 0 || cStart < 0 || rStart + rNb > M || cStart + cNb > N)
+            throw new ArgumentException();
+
+        var coefs = new K[rNb, cNb];
+        for (int i = 0; i < rNb; i++)
+        {
+            for (int j = 0; j < cNb; j++)
+            {
+                coefs[i, j] = Coefs[rStart + i, cStart + j];
+            }
+        }
+
+        return new(coefs);
+    }
+
+    public K[] ToArray()
+    {
+        var coefs = Coefs;
+        return M.Range().Grid2D(N.Range()).Select(e => coefs[e.t1, e.t2]).ToArray();
+    }
+
     public int CompareTo(KMatrix<K> other)
     {
         var compDim = Dim.CompareTo(other.Dim);

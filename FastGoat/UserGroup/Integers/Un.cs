@@ -6,6 +6,7 @@ namespace FastGoat.UserGroup.Integers;
 
 public class Un : ConcreteGroup<Automorphism<ZnInt>>
 {
+    public static ZnInt FirstGen(int p) => new Un(p).GetGenerators().First()[new ZnInt(p, 1)];
     public Cn Cn { get; }
 
     public Un(int n) : base($"U{n}", Group.AutBase(new Cn(n)), true)

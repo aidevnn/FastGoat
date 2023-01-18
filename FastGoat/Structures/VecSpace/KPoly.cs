@@ -83,6 +83,7 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
 
     public KPoly<K> LeadingCoeff => IsZero() ? One : new(x, KZero, new[] { Coefs.Last() });
     public KPoly<K> Derivative => new(x, KZero, Coefs.Select((e, i) => e.Mul(i)).Skip(1).TrimSeq().ToArray());
+    public K Substitute(K f) => Coefs.Select((k, i) => k * f.Pow(i)).Aggregate((a, b) => a + b);
     public KPoly<K> Substitute(KPoly<K> f) => Coefs.Select((k, i) => k * f.Pow(i)).Aggregate((a, b) => a + b);
     public EPoly<K> Substitute(EPoly<K> f) => Coefs.Select((k, i) => k * f.Pow(i)).Aggregate((a, b) => a + b);
 

@@ -68,17 +68,17 @@ public static partial class Ring
     public static Indeterminates<Xi> Indeterminates(params char[] xs) =>
         Indeterminates(xs.Select(c => c.ToString()).ToArray());
 
-    public static Polynomial<K, Xi> Polynomial<K>(K scalar, Indeterminates<Xi> indeterminates)
-        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
-    {
-        return new(indeterminates, scalar);
-    }
-
     public static Polynomial<K, Xi>[] Polynomial<K>(K scalar, string[] xi)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
         var indeterminates = Indeterminates(xi);
         return xi.Select(c => new Polynomial<K, Xi>(new Monom<Xi>(indeterminates, new(c), 1), scalar.One)).ToArray();
+    }
+
+    public static Polynomial<K, Xi>[] Polynomial<K>(K scalar, Indeterminates<Xi> indeterminates)
+        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
+    {
+        return indeterminates.Content.Select(c => new Polynomial<K, Xi>(new Monom<Xi>(indeterminates, c, 1), scalar.One)).ToArray();
     }
 
     public static Polynomial<K, Xi>[] Polynomial<K>(K scalar, MonomOrder order, string[] xi)
@@ -142,6 +142,15 @@ public static partial class Ring
     {
         var polys = Polynomial(scalar, order, new[] { x1, x2, x3, x4, x5 });
         return (polys[0], polys[1], polys[2], polys[3], polys[4]);
+    }
+
+    public static (Polynomial<K, Xi> x1, Polynomial<K, Xi> x2, Polynomial<K, Xi> x3,
+        Polynomial<K, Xi> x4, Polynomial<K, Xi> x5, Polynomial<K, Xi> x6)
+        Polynomial<K>(string x1, string x2, string x3, string x4, string x5, string x6, K scalar, MonomOrder order = MonomOrder.GrLex)
+        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
+    {
+        var polys = Polynomial(scalar, order, new[] { x1, x2, x3, x4, x5, x6 });
+        return (polys[0], polys[1], polys[2], polys[3], polys[4], polys[5]);
     }
 
     public static KPoly<K> ToKPoly<K>(this Polynomial<K, Xi> f, Xi x)

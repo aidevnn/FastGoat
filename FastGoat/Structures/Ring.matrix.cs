@@ -442,10 +442,8 @@ public static partial class Ring
         var rows = mat.GetLength(0);
         var cols = mat.GetLength(1);
         var rgCols = cols.Range();
-        var digits = rgCols.Select(j => rows.Range().Max(i => $"{mat[i, j]}".Length)).Max();
-        var digitsByCols = rgCols.Select(j => rows.Range().Max(i => $"{mat[i, j]}".Length)).Select(d => $"{{0,{d}}}").ToArray();
-        var fmt = $"{{0,{digits}}}";
-        StringBuilder sb = new();
+        var rgRows = rows.Range();
+        var digitsByCols = rgCols.Select(j => rgRows.Max(i => $"{mat[i, j]}".Length)).Select(d => $"{{0,{d}}}").ToArray();
         var lt = new List<string>();
         for (int i = 0; i < rows; i++)
         {
@@ -459,17 +457,14 @@ public static partial class Ring
 
         if (MatrixDisplayForm == MatrixDisplay.Table)
         {
-            // lt = lt.Prepend("").ToList();
-            sb.AppendJoin('\n', lt);
-            return sb.ToString();
+            return lt.Glue("\n");
         }
         else
         {
-            sb.AppendJoin(',', lt);
             if (MatrixDisplayForm == MatrixDisplay.CurlyBracket)
-                return $"{{ {sb} }}";
+                return $"{{ {lt.Glue(",")} }}";
             else
-                return $"[{sb}]";
+                return $"[{lt.Glue(",")}]";
         }
     }
 
@@ -742,6 +737,16 @@ public static partial class Ring
             mat.Coefs[i, 0] = f[i];
 
         return mat;
+    }
+
+    public static KMatrix<K> ToHMatrix<K>(this KPoly<K> f) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        return f.ToHMatrix(f.Degree);
+    }
+
+    public static KMatrix<K> ToVMatrix<K>(this KPoly<K> f) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        return f.ToVMatrix(f.Degree);
     }
 
     public static KMatrix<K> ToMatrix<K>(this KPoly<K> f) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>

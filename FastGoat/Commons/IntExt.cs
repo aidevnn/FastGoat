@@ -6,7 +6,7 @@ namespace FastGoat.Commons
     {
         static IntExt()
         {
-            Primes10000 = new(AllPrimes(10000000));
+            Primes10000 = new(AllPrimes(100000));
             Partitions32 = IntPartitions(32);
 
             var comp = Comparer<int[]>.Create((a, b) => a.SequenceCompareTo(b));

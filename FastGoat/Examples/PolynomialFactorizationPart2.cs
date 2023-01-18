@@ -29,12 +29,9 @@ public static class PolynomialFactorizationPart2
 
         var deg = f.Degree + 3;
         var rg = deg.Range(1).ToArray();
-        // var all = primes.Take(20).Grid2D(rg)
-        //     .Select(e => (s: e.t2, p: e.t1, pow: float.Pow(e.t1, e.t2)))
-        //     .Where(e => e.pow > 2 * nu).OrderBy(e => e.p)
-        //     .ToArray();
-        
+
         var all = primes.Take(50).Select(p => (p, s: (int)(Double.Log(2 * nu) / Double.Log(p)) + 1))
+            .OrderByDescending(e => e.s)
             .ToArray();
 
         if (details)

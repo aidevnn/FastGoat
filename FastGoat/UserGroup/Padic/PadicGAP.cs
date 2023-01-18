@@ -149,7 +149,7 @@ public readonly struct PadicGAP : IElt<PadicGAP>, IRingElt<PadicGAP>, IFieldElt<
         }
     }
 
-    public PadicGAP Opp() => new(P, O, new ZnBInt(Details, K).Opp().K, Val.V);
+    public PadicGAP Opp() => Val.IsInfinity ? this : new(P, O, new ZnBInt(Details, K).Opp().K, Val.V);
     public PadicGAP Sub(PadicGAP other) => Add(other.Opp());
 
     public PadicGAP Mul(PadicGAP other)

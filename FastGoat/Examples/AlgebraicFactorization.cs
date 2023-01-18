@@ -8,13 +8,13 @@ namespace FastGoat.Examples;
 
 public static class AlgebraicFactorization
 {
-    static EPoly<K>[] Ebase<K>(EPoly<K> scalar) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    public static EPoly<K>[] Ebase<K>(EPoly<K> scalar) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var n = scalar.F.Degree;
         return n.Range().Select(i => scalar.X.Pow(i)).ToArray();
     }
 
-    static KMatrix<K> Endo<K>(EPoly<K> b) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    public static KMatrix<K> Endo<K>(EPoly<K> b) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var bs = Ebase(b);
         var vs = new KMatrix<K>[bs.Length];
@@ -141,6 +141,12 @@ public static class AlgebraicFactorization
         foreach (var (h0, q, i) in sepFactors)
         {
             var hs = PolynomialFactorizationPart2.FirrQ(h0);
+            if (hs.Length == 1)
+            {
+                L.Add((f.Substitute(x), q, i));
+                Console.WriteLine($"Irreductible {f}");
+                continue;
+            }
             foreach (var h1 in hs)
             {
                 var h2 = h1.Substitute(x);
@@ -183,6 +189,9 @@ public static class AlgebraicFactorization
         }
 
         var gcd = Ring.Gcd(p0, g0);
+        if (gcd.Degree == 0)
+            throw new ArgumentException($"A={A} MinPoly={p0} A0={g0}");
+        
         return (-gcd[0]) / gcd[1];
     }
 
@@ -324,7 +333,7 @@ public static class AlgebraicFactorization
     }
 
     // Barry Trager, Algebraic Factoring
-    public static void SplittingField(KPoly<Rational> P)
+    public static List<EPoly<Rational>> SplittingField(KPoly<Rational> P,bool details = false)
     {
         var (X, y) = FG.EPolyXc(P, 'a');
         var P0 = P.Substitute(X);
@@ -335,13 +344,13 @@ public static class AlgebraicFactorization
         EPoly<Rational> new_y;
         var idx = 0;
 
-        Console.WriteLine($"Polynomial P = {P0}");
+        if (details)
+            Console.WriteLine($"Polynomial P = {P0} in Q(a)[X]");
 
         while (true)
         {
             var BPoly = X.Zero;
-            var p0 = polys[idx].SubstituteP0b(X, b);
-            polys[idx] = p0 / (X - b);
+            polys[idx] = polys[idx] / (X - b);
             roots.Add(b);
             var (k, new_s) = (0, 0);
             var newFactors = new List<KPoly<EPoly<Rational>>>();
@@ -382,10 +391,15 @@ public static class AlgebraicFactorization
 
             if (newFactors.Count == 0)
             {
-                Console.WriteLine($"With {new_y.F} = 0");
-                roots.Println("Roots");
-                Console.WriteLine();
-                return;
+                if (details)
+                {
+                    Console.WriteLine($"With {new_y.F} = 0");
+                    roots.Println("Roots");
+                    Console.WriteLine("Verif [Prod(X - ri)] = {0}", roots.Select(r => X - r).Aggregate((Xi, Xj) => Xi * Xj));
+                    Console.WriteLine();
+                }
+
+                return roots;
             }
 
             roots = roots.Select(r => r.Substitute(a)).ToList();
@@ -395,13 +409,13 @@ public static class AlgebraicFactorization
     }
 
     // Barry Trager, Algebraic Factoring
-    public static void Resolvent(KPoly<Rational> P)
+    public static void Resolvent<K>(KPoly<K> P) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var (X, y) = FG.EPolyXc(P, 'a');
         var Poly = P.Substitute(X);
         var minPoly = P;
         var b = y;
-        var roots = new List<EPoly<Rational>>();
+        var roots = new List<EPoly<K>>();
         while (true)
         {
             Poly = Poly / (X - b);
@@ -488,6 +502,7 @@ public static class AlgebraicFactorization
         SplittingField(x.Pow(4) - 2);
         SplittingField(x.Pow(4) + 2);
 
+        SplittingField(x.Pow(6) + 243);
         // SplittingField(x.Pow(4) + 3*x.Pow(3) - x.Pow(2) + x + 1); // wont work
     }
 }

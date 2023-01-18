@@ -44,6 +44,7 @@ public class Indeterminates<T> : IEnumerable<T>, IEquatable<Indeterminates<T>> w
         Hash = Content.Aggregate(0, (acc, a) => (acc, a.Hash).GetHashCode());
     }
 
+    public int Length => Content.Length;
     public MonomOrder Order =>
         (Graduate: Graded, Reverse) switch
         {
