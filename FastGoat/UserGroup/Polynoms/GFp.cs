@@ -1,89 +1,85 @@
 using System.Collections;
 using FastGoat.Commons;
+using FastGoat.Examples;
 using FastGoat.Structures;
 using FastGoat.Structures.CartesianProduct;
 using FastGoat.Structures.GenericGroup;
+using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup.Integers;
+using FastGoat.UserGroup.Padic;
 
 namespace FastGoat.UserGroup.Polynoms;
 
-public class GFp : IGroup<FpPolynom>
+public class GFp : IGroup<EPoly<ZnInt>>
 {
-    public GFp(string name, (char x, int p) xp, int[] polynom)
+    public GFp(string name, EPoly<ZnInt> e)
     {
-        if (!IntExt.Primes10000.Contains(xp.p))
+        if (!IntExt.Primes10000.Contains(e.P))
             throw new GroupException(GroupExceptionType.GroupDef);
 
-        P = xp.p;
-        X = xp.x;
+        P = e.P;
         Name = name;
 
-        polynom = PolynomExt.TrimPoly(polynom);
-        if (polynom.Length < 2 || polynom.Last() != 1 ||
-            polynom.Any(e => IntExt.AmodP(e, P) != e))
-            throw new GroupException(GroupExceptionType.NotIrreductiblePolynom);
+        var zb = ZnBInt.KZero(P);
+        var fzb = new KPoly<ZnBInt>('x', zb, e.Poly.Coefs.Select(c => c.K * zb.One).ToArray());
+        var factors = PolynomialFactorization.Firr(fzb, Un.FirstGenZb(P));
+        if (factors.Count() != 1)
+            throw new GroupException(GroupExceptionType.GroupDef);
 
-        var seq = Enumerable.Range(1, P - 1).Select(a => polynom.Select((e, i) => e * (int)Math.Pow(a, i)).Sum())
-            .ToArray();
+        F = e.F;
+        X = e.X;
+        M = F.Degree;
 
-        Poly = new FpPolynom(P, X, polynom);
-        M = polynom.Length - 1;
-
-        Hash = (Poly.Hash, xp.x).GetHashCode();
-        _neutral = FpPolynom.One(P, X);
-
-        Elements = Group.GenerateElements(this, FpPolynom.Fpx(P, X)).ToHashSet();
+        Hash = e.Hash;
     }
 
-    public FpPolynom Poly { get; }
-
-    private char X { get; }
-    private readonly FpPolynom _neutral;
-    private HashSet<FpPolynom> Elements { get; }
+    public KPoly<ZnInt> F { get; }
+    private EPoly<ZnInt> X { get; }
     public int M { get; }
     public int P { get; }
 
-    public IEnumerator<FpPolynom> GetEnumerator() => GetElements().GetEnumerator();
+    public IEnumerator<EPoly<ZnInt>> GetEnumerator() => GetElements().GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator()
     {
         return GetEnumerator();
     }
 
-    public bool Equals(IGroup<FpPolynom>? other) => other?.Hash == Hash;
+    public bool Equals(IGroup<EPoly<ZnInt>>? other) => other?.Hash == Hash;
 
     public int Hash { get; }
     public string Name { get; }
 
-    public FpPolynom this[params ValueType[] us]
+    public EPoly<ZnInt> this[params ValueType[] us]
     {
         get
         {
-            var intUs = us.Select(Convert.ToInt32).ToArray();
-            return new FpPolynom(P, X, intUs).DivideBy(Poly).rem;
+            if (us[0] is char x && F.x.Equals(x))
+                return X;
+            if (us[0] is EPoly<ZnInt> e && e.Poly.Equals(F) && !e.IsZero())
+                return e;
+            if (us[0] is int k && k != 0)
+                return X * k;
+
+            throw new GroupException(GroupExceptionType.GroupDef);
         }
     }
 
-    public IEnumerable<FpPolynom> GetElements() => Elements;
-
-    public IEnumerable<FpPolynom> GetGenerators()
+    public IEnumerable<EPoly<ZnInt>> GetElements()
     {
-        yield return FpPolynom.Fpx(P, X);
+        yield return Neutral();
     }
 
-    public FpPolynom Neutral() => _neutral;
-
-    public FpPolynom Invert(FpPolynom e)
+    public IEnumerable<EPoly<ZnInt>> GetGenerators()
     {
-        var (x, y) = FpPolynom.Bezout(e, Poly);
-        var gcd = e * x + y * Poly;
-        return (x / gcd).DivideBy(Poly).rem;
+        yield return X;
     }
 
-    public FpPolynom Op(FpPolynom e1, FpPolynom e2)
-    {
-        return (e1 * e2).DivideBy(Poly).rem;
-    }
+    public EPoly<ZnInt> Neutral() => X.One;
+
+    public EPoly<ZnInt> Invert(EPoly<ZnInt> e) => e.Inv();
+
+    public EPoly<ZnInt> Op(EPoly<ZnInt> e1, EPoly<ZnInt> e2) => e1 * e2;
 
     public override int GetHashCode() => Hash;
     public override string ToString() => Name;

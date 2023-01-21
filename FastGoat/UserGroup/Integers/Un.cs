@@ -1,12 +1,14 @@
 using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.GenericGroup;
+using FastGoat.UserGroup.Padic;
 
 namespace FastGoat.UserGroup.Integers;
 
 public class Un : ConcreteGroup<Automorphism<ZnInt>>
 {
     public static ZnInt FirstGen(int p) => new Un(p).GetGenerators().First()[new ZnInt(p, 1)];
+    public static ZnBInt FirstGenZb(int p) => FirstGen(p).K * ZnBInt.KZero(p).One;
     public Cn Cn { get; }
 
     public Un(int n) : base($"U{n}", Group.AutBase(new Cn(n)), true)

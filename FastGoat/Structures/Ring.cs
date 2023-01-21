@@ -19,7 +19,7 @@ public static partial class Ring
     {
         if (b.IsZero())
             return a.CompareTo(a.Opp()) == -1 ? a.Opp() : a;
-
+        
         if (a.CompareTo(b) == -1)
         {
             if(a.IsZero())
@@ -86,6 +86,28 @@ public static partial class Ring
     {
         var indeterminates = new Indeterminates<Xi>(order, xi.Select(x => new Xi(x)).ToArray());
         return xi.Select(c => new Polynomial<K, Xi>(new Monom<Xi>(indeterminates, new(c), 1), scalar.One)).ToArray();
+    }
+
+    public static (Polynomial<K, Xi> X,Polynomial<K, Xi>[] Xis) Polynomial<K>(K scalar, MonomOrder order, (int n, string h) e, string x0)
+        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
+    {
+        var digits = $"{e.n - 1}".Length;
+        var zeros = Enumerable.Repeat(0, digits).Glue();
+        var fmt = $"{{0}}{{1,{digits}:{zeros}}}";
+        var xi = e.n.Range().Select(i => string.Format(fmt, e.h, i)).Append(x0).ToArray();
+        var indeterminates = new Indeterminates<Xi>(order, xi.Select(x => new Xi(x)).ToArray());
+        var xis = xi.Select(c => new Polynomial<K, Xi>(new Monom<Xi>(indeterminates, new(c), 1), scalar.One)).ToArray();
+        var X0 = xis.Last();
+        var Xis = xis.SkipLast(1).ToArray();
+        return (X0, Xis);
+    }
+
+    public static (EPolynomial<K> X,EPolynomial<K>[] xis) EPolynomial<K>(K scalar, MonomOrder order, (int n, string h) e, string x0)
+        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
+    {
+        var (x, xis) = Polynomial(scalar, order, e, x0);
+        var basis = new PolynomialBasis<K, Xi>(x.Indeterminates);
+        return (new EPolynomial<K>(x, basis), xis.Select(xi => new EPolynomial<K>(xi, basis)).ToArray());
     }
 
     public static Polynomial<K, Xi>[] Polynomial<K>(K scalar, char[] xi)
