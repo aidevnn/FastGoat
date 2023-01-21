@@ -3,12 +3,14 @@ using FastGoat.Structures;
 using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup.Integers;
 using FastGoat.UserGroup.Matrix;
+using FastGoat.UserGroup.Padic;
 
 namespace FastGoat.UserGroup;
 
 public static partial class FG
 {
     public static KPoly<ZnInt> ZPoly(int p, char x = 'x') => new KPoly<ZnInt>(x, ZnInt.KZero(p)).X;
+    public static KPoly<ZnBInt> ZbPoly(int p, char x = 'x') => new KPoly<ZnBInt>(x, ZnBInt.KZero(p)).X;
     public static KPoly<Rational> QPoly(char x = 'x') => new KPoly<Rational>(x);
 
     public static KPoly<K> KPoly<K>(char x, K scalar) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>

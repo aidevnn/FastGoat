@@ -61,13 +61,14 @@ public static partial class Ring
         return C;
     }
 
-    public static void Dot<T>(T[,] A, T[,] B, T[,] C, T t0) where T : IElt<T>, IRingElt<T>, IFieldElt<T>
+    public static void Dot<T>(T[,] A, T[,] B, T[,] C) where T : IElt<T>, IRingElt<T>
     {
         if (A.GetLength(1) != B.GetLength(0) || A.GetLength(0) != C.GetLength(0) || B.GetLength(1) != C.GetLength(1))
             throw new ArgumentException();
 
         var rowsA = C.GetLength(0);
         var colsAB = A.GetLength(1);
+        var t0 = A[0, 0];
         for (int i = 0; i < rowsA; i++)
         {
             for (int j = 0; j < colsAB; j++)
@@ -678,6 +679,33 @@ public static partial class Ring
 
         var dA = A.Degree;
         return ((s * B.Pow(dA)) / g.Pow(dA - 1))[0];
+    }
+
+    public static KPoly<K> StableGcd<K>(KPoly<K> a, KPoly<K> b)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        if (b.IsZero())
+            return a.CompareTo(a.Opp()) == -1 ? a.Opp() : a;
+
+        var d = a.Degree - b.Degree;
+        var bDeg = b.Coefs.Last().Pow(d + 1);
+        var r = (bDeg * a).Div(b).rem;
+        // Console.WriteLine($"StableGcd deg(a){a.Degree} deg(b){b.Degree} remainder length {r.ToString().Length}");
+        return StableGcd(b / bDeg, r);
+    }
+
+    public static (KPoly<K> x, KPoly<K> y) StableBezout<K>(KPoly<K> a, KPoly<K> b) 
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        if (b.IsZero())
+            return a.CompareTo(a.Opp()) == -1 ? (a.One.Opp(), a.Zero) : (a.One, a.Zero);
+
+        var d = a.Degree - b.Degree;
+        var bDeg = b.Coefs.Last().Pow(d + 1);
+        var (q, r) = (bDeg * a).Div(b);
+        // Console.WriteLine($"StableBezout deg(a){a.Degree} deg(b){b.Degree} remainder length {r.ToString().Length}");
+        var (x0, y0) = StableBezout(b / bDeg, r);
+        return (y0 * bDeg, x0 / bDeg - q * y0);
     }
 
     public static (KMatrix<K> O, KMatrix<K> U) GramSchmidt<K>(KMatrix<K> A)

@@ -9,9 +9,9 @@ namespace FastGoat.Examples;
 
 public static class GaloisTheory
 {
-    public static void GaloisGroup(List<EPoly<Rational>> roots)
+    public static void GaloisGroup<K>(List<EPoly<K>> roots) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
-        if (roots.ToHashSet().Count !=roots.Count || roots.Select(e => e.F).Distinct().Count() != 1)
+        if (roots.ToHashSet().Count != roots.Count || roots.Select(e => e.F).Distinct().Count() != 1)
             throw new("Roots must all be differents and belong to the same extensions");
 
         var (X, a) = FG.EPolyXc(roots[0].F, 'a');
@@ -23,7 +23,7 @@ public static class GaloisTheory
         var n = a.F.Degree;
         var Fi = roots.Select((k, i) => (k, i)).ToDictionary(e => e.i, e => e.k.Poly);
         var idx = roots.Select((k, i) => (k, i)).ToDictionary(e => e.k, e => e.i);
-    
+
         var sn = new Sn(n);
         var sigmas = new List<Perm>();
         for (int j = 0; j < n; j++)
@@ -34,7 +34,7 @@ public static class GaloisTheory
                 var asj = Fi[i].Substitute(roots[j]);
                 s_j.Add(idx[asj]);
             }
-    
+
             var as_j = sn.CreateElement(s_j.Select(k => k + 1).ToArray());
             sigmas.Add(as_j);
         }
@@ -48,17 +48,16 @@ public static class GaloisTheory
 
     public static void NormalExtensionCase()
     {
-        
         {
             var x = FG.QPoly();
             var (X0, y0) = FG.EPolyXc(x.Pow(2) - 2, 'a');
-            GaloisGroup(new() { y0, -y0 });
+            GaloisGroup(new List<EPoly<Rational>>() { y0, -y0 });
         }
 
         {
             var x = FG.QPoly();
             var (X0, y0) = FG.EPolyXc(x.Pow(2) + 4 * x - 2, 'a');
-            GaloisGroup(new() { y0, -y0-4 });
+            GaloisGroup(new List<EPoly<Rational>>() { y0, -y0 - 4 });
         }
 
         {
@@ -75,8 +74,14 @@ public static class GaloisTheory
 
         {
             var x = FG.QPoly();
+            var roots = AlgebraicFactorization.SplittingField(x.Pow(4) - 4 * x.Pow(2) + 2);
+            GaloisGroup(roots);
+        }
+
+        {
+            var x = FG.QPoly();
             var (X0, y0) = FG.EPolyXc(x.Pow(6) + 243, 'a');
-            
+
             var z = y0.Pow(3) / 9;
             var r0 = (-1 + z) / 2;
             var r1 = (-1 - z) / 2;
@@ -86,6 +91,5 @@ public static class GaloisTheory
             var roots = new List<EPoly<Rational>>() { y0, -y0, r0 * y0, r1 * y0, r2 * y0, r3 * y0 };
             GaloisGroup(roots);
         }
-
     }
 }
