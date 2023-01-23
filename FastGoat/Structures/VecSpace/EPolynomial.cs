@@ -155,6 +155,26 @@ public readonly struct EPolynomial<K> : IVsElt<K, EPolynomial<K>>, IElt<EPolynom
             return (q0, q0.One);
         }
 
+        var nbNum = num.NbIndeterminates;
+        var nbDenom = denom.NbIndeterminates;
+        if (nbNum == 0)
+            return (num, denom);
+
+        if (nbNum == 1 && nbDenom == 1)
+        {
+            var ai = num.ExtractIndeterminate;
+            var bi = denom.ExtractIndeterminate;
+            if (!ai.Equals(bi))
+                return (num, denom);
+
+            var num1 = num.ToKPoly(ai);
+            var denom1 = denom.ToKPoly(bi);
+            var gcd = Ring.Gcd(num1, denom1);
+            var num2 = basis.Rem((num1 / gcd).ToPolynomial(num.Indeterminates, ai));
+            var denom2 = basis.Rem((denom1 / gcd).ToPolynomial(num.Indeterminates, ai));
+            return (num2, denom2);
+        }
+
         var lcm = Ring.LcmPolynomial(num, denom);
         var num0 = basis.Rem(lcm / denom);
         var denom0 = basis.Rem(lcm / num);

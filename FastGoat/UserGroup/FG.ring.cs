@@ -153,6 +153,11 @@ public static partial class FG
 
     public static (KPoly<EPoly<ZnInt>> x, EPoly<ZnInt> a) FqX_Poly(int q) => FqX_Poly(q, ('x', 'a'));
 
+    public static GL GLnp(int n, int p)
+    {
+        return new GL(n, p);
+    }
+
     public static GLn<K> GLnK<K>(int n, K scalar) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         return new GLn<K>(n, scalar);
@@ -190,6 +195,16 @@ public static partial class FG
         return NumberFieldQ(a);
     }
     
+    public static (EPolynomial<Rational> x, EPolynomial<Rational> p0) NumberFieldQ(KPoly<Rational> e, string x, string p0)
+    {
+        var all = new[] { x, p0, "_t_" };
+        var xis = Ring.Polynomial(Rational.KZero(), MonomOrder.Lex, all);
+        var x0 = xis[0];
+        var a = e.ToPolynomial(x0.Indeterminates, x0.Indeterminates[0]);
+        var nf = NumberFieldQ(a);
+        return (nf, new EPolynomial<Rational>(xis[1], nf.Basis));
+    }
+
     public static (EPolynomial<Rational>, EPolynomial<Rational>) NumberFieldQ((KPoly<Rational>, string) e0,
         (KPoly<Rational>, string) e1)
     {
@@ -198,5 +213,17 @@ public static partial class FG
         var b = e1.Item1.ToPolynomial(t.Indeterminates, t.Indeterminates[1]);
         var nbf = NumberFieldQ(new[] { a, b });
         return (nbf[0], nbf[1]);
+    }
+    
+    public static (EPolynomial<Rational> e0, EPolynomial<Rational> e1, EPolynomial<Rational> p0) NumberFieldQ((KPoly<Rational>, string) e0,
+        (KPoly<Rational>, string) e1, string p0, params string[] others)
+    {
+        var all = new[] { e0.Item2, e1.Item2, p0, "_t_" }.ToArray();
+        var xis = Ring.Polynomial(Rational.KZero(), MonomOrder.Lex, all);
+        var x0 = xis[0];
+        var a = e0.Item1.ToPolynomial(x0.Indeterminates, x0.Indeterminates[0]);
+        var b = e1.Item1.ToPolynomial(x0.Indeterminates, x0.Indeterminates[1]);
+        var nbf = NumberFieldQ(new[] { a, b });
+        return (nbf[0], nbf[1], new EPolynomial<Rational>(xis[2], nbf[0].Basis));
     }
 }

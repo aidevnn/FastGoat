@@ -95,6 +95,8 @@ public struct Ep<T> : IElt<Ep<T>> where T : IElt<T>
         return Ei.SequenceCompareTo(other.Ei);
     }
 
+    public T this[int index] => Ei[index];
+
     public int Hash { get; }
     public override int GetHashCode() => Hash;
     public override string ToString() => $"({Ei.Glue(", ")})";

@@ -80,6 +80,22 @@ public static partial class FG
         return Product.GpGenerate(seq.Select(i => new Cn(i)).Cast<IGroup<ZnInt>>().ToArray());
     }
 
+    public static WordGroup AbelianWg(string name, params int[] seq)
+    {
+        if (seq.Length > 5 || seq.Min() <= 1)
+            throw new GroupException(GroupExceptionType.GroupDef);
+        
+        var n = seq.Length.Range();
+        var gens = n.Select(i => ((char)('a' + i)).ToString()).ToArray();
+        var allCombs = n.SelectMany(i => n.Where(j => j > i).Select(j => (gens[i], gens[j]))).ToArray();
+        var relators = gens.Select((g, i) => $"{g}{seq[i]}").Concat(allCombs.Select(e => $"{e.Item1}{e.Item2}={e.Item2}{e.Item1}"))
+            .Glue(", ");
+
+        return new WordGroup(name, relators);
+    }
+
+    public static WordGroup AbelianWg(params int[] seq) => AbelianWg(seq.Glue(" x ", "C{0}"), seq);
+
     public static SemiDirectProduct<ZnInt, ZnInt> DihedralSdp(int n)
     {
         var cn = new Cn(n);

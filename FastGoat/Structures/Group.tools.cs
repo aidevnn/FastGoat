@@ -1,3 +1,4 @@
+using System.Reflection;
 using FastGoat.Commons;
 using FastGoat.Structures.GenericGroup;
 
@@ -40,11 +41,12 @@ public static partial class Group
     {
         HashSet<T2> set = new() { x };
         Queue<T2> q = new Queue<T2>();
+        var gens = gr.GetGenerators().ToArray();
         q.Enqueue(x);
         while (q.Count != 0)
         {
             var x0 = q.Dequeue();
-            foreach (var g in gr.PseudoGenerators)
+            foreach (var g in gens)
             {
                 var x1 = act(g, x0);
                 if (set.Add(x1))
@@ -52,7 +54,6 @@ public static partial class Group
             }
         }
 
-        // return gr.Select(g => act(g, x)).ToHashSet();
         return set;
     }
 
@@ -87,15 +88,19 @@ public static partial class Group
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
     {
+        var i = 0;
         foreach (var kp in allClasses.OrderBy(p => p.Value.Orbx.Count))
         {
+            ++i;
             var x = kp.Key;
             var (stabx, orbx) = kp.Value;
             if (details)
-                Console.WriteLine($"x = {x,-40} Stab(x):{stabx.Count,-4} Orb(x):{orbx.Count}   {orbx.Glue(", ")}");
+                Console.WriteLine($"x{i} = {x,-40} Stab(x{i}):{stabx.Count,-4} Orb(x{i}):{orbx.Count}   {orbx.Glue(", ")}");
             else
-                Console.WriteLine($"x = {x,-40} Stab(x):{stabx.Count,-4} Orb(x):{orbx.Count}");
+                Console.WriteLine($"x{i} = {x,-40} Stab(x{i}):{stabx.Count,-4} Orb(x{i}):{orbx.Count}");
         }
+
+        Console.WriteLine();
     }
 
     public static void DisplayOrbx<T1, T2>(ConcreteGroup<T1> gr,
@@ -103,6 +108,8 @@ public static partial class Group
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
     {
+        DisplayGroup.Head(gr);
+        Console.WriteLine($"Classes for action {act.Method.Name}");
         DisplayOrbx(AllOrbits(gr, set, act), details);
     }
 
@@ -110,6 +117,11 @@ public static partial class Group
         where T : struct, IElt<T>
     {
         DisplayOrbx(gr, gr.ToArray(), act);
+    }
+
+    public static void DisplayConjugacyClasses<T>(ConcreteGroup<T> gr) where T : struct, IElt<T>
+    {
+        DisplayOrbx(gr, ByConjugate(gr));
     }
 
     public static bool AreConjugate<T>(ConcreteGroup<T> g, T a, T b) where T : struct, IElt<T>

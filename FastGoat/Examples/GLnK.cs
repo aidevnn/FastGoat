@@ -114,18 +114,18 @@ public static class GLnK
         var x = FG.QPoly();
         var (a, i) = FG.NumberFieldQ((x.Pow(2) - 3, "√3"), (x.Pow(2) + 1, "i"));
         var gl = FG.GLnK($"Q({i},{a})", 2, a);
-    
+        
         var m0 = gl[(1 + i * a) / 2, 0, 0, (1 - i * a) / 2];
         var m1 = gl[i, 0, 0, -i];
         var m2 = gl[0, 1, -1, 0];
-    
+        
         var g0 = Group.Generate("C6", gl, m0);
         DisplayGroup.HeadElements(g0);
         var g1 = Group.Generate("Q8", gl, m1, m2);
         DisplayGroup.HeadElements(g1);
         var g2 = Group.Generate("G24", gl, m0, m1, m2);
         DisplayGroup.HeadElements(g2);
-
+        
         var sdp = Group.SemiDirectProd(new Cn(3), FG.Quaternion(8));
         DisplayGroup.HeadOrders(g2);
         DisplayGroup.HeadSdpOrders(sdp);

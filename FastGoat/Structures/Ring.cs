@@ -102,6 +102,33 @@ public static partial class Ring
         return (X0, Xis);
     }
 
+    public static Polynomial<K, Xi>[] Polynomial<K>(K scalar, MonomOrder order, (int n, string h) e)
+        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
+    {
+        var digits = $"{e.n - 1}".Length;
+        var zeros = Enumerable.Repeat(0, digits).Glue();
+        var fmt = $"{{0}}{{1,{digits}:{zeros}}}";
+        var xi = e.n.Range().Select(i => string.Format(fmt, e.h, i)).ToArray();
+        var indeterminates = new Indeterminates<Xi>(order, xi.Select(x => new Xi(x)).ToArray());
+        return xi.Select(c => new Polynomial<K, Xi>(new Monom<Xi>(indeterminates, new(c), 1), scalar.One)).ToArray();
+    }
+
+    public static EPolynomial<K>[] EPolynomial<K>(K scalar, MonomOrder order, (int n, string h) e)
+        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
+    {
+        var xis = Polynomial(scalar, order, e);
+        var basis = new PolynomialBasis<K, Xi>(xis[0].Indeterminates);
+        return xis.Select(xi => new EPolynomial<K>(xi, basis)).ToArray();
+    }
+
+    public static EPolynomial<K>[] EPolynomial<K>(K scalar, MonomOrder order, string[] xis)
+        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
+    {
+        var xis0 = Polynomial(scalar, order, xis);
+        var basis = new PolynomialBasis<K, Xi>(xis0[0].Indeterminates);
+        return xis0.Select(xi => new EPolynomial<K>(xi, basis)).ToArray();
+    }
+
     public static (EPolynomial<K> X,EPolynomial<K>[] xis) EPolynomial<K>(K scalar, MonomOrder order, (int n, string h) e, string x0)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
@@ -174,6 +201,24 @@ public static partial class Ring
         var polys = Polynomial(scalar, order, new[] { x1, x2, x3, x4, x5, x6 });
         return (polys[0], polys[1], polys[2], polys[3], polys[4], polys[5]);
     }
+    
+    
+    public static (EPolynomial<K> x1, EPolynomial<K> x2)
+        EPolynomial<K>(string x1, string x2, K scalar, MonomOrder order = MonomOrder.GrLex)
+        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
+    {
+        var polys = EPolynomial(scalar, order, new[] { x1, x2 });
+        return (polys[0], polys[1]);
+    }
+
+    public static (EPolynomial<K> x1, EPolynomial<K> x2, EPolynomial<K> x3)
+        EPolynomial<K>(string x1, string x2, string x3, K scalar, MonomOrder order = MonomOrder.GrLex)
+        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
+    {
+        var polys = EPolynomial(scalar, order, new[] { x1, x2, x3 });
+        return (polys[0], polys[1], polys[2]);
+    }
+
 
     public static KPoly<K> ToKPoly<K>(this Polynomial<K, Xi> f, Xi x)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>

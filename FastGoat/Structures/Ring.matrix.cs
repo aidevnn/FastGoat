@@ -6,7 +6,7 @@ namespace FastGoat.Structures;
 
 public static partial class Ring
 {
-    public static T[,] Matrix<T>(int rows, params T[] coefs)
+    public static T[,] Matrix<T>(int rows, T[] coefs)
     {
         if (coefs.Length % rows != 0)
             throw new ArgumentException();
@@ -24,9 +24,9 @@ public static partial class Ring
         return A;
     }
 
-    public static T[,] Matrix<T>(int rows, T t0, params int[] coefs) where T : IElt<T>, IRingElt<T>, IFieldElt<T>
+    public static T[,] Matrix<T>(int rows, T t0, params dynamic[] coefs) where T : IElt<T>, IRingElt<T>, IFieldElt<T>
     {
-        return Matrix(rows, coefs.Select(c => t0.One.Mul(c)).ToArray());
+        return Matrix(rows, coefs.Select(c => c is int c0 ? t0.One.Mul(c0) : c is T c1 ? c1 : t0.Zero).ToArray());
     }
 
     public static T[,] Diagonal<T>(T v, int n) where T : IElt<T>, IRingElt<T>

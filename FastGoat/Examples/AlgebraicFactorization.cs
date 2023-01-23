@@ -128,48 +128,39 @@ public static class AlgebraicFactorization
     }
 
     // Barry Trager, Algebraic Factoring
-    public static List<(KPoly<EPoly<Rational>> hi, int i, int q)> AlgebraicFactors(KPoly<EPoly<Rational>> f, char c = 'X')
+    public static List<KPoly<EPoly<Rational>>> AlgebraicFactors(KPoly<EPoly<Rational>> f, bool details = false)
     {
-        Console.WriteLine("############# START Algebraic Factors #############");
         var (s, g, r) = SqfrNorm(f);
-        var sepFactors = PolynomialFactorization.YunSFFDetails(r);
-        var L = new List<(KPoly<EPoly<Rational>> hi, int i, int q)>();
+        var L = new List<KPoly<EPoly<Rational>>>();
         var x = g.X;
         var a = g[0].X;
         var g0 = g.Substitute(x);
-
-        var k = 0;
-        foreach (var (h0, q, i) in sepFactors)
+        
+        var hs = PolynomialFactorizationPart2.FirrZ(r);
+        if (hs.Length == 1)
         {
-            var hs = PolynomialFactorizationPart2.FirrQ(h0);
-            if (hs.Length == 1)
-            {
-                L.Add((f.Substitute(x), q, i));
-                Console.WriteLine($"Irreductible {f}");
-                continue;
-            }
-            foreach (var h1 in hs)
-            {
-                var h2 = h1.Substitute(x);
-                var h3 = Ring.StableGcd(g0, h2);
-                g0 = g0 / h3;
-                var h4 = h3.Substitute(x + s * a);
-                L.Add((h4.Monic, q, i));
-                Console.WriteLine(new { k, hi = h4.Monic, q, i });
-            }
-
-            ++k;
+            L.Add(f.Substitute(x));
+            return L;
+        }
+        
+        foreach (var h1 in hs)
+        {
+            var h2 = h1.Substitute(x);
+            var h3 = Ring.StableGcd(g0, h2);
+            g0 = g0 / h3;
+            var h4 = h3.Substitute(x + s * a);
+            L.Add(h4.Monic);
         }
 
-        Console.WriteLine();
-        Console.WriteLine($"With {a.F} = 0");
-
-        var prod = L.Aggregate(g.One, (acc, h) => acc * h.hi);
-        var seq = L.Select(h => h.hi).Glue(" * ", "({0})");
-        Console.WriteLine($"{prod} = {seq}");
-        Console.WriteLine($"Is equal {f.Substitute(g.X).Equals(prod)}");
-        Console.WriteLine("#############  END  Algebraic Factors #############");
-        Console.WriteLine();
+        if (details)
+        {
+            Console.WriteLine($"With {a.F} = 0");
+            var prod = L.Aggregate(g.One, (acc, h) => acc * h);
+            var seq = L.Glue(" * ", "({0})");
+            Console.WriteLine($"{prod} = {seq}");
+            Console.WriteLine($"Is equal {f.Substitute(g.X).Equals(prod)}");
+            Console.WriteLine();
+        }
 
         return L;
     }
@@ -257,7 +248,7 @@ public static class AlgebraicFactorization
             var i = FG.EQPoly('i', 1, 0, 1);
             var x = FG.KPoly('x', i);
             var A = x.Pow(4) - x.Pow(2) - 2;
-            AlgebraicFactors(A);
+            AlgebraicFactors(A, true);
             // x^4 + -x^2 + -2 = (x + -i) * (x + i) * (x^2 + -2)
         }
 
@@ -267,7 +258,7 @@ public static class AlgebraicFactorization
             var f = x.Pow(3) - 3 * x - 1;
             Console.WriteLine($"f={f}; A = f/(x-a) = {f.Div(x - a)}");
             var A = f / (x - a);
-            AlgebraicFactors(f);
+            AlgebraicFactors(f, true);
             // x^3 + -3·x + -1 = (x + a^2 + -2) * (x + -a) * (x + -a^2 + a + 2)
         }
 
@@ -275,8 +266,16 @@ public static class AlgebraicFactorization
             var a = FG.EQPoly('a', 1, 1, 1, 1, 1);
             var x = FG.KPoly('x', a);
             var A = x.Pow(2) - 5;
-            AlgebraicFactors(A);
+            AlgebraicFactors(A, true);
             // x^2 + -5 = (x + 2·a^3 + 2·a^2 + 1) * (x + -2·a^3 + -2·a^2 + -1)
+        }
+
+        {
+            var a = FG.EQPoly('a', -5, 0, 1);
+            var x = FG.KPoly('x', a);
+            var A = x.Pow(4) + x.Pow(3) + x.Pow(2) + x + 1;
+            AlgebraicFactors(A, true);
+            // x^4 + x^3 + x^2 + x + 1 = (x^2 + (1/2·a + 1/2)·x + 1) * (x^2 + (-1/2·a + 1/2)·x + 1)
         }
 
         {
@@ -291,7 +290,7 @@ public static class AlgebraicFactorization
             var i = FG.EQPoly('i', 1, 0, 1);
             var x = FG.KPoly('x', i);
             var A = x.Pow(4) + 25 * x.Pow(2) + 50 * x + 25;
-            AlgebraicFactors(A);
+            AlgebraicFactors(A, true);
             // x^4 + 25·x^2 + 50·x + 25 = (x^2 + -5·i·x + -5·i) * (x^2 + 5·i·x + 5·i)
         }
 
@@ -299,8 +298,16 @@ public static class AlgebraicFactorization
             var a = FG.EQPoly('a', 2, 2, 1);
             var x = FG.KPoly('x', a);
             var A = x.Pow(4) + 4;
-            AlgebraicFactors(A);
+            AlgebraicFactors(A, true);
             // x^4 + 4 = (x + -a) * (x + a) * (x + a + 2) * (x + -a + -2)
+        }
+
+        {
+            var a = FG.EQPoly('a', 3, 0, 1);
+            var x = FG.KPoly('x', a);
+            var A = x.Pow(6) - 1;
+            AlgebraicFactors(A, true);
+            // x^6 + -1 = (x + 1/2·a + 1/2) * (x + 1/2·a + -1/2) * (x + -1/2·a + 1/2) * (x + -1/2·a + -1/2) * (x + 1) * (x + -1)
         }
     }
 

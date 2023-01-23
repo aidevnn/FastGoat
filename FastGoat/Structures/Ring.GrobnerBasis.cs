@@ -152,7 +152,7 @@ public static partial class Ring
         var mnm = new Monom<Xi>(a.Indeterminates, ti, 1);
         var t = new Polynomial<K, Xi>(mnm, a.KOne);
         var ord = a.Indeterminates.Order;
-        a.Indeterminates.SetOrder(MonomOrder.GrLex);
+        a.Indeterminates.SetOrder(MonomOrder.Lex);
         var gb = ReducedGrobnerBasis(t * a, (1 - t) * b);
         var lcm = gb.Last().Monic();
         a.Indeterminates.SetOrder(ord);
