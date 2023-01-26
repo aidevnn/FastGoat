@@ -138,7 +138,7 @@ public static class PolynomialFactorizationPart2
             throw new Exception();
         }
         
-        var listIrr0 = listIrr.OrderBy(q => new KPoly<Rational>(q.x, q.KZero, q.Coefs.Select(Rational.Abs).ToArray())).ToArray();
+        var listIrr0 = listIrr.OrderBy(q => new KPoly<Rational>(q.x, q.KZero, q.Coefs.Select(Rational.Absolute).ToArray())).ToArray();
         if (details)
         {
             Console.WriteLine($"Prime P = {p}; Sigma = {o}; P^o={BigInteger.Pow(p, o)} 2*Nu={2*nu,0:0.00}");

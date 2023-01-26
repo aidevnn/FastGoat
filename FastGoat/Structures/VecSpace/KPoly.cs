@@ -1,3 +1,4 @@
+using System.Numerics;
 using FastGoat.Commons;
 
 namespace FastGoat.Structures.VecSpace;
@@ -64,7 +65,8 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
 
         for (int i = Degree; i >= 0; i--)
         {
-            var comp = this[i].CompareTo(other[i]);
+            var s = (Degree - i) % 2 == 0 ? 1 : -1;
+            var comp = s * this[i].CompareTo(other[i]);
             if (comp != 0)
                 return comp;
         }
@@ -81,7 +83,6 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
     public KPoly<K> One => new(x, KZero, new[] { KOne });
     public KPoly<K> X => new(x, KZero, new[] { KZero, KOne });
 
-    public KPoly<K> LeadingCoeff => IsZero() ? One : new(x, KZero, new[] { Coefs.Last() });
     public KPoly<K> Derivative => new(x, KZero, Coefs.Select((e, i) => e.Mul(i)).Skip(1).TrimSeq().ToArray());
     public K Substitute(K f) => Coefs.Select((k, i) => k * f.Pow(i)).Aggregate((a, b) => a + b);
     public KPoly<K> Substitute(KPoly<K> f) => Coefs.Select((k, i) => k * f.Pow(i)).Aggregate((a, b) => a + b);

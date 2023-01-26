@@ -11,6 +11,22 @@ public struct ZnBInt : IElt<ZnBInt>, IRingElt<ZnBInt>, IFieldElt<ZnBInt>
     public static ZnBInt KZero(int mod, int o = 1) => new(mod, 0, o);
     public Modulus Details { get; }
 
+    public static double Abs(ZnBInt z)
+    {
+        if (z.IsZero())
+            return 0;
+        
+        var a0 = z.K;
+        for (int k = 0; k < z.Details.O; ++k)
+        {
+            a0 /= z.P;
+            if (a0.IsZero)
+                return k;
+        }
+        
+        return z.Details.O;
+    }
+    public static bool IsValuedField => true;
     public int P => Details.P;
 
     public ZnBInt(int mod, BigInteger k, int o = 1)
@@ -85,8 +101,6 @@ public struct ZnBInt : IElt<ZnBInt>, IRingElt<ZnBInt>, IFieldElt<ZnBInt>
         var r = BigInteger.ModPow(K, k, Mod);
         return new(Details, r);
     }
-
-    public ZnBInt LeadingCoeff => new(Details, 1);
 
     public ZnBInt Inv()
     {

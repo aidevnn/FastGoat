@@ -8,6 +8,17 @@ namespace FastGoat.UserGroup.Padic;
 public readonly struct PadicZealous : IElt<PadicZealous>, IRingElt<PadicZealous>, IFieldElt<PadicZealous>
 {
     public static PadicZealous KZero(int p, int o) => new(p, o);
+    
+    public static double Abs(PadicZealous p)
+    {
+        if (p.IsZero())
+            return float.PositiveInfinity;
+
+        return p.Val;
+    }
+    
+    public static bool IsValuedField => true;
+    
     public int N { get; }
     public int Val { get; }
     public BigInteger S { get; }
@@ -213,7 +224,6 @@ public readonly struct PadicZealous : IElt<PadicZealous>, IRingElt<PadicZealous>
         return Enumerable.Repeat(a0, k).Aggregate(One, (acc, e) => acc.Mul(e));
     }
 
-    public PadicZealous LeadingCoeff => One;
     public Rational Norm => Val == N ? new(0) : new Rational(P).Pow(-Val);
     public PadicZealous Normalized => new(P, N, 0, S, Mod);
 

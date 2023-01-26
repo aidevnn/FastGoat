@@ -15,6 +15,8 @@ public readonly struct FracPoly<K> : IVsElt<K, FracPoly<K>>, IElt<FracPoly<K>>, 
         Hash = (Num.Hash, Denom.Hash).GetHashCode();
     }
 
+    public static bool IsValuedField => false;
+    public static double Abs(FracPoly<K> e) => throw new NotImplementedException();
     public FracPoly(KPoly<K> num)
     {
         Num = num;
@@ -42,7 +44,7 @@ public readonly struct FracPoly<K> : IVsElt<K, FracPoly<K>>, IElt<FracPoly<K>>, 
             var gcd = Ring.Gcd(num, denom);
             var num0 = num.Div(gcd).quo;
             var denom0 = denom.Div(gcd).quo;
-            var c = denom0.LeadingCoeff;
+            var c = denom0.Coefs.Last();
             Num = num0 / c;
             Denom = denom0 / c;
         }
@@ -109,8 +111,6 @@ public readonly struct FracPoly<K> : IVsElt<K, FracPoly<K>>, IElt<FracPoly<K>>, 
 
         return $"({Num})/({Denom})";
     }
-
-    public FracPoly<K> LeadingCoeff => new(Num.LeadingCoeff, Denom.LeadingCoeff);
 
     public static FracPoly<K> operator +(FracPoly<K> a, FracPoly<K> b) => a.Add(b);
 

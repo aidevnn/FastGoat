@@ -73,7 +73,13 @@ public readonly struct GLn<K> : IGroup<KMatrix<K>> where K : struct, IElt<K>, IR
             var us0 = us.Select(e => e is int e0 ? e0 * kone : e is K e1 ? e1 : kzero).ToArray();
             var m = new KMatrix<K>(Ring.Matrix(N, us0));
             var det = m.Det;
-            if (!det.Equals(kone) && !det.Equals(-kone))
+
+            if (K.IsValuedField)
+            {
+                if (Math.Abs(K.Abs(det) - 1) > 1e-7)
+                    throw new GroupException(GroupExceptionType.GroupDef);
+            }
+            else if (!det.Equals(kone) && !det.Equals(-kone))
                 throw new GroupException(GroupExceptionType.GroupDef);
 
             return m;

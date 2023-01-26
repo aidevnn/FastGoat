@@ -10,6 +10,8 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
     public BigInteger Denom { get; }
     public static Rational KZero() => new(0, 1);
 
+    public static double Abs(Rational r) => Absolute(r);
+    public static bool IsValuedField => true;
     public Rational()
     {
         Num = 1;
@@ -49,7 +51,6 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
     public bool IsZero() => Num == 0;
     public Rational Zero => new(0, 1);
     public Rational One => new(1, 1);
-    public Rational LeadingCoeff => One;
     public Rational Add(Rational e) => new(Num * e.Denom + e.Num * Denom, Denom * e.Denom);
     public Rational Sub(Rational e) => new(Num * e.Denom - e.Num * Denom, Denom * e.Denom);
 
@@ -85,7 +86,7 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
     public override int GetHashCode() => Hash;
     public override string ToString() => IsZero() ? "0" : Denom == 1 ? $"{Num}" : $"{Num}/{Denom}";
 
-    public static Rational Abs(Rational e) => new(BigInteger.Abs(e.Num), e.Denom);
+    public static Rational Absolute(Rational e) => new(BigInteger.Abs(e.Num), e.Denom);
     public static Rational operator +(Rational a, Rational b) => a.Add(b);
     public static Rational operator +(int a, Rational b) => b.Add(b.One.Mul(a));
     public static Rational operator +(Rational a, int b) => a.Add(a.One.Mul(b));

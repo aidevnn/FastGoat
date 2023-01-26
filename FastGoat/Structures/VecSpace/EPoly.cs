@@ -5,6 +5,8 @@ public readonly struct EPoly<K> : IVsElt<K, EPoly<K>>, IElt<EPoly<K>>, IRingElt<
 {
     public KPoly<K> F { get; }
     public KPoly<K> Poly { get; }
+    public static double Abs(EPoly<K> e) => throw new NotImplementedException();
+    public static bool IsValuedField => false;
 
     public EPoly(KPoly<K> f)
     {
@@ -55,7 +57,6 @@ public readonly struct EPoly<K> : IVsElt<K, EPoly<K>>, IElt<EPoly<K>>, IRingElt<
     public EPoly<K> Zero => new(F, F.Zero);
     public EPoly<K> One => new(F, F.One);
     public EPoly<K> X => new(F);
-    public EPoly<K> LeadingCoeff => new(F, F.LeadingCoeff);
     public EPoly<K> Derivative => new(F, Poly.Derivative.Div(F).rem);
     public EPoly<K> Substitute(KPoly<K> f) => new(F, Poly.Substitute(f).Div(F).rem);
     public EPoly<K> Substitute(EPoly<K> f) => new(f.F, Poly.Substitute(f.Poly).Div(f.F).rem);

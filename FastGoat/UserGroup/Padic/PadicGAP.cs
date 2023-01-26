@@ -8,6 +8,15 @@ namespace FastGoat.UserGroup.Padic;
 public readonly struct PadicGAP : IElt<PadicGAP>, IRingElt<PadicGAP>, IFieldElt<PadicGAP>
 {
     public static PadicGAP KZero(int p, int o) => new(p, o);
+
+    public static double Abs(PadicGAP p)
+    {
+        if (p.IsZero())
+            return float.PositiveInfinity;
+
+        return p.Val.V;
+    }
+    public static bool IsValuedField => true;
     public Modulus Details { get; }
     public Valuation Val { get; }
     public BigInteger K { get; }
@@ -187,7 +196,6 @@ public readonly struct PadicGAP : IElt<PadicGAP>, IRingElt<PadicGAP>, IFieldElt<
         return new(P, O, new ZnBInt(Details, K).Pow(k).K, k * Val.V);
     }
 
-    public PadicGAP LeadingCoeff => One;
     public Rational Norm => Val.IsInfinity ? new(0) : new Rational(P).Pow(-Val.V);
     public PadicGAP Normalized => new(Details, K, new(0));
 

@@ -1,3 +1,4 @@
+using System.Numerics;
 using FastGoat.Commons;
 using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup.Integers;
@@ -258,4 +259,7 @@ public static partial class Ring
     {
         return P.Coefs.Select((c, i) => c.Poly.Substitute(a) * s.Pow(i)).Aggregate(s.Zero, (acc, c) => acc + c);
     }
+
+    public static Complex Substitute(this KPoly<Rational> f, Complex c) => f.Coefs.Select((k, i) => k * Complex.Pow(c, i))
+        .Aggregate(Complex.Zero, (sum, ci) => sum + ci);
 }

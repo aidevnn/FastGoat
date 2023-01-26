@@ -10,6 +10,8 @@ public struct KMatrix<K> : IVsElt<K, KMatrix<K>>, IElt<KMatrix<K>>, IRingElt<KMa
     public int N { get; }
     public (int m, int n) Dim => (M, N);
 
+    public static double Abs(KMatrix<K> m) => K.IsValuedField ? K.Abs(m.Det) : throw new NotImplementedException();
+    public static bool IsValuedField => K.IsValuedField;
     public KMatrix(K scalar, int m, int n)
     {
         Coefs = new K[m, n];
@@ -49,7 +51,6 @@ public struct KMatrix<K> : IVsElt<K, KMatrix<K>>, IElt<KMatrix<K>>, IRingElt<KMa
     public K KZero { get; }
     public K KOne => KZero.One;
 
-    public KMatrix<K> LeadingCoeff => One;
     public K this[int i, int j] => Coefs[i, j];
 
     public bool Equals(KMatrix<K> other)

@@ -14,7 +14,6 @@ public interface IRingElt<T> : IEquatable<T>, IComparable<T> where T : IElt<T>, 
     (T quo, T rem) Div(T e);
     T Mul(int k);
     T Pow(int k);
-    T LeadingCoeff { get; }
     static abstract T operator +(T a, T b);
     static abstract T operator +(int a, T b);
     static abstract T operator +(T a, int b);
@@ -34,6 +33,8 @@ public interface IFieldElt<T> : IEquatable<T>, IComparable<T> where T : IElt<T>,
     int P { get; }
     T Inv();
     static abstract T operator /(int a, T b);
+    static abstract double Abs(T t);
+    static abstract bool IsValuedField { get; }
 }
 
 public interface IVsElt<K, T> : IEquatable<T>, IComparable<T>

@@ -140,6 +140,8 @@ public static class AlgebraicFactorization
         if (hs.Length == 1)
         {
             L.Add(f.Substitute(x));
+            if(details)
+                Console.WriteLine($"f = {L[0]} is irreductible");
             return L;
         }
         
