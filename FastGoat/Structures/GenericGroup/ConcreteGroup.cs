@@ -62,6 +62,7 @@ public class ConcreteGroup<T> : IGroup<T> where T : struct, IElt<T>
     {
     }
 
+    public string ShortName => $"|{Name}| = {this.Count()}";
     public ReadOnlyCollection<T> PseudoGenerators { get; protected set; }
     public IEnumerable<int> ElementsOrdersList() => ElementsOrders.Values.Ascending();
     protected HashSet<T> Elements { get; set; }

@@ -114,6 +114,11 @@ public static partial class Product
         return new(en);
     }
 
+    public static ConcreteGroup<Ep<T>> GpGenerate<T>(string name, params IGroup<T>[] gn) where T : struct, IElt<T>
+    {
+        return new(name, Gp(gn));
+    }
+
     public static ConcreteGroup<Ep<T>> GpGenerate<T>(params IGroup<T>[] gn) where T : struct, IElt<T>
     {
         return new(Gp(gn));

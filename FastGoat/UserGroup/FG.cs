@@ -23,6 +23,9 @@ public static partial class FG
 
     public static KPoly<Rational> CyclotomicPolynomial(int k)
     {
+        if (k < 1)
+            throw new Exception();
+        
         if (CyclotomicPolynomials.ContainsKey(k))
             return CyclotomicPolynomials[k];
 
@@ -72,7 +75,7 @@ public static partial class FG
 
     public static ConcreteGroup<Ep<ZnInt>> Abelian(string name, params int[] seq)
     {
-        return Group.Create(name, new Gp<ZnInt>(seq.Select(i => new Zn(i)).Cast<IGroup<ZnInt>>().ToArray()));
+        return Product.GpGenerate(name, seq.Select(i => new Cn(i)).Cast<IGroup<ZnInt>>().ToArray());
     }
 
     public static ConcreteGroup<Ep<ZnInt>> Abelian(params int[] seq)
@@ -90,7 +93,7 @@ public static partial class FG
         var allCombs = n.SelectMany(i => n.Where(j => j > i).Select(j => (gens[i], gens[j]))).ToArray();
         var relators = gens.Select((g, i) => $"{g}{seq[i]}").Concat(allCombs.Select(e => $"{e.Item1}{e.Item2}={e.Item2}{e.Item1}"))
             .Glue(", ");
-
+        
         return new WordGroup(name, relators);
     }
 
@@ -142,7 +145,8 @@ public static partial class FG
         var aut = Group.Generate(autCm, g1);
         var pMap = Group.PartialMap((cn[0], autCm.Neutral()), (cn[1], g1));
         var theta = Group.Hom(cn, Group.HomomorphismMap(cn, aut, pMap));
-        return Group.SemiDirectProd($"Frob({m},{n},{r})", cm, theta, cn);
+        var name = IntExt.Gcd(m, n * (r - 1)) == 1 ? $"Frob({m},{n},{r})" : $"MtCyc({m},{n},{r})";
+        return Group.SemiDirectProd(name, cm, theta, cn);
     }
 
     public static int[] FrobeniusGetR(int m, int n)

@@ -289,14 +289,14 @@ namespace FastGoat.Commons
         {
             var seq = Enumerable.Range(2, n - 2);
             var criteria = seq.Where(i => Gcd(i, n) == 1 && PowMod(i, m, n) == 1);
-            return criteria.FirstOrDefault();
+            return criteria.FirstOrDefault(-1);
         }
 
         public static int KpowMmodN(int n, int m)
         {
             var seq = Enumerable.Range(2, n - 2);
             var criteria = seq.Where(i => Gcd(i, n) == 1 && PowMod(i, m, n) == 1);
-            return criteria.FirstOrDefault();
+            return criteria.FirstOrDefault(-1);
         }
 
         public static int AmodP(int a, int p)
@@ -353,6 +353,7 @@ namespace FastGoat.Commons
 
         public static int[] Range(this int a, int start = 0, int step = 1) => a.SeqLazy(start, step).ToArray();
 
+        public static BigInteger Fact(this int i) => Enumerable.Range(0, i).Aggregate(BigInteger.One, (acc, k) => acc * k);
         public static IEnumerable<int> SeqLazy(this int a, int start = 0, int step = 1)
         {
             return Enumerable.Range(0, a).Select(i => start + i * step);

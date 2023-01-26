@@ -76,7 +76,6 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
 
     public Polynomial<K, T> Zero => new(Indeterminates, KZero);
     public Polynomial<K, T> One => new(Indeterminates, KZero.One);
-    public Polynomial<K, T> LeadingCoeff => IsZero() ? One : new(Indeterminates, Coefs.Last().Value);
 
     public T ExtractIndeterminate
     {

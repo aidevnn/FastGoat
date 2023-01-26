@@ -33,6 +33,8 @@ public static partial class FG
         return new(new KPoly<K>(x, f.KZero, f.Coefs));
     }
 
+    public static EPoly<Rational> CyclotomicEPoly(int n) => FG.EPoly(FG.CyclotomicPolynomial(n), 'a');
+
     public static KPoly<K> KPoly<K>(char x, params K[] coefs)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {

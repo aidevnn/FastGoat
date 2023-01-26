@@ -29,7 +29,7 @@ public readonly struct CyclotomicGroupBase<K> : IGroup<EPoly<K>> where K : struc
         Poly = new KPoly<K>('ζ', scalar, poly.Coefs.Select(c => ((int)c.Num) * scalar.One).ToArray());
         Hash = ("CF", p, Poly.Hash).GetHashCode();
 
-        var q = IntExt.UnInvertible(n).First(e => n == 2 || e.Key != 1).Value;
+        var q = n == 2 ? 1 : IntExt.UnInvertible(n).First(e => e.Key != 1).Key;
         var x = FG.EPoly(Poly);
         Zeta = x.Pow(q);
     }

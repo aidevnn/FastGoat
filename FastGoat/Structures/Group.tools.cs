@@ -77,13 +77,24 @@ public static partial class Group
         return allStabsOrbits;
     }
 
-    public static Dictionary<T, (HashSet<T> Stabx, HashSet<T> Orbx)> AllOrbits<T>(ConcreteGroup<T> gr,
-        GroupAction<T, T> act)
+    public static Dictionary<T, (HashSet<T> Stabx, HashSet<T> Orbx)> AllOrbits<T>(ConcreteGroup<T> gr, GroupAction<T, T> act)
         where T : struct, IElt<T>
     {
         return AllOrbits(gr, gr.ToArray(), act);
     }
 
+
+    public static Dictionary<T, (T rep, int nb)> AllConjugacyClasses<T>(ConcreteGroup<T> gr)
+        where T : struct, IElt<T>
+    {
+        var orbs = AllOrbits(gr, gr.ToArray(), ByConjugate(gr));
+        var map = gr.ToDictionary(g => g, g =>
+        {
+            var cl = orbs.First(kp => kp.Value.Orbx.Contains(g));
+            return (cl.Key, cl.Value.Orbx.Count);
+        });
+        return map;
+    }
     public static void DisplayOrbx<T1, T2>(Dictionary<T2, (HashSet<T1> Stabx, HashSet<T2> Orbx)> allClasses, bool details = false)
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
@@ -103,8 +114,29 @@ public static partial class Group
         Console.WriteLine();
     }
 
-    public static void DisplayOrbx<T1, T2>(ConcreteGroup<T1> gr,
-        T2[] set, GroupAction<T1, T2> act, bool details = false)
+    public static void DisplayOrbxSelf<T1>(ConcreteGroup<T1> gr, GroupAction<T1, T1> act, bool details = false)
+        where T1 : struct, IElt<T1>
+    {
+        DisplayGroup.Head(gr);
+        Console.WriteLine($"Classes for action {act.Method.Name}");
+        var allClasses = AllOrbits(gr, gr.ToArray(), act);
+
+        var i = 0;
+        foreach (var kp in allClasses.OrderBy(p => p.Value.Orbx.Count))
+        {
+            ++i;
+            var x = kp.Key;
+            var (stabx, orbx) = kp.Value;
+            if (details)
+                Console.WriteLine($"x{i}[{gr.ElementsOrders[x]}] = {x,-40} Stab(x{i}):{stabx.Count,-4} Orb(x{i}):{orbx.Count}   {orbx.Glue(", ")}");
+            else
+                Console.WriteLine($"x{i}[{gr.ElementsOrders[x]}] = {x,-40} Stab(x{i}):{stabx.Count,-4} Orb(x{i}):{orbx.Count}");
+        }
+
+        Console.WriteLine();
+    }
+
+    public static void DisplayOrbx<T1, T2>(ConcreteGroup<T1> gr, T2[] set, GroupAction<T1, T2> act, bool details = false)
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
     {
@@ -119,9 +151,9 @@ public static partial class Group
         DisplayOrbx(gr, gr.ToArray(), act);
     }
 
-    public static void DisplayConjugacyClasses<T>(ConcreteGroup<T> gr) where T : struct, IElt<T>
+    public static void DisplayConjugacyClasses<T>(ConcreteGroup<T> gr, bool details = false) where T : struct, IElt<T>
     {
-        DisplayOrbx(gr, ByConjugate(gr));
+        DisplayOrbxSelf(gr, ByConjugate(gr), details);
     }
 
     public static bool AreConjugate<T>(ConcreteGroup<T> g, T a, T b) where T : struct, IElt<T>

@@ -205,8 +205,7 @@ public static partial class Group
         return map1.Where(kp => map2.ContainsKey(kp.Value)).ToDictionary(a => a.Key, a => map2[a.Value]);
     }
 
-    public static SemiDirectProduct<T1, T2> SemiDirectProd<T1, T2>(string name, ConcreteGroup<T1> n,
-        ConcreteGroup<T2> g)
+    public static SemiDirectProduct<T1, T2> SemiDirectProd<T1, T2>(string name, ConcreteGroup<T1> n, ConcreteGroup<T2> g)
         where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
     {
         var allOps = AllOpsByAutomorphisms(g, n);
@@ -222,15 +221,13 @@ public static partial class Group
         return new SemiDirectProduct<T1, T2>(name, n, theta, g);
     }
 
-    public static SemiDirectProduct<T1, T2> SemiDirectProd<T1, T2>(ConcreteGroup<T1> n,
-        ConcreteGroup<T2> g)
+    public static SemiDirectProduct<T1, T2> SemiDirectProd<T1, T2>(ConcreteGroup<T1> n, ConcreteGroup<T2> g)
         where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
     {
         return SemiDirectProd("", n, g);
     }
 
-    public static SemiDirectProduct<T1, T2> SemiDirectProd<T1, T2>(ConcreteGroup<T1> n,
-        Homomorphism<T2, Automorphism<T1>> theta, ConcreteGroup<T2> g)
+    public static SemiDirectProduct<T1, T2> SemiDirectProd<T1, T2>(ConcreteGroup<T1> n, Homomorphism<T2, Automorphism<T1>> theta, ConcreteGroup<T2> g)
         where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
     {
         return new SemiDirectProduct<T1, T2>("", n, theta, g);
