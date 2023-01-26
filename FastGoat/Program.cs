@@ -86,52 +86,46 @@ Console.WriteLine("Hello World");
 //     DisplayGroup.AreIsomorphics(GAB, GCD);
 // }
 
-// {
-//     Ring.MatrixDisplayForm = Ring.MatrixDisplay.SquareBracket;
-//     var x = FG.QPoly();
-//     var (z, i, X) = FG.NumberFieldQ((x.Pow(2) - 3, "√3"), (x.Pow(2) + 1, "i"), "X");
-//     var one = z.One;
-//     var gl = FG.GLnK($"Q({z})", 2, z);
-//     var j = (1 + z * i) / 2;
-//     var j2 = (1 - z * i) / 2;
-//     
-//     var A = gl[j, 0, 0, j2];
-//     var B = gl[0, 1, 1, 0];
-//     var C = gl[one / 2, z / 2, -z / 2, one / 2];
-//     var D = gl[1, 0, 0, -1];
-//
-//     var matX = Ring.Diagonal(X, 2).ToKMatrix();
-//     Console.WriteLine(A - matX);
-//     Console.WriteLine((A - matX).Det);
-//     Console.WriteLine(B - matX);
-//     Console.WriteLine((B - matX).Det);
-//     Console.WriteLine(C - matX);
-//     Console.WriteLine((C - matX).Det);
-//     Console.WriteLine(D - matX);
-//     Console.WriteLine((D - matX).Det);
-//
-// }
-
 {
-    DisplayGroup.HeadElements(FG.AbelianWg(2, 2));
-    DisplayGroup.HeadElements(FG.AbelianWg(2, 3));
-    DisplayGroup.HeadElements(FG.AbelianWg(2, 3, 5));
-    DisplayGroup.HeadElements(FG.AbelianWg(2, 3, 2, 3));
+    Ring.MatrixDisplayForm = Ring.MatrixDisplay.SquareBracket;
 
-    // var a4 = FG.Alternate(4);
-    // Group.DisplayOrbx(a4, Group.ByConjugate(a4));
-    //
-    // var a5 = FG.Alternate(5);
-    // Group.DisplayOrbx(a5, Group.ByConjugate(a5));
-    //
-    // var a6 = FG.Alternate(6);
-    // Group.DisplayOrbx(a6, Group.ByConjugate(a6));
+    var rg10 = 9.Range(2);
+    var metacycl = rg10.Grid2D(rg10)
+        .SelectMany(e => SolveAll_k_pow_m_equal_one_mod_n(e.t1, e.t2).Select(r => FG.MetaCyclicSdp(e.t1, e.t2, r)))
+        .OrderBy(e => e.Count()).ThenBy(e => e.ShortName).ToArray();
+    
+    var gr = (SemiDirectProduct<ZnInt, ZnInt>)metacycl.First(e=>e.Count() == 20);
+    var m = gr.G.Count();
+    var n = gr.N.Count();
+    var am = new Cnf(m);
+    var an = new Cnf(n);
+    Console.WriteLine(new { m, n, am, an });
+    Group.DisplayConjugacyClasses(gr);
+    var cl = Group.AllConjugacyClasses(gr);
+    var orbx = Group.AllOrbits(gr, Group.ByConjugate(gr));
+    var dg = Group.DerivedChain(gr);
+    var quo = dg[0].Over(dg[1]);
+    
+    dg.Select(g => g.ShortName).Println();
+    DisplayGroup.HeadElements(quo);
+    
+    orbx.ToDictionary(e => e.Key, e => e.Value.Orbx.Glue("; ")).Println();
+    var Bis = orbx.ToDictionary(e => e.Key, e => e.Value.Orbx.Aggregate(gr.Neutral(), (sum, g) => gr.Op(sum, g)));
+    Bis.Println();
+    
+    var glk = FG.GLnK($"CF({m * n}", 2, am);
+    var mat0 = glk[am, 1, 0, an];
+    Int32.Max(m, n).Range().Select(i => am.Pow(i)).Println();
+    Int32.Max(m, n).Range().Select(i => an.Pow(i)).Println();
 
-    // var (X, T) = Ring.EPolynomial("X", "T", Rational.KZero(), MonomOrder.Lex);
-    // var matB = Ring.Matrix(2, X, -1, -1, 1, 0).ToKMatrix();
-    // var matX = Ring.Diagonal(X, 2).ToKMatrix();
-    // Console.WriteLine(matB);
-    // Console.WriteLine(matB - matX);
-    // Console.WriteLine((matB - matX).Det);
-    // Console.WriteLine(Ring.Determinant((matB - matX).Coefs, X));
+    var det = mat0.Det;
+    Console.WriteLine(det);
+    Console.WriteLine(det.Conj);
+    Console.WriteLine(det.Re);
+    Console.WriteLine(det.Im);
+    Console.WriteLine(det.Module2);
+
+    Console.WriteLine(mat0);
+    Console.WriteLine(mat0.Pow(2));
+    Console.WriteLine(mat0.Pow(3));
 }
