@@ -1,9 +1,12 @@
 using FastGoat.Commons;
 using FastGoat.Structures;
+using FastGoat.Structures.GenericGroup;
 using FastGoat.Structures.VecSpace;
+using FastGoat.UserGroup.Characters;
 using FastGoat.UserGroup.Integers;
 using FastGoat.UserGroup.Matrix;
 using FastGoat.UserGroup.Padic;
+using FastGoat.UserGroup.Polynoms;
 
 namespace FastGoat.UserGroup;
 
@@ -227,5 +230,10 @@ public static partial class FG
         var b = e1.Item1.ToPolynomial(x0.Indeterminates, x0.Indeterminates[1]);
         var nbf = NumberFieldQ(new[] { a, b });
         return (nbf[0], nbf[1], new EPolynomial<Rational>(xis[2], nbf[0].Basis));
+    }
+
+    public static CharacterTable<T> CharactersTable<T>(ConcreteGroup<T> gr) where T : struct, IElt<T>
+    {
+        return new CharacterTable<T>(gr);
     }
 }
