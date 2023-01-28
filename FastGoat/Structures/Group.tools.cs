@@ -83,18 +83,32 @@ public static partial class Group
         return AllOrbits(gr, gr.ToArray(), act);
     }
 
-
-    public static Dictionary<T, (T rep, int nb)> AllConjugacyClasses<T>(ConcreteGroup<T> gr)
+    public static (string name, T repr, HashSet<T> stabx, HashSet<T> orbx)[] AllConjugacyClassesNames<T>(ConcreteGroup<T> gr)
         where T : struct, IElt<T>
     {
-        var orbs = AllOrbits(gr, gr.ToArray(), ByConjugate(gr));
-        var map = gr.ToDictionary(g => g, g =>
-        {
-            var cl = orbs.First(kp => kp.Value.Orbx.Contains(g));
-            return (cl.Key, cl.Value.Orbx.Count);
-        });
-        return map;
+        var act = ByConjugate(gr);
+        var alpha = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        var allClasses = AllOrbits(gr, gr.ToArray(), act);
+        var classNames = allClasses.GroupBy(e => gr.ElementsOrders[e.Key])
+            .ToDictionary(
+                e => e.Key,
+                e => e.OrderBy(f => f.Value.Orbx.Count)
+                    .Select((f, i) => e.Count() == 1 ? ($"{e.Key}", f) : ($"{e.Key}{alpha[i]}", f)).ToArray()
+            ).SelectMany(e => e.Value).Select(e => (e.Item1, e.f.Key, e.f.Value.Stabx, e.f.Value.Orbx))
+            .OrderBy(e => gr.ElementsOrders[e.Key]).ThenBy(e => e.Orbx.Count).ThenBy(e => e.Item1)
+            .ToArray();
+
+        return classNames;
     }
+
+    public static Dictionary<T, (string name, T repr, HashSet<T> stabx, HashSet<T> orbx)>
+        AllConjugacyClasses<T>(ConcreteGroup<T> gr)
+        where T : struct, IElt<T>
+    {
+        var clNames = AllConjugacyClassesNames(gr);
+        return clNames.SelectMany(e => e.orbx.Select(ei => (ei, e))).ToDictionary(e => e.ei, e => e.e);
+    }
+
     public static void DisplayOrbx<T1, T2>(Dictionary<T2, (HashSet<T1> Stabx, HashSet<T2> Orbx)> allClasses, bool details = false)
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
@@ -114,25 +128,24 @@ public static partial class Group
         Console.WriteLine();
     }
 
-    public static void DisplayOrbxSelf<T1>(ConcreteGroup<T1> gr, GroupAction<T1, T1> act, bool details = false)
-        where T1 : struct, IElt<T1>
+    public static void DisplayOrbxSelf<T>(ConcreteGroup<T> gr, bool details = false)
+        where T : struct, IElt<T>
     {
-        DisplayGroup.Head(gr);
-        Console.WriteLine($"Classes for action {act.Method.Name}");
-        var allClasses = AllOrbits(gr, gr.ToArray(), act);
+        var clNames = AllConjugacyClassesNames(gr);
+        var digits = clNames.Max(e => $"{e.repr}".Length);
+        var fmt = $"{{0,-{digits}}}";
 
-        var i = 0;
-        foreach (var kp in allClasses.OrderBy(p => p.Value.Orbx.Count))
+        foreach (var e in clNames)
         {
-            ++i;
-            var x = kp.Key;
-            var (stabx, orbx) = kp.Value;
             if (details)
-                Console.WriteLine($"x{i}[{gr.ElementsOrders[x]}] = {x,-40} Stab(x{i}):{stabx.Count,-4} Orb(x{i}):{orbx.Count}   {orbx.Glue(", ")}");
+                Console.WriteLine(
+                    $"{e.name,-3} = {string.Format(fmt, e.repr)} {$"Stab({e.name})",-10}:{e.stabx.Count,-4} {$"Orb({e.name})",-10}:{e.orbx.Count,-4}  {e.orbx.Glue(", ")}");
             else
-                Console.WriteLine($"x{i}[{gr.ElementsOrders[x]}] = {x,-40} Stab(x{i}):{stabx.Count,-4} Orb(x{i}):{orbx.Count}");
+                Console.WriteLine(
+                    $"{e.name,-3} = {string.Format(fmt, e.repr)} {$"Stab({e.name})",-10}:{e.stabx.Count,-4} {$"Orb({e.name})",-10}:{e.orbx.Count,-4}");
         }
 
+        Console.WriteLine($"Nb Classes:{clNames.Length}");
         Console.WriteLine();
     }
 
@@ -153,7 +166,25 @@ public static partial class Group
 
     public static void DisplayConjugacyClasses<T>(ConcreteGroup<T> gr, bool details = false) where T : struct, IElt<T>
     {
-        DisplayOrbxSelf(gr, ByConjugate(gr), details);
+        DisplayGroup.Head(gr);
+        Console.WriteLine($"Classes for action {ByConjugate(gr).Method.Name}");
+        
+        var clNames = AllConjugacyClassesNames(gr);
+        var digits = clNames.Max(e => $"{e.repr}".Length);
+        var fmt = $"{{0,-{digits}}}";
+
+        foreach (var e in clNames)
+        {
+            if (details)
+                Console.WriteLine(
+                    $"{e.name,-3} = {string.Format(fmt, e.repr)} {$"Stab({e.name})",-10}:{e.stabx.Count,-4} {$"Orb({e.name})",-10}:{e.orbx.Count,-4}  {e.orbx.Glue(", ")}");
+            else
+                Console.WriteLine(
+                    $"{e.name,-3} = {string.Format(fmt, e.repr)} {$"Stab({e.name})",-10}:{e.stabx.Count,-4} {$"Orb({e.name})",-10}:{e.orbx.Count,-4}");
+        }
+
+        Console.WriteLine($"Nb Classes:{clNames.Length}");
+        Console.WriteLine();
     }
 
     public static bool AreConjugate<T>(ConcreteGroup<T> g, T a, T b) where T : struct, IElt<T>
@@ -254,6 +285,11 @@ public static partial class Group
 
         chain.Add(comGr);
         DerivedChain<T>(chain);
+    }
+
+    public static ConcreteGroup<T> Derived<T>(ConcreteGroup<T> gr) where T : struct, IElt<T>
+    {
+        return Commutator($"D({gr.Name})", gr, gr, gr);
     }
 
     public static List<ConcreteGroup<T>> DerivedChain<T>(ConcreteGroup<T> gr) where T : struct, IElt<T>
