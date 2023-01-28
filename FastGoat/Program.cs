@@ -30,102 +30,63 @@ using FastGoat.UserGroup.Padic;
 
 Console.WriteLine("Hello World");
 
-(EPoly<K> W, int l) Primitive3<K>(EPoly<K> U, EPoly<K> V) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
 {
-    var n = U.F.Degree;
-    var vecV = V.Poly.ToVMatrix(n);
-    for (int l = 1; l < 50; l++)
-    {
-        var W = U + l * V;
-        var M = KMatrix<K>.MergeSameRows(n.Range().Select(i => W.Pow(i).Poly.ToVMatrix(n)).ToArray());
-        var vM = KMatrix<K>.MergeSameRows(vecV, M);
-        var dimKerM = M.NullSpace().nullity;
-        var dimKerVM = vM.NullSpace().nullity;
-        if (dimKerM == dimKerVM)
-        {
-            return (W, l);
-        }
-    }
+    
+    FG.CharactersTable(FG.Abelian(2)).DisplayCells();
+    FG.CharactersTable(FG.Abelian(3)).DisplayCells();
+    FG.CharactersTable(FG.Abelian(2, 2)).DisplayCells();
+    FG.CharactersTable(FG.Abelian(2, 3)).DisplayCells();
+    FG.CharactersTable(FG.Abelian(6)).DisplayCells();
+    FG.CharactersTable(FG.Abelian(4)).DisplayCells();
+    FG.CharactersTable(FG.Abelian(2, 4)).DisplayCells();
+    FG.CharactersTable(FG.Abelian(2, 2, 2)).DisplayCells();
+    FG.CharactersTable(FG.Abelian(2, 2, 3)).DisplayCells();
 
-    throw new();
+    FG.CharactersTable(FG.Dihedral(3)).DisplayCells();
+    FG.CharactersTable(FG.Dihedral(4)).DisplayCells();
+    FG.CharactersTable(FG.Quaternion(8)).DisplayCells();
+    FG.CharactersTable(FG.Alternate(4)).DisplayCells();
+    FG.CharactersTable(FG.Dihedral(5)).DisplayCells();
+    FG.CharactersTable(FG.Dihedral(6)).DisplayCells();
+    FG.CharactersTable(FG.DiCyclic(3)).DisplayCells();
+    FG.CharactersTable(Group.SemiDirectProd(new Cn(7), new Cn(3))).DisplayCells();
+    FG.CharactersTable(Group.SemiDirectProd(new Cn(4), new Cn(4))).DisplayCells();
+    FG.CharactersTable(Group.SemiDirectProd(FG.Abelian(3, 3), new Cn(4))).DisplayCells();
 }
 
-// {
-//     Ring.MatrixDisplayForm = Ring.MatrixDisplay.SquareBracket;
-//     var x = FG.QPoly();
-//     var (z, i) = FG.NumberFieldQ((x.Pow(2) - 3, "√3"), (x.Pow(2) + 1, "i"));
-//     var one = z.One;
-//     var gl = FG.GLnK($"Q({z})", 2, z);
-//     var j = (1 + z * i) / 2;
-//     var j2 = (1 - z * i) / 2;
-//     
-//     var A = gl[j, 0, 0, j2];
-//     var B = gl[0, 1, 1, 0];
-//     var C = gl[one / 2, z / 2, -z / 2, one / 2];
-//     var D = gl[1, 0, 0, -1];
-//     var GAB = Group.Generate("D12-AB", gl, A, B);
-//     var GCD = Group.Generate("D12-CD", gl, C, D);
-//     DisplayGroup.HeadElements(GAB);
-//     DisplayGroup.HeadElements(GCD);
-//
-//     var d12 = FG.DihedralWg(6);
-//     var a = d12["a"];
-//     var b = d12["b"];
-//     DisplayGroup.HeadElements(d12);
-//
-//     var pMapAB = Group.PartialMap((a, A), (b, B));
-//     var homAB = Group.Hom(d12, Group.HomomorphismMap(d12, GAB, pMapAB));
-//     Console.WriteLine(homAB.HomMap.Glue("\n"));
-//     DisplayGroup.AreIsomorphics(d12, GAB);
-//     Console.WriteLine();
-//
-//     var pMapCD = Group.PartialMap((a, C), (b, D));
-//     var homCD = Group.Hom(d12, Group.HomomorphismMap(d12, GCD, pMapCD));
-//     Console.WriteLine(homCD.HomMap.Glue("\n"));
-//
-//     DisplayGroup.AreIsomorphics(GAB, GCD);
-// }
+/* TODO filling Character Table with solutions
+ 
+ 
+|(C3 x C3) x: C4| = 36
+Type        NonAbelianGroup
+BaseGroup   C3 x C3 x C4
 
-{
-    Ring.MatrixDisplayForm = Ring.MatrixDisplay.SquareBracket;
-
-    var rg10 = 9.Range(2);
-    var metacycl = rg10.Grid2D(rg10)
-        .SelectMany(e => SolveAll_k_pow_m_equal_one_mod_n(e.t1, e.t2).Select(r => FG.MetaCyclicSdp(e.t1, e.t2, r)))
-        .OrderBy(e => e.Count()).ThenBy(e => e.ShortName).ToArray();
-    
-    var gr = (SemiDirectProduct<ZnInt, ZnInt>)metacycl.First(e=>e.Count() == 20);
-    var m = gr.G.Count();
-    var n = gr.N.Count();
-    var am = new Cnf(m);
-    var an = new Cnf(n);
-    Console.WriteLine(new { m, n, am, an });
-    Group.DisplayConjugacyClasses(gr);
-    var cl = Group.AllConjugacyClasses(gr);
-    var orbx = Group.AllOrbits(gr, Group.ByConjugate(gr));
-    var dg = Group.DerivedChain(gr);
-    var quo = dg[0].Over(dg[1]);
-    
-    dg.Select(g => g.ShortName).Println();
-    DisplayGroup.HeadElements(quo);
-    
-    orbx.ToDictionary(e => e.Key, e => e.Value.Orbx.Glue("; ")).Println();
-    var Bis = orbx.ToDictionary(e => e.Key, e => e.Value.Orbx.Aggregate(gr.Neutral(), (sum, g) => gr.Op(sum, g)));
-    Bis.Println();
-    
-    var glk = FG.GLnK($"CF({m * n}", 2, am);
-    var mat0 = glk[am, 1, 0, an];
-    Int32.Max(m, n).Range().Select(i => am.Pow(i)).Println();
-    Int32.Max(m, n).Range().Select(i => an.Pow(i)).Println();
-
-    var det = mat0.Det;
-    Console.WriteLine(det);
-    Console.WriteLine(det.Conj);
-    Console.WriteLine(det.Re);
-    Console.WriteLine(det.Im);
-    Console.WriteLine(det.Module2);
-
-    Console.WriteLine(mat0);
-    Console.WriteLine(mat0.Pow(2));
-    Console.WriteLine(mat0.Pow(3));
-}
+[1   1   1   1   1   1]
+[1  -1   1   1   I  -I]
+[4   0  x0  x1   0   0]
+[4   0  x2  x3   0   0]
+[1   1   1   1  -1  -1]
+[1  -1   1   1  -I   I]
+|(C3 x C3) x: C4| = 36
+System
+    4·x0 + 4·x2 + 4
+    4·x1 + 4·x3 + 4
+    x0x1 + x2x3 + 4
+    x0² + x2² + -5
+    x1² + x3² + -5
+Solve
+    x3² + x3 + -2
+    x2 + x3 + 1
+    x1 + x3 + 1
+    x0 + -x3
+|(C3 x C3) x: C4| = 36
+[Class     1  2 3a 3b 4a 4b]
+[ Size     1  9  4  4  9  9]
+[                          ]
+[  X.1     1  1  1  1  1  1]
+[  X.2     1 -1  1  1  I -I]
+[  X.3     4  0  #  #  0  0]
+[  X.4     4  0  #  #  0  0]
+[  X.5     1  1  1  1 -1 -1]
+[  X.6     1 -1  1  1 -I  I]
+*/
