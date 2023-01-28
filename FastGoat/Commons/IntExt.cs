@@ -34,7 +34,20 @@ namespace FastGoat.Commons
                         AllCombinations[k - 1].Select(l => l.Prepend(c == 1).ToArray()))
                     .ToArray();
             }
+            
+            var rg = 10.Range(1);
+            var oneSquare = rg.ToDictionary(e => e * e, e => new[] { new[] { e } });
+            var twoSquares = rg.Grid2D(rg).Where(e => e.t1 <= e.t2)
+                .GroupBy(e => e.t1.Pow(2) + e.t2.Pow(2)).Where(e => e.Key <= 100)
+                .OrderBy(e => e.Key).ToDictionary(e => e.Key, e => e.Select(f => new[] { f.t1, f.t2 }).ToArray());
+            var threeSquares = rg.Grid3D(rg, rg).Where(e => e.t1 <= e.t2 && e.t2 <= e.t3)
+                .GroupBy(e => e.t1.Pow(2) + e.t2.Pow(2) + e.t3.Pow(2)).Where(e => e.Key <= 100)
+                .OrderBy(e => e.Key).ToDictionary(e => e.Key, e => e.Select(f => new[] { f.t1, f.t2, f.t3 }).ToArray());
+
+            SolveSquareInt = new() { [1] = oneSquare, [2] = twoSquares, [3] = threeSquares };
         }
+        
+        public static Dictionary<int, Dictionary<int, int[][]>> SolveSquareInt { get; }
 
         // Primes Sequence
         public static List<int> Primes10000 { get; }
