@@ -445,6 +445,9 @@ public static partial class Ring
         var rgCols = cols.Range();
         var rgRows = rows.Range();
         var digitsByCols = rgCols.Select(j => rgRows.Max(i => $"{mat[i, j]}".Length)).Select(d => $"{{0,{d}}}").ToArray();
+        if (MatrixDisplayForm == MatrixDisplay.CurlyBracketNoFmt || MatrixDisplayForm == MatrixDisplay.SquareBracketNoFmt)
+            digitsByCols = digitsByCols.Select(d => "{0}").ToArray();
+        
         var lt = new List<string>();
         for (int i = 0; i < rows; i++)
         {
@@ -473,6 +476,8 @@ public static partial class Ring
     {
         CurlyBracket,
         SquareBracket,
+        CurlyBracketNoFmt,
+        SquareBracketNoFmt,
         Table
     }
 

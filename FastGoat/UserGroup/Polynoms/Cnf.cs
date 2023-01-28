@@ -34,7 +34,7 @@ public struct Cnf : IElt<Cnf>, IRingElt<Cnf>, IFieldElt<Cnf>
     }
 
     public Cnf Im => (this - Re) / I;
-    public Cnf Conj => Re - I * Im;
+    public Cnf Conj => new(N, E.Substitute(E.X.Inv()));
 
     public Cnf Module2
     {
@@ -193,9 +193,7 @@ public struct Cnf : IElt<Cnf>, IRingElt<Cnf>, IFieldElt<Cnf>
 
     public static double Abs(Cnf t)
     {
-        var cos = double.Cos(2 * double.Pi / t.N);
-        var sin = double.Sin(2 * double.Pi / t.N);
-        var c = new Complex(cos, sin);
+        var c = Complex.FromPolarCoordinates(1, 2 * Double.Pi / t.N);
         var c0 = t.E.Poly.Substitute(c);
         return Complex.Abs(c0);
     }
