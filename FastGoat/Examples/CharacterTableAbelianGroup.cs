@@ -148,4 +148,42 @@ public static class CharacterTableAbelianGroup
         TableCmCn(2, 4);
         TableCmCn(3, 4);
     }
+
+    public static void ExamplesCharactersTableAbelianGroups()
+    {
+        FG.CharactersTable(FG.Dihedral(8)).DisplayCells();
+        FG.CharactersTable(FG.Abelian(3)).DisplayCells();
+        FG.CharactersTable(FG.Abelian(2, 2)).DisplayCells();
+        FG.CharactersTable(FG.Abelian(2, 3)).DisplayCells();
+        FG.CharactersTable(FG.Abelian(6)).DisplayCells();
+        FG.CharactersTable(FG.Abelian(4)).DisplayCells();
+        FG.CharactersTable(FG.Abelian(2, 4)).DisplayCells();
+        FG.CharactersTable(FG.Abelian(2, 2, 2)).DisplayCells();
+        FG.CharactersTable(FG.Abelian(2, 2, 3)).DisplayCells();
+    }
+
+    public static void ExamplesLiftDerivedGroup()
+    {
+        FG.CharactersTable(FG.Symmetric(3)).DisplayCells();
+        FG.CharactersTable(FG.Dihedral(4)).DisplayCells();
+        FG.CharactersTable(FG.Alternate(4)).DisplayCells();
+        FG.CharactersTable(FG.Quaternion(8)).DisplayCells();
+        FG.CharactersTable(FG.Dihedral(5)).DisplayCells();
+        FG.CharactersTable(Group.SemiDirectProd(new Cn(5), new Cn(4))).DisplayCells();
+        FG.CharactersTable(Group.SemiDirectProd(new Cn(7), new Cn(6))).DisplayCells();
+        FG.CharactersTable(Group.SemiDirectProd(new Cn(11), new Cn(10))).DisplayCells();
+    }
+
+    public static void ExamplesTwoMissingCharacters()
+    {
+        FG.CharactersTable(Group.SemiDirectProd(new Cn(3), new Cn(4))).DisplayCells();
+        FG.CharactersTable(Group.SemiDirectProd(new Cn(4), new Cn(4))).DisplayCells();
+        FG.CharactersTable(Group.SemiDirectProd(new Cn(7), new Cn(3))).DisplayCells();
+        FG.CharactersTable(Group.SemiDirectProd(FG.Abelian(3, 3), new Cn(4))).DisplayCells();
+        FG.CharactersTable(FG.Dihedral(6)).DisplayCells();
+        FG.CharactersTable(FG.DiCyclic(3)).DisplayCells();
+        
+        // FG.CharactersTable(Group.SemiDirectProd(new Cn(9), new Cn(3)));
+        // unable to Factors X² + 3·X + 9 in splitting field a¹⁸ + a⁹ + 1 of Q(ξ27)[x]
+    }
 }
