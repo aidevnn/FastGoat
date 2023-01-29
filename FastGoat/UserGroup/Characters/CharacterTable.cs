@@ -22,12 +22,16 @@ public class CharacterTable<T> where T : struct, IElt<T>
         CnfCells = new CnfCell[Classes.Length, Classes.Length];
         IndexesTint = Classes.Select((e, i) => (e, i)).ToDictionary(e => e.e.repr, e => e.i);
         ReprOrbx = Classes.SelectMany(e => e.orbx.Select(ei => (e, ei))).ToDictionary(e => e.ei, e => e.e.repr);
+        NbOrbx = Classes.Select((e, i) => (e, i)).ToDictionary(e => e.i, e => e.e.orbx.Count);
+        NbStabx = Classes.Select((e, i) => (e, i)).ToDictionary(e => e.i, e => e.e.stabx.Count);
         InitializeCells();
         if (Gr.GroupType == GroupType.AbelianGroup)
             AbelianCase();
         else
         {
             DerivedGroupLift();
+            SolveSquareSum();
+            SolveOrthogonality();
         }
     }
 
@@ -124,7 +128,14 @@ public class CharacterTable<T> where T : struct, IElt<T>
                     Cells[i + 3, k + 2] = CnfCells[i, k] = new CnfCell(Cnf.CnfZero);
             }
         }
+    }
 
+    public void SolveSquareSum()
+    {
+        var otherClasses = IndexesTint.Where(e => IndexesTint.Any(f => CnfCells[e.Value, f.Value].IsEmpty))
+            .ToDictionary(e => e.Key, e => e.Value);
+
+        var Og = Gr.Count();
         var nbOcl = otherClasses.Count;
         if (nbOcl > 0 && nbOcl < 4)
         {
@@ -136,61 +147,198 @@ public class CharacterTable<T> where T : struct, IElt<T>
             foreach (var (e, i) in otherClasses.Select((e, i) => (e, i)))
                 Cells[e.Value + 3, 2] = CnfCells[e.Value, 0] = new CnfCell(sol[i] * Cnf.CnfOne);
         }
+    }
 
-        if (nbOcl > 0 && nbOcl < 4)
+    public void SolveOrthogonality()
+    {
+        var clIdx = R.Range();
+        var nbOcl = clIdx.Count(i => clIdx.Any(j => CnfCells[i, j].IsEmpty));
+        if (nbOcl == 0)
+            return;
+        if (nbOcl > 2)
         {
-            var cells = new List<(int, int)>();
-            for (int i = 0; i < Classes.Length; i++)
-            {
-                for (int j = 0; j < Classes.Length; j++)
-                {
-                    if (CnfCells[i, j].IsEmpty)
-                        cells.Add((i, j));
-                }
-            }
-
-            var xis = Ring.EPolynomial(Cnf.CnfZero, MonomOrder.Lex, (cells.Count + 1, "x"));
-            var mapCells = xis.SkipLast(1).Select((e, i) => (e, i)).ToDictionary(e => e.e, e => cells[e.i]);
-            var mapSymb = mapCells.ToDictionary(e => e.Value, e => e.Key);
-            var xz = xis.Last();
-            var table = new Dictionary<T, KMatrix<EPolynomial<Cnf>>>();
-
-            foreach (var (gi, i) in IndexesTint)
-            {
-                var mat = new KMatrix<EPolynomial<Cnf>>(xz, Classes.Length, 1);
-                for (int j = 0; j < Classes.Length; j++)
-                {
-                    var c = CnfCells[j, i];
-                    if (c.IsEmpty)
-                        mat.Coefs[j, 0] = mapSymb[(j, i)];
-                    else
-                        mat.Coefs[j, 0] = c.E * xz.One;
-                }
-
-                table[gi] = mat;
-            }
-
-            var rg = table.Count.Range();
-            var keys = table.Keys.ToArray();
-            var allCombs = rg.SelectMany(i => rg.Where(j => j > i).Select(j => (keys[i], Gr.Invert(keys[j])))).ToArray();
-            var orth = allCombs.Select(e => (table[e.Item1].T * table[ReprOrbx[e.Item2]])[0, 0]).ToArray();
-            var ord = keys.Select(gi => (table[gi].T * table[ReprOrbx[Gr.Invert(gi)]])[0, 0] - Ocl[gi] * xz.One).ToArray();
-            var eqs = orth.Concat(ord).Select(p => p.Num).Where(p => !p.IsZero()).ToArray();
-
-            var sys = KMatrix<EPolynomial<Cnf>>.MergeSameRows(table.Values.ToArray());
-            Console.WriteLine("#######################################################");
-            DisplayGroup.Head(Gr);
-            Ring.DisplayMatrix(sys.Coefs, "  ");
-
-            Console.WriteLine(Gr.ShortName);
-            eqs.Println("System");
-            Ring.ReducedGrobnerBasis(eqs).Println("Solve");
+            Console.WriteLine("Missing 3 characters or more");
+            return;
         }
+
+        var cells = new List<(int, int)>();
+        for (int i = 0; i < Classes.Length; i++)
+        {
+            for (int j = 0; j < Classes.Length; j++)
+            {
+                if (CnfCells[i, j].IsEmpty)
+                    cells.Add((i, j));
+            }
+        }
+
+        var xis = Ring.EPolynomial(Cnf.CnfZero, MonomOrder.Lex, (cells.Count + 1, "x"));
+        var mapCells = xis.SkipLast(1).Select((e, i) => (e, i)).ToDictionary(e => e.e, e => cells[e.i]);
+        var mapSymb = mapCells.ToDictionary(e => e.Value, e => e.Key);
+        var mapInd = mapCells.ToDictionary(e => e.Key.Num.ExtractIndeterminate, e => e.Value);
+        var xz = xis.Last();
+        var table = new Dictionary<T, KMatrix<EPolynomial<Cnf>>>();
+
+        foreach (var (gi, i) in IndexesTint)
+        {
+            var mat = new KMatrix<EPolynomial<Cnf>>(xz, Classes.Length, 1);
+            for (int j = 0; j < Classes.Length; j++)
+            {
+                var c = CnfCells[j, i];
+                if (c.IsEmpty)
+                    mat.Coefs[j, 0] = mapSymb[(j, i)];
+                else
+                    mat.Coefs[j, 0] = c.E * xz.One;
+            }
+
+            table[gi] = mat;
+        }
+
+        var rg = table.Count.Range();
+        var keys = table.Keys.ToArray();
+        var allCombs = rg.SelectMany(i => rg.Where(j => j > i).Select(j => (keys[i], Gr.Invert(keys[j])))).ToArray();
+        var orth = allCombs.Select(e => (table[e.Item1].T * table[ReprOrbx[e.Item2]])[0, 0]).ToArray();
+        var ord = keys.Select(gi => (table[gi].T * table[ReprOrbx[Gr.Invert(gi)]])[0, 0] - NbStabx[IndexesTint[gi]] * xz.One)
+            .ToArray();
+        var eqs = orth.Concat(ord).Select(p => p.Num).Where(p => !p.IsZero()).ToArray();
+        var redEqs = Ring.ReducedGrobnerBasis(eqs);
+
+        var sys = KMatrix<EPolynomial<Cnf>>.MergeSameRows(table.Values.ToArray());
+        DisplayGroup.Head(Gr);
+        Ring.DisplayMatrix(sys.Coefs, "  ");
+        
+        Console.WriteLine(Gr.ShortName);
+        eqs.Println("System");
+        redEqs.Println("Reduced System");
+        Console.WriteLine();
+
+        var mapCnf = mapSymb.ToDictionary(e => e.Value.Num.ExtractIndeterminate, e => Cnf.Nth(NbStabx[e.Key.Item2]));
+        var allSolutions = SolveSystem(new Dictionary<Xi, Cnf>(), redEqs, mapCnf, xz.Num).ToArray();
+        foreach (var solution in allSolutions)
+        {
+            solution.Println("Solution");
+            Console.WriteLine();
+        }
+
+        var firstSol = allSolutions[0];
+        foreach (var (xi, cnf) in firstSol)
+        {
+            var (i, j) = mapInd[xi];
+            Cells[i + 3, j + 2] = CnfCells[i, j] = new CnfCell(cnf);
+        }
+    }
+
+    private IEnumerable<Dictionary<Xi, Cnf>> SolveSystem(Dictionary<Xi, Cnf> solutions, Polynomial<Cnf, Xi>[] eqs,
+        Dictionary<Xi, Cnf> mapCnf, Polynomial<Cnf, Xi> xz)
+    {
+        var oneIndeterminate = eqs.Where(eq => eq.NbIndeterminates == 1).OrderBy(eq => eq.Coefs.Keys.Max(m => m.Degree)).ToArray();
+        // eqs.Println("Reduced System");
+        // oneIndeterminate.Println("One Indeterminate");
+        // Console.WriteLine();
+
+        var mapSol = new Dictionary<Xi, Cnf[]>();
+        foreach (var p in oneIndeterminate)
+        {
+            var ind = p.ExtractIndeterminate;
+            var cnfOrd = mapCnf[ind];
+            mapSol[ind] = Solve(p, ind, cnfOrd);
+        }
+
+        // mapSol.Select(e => $"{e.Key} in {{{e.Value.Glue("; ")}}}").Println("Solutions One Indeterminates");
+
+        var allPos = mapSol.SelectMany(e => e.Value.Select(c => (e.Key, c * xz.One))).GroupBy(e => e.Item1)
+            .Select(e => e.ToArray()).ToArray();
+
+        foreach (var pos in allPos.MultiLoop())
+        {
+            var pos0 = pos.ToArray();
+            // pos0.Println("Possibility");
+            var subsEq = eqs.Select(eq => pos0.Aggregate(eq, (eq0, s) => eq0.Substitute(s.Item2, s.Item1)))
+                .Where(eq => !eq.IsZero()).ToArray();
+
+            var nsol = new Dictionary<Xi, Cnf>(solutions);
+            foreach (var kp in pos0)
+                nsol.Add(kp.Key, kp.Item2.Coefs.Values.First());
+
+            if (subsEq.Length == 0)
+            {
+                // Console.WriteLine("######### End");
+                yield return new Dictionary<Xi, Cnf>(nsol);
+            }
+            else if (subsEq.All(eq => eq.NbIndeterminates != 0))
+            {
+                // subsEq.Println("Substituate System");
+                // Console.WriteLine();
+                foreach (var nsol0 in SolveSystem(nsol, subsEq, mapCnf, xz))
+                    yield return nsol0;
+            }
+            else
+            {
+                subsEq.Println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ Rejected System");
+                Console.WriteLine();
+            }
+        }
+    }
+
+    private Cnf[] Solve(Polynomial<Cnf, Xi> p, Xi ind, Cnf c)
+    {
+        List<Cnf> algSol = new();
+        var f0 = p.ToKPoly(ind);
+        if (f0.Degree == 1)
+        {
+            var sol = -f0[0] / f0[1];
+            // Console.WriteLine($"Eq {f} = 0 with solutions {{{sol}}}");
+            algSol.Add(sol * c.One);
+            return algSol.ToArray();
+        }
+
+        var x = FG.QPoly();
+        if (f0.Coefs.Any(c0 => c0.E.Poly.Degree > 0))
+        {
+            throw new Exception($"############# Faillure to solve {p} = 0");
+        }
+        
+        var f = p.ToKPoly(ind).Coefs.Select((c0, i) => c0.E[0] * x.Pow(i)).Aggregate(x.Zero, (sum, xi) => sum + xi);
+        // var facts0 = PolynomialFactorizationPart2.FirrZ(f, details: true);
+        var facts0 = PolynomialFactorizationPart2.FirrZ(f);
+        var degreeOne = facts0.Where(fi => fi.Degree == 1).ToArray();
+        var sols = degreeOne.Select(fi => -fi[0] / fi[1]).ToArray();
+
+        var irrs = facts0.Where(fi => fi.Degree > 1).ToArray();
+        if (irrs.Length == 0)
+        {
+            // Console.WriteLine($"Eq {f} = 0 with solutions {{{sols.Glue("; ")}}}");
+            algSol.AddRange(sols.Select(s => c.One * s));
+            return algSol.ToArray();
+        }
+
+        algSol.AddRange(sols.Select(s => s * c));
+        foreach (var fi in irrs)
+        {
+            var (X, a) = FG.EPolyXc(c.E.F, 'a');
+            var P = fi.Substitute(X);
+            Console.WriteLine($"Factors of {P} in splitting field {a.F} of Q({c})[x]");
+            // var facts = AlgebraicFactorization.AlgebraicFactors(P, details: true);
+            var facts = AlgebraicFactorization.AlgebraicFactors(P);
+            var degreeOneAlg = facts.Where(fj => fj.Degree == 1).ToArray();
+            var irrsAlg = facts.Where(fj => fj.Degree > 1).ToArray();
+            if (irrsAlg.Length > 0)
+            {
+                throw new Exception($"############# Faillure to solve {p} = 0");
+            }
+
+            algSol.AddRange(degreeOneAlg.Select(fj =>
+                (-fj[0] / fj[1]).Poly.Coefs.Select((k, i) => k * c.Pow(i)).Aggregate(c.Zero, (sum, ci) => sum + ci)));
+        }
+
+        // Console.WriteLine($"Eq {f} = 0 with solutions {{{algSol.Glue("; ")}}}");
+        return algSol.ToArray();
     }
 
     public int R => Classes.Length;
     private ACell[,] Cells { get; }
     private CnfCell[,] CnfCells { get; }
+    public Dictionary<int, int> NbStabx { get; }
+    public Dictionary<int, int> NbOrbx { get; }
     public Dictionary<T, int> IndexesTint { get; }
     private Dictionary<T, T> ReprOrbx { get; }
     public (string name, T repr, HashSet<T> stabx, HashSet<T> orbx)[] Classes { get; }
@@ -211,15 +359,16 @@ public class CharacterTable<T> where T : struct, IElt<T>
             }
         }
 
-        var table = Classes.Select((e, i) => (i, e.repr)).ToDictionary(e => e.repr, e => mat.GetCol(e.i));
-        var Ocl = Classes.ToDictionary(e => e.repr, e => e.stabx.Count);
-        var e0 = table.Values.First().ToArray().First();
         var rg = Classes.Length.Range();
-        var keys = table.Keys.ToArray();
-        var allCombs = rg.SelectMany(i => rg.Where(j => j > i).Select(j => (keys[i], Gr.Invert(keys[j])))).ToArray();
-        Console.WriteLine("Sum[Xi(g)Xj(g^−1 )]= 0  : {0}", allCombs.All(e => (table[e.Item1].T * table[ReprOrbx[e.Item2]]).IsZero()));
+        var tableCols = Classes.Select((e, i) => (i, e.repr)).ToDictionary(e => e.repr, e => mat.GetCol(e.i));
+        var Ocl = Classes.ToDictionary(e => e.repr, e => e.stabx.Count);
+        var e0 = tableCols.Values.First().ToArray().First();
+        var keys = tableCols.Keys.ToArray();
+        var allCombsCols = rg.SelectMany(i => rg.Where(j => j > i).Select(j => (keys[i], Gr.Invert(keys[j])))).ToArray();
+        Console.WriteLine("Sum[Xi(g)Xj(g^−1 )]= 0  : {0}",
+            allCombsCols.All(e => (tableCols[e.Item1].T * tableCols[ReprOrbx[e.Item2]]).IsZero()));
         Console.WriteLine("Sum[Xi(g)Xi(g^−1 )]=|G| : {0}",
-            table.Keys.All(gi => (table[gi].T * table[ReprOrbx[Gr.Invert(gi)]])[0, 0].Equals(e0.One * Ocl[gi])));
+            tableCols.Keys.All(gi => (tableCols[gi].T * tableCols[ReprOrbx[Gr.Invert(gi)]])[0, 0].Equals(e0.One * Ocl[gi])));
     }
 
     public void DisplayCells()
