@@ -22,7 +22,7 @@ public readonly struct Automorphism<T> : IMap<T, T>, IElt<Automorphism<T>> where
 
     public bool Equals(Automorphism<T> other) => Hash == other.Hash;
 
-    public int CompareTo(Automorphism<T> other) => this.CompareMapTo(other);
+    public int CompareTo(Automorphism<T> other) => IMap<T,T>.CompareMap(this, other);
 
     public int Hash { get; }
     public AutomorphismGroup<T> AutGroup { get; }
@@ -38,7 +38,7 @@ public readonly struct Automorphism<T> : IMap<T, T>, IElt<Automorphism<T>> where
     public IEnumerable<T> Image() => AutMap.Values.Distinct();
 
     public bool Equals(IMap<T, T>? other) => other?.Hash == Hash;
-    public int CompareTo(IMap<T, T>? other) => other is null ? 1 : this.CompareMapTo(other);
+    public int CompareTo(IMap<T, T>? other) => other is null ? 1 : IMap<T, T>.CompareMap(this, other);
     public override int GetHashCode() => Hash;
     public T this[T index] => AutMap[index];
 

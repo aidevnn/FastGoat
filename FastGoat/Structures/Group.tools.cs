@@ -1,4 +1,3 @@
-using System.Reflection;
 using FastGoat.Commons;
 using FastGoat.Structures.GenericGroup;
 
@@ -25,7 +24,7 @@ public static partial class Group
         where T : struct, IElt<T>
     {
         var cosets = Cosets(grG, grH, CosetType.Left);
-        return (T g, Coset<T> xH) => cosets[grG.Op(g, xH.X)];
+        return (g, xH) => cosets[grG.Op(g, xH.X)];
     }
 
     public static HashSet<T1> Stabs<T1, T2>(ConcreteGroup<T1> gr, GroupAction<T1, T2> act, T2 x)
@@ -134,7 +133,7 @@ public static partial class Group
         var clNames = AllConjugacyClassesNames(gr);
         var digits = clNames.Max(e => $"{e.repr}".Length);
         var fmt = $"{{0,-{digits}}}";
-
+        
         foreach (var e in clNames)
         {
             if (details)
@@ -144,11 +143,11 @@ public static partial class Group
                 Console.WriteLine(
                     $"{e.name,-3} = {string.Format(fmt, e.repr)} {$"Stab({e.name})",-10}:{e.stabx.Count,-4} {$"Orb({e.name})",-10}:{e.orbx.Count,-4}");
         }
-
+        
         Console.WriteLine($"Nb Classes:{clNames.Length}");
         Console.WriteLine();
     }
-
+    
     public static void DisplayOrbx<T1, T2>(ConcreteGroup<T1> gr, T2[] set, GroupAction<T1, T2> act, bool details = false)
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
@@ -157,13 +156,13 @@ public static partial class Group
         Console.WriteLine($"Classes for action {act.Method.Name}");
         DisplayOrbx(AllOrbits(gr, set, act), details);
     }
-
+    
     public static void DisplayOrbx<T>(ConcreteGroup<T> gr, GroupAction<T, T> act)
         where T : struct, IElt<T>
     {
         DisplayOrbx(gr, gr.ToArray(), act);
     }
-
+    
     public static void DisplayConjugacyClasses<T>(ConcreteGroup<T> gr, bool details = false) where T : struct, IElt<T>
     {
         DisplayGroup.Head(gr);
@@ -190,6 +189,11 @@ public static partial class Group
     public static bool AreConjugate<T>(ConcreteGroup<T> g, T a, T b) where T : struct, IElt<T>
     {
         return g.Contains(a) && g.Contains(b) && Orbits(g, ByConjugate(g), a).Contains(b);
+    }
+
+    public static ConjugacyClasses<T> ConjugacyClasses<T>(ConcreteGroup<T> gr) where T : struct, IElt<T>
+    {
+        return new ConjugacyClasses<T>(gr);
     }
 
     public static List<ConcreteGroup<T>> SubGroupsConjugates<T>(ConcreteGroup<T> g, ConcreteGroup<T> h) where T : struct, IElt<T>

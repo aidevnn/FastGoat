@@ -16,7 +16,7 @@ public readonly struct Homomorphism<T1, T2> : IMap<T1, T2> where T1 : struct, IE
 
     public bool Equals(IMap<T1, T2>? other) => other?.Hash == Hash;
 
-    public int CompareTo(IMap<T1, T2>? other) => other is null ? 1 : this.CompareMapTo(other);
+    public int CompareTo(IMap<T1, T2>? other) => other is null ? 1 : IMap<T1, T2>.CompareMap(this, other);
 
     public int Count => HomMap.Count;
     public int Hash { get; }

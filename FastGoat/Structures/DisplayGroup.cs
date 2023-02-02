@@ -224,4 +224,10 @@ public static class DisplayGroup
     {
         Console.WriteLine("{0} IsIsomorphicTo {1} : {2}", g1, g2, g1.IsIsomorphicTo(g2));
     }
+
+    public static void ConjugacyClasses<T>(ConcreteGroup<T> gr) where T : struct, IElt<T>
+    {
+        Head(gr);
+        new ConjugacyClasses<T>(gr).Display();
+    }
 }
