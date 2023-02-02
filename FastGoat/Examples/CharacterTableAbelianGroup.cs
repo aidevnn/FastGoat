@@ -6,6 +6,7 @@ using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup;
 using FastGoat.UserGroup.Integers;
 using FastGoat.UserGroup.Polynoms;
+using FastGoat.UserGroup.Words;
 
 namespace FastGoat.Examples;
 
@@ -172,6 +173,7 @@ public static class CharacterTableAbelianGroup
         FG.CharactersTable(Group.SemiDirectProd(new Cn(5), new Cn(4))).DisplayCells();
         FG.CharactersTable(Group.SemiDirectProd(new Cn(7), new Cn(6))).DisplayCells();
         FG.CharactersTable(Group.SemiDirectProd(new Cn(11), new Cn(10))).DisplayCells();
+        FG.CharactersTable(Group.SemiDirectProd(new Cn(13), new Cn(12))).DisplayCells();
     }
 
     public static void ExamplesTwoMissingCharacters()
@@ -179,11 +181,14 @@ public static class CharacterTableAbelianGroup
         FG.CharactersTable(Group.SemiDirectProd(new Cn(3), new Cn(4))).DisplayCells();
         FG.CharactersTable(Group.SemiDirectProd(new Cn(4), new Cn(4))).DisplayCells();
         FG.CharactersTable(Group.SemiDirectProd(new Cn(7), new Cn(3))).DisplayCells();
-        FG.CharactersTable(Group.SemiDirectProd(FG.Abelian(3, 3), new Cn(4))).DisplayCells();
+        FG.CharactersTable(Group.SemiDirectProd(new Cn(9), new Cn(3))).DisplayCells();
         FG.CharactersTable(FG.Dihedral(6)).DisplayCells();
         FG.CharactersTable(FG.DiCyclic(3)).DisplayCells();
+        FG.CharactersTable(FG.SemiDihedral(4)).DisplayCells();
+        FG.CharactersTable(FG.Symmetric(4)).DisplayCells();
         
-        // FG.CharactersTable(Group.SemiDirectProd(new Cn(9), new Cn(3)));
-        // unable to Factors X² + 3·X + 9 in splitting field a¹⁸ + a⁹ + 1 of Q(ξ27)[x]
+        FG.CharactersTable(Group.SemiDirectProd(FG.Abelian(3, 3), new Cn(4))).DisplayCells();
+        // FG.CharactersTable(new WordGroup("a3, b3, c4, ab = ba, cac−1 = b, cbc−1 = a2")).DisplayCells();
+        // FG.CharactersTable(Group.SemiDirectProd(new Cn(3), new Cn(8))).DisplayCells(); // wont work
     }
 }

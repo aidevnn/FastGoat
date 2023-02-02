@@ -180,3 +180,9 @@ INRIA (POLSYS) / UPMC / CNRS/ LIP6.
 Ideals, Varieties, and Algorithms.
 Springer. 4th Edition. 2015.
 <i>Chapter 5. Polynomial and Rational Functions on a Variety</i>
+
+[Charaktertheorie](https://www.mathematik.uni-kl.de/~lassueur/en/teaching/CTFGSS20/)
+<b>Jun.-Prof. Dr. Caroline Lassueur</b>
+Character Theory of Finite Groups.
+TU Kaiserslautern, SS2020.
+<i>Chapter 6. Induction and Restriction of Characters</i>
