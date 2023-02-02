@@ -191,4 +191,16 @@ public static class CharacterTableAbelianGroup
         // FG.CharactersTable(new WordGroup("a3, b3, c4, ab = ba, cac−1 = b, cbc−1 = a2")).DisplayCells();
         // FG.CharactersTable(Group.SemiDirectProd(new Cn(3), new Cn(8))).DisplayCells(); // wont work
     }
+
+    public static void ExamplesPQgroups()
+    {
+        for (int i = 2; i <= 16; i++)
+            FG.CharactersTable(FG.Dihedral(i)).DisplayCells();
+        
+        var pqGroups = 31.Range(2).SelectMany(i => FG.Frobenius(i)).ToArray();
+        foreach (var g in pqGroups)
+        {
+            FG.CharactersTable(g).DisplayCells();
+        }
+    }
 }
