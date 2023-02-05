@@ -10,7 +10,7 @@ using FastGoat.UserGroup.Words;
 
 namespace FastGoat.Examples;
 
-public static class CharacterTableAbelianGroup
+public static class CharacterTableExamples
 {
     public struct StringElt : IElt<StringElt>
     {
@@ -203,4 +203,89 @@ public static class CharacterTableAbelianGroup
             FG.CharactersTable(g).DisplayCells();
         }
     }
+
+    public static void ExamplesPermGroups()
+    {
+        for (int i = 3; i < 7; i++)
+        {
+            FG.CharactersTable2(FG.Alternate(i)).DisplayCells();
+            FG.CharactersTable2(FG.Symmetric(i)).DisplayCells();
+        }
+    }
+    /*
+        [Class     1  2  3            5a            5b]
+        [ Size     1 15 20            12            12]
+        [                                             ]
+        [  X.1     1  1  1             1             1]
+        [  X.2     3 -1  0   -ξ5³ + -ξ5² ξ5³ + ξ5² + 1]
+        [  X.3     3 -1  0 ξ5³ + ξ5² + 1   -ξ5³ + -ξ5²]
+        [  X.4     4  0  1            -1            -1]
+        [  X.5     5  1 -1             0             0]
+        All i,                 Sum[g](Xi(g)Xi(g^−1))= |G|      : True
+        All i <> j,            Sum[g](Xi(g)Xj(g^−1))=  0       : True
+        All g, h in Cl(g),     Sum[r](Xr(g)Xr(h^−1))= |Cl(g)|  : True
+        All g, h not in Cl(g), Sum[r](Xr(g)Xr(h^−1))=  0       : True
+
+        |Symm5| = 120
+        Type        NonAbelianGroup
+        BaseGroup   S5
+
+        [Class     1 2a 2b  3  4  5  6]
+        [ Size     1 10 15 20 30 24 20]
+        [                             ]
+        [  X.1     1  1  1  1  1  1  1]
+        [  X.2     1 -1  1  1 -1  1 -1]
+        [  X.3     4  2  0  1  0 -1 -1]
+        [  X.4     4 -2  0  1  0 -1  1]
+        [  X.5     5  1  1 -1 -1  0  1]
+        [  X.6     5 -1  1 -1  1  0 -1]
+        [  X.7     6  0 -2  0  0  1  0]
+        All i,                 Sum[g](Xi(g)Xi(g^−1))= |G|      : True
+        All i <> j,            Sum[g](Xi(g)Xj(g^−1))=  0       : True
+        All g, h in Cl(g),     Sum[r](Xr(g)Xr(h^−1))= |Cl(g)|  : True
+        All g, h not in Cl(g), Sum[r](Xr(g)Xr(h^−1))=  0       : True
+
+        |Alt6| = 360
+        Type        NonAbelianGroup
+        BaseGroup   S6
+        SuperGroup  |Symm6| = 720
+
+        [Class      1  2 3a 3b  4            5a            5b]
+        [ Size      1 45 40 40 90            72            72]
+        [                                                    ]
+        [  X.1      1  1  1  1  1             1             1]
+        [  X.2      5  1  2 -1 -1             0             0]
+        [  X.3      5  1 -1  2 -1             0             0]
+        [  X.4      8  0 -1 -1  0   -ξ5³ + -ξ5² ξ5³ + ξ5² + 1]
+        [  X.5      8  0 -1 -1  0 ξ5³ + ξ5² + 1   -ξ5³ + -ξ5²]
+        [  X.6      9  1  0  0  1            -1            -1]
+        [  X.7     10 -2  1  1  0             0             0]
+        All i,                 Sum[g](Xi(g)Xi(g^−1))= |G|      : True
+        All i <> j,            Sum[g](Xi(g)Xj(g^−1))=  0       : True
+        All g, h in Cl(g),     Sum[r](Xr(g)Xr(h^−1))= |Cl(g)|  : True
+        All g, h not in Cl(g), Sum[r](Xr(g)Xr(h^−1))=  0       : True
+
+        |Symm6| = 720
+        Type        NonAbelianGroup
+        BaseGroup   S6
+
+        [Class      1 2a 2b 2c 3a 3b 4a 4b   5  6a  6b]
+        [ Size      1 15 15 45 40 40 90 90 144 120 120]
+        [                                             ]
+        [  X.1      1  1  1  1  1  1  1  1   1   1   1]
+        [  X.2      1 -1 -1  1  1  1 -1  1   1  -1  -1]
+        [  X.3      5  3 -1  1  2 -1  1 -1   0   0  -1]
+        [  X.4      5 -3  1  1  2 -1 -1 -1   0   0   1]
+        [  X.5      5 -1  3  1 -1  2  1 -1   0  -1   0]
+        [  X.6      5  1 -3  1 -1  2 -1 -1   0   1   0]
+        [  X.7      9  3  3  1  0  0 -1  1  -1   0   0]
+        [  X.8      9 -3 -3  1  0  0  1  1  -1   0   0]
+        [  X.9     10  2 -2 -2  1  1  0  0   0  -1   1]
+        [ X.10     10 -2  2 -2  1  1  0  0   0   1  -1]
+        [ X.11     16  0  0  0 -2 -2  0  0   1   0   0]
+        All i,                 Sum[g](Xi(g)Xi(g^−1))= |G|      : True
+        All i <> j,            Sum[g](Xi(g)Xj(g^−1))=  0       : True
+        All g, h in Cl(g),     Sum[r](Xr(g)Xr(h^−1))= |Cl(g)|  : True
+        All g, h not in Cl(g), Sum[r](Xr(g)Xr(h^−1))=  0       : True
+     */
 }
