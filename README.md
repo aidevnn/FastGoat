@@ -110,6 +110,30 @@ NormalGroup |N| = 7
 # Group21 Time:0 ms
 ```
 
+## Characters Table
+
+Displaying characters table for the group $C_7 \rtimes C_3$ in $\textbf{S}_7$
+
+```csharp
+FG.CharactersTable2(g21).DisplayCells();
+```
+will output
+```dotnetcli
+[Class     1       3a       3b                                     7a                                     7b]
+[ Size     1        7        7                                      3                                      3]
+[                                                                                                           ]
+[  X.1     1        1        1                                      1                                      1]
+[  X.2     1       ξ3 -ξ3 + -1                                      1                                      1]
+[  X.3     1 -ξ3 + -1       ξ3                                      1                                      1]
+[  X.4     3        0        0 ξ21¹¹ + -ξ21⁹ + ξ21⁸ + ξ21⁴ + ξ21 + -1   -ξ21¹¹ + ξ21⁹ + -ξ21⁸ + -ξ21⁴ + -ξ21]
+[  X.5     3        0        0   -ξ21¹¹ + ξ21⁹ + -ξ21⁸ + -ξ21⁴ + -ξ21 ξ21¹¹ + -ξ21⁹ + ξ21⁸ + ξ21⁴ + ξ21 + -1]
+All i,                 Sum[g](Xi(g)Xi(g^−1))= |G|      : True
+All i <> j,            Sum[g](Xi(g)Xj(g^−1))=  0       : True
+All g, h in Cl(g),     Sum[r](Xr(g)Xr(h^−1))= |Cl(g)|  : True
+All g, h not in Cl(g), Sum[r](Xr(g)Xr(h^−1))=  0       : True
+
+```
+
 ## References
 
 [ALGÈBRE T1](https://laboutique.edpsciences.fr/produit/63/9782759803316/)
@@ -128,7 +152,14 @@ American Mathematical Society.
 <b>H.E. Rose.</b>
 A Course on Finite Groups.
 Springer. 2009.
-<i>All Chapters.</i>
+<i>All Chapters. Web Sections, Web Chapters.</i>
+
+[A Course on Finite Groups](https://link.springer.com/book/10.1007/978-1-84882-889-6)
+<b>H.E. Rose.</b>
+A Course on Finite Groups.
+Web Sections, Web Chapters and Solution Appendix.
+Springer. 2009.
+<i>Chapter 13. Representation and Character Theory.</i>
 
 [GroupNames](https://people.maths.bris.ac.uk/~matyd/GroupNames/index.html)
 <b>Tim Dokchitser.</b>

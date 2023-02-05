@@ -182,14 +182,12 @@ public static class CharacterTableExamples
         FG.CharactersTable(Group.SemiDirectProd(new Cn(4), new Cn(4))).DisplayCells();
         FG.CharactersTable(Group.SemiDirectProd(new Cn(7), new Cn(3))).DisplayCells();
         FG.CharactersTable(Group.SemiDirectProd(new Cn(9), new Cn(3))).DisplayCells();
+        FG.CharactersTable(Group.SemiDirectProd(new Cn(3), new Cn(8))).DisplayCells();
+        FG.CharactersTable(Group.SemiDirectProd(FG.Abelian(3, 3), new Cn(4))).DisplayCells();
+        
         FG.CharactersTable(FG.Dihedral(6)).DisplayCells();
         FG.CharactersTable(FG.DiCyclic(3)).DisplayCells();
         FG.CharactersTable(FG.SemiDihedral(4)).DisplayCells();
-        FG.CharactersTable(FG.Symmetric(4)).DisplayCells();
-        
-        FG.CharactersTable(Group.SemiDirectProd(FG.Abelian(3, 3), new Cn(4))).DisplayCells();
-        // FG.CharactersTable(new WordGroup("a3, b3, c4, ab = ba, cac−1 = b, cbc−1 = a2")).DisplayCells();
-        // FG.CharactersTable(Group.SemiDirectProd(new Cn(3), new Cn(8))).DisplayCells(); // wont work
     }
 
     public static void ExamplesPQgroups()
