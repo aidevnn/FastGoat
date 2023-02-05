@@ -34,17 +34,8 @@ namespace FastGoat.Commons
                         AllCombinations[k - 1].Select(l => l.Prepend(c == 1).ToArray()))
                     .ToArray();
             }
-            
-            var rg = 10.Range(1);
-            var oneSquare = rg.ToDictionary(e => e * e, e => new[] { new[] { e } });
-            var twoSquares = rg.Grid2D(rg).Where(e => e.t1 <= e.t2)
-                .GroupBy(e => e.t1.Pow(2) + e.t2.Pow(2)).Where(e => e.Key <= 100)
-                .OrderBy(e => e.Key).ToDictionary(e => e.Key, e => e.Select(f => new[] { f.t1, f.t2 }).ToArray());
-            var threeSquares = rg.Grid3D(rg, rg).Where(e => e.t1 <= e.t2 && e.t2 <= e.t3)
-                .GroupBy(e => e.t1.Pow(2) + e.t2.Pow(2) + e.t3.Pow(2)).Where(e => e.Key <= 100)
-                .OrderBy(e => e.Key).ToDictionary(e => e.Key, e => e.Select(f => new[] { f.t1, f.t2, f.t3 }).ToArray());
 
-            SolveSquareInt = new() { [1] = oneSquare, [2] = twoSquares, [3] = threeSquares };
+            SolveSquareInt = SquareSums();
         }
         
         public static Dictionary<int, Dictionary<int, int[][]>> SolveSquareInt { get; }
@@ -158,8 +149,55 @@ namespace FastGoat.Commons
             return all.GroupBy(l0 => l0.Sum()).ToDictionary(a => a.Key, b => b.ToList());
         }
 
+        public static Dictionary<int, Dictionary<int, int[][]>> SquareSums(int maxSum = 128, int maxList = 10)
+        {
+            var maxN = (int)Double.Sqrt(maxSum);
+            var allSums = (maxN - 1).Range(2).ToDictionary(i => i * i, i => new List<List<int>>() { new() { i } });
+            while (true)
+            {
+                var tmp = allSums.ToDictionary(a => a.Key, a => a.Value.Select(b => b.ToList()).ToList());
+                foreach (var (sum, list) in allSums)
+                {
+                    foreach (var l1 in list.Where(l => l.Count < maxList))
+                    {
+                        var s = l1.Last();
+                        for (int s1 = s; s1 <= maxN; s1++)
+                        {
+                            var sum2 = s1 * s1 + sum;
+                            if (sum2 <= maxSum)
+                            {
+                                var l2 = l1.Append(s1).ToList();
+                                if (!tmp.ContainsKey(sum2))
+                                    tmp[sum2] = new List<List<int>>() { l2 };
+                                else if (tmp[sum2].All(l => !l.SequenceEqual(l2)))
+                                    tmp[sum2].Add(l2);
+                            }
+                        }
+                    }
+                }
+
+                if (allSums.Sum(k => k.Value.Count) != tmp.Sum(k => k.Value.Count))
+                    allSums = tmp;
+                else
+                    break;
+            }
+
+            var squareSums = allSums.SelectMany(e => e.Value.Select(l => (sum: e.Key, l.Count, l)))
+                .OrderBy(e => e.Count)
+                .GroupBy(e => e.Count)
+                .ToDictionary(
+                    e => e.Key,
+                    e => e.OrderBy(f => f.sum).GroupBy(f => f.sum).ToDictionary(
+                        f => f.Key,
+                        f => f.Select(g => g.l.ToArray()).
+                            OrderBy(l => l, Comparer<int[]>.Create((la, lb) => la.SequenceCompareTo(lb)))
+                            .ToArray()));
+            
+            return squareSums;
+        }
+
         public const int NbPermutations = 8;
-        public const int NbCombinations = 10;
+        public const int NbCombinations = 12;
         private static Dictionary<int, int[][]> AllPermutations { get; }
         private static Dictionary<int, bool[][]> AllCombinations { get; }
 
@@ -367,6 +405,7 @@ namespace FastGoat.Commons
         public static int[] Range(this int a, int start = 0, int step = 1) => a.SeqLazy(start, step).ToArray();
 
         public static BigInteger Fact(this int i) => Enumerable.Range(0, i).Aggregate(BigInteger.One, (acc, k) => acc * k);
+
         public static IEnumerable<int> SeqLazy(this int a, int start = 0, int step = 1)
         {
             return Enumerable.Range(0, a).Select(i => start + i * step);
