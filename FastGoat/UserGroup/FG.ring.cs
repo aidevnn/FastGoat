@@ -231,9 +231,4 @@ public static partial class FG
         var nbf = NumberFieldQ(new[] { a, b });
         return (nbf[0], nbf[1], new EPolynomial<Rational>(xis[2], nbf[0].Basis));
     }
-
-    public static CharacterTable<T> CharactersTable<T>(ConcreteGroup<T> gr) where T : struct, IElt<T>
-    {
-        return new CharacterTable<T>(gr);
-    }
 }

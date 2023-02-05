@@ -18,7 +18,10 @@ public class CharacterTable<T> where T : struct, IElt<T>
     {
         Gr = g;
         Classes = Group.AllConjugacyClassesNames(Gr);
-        CClasses = new ConjugacyClasses<T>(Gr);
+        var one = FG.CharacterOne(Gr);
+        CClasses = one.Classes;
+        AllCharacters = new Character<T>[CClasses.Count()];
+        AllCharacters[0] = one;
         Cells = new ACell[Classes.Length + 3, Classes.Length + 2];
         CnfCells = new CnfCell[Classes.Length, Classes.Length];
         IndexesTint = Classes.Select((e, i) => (e, i)).ToDictionary(e => e.e.repr, e => e.i);
@@ -40,6 +43,7 @@ public class CharacterTable<T> where T : struct, IElt<T>
     }
 
     public ConjugacyClasses<T> CClasses { get; }
+    public Character<T>[] AllCharacters { get; set; }
     public int R => Classes.Length;
     private ACell[,] Cells { get; }
     public CnfCell[,] CnfCells { get; }
@@ -111,6 +115,8 @@ public class CharacterTable<T> where T : struct, IElt<T>
                 Cells[i + 3, j + 2] = CnfCells[i, j] = new(Chi(i, g));
             }
         }
+
+        AllCharacters = FG.LinearCharacters(Gr).ToArray();
     }
 
     private void DerivedGroupLift()
@@ -120,7 +126,7 @@ public class CharacterTable<T> where T : struct, IElt<T>
         var Odg = DerivedGroup.Count();
         if (Og == Odg)
             return;
-        
+
         QuotientGroup = Gr.Over(DerivedGroup);
         var quo = (Quotient<T>)QuotientGroup.BaseGroup;
         var n = QuotientGroup.Count();
@@ -133,6 +139,7 @@ public class CharacterTable<T> where T : struct, IElt<T>
         foreach (var (gk, dk) in derivedClasses)
         {
             var k = IndexesTint[gk];
+            var sum = Cnf.CnfZero;
             foreach (var (gj, j) in IndexesTint)
             {
                 var dgj = quo.GetRepresentative(gj);
@@ -144,6 +151,34 @@ public class CharacterTable<T> where T : struct, IElt<T>
             {
                 foreach (var (_, i) in otherClasses)
                     Cells[i + 3, k + 2] = CnfCells[i, k] = new CnfCell(Cnf.CnfZero);
+            }
+        }
+    }
+
+    public void PrefillOrthogonality()
+    {
+        var clIdx = R.Range();
+        var Ocl = Classes.ToDictionary(e => e.repr, e => e.stabx.Count);
+        foreach (var (g, j) in IndexesTint)
+        {
+            var sum = Cnf.CnfZero;
+            foreach (var i in clIdx)
+            {
+                var c = CnfCells[i, j];
+                if (c.IsEmpty)
+                    continue;
+                
+                sum += c.E.Pow(2);
+            }
+
+            if (sum.Simplify().Equals(Ocl[g] * Cnf.CnfOne))
+            {
+                foreach (var i in clIdx)
+                {
+                    var c = CnfCells[i, j];
+                    if (c.IsEmpty)
+                        Cells[i + 3, j + 2] = CnfCells[i, j] = new CnfCell(Cnf.CnfZero);
+                }
             }
         }
     }
@@ -161,19 +196,19 @@ public class CharacterTable<T> where T : struct, IElt<T>
 
     public void InductionFromSubgroup(ConcreteGroup<T> sgr)
     {
-        if(sgr.Count() == Gr.Count() || !sgr.SubSetOf(Gr))
+        if (sgr.Count() == Gr.Count() || !sgr.SubSetOf(Gr))
             return;
-        
+
         var clIdx = R.Range();
         var liftIdx = clIdx.Where(i => clIdx.All(j => !CnfCells[i, j].IsEmpty)).ToArray();
         if (liftIdx.Length == R)
             return;
 
         var ctDg = FG.CharactersTable(sgr);
-        
+
         if (ctDg.R.Range().Any(i => ctDg.R.Range().Any(j => ctDg.CnfCells[i, j].IsEmpty)))
             return;
-        
+
         var induced = new Dictionary<int, Dictionary<T, Cnf>>();
         foreach (var i in ctDg.IndexesTint.Values)
         {
@@ -228,7 +263,7 @@ public class CharacterTable<T> where T : struct, IElt<T>
             var irrs = deg.Select(d => ind.ToDictionary(e => e.Key, e => e.Value / d))
                 .Where(ind0 =>
                     HProd(ind0, ind0).Equals(Cnf.CnfOne) &&
-                    ( ind0[Gr.Neutral()].Pow(2)).Module <= nb0)
+                    (ind0[Gr.Neutral()].Pow(2)).Module <= nb0)
                 .ToArray();
 
             if (irrs.Length == 0)
@@ -289,7 +324,7 @@ public class CharacterTable<T> where T : struct, IElt<T>
         var mapSymb = mapCells.ToDictionary(e => e.Value, e => e.Key);
         var mapInd = mapCells.ToDictionary(e => e.Key.ExtractIndeterminate, e => e.Value);
         var xz = xis.Last();
-        var mat = new Polynomial<Cnf,Xi>[Classes.Length, Classes.Length];
+        var mat = new Polynomial<Cnf, Xi>[Classes.Length, Classes.Length];
 
         foreach (var (gi, i) in IndexesTint)
         {
@@ -302,7 +337,7 @@ public class CharacterTable<T> where T : struct, IElt<T>
                     mat[j, i] = c.E * xz.One;
             }
         }
-        
+
         var rg = Classes.Length.Range();
         var Ocl = Classes.ToDictionary(e => e.repr, e => e.stabx.Count);
         var e0 = Cnf.CnfZero;
@@ -311,26 +346,25 @@ public class CharacterTable<T> where T : struct, IElt<T>
         var clggi = rg.ToDictionary(i => i, i => IndexesTint[CClasses.GetRepresentative(Gr.Invert(Repr[i]))]);
 
         var eqs = new List<Polynomial<Cnf, Xi>>();
-        
+
         // All i, Sum[g](Xi(g)Xi(g^−1))= |G|
         // eqs.AddRange(rg.Select(i => ggi.Aggregate(xz.Zero, (sum, kp) => sum + mat[i, kp.g] * mat[i, kp.gi]) - (xz.One * Gr.Count())));
         // All i <> j, Sum[g](Xi(g)Xj(g^−1))=  0
         eqs.AddRange(allCombs.Select(e => ggi.Aggregate(xz.Zero, (sum, kp) => sum + mat[e.i, kp.g] * mat[e.j, kp.gi])));
-        
+
         // All g, h in Cl(g), Sum[r](Xr(g)Xr(h^−1))= |Cl(g)|
         eqs.AddRange(clggi.Select(kp =>
             rg.Aggregate(xz.Zero, (sum, r) => sum + mat[r, kp.Key] * mat[r, kp.Value]) - (xz.One * Ocl[Repr[kp.Key]])));
         // All g, h not in Cl(g), Sum[r](Xr(g)Xr(h^−1))=  0
         eqs.AddRange(allCombs.Select(e => rg.Aggregate(xz.Zero, (sum, r) => sum + mat[r, e.i] * mat[r, clggi[e.j]])));
-        
+
         eqs.RemoveAll(e => e.IsZero());
         eqs.Println("System");
         var redEqs = Ring.ReducedGrobnerBasis(eqs.ToArray());
 
         redEqs.Println("Reduced System");
         Console.WriteLine();
-        return;
-        
+
         var mapCnf = mapSymb.ToDictionary(e => e.Value.ExtractIndeterminate, e => Cnf.Nth(NbStabx[e.Key.Item2]));
         var allSolutions = SolveSystem(new Dictionary<Xi, Cnf>(), redEqs, mapCnf, xz).ToArray();
         foreach (var solution in allSolutions)

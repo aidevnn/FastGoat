@@ -87,7 +87,7 @@ public static partial class Group
     {
         var act = ByConjugate(gr);
         var alpha = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        var allClasses = AllOrbits(gr, gr.ToArray(), act);
+        var allClasses = AllOrbits(gr, gr.Order().ToArray(), act);
         var classNames = allClasses.GroupBy(e => gr.ElementsOrders[e.Key])
             .ToDictionary(
                 e => e.Key,

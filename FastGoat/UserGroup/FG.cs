@@ -312,6 +312,9 @@ public static partial class FG
         return Group.SemiDirectProd($"QD{n1 * 2}", cn, theta, c2);
     }
 
+    public static WordGroup WordGroup(string relators) => new WordGroup(relators);
+    public static WordGroup WordGroup(string name, string relators) => new WordGroup(name, relators);
+
     public static ConcreteGroup<EPoly<ZnInt>> Galois(int q, char x = 'x')
     {
         var fq = new Fq(q, x);

@@ -1,8 +1,9 @@
+using System.Collections;
 using FastGoat.Commons;
 
 namespace FastGoat.Structures.GenericGroup;
 
-public readonly struct ConjugacyClasses<T> where T : struct, IElt<T>
+public readonly struct ConjugacyClasses<T> : IEnumerable<T> where T : struct, IElt<T>
 {
     public ConcreteGroup<T> Gr { get; }
 
@@ -31,14 +32,18 @@ public readonly struct ConjugacyClasses<T> where T : struct, IElt<T>
         }
     }
 
-    public void Display()
+    public void Display(bool details = false)
     {
         var digits = Classes.Max(e => $"{e.repr}".Length);
         var fmt = $"{{0,-{digits}}}";
         foreach (var e in Classes)
         {
-            Console.WriteLine(
-                $"{e.name,-3} = {string.Format(fmt, e.repr)} {$"Stab({e.name})",-10}:{e.stabx.Count,-4} {$"Orb({e.name})",-10}:{e.orbx.Count,-4}  {e.orbx.Glue(", ")}");
+            if (details)
+                Console.WriteLine(
+                    $"{e.name,-3} = {string.Format(fmt, e.repr)} {$"Stab({e.name})",-10}:{e.stabx.Count,-4} {$"Orb({e.name})",-10}:{e.orbx.Count,-4}  {e.orbx.Glue(", ")}");
+            else
+                Console.WriteLine(
+                    $"{e.name,-3} = {string.Format(fmt, e.repr)} {$"Stab({e.name})",-10}:{e.stabx.Count,-4} {$"Orb({e.name})",-10}:{e.orbx.Count,-4}");
         }
         
         Console.WriteLine($"Nb Classes:{Classes.Length}");
@@ -67,6 +72,14 @@ public readonly struct ConjugacyClasses<T> where T : struct, IElt<T>
     public IEnumerable<T> GetClassStabx(T e) => ClassStabx[e];
     public IEnumerable<T> GetClassStabx(int i) => ClassStabx[Idx2Repr[i]];
     public IEnumerable<T> GetRepresentatives() => AllReprs;
+    public IEnumerable<int> GetOrbxCount() => ClassOrbx.Select(s => s.Value.Count);
+    public IEnumerable<int> GetStabxCount() => ClassStabx.Select(s => s.Value.Count);
 
     public bool ValidClasses(IEnumerable<T> classes) => AllReprs.SetEquals(classes);
+    public IEnumerator<T> GetEnumerator() => AllReprs.OrderDescending().GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
 }
