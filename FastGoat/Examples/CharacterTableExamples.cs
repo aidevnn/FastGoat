@@ -5,6 +5,7 @@ using FastGoat.Structures.GenericGroup;
 using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup;
 using FastGoat.UserGroup.Integers;
+using FastGoat.UserGroup.Matrix;
 using FastGoat.UserGroup.Polynoms;
 using FastGoat.UserGroup.Words;
 
@@ -43,7 +44,8 @@ public static class CharacterTableExamples
         var keys = table.Keys.ToArray();
         var allCombs = rg.SelectMany(i => rg.Where(j => j > i).Select(j => (keys[i], g.Invert(keys[j])))).ToArray();
         Console.WriteLine("Sum[Ꭓi(g)Ꭓj(g^−1 )]= 0  : {0}", allCombs.All(e => (table[e.Item1].T * table[e.Item2]).IsZero()));
-        Console.WriteLine("Sum[Ꭓi(g)Ꭓi(g^−1 )]=|G| : {0}", rg.All(i => (table[keys[i]].T * table[g.Invert(keys[i])])[0, 0].Equals(e0.One * n)));
+        Console.WriteLine("Sum[Ꭓi(g)Ꭓi(g^−1 )]=|G| : {0}",
+            rg.All(i => (table[keys[i]].T * table[g.Invert(keys[i])])[0, 0].Equals(e0.One * n)));
     }
 
     static void TableCn(int n)
@@ -184,7 +186,7 @@ public static class CharacterTableExamples
         FG.CharactersTable(Group.SemiDirectProd(new Cn(9), new Cn(3))).DisplayCells();
         FG.CharactersTable(Group.SemiDirectProd(new Cn(3), new Cn(8))).DisplayCells();
         FG.CharactersTable(Group.SemiDirectProd(FG.Abelian(3, 3), new Cn(4))).DisplayCells();
-        
+
         FG.CharactersTable(FG.Dihedral(6)).DisplayCells();
         FG.CharactersTable(FG.DiCyclic(3)).DisplayCells();
         FG.CharactersTable(FG.SemiDihedral(4)).DisplayCells();
@@ -193,21 +195,29 @@ public static class CharacterTableExamples
     public static void ExamplesPQgroups()
     {
         for (int i = 2; i <= 16; i++)
-            FG.CharactersTable(FG.Dihedral(i)).DisplayCells();
-        
-        var pqGroups = 31.Range(2).SelectMany(i => FG.Frobenius(i)).ToArray();
+            FG.CharactersTable2(FG.DihedralSdp(i)).DisplayCells();
+
+        var pqGroups = 31.Range(2).SelectMany(i => FG.FrobeniusSdp(i)).ToArray();
         foreach (var g in pqGroups)
         {
-            FG.CharactersTable(g).DisplayCells();
+            FG.CharactersTable2(g).DisplayCells();
         }
     }
 
     public static void ExamplesPermGroups()
     {
-        for (int i = 3; i < 7; i++)
+        for (int n = 3; n < 7; n++)
         {
-            FG.CharactersTable2(FG.Alternate(i)).DisplayCells();
-            FG.CharactersTable2(FG.Symmetric(i)).DisplayCells();
+            var ctAn = FG.CharactersTable2Slow(FG.Alternate(n));
+            if (n == 6)
+                ctAn.InductionFromSubGroups(2);
+            ctAn.DisplayCells();
+        }
+        
+        for (int n = 3; n < 7; n++)
+        {
+            var ctSn = FG.CharactersTable2Slow(FG.Symmetric(n));
+            ctSn.DisplayCells();
         }
     }
     /*
@@ -286,4 +296,98 @@ public static class CharacterTableExamples
         All g, h in Cl(g),     Sum[r](Xr(g)Xr(h^−1))= |Cl(g)|  : True
         All g, h not in Cl(g), Sum[r](Xr(g)Xr(h^−1))=  0       : True
      */
+
+    public static void ExamplesGL23()
+    {
+        var gl = new GL(2, 3);
+        var a0 = gl[2, 0, 0, 1];
+        var b0 = gl[2, 1, 2, 0];
+
+        var gl23 = Group.Generate(gl, a0, b0);
+        var ctGL23 = FG.CharactersTable2Slow(gl23);
+        ctGL23.DisplayCells();
+    
+        var a = gl[1, 1, 0, 1];
+        var b = gl[0, 1, 2, 0];
+
+        var sl23 = Group.Generate("SL(2,3)", gl, a, b);
+        var ctSL23 = FG.CharactersTable2(sl23);
+        ctSL23.RestrictionFromSuperGroup(ctGL23);
+        ctSL23.DisplayCells();
+    }
+    /*
+        |GL(2,3)| = 48
+        Type        NonAbelianGroup
+        BaseGroup   GL(2,3)
+
+        [Class     1 2a 2b  3  4  6         8a         8b]
+        [ Size     1  1 12  8  6  8          6          6]
+        [                                                ]
+        [  X.1     1  1  1  1  1  1          1          1]
+        [  X.2     1  1 -1  1  1  1         -1         -1]
+        [  X.3     2  2  0 -1  2 -1          0          0]
+        [  X.4     2 -2  0 -1  0  1   ξ8³ + ξ8 -ξ8³ + -ξ8]
+        [  X.5     2 -2  0 -1  0  1 -ξ8³ + -ξ8   ξ8³ + ξ8]
+        [  X.6     3  3 -1  0 -1  0          1          1]
+        [  X.7     3  3  1  0 -1  0         -1         -1]
+        [  X.8     4 -4  0  1  0 -1          0          0]
+        All i,                 Sum[g](Xi(g)Xi(g^−1))= |G|      : True
+        All i <> j,            Sum[g](Xi(g)Xj(g^−1))=  0       : True
+        All g, h in Cl(g),     Sum[r](Xr(g)Xr(h^−1))= |Cl(g)|  : True
+        All g, h not in Cl(g), Sum[r](Xr(g)Xr(h^−1))=  0       : True
+
+        |SL(2,3)| = 24
+        Type        NonAbelianGroup
+        BaseGroup   GL(2,3)
+
+        [Class     1  2       3a       3b  4       6a       6b]
+        [ Size     1  1        4        4  6        4        4]
+        [                                                     ]
+        [  X.1     1  1        1        1  1        1        1]
+        [  X.2     1  1 -ξ3 + -1       ξ3  1       ξ3 -ξ3 + -1]
+        [  X.3     1  1       ξ3 -ξ3 + -1  1 -ξ3 + -1       ξ3]
+        [  X.4     2 -2       -1       -1  0        1        1]
+        [  X.5     2 -2   ξ3 + 1      -ξ3  0       ξ3 -ξ3 + -1]
+        [  X.6     2 -2      -ξ3   ξ3 + 1  0 -ξ3 + -1       ξ3]
+        [  X.7     3  3        0        0 -1        0        0]
+        All i,                 Sum[g](Xi(g)Xi(g^−1))= |G|      : True
+        All i <> j,            Sum[g](Xi(g)Xj(g^−1))=  0       : True
+        All g, h in Cl(g),     Sum[r](Xr(g)Xr(h^−1))= |Cl(g)|  : True
+        All g, h not in Cl(g), Sum[r](Xr(g)Xr(h^−1))=  0       : True
+     */
+    
+    public static void OtherExamples()
+    {
+        {
+            FG.CharactersTable2(FG.DiCyclicSdp(5)).DisplayCells();
+            FG.CharactersTable2(FG.DiCyclicSdp(6)).DisplayCells();
+            FG.CharactersTable2(FG.DiCyclicSdp(7)).DisplayCells();
+            FG.CharactersTable2(FG.DiCyclicSdp(8)).DisplayCells();
+        }
+
+        {
+            FG.CharactersTable2(Group.SemiDirectProd(FG.Abelian(4, 4), FG.Abelian(3))).DisplayCells();
+            FG.CharactersTable2(Group.SemiDirectProd(FG.Abelian(3), FG.Symmetric(3))).DisplayCells();
+            FG.CharactersTable2(Group.SemiDirectProd(FG.Abelian(3, 3), FG.Abelian(8))).DisplayCells();
+            FG.CharactersTable2(Group.SemiDirectProd(FG.Abelian(5), FG.Abelian(8))).DisplayCells();
+            FG.CharactersTable2(Group.SemiDirectProd(FG.Abelian(4), FG.Abelian(4))).DisplayCells();
+            FG.CharactersTable2(Group.SemiDirectProd(FG.Abelian(4), FG.Abelian(4))).DisplayCells();
+        }
+
+        {
+            var E = FG.WordGroup("E", "a4, d6, adad, a3da3d");
+            var Esdp = Group.SemiDirectProd(FG.Abelian(3), FG.DihedralSdp(4));
+            DisplayGroup.AreIsomorphics(Esdp, E);
+            FG.CharactersTable2Slow(E).DisplayCells();
+            FG.CharactersTable2Slow(Esdp).DisplayCells();
+        }
+        
+        {
+            var f8 = Group.SemiDirectProd(FG.Abelian(2, 2, 2), FG.Abelian(7));
+            FG.CharactersTable2(f8).DisplayCells();
+            
+            var gr = Group.SemiDirectProd(f8, FG.Abelian(3));
+            FG.CharactersTable2Slow(gr).DisplayCells();
+        }
+    }
 }
