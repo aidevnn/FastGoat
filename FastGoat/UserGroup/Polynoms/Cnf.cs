@@ -127,9 +127,9 @@ public struct Cnf : IElt<Cnf>, IRingElt<Cnf>, IFieldElt<Cnf>
             return CnfZero;
 
         var a = c.E.X;
-        var n0 = c.N;
         var a0 = a.One;
-        for (int i = 0; i < n0; i++)
+        var n0 = c.N;
+        for (int i = 0; i <= n0; i++)
         {
             var cfe = c.E;
             var t = cfe.Div(a0).quo;
@@ -144,6 +144,19 @@ public struct Cnf : IElt<Cnf>, IRingElt<Cnf>, IFieldElt<Cnf>
             }
 
             a0 *= a;
+        }
+
+        var p0 = (c.E.Poly - c.E.Poly[0]);
+        var t0 = p0.Coefs.Select((e, i) => (e, i)).Where(e => !e.e.IsZero()).ToArray();
+        var gcd0 = IntExt.Gcd(t0.Select(e => e.i).ToArray());
+        if (gcd0 > 1 && n0 % gcd0 == 0)
+        {
+            var xp = p0.X;
+            var n1 = n0 / gcd0;
+            var p1 = t0.Aggregate(c.E.Poly[0] * xp.One, (sum, e) => sum + e.e * xp.Pow(e.i / gcd0));
+            var a1 = FG.CyclotomicEPoly(n1);
+            var c1 = new Cnf(n1, a1.One * p1);
+            return c1;
         }
 
         return c;
