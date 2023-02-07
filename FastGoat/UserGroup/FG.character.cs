@@ -25,6 +25,11 @@ public static partial class FG
         return new CharacterTable2<T>(gr);
     }
 
+    public static CharacterTable2<T> CharactersTable2Slow<T>(ConcreteGroup<T> gr, int nbGens = 2) where T : struct, IElt<T>
+    {
+        return new CharacterTable2<T>(gr, nbGens);
+    }
+
     public static CharacterTable<T> CharactersTable<T>(ConcreteGroup<T> gr) where T : struct, IElt<T>
     {
         return new CharacterTable<T>(gr);
@@ -99,7 +104,7 @@ public static partial class FG
                     sum += chi[yigy]!.Value;
             }
 
-            map[g] = (sum / oH).Simplify();
+            map[g] = (sum / oH);
         }
         
         return new(clG, map);
