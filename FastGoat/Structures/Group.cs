@@ -235,12 +235,14 @@ public static partial class Group
 
     public static ConcreteGroup<T> Generate<T>(IGroup<T> g, params T[] generators) where T : struct, IElt<T>
     {
+        generators = generators.Length == 0 ? g.GetGenerators().ToArray() : generators;
         return new ConcreteGroup<T>(g, generators);
     }
 
     public static ConcreteGroup<T> Generate<T>(string name, IGroup<T> g, params T[] generators)
         where T : struct, IElt<T>
     {
+        generators = generators.Length == 0 ? g.GetGenerators().ToArray() : generators;
         return new ConcreteGroup<T>(name, g, generators);
     }
 

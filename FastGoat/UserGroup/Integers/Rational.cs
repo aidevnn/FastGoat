@@ -10,6 +10,8 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
     public BigInteger Denom { get; }
     public static Rational KZero() => new(0, 1);
 
+    public static Rational KOne() => new(1, 1);
+
     public static double Abs(Rational r) => Absolute(r);
     public static bool IsValuedField => true;
     public Rational()
@@ -42,6 +44,8 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
         num = Num;
         denom = Denom;
     }
+
+    public double Abs() => Abs(this);
 
     public bool Equals(Rational other) => Hash == other.Hash;
 
@@ -81,6 +85,7 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
     }
 
     public Rational Inv() => new(Denom, Num);
+    public bool IsInteger() => Denom.IsOne;
     public static implicit operator double(Rational e) => (double)e.Num / (double)e.Denom;
 
     public override int GetHashCode() => Hash;

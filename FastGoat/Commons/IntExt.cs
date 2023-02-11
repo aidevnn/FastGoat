@@ -23,20 +23,11 @@ namespace FastGoat.Commons
                     .OrderBy(a => a, comp).ToArray();
             }
 
-            AllCombinations = new Dictionary<int, bool[][]>
-            {
-                [0] = new[] { Array.Empty<bool>() }
-            };
-            for (int k = 1; k <= NbCombinations; ++k)
-            {
-                AllCombinations[k] = Enumerable.Range(0, 2)
-                    .SelectMany(c =>
-                        AllCombinations[k - 1].Select(l => l.Prepend(c == 1).ToArray()))
-                    .ToArray();
-            }
-
             SolveSquareInt = SquareSums();
+            Rng = new();
         }
+        
+        public static Random Rng { get; }
         
         public static Dictionary<int, Dictionary<int, int[][]>> SolveSquareInt { get; }
 
@@ -197,9 +188,7 @@ namespace FastGoat.Commons
         }
 
         public const int NbPermutations = 8;
-        public const int NbCombinations = 12;
         private static Dictionary<int, int[][]> AllPermutations { get; }
-        private static Dictionary<int, bool[][]> AllCombinations { get; }
 
         public static IEnumerable<IEnumerable<int>> YieldAllPermutations(int n)
         {
@@ -211,6 +200,32 @@ namespace FastGoat.Commons
                         yield return perm.InsertAt(i, n);
         }
 
+        public static IEnumerable<IEnumerable<bool>> YieldCombsKinN(int k, int n)
+        {
+            if (k == 0)
+                yield return Enumerable.Repeat(false, n);
+            else if (k == n)
+                yield return Enumerable.Repeat(true, n);
+            else
+            {
+                foreach (var list in YieldCombsKinN(k, n - 1))
+                    yield return list.Prepend(false);
+
+                foreach (var list in YieldCombsKinN(k - 1, n - 1))
+                    yield return list.Prepend(true);
+            }
+        }
+
+        public static IEnumerable<IEnumerable<bool>> YieldAllCombs(int n)
+        {
+            for (int k = 0; k <= n; k++)
+            {
+                foreach (var list in YieldCombsKinN(k, n))
+                {
+                    yield return list;
+                }
+            }
+        }
         public static IEnumerable<IEnumerable<bool>> YieldAllCombinations(int n)
         {
             return new[] { false, true }.MultiLoop(n);
@@ -419,16 +434,6 @@ namespace FastGoat.Commons
         public static int[] GetPermutation(int n, int k)
         {
             return AllPermutations[n][k];
-        }
-
-        public static bool[][] GetCombinations(int n)
-        {
-            return AllCombinations[n];
-        }
-
-        public static bool[] GetCombination(int n, int k)
-        {
-            return AllCombinations[n][k];
         }
 
         public static int GenHash(int n, int[] m)

@@ -62,7 +62,7 @@ public static partial class Ring
         return (y0, x0.Add(q.Mul(y0).Opp()));
     }
 
-    public static Monom<Xi> Xi(char c, int n = 1) => new Monom<Xi>(new Xi(c), n);
+    public static Monom<Xi> Xi(string c, int n = 1) => new Monom<Xi>(new Xi(c), n);
 
     public static Indeterminates<Xi> Indeterminates(params string[] xs) => new(xs.Select(s => new Xi(s)).ToArray());
 

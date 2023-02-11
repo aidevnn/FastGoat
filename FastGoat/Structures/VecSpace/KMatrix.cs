@@ -1,8 +1,9 @@
+using System.Collections;
 using FastGoat.Commons;
 
 namespace FastGoat.Structures.VecSpace;
 
-public struct KMatrix<K> : IVsElt<K, KMatrix<K>>, IElt<KMatrix<K>>, IRingElt<KMatrix<K>>, IFieldElt<KMatrix<K>>
+public struct KMatrix<K> : IVsElt<K, KMatrix<K>>, IElt<KMatrix<K>>, IRingElt<KMatrix<K>>, IFieldElt<KMatrix<K>>, IEnumerable<K>
     where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
 {
     public K[,] Coefs { get; }
@@ -87,10 +88,15 @@ public struct KMatrix<K> : IVsElt<K, KMatrix<K>>, IElt<KMatrix<K>>, IRingElt<KMa
         return new(coefs);
     }
 
-    public K[] ToArray()
+    public IEnumerator<K> GetEnumerator()
     {
         var coefs = Coefs;
-        return M.Range().Grid2D(N.Range()).Select(e => coefs[e.t1, e.t2]).ToArray();
+        return M.Range().Grid2D(N.Range()).Select(e => coefs[e.t1, e.t2]).GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
     }
 
     public int CompareTo(KMatrix<K> other)
@@ -344,7 +350,7 @@ public struct KMatrix<K> : IVsElt<K, KMatrix<K>>, IElt<KMatrix<K>>, IRingElt<KMa
         {
             for (int i0 = 0; i0 < mat.M; i0++, i++)
             {
-                for (int j = 0; j < m; j++)
+                for (int j = 0; j < n; j++)
                 {
                     mat0[i, j] = mat[i0, j];
                 }

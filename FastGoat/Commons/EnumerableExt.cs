@@ -130,14 +130,11 @@ public static class EnumerableExt
             yield return p;
     }
 
-    public static IEnumerable<IEnumerable<T>> AllCombinations<T>(this IEnumerable<T> seq)
+    public static IEnumerable<T[]> AllCombinations<T>(this IEnumerable<T> seq)
     {
         var enumerable = seq as T[] ?? seq.ToArray();
         var nb = enumerable.Count();
-        if (nb > IntExt.NbCombinations)
-            throw new Exception($"Max length is {IntExt.NbCombinations}");
-
-        return IntExt.GetCombinations(nb).Select(comb => comb.Zip(enumerable).Where(e => e.First).Select(e => e.Second));
+        return IntExt.YieldAllCombs(nb).Select(comb => comb.Zip(enumerable).Where(e => e.First).Select(e => e.Second).ToArray());
     }
 
     public static IEnumerable<IEnumerable<T>> MultiLoop<T>(this IEnumerable<IEnumerable<T>> enumerables)

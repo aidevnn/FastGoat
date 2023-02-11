@@ -69,7 +69,7 @@ public readonly struct Character<T> : IElt<Character<T>>, IRingElt<Character<T>>
         {
             var c0 = Map.ContainsKey(g);
             var c1 = other.Map.ContainsKey(g);
-            if (!c0 || !c1 ||!Map[g]!.Value.Equals(other.Map[g]!.Value))
+            if (!c0 || !c1 || !Map[g]!.Value.Equals(other.Map[g]!.Value))
                 return false;
         }
 
@@ -98,7 +98,8 @@ public readonly struct Character<T> : IElt<Character<T>>, IRingElt<Character<T>>
     public override string ToString()
     {
         var str = new List<string>();
-        foreach (var (e, c0) in Map)
+        var cl = Classes;
+        foreach (var (e, c0) in Map.OrderBy(e => cl.GetClassName(e.Key)))
         {
             var t = Classes.GetClassName(e);
             if (!c0.HasValue)
@@ -146,12 +147,12 @@ public readonly struct Character<T> : IElt<Character<T>>, IRingElt<Character<T>>
     public Character<T> Add(Character<T> e) =>
         new(Classes, Map.ToDictionary(k => k.Key, k => (Cnf?)(k.Value!.Value + e[k.Key]!.Value)));
 
-    public Character<T> Sub(Character<T> e) => 
+    public Character<T> Sub(Character<T> e) =>
         new(Classes, Map.ToDictionary(k => k.Key, k => (Cnf?)(k.Value!.Value - e[k.Key]!.Value)));
 
     public Character<T> Opp() => new(Classes, Map.ToDictionary(k => k.Key, k => (Cnf?)-k.Value!.Value));
 
-    public Character<T> Mul(Character<T> e) => 
+    public Character<T> Mul(Character<T> e) =>
         new(Classes, Map.ToDictionary(k => k.Key, k => (Cnf?)(k.Value!.Value * e[k.Key]!.Value)));
 
     public (Character<T> quo, Character<T> rem) Div(Character<T> e)

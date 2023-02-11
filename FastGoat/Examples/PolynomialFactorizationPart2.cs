@@ -99,7 +99,7 @@ public static class PolynomialFactorizationPart2
             all = tmp.ToList();
         }
 
-        var xp = FG.KPoly(f.x, ZnBInt.KZero(p.Pow(o0)));
+        var xp = FG.KPoly(f.x, new ZnBInt(new Modulus(p, o0), 0));
         var F = new KPoly<Rational>(f.x, f.KZero, f.Coefs);
 
         var listIrr = new List<KPoly<Rational>>();

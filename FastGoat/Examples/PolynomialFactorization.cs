@@ -339,7 +339,7 @@ public static class PolynomialFactorization
         }
     }
 
-    static List<(KPoly<K> g, int q, int m)> FirrFsep<K>(KPoly<K> f, K a0)
+    public static List<(KPoly<K> g, int q, int m)> FirrFsep<K>(KPoly<K> f, K a0)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         List<(KPoly<K> g, int q, int m)> all = new();
@@ -374,7 +374,7 @@ public static class PolynomialFactorization
         Console.WriteLine();
     }
 
-    static Rational SquareNorm2(KMatrix<Rational> v)
+    public static Rational SquareNorm2(KMatrix<Rational> v)
     {
         if (v.M == 1)
             return (v * v.T)[0, 0];
@@ -415,7 +415,7 @@ public static class PolynomialFactorization
         return new(q + rs, 1);
     }
 
-    static KMatrix<Rational> LLL(KMatrix<Rational> v)
+    public static KMatrix<Rational> LLL(KMatrix<Rational> v)
     {
         var n = v.N;
         var w = v.Cols;

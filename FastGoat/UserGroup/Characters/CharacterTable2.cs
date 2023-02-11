@@ -61,9 +61,10 @@ public class CharacterTable2<T> where T : struct, IElt<T>
 
         NbGens = nbGens;
         var subGr = new HashSet<ConcreteGroup<T>>(new IsomorphEquality<T>());
+
         foreach (var elts in Classes.AllCombinations().Where(l => !l.Contains(Gr.Neutral()) && l.Count() <= NbGens))
         {
-            var ge = Group.Generate($"[{Gr.ShortName}]SubGr", Gr, elts.ToArray());
+            var ge = Group.Generate($"[{Gr.ShortName}]SubGr", Gr, elts);
             subGr.Add(ge);
         }
 
@@ -247,6 +248,7 @@ public class CharacterTable2<T> where T : struct, IElt<T>
                 return (todoChis.Count > 1 ? AddCharacterState.Done : AddCharacterState.TableFull, chi2);
             }
 
+            // Console.WriteLine($"{Gr.ShortName} Orthogonal Not Irreductible Xi = {chi1} => {chi2}");
             return (AddCharacterState.NotIrr, chi2);
         }
 

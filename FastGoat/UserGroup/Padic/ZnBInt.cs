@@ -1,6 +1,7 @@
 using System.Numerics;
 using FastGoat.Commons;
 using FastGoat.Structures;
+using FastGoat.UserGroup.Integers;
 
 namespace FastGoat.UserGroup.Padic;
 
@@ -112,6 +113,7 @@ public struct ZnBInt : IElt<ZnBInt>, IRingElt<ZnBInt>, IFieldElt<ZnBInt>
         return new(Details, x / gcd);
     }
 
+    public int Sgn => K * 2 <= Mod ? 1 : -1;
     public BigInteger ToSignedBigInt => K * 2 <= Mod ? K : K - Mod;
 
     public string ToSignedBigIntString()
@@ -138,7 +140,7 @@ public struct ZnBInt : IElt<ZnBInt>, IRingElt<ZnBInt>, IFieldElt<ZnBInt>
 
     public string PadicNumericString()
     {
-        var pstr = Ring.Xi('p', Details.O).ToString().Replace("p", $"{P}");
+        var pstr = Ring.Xi($"{P}", Details.O).ToString();
         var s = "";
 
         if (IsZero())
@@ -157,6 +159,20 @@ public struct ZnBInt : IElt<ZnBInt>, IRingElt<ZnBInt>, IFieldElt<ZnBInt>
         return $"[{s}({pstr})]";
     }
 
+    public string LandauString()
+    {
+        var r1 = Rational.KOne();
+        var xp = Ring.Polynomial($"{P}", r1);
+        var pstr = $"O({xp.Pow(Details.O)})";
+        var sgn = Sgn;
+        var p = P;
+        var seq = sgn == 1 ? PadicSequence().ToArray() : Opp().PadicSequence().ToArray();
+        var sum = PadicSequence().Select((e, i) => (e, i))
+            .Where(e => e.e != 0).Select(e => e.i == 0 ? $"{e.e}" : $"{e.e}·{xp.Pow(e.i)}").Append(pstr).ToArray();
+
+        return sum.Glue(" + ");
+    }
+
     public static IEnumerable<ZnBInt> Generate(int mod, int o = 1)
     {
         for (int k = 0; k < mod.Pow(o); ++k)
@@ -165,19 +181,28 @@ public struct ZnBInt : IElt<ZnBInt>, IRingElt<ZnBInt>, IFieldElt<ZnBInt>
 
     public static (ZnBInt trunc, ZnBInt rem) Truncate(ZnBInt z, Modulus details)
     {
+        if (details.O < 1)
+            throw new($"tau:{details} sigma:{z.Details}");
+
+        if (details.O > z.Details.O)
+            return (KZero(z.P), new(details, z.K));
+
         var k0 = z.K % details.Mod;
+        var mod1 = new Modulus(z.P, z.Details.O - details.O);
         if (k0 * 2 > details.Mod)
         {
             var r = k0 - details.Mod;
             var a = (z.K - r) / details.Mod;
-            return (new ZnBInt(z.Details, a), new ZnBInt(z.Details, r));
+            return (new ZnBInt(mod1, a), new ZnBInt(details, r));
         }
         else
         {
             var a = (z.K - k0) / details.Mod;
-            return (new ZnBInt(z.Details, a), new ZnBInt(z.Details, k0));
+            return (new ZnBInt(mod1, a), new ZnBInt(details, k0));
         }
     }
+
+    public static (ZnBInt trunc, ZnBInt rem) Truncate(ZnBInt z, int tau) => Truncate(z, new Modulus(z.P, tau));
 
     public static (BigInteger x, BigInteger y) BezoutBigInteger(BigInteger a, BigInteger b)
     {
