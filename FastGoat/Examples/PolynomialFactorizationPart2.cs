@@ -36,7 +36,7 @@ public static class PolynomialFactorizationPart2
 
         if (details)
             Console.WriteLine($"nu={nu} prime first = {primes.First()} all = {all.Length}");
-        
+
         foreach (var (p, s) in all)
         {
             yield return (p, s);
@@ -63,12 +63,10 @@ public static class PolynomialFactorizationPart2
     static KPoly<ZnBInt> ZPoly2ZnInt(KPoly<ZnBInt> f, Modulus po) =>
         new(f.x, po.Zero, f.Coefs.Select(e => new ZnBInt(po, e.K)).ToArray());
 
-    static KPoly<Rational>[] HenselLifting(KPoly<Rational> f, int p, int o, bool details = false)
+    static (KPoly<ZnBInt> f0, KPoly<ZnBInt>[] firr0, KPoly<ZnBInt>[] firr) HenselLifting(KPoly<Rational> f, int p, int o)
     {
         if (!f.Coefs.Last().Equals(f.KOne) || f.Coefs.Any(c => !c.Denom.IsOne))
             throw new ArgumentException();
-
-        var nu = Nu(f);
 
         var ai0 = (new Un(p)).GetGenerators().First()[new(p, 1)];
         var a0 = ZnBInt.KZero(p) + ai0.K;
@@ -91,7 +89,7 @@ public static class PolynomialFactorizationPart2
                 var dgi = new EPoly<ZnBInt>(gi, gi.Derivative);
                 var fi = new EPoly<ZnBInt>(gi, fa.Div(gi).rem);
                 var dfi = new EPoly<ZnBInt>(gi, fa.Derivative.Div(gi).rem);
-                var ri = (dgi * fi / dfi).Poly;
+                var ri = ((dgi * fi) / dfi).Poly;
                 tmp.Add(gi + ri);
             }
 
@@ -99,11 +97,20 @@ public static class PolynomialFactorizationPart2
             all = tmp.ToList();
         }
 
+        return (f0, firr0, all.ToArray());
+    }
+
+    static KPoly<Rational>[] HenselLiftingNaive(KPoly<Rational> f, int p, int o, bool details = false)
+    {
+        if (!f.Coefs.Last().Equals(f.KOne) || f.Coefs.Any(c => !c.Denom.IsOne))
+            throw new ArgumentException();
+
+        var (f0, firr0, allS) = HenselLifting(f, p, o);
+        var o0 = allS.Max(pl => pl.KZero.Details.O);
         var xp = FG.KPoly(f.x, new ZnBInt(new Modulus(p, o0), 0));
         var F = new KPoly<Rational>(f.x, f.KZero, f.Coefs);
 
         var listIrr = new List<KPoly<Rational>>();
-        var allS = all.ToArray();
         var sz = 0;
         while (allS.Length != sz)
         {
@@ -137,11 +144,12 @@ public static class PolynomialFactorizationPart2
         {
             throw new Exception();
         }
-        
+
         var listIrr0 = listIrr.OrderBy(q => new KPoly<Rational>(q.x, q.KZero, q.Coefs.Select(Rational.Absolute).ToArray())).ToArray();
         if (details)
         {
-            Console.WriteLine($"Prime P = {p}; Sigma = {o}; P^o={BigInteger.Pow(p, o)} 2*Nu={2*nu,0:0.00}");
+            var nu = Nu(f);
+            Console.WriteLine($"Prime P = {p}; Sigma = {o}; P^o={BigInteger.Pow(p, o)} 2*Nu={2 * nu,0:0.00}");
             Console.WriteLine($"f = {f0} mod {p}");
             Console.WriteLine("Fact(f) = {0} mod {1}", firr0.Order().Glue("*", "({0})"), p);
             Console.WriteLine("Fact(f) = {0} in Z[X]", listIrr0.Glue("*", "({0})"));
@@ -149,6 +157,115 @@ public static class PolynomialFactorizationPart2
         }
 
         return listIrr0;
+    }
+
+
+    static KMatrix<Rational> Lattice(KPoly<Rational> F, KPoly<ZnBInt>[] irrs, int n, int p, int sigma, int tau)
+    {
+        var s = irrs.Length;
+        var m = n + s;
+        var mat = new KMatrix<Rational>(Rational.KZero(), m, m);
+
+        var Fp = QPoly2ZnInt(F, new(p, sigma));
+        for (int i = 0; i < s; i++)
+            mat.Coefs[i, i] = Rational.KOne();
+
+        for (int i = 0; i < n; i++)
+            mat.Coefs[i + s, i + s] = new Rational(p).Pow(sigma - tau);
+
+        for (int i = 0; i < s; i++)
+        {
+            var fi = irrs[i];
+            var gi = (Fp * fi.Derivative) / fi;
+            // Console.WriteLine((Fp * fi.Derivative).Div(fi).rem);
+            for (int j = 0; j < n; j++)
+            {
+                var z = ZnBInt.Truncate(gi[j], tau);
+                mat.Coefs[i, j + s] = new Rational(z.trunc.ToSignedBigInt);
+            }
+        }
+
+        return PolynomialFactorization.LLL(mat.T);
+    }
+
+    static void VanHoeijFactorization(KPoly<Rational> f)
+    {
+        var discQ = Ring.Discriminant(f).Num;
+        Console.WriteLine($"f = {f}");
+        var discDecomp = IntExt.PrimesDec(discQ);
+        Console.WriteLine($"Disc(f) = {discQ} ~ {discDecomp.AscendingByKey().GlueMap(" * ", "{0}^{1}")}");
+        
+        foreach (var p in IntExt.Primes10000.Where(p => !BigInteger.Remainder(discQ, p).IsZero))
+        {
+            try
+            {
+                SearchVanHoeij(f, p);
+                break;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"#### Prime {p} wont work ####");
+            }
+        }
+    }
+
+    static void SearchVanHoeij(KPoly<Rational> P, int p)
+    {
+        var n = P.Degree;
+        var x = FG.ZPoly(p);
+        var P0 = P.Coefs.Select((e, i) => (int)BigInteger.Remainder(e.Num, p) * x.Pow(i)).Aggregate(x.Zero, (sum, xi) => sum + xi);
+        var p0 = Un.FirstGen(p);
+        var irrs = PolynomialFactorization.FirrFsep(P0, p0);
+        var s = irrs.Count;
+        var m = s + n;
+        var nu = Double.Sqrt(s + n * Double.Pow(s / 2.0, 2));
+
+        var norm2 = Double.Sqrt(P.Coefs.Sum(f => Double.Pow(f.Abs(), 2)));
+        var boundTau = n * Double.Pow(2, n) * norm2;
+        var tau = (int)(Double.Log(boundTau) / Double.Log(p)) + 1;
+        var pPowTau = Double.Pow(p, tau);
+        var sqrtN = Double.Sqrt(n);
+        var theta = sqrtN * ((1 + sqrtN / 2.0) * Double.Pow(2, (m - 1) / 2.0) * (1 + nu) * nu + 0.5) * pPowTau;
+        var boundSigma = 2 * Double.Pow(theta, n) * Double.Pow(norm2, n - 1);
+        var sigma = (int)(Double.Log(boundSigma) / Double.Log(p)) + 1;
+        var nb = Int32.Min(sigma / tau, 5);
+        Console.WriteLine($"SearchVanHoeij P = {P} Tau = {tau} Theta = {theta} BoundSigma = {boundSigma} MaxSigma = {sigma} => Nb = {nb}");
+        for (int i = 2; i <= nb; i++)
+        {
+            var sigma2 = tau * i;
+            try
+            {
+                var (f0, firr0, irrs2) = HenselLifting(P, p, sigma2);
+                var lll = Lattice(P, irrs2, n, p, sigma2, tau);
+                var cols = lll.Cols;
+                var rgM = m.Range();
+                var rgS = s.Range();
+                var t = rgM.Where(i0 => rgM.Where(j => j > i0).All(j => Double.Sqrt(PolynomialFactorization.SquareNorm2(cols[j])) > nu))
+                    .Min();
+
+                var bs = (t + 1).Range().Select(i => cols[i].T.Extract(0, 1, 0, s)).ToArray();
+                var coefs = bs.Select(mat => mat.Select(r => (int)r.Num).ToArray()).ToArray();
+                var one0 = irrs2[0].One;
+                var polys = coefs.Select(l => rgS.Aggregate(one0, (prod, i0) => prod * irrs2[i0].Pow(l[i0])))
+                    .Select(ZPoly2QPoly).ToArray();
+
+                var one1 = polys[0].One;
+                Console.WriteLine($"Prime P = {p}; Tau = {tau}; Theta = {theta} Sigma = {sigma2}; Nu = {nu}");
+                Console.WriteLine($"f = {f0} mod {p}");
+                Console.WriteLine("Fact(f) = {0} mod {1}", firr0.Glue("*", "({0})"), p);
+                bs.Println("LLL Combinaisons");
+                Console.WriteLine("Fact(f) = {0} in Z[X]", polys.Glue("*", "({0})"));
+                Console.WriteLine($"f = Prod[Fact(f)] : {P.Equals(polys.Aggregate(one1, (prod, e) => prod * e))}");
+                Console.WriteLine();
+                return;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"#### Prime {p} Sigma {sigma2} = {i}*tau wont work ####");
+            }
+        }
+
+        throw new();
     }
 
     public static KPoly<Rational>[] FirrQ(KPoly<Rational> f, bool details = false)
@@ -179,7 +296,7 @@ public static class PolynomialFactorizationPart2
             var firr0 = firr.Select(g => g.Substitute(g.X * c).Monic).ToArray();
             var m = m0 * ct.Inv() * c.Pow(f1.Degree - 1).Inv() *
                     firr.Select(g => g.Substitute(g.X * c)[g.Degree]).Aggregate(new Rational(1), (acc, a) => a * acc);
-            if(details)
+            if (details)
             {
                 Console.WriteLine("Finalize");
                 if (!m.Equals(m.One))
@@ -205,10 +322,10 @@ public static class PolynomialFactorizationPart2
             ? Array.Empty<int>()
             : ai.Select(a => IntExt.PrimesDecompositionBigInt(BigInteger.Abs(a.Num)).Distinct())
                 .Aggregate((a, b) => a.Intersect(b)).ToArray();
-        
+
         if (details)
             Console.WriteLine($"Common Primes {pi.Glue("; ")}");
-        
+
         if (pi.Length == 0)
             return false;
         else
@@ -223,7 +340,7 @@ public static class PolynomialFactorizationPart2
                         Console.WriteLine($"Fact(f) = {f}");
                         Console.WriteLine();
                     }
-                    
+
                     return true;
                 }
             }
@@ -246,12 +363,12 @@ public static class PolynomialFactorizationPart2
         {
             return new[] { f };
         }
-        
+
         foreach (var (p, o) in PSigma(f))
         {
             try
             {
-                return HenselLifting(f, p, o, details);
+                return HenselLiftingNaive(f, p, o, details);
             }
             catch (Exception)
             {
@@ -272,22 +389,22 @@ public static class PolynomialFactorizationPart2
         var X = FG.QPoly('X');
 
         // AECF example 21.2, page 387
-        FirrZ(X.Pow(4) - 1);
-        FirrZ(X.Pow(15) - 1);
-        FirrZ(X.Pow(11) - 1);
-        FirrZ(X.Pow(8) - 40 * X.Pow(6) + 352 * X.Pow(4) - 960 * X.Pow(2) + 576);
-        FirrZ(X.Pow(12) - 50 * X.Pow(10) + 753 * X.Pow(8) - 4520 * X.Pow(6) + 10528 * X.Pow(4) - 6720 * X.Pow(2) + 576);
+        FirrZ(X.Pow(4) - 1, details: true);
+        FirrZ(X.Pow(15) - 1, details: true);
+        FirrZ(X.Pow(11) - 1, details: true);
+        FirrZ(X.Pow(8) - 40 * X.Pow(6) + 352 * X.Pow(4) - 960 * X.Pow(2) + 576, details: true);
+        FirrZ(X.Pow(12) - 50 * X.Pow(10) + 753 * X.Pow(8) - 4520 * X.Pow(6) + 10528 * X.Pow(4) - 6720 * X.Pow(2) + 576, details: true);
 
-        FirrZ((X + 3) * (X - 5) * (X + 11) * (X - 17));
-        FirrZ(X.Pow(6) + 2 * X.Pow(4) - 1);
-        FirrZ((X.Pow(3) + 3 * X.Pow(2) + -2) * (X.Pow(3) + -3 * X.Pow(2) + 2));
-        FirrZ((X.Pow(3) + 3 * X.Pow(2) + -2) * (X.Pow(3) + -5 * X.Pow(2) + 2 * X + -4));
+        FirrZ((X + 3) * (X - 5) * (X + 11) * (X - 17), details: true);
+        FirrZ(X.Pow(6) + 2 * X.Pow(4) - 1, details: true);
+        FirrZ((X.Pow(3) + 3 * X.Pow(2) + -2) * (X.Pow(3) + -3 * X.Pow(2) + 2), details: true);
+        FirrZ((X.Pow(3) + 3 * X.Pow(2) + -2) * (X.Pow(3) + -5 * X.Pow(2) + 2 * X + -4), details: true);
 
-        FirrZ(X.Pow(6) + 5 * X.Pow(5) + 3 * X.Pow(4) + -7 * X.Pow(3) + -3 * X.Pow(2) + 7 * X + -2);
+        FirrZ(X.Pow(6) + 5 * X.Pow(5) + 3 * X.Pow(4) + -7 * X.Pow(3) + -3 * X.Pow(2) + 7 * X + -2, details: true);
 
-        // FirrZ(X.Pow(12) + 5 * X.Pow(11) + -202 * X.Pow(10) + -155 * X.Pow(9) + 11626 * X.Pow(8) + -37275 * X.Pow(7)
-        //       + -33479 * X.Pow(6) + 547100 * X.Pow(5) + -560012 * X.Pow(4) + -616520 * X.Pow(3) + 351876 * X.Pow(2)
-        //       + 146520 * X + -56160); // Bug
+        FirrZ(X.Pow(12) + 5 * X.Pow(11) + -202 * X.Pow(10) + -155 * X.Pow(9) + 11626 * X.Pow(8) + -37275 * X.Pow(7)
+              + -33479 * X.Pow(6) + 547100 * X.Pow(5) + -560012 * X.Pow(4) + -616520 * X.Pow(3) + 351876 * X.Pow(2)
+              + 146520 * X + -56160, details: true);
 
         Console.WriteLine("Random Z[X] Polynomials");
         Console.WriteLine();
@@ -326,6 +443,101 @@ public static class PolynomialFactorizationPart2
                 Fact(f) = (X + 2)*(X + 3)*(X^2 + 3*X + 6)*(X^2 + -2*X + -4)*(X^4 + 3*X^3 + 2*X^2 + -5*X + -4) mod 13
                 Fact(f) = (X^2 + 3*X + 6)*(X^2 + 5*X + -7)*(X^6 + X^5 + 5*X^4 + -8*X^3 + -2*X^2 + 2*X + 3) in Z[X]
 
+             */
+        }
+    }
+
+    public static void IrreductibleFactorizationLLL()
+    {
+        Console.WriteLine();
+        Console.WriteLine("Irreductible Factorization in Z[X]");
+        Console.WriteLine();
+        Monom.Display = MonomDisplay.StarCaret;
+        var X = FG.QPoly('X');
+
+        VanHoeijFactorization(X.Pow(4) - 1);
+        VanHoeijFactorization(X.Pow(15) - 1);
+        VanHoeijFactorization(X.Pow(11) - 1);
+        VanHoeijFactorization(X.Pow(8) - 40 * X.Pow(6) + 352 * X.Pow(4) - 960 * X.Pow(2) + 576);
+        VanHoeijFactorization(X.Pow(12) - 50 * X.Pow(10) + 753 * X.Pow(8) - 4520 * X.Pow(6) + 10528 * X.Pow(4) - 6720 * X.Pow(2) +
+                              576);
+
+        VanHoeijFactorization((X + 3) * (X - 5) * (X + 11) * (X - 17));
+        VanHoeijFactorization(X.Pow(6) + 2 * X.Pow(4) - 1);
+        VanHoeijFactorization((X.Pow(3) + 3 * X.Pow(2) + -2) * (X.Pow(3) + -3 * X.Pow(2) + 2));
+        VanHoeijFactorization((X.Pow(3) + 3 * X.Pow(2) + -2) * (X.Pow(3) + -5 * X.Pow(2) + 2 * X + -4));
+
+        VanHoeijFactorization(X.Pow(6) + 5 * X.Pow(5) + 3 * X.Pow(4) + -7 * X.Pow(3) + -3 * X.Pow(2) + 7 * X + -2);
+
+        VanHoeijFactorization(X.Pow(12) + 5 * X.Pow(11) + -202 * X.Pow(10) + -155 * X.Pow(9) + 11626 * X.Pow(8) + -37275 * X.Pow(7)
+                              + -33479 * X.Pow(6) + 547100 * X.Pow(5) + -560012 * X.Pow(4) + -616520 * X.Pow(3) + 351876 * X.Pow(2)
+                              + 146520 * X + -56160);
+
+        Console.WriteLine("Random Z[X] Polynomials");
+        Console.WriteLine();
+        for (int j = 0; j < 20; j++)
+        {
+            var amp = PolynomialFactorization.rnd.Next(2, 20);
+            var n = 2 + PolynomialFactorization.rnd.Next(11);
+            var degrees = IntExt.Partitions32[n].Where(l => l.All(i => i != 1) && l.Count > 1)
+                .OrderBy(i => PolynomialFactorization.rnd.NextDouble())
+                .FirstOrDefault(new int[] { 2, 3, 4 }.ToList())
+                .ToArray();
+            var f0 = degrees.Select(ni => PolynomialFactorization.RandPolySep(Rational.KZero(), amp, ni))
+                .Aggregate((a, b) => a * b);
+            var f = new KPoly<Rational>('X', f0.KZero, f0.Coefs);
+            if (Ring.Discriminant(f).IsZero()) // Separable polynomial
+                continue;
+
+            VanHoeijFactorization(f);
+
+            /***
+             *  Examples of outputs
+             *
+                f = X^6 + -10*X^5 + 28*X^4 + -20*X^3 + -65*X^2 + 50*X + 16
+                Disc(f) = -1553297679360000 ~ -1^1 * 2^13 * 3^7 * 5^4 * 7^2 * 19^1 * 149^1
+                Prime P = 11; Tau = 5; Theta = 661328432.0240374 Sigma = 10; Nu = 5.291502622129181
+                f = X^6 + X^5 +  6*X^4 +  2*X^3 + X^2 +  6*X +  5 mod 11
+                Fact(f) = (X^2 +  3*X +  6)*(X^2 +  6*X +  3)*(X +  4)*(X + 10) mod 11
+                LLL Combinaisons
+                    [0, 1, 0, 0]
+                    [1, 0, 1, 0]
+                    [0, 0, 0, 1]
+                Fact(f) = (X^2 + -5*X + -8)*(X^3 + -4*X^2 + 7*X + 2)*(X + -1) in Z[X]
+                f = Fact(f) : True
+
+                f = X^9 + -16*X^8 + 68*X^7 + -38*X^6 + 68*X^5 + -404*X^4 + 1297*X^3 + -1372*X^2 + -1704*X + 1560
+                Disc(f) = 171242376893905022721623419223750303809536 ~ 2^22 * 3^6 * 7^6 * 11^1 * 19^1 * 23^2 * 29^1 * 37^2 * 43^2 * 67^2 * 151^2 * 757^2
+                Prime P = 5; Tau = 11; Theta = 8490538852469.95 Sigma = 22; Nu = 10.828203913853857
+                f = X^9 + 4*X^8 + 3*X^7 + 2*X^6 + 3*X^5 + X^4 + 2*X^3 + 3*X^2 + X mod 5
+                Fact(f) = (X + 2)*(X^2 + 3*X + 4)*(X + 4)*(X^2 + X + 1)*(X + 3)*(X + 1)*(X) mod 5
+                LLL Combinaisons
+                    [0, 1, 0, 0, 0, 0, 0]
+                    [1, 0, 1, 0, 0, 0, 0]
+                    [0, 0, 0, 1, 0, 0, 0]
+                    [0, 0, 0, 0, 0, 1, 0]
+                    [0, 0, 0, 0, 1, 0, 1]
+                Fact(f) = (X^2 + -2*X + 4)*(X^2 + -9*X + 13)*(X^2 + -9*X + 6)*(X + 1)*(X^2 + 3*X + 5) in Z[X]
+                f = Fact(f) : True
+
+                f = X^11 + -17*X^10 + -16*X^9 + 767*X^8 + -1560*X^7 + 1397*X^6 + -491*X^5 + -2910*X^4 + 2799*X^3 + -1911*X^2 + -1685*X + -182
+                Disc(f) = 72570018092906449167601721141392286400505133081053425861717760 ~ 2^8 * 5^1 * 7^1 * 11^3 * 23^2 * 113^2 * 139^2 * 173^2 * 233^1 * 2833^2 * 3449^1
+                SearchVanHoeij P = X^11 + -17*X^10 + -16*X^9 + 767*X^8 + -1560*X^7 + 1397*X^6 + -491*X^5 + -2910*X^4 + 2799*X^3 + -1911*X^2 + -1685*X + -182 Tau = 17 Theta = 3402784769104.1543 BoundSigma = 2.4561005912838476E+175 MaxSigma = 368 => Nb = 5
+                #### Prime 3 Sigma 34 = 2*tau wont work ####
+                #### Prime 3 Sigma 51 = 3*tau wont work ####
+                #### Prime 3 Sigma 68 = 4*tau wont work ####
+                #### Prime 3 Sigma 85 = 5*tau wont work ####
+                #### Prime 3 wont work ####
+                SearchVanHoeij P = X^11 + -17*X^10 + -16*X^9 + 767*X^8 + -1560*X^7 + 1397*X^6 + -491*X^5 + -2910*X^4 + 2799*X^3 + -1911*X^2 + -1685*X + -182 Tau = 8 Theta = 212188261668464.22 BoundSigma = 1.3614502344021254E+195 MaxSigma = 176 => Nb = 5
+                Prime P = 13; Tau = 8; Theta = 212188261668464.22 Sigma = 16; Nu = 10.246950765959598
+                f = X^11 +  9*X^10 + 10*X^9 +  6*X^6 +  3*X^5 +  2*X^4 +  4*X^3 +  5*X mod 13
+                Fact(f) = (X^6 +  9*X^5 +  5*X^4 +  7*X^3 + 10*X^2 + 11)*(X +  5)*(X + 10)*(X +  8)*(X +  3)*(X) mod 13
+                LLL Combinaisons
+                    [1, 0, 1, 0, 0, 0]
+                    [0, 0, 0, 1, 1, 0]
+                    [0, 1, 0, 0, 0, 1]
+                Fact(f) = (X^7 + -7*X^6 + 4*X^5 + -8*X^4 + -11*X^3 + 9*X^2 + -15*X + -7)*(X^2 + -15*X + -2)*(X^2 + 5*X + -13) in Z[X]
+                f = Fact(f) : True
 
              */
         }
