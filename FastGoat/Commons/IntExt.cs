@@ -26,9 +26,9 @@ namespace FastGoat.Commons
             SolveSquareInt = SquareSums();
             Rng = new();
         }
-        
+
         public static Random Rng { get; }
-        
+
         public static Dictionary<int, Dictionary<int, int[][]>> SolveSquareInt { get; }
 
         // Primes Sequence
@@ -101,7 +101,7 @@ namespace FastGoat.Commons
             var prod = dec.Aggregate(BigInteger.One, (acc, a) => acc * a);
             // if (prod != BigInteger.Abs(n))
             //     throw new Exception($"Primes10000 decomposition incomplete n/p={BigInteger.Abs(n) / prod} n={n}");
-            
+
             var dico = dec.GroupBy(e => e).ToDictionary(e => e.Key, e => e.Count());
             if (n < 0)
                 dico[-1] = 1;
@@ -180,10 +180,9 @@ namespace FastGoat.Commons
                     e => e.Key,
                     e => e.OrderBy(f => f.sum).GroupBy(f => f.sum).ToDictionary(
                         f => f.Key,
-                        f => f.Select(g => g.l.ToArray()).
-                            OrderBy(l => l, Comparer<int[]>.Create((la, lb) => la.SequenceCompareTo(lb)))
+                        f => f.Select(g => g.l.ToArray()).OrderBy(l => l, Comparer<int[]>.Create((la, lb) => la.SequenceCompareTo(lb)))
                             .ToArray()));
-            
+
             return squareSums;
         }
 
@@ -209,10 +208,10 @@ namespace FastGoat.Commons
             else
             {
                 foreach (var list in YieldCombsKinN(k, n - 1))
-                    yield return list.Prepend(false);
+                    yield return list.InsertAt(n - 1, false);
 
                 foreach (var list in YieldCombsKinN(k - 1, n - 1))
-                    yield return list.Prepend(true);
+                    yield return list.InsertAt(n - 1, true);
             }
         }
 
@@ -226,6 +225,26 @@ namespace FastGoat.Commons
                 }
             }
         }
+
+        public static IEnumerable<IEnumerable<bool>> YieldAllCombsBinary(int n)
+        {
+            IEnumerable<bool> IntToBinary(int n0, int p)
+            {
+                var p0 = p;
+                for (int i = 0; i < n0; i++)
+                {
+                    yield return (p0 & 1) == 1;
+                    p0 >>= 1;
+                }
+            }
+            
+            var mx = 1 << n;
+            for (int i = 0; i < mx; i++)
+            {
+                yield return IntToBinary(n, i);
+            }
+        }
+
         public static IEnumerable<IEnumerable<bool>> YieldAllCombinations(int n)
         {
             return new[] { false, true }.MultiLoop(n);
