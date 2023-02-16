@@ -19,23 +19,11 @@ public static class PolynomialFactorizationPart2
 
     static IEnumerable<(int p, int s)> PSigma(KPoly<Rational> f, bool details = false)
     {
-        var discPrimes = IntExt.PrimesDecompositionBigInt(BigInteger.Abs(Ring.Discriminant(f).Num))
-            .Distinct().ToArray();
-
-        if (details)
-            Console.WriteLine($"discPrimes = {discPrimes.Glue("; ")}");
-        var primes = IntExt.Primes10000.Except(discPrimes).ToArray();
+        var disc = Ring.Discriminant(f).Num;
         var nu = Nu(f);
-
-        var deg = f.Degree + 3;
-        var rg = deg.Range(1).ToArray();
-
-        var all = primes.Take(50).Select(p => (p, s: (int)(Double.Log(2 * nu) / Double.Log(p)) + 1))
-            .OrderByDescending(e => e.s)
-            .ToArray();
-
-        if (details)
-            Console.WriteLine($"nu={nu} prime first = {primes.First()} all = {all.Length}");
+        var all = IntExt.Primes10000.Where(p => !BigInteger.Remainder(disc, p).IsZero).Take(50)
+            .Select(p => (p, s: (int)(Double.Log(2 * nu) / Double.Log(p)) + 1))
+            .OrderByDescending(e => e.s).ToArray();
 
         foreach (var (p, s) in all)
         {
@@ -188,7 +176,7 @@ public static class PolynomialFactorizationPart2
         return PolynomialFactorization.LLL(mat.T);
     }
 
-    static void VanHoeijFactorization(KPoly<Rational> f)
+    static void VanHoeijFactorization(KPoly<Rational> f, int max = 2)
     {
         var discQ = Ring.Discriminant(f).Num;
         Console.WriteLine($"f = {f}");
@@ -199,7 +187,7 @@ public static class PolynomialFactorizationPart2
         {
             try
             {
-                SearchVanHoeij(f, p);
+                SearchVanHoeij(f, p, max);
                 break;
             }
             catch (Exception e)
@@ -209,7 +197,7 @@ public static class PolynomialFactorizationPart2
         }
     }
 
-    static void SearchVanHoeij(KPoly<Rational> P, int p)
+    static void SearchVanHoeij(KPoly<Rational> P, int p, int max = 2)
     {
         var n = P.Degree;
         var x = FG.ZPoly(p);
@@ -227,9 +215,9 @@ public static class PolynomialFactorizationPart2
         var sqrtN = Double.Sqrt(n);
         var theta = sqrtN * ((1 + sqrtN / 2.0) * Double.Pow(2, (m - 1) / 2.0) * (1 + nu) * nu + 0.5) * pPowTau;
         var boundSigma = 2 * Double.Pow(theta, n) * Double.Pow(norm2, n - 1);
-        var sigma = (int)(Double.Log(boundSigma) / Double.Log(p)) + 1;
-        var nb = Int32.Min(sigma / tau, 5);
-        Console.WriteLine($"SearchVanHoeij P = {P} Tau = {tau} Theta = {theta} BoundSigma = {boundSigma} MaxSigma = {sigma} => Nb = {nb}");
+        var sigma = (int)((Double.Log(2) + n * Double.Log(theta) + (n - 1) * Double.Log(norm2)) / Double.Log(p)) + 1;
+        var nb = Int32.Min(sigma / tau, max);
+        Console.WriteLine($"Search Van-Hoeij Prime P = {p} Tau = {tau} Theta = {theta} BoundSigma = {boundSigma} MaxSigma = {sigma}; Nu = {nu}");
         for (int i = 2; i <= nb; i++)
         {
             var sigma2 = tau * i;
@@ -243,14 +231,14 @@ public static class PolynomialFactorizationPart2
                 var t = rgM.Where(i0 => rgM.Where(j => j > i0).All(j => Double.Sqrt(PolynomialFactorization.SquareNorm2(cols[j])) > nu))
                     .Min();
 
-                var bs = (t + 1).Range().Select(i => cols[i].T.Extract(0, 1, 0, s)).ToArray();
+                var bs = (t + 1).Range().Select(i0 => cols[i0].T.Extract(0, 1, 0, s)).ToArray();
                 var coefs = bs.Select(mat => mat.Select(r => (int)r.Num).ToArray()).ToArray();
                 var one0 = irrs2[0].One;
                 var polys = coefs.Select(l => rgS.Aggregate(one0, (prod, i0) => prod * irrs2[i0].Pow(l[i0])))
                     .Select(ZPoly2QPoly).ToArray();
 
                 var one1 = polys[0].One;
-                Console.WriteLine($"Prime P = {p}; Tau = {tau}; Theta = {theta} Sigma = {sigma2}; Nu = {nu}");
+                Console.WriteLine($"       Found Sigma = {sigma2} = {i}*Tau");
                 Console.WriteLine($"f = {f0} mod {p}");
                 Console.WriteLine("Fact(f) = {0} mod {1}", firr0.Glue("*", "({0})"), p);
                 bs.Println("LLL Combinaisons");
@@ -261,7 +249,7 @@ public static class PolynomialFactorizationPart2
             }
             catch (Exception e)
             {
-                Console.WriteLine($"#### Prime {p} Sigma {sigma2} = {i}*tau wont work ####");
+                Console.WriteLine($"#### Prime {p} Sigma {sigma2} = {i}*Tau wont work ####");
             }
         }
 
@@ -323,7 +311,7 @@ public static class PolynomialFactorizationPart2
             : ai.Select(a => IntExt.PrimesDecompositionBigInt(BigInteger.Abs(a.Num)).Distinct())
                 .Aggregate((a, b) => a.Intersect(b)).ToArray();
 
-        if (details)
+        if (details && pi.Length > 0)
             Console.WriteLine($"Common Primes {pi.Glue("; ")}");
 
         if (pi.Length == 0)
@@ -410,18 +398,20 @@ public static class PolynomialFactorizationPart2
         Console.WriteLine();
         for (int j = 0; j < 20; j++)
         {
-            var amp = PolynomialFactorization.rnd.Next(2, 20);
-            var n = 2 + PolynomialFactorization.rnd.Next(11);
+            var amp = PolynomialFactorization.rnd.Next(2, 9);
+            var n = 12 + PolynomialFactorization.rnd.Next(13);
             var degrees = IntExt.Partitions32[n].Where(l => l.All(i => i != 1) && l.Count > 1)
                 .OrderBy(i => PolynomialFactorization.rnd.NextDouble())
-                .FirstOrDefault(new int[] { 2, 3, 4 }.ToList())
+                .FirstOrDefault(new []{ 2, 3, 4 }.ToList())
                 .ToArray();
-            var f0 = degrees.Select(ni => PolynomialFactorization.RandPolySep(Rational.KZero(), amp, ni))
-                .Aggregate((a, b) => a * b);
+            
+            var polys = degrees.Select(ni => PolynomialFactorization.RandPolySep(Rational.KZero(), amp, ni)).ToArray();
+            var f0 = polys.Aggregate((a, b) => a * b);
             var f = new KPoly<Rational>('X', f0.KZero, f0.Coefs);
             if (Ring.Discriminant(f).IsZero()) // Separable polynomial
                 continue;
 
+            Console.WriteLine($"Random factors : [{polys.Glue(" ;  ")}]");
             FirrZ(f, details: true);
 
             /***
@@ -477,17 +467,20 @@ public static class PolynomialFactorizationPart2
         Console.WriteLine();
         for (int j = 0; j < 20; j++)
         {
-            var amp = PolynomialFactorization.rnd.Next(2, 20);
+            var amp = PolynomialFactorization.rnd.Next(2, 29);
             var n = 2 + PolynomialFactorization.rnd.Next(11);
             var degrees = IntExt.Partitions32[n].Where(l => l.All(i => i != 1) && l.Count > 1)
                 .OrderBy(i => PolynomialFactorization.rnd.NextDouble())
                 .FirstOrDefault(new int[] { 2, 3, 4 }.ToList())
                 .ToArray();
-            var f0 = degrees.Select(ni => PolynomialFactorization.RandPolySep(Rational.KZero(), amp, ni))
-                .Aggregate((a, b) => a * b);
+            
+            var polys = degrees.Select(ni => PolynomialFactorization.RandPolySep(Rational.KZero(), amp, ni)).ToArray();
+            var f0 = polys.Aggregate((a, b) => a * b);
             var f = new KPoly<Rational>('X', f0.KZero, f0.Coefs);
             if (Ring.Discriminant(f).IsZero()) // Separable polynomial
                 continue;
+
+            Console.WriteLine($"Random factors : [{polys.Glue(" ;  ")}]");
 
             VanHoeijFactorization(f);
 
