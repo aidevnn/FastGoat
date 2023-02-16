@@ -20,12 +20,6 @@ public class GFp : IGroup<EPoly<ZnInt>>
         P = e.P;
         Name = name;
 
-        var zb = ZnBInt.KZero(P);
-        var fzb = new KPoly<ZnBInt>('x', zb, e.Poly.Coefs.Select(c => c.K * zb.One).ToArray());
-        var factors = PolynomialFactorization.Firr(fzb, Un.FirstGenZb(P));
-        if (factors.Count() != 1)
-            throw new GroupException(GroupExceptionType.GroupDef);
-
         F = e.F;
         X = e.X;
         M = F.Degree;

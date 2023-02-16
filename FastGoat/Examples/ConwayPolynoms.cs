@@ -10,68 +10,79 @@ namespace FastGoat.Examples;
 
 public static class ConwayPolynoms
 {
-    static string ConwayWord(KPoly<ZnInt> e0)
-    {
-        var p = e0.P;
-        return e0.Coefs.Reverse().Select((k, i) => i % 2 == 0 ? k : p - k).Glue();
-    }
-
-    static Dictionary<int, KPoly<ZnInt>[]> allCnPolys = new();
-
+    static Dictionary<int, Dictionary<int, KPoly<ZnInt>>> allCnPolys = new();
+    
     static KPoly<ZnInt> GetPoly(int p, int n)
     {
         var x = FG.ZPoly(p);
-        KPoly<ZnInt> Poly_PpowD(int d) => x.Pow((int)Math.Pow(p, d)) - x;
-        var ln = p.Range().MultiLoop(n).Select(l => l.Append(1).ToArray()).ToArray();
+        var xPow = new Dictionary<int, KPoly<ZnInt>>();
+        var xp = x;
+        for (int k = 1; k <= n; k++)
+        {
+            var xp0 = xp.One;
+            for (int j = 0; j < p; j++)
+                xp0 *= xp;
+
+            xp = xp0;
+            xPow[k] = xp - x;
+        }
+
+        KPoly<ZnInt> Poly_PpowD(int d) => xPow[d];// x.Pow(p.Pow(d)) - x;
+        var seq = EnumerableExt.MultiLoop(n.Range().OrderDescending()
+            .Select(i => p.Range().Select(j => j == 0 ? x.Zero : x.Pow(i) * ((n - i) % 2 == 0 ? j : p - j))));
 
         var Px = Poly_PpowD(n);
         var lPolys = IntExt.Dividors(n).Select(m => (m, l: Poly_PpowD(m))).ToList();
 
-        var irreductibles = new List<KPoly<ZnInt>>();
-        foreach (var l in ln)
+        var cnPoly = x.Zero;
+        foreach (var lt in seq)
         {
-            var tl = PolynomExt.TrimPoly(l);
-            var lx = new KPoly<ZnInt>(x.x, x.KZero, tl.Select(k => k * x.KOne).ToArray());
-            if (lx.IsZero() || lx.Equals(x) || tl.Last() != 1)
+            var lx = x.Pow(n) + lt.Aggregate(x.Zero, (sum, xi) => xi + sum);
+            if (lx.IsZero() || lx.Equals(x) || lx[0].IsZero() || !Px.Div(lx).rem.IsZero())
                 continue;
 
-            if (Px.Div(lx).rem.IsZero() && lPolys.All(pi =>
-                    !pi.l.Div(lx).rem.IsZero() && (n == 1 || FG.EPoly(pi.l).Pow((p.Pow(n) - 1) / (p.Pow(pi.m) - 1)).IsZero())))
+            var a = FG.EPoly(lx);
+            var pn = p.Pow(n) - 1;
+            var aPow = new Dictionary<int, EPoly<ZnInt>>() { [0] = a.One };
+            var acc = a.One;
+            var i = 0;
+            do
             {
-                var z0 = ZnInt.KZero(p);
-                var e = FG.EPoly(FG.KPoly(x.KZero, 'x', tl.Select(i => i * z0.One).ToArray()));
-                var gf0 = new GFp($"GF({lx})", e);
-                var gf = Group.Generate(gf0, e);
-                if (gf.Count() == (int)Math.Pow(p, n) - 1)
-                    irreductibles.Add(lx);
+                ++i;
+                acc *= a;
+                aPow[i] = acc;
+            } while (!acc.Equals(a.One));
+
+            if (i != pn)
+                continue;
+
+            if (lPolys.All(pi =>
+                    !pi.l.Div(lx).rem.IsZero() &&
+                    (n == 1 || allCnPolys[p][pi.m].Substitute(aPow[pn / (p.Pow(pi.m) - 1)]).IsZero())))
+            {
+                cnPoly = lx;
+                break;
             }
         }
 
-        var cnPoly = irreductibles.MinBy(ConwayWord);
-        irreductibles.OrderBy(ConwayWord).Select(e => $"{ConwayWord(e),-20} <= {e}").Println();
+        if (!allCnPolys.ContainsKey(p))
+            allCnPolys[p] = new() { [1] = cnPoly };
+        else
+            allCnPolys[p][n] = cnPoly;
+
         return cnPoly;
     }
 
     static void MyPoly(int p, int n)
     {
         var x = FG.ZPoly(p);
-        var cnPoly = GetPoly(p, n);
-        var g = PolynomExt.GetConwayPoly((int)Math.Pow(p, n));
+        var pn = p.Pow(n);
+        var g = PolynomExt.GetConwayPoly(pn);
         var cnPoly0 = g.coefs.Select((k, i) => k * x.Pow(i)).Aggregate(x.Zero, (acc, xi) => acc + xi);
-
-        var gf = new GFp($"GF({cnPoly})", FG.EPoly(FG.KPoly(ZnInt.KZero(p), 'x', cnPoly.Coefs)));
-        DisplayGroup.Head(Group.Create(gf));
-        if (!cnPoly0.Equals(cnPoly))
-        {
-            Console.WriteLine($"My Poly     p={p} n={n} : {cnPoly} ### Conway Poly p={p} n={n} : {cnPoly0}");
-            Console.WriteLine("############### Why? ###############");
-        }
-        else
-        {
-            Console.WriteLine($"Conway Poly p={p} n={n} : {cnPoly}");
-        }
-
-        Console.WriteLine();
+        var cnPoly1 = GetPoly(p, n);
+        Console.WriteLine($"Conway Poly {$"p={p} n={n} |GF({cnPoly0})| = {pn - 1}", -80} Exact:{cnPoly1.Equals(cnPoly0)}");
+        // var gf = new GFp($"GF({cnPoly})", FG.EPoly(FG.KPoly(ZnInt.KZero(p), 'x', cnPoly.Coefs)));
+        // DisplayGroup.Head(Group.Generate(gf));
     }
 
     public static void AutomorphismFromPoly(int p, int n, bool verbose = true)
@@ -162,27 +173,13 @@ public static class ConwayPolynoms
 
     public static void Run()
     {
-        MyPoly(2, 1);
-        MyPoly(2, 2);
-        MyPoly(2, 3);
-        MyPoly(2, 4);
-        MyPoly(2, 5);
-
-        MyPoly(3, 1);
-        MyPoly(3, 2);
-        MyPoly(3, 2);
-        MyPoly(3, 3);
-        MyPoly(3, 4); // My Poly     p=3 n=4 : 2 + 2x + x^4 ### Conway Poly p=3 n=4 : 2 + 2x^3 + x^4
-        MyPoly(3, 5);
-
-        // MyPoly(5, 1);
-        // MyPoly(5, 2);
-        // MyPoly(5, 3);
-        // MyPoly(5, 4); // My Poly     p=5 n=4 : 2 + 3x + x^2 + x^4 ### Conway Poly p=5 n=4 : 2 + 4x + 4x^2 + x^4
-        //
-        // MyPoly(7, 1);
-        // MyPoly(7, 2);
-        // MyPoly(7, 3); // My Poly     p=7 n=3 : 2 + 3x + x^3 ### Conway Poly p=7 n=3 : 4 + 6x^2 + x^3
+        var nb = 1024;
+        foreach (var p in IntExt.Primes10000.Where(p => p * p < nb))
+        {
+            var mx = (int)(Double.Log(nb) / Double.Log(p));
+            for (int n = 1; n <= mx; n++)
+                MyPoly(p, n);
+        }
     }
 
     public static void FastAutomorphism()

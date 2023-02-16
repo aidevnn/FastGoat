@@ -66,7 +66,7 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
         for (int i = Degree; i >= 0; i--)
         {
             var s = (Degree - i) % 2 == 0 ? 1 : -1;
-            var comp = s * this[i].CompareTo(other[i]);
+            var comp = (s * this[i]).CompareTo(s * other[i]); // R.Parker lexicographic order
             if (comp != 0)
                 return comp;
         }

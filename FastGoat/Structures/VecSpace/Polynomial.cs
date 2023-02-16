@@ -102,6 +102,27 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
         return poly;
     }
 
+    public EPolynomial<K> Substitute(EPolynomial<K> f, T xi)
+    {
+        var poly = f.Zero;
+        foreach (var (m, c) in Coefs)
+        {
+            var (n, m1) = m.Remove(xi);
+            
+            if(m1.IsOne)
+                poly += c * f.Pow(n);
+            else if (m1 is Monom<Xi> m2)
+            {
+                var p0 = new EPolynomial<K>(new Polynomial<K, Xi>(m2, c), f.Basis);
+                poly += p0 * f.Pow(n);
+            }
+            else
+                throw new Exception();
+        }
+
+        return poly;
+    }
+
     public Polynomial<K, T> Substitute(Polynomial<K, T> f, Polynomial<K, T> xi) => Substitute(f, xi.ExtractIndeterminate);
 
     public Polynomial<K, T> Substitute(K k, T xi) => Substitute(k * One, xi);
