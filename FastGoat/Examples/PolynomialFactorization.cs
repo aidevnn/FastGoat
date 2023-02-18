@@ -10,11 +10,10 @@ namespace FastGoat.Examples;
 
 public static class PolynomialFactorization
 {
-    public static Random rnd = new Random();
 
     static KPoly<K> RandPoly<K>(K scalar, int p, int n) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
-        var coefs = n.Range().Select(i => rnd.Next(-p, p + 1) * scalar.One).TrimSeq().Append(scalar.One).ToArray();
+        var coefs = n.Range().Select(i => IntExt.Rng.Next(-p, p + 1) * scalar.One).TrimSeq().Append(scalar.One).ToArray();
         return new KPoly<K>('x', scalar, coefs);
     }
 
@@ -26,8 +25,8 @@ public static class PolynomialFactorization
         KPoly<K> RandPolyDegSep(K s0, int p0, int n0)
         {
             var f = RandPoly(s0, p0, n0);
-            if (maxSep.ContainsKey(p0) && n0 <= 3 && rnd.Next(2) == 0)
-                f = f.Substitute(f.X.Pow(p * rnd.Next(1, maxSep[p0] + 1)));
+            if (maxSep.ContainsKey(p0) && n0 <= 3 && IntExt.Rng.Next(2) == 0)
+                f = f.Substitute(f.X.Pow(p * IntExt.Rng.Next(1, maxSep[p0] + 1)));
 
             return f;
         }
@@ -275,10 +274,9 @@ public static class PolynomialFactorization
         return f.Degree.Range().Select(i => x.Pow(i)).ToArray();
     }
 
-    static KMatrix<K> BerlekampMatrix<K>(KPoly<K> f, int q)
+    static KMatrix<K> BerlekampMatrix<K>(KPoly<K> f,  EPoly<K>[] baseCan, int q)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
-        var baseCan = CanonicalBase(f);
         var n = baseCan.Length;
         var M = new K[n, n];
         var polys = baseCan.Select(g => g.Pow(q) - g).ToArray();
@@ -290,11 +288,11 @@ public static class PolynomialFactorization
         return new(M);
     }
 
-    static KPoly<K>[] FrobeniusKernel<K>(KPoly<K> f, int q)
+    public static KPoly<K>[] FrobeniusKernel<K>(KPoly<K> f, int q)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var baseCan = CanonicalBase(f);
-        var bm = BerlekampMatrix(f, q);
+        var bm = BerlekampMatrix(f, baseCan, q);
         var (nt, ns) = bm.NullSpace();
         var (m, n) = ns.Dim;
         var polys = n.Range().Select(j => m.Range().Select(i => ns[i, j] * baseCan[i]).Aggregate((a, b) => a + b).Poly)
@@ -302,31 +300,21 @@ public static class PolynomialFactorization
         return polys;
     }
 
-    public static IEnumerable<KPoly<K>> Firr<K>(KPoly<K> f, K a0)
-        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    static IEnumerable<KPoly<K>> FirrInternal<K>(KPoly<K> f, List<K> allF)where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
-        var acc = a0.One;
-        var q = 0;
-        do
-        {
-            acc *= a0;
-            ++q;
-        } while (!acc.Equals(a0.One));
-
-        var polys = FrobeniusKernel(f, q + 1);
+        var polys = FrobeniusKernel(f, allF.Count);
         if (polys.Length > 1)
         {
-            var fqa = q.Range(1).Select(a0.Pow).ToArray();
-            foreach (var (g, a) in polys.Where(g => g.Degree > 0).Grid2D(fqa))
+            foreach (var (g, a) in polys.Where(g => g.Degree > 0).Grid2D(allF.Skip(1)))
             {
                 var g_a = g - a;
                 var gcd = Ring.Gcd(f, g_a).Monic;
                 if (gcd.Degree != 0)
                 {
-                    foreach (var f1 in Firr(gcd, a0))
+                    foreach (var f1 in FirrInternal(gcd, allF))
                         yield return f1;
 
-                    foreach (var f1 in Firr(f / gcd, a0))
+                    foreach (var f1 in FirrInternal(f / gcd, allF))
                         yield return f1;
 
                     break;
@@ -337,6 +325,19 @@ public static class PolynomialFactorization
         {
             yield return f;
         }
+    }
+
+    public static IEnumerable<KPoly<K>> Firr<K>(KPoly<K> f, K a0)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var acc = a0.One;
+        var allF = new List<K>() { a0.Zero };
+        do
+        {
+            allF.Add(acc);
+            acc *= a0;
+        } while (!acc.Equals(a0.One));
+        return FirrInternal(f, allF);
     }
 
     public static List<(KPoly<K> g, int q, int m)> FirrFsep<K>(KPoly<K> f, K a0)
@@ -396,7 +397,7 @@ public static class PolynomialFactorization
         var m = new KMatrix<Rational>(Rational.KZero(), n, n);
         while (true)
         {
-            var m0 = Ring.Matrix(n, Rational.KZero(), (n * n).Range().Select(i => rnd.Next(n + 1)).ToArray());
+            var m0 = Ring.Matrix(n, Rational.KZero(), (n * n).Range().Select(i => IntExt.Rng.Next(n + 1)).ToArray());
             m = new(m0);
             if (!m.Det.IsZero())
                 return m;
@@ -556,13 +557,13 @@ public static class PolynomialFactorization
 
         for (int i = 0; i < 20; ++i)
         {
-            var p = IntExt.Primes10000[rnd.Next(10)]; // 2, 3, 5, 7, 11, 13, 17, 19, 23, 29
-            var d = rnd.Next((int)(Math.Log(50) / Math.Log(p))) + 1; // p^d < 30 => 4, 8, 9, 16, 25, 27, 32, 49
+            var p = IntExt.Primes10000[IntExt.Rng.Next(10)]; // 2, 3, 5, 7, 11, 13, 17, 19, 23, 29
+            var d = IntExt.Rng.Next((int)(Math.Log(50) / Math.Log(p))) + 1; // p^d < 30 => 4, 8, 9, 16, 25, 27, 32, 49
             var fq = new Fq(p.Pow(d), 'a');
             var gf = FG.Galois(p.Pow(d), 'a');
             var a0 = gf.GetGenerators().First();
             Console.WriteLine($"{fq} with {fq.F} = 0");
-            var n = 2 + rnd.Next(7);
+            var n = 2 + IntExt.Rng.Next(7);
             var f = RandPolySep(fq.One, p, n);
             Console.WriteLine($"f = {f} mod ({p})");
 
@@ -586,10 +587,10 @@ public static class PolynomialFactorization
 
         for (int j = 0; j < 20; j++)
         {
-            var p = IntExt.Primes10000[rnd.Next(5)]; // 2, 3, 5, 7, 11
+            var p = IntExt.Primes10000[IntExt.Rng.Next(5)]; // 2, 3, 5, 7, 11
             var a0 = new Un(p).GetGenerators().First()[new ZnInt(p, 1)];
-            var n = 2 + rnd.Next(11);
-            var degrees = IntExt.Partitions32[n].Where(l => l.All(i => i != 1)).OrderBy(i => rnd.NextDouble()).First()
+            var n = 2 + IntExt.Rng.Next(11);
+            var degrees = IntExt.Partitions32[n].Where(l => l.All(i => i != 1)).OrderBy(i => IntExt.Rng.NextDouble()).First()
                 .ToArray();
             var f = RandPoly(ZnInt.KZero(p), p, degrees);
             DisplayFactorization(f, a0);
