@@ -293,7 +293,7 @@ public struct KMatrix<K> : IVsElt<K, KMatrix<K>>, IElt<KMatrix<K>>, IRingElt<KMa
     public KMatrix<K> GetRow(int i)
     {
         var r = new K[1, N];
-        for (int j = 0; j < M; j++)
+        for (int j = 0; j < N; j++)
             r[0, j] = Coefs[i, j];
 
         return new(r);
