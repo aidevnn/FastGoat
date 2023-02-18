@@ -22,7 +22,10 @@ public static class GlobalStopWatch
         sw.Restart();
         action();
         sw.Stop();
-        Console.WriteLine($"# {label} Time:{sw.ElapsedMilliseconds} ms");
+
+        if (lbl)
+            Console.WriteLine($"# {label} Time:{sw.ElapsedMilliseconds} ms");
+        
         return sw.ElapsedMilliseconds;
     }
 
@@ -38,7 +41,6 @@ public static class GlobalStopWatch
         var avg = list.Average();
         var dev = Double.Sqrt(list.Select(t => Double.Pow(t - avg, 2)).Average());
         Console.WriteLine($"# {label} Avg Time:{(long)avg} ms Dev:{dev:F}");
-        Console.WriteLine();
     }
 
     private static int ct = 0;

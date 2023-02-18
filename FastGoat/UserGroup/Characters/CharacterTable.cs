@@ -454,7 +454,7 @@ public class CharacterTable<T> where T : struct, IElt<T>
 
         var f = p.ToKPoly(ind).Coefs.Select((c0, i) => c0.E[0] * x.Pow(i)).Aggregate(x.Zero, (sum, xi) => sum + xi);
         // var facts0 = PolynomialFactorizationPart2.FirrZ(f, details: true);
-        var facts0 = PolynomialFactorizationPart2.FirrZ(f);
+        var facts0 = IntFactorisation.FirrZ(f);
         var degreeOne = facts0.Where(fi => fi.Degree == 1).ToArray();
         var sols = degreeOne.Select(fi => -fi[0] / fi[1]).ToArray();
 
@@ -473,7 +473,7 @@ public class CharacterTable<T> where T : struct, IElt<T>
             var P = fi.Substitute(X);
             Console.WriteLine($"Factors of {P} in splitting field {a.F} of Q({c})[x]");
             // var facts = AlgebraicFactorization.AlgebraicFactors(P, details: true);
-            var facts = AlgebraicFactorization.AlgebraicFactors(P);
+            var facts = IntFactorisation.AlgebraicFactors(P);
             var degreeOneAlg = facts.Where(fj => fj.Degree == 1).ToArray();
             var irrsAlg = facts.Where(fj => fj.Degree > 1).ToArray();
             if (irrsAlg.Length > 0)

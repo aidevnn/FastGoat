@@ -4,6 +4,7 @@ using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup;
 using FastGoat.UserGroup.Integers;
 using FastGoat.UserGroup.Perms;
+using FastGoat.UserGroup.Polynoms;
 
 namespace FastGoat.Examples;
 
@@ -62,19 +63,19 @@ public static class GaloisTheory
 
         {
             var x = FG.QPoly();
-            var roots = AlgebraicFactorization.SplittingField(x.Pow(3) - 3 * x - 1);
+            var roots = IntFactorisation.SplittingField(x.Pow(3) - 3 * x - 1);
             GaloisGroup(roots);
         }
 
         {
             var x = FG.QPoly();
-            var roots = AlgebraicFactorization.SplittingField(x.Pow(4) + x.Pow(3) + x.Pow(2) + x + 1);
+            var roots = IntFactorisation.SplittingField(x.Pow(4) + x.Pow(3) + x.Pow(2) + x + 1);
             GaloisGroup(roots);
         }
 
         {
             var x = FG.QPoly();
-            var roots = AlgebraicFactorization.SplittingField(x.Pow(4) - 4 * x.Pow(2) + 2);
+            var roots = IntFactorisation.SplittingField(x.Pow(4) - 4 * x.Pow(2) + 2);
             GaloisGroup(roots);
         }
 
