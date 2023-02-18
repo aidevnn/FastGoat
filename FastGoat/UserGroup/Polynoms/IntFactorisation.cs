@@ -339,4 +339,122 @@ public static partial class IntFactorisation
             yield return f;
     }
 
+    static (int i, KPoly<K> Ei)[] DDF<K>(KPoly<K> F, int q) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var n = F.Degree;
+        var X = FG.EPoly(F);
+        var LX0 = new List<EPoly<K>>() { X };
+        var f = F;
+        for (int i = 1; i <= n; i++)
+        {
+            var Xi0 = LX0.Last();
+            LX0.Add(Xi0.Pow(q));
+        }
+
+        var L = new List<(int i, KPoly<K> Ei)>();
+        foreach (var (poly, i) in LX0.Select((ei, i) => (ei.Poly, i)).Skip(1))
+        {
+            var Ei = Ring.Gcd(poly - F.X, f).Monic;
+            if (!Ei.Equals(f.One))
+                L.Add((i, Ei));
+
+            f = f / Ei;
+        }
+
+        return L.ToArray();
+    }
+
+    static IEnumerable<KPoly<K>> EDF<K>(KPoly<K> F, List<K> allF, int i) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        if (i == F.Degree)
+        {
+            yield return F;
+            yield break;
+        }
+
+        var q = allF.Count;
+
+        KPoly<K> H1;
+        while (true)
+        {
+            var G = new KPoly<K>(F.x, F.KZero, F.Degree.Range().Select(i0 => allF[IntExt.Rng.Next(q)]).TrimSeq().ToArray());
+            if (G.Degree == 0)
+                continue;
+
+            H1 = Ring.Gcd(F, G).Monic;
+            if (H1.Degree > 0 && H1.Degree != F.Degree)
+                break;
+
+            var x = FG.EPoly(F);
+            var H = Mk(G.Substitute(x), i, q).Poly.Monic;
+            if (H.Degree == 0)
+                continue;
+
+            H1 = Ring.Gcd(F, H).Monic;
+            if (H1.Degree > 0 && H1.Degree != F.Degree)
+                break;
+        }
+
+        foreach (var fi in EDF(H1, allF, i))
+            yield return fi;
+
+        var H2 = (F / H1).Monic;
+        foreach (var fi in EDF(H2, allF, i))
+            yield return fi;
+    }
+
+    public static IEnumerable<KPoly<K>> CantorZassenhausVShoup<K>(KPoly<K> F, K a0) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var acc = a0.One;
+        var allF = new List<K>() { a0.Zero };
+        do
+        {
+            allF.Add(acc);
+            acc *= a0;
+        } while (!acc.Equals(a0.One));
+
+        var q = allF.Count;
+        foreach (var (i, ei) in DDF(F, q))
+        {
+            var r = ei.Degree / i;
+            var H = new List<KPoly<K>>() { ei };
+            while (H.Count < r)
+            {
+                var Hp = new HashSet<KPoly<K>>();
+                foreach (var h in H)
+                {
+                    var a = new EPoly<K>(h,
+                        new KPoly<K>(h.x, h.KZero, h.Degree.Range().Select(i0 => allF[IntExt.Rng.Next(q)]).TrimSeq().ToArray()));
+                    var d = Ring.Gcd(Mk(a, i, q).Poly, h).Monic;
+                    if (d.Equals(d.One) || d.Equals(h))
+                        Hp.Add(h);
+                    else
+                        Hp.UnionWith(new[] { d, (h / d).Monic });
+                }
+
+                H = Hp.ToList();
+            }
+
+            foreach (var h in H)
+                yield return h;
+        }
+    }
+
+    public static IEnumerable<KPoly<K>> CantorZassenhausAECF<K>(KPoly<K> F, K a0) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var acc = a0.One;
+        var allF = new List<K>() { a0.Zero };
+        do
+        {
+            allF.Add(acc);
+            acc *= a0;
+        } while (!acc.Equals(a0.One));
+
+        var q = allF.Count;
+        foreach (var (i, ei) in DDF(F, q))
+        {
+            foreach (var fi in EDF(ei, allF, i))
+                yield return fi;
+        }
+    }
 }
