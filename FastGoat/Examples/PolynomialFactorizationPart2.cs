@@ -398,10 +398,10 @@ public static class PolynomialFactorizationPart2
         Console.WriteLine();
         for (int j = 0; j < 20; j++)
         {
-            var amp = PolynomialFactorization.rnd.Next(2, 9);
-            var n = 12 + PolynomialFactorization.rnd.Next(13);
+            var amp = IntExt.Rng.Next(2, 9);
+            var n = 12 + IntExt.Rng.Next(13);
             var degrees = IntExt.Partitions32[n].Where(l => l.All(i => i != 1) && l.Count > 1)
-                .OrderBy(i => PolynomialFactorization.rnd.NextDouble())
+                .OrderBy(i => IntExt.Rng.NextDouble())
                 .FirstOrDefault(new []{ 2, 3, 4 }.ToList())
                 .ToArray();
             
@@ -467,10 +467,10 @@ public static class PolynomialFactorizationPart2
         Console.WriteLine();
         for (int j = 0; j < 20; j++)
         {
-            var amp = PolynomialFactorization.rnd.Next(2, 29);
-            var n = 2 + PolynomialFactorization.rnd.Next(11);
+            var amp = IntExt.Rng.Next(2, 29);
+            var n = 2 + IntExt.Rng.Next(11);
             var degrees = IntExt.Partitions32[n].Where(l => l.All(i => i != 1) && l.Count > 1)
-                .OrderBy(i => PolynomialFactorization.rnd.NextDouble())
+                .OrderBy(i => IntExt.Rng.NextDouble())
                 .FirstOrDefault(new int[] { 2, 3, 4 }.ToList())
                 .ToArray();
             

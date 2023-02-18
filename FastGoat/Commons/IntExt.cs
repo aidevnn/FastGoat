@@ -27,7 +27,12 @@ namespace FastGoat.Commons
             Rng = new();
         }
 
-        public static Random Rng { get; }
+        public static Random Rng { get; private set; }
+
+        public static void RngSeed(int seed)
+        {
+            Rng = new(seed);
+        }
 
         public static Dictionary<int, Dictionary<int, int[][]>> SolveSquareInt { get; }
 

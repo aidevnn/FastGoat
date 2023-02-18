@@ -12,7 +12,6 @@ public class GLnpUnitTest
     [Fact]
     public void Test1Ops()
     {
-        Random rnd = new Random();
         for (int n = 2; n < 6; n++) // n = 2, 3, 4, 5
         {
             for (int p0 = 0; p0 < 5; p0++) // p = 2, 3, 5, 7, 11
@@ -23,8 +22,8 @@ public class GLnpUnitTest
                 var rg = Enumerable.Range(0, n * n).ToArray();
                 for (int j = 0; j < 5; j++)
                 {
-                    var mat0 = rg.Select(i => rnd.Next(p)).ToArray();
-                    var mat1 = rg.Select(i => rnd.Next(p)).ToArray();
+                    var mat0 = rg.Select(i => IntExt.Rng.Next(p)).ToArray();
+                    var mat1 = rg.Select(i => IntExt.Rng.Next(p)).ToArray();
                     var det0 = IntExt.AmodP(MatrixExt.ComputeDeterminant(mat0), p);
                     var det1 = IntExt.AmodP(MatrixExt.ComputeDeterminant(mat1), p);
                     if (det0 == 0 || det1 == 0)
