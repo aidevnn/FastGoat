@@ -243,7 +243,7 @@ public static partial class IntFactorisation
             {
                 var b = new EPoly<K>(h, g);
                 var d = Ring.Gcd(Mk(b, 1, q + 1).Poly, h).Monic;
-                if (d.Equals(d.One) || d.Equals(h))
+                if (d.Degree == 0 || d.Degree == h.Degree)
                     H1.Add(h.Monic);
                 else
                     H1.AddRange(new[] { d, (h / d).Monic });
@@ -315,10 +315,8 @@ public static partial class IntFactorisation
         var Gi2 = new HashSet<KPoly<K>>() { F.One };
 
         var df = F.Derivative;
-        var h1 = FG.EPoly(H1);
-        var h2 = FG.EPoly(H2);
-        var dh1h2 = (H1.Derivative * H2).Substitute(h1).Inv();
-        var h1dh2 = (H1 * H2.Derivative).Substitute(h2).Inv();
+        var dh1h2 = new EPoly<K>(H1, H1.Derivative * H2).Inv();
+        var h1dh2 = new EPoly<K>(H2, H1 * H2.Derivative).Inv();
         foreach (var gi in Gi)
         {
             var gidf = gi * df;

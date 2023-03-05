@@ -695,7 +695,6 @@ public static partial class Ring
         var d = a.Degree - b.Degree;
         var bDeg = b.Coefs.Last().Pow(d + 1);
         var r = (bDeg * a).Div(b).rem;
-        // Console.WriteLine($"StableGcd deg(a){a.Degree} deg(b){b.Degree} remainder length {r.ToString().Length}");
         return StableGcd(b / bDeg, r);
     }
 
@@ -708,7 +707,6 @@ public static partial class Ring
         var d = a.Degree - b.Degree;
         var bDeg = b.Coefs.Last().Pow(d + 1);
         var (q, r) = (bDeg * a).Div(b);
-        // Console.WriteLine($"StableBezout deg(a){a.Degree} deg(b){b.Degree} remainder length {r.ToString().Length}");
         var (x0, y0) = StableBezout(b / bDeg, r);
         return (y0 * bDeg, x0 / bDeg - q * y0);
     }

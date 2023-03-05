@@ -181,7 +181,7 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
         if (m.Coefs.Count != 1 || m.Coefs.First().Key.Degree != 1)
             throw new GroupException(GroupExceptionType.GroupDef);
 
-        return D(m.Coefs.First().Key.Indeterminates.First());
+        return D(m.ExtractIndeterminate);
     }
 
     public int DegreeOf(T t) => Coefs.Max(e => e.Key[t]);

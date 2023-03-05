@@ -66,7 +66,7 @@ public static partial class IntFactorisation
         Console.WriteLine();
     }
 
-    public static KPoly<K> Norm<K>(KPoly<EPoly<K>> A, char c = 'x') where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    public static KPoly<K> NormBak<K>(KPoly<EPoly<K>> A, char c = 'x') where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var n = A.Degree;
         var g0 = A[0].F;
@@ -83,6 +83,25 @@ public static partial class IntFactorisation
         var ug = new KPoly<FracPoly<K>>(y.x, y.KZero, g0.Coefs.Select(k => k * y.KOne).ToArray());
         var res = Ring.FastResultant(ug, ga);
         return res.Num;
+    }
+
+    public static KPoly<K> Norm<K>(KPoly<EPoly<K>> A, char c = 'x') where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var n = A.Degree;
+        var g0 = A[0].F;
+        var x = FG.RPoly(c, A.KZero.Poly.KZero);
+        var y = FG.KPoly(A.x, x.Zero);
+        var ga = y.Zero;
+        for (int i = 0; i <= n; i++)
+        {
+            var gi = A[i].Poly.Coefs;
+            var gy = new KPoly<RPoly<K>>(y.x, y.KZero, gi.Select(k => k * y.KOne).ToArray());
+            ga = ga + gy * x.Pow(i);
+        }
+
+        var ug = new KPoly<RPoly<K>>(y.x, y.KZero, g0.Coefs.Select(k => k * y.KOne).ToArray());
+        var res = Ring.FastResultant(ug, ga);
+        return res.ToKPoly();
     }
 
     public static void NormDetails<K>(KPoly<EPoly<K>> A, char c = 'X') where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
@@ -117,7 +136,7 @@ public static partial class IntFactorisation
             // Console.WriteLine($"s={s} Norm({g})");
             var r = Norm(g, c);
             if (Ring.Gcd(r, r.Derivative).Degree == 0)
-                return (s, g, r);
+                return (s, g.Monic, r);
 
             g = g.Substitute(x - a);
         }
@@ -180,7 +199,9 @@ public static partial class IntFactorisation
             g0 += g1 * y.Pow(i);
         }
 
+        GlobalStopWatch.AddLap();
         var gcd = Ring.StableGcd(p0, g0);
+        GlobalStopWatch.Show($"StableGcd [{p0}] [{g0}]");
         if (gcd.Degree == 0)
             throw new ArgumentException($"A={A} MinPoly={p0} A0={g0}");
         
@@ -231,6 +252,7 @@ public static partial class IntFactorisation
     // Barry Trager, Algebraic Factoring
     public static List<EPoly<Rational>> SplittingField(KPoly<Rational> P,bool details = false)
     {
+        GlobalStopWatch.Restart();
         var (X, y) = FG.EPolyXc(P, 'a');
         var P0 = P.Substitute(X);
         var roots = new List<EPoly<Rational>>();
@@ -261,11 +283,17 @@ public static partial class IntFactorisation
 
             foreach (var pi in polys)
             {
+                GlobalStopWatch.AddLap();
                 var (s, g, R) = SqfrNorm(pi);
-                var L = R.Degree < 13 ? IntFactorisation.FirrQ(R) : new[] { R };
+                GlobalStopWatch.Show("SqfrNorm");
+                GlobalStopWatch.AddLap();
+                var L = R.Degree < 13 ? FirrQ(R) : new[] { R };
+                GlobalStopWatch.Show("FirrQ");
                 foreach (var qj in L.Order())
                 {
+                    GlobalStopWatch.AddLap();
                     var f = Ring.StableGcd(g, qj.Substitute(X));
+                    GlobalStopWatch.Show($"StableGcd [{g}] [{qj}]");
                     if (qj.Degree > minPoly.Degree)
                     {
                         minPoly = qj;
@@ -274,7 +302,7 @@ public static partial class IntFactorisation
                         BPoly = f;
                     }
 
-                    g /= f;
+                    g = (g / f).Monic;
                     f = f.Substitute(X + s * y);
                     if (f.Degree == 1)
                     {
@@ -290,7 +318,9 @@ public static partial class IntFactorisation
             }
 
             (X, new_y) = FG.EPolyXc(minPoly, 'a');
+            GlobalStopWatch.AddLap();
             var a = AlphaPrimElt(BPoly, X);
+            GlobalStopWatch.Show("AlphaPrimElt");
             b = new_y - new_s * a;
 
             if (newFactors.Count == 0)
@@ -300,6 +330,7 @@ public static partial class IntFactorisation
                     Console.WriteLine($"With {new_y.F} = 0");
                     roots.Println("Roots");
                     Console.WriteLine("Verif [Prod(X - ri)] = {0}", roots.Select(r => X - r).Aggregate((Xi, Xj) => Xi * Xj));
+                    GlobalStopWatch.Show($"Time");
                     Console.WriteLine();
                 }
 

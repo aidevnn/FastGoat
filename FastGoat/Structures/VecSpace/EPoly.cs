@@ -32,7 +32,7 @@ public readonly struct EPoly<K> : IVsElt<K, EPoly<K>>, IElt<EPoly<K>>, IRingElt<
         Hash = (Poly.Hash, f.Hash).GetHashCode();
     }
 
-    public bool Equals(EPoly<K> other) => Poly.Equals(other.Poly); // Avoid collisions
+    public bool Equals(EPoly<K> other) =>  Poly.Equals(other.Poly); // Avoid collisions
 
     public int CompareTo(EPoly<K> other) => Poly.CompareTo(other.Poly);
 
@@ -68,12 +68,12 @@ public readonly struct EPoly<K> : IVsElt<K, EPoly<K>>, IElt<EPoly<K>>, IRingElt<
 
     public EPoly<K> Add(EPoly<K> e)
     {
-        return new(F, Poly.Add(e.Poly).Div(F).rem);
+        return new(F, Poly.Add(e.Poly));
     }
 
     public EPoly<K> Sub(EPoly<K> e)
     {
-        return new(F, Poly.Sub(e.Poly).Div(F).rem);
+        return new(F, Poly.Sub(e.Poly));
     }
 
     public EPoly<K> Opp() => new(F, Poly.Opp());
@@ -95,8 +95,15 @@ public readonly struct EPoly<K> : IVsElt<K, EPoly<K>>, IElt<EPoly<K>>, IRingElt<
         if (k < 0)
             return Inv().Pow(-k);
 
-        var pi = this;
-        return Enumerable.Repeat(pi, k).Aggregate((a, b) => a.Mul(b));
+        var pi = Poly;
+        var fi = F;
+        var deg3 = F.Degree * 3;
+        var r = Enumerable.Repeat(pi, k).Aggregate((a, b) =>
+        {
+            var e0 = a.Mul(b);
+            return e0.Degree < deg3 ? e0 : e0.Div(fi).rem;
+        });
+        return new(F, r.Div(F).rem);
     }
 
     public KPoly<EPoly<K>> ToKPoly(char x) => new(x, this);

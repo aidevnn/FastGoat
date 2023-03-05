@@ -3,7 +3,7 @@ using FastGoat.Commons;
 
 namespace FastGoat.Structures.VecSpace;
 
-public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<KPoly<K>>
+public readonly struct RPoly<K> : IVsElt<K, RPoly<K>>, IElt<RPoly<K>>, IRingElt<RPoly<K>>, IFieldElt<RPoly<K>>
     where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
 {
     public K[] Coefs { get; }
@@ -11,9 +11,28 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
     public K KZero { get; }
     public K KOne => KZero.One;
     public int P { get; }
+    public RPoly<K> Inv()
+    {
+        if (Degree == 0)
+            return new RPoly<K>(x, KZero, new[] { Coefs[0].Inv() });
+        
+        throw new NotImplementedException();
+    }
+
+    public static RPoly<K> operator /(int a, RPoly<K> b)
+    {
+        throw new NotImplementedException();
+    }
+
+    public static double Abs(RPoly<K> t)
+    {
+        throw new NotImplementedException();
+    }
+
+    public static bool IsValuedField => false;
     public char x { get; }
 
-    public KPoly(char x0)
+    public RPoly(char x0)
     {
         KZero = new K().Zero;
         P = KZero.P;
@@ -23,7 +42,7 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
         Degree = Coefs.Length - 1;
     }
 
-    public KPoly(char x0, K k0)
+    public RPoly(char x0, K k0)
     {
         KZero = k0.Zero;
         P = k0.P;
@@ -33,7 +52,7 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
         Degree = Coefs.Length - 1;
     }
 
-    public KPoly(char x0, K kZero, K[] coefs)
+    public RPoly(char x0, K kZero, K[] coefs)
     {
         KZero = kZero.Zero;
         P = kZero.P;
@@ -55,9 +74,9 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
         }
     }
 
-    public bool Equals(KPoly<K> other) => Hash == other.Hash && Coefs.SequenceEqual(other.Coefs); // Avoid collisions
+    public bool Equals(RPoly<K> other) => Hash == other.Hash && Coefs.SequenceEqual(other.Coefs); // Avoid collisions
 
-    public int CompareTo(KPoly<K> other)
+    public int CompareTo(RPoly<K> other)
     {
         var compDegree = Degree.CompareTo(other.Degree);
         if (compDegree != 0)
@@ -78,29 +97,29 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
 
     public bool IsZero() => Degree == 0 && Coefs[0].IsZero();
 
-    public KPoly<K> Zero => new(x, KZero, new[] { KZero });
-    public KPoly<K> ZeroExtended(int degree) => new(x, KZero, Enumerable.Repeat(KZero, degree + 1).ToArray());
-    public KPoly<K> One => new(x, KZero, new[] { KOne });
-    public KPoly<K> X => new(x, KZero, new[] { KZero, KOne });
+    public RPoly<K> Zero => new(x, KZero, new[] { KZero });
+    public RPoly<K> ZeroExtended(int degree) => new(x, KZero, Enumerable.Repeat(KZero, degree + 1).ToArray());
+    public RPoly<K> One => new(x, KZero, new[] { KOne });
+    public RPoly<K> X => new(x, KZero, new[] { KZero, KOne });
 
-    public KPoly<K> Derivative => new(x, KZero, Coefs.Select((e, i) => e.Mul(i)).Skip(1).TrimSeq().ToArray());
+    public RPoly<K> Derivative => new(x, KZero, Coefs.Select((e, i) => e.Mul(i)).Skip(1).TrimSeq().ToArray());
     public K Substitute(K f) => Coefs.Select((k, i) => k * f.Pow(i)).Aggregate((a, b) => a + b);
-    public KPoly<K> Substitute(KPoly<K> f) => Coefs.Select((k, i) => k * f.Pow(i)).Aggregate((a, b) => a + b);
+    public RPoly<K> Substitute(RPoly<K> f) => Coefs.Select((k, i) => k * f.Pow(i)).Aggregate((a, b) => a + b);
     public EPoly<K> Substitute(EPoly<K> f) => Coefs.Select((k, i) => k * f.Pow(i)).Aggregate((a, b) => a + b);
 
-    public KPoly<EPoly<K>> Substitute(KPoly<EPoly<K>> f)
+    public RPoly<EPoly<K>> Substitute(RPoly<EPoly<K>> f)
     {
-        var poly = new KPoly<EPoly<K>>(f.x, f.KZero, Coefs.Select(k => k * f.KOne).ToArray());
+        var poly = new RPoly<EPoly<K>>(f.x, f.KZero, Coefs.Select(k => k * f.KOne).ToArray());
         return poly.Substitute(f);
     }
 
-    public KPoly<FracPoly<K>> Substitute(KPoly<FracPoly<K>> f)
+    public RPoly<FracPoly<K>> Substitute(RPoly<FracPoly<K>> f)
     {
-        var poly = new KPoly<FracPoly<K>>(f.x, f.KZero, Coefs.Select(k => k * f.KOne).ToArray());
+        var poly = new RPoly<FracPoly<K>>(f.x, f.KZero, Coefs.Select(k => k * f.KOne).ToArray());
         return poly.Substitute(f);
     }
 
-    public KPoly<K> Add(KPoly<K> e)
+    public RPoly<K> Add(RPoly<K> e)
     {
         var maxDegree = Math.Max(Degree, e.Degree);
         var coefs = new K[maxDegree + 1];
@@ -110,7 +129,7 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
         return new(x, KZero, coefs.TrimSeq().ToArray());
     }
 
-    public KPoly<K> Sub(KPoly<K> e)
+    public RPoly<K> Sub(RPoly<K> e)
     {
         var maxDegree = Math.Max(Degree, e.Degree);
         var coefs = new K[maxDegree + 1];
@@ -120,9 +139,9 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
         return new(x, KZero, coefs.TrimSeq().ToArray());
     }
 
-    public KPoly<K> Opp() => Zero.Sub(this);
+    public RPoly<K> Opp() => Zero.Sub(this);
 
-    public KPoly<K> Mul(KPoly<K> e)
+    public RPoly<K> Mul(RPoly<K> e)
     {
         var deg = Degree + e.Degree;
         var coefs = Enumerable.Repeat(KZero, deg + 1).ToArray();
@@ -136,7 +155,7 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
         return new(x, KZero, coefs.TrimSeq().ToArray());
     }
 
-    public void InPlaceAdd(KPoly<K> a)
+    public void InPlaceAdd(RPoly<K> a)
     {
         if (a.Degree > Degree)
             throw new GroupException(GroupExceptionType.GroupDef);
@@ -145,7 +164,7 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
             Coefs[i] += a[i];
     }
 
-    public void InPlaceAddProd(KPoly<K> a, KPoly<K> b)
+    public void InPlaceAddProd(RPoly<K> a, RPoly<K> b)
     {
         if (a.Degree + b.Degree > Degree)
             throw new GroupException(GroupExceptionType.GroupDef);
@@ -158,21 +177,21 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
         }
     }
 
-    public KPoly<K> KMul(K k)
+    public RPoly<K> KMul(K k)
     {
         var coefs = Coefs.Select(e => e.Mul(k)).TrimSeq().ToArray();
         return new(x, KZero, coefs);
     }
 
-    public KPoly<K> Mul(int k)
+    public RPoly<K> Mul(int k)
     {
         var k0 = KOne.Mul(k);
         return KMul(k0);
     }
 
-    public KPoly<K> Monic => IsZero() ? this : KMul(Coefs.Last().Inv());
+    public RPoly<K> Monic => IsZero() ? this : KMul(Coefs.Last().Inv());
 
-    public KPoly<K> Pow(int k)
+    public RPoly<K> Pow(int k)
     {
         if (k == 0)
             return One;
@@ -184,7 +203,7 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
         return Enumerable.Repeat(pi, k).Aggregate((a, b) => a.Mul(b));
     }
 
-    public (KPoly<K> quo, KPoly<K> rem) Div(KPoly<K> e)
+    public (RPoly<K> quo, RPoly<K> rem) Div(RPoly<K> e)
     {
         if (e.IsZero())
             throw new DivideByZeroException();
@@ -219,26 +238,27 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
         return $"{fx}";
     }
 
-    public EPoly<K> ToEPoly(KPoly<K> f) => new(f, this);
+    public KPoly<K> ToKPoly() => new(x, KZero, Coefs);
+    public EPoly<K> ToEPoly(RPoly<K> f) => new(f.ToKPoly(), ToKPoly());
 
-    public static KPoly<K> operator +(KPoly<K> a, KPoly<K> b) => a.Add(b);
-    public static KPoly<K> operator +(int a, KPoly<K> b) => b.Add(b.One.Mul(a));
-    public static KPoly<K> operator +(KPoly<K> a, int b) => a.Add(a.One.Mul(b));
-    public static KPoly<K> operator -(KPoly<K> a) => a.Opp();
-    public static KPoly<K> operator -(KPoly<K> a, KPoly<K> b) => a + (-b);
-    public static KPoly<K> operator -(int a, KPoly<K> b) => a + (-b);
-    public static KPoly<K> operator -(KPoly<K> a, int b) => a + (-b);
-    public static KPoly<K> operator *(KPoly<K> a, KPoly<K> b) => a.Mul(b);
-    public static KPoly<K> operator *(KPoly<K> a, int b) => a.Mul(b);
-    public static KPoly<K> operator *(int a, KPoly<K> b) => b.Mul(a);
-    public static KPoly<K> operator /(KPoly<K> a, KPoly<K> b) => a.Div(b).quo;
-    public static KPoly<K> operator /(KPoly<K> a, int b) => a.Div(a.One.Mul(b)).quo;
+    public static RPoly<K> operator +(RPoly<K> a, RPoly<K> b) => a.Add(b);
+    public static RPoly<K> operator +(int a, RPoly<K> b) => b.Add(b.One.Mul(a));
+    public static RPoly<K> operator +(RPoly<K> a, int b) => a.Add(a.One.Mul(b));
+    public static RPoly<K> operator -(RPoly<K> a) => a.Opp();
+    public static RPoly<K> operator -(RPoly<K> a, RPoly<K> b) => a + (-b);
+    public static RPoly<K> operator -(int a, RPoly<K> b) => a + (-b);
+    public static RPoly<K> operator -(RPoly<K> a, int b) => a + (-b);
+    public static RPoly<K> operator *(RPoly<K> a, RPoly<K> b) => a.Mul(b);
+    public static RPoly<K> operator *(RPoly<K> a, int b) => a.Mul(b);
+    public static RPoly<K> operator *(int a, RPoly<K> b) => b.Mul(a);
+    public static RPoly<K> operator /(RPoly<K> a, RPoly<K> b) => a.Div(b).quo;
+    public static RPoly<K> operator /(RPoly<K> a, int b) => a.Div(a.One.Mul(b)).quo;
 
-    public static KPoly<K> operator +(KPoly<K> a, K b) => a + a.One.KMul(b);
-    public static KPoly<K> operator +(K a, KPoly<K> b) => b.One.KMul(a) + b;
-    public static KPoly<K> operator -(KPoly<K> a, K b) => a - a.One.KMul(b);
-    public static KPoly<K> operator -(K a, KPoly<K> b) => b.One.KMul(a) - b;
-    public static KPoly<K> operator *(KPoly<K> a, K b) => a.KMul(b);
-    public static KPoly<K> operator *(K a, KPoly<K> b) => b.KMul(a);
-    public static KPoly<K> operator /(KPoly<K> a, K b) => new KPoly<K>(a.x, a.KZero, a.Coefs.Select(c => c.Div(b).quo).ToArray());
+    public static RPoly<K> operator +(RPoly<K> a, K b) => a + a.One.KMul(b);
+    public static RPoly<K> operator +(K a, RPoly<K> b) => b.One.KMul(a) + b;
+    public static RPoly<K> operator -(RPoly<K> a, K b) => a - a.One.KMul(b);
+    public static RPoly<K> operator -(K a, RPoly<K> b) => b.One.KMul(a) - b;
+    public static RPoly<K> operator *(RPoly<K> a, K b) => a.KMul(b);
+    public static RPoly<K> operator *(K a, RPoly<K> b) => b.KMul(a);
+    public static RPoly<K> operator /(RPoly<K> a, K b) => a.KMul(b.Inv());
 }

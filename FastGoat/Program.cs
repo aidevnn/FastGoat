@@ -1,4 +1,5 @@
-﻿using FastGoat.Commons;
+﻿using System.Numerics;
+using FastGoat.Commons;
 using FastGoat.Examples;
 using FastGoat.Structures;
 using FastGoat.Structures.CartesianProduct;
