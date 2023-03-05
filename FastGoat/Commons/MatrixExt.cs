@@ -1,7 +1,16 @@
 namespace FastGoat.Commons;
 
+/// <summary>
+/// Extension class that provides methods for manipulating matrices. 
+/// </summary>
 public static class MatrixExt
 {
+    /// <summary>
+    /// Creates an matrix of size nb x nb and fills it with the value v on the diagonal.
+    /// </summary>
+    /// <param name="nb">Size of the matrix.</param>
+    /// <param name="v">Value to fill the diagonal.</param>
+    /// <returns>An array of size nb filled with v on the diagonal.</returns>
     public static int[] Diagonal(int nb, int v)
     {
         int[] mat0 = new int[nb * nb];
@@ -13,8 +22,20 @@ public static class MatrixExt
         return mat0;
     }
 
+    /// <summary>
+    /// Creates an identity matrix of size nb x nb. 
+    /// </summary>
+    /// <param name="nb">The size of the matrix.</param>
+    /// <returns>An identity matrix of size nb.</returns>
     public static int[] Identity(int nb) => Diagonal(nb, 1);
 
+    /// <summary>
+    /// Calculates the cofactor of a matrix at a given row and column.
+    /// </summary>
+    /// <param name="mat">The matrix to calculate the cofactor of.</param>
+    /// <param name="row">The row index of the element to calculate the cofactor for.</param>
+    /// <param name="col">The column index of the element to calculate the cofactor for.</param>
+    /// <returns>An array containing the cofactor of the given element.</returns>
     public static int[] Cofactor(int[] mat, int row, int col)
     {
         int nb = (int)Math.Sqrt(mat.Length);
@@ -36,6 +57,11 @@ public static class MatrixExt
         return mat0;
     }
 
+    /// <summary>
+    /// Calculates the determinant of a given matrix.
+    /// </summary>
+    /// <param name="mat">The matrix to calculate the determinant of.</param>
+    /// <returns>The determinant of the given matrix.</returns>
     public static int ComputeDeterminant(int[] mat)
     {
         int nb = (int)Math.Sqrt(mat.Length);
@@ -53,6 +79,11 @@ public static class MatrixExt
         return det;
     }
 
+    /// <summary>
+    /// Transposes the given matrix.
+    /// </summary>
+    /// <param name="mat">The matrix to transpose.</param>
+    /// <returns>The transposed matrix.</returns>
     public static int[] Transpose(int[] mat)
     {
         int nb = (int)Math.Sqrt(mat.Length);
@@ -68,6 +99,11 @@ public static class MatrixExt
         return mat0;
     }
 
+    /// <summary>
+    /// Calculates the comatrix of the given matrix.
+    /// </summary>
+    /// <param name="mat">The matrix to calculate the comatrix of.</param>
+    /// <returns>The comatrix of the given matrix.</returns>
     public static int[] Comatrix(int[] mat)
     {
         int nb = (int)Math.Sqrt(mat.Length);
@@ -84,6 +120,12 @@ public static class MatrixExt
         return mat0;
     }
 
+    /// <summary>
+    /// Calculates the dot product of two matrices.
+    /// </summary>
+    /// <param name="matA">The first matrix.</param>
+    /// <param name="matB">The second matrix.</param>
+    /// <returns>The dot product of the two matrices.</returns>
     public static int[] Dot(int[] matA, int[] matB)
     {
         int nb = (int)Math.Sqrt(matA.Length);
@@ -105,6 +147,10 @@ public static class MatrixExt
         return matC;
     }
 
+    /// <summary>
+    /// Displays a matrix of integers.
+    /// </summary>
+    /// <param name="mat"></param>
     public static void DisplayMatrix(int[] mat)
     {
         int nb = (int)Math.Sqrt(mat.Length);
@@ -114,13 +160,32 @@ public static class MatrixExt
         }
     }
 
+    /// <summary>
+    /// Reduce a matrix modulo p. 
+    /// </summary>
+    /// <param name="p">An integer representing the modulus.</param>
+    /// <param name="mat">A matrix of integers.</param>
+    /// <returns>An array of integers.</returns>
     public static int[] ModP(int p, int[] mat)
     {
         return mat.Select(e => IntExt.AmodP(e, p)).ToArray();
     }
 
+    /// <summary>
+    /// Calculates the dot product of two matrices and reduce the result modulo p.
+    /// </summary>
+    /// <param name="p">The number to use for the modulo operation.</param>
+    /// <param name="matA">The first matrix to use for the dot product.</param>
+    /// <param name="matB">The second matrix to use for the dot product.</param>
+    /// <returns>An array containing the result of the dot product modulo p.</returns>
     public static int[] DotModP(int p, int[] matA, int[] matB) => ModP(p, Dot(matA, matB));
 
+    /// <summary>
+    /// Inverts matrix and reduce it modulo p.
+    /// </summary>
+    /// <param name="p">The modulo p.</param>
+    /// <param name="mat">The matrix to invert.</param>
+    /// <returns>The inverted matrix.</returns>
     public static int[] InvertModP(int p, int[] mat)
     {
         int n = (int)Math.Sqrt(mat.Length);
@@ -136,6 +201,11 @@ public static class MatrixExt
         return invP;
     }
 
+    /// <summary>
+    /// This method calculates the determinant of an NxN matrix with N from 1 to 5. 
+    /// </summary>
+    /// <param name="mat">The matrix to calculate the determinant of.</param>
+    /// <returns>The determinant of the matrix.</returns>
     public static int DetNxN(int[] mat)
     {
         if (mat.Length == 1)
@@ -149,9 +219,14 @@ public static class MatrixExt
         else if (mat.Length == 25)
             return Det5x5(mat);
 
-        return -1;
+        throw new();
     }
 
+    /// <summary>
+    /// Calculates the determinant of a 2x2 matrix. 
+    /// </summary>
+    /// <param name="mat">The 2x2 matrix to calculate the determinant of.</param>
+    /// <returns>The determinant of the given matrix.</returns>
     public static int Det2x2(int[] mat)
     {
         var (a, b) = (mat[0], mat[1]);
@@ -160,6 +235,11 @@ public static class MatrixExt
         return det;
     }
 
+    /// <summary>
+    /// Calculates the determinant of a 3x3 matrix. 
+    /// </summary>
+    /// <param name="mat">The 3x3 matrix to calculate the determinant of.</param>
+    /// <returns>The determinant of the given matrix.</returns>
     public static int Det3x3(int[] mat)
     {
         var (a, b, c) = (mat[0], mat[1], mat[2]);
@@ -169,6 +249,11 @@ public static class MatrixExt
         return det;
     }
 
+    /// <summary>
+    /// Calculates the determinant of a 4x4 matrix. 
+    /// </summary>
+    /// <param name="mat">The 4x4 matrix to calculate the determinant of.</param>
+    /// <returns>The determinant of the given matrix.</returns>
     public static int Det4x4(int[] mat)
     {
         var (a, b, c, d) = (mat[0], mat[1], mat[2], mat[3]);
@@ -184,6 +269,11 @@ public static class MatrixExt
         return det;
     }
 
+    /// <summary>
+    /// Calculates the determinant of a 5x5 matrix. 
+    /// </summary>
+    /// <param name="mat">The 5x5 matrix to calculate the determinant of.</param>
+    /// <returns>The determinant of the given matrix.</returns>
     public static int Det5x5(int[] mat)
     {
         var (a, b, c, d, e) = (mat[0], mat[1], mat[2], mat[3], mat[4]);

@@ -5,11 +5,25 @@ namespace FastGoat.Commons;
 
 public static class EnumerableExt
 {
+    /// <summary>
+    /// Join into a string the elements of an <see cref="IEnumerable{T}"/> together with a separator and format string.
+    /// </summary>
+    /// <typeparam name="T">The type of elements in the enumerable.</typeparam>
+    /// <param name="ts">The enumerable to glue.</param>
+    /// <param name="sep">The separator to use between elements. Default is an empty string.</param>
+    /// <param name="fmt">The format string to use for each element. Default is "{0}".</param>
+    /// <returns>A string containing the joined elements.</returns>
     public static string Glue<T>(this IEnumerable<T> ts, string sep = "", string fmt = "{0}")
     {
         return string.Join(sep, ts.Select(t => string.Format(fmt, t)));
     }
 
+    /// <summary>
+    /// Prints the object to the console with a header and a format. 
+    /// </summary>
+    /// <param name="v">The object to be printed.</param>
+    /// <param name="header">The header that will be printed before the object.</param>
+    /// <param name="fmt">The format of the output.</param>
     public static void Println(this object v, string header = "Lines", string fmt = "    {0}")
     {
         Console.WriteLine(header);
@@ -17,10 +31,19 @@ public static class EnumerableExt
             Console.WriteLine(v0.Length.Range().Select(i => v0[i]).Glue("\n", fmt));
         else if (v is IEnumerable v1)
             Console.WriteLine(v1.Cast<object>().Glue("\n", fmt));
-        else 
+        else
             Console.WriteLine(fmt, v);
     }
 
+    /// <summary>
+    /// Join into a string a map of type <typeparamref name="T1"/> and <typeparamref name="T2"/>.
+    /// </summary>
+    /// <typeparam name="T1">The type of the keys in the map.</typeparam>
+    /// <typeparam name="T2">The type of the values in the map.</typeparam>
+    /// <param name="map">The map to be glued.</param>
+    /// <param name="sep">The separator between each key-value pair, defaults to ", ".</param>
+    /// <param name="fmt">The format of each key-value pair, defaults to "{0}->{1}".</param>
+    /// <returns>A string representation of the given map.</returns>
     public static string GlueMap<T1, T2>(this IEnumerable<KeyValuePair<T1, T2>> map, string sep = ", ", string fmt = "{0}->{1}")
     {
         return string.Join(sep, map.Select(kp => string.Format(fmt, kp.Key, kp.Value)));
@@ -91,6 +114,13 @@ public static class EnumerableExt
         return ts.ThenByDescending(t => t.Count());
     }
 
+    /// <summary>
+    /// Compares two sequences of elements of type T which implement the IComparable<T> interface.
+    /// </summary>
+    /// <typeparam name="T">The type of elements in the sequences.</typeparam>
+    /// <param name="sq1">The first sequence to compare.</param>
+    /// <param name="sq2">The second sequence to compare.</param>
+    /// <returns>A positive value if sq1 is greater than sq2, a negative value if sq1 is less than sq2, or 0 if they are equal.</returns>
     public static int SequenceCompareTo<T>(this IEnumerable<T> sq1, IEnumerable<T> sq2) where T : IComparable<T>
     {
         var en1 = sq1.GetEnumerator();
@@ -114,7 +144,14 @@ public static class EnumerableExt
         return 0;
     }
 
-    // x3 Faster than append concat, for permutation methods
+    /// <summary>
+    /// Inserts an element at a specified index in an IEnumerable.
+    /// </summary>
+    /// <typeparam name="T">The type of the elements in the IEnumerable.</typeparam>
+    /// <param name="ts">The IEnumerable to insert the element into.</param>
+    /// <param name="index">The index at which to insert the element.</param>
+    /// <param name="p">The element to insert.</param>
+    /// <returns>An IEnumerable containing the inserted element.</returns>
     public static IEnumerable<T> InsertAt<T>(this IEnumerable<T> ts, int index, T p)
     {
         int k = 0;
@@ -130,6 +167,12 @@ public static class EnumerableExt
             yield return p;
     }
 
+    /// <summary>
+    /// Generates all possible combinations of elements in a given sequence.
+    /// </summary>
+    /// <typeparam name="T">The type of the elements in the sequence.</typeparam>
+    /// <param name="seq">The sequence of elements to generate combinations from.</param>
+    /// <returns>An enumerable of arrays containing all possible combinations of elements from the given sequence.</returns>
     public static IEnumerable<T[]> AllCombinations<T>(this IEnumerable<T> seq)
     {
         var enumerable = seq as T[] ?? seq.ToArray();
@@ -137,6 +180,12 @@ public static class EnumerableExt
         return IntExt.YieldAllCombs(nb).Select(comb => comb.Zip(enumerable).Where(e => e.First).Select(e => e.Second).ToArray());
     }
 
+    /// <summary>
+    /// Generates a sequence of sequences by combining elements from the given enumerables.
+    /// </summary>
+    /// <typeparam name="T">The type of the elements in the enumerables.</typeparam>
+    /// <param name="enumerables">The enumerables to combine.</param>
+    /// <returns>A sequence of sequences, each containing one element from each of the given enumerables.</returns>
     public static IEnumerable<IEnumerable<T>> MultiLoop<T>(this IEnumerable<IEnumerable<T>> enumerables)
     {
         if (!enumerables.Any())
@@ -153,6 +202,13 @@ public static class EnumerableExt
         }
     }
 
+    /// <summary>
+    /// Generates a sequence of sequences by combining elements from the given IEnumerable and an array of other IEnumerables.
+    /// </summary>
+    /// <typeparam name="T">The type of elements in the IEnumerable.</typeparam>
+    /// <param name="ts">The original IEnumerable.</param>
+    /// <param name="other">An array of other IEnumerables.</param>
+    /// <returns>A sequence of sequences.</returns>
     public static IEnumerable<IEnumerable<T>> MultiLoopWith<T>(this IEnumerable<T> ts, params IEnumerable<T>[] other)
     {
         return MultiLoop(other.Prepend(ts));
@@ -194,22 +250,52 @@ public static class EnumerableExt
     public static IEnumerable<(T t1, T t2, T t3)> Grid3D<T>(this T[] seq) => Grid3D(seq, seq, seq);
 }
 
+/// <summary>
+/// Comparer class for HashSet<T> objects.
+/// </summary>
+/// <typeparam name="T">The type of elements in the HashSet.</typeparam>
 public class SetEquality<T> : EqualityComparer<HashSet<T>> where T : IEquatable<T>
 {
+    /// <summary>
+    /// Determines whether two HashSets are equal. 
+    /// </summary>
+    /// <param name="x">The first HashSet to compare.</param>
+    /// <param name="y">The second HashSet to compare.</param>
+    /// <returns><c>true</c>, if both sets are equal; otherwise, <c>false</c>. </returns>
     public override bool Equals(HashSet<T>? x, HashSet<T>? y)
     {
         return y is not null && x is not null && x.SetEquals(y);
     }
 
+    /// <summary> 
+    /// Returns a hash code for the specified object. 
+    /// </summary> 
+    /// <param name="obj">The object for which a hash code is to be returned.</param> 
+    /// <returns></returns> 		
     public override int GetHashCode(HashSet<T> obj) => (obj.Count(), typeof(T).GetHashCode()).GetHashCode();
 }
 
+/// <summary>
+/// Represents an EqualityComparer for IEnumerable of type T, where T is IEquatable and IComparable.
+/// </summary>
+/// <typeparam name="T">The type of the elements of the IEnumerable.</typeparam>
 public class SequenceEquality<T> : EqualityComparer<IEnumerable<T>> where T : IEquatable<T>, IComparable<T>
 {
+    /// <summary>
+    /// Compares two IEnumerable objects for equality.
+    /// </summary>
+    /// <param name="x">The first IEnumerable object to compare.</param>
+    /// <param name="y">The second IEnumerable object to compare.</param>
+    /// <returns>True if the two objects are equal, false otherwise.</returns>
     public override bool Equals(IEnumerable<T>? x, IEnumerable<T>? y)
     {
         return y is not null && x is not null && x.SequenceEqual(y);
     }
 
+    /// <summary>
+    /// Gets the hash code for the given <see cref="IEnumerable{T}"/>.
+    /// </summary>
+    /// <param name="obj">The <see cref="IEnumerable{T}"/> to get the hash code for.</param>
+    /// <returns>The hash code for the given <see cref="IEnumerable{T}"/>.</returns>
     public override int GetHashCode(IEnumerable<T> obj) => (obj.Count(), typeof(T).GetHashCode()).GetHashCode();
 }

@@ -2,8 +2,17 @@ using System.Numerics;
 
 namespace FastGoat.Commons;
 
+/// <summary>
+/// Extension class for p-adic integers. 
+/// </summary>
 public static class PadicExt
 {
+    /// <summary>
+    /// Calculates the valuation of a p-adic integer.
+    /// </summary>
+    /// <param name="p">The prime p.</param>
+    /// <param name="n">The p-adic integer to calculate the valuation for.</param>
+    /// <returns>A tuple containing the valuation and the remaining p-adic.</returns>
     public static (int val, BigInteger nb) GetValuation(int p, BigInteger n)
     {
         if (n.IsZero)
@@ -24,6 +33,13 @@ public static class PadicExt
         return (v, n0);
     }
 
+    /// <summary>
+    /// Adds a given valuation to an p-adic integer.
+    /// </summary>
+    /// <param name="p">The integer to add the value to.</param>
+    /// <param name="n">The p-adic integer to add the value to.</param>
+    /// <param name="val">The valuation to add.</param>
+    /// <returns>A tuple containing the sum of the new valuation and the remaining p-adic integer.</returns>
     public static (int val, BigInteger nb) AddValuation(int p, BigInteger n, int val)
     {
         var (v0, n0) = GetValuation(p, n);

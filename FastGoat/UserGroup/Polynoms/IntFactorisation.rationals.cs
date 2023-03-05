@@ -9,6 +9,12 @@ namespace FastGoat.UserGroup.Polynoms;
 
 public static partial class IntFactorisation
 {
+    /// <summary>
+    /// Computes the square norm of a vector row or column
+    /// </summary>
+    /// <param name="v">KMatrix<Rational></param>
+    /// <returns>Rational</returns>
+    /// <exception cref="ArgumentException"></exception>
     public static Rational SquareNorm2(KMatrix<Rational> v)
     {
         if (v.M == 1)
@@ -19,6 +25,13 @@ public static partial class IntFactorisation
         throw new ArgumentException();
     }
 
+    /// <summary>
+    /// Swap two rows of a matrix
+    /// </summary>
+    /// <param name="i"></param>
+    /// <param name="j"></param>
+    /// <param name="A"></param>
+    /// <typeparam name="T"></typeparam>
     static void SwapRows<T>(int i, int j, T[,] A)
     {
         var cols = A.GetLength(1);
@@ -135,7 +148,7 @@ public static partial class IntFactorisation
         var po = a0.Details;
         var f0 = QPoly2ZnInt(f, po);
 
-        var firr0 = IntFactorisation.Firr(f0, a0).ToArray();
+        var firr0 = Firr(f0, a0).ToArray();
         var all = new List<KPoly<ZnBInt>>(firr0);
         var o0 = 1;
 

@@ -2,8 +2,14 @@ using System.Numerics;
 
 namespace FastGoat.Commons
 {
+    /// <summary>
+    /// This static class provides extension methods for the <see cref="int"/> type.
+    /// </summary>
     public static class IntExt
     {
+        /// <summary>
+        /// Initializes the <see cref="IntExt"/> class.
+        /// </summary>
         static IntExt()
         {
             Primes10000 = new(AllPrimes(100000));
@@ -27,8 +33,15 @@ namespace FastGoat.Commons
             Rng = new();
         }
 
+        /// <summary>
+        /// Gets or sets the Random Rng.
+        /// </summary>
         public static Random Rng { get; private set; }
 
+        /// <summary>
+        /// This method sets the seed value for the random number generator.
+        /// </summary>
+        /// <param name="seed">The seed value to be used for the random number generator.</param>
         public static void RngSeed(int seed)
         {
             Rng = new(seed);
@@ -36,14 +49,22 @@ namespace FastGoat.Commons
 
         public static Dictionary<int, Dictionary<int, int[][]>> SolveSquareInt { get; }
 
-        // Primes Sequence
+        /// <summary>
+        /// All Primes less than 10000
+        /// </summary>
         public static List<int> Primes10000 { get; }
 
-        // Partitions of integers, 
-        // for each key, the dictionary contains all partitions
+        /// <summary>
+        ///  Partitions of an integers until 32. 
+        /// </summary>
         public static Dictionary<int, List<List<int>>> Partitions32;
 
-        // Compute all primes less than n
+
+        /// <summary>
+        /// Returns a sequence of prime numbers up to a given number.
+        /// </summary>
+        /// <param name="n">The maximum number to be included in the sequence.</param>
+        /// <returns>A sequence of prime numbers up to the given number.</returns>
         static IEnumerable<int> AllPrimes(int n)
         {
             var primes = new Queue<int>();
@@ -66,10 +87,11 @@ namespace FastGoat.Commons
             return primes;
         }
 
-        // Primes decompositions of an integer N
-        // Return a sequence of tuple (p, pow)
-        // N = (p0^pow0) x (p1^pow1) x (p2^pow3) x ... x (p_i^pow_i)
-        // Example : The result for N=60 is {(2,2), (3,1), (5,1)}
+        /// <summary>
+        /// Calculates the prime decomposition of a given Integer. 
+        /// </summary>
+        /// <param name="n">The Integer to decompose.</param>
+        /// <returns>An IEnumerable of ints containing the prime factors of the given Integer.</returns>
         public static IEnumerable<int> PrimesDecomposition(int n)
         {
             var n0 = n;
@@ -85,6 +107,11 @@ namespace FastGoat.Commons
             }
         }
 
+        /// <summary>
+        /// Calculates the prime decomposition of a given BigInteger. 
+        /// </summary>
+        /// <param name="n">The BigInteger to decompose.</param>
+        /// <returns>An IEnumerable of ints containing the prime factors of the given BigInteger.</returns>
         public static IEnumerable<int> PrimesDecompositionBigInt(BigInteger n)
         {
             var n0 = n;
@@ -100,6 +127,11 @@ namespace FastGoat.Commons
             }
         }
 
+        /// <summary>
+        /// This method returns a dictionary containing the prime factors of a given number.
+        /// </summary>
+        /// <param name="n">The number to be factored.</param>
+        /// <returns>A Dictionary containing the prime factors of the given number.</returns>
         public static Dictionary<int, int> PrimesDec(BigInteger n)
         {
             var dec = PrimesDecompositionBigInt(BigInteger.Abs(n));
@@ -113,10 +145,13 @@ namespace FastGoat.Commons
             return dico;
         }
 
-        // Partitions of an integers until N
-        // Return a dictionary where each key is mapped to a collection
-        // of ordered sequence of integers
-        // Example : 5 => {5}, {4,1}, {3,2}, {3,1,1}, {2,2,1}, {2,1,1,1}, {1,1,1,1,1}
+        /// <summary>
+        /// Partitions of an integers until N
+        /// Return a dictionary where each key is mapped to a collection
+        /// </summary>
+        /// <param name="n">int</param>
+        /// <returns>A dictionary of all partitions</returns>
+        /// <example>5 => {5}, {4,1}, {3,2}, {3,1,1}, {2,2,1}, {2,1,1,1}, {1,1,1,1,1}</example>
         public static Dictionary<int, List<List<int>>> IntPartitions(int n)
         {
             List<List<int>> all = new();
@@ -145,6 +180,17 @@ namespace FastGoat.Commons
             return all.GroupBy(l0 => l0.Sum()).ToDictionary(a => a.Key, b => b.ToList());
         }
 
+        /// <summary>
+        /// Map of solutions of equation
+        /// <list type="bullet">
+        /// <item><term>a^2=n</term></item>
+        /// <item><term>a^2+b^2=n</term></item>
+        /// <item><term>a^2+b^2+c^2=n</term></item>
+        /// </list>
+        /// </summary>
+        /// <param name="maxSum"></param>
+        /// <param name="maxList"></param>
+        /// <returns>A dictionary of solutions</returns>
         public static Dictionary<int, Dictionary<int, int[][]>> SquareSums(int maxSum = 128, int maxList = 10)
         {
             var maxN = (int)Double.Sqrt(maxSum);
@@ -191,9 +237,17 @@ namespace FastGoat.Commons
             return squareSums;
         }
 
+        /// <summary>
+        /// Represents the maximum of precomputed permutations.
+        /// </summary>
         public const int NbPermutations = 8;
         private static Dictionary<int, int[][]> AllPermutations { get; }
 
+        /// <summary>
+        /// Generates all possible permutations of a set of numbers. 
+        /// </summary>
+        /// <param name="n">The number of elements in the set.</param>
+        /// <returns>An enumerable of enumerables containing all possible permutations.</returns>
         public static IEnumerable<IEnumerable<int>> YieldAllPermutations(int n)
         {
             if (n == 0)
@@ -204,6 +258,12 @@ namespace FastGoat.Commons
                         yield return perm.InsertAt(i, n);
         }
 
+        /// <summary>
+        /// Generates all combinations of k elements from a set of n elements.
+        /// </summary>
+        /// <param name="k">The number of elements in each combination.</param>
+        /// <param name="n">The total number of elements in the set.</param>
+        /// <returns>An enumerable containing all possible combinations.</returns>
         public static IEnumerable<IEnumerable<bool>> YieldCombsKinN(int k, int n)
         {
             if (k == 0)
@@ -220,6 +280,11 @@ namespace FastGoat.Commons
             }
         }
 
+        /// <summary>
+        /// Generates all possible combinations of boolean values for a given number of elements.
+        /// </summary>
+        /// <param name="n">The number of elements.</param>
+        /// <returns>An enumerable of enumerables containing all possible combinations of boolean values.</returns>
         public static IEnumerable<IEnumerable<bool>> YieldAllCombs(int n)
         {
             for (int k = 0; k <= n; k++)
@@ -231,6 +296,11 @@ namespace FastGoat.Commons
             }
         }
 
+        /// <summary>
+        /// Generates all possible combinations of boolean values for a given number of elements.
+        /// </summary>
+        /// <param name="n">The number of elements.</param>
+        /// <returns>An enumerable of enumerables containing all possible combinations of boolean values.</returns>
         public static IEnumerable<IEnumerable<bool>> YieldAllCombsBinary(int n)
         {
             IEnumerable<bool> IntToBinary(int n0, int p)
@@ -242,7 +312,7 @@ namespace FastGoat.Commons
                     p0 >>= 1;
                 }
             }
-            
+
             var mx = 1 << n;
             for (int i = 0; i < mx; i++)
             {
@@ -250,13 +320,30 @@ namespace FastGoat.Commons
             }
         }
 
+        /// <summary>
+        /// Generates all possible combinations of boolean values for a given number of elements.
+        /// </summary>
+        /// <param name="n">The number of elements.</param>
+        /// <returns>An enumerable of enumerables containing all possible combinations of boolean values.</returns>
         public static IEnumerable<IEnumerable<bool>> YieldAllCombinations(int n)
         {
             return new[] { false, true }.MultiLoop(n);
         }
 
+        /// <summary>
+        /// Calculates the value of n to the power of m. 
+        /// </summary>
+        /// <param name="n">The base number.</param>
+        /// <param name="m">The exponent.</param>
+        /// <returns>The result of n to the power of m.</returns>
         public static int Pow(this int n, int m) => (int)Math.Pow(n, m);
 
+        /// <summary>
+        /// Calculates the greatest common divisor of two integers. 
+        /// </summary>
+        /// <param name="a">The first integer.</param>
+        /// <param name="b">The second integer.</param>
+        /// <returns>The greatest common divisor of the two integers.</returns>
         public static int Gcd(int a, int b)
         {
             if (b == 0)
@@ -267,6 +354,11 @@ namespace FastGoat.Commons
             return Gcd(b, r);
         }
 
+        /// <summary>
+        /// Calculates the greatest common divisor of a given array of integers.
+        /// </summary>
+        /// <param name="arr">The array of integers to calculate the GCD for.</param>
+        /// <returns>The greatest common divisor of the given array.</returns>
         public static int Gcd(int[] arr)
         {
             if (!arr.Any())
@@ -275,6 +367,12 @@ namespace FastGoat.Commons
             return Gcd(arr.First(), Gcd(arr.Skip(1).ToArray()));
         }
 
+        /// <summary>
+        /// Calculates the greatest common divisor (GCD) of two BigIntegers.
+        /// </summary>
+        /// <param name="a">The first BigInteger.</param>
+        /// <param name="b">The second BigInteger.</param>
+        /// <returns>The GCD of the two BigIntegers.</returns>
         public static BigInteger GcdBigInt(BigInteger a, BigInteger b)
         {
             if (b == 0)
@@ -283,6 +381,11 @@ namespace FastGoat.Commons
             return GcdBigInt(b, BigInteger.Remainder(a, b));
         }
 
+        /// <summary>
+        /// Calculates the greatest common divisor (GCD) of an array of BigIntegers.
+        /// </summary>
+        /// <param name="arr">An array of BigIntegers.</param>
+        /// <returns>The GCD of the given array.</returns>
         public static BigInteger GcdBigInt(BigInteger[] arr)
         {
             if (!arr.Any())
@@ -291,8 +394,19 @@ namespace FastGoat.Commons
             return GcdBigInt(arr.First(), GcdBigInt(arr.Skip(1).ToArray()));
         }
 
+        /// <summary>
+        /// Calculates the least common multiple of two BigIntegers.
+        /// </summary>
+        /// <param name="a">The first BigInteger.</param>
+        /// <param name="b">The second BigInteger.</param>
+        /// <returns>The least common multiple of the two BigIntegers.</returns>
         public static BigInteger LcmBigInt(BigInteger a, BigInteger b) => (a * b) / BigInteger.GreatestCommonDivisor(a, b);
 
+        /// <summary>
+        /// Calculates the least common multiple of an array of BigIntegers.
+        /// </summary>
+        /// <param name="arr">The array of BigIntegers.</param>
+        /// <returns>The least common multiple of the array.</returns>
         public static BigInteger LcmBigInt(BigInteger[] arr)
         {
             if (!arr.Any())
@@ -302,6 +416,12 @@ namespace FastGoat.Commons
         }
 
         // wikipedia
+        /// <summary>
+        /// Computes the Bezout coefficients and greatest common divisor of two BigIntegers.
+        /// </summary>
+        /// <param name="a">The first BigInteger.</param>
+        /// <param name="b">The second BigInteger.</param>
+        /// <returns>A tuple containing the Bezout coefficients (Xa, Xb) and the greatest common divisor (Gcd).</returns>
         public static (BigInteger Xa, BigInteger Xb, BigInteger Gcd) BezoutBigInt(BigInteger a, BigInteger b)
         {
             var (r0, x0, y0, r1, x1, y1) = (a, BigInteger.One, BigInteger.Zero, b, BigInteger.Zero, BigInteger.One);
@@ -317,6 +437,12 @@ namespace FastGoat.Commons
             return (-x0, -y0, -r0);
         }
 
+        /// <summary>
+        /// Calculates the Bezout coefficients for two integers a and b. 
+        /// </summary>
+        /// <param name="a">The first integer.</param>
+        /// <param name="b">The second integer.</param>
+        /// <returns>A tuple containing the Bezout coefficients for a and b.</returns>
         public static (int x, int y) Bezout(int a, int b)
         {
             if (b == 0)
@@ -330,6 +456,12 @@ namespace FastGoat.Commons
             return (y0, x0 - y0 * q);
         }
 
+        /// <summary>
+        /// Calculates the Bezout coefficients (x, y) for two integers a and b. 
+        /// </summary>
+        /// <param name="a">The first integer.</param>
+        /// <param name="b">The second integer.</param>
+        /// <returns>A tuple containing the Bezout coefficients (x, y).</returns>
         public static (int x, int y) BezoutVerbose(int a, int b)
         {
             if (b == 0)
@@ -351,6 +483,13 @@ namespace FastGoat.Commons
             return (y0, x0 - y0 * q);
         }
 
+        /// <summary>
+        /// Calculates the result of raising a number to a power and then modulo it with a given number. 
+        /// </summary>
+        /// <param name="a">The base number.</param>
+        /// <param name="exp">The exponent.</param>
+        /// <param name="mod">The modulus.</param>
+        /// <returns>The result of the calculation.</returns>
         public static int PowMod(int a, int exp, int mod)
         {
             var a0 = 1;
@@ -360,6 +499,13 @@ namespace FastGoat.Commons
             return AmodP(a0, mod);
         }
 
+
+        /// <summary>
+        /// Calculates the power of a given number, modulo a given number.
+        /// </summary>
+        /// <param name="a">The number to be powered.</param>
+        /// <param name="mod">The modulo to be used.</param>
+        /// <returns>An IEnumerable of integers containing the result of the power calculation.</returns>
         public static IEnumerable<int> LoopPowMod(int a, int mod)
         {
             HashSet<int> set = new() { a };
@@ -374,7 +520,12 @@ namespace FastGoat.Commons
             return set;
         }
 
-        // Saunders MacLane, Garrett Birkhoff. Algebra (3rd ed.) criteria
+        /// <summary>
+        /// Solves the equation k^m = 1 (mod n) for a given n and m.
+        /// </summary>
+        /// <param name="n">The modulus of the equation.</param>
+        /// <param name="m">The power of the equation.</param>
+        /// <returns>The solution of the equation, or -1 if no solution exists.</returns>
         public static int Solve_k_pow_m_equal_one_mod_n(int n, int m)
         {
             var seq = Enumerable.Range(2, n - 2);
@@ -382,6 +533,45 @@ namespace FastGoat.Commons
             return criteria.FirstOrDefault(-1);
         }
 
+        /// <summary>
+        /// Solves the equation k^m = 1 (mod n) for a given n and m.
+        /// </summary>
+        /// <param name="n">The modulus of the equation.</param>
+        /// <param name="m">The power of the equation.</param>
+        /// <returns>The solution of the equation, or -1 if no solution exists.</returns>
+        public static int Solve_k_pow_m_equal_one_mod_n_strict(int n, int m)
+        {
+            var seq = Enumerable.Range(2, n - 2);
+            var criteria = seq.Where(i => Gcd(i, n) == 1 && PowModEqualOne(i, m, n));
+            return criteria.FirstOrDefault(-1);
+        }
+
+        /// <summary>
+        /// Calculates if the result of a^e mod m is equal to 1.
+        /// </summary>
+        /// <param name="a">The base of the exponent.</param>
+        /// <param name="e">The exponent.</param>
+        /// <param name="m">The modulus.</param>
+        /// <returns>True if a^e mod m is equal to 1, false otherwise.</returns>
+        public static bool PowModEqualOne(int a, int e, int m)
+        {
+            var a0 = 1;
+            for (var k = 0; k < e; ++k)
+            {
+                a0 = (a0 * a) % m;
+                if (a0 == 1 && k < e - 1)
+                    return false;
+            }
+
+            return a0 == 1;
+        }
+
+        /// <summary>
+        /// Calculates the result of K^M mod N, where K is a constant. 
+        /// </summary>
+        /// <param name="n">The divisor.</param>
+        /// <param name="m">The exponent.</param>
+        /// <returns>The result of K^M mod N.</returns>
         public static int KpowMmodN(int n, int m)
         {
             var seq = Enumerable.Range(2, n - 2);
@@ -389,23 +579,45 @@ namespace FastGoat.Commons
             return criteria.FirstOrDefault(-1);
         }
 
+        /// <summary>
+        /// Calculates the remainder of a divided by p.
+        /// </summary>
+        /// <param name="a">The dividend.</param>
+        /// <param name="p">The divisor.</param>
+        /// <returns>The remainder of a divided by p.</returns>
         public static int AmodP(int a, int p)
         {
             int r = a % p;
             return r < 0 ? r + p : r;
         }
 
+        /// <summary>
+        /// Calculates the inverse modulo of a number a modulo p. 
+        /// </summary>
+        /// <param name="a">The number to calculate the inverse modulo of.</param>
+        /// <param name="p">The modulo.</param>
+        /// <returns>The inverse modulo of a modulo p.</returns>
         public static int InvModP(int a, int p) => Enumerable.Range(1, p - 1).First(e => AmodP(e * a, p) == 1);
 
+        /// <summary>
+        /// Creates a dictionary with keys from 1 to n, and values are the invert mod n of the keys. 
+        /// </summary>
+        /// <param name="n">The upper limit of the range of numbers.</param>
+        /// <returns>A Dictionary with keys from 1 to n, and values are the invert mod n of the keys.</returns>
         public static Dictionary<int, int> UnInvertible(int n)
         {
             var seq = from a in Enumerable.Range(1, n)
-                from b in Enumerable.Range(1, n)
-                select (a, b);
+                      from b in Enumerable.Range(1, n)
+                      select (a, b);
             return seq.Where(i => (i.a * i.b) % n == 1).ToDictionary(i => i.a, i => i.b);
         }
 
-        // Saunders MacLane, Garrett Birkhoff. Algebra (3rd ed.) criteria
+        /// <summary>
+        /// Solves the equation k^m = 1 (mod n) and gcd(k, n) = 1.
+        /// </summary>
+        /// <param name="n">The modulus.</param>
+        /// <param name="m">The exponent.</param>
+        /// <returns>A list of all solutions to the equation k^m = 1 (mod n).</returns>
         public static List<int> SolveAll_k_pow_m_equal_one_mod_n(int n, int m)
         {
             var seq = Enumerable.Range(2, n - 2);
@@ -413,16 +625,44 @@ namespace FastGoat.Commons
             return criteria.ToList();
         }
 
+        /// <summary>
+        /// Solves the equation a^m = 1 (mod n).
+        /// </summary>
+        /// <param name="n">The modulus.</param>
+        /// <param name="a">The base of the equation.</param>
+        /// <returns>A sequence of integers representing the solutions to the equation.</returns>
         public static IEnumerable<int> SolveAll_a_pow_m_equal_one_mod_n(int n, int a)
         {
             var seq = Enumerable.Range(2, n - 2);
             return seq.Where(m => PowMod(a, m, n) == 1);
         }
 
+        /// <summary>
+        /// Returns the coprimes of a given integer. 
+        /// </summary>
+        /// <param name="n">The integer to find the coprimes of.</param>
+        /// <returns>An IEnumerable containing all the coprimes of n.</returns>
         public static IEnumerable<int> Coprimes(int n) => n.Range(1).Where(a => Gcd(a, n) == 1);
+
+        /// <summary>
+        /// Computes the Euler's totient function phi(n) for a given integer n.
+        /// </summary>
+        /// <param name="n">The integer for which to compute phi(n).</param>
+        /// <returns>The Euler's totient function phi(n).</returns>
         public static int Phi(int n) => Coprimes(n).Count();
+
+        /// <summary>
+        /// Calculates the dividors of a given integer.
+        /// </summary>
+        /// <param name="n">The integer to calculate dividors for.</param>
+        /// <returns>An enumerable containing the dividors of the given integer.</returns>
         public static IEnumerable<int> Dividors(int n) => Enumerable.Range(1, n / 2).Where(i => i != n && n % i == 0);
 
+        /// <summary>
+        /// Calculates the Carmichael numbers up to the given value. 
+        /// </summary>
+        /// <param name="n">The maximum value of the Carmichael numbers.</param>
+        /// <returns>A list of all Carmichael numbers up to the given value.</returns>
         public static List<int> Carmichael(int n)
         {
             var l = Coprimes(n)
@@ -431,18 +671,41 @@ namespace FastGoat.Commons
             return l.ToList();
         }
 
+        /// <summary>
+        /// Calculates the least common multiple of two integers.
+        /// </summary>
+        /// <param name="a">The first integer.</param>
+        /// <param name="b">The second integer.</param>
+        /// <returns>The least common multiple of the two integers.</returns>
         public static int Lcm(int a, int b)
         {
             return a * b / Gcd(a, b);
         }
 
+        /// <summary>
+        /// Calculates the least common multiple of an array of integers.
+        /// </summary>
+        /// <param name="arr">An array of integers.</param>
+        /// <returns>The least common multiple of the integers in the array.</returns>
         public static int Lcm(int[] arr)
         {
             return arr.Aggregate((a, b) => a * b) / Gcd(arr);
         }
 
-        public static int[] Range(this int a, int start = 0, int step = 1) => a.SeqLazy(start, step).ToArray();
+        /// <summary>
+        /// Generates an array of integers with a range from the given start and step values.
+        /// </summary>
+        /// <param name="a">The end value of the range.</param>
+        /// <param name="start">The starting value of the range (defaults to 0).</param>
+        /// <param name="step">The increment between each value (defaults to 1).</param>
+        /// <returns>An array of integers with a range from the given start and step values.</returns>
+        public static int[] Range(this int a, int start = 0, int step = 1) => Enumerable.Range(0, a).Select(i => start + i * step).ToArray();
 
+        /// <summary>
+        /// Calculates and returns the factorial of the given integer.
+        /// </summary>
+        /// <param name="i">The integer to calculate the factorial of.</param>
+        /// <returns>The factorial of the given integer.</returns>
         public static BigInteger Fact(this int i) => Enumerable.Range(0, i).Aggregate(BigInteger.One, (acc, k) => acc * k);
 
         public static IEnumerable<int> SeqLazy(this int a, int start = 0, int step = 1)
@@ -450,16 +713,33 @@ namespace FastGoat.Commons
             return Enumerable.Range(0, a).Select(i => start + i * step);
         }
 
+        /// <summary>
+        /// Generates all possible permutations of the numbers from 1 to n.
+        /// </summary>
+        /// <param name="n">The upper bound of the range of numbers.</param>
+        /// <returns>An array containing all possible permutations of the numbers from 1 to n.</returns>
         public static int[][] GetPermutations(int n)
         {
             return AllPermutations[n];
         }
 
+        /// <summary>
+        /// Gets the kth permutation of a sequence of numbers from 1 to n.
+        /// </summary>
+        /// <param name="n">The length of the sequence.</param>
+        /// <param name="k">The index of the permutation to be returned.</param>
+        /// <returns>An array containing the kth permutation of a sequence from 1 to n.</returns>
         public static int[] GetPermutation(int n, int k)
         {
             return AllPermutations[n][k];
         }
 
+        /// <summary>
+        /// Generates a hash value for the given integer and array.
+        /// </summary>
+        /// <param name="n">An integer value.</param>
+        /// <param name="m">An array of integers.</param>
+        /// <returns>An integer representing the generated hash value.</returns>
         public static int GenHash(int n, int[] m)
         {
             var pow = 1;
@@ -473,6 +753,12 @@ namespace FastGoat.Commons
             return hash;
         }
 
+        /// <summary>
+        /// Converts a permutation of length n into its corresponding cycle representation.
+        /// </summary>
+        /// <param name="n">The length of the permutation.</param>
+        /// <param name="p">The permutation to convert.</param>
+        /// <returns>An array of cycles representing the given permutation.</returns>
         public static int[][] PermutationToCycles(int n, int[] p)
         {
             var orbits = new List<List<int>>();
@@ -512,6 +798,12 @@ namespace FastGoat.Commons
             return orbits.Select(l => l.ToArray()).ToArray();
         }
 
+        /// <summary>
+        /// Inverts the given permutation of an array.
+        /// </summary>
+        /// <param name="arr0">The original array.</param>
+        /// <param name="arr1">The permutation of the original array.</param>
+        /// <returns>An integer representing the inversion of the given permutation.</returns>
         public static int InvertPermutation(int[] arr0, int[] arr1)
         {
             var n = arr0.Length;
@@ -521,6 +813,13 @@ namespace FastGoat.Commons
             return GenHash(n, arr1);
         }
 
+        /// <summary>
+        /// Compose a permutation from two arrays.
+        /// </summary>
+        /// <param name="arr0">The first array.</param>
+        /// <param name="arr1">The second array.</param>
+        /// <param name="arr2">The result array.</param>
+        /// <returns>The composed permutation.</returns>
         public static int ComposePermutation(int[] arr0, int[] arr1, int[] arr2)
         {
             var n = arr0.Length;
@@ -537,6 +836,12 @@ namespace FastGoat.Commons
             return hash;
         }
 
+        /// <summary>
+        /// Checks if the given array is a valid permutation of size n.
+        /// </summary>
+        /// <param name="n">The size of the permutation.</param>
+        /// <param name="arr">The array to be checked.</param>
+        /// <returns>True if the array is a valid permutation, false otherwise.</returns>
         public static bool CheckTable(int n, int[] arr)
         {
             if (arr.Length != n)
@@ -548,6 +853,12 @@ namespace FastGoat.Commons
             return true;
         }
 
+        /// <summary>
+        /// Checks if a cycle exists in the given array.
+        /// </summary>
+        /// <param name="n">Number of elements in the array.</param>
+        /// <param name="arr">Array to be checked for a cycle.</param>
+        /// <returns>True if a cycle exists, false otherwise.</returns>
         public static bool CheckCycle(int n, int[] arr)
         {
             if (arr.Min() < 0 || arr.Max() > n - 1 || arr.Distinct().Count() != arr.Length)
@@ -556,6 +867,11 @@ namespace FastGoat.Commons
             return true;
         }
 
+        /// <summary>
+        /// Applies the given cycle to the given array.
+        /// </summary>
+        /// <param name="arr">The array to apply the cycle to.</param>
+        /// <param name="cycle">The cycle to apply.</param>
         public static void ApplyCycle(int[] arr, int[] cycle)
         {
             var a0 = arr[cycle[0]];

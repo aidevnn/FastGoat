@@ -1,7 +1,13 @@
 namespace FastGoat.Commons;
 
+/// <summary>
+/// Extension class for Conway polynomial. 
+/// </summary>
 public static class PolynomExt
 {
+    /// <summary>
+    /// Static constructor for the <see cref="PolynomExt"/> class. 
+    /// </summary>
     static PolynomExt()
     {
         AllConwayPolys = new();
@@ -20,8 +26,16 @@ public static class PolynomExt
         }
     }
 
+    /// <summary>
+    /// Represents a dictionary of all Conway Polynomials.
+    /// </summary>
     private static readonly Dictionary<int, Dictionary<int, int[]>> AllConwayPolys;
 
+    /// <summary>
+    /// Gets the Conway polynomial of a given integer q.
+    /// </summary>
+    /// <param name="q">The integer for which to calculate the Conway polynomial.</param>
+    /// <returns>A tuple containing the prime and multiplicity of the polynomial, as well as an array of coefficients.</returns>
     public static ((int p, int m) pm, int[] coefs) GetConwayPoly(int q)
     {
         var pm = IntExt.PrimesDecomposition(q).ToArray();
@@ -30,97 +44,15 @@ public static class PolynomExt
 
         var p = pm[0];
         var m = pm.Length;
+        if (m == 1)
+        {
+            var e = IntExt.Solve_k_pow_m_equal_one_mod_n_strict(p, p - 1);
+            if (e == -1)
+                throw new();
+
+            return ((p, m), new[] { p - e, 1 });
+        }
         return ((p, m), AllConwayPolys[p][m]);
-    }
-
-    public static (int d, int[] coefs)[] GetAll(int p)
-    {
-        return AllConwayPolys[p].Select(e => (e.Key, e.Value)).ToArray();
-    }
-
-    public static string PolyStr(char x, string prev, int n, int v)
-    {
-        if (v == 0) return prev;
-
-        int sgn = v < 0 ? -1 : 1;
-        int va = v < 0 ? -v : v;
-        var xs = n == 0 ? "" : n == 1 ? $"{x}" : $"{x}^{n}";
-        var vs = n == 0 ? $"{va}" : va == 1 ? $"{xs}" : $"{va}{xs}";
-        if (prev == "")
-            return sgn == -1 ? $"-{vs}" : $"{vs}";
-
-        return sgn == -1 ? $"{prev} - {vs}" : $"{prev} + {vs}";
-    }
-
-    public static int[] TrimPoly(int[] poly)
-    {
-        var stack = new Stack<int>(poly);
-        while (stack.Count != 0 && stack.Peek() == 0)
-            stack.Pop();
-
-        if (stack.Count == 0)
-            return new[] { 0 };
-
-        return stack.Reverse().ToArray();
-    }
-
-    static void AddInPlace(int p, int start, int[] acc, int[] m, int factor = 1)
-    {
-        for (int i = 0; i < m.Length; i++)
-            acc[start + i] = IntExt.AmodP(acc[start + i] + m[i] * factor, p);
-    }
-
-    public static int[] AddPoly(int p, int[] a, int[] b)
-    {
-        if (a.Length >= b.Length)
-        {
-            var acc = a.ToArray();
-            AddInPlace(p, 0, acc, b);
-            return TrimPoly(acc);
-        }
-        else
-        {
-            var acc = b.ToArray();
-            AddInPlace(p, 0, acc, a);
-            return TrimPoly(acc);
-        }
-    }
-
-    public static int[] MulKPoly(int p, int k, int[] b)
-    {
-        return TrimPoly(b.Select(e => IntExt.AmodP(e * k, p)).ToArray());
-    }
-
-    public static int[] MulPoly(int p, int[] a, int[] b)
-    {
-        var acc = new int[a.Length + b.Length];
-        for (int i = 0; i < a.Length; i++)
-            AddInPlace(p, i, acc, b, a[i]);
-
-        return TrimPoly(acc);
-    }
-
-    public static (int[] quo, int[] rem) DivPoly(int p, int[] a, int[] b)
-    {
-        if (a.Length >= b.Length)
-        {
-            var bn = b.Last();
-            var bi = IntExt.InvModP(bn, p);
-            var quo = new int[a.Length - b.Length + 1];
-            var rem = a.ToArray();
-            for (int i = 0, k = a.Length - 1; i < quo.Length; ++i, --k)
-            {
-                var f = IntExt.AmodP(-rem[k] * bi, p);
-                quo[quo.Length - i - 1] = IntExt.AmodP(-f, p);
-                AddInPlace(p, quo.Length - i - 1, rem, b, f);
-            }
-
-            return (quo, TrimPoly(rem));
-        }
-        else
-        {
-            return (new[] { 0 }, a);
-        }
     }
 
     // http://www.math.rwth-aachen.de/~Frank.Luebeck/data/ConwayPol/index.html
