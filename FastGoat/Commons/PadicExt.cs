@@ -34,9 +34,9 @@ public static class PadicExt
     }
 
     /// <summary>
-    /// Adds a given valuation to an p-adic integer.
+    /// Adds a given valuation to a p-adic integer.
     /// </summary>
-    /// <param name="p">The integer to add the value to.</param>
+    /// <param name="p">The prime p.</param>
     /// <param name="n">The p-adic integer to add the value to.</param>
     /// <param name="val">The valuation to add.</param>
     /// <returns>A tuple containing the sum of the new valuation and the remaining p-adic integer.</returns>
