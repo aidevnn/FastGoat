@@ -21,11 +21,6 @@ public static partial class FG
         return new KPoly<K>(x, scalar).X;
     }
 
-    public static RPoly<K> RPoly<K>(char x, K scalar) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
-    {
-        return new RPoly<K>(x, scalar).X;
-    }
-
     public static FracPoly<K> KFracPoly<K>(char x, K scalar) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         return new FracPoly<K>(x, scalar).X;

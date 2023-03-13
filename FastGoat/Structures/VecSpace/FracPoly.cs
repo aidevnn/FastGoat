@@ -94,6 +94,7 @@ public readonly struct FracPoly<K> : IVsElt<K, FracPoly<K>>, IElt<FracPoly<K>>, 
     public FracPoly<K> Mul(FracPoly<K> e) => new(Num * e.Num, Denom * e.Denom);
 
     public FracPoly<K> Inv() => new(Denom, Num);
+    public bool Invertible() => !Num.IsZero();
 
     public (FracPoly<K> quo, FracPoly<K> rem) Div(FracPoly<K> e) =>
         (new FracPoly<K>(Num * e.Denom, Denom * e.Num), Zero);

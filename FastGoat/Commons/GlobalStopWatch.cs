@@ -45,7 +45,7 @@ public static class GlobalStopWatch
     /// Outputs the elapsed time since the last lap or start
     /// </summary>
     /// <param name="label">Label to be output before the time</param>
-    public static void Show(string label)
+    public static void Show(string label = "")
     {
         var start = Lapse.Count == 0 ? 0 : Lapse.Pop();
         Console.WriteLine($"# {label} Time:{sw.ElapsedMilliseconds - start} ms");

@@ -55,7 +55,8 @@ public static class AlgebraicFactorization
 
     public static void AlgFactorization()
     {
-        Monom.Display = MonomDisplay.Caret;
+        Ring.DisplayPolynomial = MonomDisplay.Caret;
+        
         {
             var i = FG.EQPoly('i', 1, 0, 1);
             var x = FG.KPoly('x', i);
@@ -68,8 +69,6 @@ public static class AlgebraicFactorization
             var a = FG.EQPoly('a', -1, -3, 0, 1);
             var x = FG.KPoly('x', a);
             var f = x.Pow(3) - 3 * x - 1;
-            Console.WriteLine($"f={f}; A = f/(x-a) = {f.Div(x - a)}");
-            var A = f / (x - a);
             AlgebraicFactors(f, true);
             // x^3 + -3·x + -1 = (x + a^2 + -2) * (x + -a) * (x + -a^2 + a + 2)
         }
@@ -94,7 +93,7 @@ public static class AlgebraicFactorization
             var a = FG.EQPoly('a', -2, 0, 0, 1);
             var x = FG.KPoly('x', a);
             var A = x.Pow(3) + 3 * x.Pow(2) + 3 * x - 1;
-            AlgebraicFactors(A);
+            AlgebraicFactors(A, true);
             // x^3 + 3·x^2 + 3·x + -1 = (x + -a + 1) * (x^2 + (a + 2)·x + a^2 + a + 1)
         }
 
@@ -130,8 +129,8 @@ public static class AlgebraicFactorization
             var f = b.Pow(2) - 3;
             var (r0, a0, b0) = PrimitiveElt(f);
             Console.WriteLine($"With {b[0].F} = 0 and {f} = 0");
-            Console.WriteLine($"Trager Primitive element y with Q(y) = Q(a,b)");
-            Console.WriteLine(new[] { "SqfrNorm", $"{r0} = 0", $"a = {a0}", $"b = {b0}" }.Glue("\n"));
+            Console.WriteLine($"Primitive element y with Q(y) = Q(a,b)");
+            Console.WriteLine(new[] { "Trager SqfrNorm", $"{r0} = 0", $"a = {a0}", $"b = {b0}" }.Glue("\n"));
             var (r1, a1, b1) = PrimEltGb(f);
             Console.WriteLine(new[] { "Grobner Basis", $"{r1} = 0", $"a = {a1}", $"b = {b1}" }.Glue("\n"));
             Console.WriteLine();
@@ -187,7 +186,7 @@ public static class AlgebraicFactorization
         SplittingField(x.Pow(4) + 5, true);
         SplittingField(x.Pow(4) + 3 * x.Pow(2) + 3, true);
 
-        SplittingField(x.Pow(4) + x + 1, true); // Time:70s
-        // SplittingField(x.Pow(4) + 3*x.Pow(3) - x.Pow(2) + x + 1, true); // Time:113s
+        SplittingField(x.Pow(4) + x + 1, true); // Time:32489 ms
+        SplittingField(x.Pow(4) + 3 * x.Pow(3) - x.Pow(2) + x + 1, true); // Time:46199 ms
     }
 }

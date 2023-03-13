@@ -5,12 +5,29 @@ namespace FastGoat.Structures.VecSpace;
 [Flags]
 public enum MonomOrder
 {
-    Lex = 0b00,
-    Graded = 0b01,
-    Reverse = 0b10,
+    Lex = 0b001,
+    Graded = 0b010,
+    Reverse = 0b100,
     GrLex = Graded | Lex,
     RevLex = Reverse | Lex,
     GrevLex = Graded | Reverse
+}
+
+[Flags]
+public enum MonomDisplay
+{
+    Caret = 0b00001,
+    Superscript = 0b00010,
+    PowFct = 0b00100,
+    Star = 0b01000,
+    Dot = 0b10000,
+    Default = Superscript,
+    StarSuperscript = Star | Superscript,
+    StarCaret = Star | Caret,
+    StarPowFct = Star | PowFct,
+    DotSuperscript = Dot | Superscript,
+    DotCaret = Dot | Caret,
+    DotPowFct = Dot | PowFct
 }
 
 public readonly struct Monom<T> : IElt<Monom<T>> where T : struct, IElt<T>
@@ -167,7 +184,8 @@ public readonly struct Monom<T> : IElt<Monom<T>> where T : struct, IElt<T>
         return (0, new(Indeterminates, content));
     }
 
-    public bool Equals(Monom<T> other) => Hash == other.Hash;
+    public bool Equals(Monom<T> other) => Hash == other.Hash && Content.Count == other.Content.Count &&
+                                          Content.All(e => e.Value.Equals(other.Content[e.Key]));
 
     public int this[T t] => Content.ContainsKey(t) ? Content[t] : 0;
 
@@ -196,14 +214,14 @@ public readonly struct Monom<T> : IElt<Monom<T>> where T : struct, IElt<T>
 
     public override string ToString()
     {
-        var sep = (Monom.Display & MonomDisplay.Star) == MonomDisplay.Star ? "*" :
-            (Monom.Display & MonomDisplay.Dot) == MonomDisplay.Dot ? "." : "";
+        var sep = (Ring.DisplayPolynomial & MonomDisplay.Star) == MonomDisplay.Star ? "*" :
+            (Ring.DisplayPolynomial & MonomDisplay.Dot) == MonomDisplay.Dot ? "." : "";
 
-        if ((Monom.Display & MonomDisplay.Caret) == MonomDisplay.Caret)
+        if ((Ring.DisplayPolynomial & MonomDisplay.Caret) == MonomDisplay.Caret)
             return Content.OrderBy(e => e.Key).Select(kp => kp.Value == 1 ? $"{kp.Key}" : $"{kp.Key}^{kp.Value}")
                 .Glue(sep);
 
-        if ((Monom.Display & MonomDisplay.PowFct) == MonomDisplay.PowFct)
+        if ((Ring.DisplayPolynomial & MonomDisplay.PowFct) == MonomDisplay.PowFct)
             return Content.OrderBy(e => e.Key).Select(kp => kp.Value == 1 ? $"{kp.Key}" : $"{kp.Key}.Pow({kp.Value})")
                 .Glue(sep);
 
@@ -221,10 +239,9 @@ public readonly struct Monom<T> : IElt<Monom<T>> where T : struct, IElt<T>
 
         return s;
     }
-
+    
     private static string superscripts = "⁰¹²³⁴⁵⁶⁷⁸⁹";
-
-
+    
     public static Monom<T> Gcd(Monom<T> a, Monom<T> b)
     {
         if (!a.Indeterminates.Equals(b.Indeterminates))
@@ -259,26 +276,4 @@ public readonly struct Monom<T> : IElt<Monom<T>> where T : struct, IElt<T>
 
         return (new(a.Indeterminates, da), new(a.Indeterminates, db));
     }
-}
-
-[Flags]
-public enum MonomDisplay
-{
-    Caret = 1,
-    Superscript = 2,
-    PowFct = 4,
-    Star = 8,
-    Dot = 16,
-    Default = Superscript,
-    StarSuperscript = Star | Superscript,
-    StarCaret = Star | Caret,
-    StarPowFct = Star | PowFct,
-    DotSuperscript = Dot | Superscript,
-    DotCaret = Dot | Caret,
-    DotPowFct = Dot | PowFct
-}
-
-public static class Monom
-{
-    public static MonomDisplay Display = MonomDisplay.Default;
 }
