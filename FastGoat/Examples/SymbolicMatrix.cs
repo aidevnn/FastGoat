@@ -8,7 +8,7 @@ public static class SymbolicMatrix
 {
     static SymbolicMatrix()
     {
-        Monom.Display = MonomDisplay.StarSuperscript;
+        Ring.DisplayPolynomial = MonomDisplay.StarSuperscript;
     }
 
     public static void Mat2x2()

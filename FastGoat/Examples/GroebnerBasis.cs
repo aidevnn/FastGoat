@@ -9,7 +9,7 @@ public static class GroebnerBasis
 {
     static GroebnerBasis()
     {
-        Monom.Display = MonomDisplay.StarCaret;
+        Ring.DisplayPolynomial = MonomDisplay.StarCaret;
     }
 
     static Polynomial<Rational, Xi> Simplify(Polynomial<Rational, Xi> f)

@@ -1,10 +1,12 @@
+using System.Threading.Channels;
 using FastGoat.Commons;
+using FastGoat.UserGroup.Integers;
 using Microsoft.VisualBasic;
 
 namespace FastGoat.Structures.VecSpace;
 
 public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Polynomial<K, T>>,
-    IRingElt<Polynomial<K, T>>
+    IRingElt<Polynomial<K, T>>, IFieldElt<Polynomial<K, T>>
     where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     where T : struct, IElt<T>
 {
@@ -50,7 +52,14 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
         Hash = Coefs.Aggregate(0, (acc, a) => (acc, (a.Key.Hash, a.Value.Hash)).GetHashCode());
     }
 
-    public bool Equals(Polynomial<K, T> other) => Hash == other.Hash;
+    public bool Equals(Polynomial<K, T> other)
+    {
+        if (Hash != other.Hash)
+            return false;
+
+        return Coefs.Count == other.Coefs.Count &&
+               Coefs.All(e => other.Coefs.ContainsKey(e.Key) && other.Coefs[e.Key].Equals(e.Value));
+    }
 
     public int CompareTo(Polynomial<K, T> other)
     {
@@ -59,6 +68,24 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
     }
 
     public int P => KZero.P;
+    public Polynomial<K, T> Inv()
+    {
+        throw new NotImplementedException();
+    }
+
+    public bool Invertible() => false;
+
+    public static Polynomial<K, T> operator /(int a, Polynomial<K, T> b)
+    {
+        throw new NotImplementedException();
+    }
+
+    public static double Abs(Polynomial<K, T> t)
+    {
+        throw new NotImplementedException();
+    }
+
+    public static bool IsValuedField => false;
 
     public int Hash { get; }
 
@@ -96,6 +123,21 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
         {
             var (n, m1) = m.Remove(xi);
             var p0 = new Polynomial<K, T>(m1, c);
+            var fn = f.Pow(n);
+            var p0fn = p0 * fn;
+            poly = poly + p0fn;
+        }
+
+        return poly;
+    }
+
+    public Polynomial<U, T> Substitute<U>(U f, T xi) where U : struct, IElt<U>, IRingElt<U>, IFieldElt<U>, IVsElt<K, U>
+    {
+        var poly = new Polynomial<U, T>(Indeterminates, f.Zero);
+        foreach (var (m, c) in Coefs)
+        {
+            var (n, m1) = m.Remove(xi);
+            var p0 = new Polynomial<U, T>(m1, c * f.One);
             poly += p0 * f.Pow(n);
         }
 
@@ -126,7 +168,7 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
     public Polynomial<K, T> Substitute(Polynomial<K, T> f, Polynomial<K, T> xi) => Substitute(f, xi.ExtractIndeterminate);
 
     public Polynomial<K, T> Substitute(K k, T xi) => Substitute(k * One, xi);
-    public Polynomial<K, T> Substitute(K k, Polynomial<K, T> xi) => Substitute(k * One, xi);
+    public Polynomial<K, T> Substitute(K k, Polynomial<K, T> xi) => Substitute(new Polynomial<K, T>(Indeterminates, k), xi);
 
     public Polynomial<K, T> Substitute(int k, T xi) => Substitute(k * One, xi);
     public Polynomial<K, T> Substitute(int k, Polynomial<K, T> xi) => Substitute(k * One, xi);
@@ -144,6 +186,8 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
             return (kp.Value, kp.Key, new(Indeterminates, KZero, lt));
         }
     }
+
+    public K ConstTerm => this[new(Indeterminates)];
 
     public Polynomial<K, T> Add(Polynomial<K, T> e)
     {
@@ -331,7 +375,7 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
     public string GetString(bool reverse = false)
     {
         var one = KZero.One;
-        var sep = (Monom.Display & MonomDisplay.Star) == MonomDisplay.Star ? "*" : "·";
+        var sep = (Ring.DisplayPolynomial & MonomDisplay.Star) == MonomDisplay.Star ? "*" : "·";
 
         string Str(Monom<T> m, K k)
         {

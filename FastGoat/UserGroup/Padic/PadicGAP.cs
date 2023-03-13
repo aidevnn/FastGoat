@@ -177,7 +177,7 @@ public readonly struct PadicGAP : IElt<PadicGAP>, IRingElt<PadicGAP>, IFieldElt<
     }
 
     public PadicGAP Inv() => new(P, O, new ZnBInt(Details, K).Inv().K, -Val.V);
-
+    public bool Invertible() => !IsZero();
     public (PadicGAP quo, PadicGAP rem) Div(PadicGAP other) => (Mul(other.Inv()), Zero);
 
     public PadicGAP Mul(int k) => K.IsZero ? this : new(P, O, k * K, Val.V);

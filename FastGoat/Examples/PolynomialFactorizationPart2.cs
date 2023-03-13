@@ -17,7 +17,7 @@ public static class PolynomialFactorizationPart2
         Console.WriteLine();
         Console.WriteLine("Irreductible Factorization in Z[X]");
         Console.WriteLine();
-        Monom.Display = MonomDisplay.StarCaret;
+        Ring.DisplayPolynomial = MonomDisplay.StarCaret;
         var X = FG.QPoly('X');
 
         // AECF example 21.2, page 387
@@ -86,7 +86,7 @@ public static class PolynomialFactorizationPart2
         Console.WriteLine();
         Console.WriteLine("Irreductible Factorization in Z[X]");
         Console.WriteLine();
-        Monom.Display = MonomDisplay.StarCaret;
+        Ring.DisplayPolynomial = MonomDisplay.StarCaret;
         var X = FG.QPoly('X');
 
         VanHoeijFactorization(X.Pow(4) - 1);

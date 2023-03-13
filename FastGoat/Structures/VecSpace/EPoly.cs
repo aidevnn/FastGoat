@@ -25,13 +25,6 @@ public readonly struct EPoly<K> : IVsElt<K, EPoly<K>>, IElt<EPoly<K>>, IRingElt<
         Hash = (Poly.Hash, f.Hash).GetHashCode();
     }
 
-    private EPoly(KPoly<K> f, K k)
-    {
-        F = f;
-        Poly = new(F.x, k);
-        Hash = (Poly.Hash, f.Hash).GetHashCode();
-    }
-
     public bool Equals(EPoly<K> other) =>  Poly.Equals(other.Poly); // Avoid collisions
 
     public int CompareTo(EPoly<K> other) => Poly.CompareTo(other.Poly);
@@ -45,7 +38,9 @@ public readonly struct EPoly<K> : IVsElt<K, EPoly<K>>, IElt<EPoly<K>>, IRingElt<
         return new(F, (x / gcd).Div(F).rem);
     }
 
-    public EPoly<K> KMul(K k) => new(F, Poly.KMul(k));
+    public bool Invertible() => !IsZero();
+
+    public EPoly<K> KMul(K k) => new(F, Poly.KMul(k).Div(F).rem);
 
     public int Hash { get; }
     public bool IsZero() => Poly.IsZero();
@@ -56,10 +51,10 @@ public readonly struct EPoly<K> : IVsElt<K, EPoly<K>>, IElt<EPoly<K>>, IRingElt<
     public K KOne => F.KOne;
     public EPoly<K> Zero => new(F, F.Zero);
     public EPoly<K> One => new(F, F.One);
-    public EPoly<K> X => new(F);
+    public EPoly<K> X => new(F, F.X);
     public EPoly<K> Derivative => new(F, Poly.Derivative.Div(F).rem);
     public EPoly<K> Substitute(KPoly<K> f) => new(F, Poly.Substitute(f).Div(F).rem);
-    public EPoly<K> Substitute(EPoly<K> f) => new(f.F, Poly.Substitute(f.Poly).Div(f.F).rem);
+    public EPoly<K> Substitute(EPoly<K> f) => Poly.Substitute(f);
 
     public FracPoly<K> Substitute(FracPoly<K> f)
     {
@@ -78,14 +73,14 @@ public readonly struct EPoly<K> : IVsElt<K, EPoly<K>>, IElt<EPoly<K>>, IRingElt<
 
     public EPoly<K> Opp() => new(F, Poly.Opp());
 
-    public EPoly<K> Mul(EPoly<K> e) => new(F, Poly.Mul(e.Poly).Div(F).rem);
+    public EPoly<K> Mul(EPoly<K> e) => new(F, (Poly.Mul(e.Poly)).Div(F).rem);
 
     public (EPoly<K> quo, EPoly<K> rem) Div(EPoly<K> e)
     {
         return (this * e.Inv(), Zero);
     }
 
-    public EPoly<K> Mul(int k) => new(F, Poly.Mul(k));
+    public EPoly<K> Mul(int k) => new(F, Poly.Mul(k).Div(F).rem);
 
     public EPoly<K> Pow(int k)
     {
@@ -95,12 +90,15 @@ public readonly struct EPoly<K> : IVsElt<K, EPoly<K>>, IElt<EPoly<K>>, IRingElt<
         if (k < 0)
             return Inv().Pow(-k);
 
+        if (Degree == 0)
+            return new(F, Poly.Pow(k));
+
         var pi = Poly;
         var fi = F;
         var deg3 = F.Degree * 3;
-        var r = Enumerable.Repeat(pi, k).Aggregate((a, b) =>
+        var r = Enumerable.Repeat(pi, k).Aggregate(One.Poly, (acc, b) =>
         {
-            var e0 = a.Mul(b);
+            var e0 = acc.Mul(b);
             return e0.Degree < deg3 ? e0 : e0.Div(fi).rem;
         });
         return new(F, r.Div(F).rem);

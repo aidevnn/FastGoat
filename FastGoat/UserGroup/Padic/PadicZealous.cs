@@ -205,6 +205,7 @@ public readonly struct PadicZealous : IElt<PadicZealous>, IRingElt<PadicZealous>
         return new(P, n0, -Val, k1, Mod);
     }
 
+    public bool Invertible() => !IsZero();
     public (PadicZealous quo, PadicZealous rem) Div(PadicZealous other) => (Mul(other.Inv()), Zero);
 
     public PadicZealous Mul(int k) => Mul(new PadicZealous(P, N, k));

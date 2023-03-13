@@ -32,6 +32,7 @@ public interface IFieldElt<T> : IEquatable<T>, IComparable<T> where T : IElt<T>,
 {
     int P { get; }
     T Inv();
+    bool Invertible();
     static abstract T operator /(int a, T b);
     static abstract double Abs(T t);
     static abstract bool IsValuedField { get; }

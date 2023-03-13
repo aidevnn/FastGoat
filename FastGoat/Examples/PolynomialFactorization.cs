@@ -11,6 +11,11 @@ namespace FastGoat.Examples;
 public static class PolynomialFactorization
 {
 
+    static PolynomialFactorization()
+    {
+        Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+    }
+    
     static KPoly<K> RandPoly<K>(K scalar, int p, int n) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var coefs = n.Range().Select(i => IntExt.Rng.Next(-p, p + 1) * scalar.One).TrimSeq().Append(scalar.One).ToArray();
@@ -201,7 +206,7 @@ public static class PolynomialFactorization
 
     public static void SquareFreeFactorizationQ()
     {
-        Monom.Display = MonomDisplay.Superscript;
+        Ring.DisplayPolynomial = MonomDisplay.Superscript;
         var x = FG.QPoly();
 
         {
@@ -235,7 +240,7 @@ public static class PolynomialFactorization
 
     public static void SeparableFactorizationFp()
     {
-        Monom.Display = MonomDisplay.Superscript;
+        Ring.DisplayPolynomial = MonomDisplay.Superscript;
 
         {
             var x = FG.ZPoly(3);
@@ -269,7 +274,7 @@ public static class PolynomialFactorization
         }
 
         {
-            Monom.Display = MonomDisplay.StarPowFct;
+            Ring.DisplayPolynomial = MonomDisplay.StarPowFct;
             var x = FG.ZPoly(3);
             // x15 + 2x14 + 2x12 + x11 + 2x10 + 2x8 + x7 + 2x6 + 2x4
             var f = x.Pow(15) + 2 * x.Pow(14) + 2 * x.Pow(12) + x.Pow(11) + 2 * x.Pow(10) + 2 * x.Pow(8) + x.Pow(7) +
@@ -284,8 +289,6 @@ public static class PolynomialFactorization
 
     public static void Separable2IrreductibleFp()
     {
-        Monom.Display = MonomDisplay.StarCaret;
-
         for (int i = 0; i < 20; ++i)
         {
             var p = IntExt.Primes10000[IntExt.Rng.Next(10)]; // 2, 3, 5, 7, 11, 13, 17, 19, 23, 29
@@ -314,8 +317,6 @@ public static class PolynomialFactorization
 
     public static void FactorizationFp()
     {
-        Monom.Display = MonomDisplay.StarCaret;
-
         for (int j = 0; j < 20; j++)
         {
             var p = IntExt.Primes10000[IntExt.Rng.Next(5)]; // 2, 3, 5, 7, 11
@@ -330,8 +331,6 @@ public static class PolynomialFactorization
 
     public static void FactorizationFp2()
     {
-        Monom.Display = MonomDisplay.StarCaret;
-
         {
             var p = 3;
             var a0 = new Un(p).GetGenerators().First()[new ZnInt(p, 1)];
@@ -360,7 +359,6 @@ public static class PolynomialFactorization
     
     public static void BenchFactorisationFiniteFields()
     {
-        Monom.Display = MonomDisplay.StarCaret;
         for (int i = 0; i < 20; ++i)
         {
             var p = IntExt.Primes10000[IntExt.Rng.Next(5)]; // 2, 3, 5, 7, 11

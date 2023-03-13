@@ -3,9 +3,15 @@ using FastGoat.Commons;
 
 namespace FastGoat.Structures.VecSpace;
 
-public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<KPoly<K>>
+public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<KPoly<K>>, IFieldElt<KPoly<K>>
     where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
 {
+    public static double Abs(KPoly<K> t)
+    {
+        throw new("No absolute value is defined");
+    }
+
+    public static bool IsValuedField => false;
     public K[] Coefs { get; }
     public int Degree { get; }
     public K KZero { get; }
@@ -29,8 +35,8 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
         P = k0.P;
         x = x0;
         Coefs = new[] { k0 };
-        Hash = Coefs.Aggregate(0, (acc, a) => (acc, a.Hash).GetHashCode());
         Degree = Coefs.Length - 1;
+        Hash = (x0, Degree, typeof(K)).GetHashCode();
     }
 
     public KPoly(char x0, K kZero, K[] coefs)
@@ -40,8 +46,8 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
         x = x0;
 
         Coefs = coefs.Length != 0 ? coefs : new[] { KZero };
-        Hash = Coefs.Aggregate(0, (acc, a) => (acc, a.Hash).GetHashCode());
         Degree = Coefs.Length - 1;
+        Hash = (x0, Degree, typeof(K)).GetHashCode();
     }
 
     public K this[int idx]
@@ -84,19 +90,38 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
     public KPoly<K> X => new(x, KZero, new[] { KZero, KOne });
 
     public KPoly<K> Derivative => new(x, KZero, Coefs.Select((e, i) => e.Mul(i)).Skip(1).TrimSeq().ToArray());
-    public K Substitute(K f) => Coefs.Select((k, i) => k * f.Pow(i)).Aggregate((a, b) => a + b);
-    public KPoly<K> Substitute(KPoly<K> f) => Coefs.Select((k, i) => k * f.Pow(i)).Aggregate((a, b) => a + b);
-    public EPoly<K> Substitute(EPoly<K> f) => Coefs.Select((k, i) => k * f.Pow(i)).Aggregate((a, b) => a + b);
+
+    public K Substitute(K f)
+    {
+        var g0 = f.One;
+        var acc = f.Zero;
+        for (int i = 0; i <= Degree; i++)
+        {
+            acc += f.Pow(i) * Coefs[i];
+            g0 *= f;
+        }
+
+        return acc;
+    }
+
+    public K Substitute(int k) => Substitute(k * KOne);
+
+    public T Substitute<T>(T f) where T : IVsElt<K, T>, IElt<T>, IRingElt<T>
+    {
+        var g0 = f.One;
+        var acc = f.Zero;
+        for (int i = 0; i <= Degree; i++)
+        {
+            acc += Coefs[i] * g0;
+            g0 *= f;
+        }
+
+        return acc;
+    }
 
     public KPoly<EPoly<K>> Substitute(KPoly<EPoly<K>> f)
     {
         var poly = new KPoly<EPoly<K>>(f.x, f.KZero, Coefs.Select(k => k * f.KOne).ToArray());
-        return poly.Substitute(f);
-    }
-
-    public KPoly<FracPoly<K>> Substitute(KPoly<FracPoly<K>> f)
-    {
-        var poly = new KPoly<FracPoly<K>>(f.x, f.KZero, Coefs.Select(k => k * f.KOne).ToArray());
         return poly.Substitute(f);
     }
 
@@ -130,8 +155,20 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
         {
             var ai = this[i];
             for (int j = 0; j <= e.Degree; j++)
-                coefs[i + j] = coefs[i + j].Add(ai.Mul(e[j]));
+                coefs[i + j] += ai * e[j];
         }
+
+        // for (int i = deg; i >= 0; i--)
+        // {
+        //     var c = KZero;
+        //     for (int k = 0; k <= i; k++)
+        //     {
+        //         var j = i - k;
+        //         c += this[k] * e[j];
+        //     }
+        //
+        //     coefs[i] = c;
+        // }
 
         return new(x, KZero, coefs.TrimSeq().ToArray());
     }
@@ -158,9 +195,28 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
         }
     }
 
+    public void InPlaceProd(KPoly<K> a, K[] cache, int degree)
+    {
+        for (int i = 0; i < Coefs.Length; i++)
+        {
+            cache[i] = Coefs[i];
+            Coefs[i] = KZero;
+        }
+        
+        for (int i = 0; i <= degree; i++)
+        {
+            var ai = cache[i];
+            for (int j = 0; j <= a.Degree; j++)
+                Coefs[i + j] += ai * a[j];
+        }
+    }
+
     public KPoly<K> KMul(K k)
     {
-        var coefs = Coefs.Select(e => e.Mul(k)).TrimSeq().ToArray();
+        if (k.IsZero())
+            return Zero;
+        
+        var coefs = Coefs.Select(e => e.Mul(k)).ToArray();
         return new(x, KZero, coefs);
     }
 
@@ -180,6 +236,19 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
         if (k < 0)
             throw new GroupException(GroupExceptionType.GroupDef);
 
+        if (Degree == 0)
+            return new(x, KZero, new[] { this[0].Pow(k) });
+        
+        // var prod = new KPoly<K>(x, KZero, Enumerable.Repeat(KZero, k * Degree + 1).ToArray());
+        // prod.Coefs[0] = KOne;
+        // var cache = Enumerable.Repeat(KZero, k * Degree + 1).ToArray();
+        // for (int i = 0; i < k; i++)
+        // {
+        //     prod.InPlaceProd(this, cache, i * Degree);
+        // }
+        //
+        // return prod;
+        
         var pi = this;
         return Enumerable.Repeat(pi, k).Aggregate((a, b) => a.Mul(b));
     }
@@ -189,27 +258,56 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
         if (e.IsZero())
             throw new DivideByZeroException();
 
+        if (IsZero())
+            return (this, this);
+
         if (Degree < e.Degree)
             return (Zero, new(x, KZero, Coefs));
 
         var em = e.Coefs.Last();
         var quo = Enumerable.Repeat(KZero, Degree - e.Degree + 1).ToArray();
         var rem = Coefs.ToArray();
-        for (int i = Degree; i >= e.Degree; i--)
+        // if (em.Invertible())
+        // {
+        //     var emi = em.Inv();
+        //     for (int i = Degree; i >= e.Degree; i--)
+        //     {
+        //         var ai = rem[i];
+        //         var c = ai * emi;
+        //         quo[i - e.Degree] = c;
+        //         for (int j = 0; j <= i; j++)
+        //             rem[j] -= e[e.Degree - i + j] * c;
+        //     }
+        //
+        //     return (new(x, KZero, quo.TrimSeq().ToArray()), new(x, KZero, rem.TrimSeq().ToArray()));
+        // }
+        // else
         {
-            var ai = rem[i];
-            var qr = ai.Div(em);
-            if (!qr.rem.IsZero())
-                throw new GroupException(GroupExceptionType.GroupDef);
+            for (int i = Degree; i >= e.Degree; i--)
+            {
+                var ai = rem[i];
+                var qr = ai.Div(em);
+                if (!qr.rem.IsZero())
+                    throw new GroupException(GroupExceptionType.GroupDef);
 
-            quo[i - e.Degree] = qr.quo;
-            for (int j = 0; j <= i; j++)
-                rem[j] = rem[j].Sub(e[e.Degree - i + j].Mul(qr.quo));
+                quo[i - e.Degree] = qr.quo;
+                for (int j = 0; j <= i; j++)
+                    rem[j] -= e[e.Degree - i + j] *  qr.quo;
+            }
+
+            return (new(x, KZero, quo.TrimSeq().ToArray()), new(x, KZero, rem.TrimSeq().ToArray()));
         }
-
-        return (new(x, KZero, quo.TrimSeq().ToArray()), new(x, KZero, rem.TrimSeq().ToArray()));
     }
 
+    public KPoly<K> Inv()
+    {
+        if (Degree == 0)
+            return new KPoly<K>(x, KZero, new[] { Coefs[0].Inv() });
+
+        throw new($"Polynomial {this} of degree > 0 is not invertible");
+    }
+
+    public bool Invertible() => !IsZero() && Degree == 0;
     public override int GetHashCode() => Hash;
 
     public override string ToString()
@@ -240,5 +338,6 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
     public static KPoly<K> operator -(K a, KPoly<K> b) => b.One.KMul(a) - b;
     public static KPoly<K> operator *(KPoly<K> a, K b) => a.KMul(b);
     public static KPoly<K> operator *(K a, KPoly<K> b) => b.KMul(a);
-    public static KPoly<K> operator /(KPoly<K> a, K b) => new KPoly<K>(a.x, a.KZero, a.Coefs.Select(c => c.Div(b).quo).ToArray());
+    public static KPoly<K> operator /(KPoly<K> a, K b) => new(a.x, a.KZero, a.Coefs.Select(c => c.Div(b).quo).ToArray());
+    public static KPoly<K> operator /(int a, KPoly<K> b) => a * b.Inv();
 }

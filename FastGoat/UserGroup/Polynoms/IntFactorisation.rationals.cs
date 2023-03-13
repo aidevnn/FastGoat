@@ -269,7 +269,7 @@ public static partial class IntFactorisation
         Console.WriteLine($"f = {f}");
         var discDecomp = IntExt.PrimesDec(discQ);
         Console.WriteLine($"Disc(f) = {discQ} ~ {discDecomp.AscendingByKey().GlueMap(" * ", "{0}^{1}")}");
-        
+
         foreach (var p in IntExt.Primes10000.Where(p => !BigInteger.Remainder(discQ, p).IsZero))
         {
             try
@@ -304,7 +304,8 @@ public static partial class IntFactorisation
         var boundSigma = 2 * Double.Pow(theta, n) * Double.Pow(norm2, n - 1);
         var sigma = (int)((Double.Log(2) + n * Double.Log(theta) + (n - 1) * Double.Log(norm2)) / Double.Log(p)) + 1;
         var nb = Int32.Min(sigma / tau, max);
-        Console.WriteLine($"Search Van-Hoeij Prime P = {p} Tau = {tau} Theta = {theta} BoundSigma = {boundSigma} MaxSigma = {sigma}; Nu = {nu}");
+        Console.WriteLine(
+            $"Search Van-Hoeij Prime P = {p} Tau = {tau} Theta = {theta} BoundSigma = {boundSigma} MaxSigma = {sigma}; Nu = {nu}");
         for (int i = 2; i <= nb; i++)
         {
             var sigma2 = tau * i;
@@ -342,6 +343,15 @@ public static partial class IntFactorisation
         throw new();
     }
 
+    public static (KPoly<K> nf, KPoly<K> nx) Composed<K>(KPoly<K> f) 
+        where K : struct, IFieldElt<K>, IRingElt<K>, IElt<K>
+    {
+        var pows = f.Coefs.Select((c, i) => (c, i)).Where(e => e.i != 0 && !e.c.IsZero()).ToArray();
+        var gcd = IntExt.Gcd(pows.Select(e => e.i).ToArray());
+        var coefs = f.Coefs.Where((c, i) => i % gcd == 0).ToArray();
+        return (new(f.x, f.KZero, coefs), f.X.Pow(gcd));
+    }
+
     public static KPoly<Rational>[] FirrQ(KPoly<Rational> f, bool details = false)
     {
         var m0 = f[f.Degree];
@@ -363,7 +373,7 @@ public static partial class IntFactorisation
             Console.WriteLine($"Monic f = {f2}");
         }
 
-        var firr = FirrZ(f2);
+        var firr = FirrZ(f2, details);
 
         if (!c.Equals(c.One))
         {
@@ -433,10 +443,10 @@ public static partial class IntFactorisation
             Console.WriteLine($"Disc(f) = {discQ} ~ {discDecomp.AscendingByKey().GlueMap(" * ", "{0}^{1}")}");
         }
 
-        if (EisensteinCriterion(f, details))
-        {
-            return new[] { f };
-        }
+        // if (EisensteinCriterion(f, details))
+        // {
+        //     return new[] { f };
+        // }
 
         foreach (var (p, o) in PSigma(f))
         {
@@ -453,5 +463,4 @@ public static partial class IntFactorisation
 
         return new[] { f };
     }
-
 }

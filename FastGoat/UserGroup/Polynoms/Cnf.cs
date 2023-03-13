@@ -101,6 +101,7 @@ public struct Cnf : IElt<Cnf>, IRingElt<Cnf>, IFieldElt<Cnf>
     }
 
     public Cnf Inv() => new(N, E.Inv());
+    public bool Invertible() => true;
 
     public (Cnf quo, Cnf rem) Div(Cnf e) => (Mul(e.Inv()), Zero);
 

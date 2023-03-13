@@ -227,6 +227,7 @@ public struct KMatrix<K> : IVsElt<K, KMatrix<K>>, IElt<KMatrix<K>>, IRingElt<KMa
         return new(e.P);
     }
 
+    public bool Invertible() => !IsZero();
     public KMatrix<K> Pow(int k)
     {
         if (M != N)

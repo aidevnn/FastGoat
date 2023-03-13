@@ -88,7 +88,7 @@ public readonly struct EPolynomial<K> : IVsElt<K, EPolynomial<K>>, IElt<EPolynom
     }
 
     public EPolynomial<K> Inv() => new(Denom, Num, Basis);
-
+    public bool Invertible() => !IsZero();
     public EPolynomial<K> Mul(int k)
     {
         var num = Basis.Rem(k * Num);

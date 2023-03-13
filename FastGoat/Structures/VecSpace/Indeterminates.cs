@@ -93,6 +93,7 @@ public class Indeterminates<T> : IEnumerable<T>, IEquatable<Indeterminates<T>> w
     }
 
     public T this[int index] => Content[index];
+    public T this[string name] => Content.First(xi => xi.ToString()!.Equals(name));
     public override int GetHashCode() => Hash;
     public override string ToString() => $"[{this.Glue(",")}]({Order})";
 

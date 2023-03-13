@@ -679,11 +679,11 @@ public static partial class Ring
             A = B;
             B = R / (f * g.Pow(d));
             f = A.Coefs.Last();
-            g = f.Pow(d) / g.Pow(d - 1);
+            g = f * (f / g).Pow(d - 1);
         }
-
+        
         var dA = A.Degree;
-        return ((s * B.Pow(dA)) / g.Pow(dA - 1))[0];
+        return  ((s * B.Pow(dA)) / g.Pow(dA - 1))[0];
     }
 
     public static KPoly<K> StableGcd<K>(KPoly<K> a, KPoly<K> b)
@@ -695,7 +695,10 @@ public static partial class Ring
         var d = a.Degree - b.Degree;
         var bDeg = b.Coefs.Last().Pow(d + 1);
         var r = (bDeg * a).Div(b).rem;
-        return StableGcd(b / bDeg, r);
+        if (bDeg.Invertible())
+            return StableGcd(b * bDeg.Inv(), r);
+        else
+            return StableGcd(b / bDeg, r);
     }
 
     public static (KPoly<K> x, KPoly<K> y) StableBezout<K>(KPoly<K> a, KPoly<K> b) 
@@ -707,8 +710,17 @@ public static partial class Ring
         var d = a.Degree - b.Degree;
         var bDeg = b.Coefs.Last().Pow(d + 1);
         var (q, r) = (bDeg * a).Div(b);
-        var (x0, y0) = StableBezout(b / bDeg, r);
-        return (y0 * bDeg, x0 / bDeg - q * y0);
+        if (bDeg.Invertible())
+        {
+            var bDegi = bDeg.Inv();
+            var (x0, y0) = StableBezout(b * bDegi, r);
+            return (y0 * bDeg, x0 * bDegi - q * y0);
+        }
+        else
+        {
+            var (x0, y0) = StableBezout(b / bDeg, r);
+            return (y0 * bDeg, x0 / bDeg - q * y0);
+        }
     }
 
     public static (KMatrix<K> O, KMatrix<K> U) GramSchmidt<K>(KMatrix<K> A)

@@ -113,6 +113,8 @@ public struct ZnBInt : IElt<ZnBInt>, IRingElt<ZnBInt>, IFieldElt<ZnBInt>
         return new(Details, x / gcd);
     }
 
+    public bool Invertible() => !K.IsZero && BigInteger.GreatestCommonDivisor(K, P).IsOne;
+
     public int Sgn => K * 2 <= Mod ? 1 : -1;
     public BigInteger ToSignedBigInt => K * 2 <= Mod ? K : K - Mod;
 

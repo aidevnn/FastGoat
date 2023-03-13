@@ -95,11 +95,13 @@ public static partial class Ring
         var digits = $"{e.n - 1}".Length;
         var zeros = Enumerable.Repeat(0, digits).Glue();
         var fmt = $"{{0}}{{1,{digits}:{zeros}}}";
+        var lex = (order & MonomOrder.Lex) == MonomOrder.Lex;
         var xi = e.n.Range().Select(i => string.Format(fmt, e.h, i)).Append(x0).ToArray();
+        xi = lex ? xi : xi.OrderDescending().ToArray();
         var indeterminates = new Indeterminates<Xi>(order, xi.Select(x => new Xi(x)).ToArray());
         var xis = xi.Select(c => new Polynomial<K, Xi>(new Monom<Xi>(indeterminates, new(c), 1), scalar.One)).ToArray();
-        var X0 = xis.Last();
-        var Xis = xis.SkipLast(1).ToArray();
+        var X0 = xis.First(e0 => !e0[new Monom<Xi>(indeterminates, new(x0))].IsZero());
+        var Xis = xis.Where(e0 => e0[new Monom<Xi>(indeterminates, new(x0))].IsZero()).ToArray();
         return (X0, Xis);
     }
 
@@ -257,6 +259,23 @@ public static partial class Ring
     public static KPoly<EPoly<K>> SubstituteP0b<K>(this KPoly<EPoly<K>> P, KPoly<EPoly<K>> s, EPoly<K> a)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
+        var g0 = s.One;
+        var acc = s.Zero;
+        for (int i = 0; i <= P.Degree; i++)
+        {
+            acc += P.Coefs[i].Poly.Substitute(a) * g0;
+            g0 *= s;
+        }
+
+        return acc;
         return P.Coefs.Select((c, i) => c.Poly.Substitute(a) * s.Pow(i)).Aggregate(s.Zero, (acc, c) => acc + c);
     }
+
+    public static KPoly<K> SubstituteChar<K>(this KPoly<K> f, char c)
+        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
+    {
+        return new(c, f.KZero, f.Coefs);
+    }
+
+    public static MonomDisplay DisplayPolynomial { get; set; } = MonomDisplay.Default;
 }

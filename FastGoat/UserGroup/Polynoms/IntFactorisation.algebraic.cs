@@ -66,42 +66,25 @@ public static partial class IntFactorisation
         Console.WriteLine();
     }
 
-    public static KPoly<K> NormBak<K>(KPoly<EPoly<K>> A, char c = 'x') where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
-    {
-        var n = A.Degree;
-        var g0 = A[0].F;
-        var x = FG.KFracPoly(c, A.KZero.Poly.KZero);
-        var y = FG.KPoly(A.x, x.Zero);
-        var ga = y.Zero;
-        for (int i = 0; i <= n; i++)
-        {
-            var gi = A[i].Poly.Coefs;
-            var gy = new KPoly<FracPoly<K>>(y.x, y.KZero, gi.Select(k => k * y.KOne).ToArray());
-            ga = ga + gy * x.Pow(i);
-        }
-
-        var ug = new KPoly<FracPoly<K>>(y.x, y.KZero, g0.Coefs.Select(k => k * y.KOne).ToArray());
-        var res = Ring.FastResultant(ug, ga);
-        return res.Num;
-    }
-
     public static KPoly<K> Norm<K>(KPoly<EPoly<K>> A, char c = 'x') where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var n = A.Degree;
         var g0 = A[0].F;
-        var x = FG.RPoly(c, A.KZero.Poly.KZero);
+        var x = FG.KPoly(c, A.KZero.Poly.KZero);
         var y = FG.KPoly(A.x, x.Zero);
         var ga = y.Zero;
         for (int i = 0; i <= n; i++)
         {
+            var xi = x.Pow(i);
             var gi = A[i].Poly.Coefs;
-            var gy = new KPoly<RPoly<K>>(y.x, y.KZero, gi.Select(k => k * y.KOne).ToArray());
-            ga = ga + gy * x.Pow(i);
+            var gy = new KPoly<KPoly<K>>(y.x, y.KZero, gi.Select(k => k * xi).ToArray());
+            ga = ga + gy;
         }
 
-        var ug = new KPoly<RPoly<K>>(y.x, y.KZero, g0.Coefs.Select(k => k * y.KOne).ToArray());
+        var yKOne = y.KOne;
+        var ug = new KPoly<KPoly<K>>(y.x, y.KZero, g0.Coefs.Select(k => k * yKOne).ToArray());
         var res = Ring.FastResultant(ug, ga);
-        return res.ToKPoly();
+        return res;
     }
 
     public static void NormDetails<K>(KPoly<EPoly<K>> A, char c = 'X') where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
@@ -152,21 +135,21 @@ public static partial class IntFactorisation
         var x = g.X;
         var a = g[0].X;
         var g0 = g.Substitute(x);
-        
-        var hs = FirrZ(r);
+
+        var hs = FirrZ(r, details);
         if (hs.Length == 1)
         {
             L.Add(f.Substitute(x));
-            if(details)
+            if (details)
                 Console.WriteLine($"f = {L[0]} is irreductible");
             return L;
         }
-        
+
         foreach (var h1 in hs)
         {
             var h2 = h1.Substitute(x);
             var h3 = Ring.StableGcd(g0, h2);
-            g0 = g0 / h3;
+            g0 = (g0 / h3).Monic;
             var h4 = h3.Substitute(x + s * a);
             L.Add(h4.Monic);
         }
@@ -199,12 +182,14 @@ public static partial class IntFactorisation
             g0 += g1 * y.Pow(i);
         }
 
-        GlobalStopWatch.AddLap();
+        // GlobalStopWatch.AddLap();
+        // new object[] { $"y = {y.F.SubstituteChar('x')}", $"p0 = {p0.SubstituteChar('X')}", $"g0 = {g0.SubstituteChar('X')}" }
+        //     .Println("y, p0, g0");
         var gcd = Ring.StableGcd(p0, g0);
-        GlobalStopWatch.Show($"StableGcd [{p0}] [{g0}]");
+        // GlobalStopWatch.Show($"StableGcd\ngcd({p0},  {g0}) =\n     {gcd.Monic}\n");
         if (gcd.Degree == 0)
             throw new ArgumentException($"A={A} MinPoly={p0} A0={g0}");
-        
+
         return (-gcd[0]) / gcd[1];
     }
 
@@ -250,7 +235,7 @@ public static partial class IntFactorisation
     }
 
     // Barry Trager, Algebraic Factoring
-    public static List<EPoly<Rational>> SplittingField(KPoly<Rational> P,bool details = false)
+    public static List<EPoly<Rational>> SplittingField(KPoly<Rational> P, bool details = false)
     {
         GlobalStopWatch.Restart();
         var (X, y) = FG.EPolyXc(P, 'a');
@@ -270,7 +255,7 @@ public static partial class IntFactorisation
             var BPoly = X.Zero;
             polys[idx] = polys[idx] / (X - b);
             roots.Add(b);
-            var (quo,rem) = polys[idx].Div(X + b);
+            var (quo, rem) = polys[idx].Div(X + b);
             if (rem.IsZero())
             {
                 polys[idx] = quo;
@@ -278,22 +263,24 @@ public static partial class IntFactorisation
                 if (quo.Degree == 0)
                     polys.Clear();
             }
+
+            if (polys.Count > 0 && polys[idx].Degree == 1)
+            {
+                var pl = polys[idx];
+                roots.Add(-pl[0] / pl[1]);
+                polys.Clear();
+            }
+
             var (k, new_s) = (0, 0);
             var newFactors = new List<KPoly<EPoly<Rational>>>();
 
             foreach (var pi in polys)
             {
-                GlobalStopWatch.AddLap();
                 var (s, g, R) = SqfrNorm(pi);
-                GlobalStopWatch.Show("SqfrNorm");
-                GlobalStopWatch.AddLap();
                 var L = R.Degree < 13 ? FirrQ(R) : new[] { R };
-                GlobalStopWatch.Show("FirrQ");
                 foreach (var qj in L.Order())
                 {
-                    GlobalStopWatch.AddLap();
                     var f = Ring.StableGcd(g, qj.Substitute(X));
-                    GlobalStopWatch.Show($"StableGcd [{g}] [{qj}]");
                     if (qj.Degree > minPoly.Degree)
                     {
                         minPoly = qj;
@@ -318,9 +305,7 @@ public static partial class IntFactorisation
             }
 
             (X, new_y) = FG.EPolyXc(minPoly, 'a');
-            GlobalStopWatch.AddLap();
             var a = AlphaPrimElt(BPoly, X);
-            GlobalStopWatch.Show("AlphaPrimElt");
             b = new_y - new_s * a;
 
             if (newFactors.Count == 0)
@@ -330,7 +315,7 @@ public static partial class IntFactorisation
                     Console.WriteLine($"With {new_y.F} = 0");
                     roots.Println("Roots");
                     Console.WriteLine("Verif [Prod(X - ri)] = {0}", roots.Select(r => X - r).Aggregate((Xi, Xj) => Xi * Xj));
-                    GlobalStopWatch.Show($"Time");
+                    GlobalStopWatch.Show();
                     Console.WriteLine();
                 }
 
@@ -344,7 +329,7 @@ public static partial class IntFactorisation
     }
 
     // Barry Trager, Algebraic Factoring
-    public static List<EPoly<ZnInt>> SplittingFieldFp(KPoly<ZnInt> P,bool details = false)
+    public static List<EPoly<ZnInt>> SplittingFieldFp(KPoly<ZnInt> P, bool details = false)
     {
         var prime = Un.FirstGen(P.KOne.P);
         var (X, y) = FG.EPolyXc(P, 'a');
@@ -420,12 +405,12 @@ public static partial class IntFactorisation
         }
     }
 
-    public static List<EPoly<ZnInt>> SplittingFieldFp2(KPoly<ZnInt> P,bool details = false)
+    public static List<EPoly<ZnInt>> SplittingFieldFp2(KPoly<ZnInt> P, bool details = false)
     {
         var (X, a) = FG.EPolyXc(P, 'a');
         var gf = new GFp("Gf", a);
         var g = Group.Generate(gf, a);
-        
+
         var P0 = P.Substitute(X);
         var roots = new List<EPoly<ZnInt>>();
         foreach (var e in g)
@@ -433,7 +418,7 @@ public static partial class IntFactorisation
             if (P0.Div(X - e).rem.IsZero())
                 roots.Add(e);
         }
-    
+
         if (details)
         {
             Console.WriteLine($"Polynomial P = {P0} in Z(a)[X] mod {gf.P}");
@@ -446,10 +431,12 @@ public static partial class IntFactorisation
 
         return roots;
     }
-    
+
     // Barry Trager, Algebraic Factoring
     public static void Resolvent<K>(KPoly<K> P) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
+        GlobalStopWatch.Restart();
+        GlobalStopWatch.AddLap();
         var (X, y) = FG.EPolyXc(P, 'a');
         var Poly = P.Substitute(X);
         var minPoly = P;
@@ -459,21 +446,23 @@ public static partial class IntFactorisation
         {
             Poly = Poly / (X - b);
             roots.Add(b);
-            var (quo,rem) = Poly.Div(X + b);
+            var (quo, rem) = Poly.Div(X + b);
             if (rem.IsZero())
             {
                 Poly = quo;
                 roots.Add(-b);
             }
+
             if (Poly.Degree <= 1)
             {
                 if (Poly.Degree == 1)
                     roots.Add(-Poly[0] / Poly[1]);
-                
+
                 Console.WriteLine($"A Resolvant for [P({P.x}) = {P}] is [R({minPoly.x}) = {minPoly}]");
                 roots.Println("Roots");
                 Console.WriteLine("Prod = {0}", roots.Select(r => X - r).Aggregate((ri, rj) => ri * rj));
-                
+                GlobalStopWatch.Show("End");
+
                 return;
             }
 
@@ -484,7 +473,7 @@ public static partial class IntFactorisation
             Poly = Poly.SubstituteP0b(X, a);
             minPoly = R;
             roots = roots.Select(r => r.Substitute(a)).ToList();
+            GlobalStopWatch.Show("Loop");
         }
     }
-
 }

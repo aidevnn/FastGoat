@@ -124,6 +124,8 @@ public readonly struct ZnInt : IElt<ZnInt>, IRingElt<ZnInt>, IFieldElt<ZnInt>
         return new(Mod, x / gcd);
     }
 
+    public bool Invertible() => IntExt.Gcd(K, P) == 1;
+
     public override bool Equals(object? obj)
     {
         return obj is ZnInt z && Equals(z);

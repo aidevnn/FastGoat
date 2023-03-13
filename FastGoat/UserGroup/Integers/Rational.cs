@@ -1,5 +1,6 @@
 using System.Numerics;
 using FastGoat.Structures;
+using FastGoat.Structures.VecSpace;
 
 namespace FastGoat.UserGroup.Integers;
 
@@ -33,10 +34,19 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
         if (denom == 0)
             throw new GroupException(GroupExceptionType.GroupDef);
 
-        var gcd = BigInteger.GreatestCommonDivisor(num, denom);
-        Num = denom > 0 ? num / gcd : -num / gcd;
-        Denom = denom > 0 ? denom / gcd : -denom / gcd;
-        Hash = (Num, Denom).GetHashCode();
+        if (denom.IsOne)
+        {
+            Num = num;
+            Denom = denom;
+            Hash = (Num, Denom).GetHashCode();
+        }
+        else
+        {
+            var gcd = BigInteger.GreatestCommonDivisor(num, denom);
+            Num = denom > 0 ? num / gcd : -num / gcd;
+            Denom = denom > 0 ? denom / gcd : -denom / gcd;
+            Hash = (Num, Denom).GetHashCode();
+        }
     }
 
     public void Deconstruct(out BigInteger num, out BigInteger denom)
@@ -85,11 +95,28 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
     }
 
     public Rational Inv() => new(Denom, Num);
+    public bool Invertible() => !IsZero();
     public bool IsInteger() => Denom.IsOne;
     public static implicit operator double(Rational e) => (double)e.Num / (double)e.Denom;
 
     public override int GetHashCode() => Hash;
-    public override string ToString() => IsZero() ? "0" : Denom == 1 ? $"{Num}" : $"{Num}/{Denom}";
+    public override string ToString()
+    {
+        if (IsZero())
+            return "0";
+        else
+        {
+            if (Ring.DisplayPolynomial != MonomDisplay.StarPowFct)
+                return Denom == 1 ? $"{Num}" : $"{Num}/{Denom}";
+            else
+            {
+                if (BigInteger.Abs(Num) > int.MaxValue || BigInteger.Abs(Denom) > int.MaxValue)
+                    return Denom == 1 ? $"{Num}*r1" : $"{Num}*r1/{Denom}";
+
+                return Denom == 1 ? $"{Num}" : $"{Num}/{Denom}";
+            }
+        }
+    }
 
     public static Rational Absolute(Rational e) => new(BigInteger.Abs(e.Num), e.Denom);
     public static Rational operator +(Rational a, Rational b) => a.Add(b);
@@ -102,7 +129,9 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
     public static Rational operator *(Rational a, Rational b) => a.Mul(b);
     public static Rational operator *(Rational a, int b) => a.Mul(b);
     public static Rational operator *(int a, Rational b) => b.Mul(a);
+    public static Rational operator *(BigInteger a, Rational b) => b.Mul(new Rational(a));
     public static Rational operator /(Rational a, Rational b) => a.Div(b).quo;
     public static Rational operator /(Rational a, int b) => a.Div(a.One.Mul(b)).quo;
+    public static Rational operator /(Rational a, BigInteger b) => a.Div(a.One.Mul(new Rational(b))).quo;
     public static Rational operator /(int a, Rational b) => b.Inv().Mul(a);
 }
