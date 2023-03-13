@@ -5,6 +5,8 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>11</LangVersion>
+        <Configurations>Debug;Release</Configurations>
+        <Platforms>AnyCPU;x64</Platforms>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="dotnet-t4-project-tool" Version="2.2.1" />
@@ -18,6 +20,10 @@
             <Generator>TextTemplatingFileGenerator</Generator>
             <LastGenOutput>Tuple2Array.cs</LastGenOutput>
         </None>
+        <None Update="Commons\Array2Tuple.tt">
+          <Generator>TextTemplatingFileGenerator</Generator>
+          <LastGenOutput>Array2Tuple.cs</LastGenOutput>
+        </None>
     </ItemGroup>
     <ItemGroup>
         <Compile Update="Gp\GpEp.cs">
@@ -29,6 +35,11 @@
             <AutoGen>True</AutoGen>
             <DesignTime>True</DesignTime>
             <DependentUpon>Tuple2Array.tt</DependentUpon>
+        </Compile>
+        <Compile Update="Commons\Array2Tuple.cs">
+          <AutoGen>True</AutoGen>
+          <DesignTime>True</DesignTime>
+          <DependentUpon>Array2Tuple.tt</DependentUpon>
         </Compile>
     </ItemGroup>
 </Project>

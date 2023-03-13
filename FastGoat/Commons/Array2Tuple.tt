@@ -1,0 +1,40 @@
+<#@ template language="C#" #>
+<#@ output extension=".cs"#>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Linq" #>
+<#
+    string Glue<T>(IEnumerable<T> ts, string sep = "", string fmt = "{0}")
+    {
+        return string.Join(sep, ts.Select(t => string.Format(fmt, t)));
+    }
+#>
+namespace FastGoat.Commons;
+
+public class Array2Tuple<T>
+{
+    private T[] array { get; }
+
+    public Array2Tuple(IEnumerable<T> arr)
+    {
+        array = arr.ToArray();
+    }
+
+    public T this[int index] => array[index];
+<#
+    for (int i = 2; i < 10; i++)
+    {
+        var ais = Enumerable.Range(0, i).Select(j => $"a{j}").ToArray();
+        var parms = Glue(ais, ", ", "out T {0}");
+        var lhs = Glue(ais, ", ");
+        var rhs = Glue(Enumerable.Range(0, i), ", ", "this[{0}]");
+#>
+
+    public void Deconstruct(<#= parms #>)
+    {
+        (<#= lhs #>) = (<#= rhs #>);
+    }
+<#
+    }
+#>
+}
