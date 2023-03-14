@@ -114,7 +114,7 @@ public static partial class IntFactorisation
     {
         var disc = Ring.Discriminant(f).Num;
         var nu = Nu(f);
-        var all = IntExt.Primes10000.Where(p => !BigInteger.Remainder(disc, p).IsZero).Take(50)
+        var all = IntExt.Primes10000.Where(p => !BigInteger.Remainder(disc, p).IsZero).Take(150)
             .Select(p => (p, s: (int)(Double.Log(2 * nu) / Double.Log(p)) + 1))
             .OrderByDescending(e => e.s).ToArray();
 
@@ -263,7 +263,7 @@ public static partial class IntFactorisation
         return LLL(mat.T);
     }
 
-    public static void VanHoeijFactorization(KPoly<Rational> f, int max = 2)
+    public static KPoly<Rational>[] VanHoeijFactorization(KPoly<Rational> f, int max = 2)
     {
         var discQ = Ring.Discriminant(f).Num;
         Console.WriteLine($"f = {f}");
@@ -274,17 +274,18 @@ public static partial class IntFactorisation
         {
             try
             {
-                SearchVanHoeij(f, p, max);
-                break;
+                return SearchVanHoeij(f, p, max);
             }
             catch (Exception e)
             {
                 Console.WriteLine($"#### Prime {p} wont work ####");
             }
         }
+
+        throw new();
     }
 
-    static void SearchVanHoeij(KPoly<Rational> P, int p, int max = 2)
+    static KPoly<Rational>[] SearchVanHoeij(KPoly<Rational> P, int p, int max = 2)
     {
         var n = P.Degree;
         var x = FG.ZPoly(p);
@@ -303,9 +304,9 @@ public static partial class IntFactorisation
         var theta = sqrtN * ((1 + sqrtN / 2.0) * Double.Pow(2, (m - 1) / 2.0) * (1 + nu) * nu + 0.5) * pPowTau;
         var boundSigma = 2 * Double.Pow(theta, n) * Double.Pow(norm2, n - 1);
         var sigma = (int)((Double.Log(2) + n * Double.Log(theta) + (n - 1) * Double.Log(norm2)) / Double.Log(p)) + 1;
-        var nb = Int32.Min(sigma / tau, max);
+        var nb = Int32.Min(Int32.Max(max, Int32.Abs(sigma / tau)), max);
         Console.WriteLine(
-            $"Search Van-Hoeij Prime P = {p} Tau = {tau} Theta = {theta} BoundSigma = {boundSigma} MaxSigma = {sigma}; Nu = {nu}");
+            $"Search Van-Hoeij Prime P = {p} Tau = {tau} nb = {nb} Theta = {theta} BoundSigma = {boundSigma} MaxSigma = {sigma}; Nu = {nu}");
         for (int i = 2; i <= nb; i++)
         {
             var sigma2 = tau * i;
@@ -332,7 +333,7 @@ public static partial class IntFactorisation
                 Console.WriteLine("Fact(f) = {0} in Z[X]", polys.Glue("*", "({0})"));
                 Console.WriteLine($"f = Prod[Fact(f)] : {P.Equals(polys.Aggregate(one1, (prod, e) => prod * e))}");
                 Console.WriteLine();
-                return;
+                return polys;
             }
             catch (Exception e)
             {
@@ -343,7 +344,7 @@ public static partial class IntFactorisation
         throw new();
     }
 
-    public static (KPoly<K> nf, KPoly<K> nx) Composed<K>(KPoly<K> f) 
+    public static (KPoly<K> nf, KPoly<K> nx) Deflate<K>(KPoly<K> f) 
         where K : struct, IFieldElt<K>, IRingElt<K>, IElt<K>
     {
         var pows = f.Coefs.Select((c, i) => (c, i)).Where(e => e.i != 0 && !e.c.IsZero()).ToArray();

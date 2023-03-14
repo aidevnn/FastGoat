@@ -86,6 +86,14 @@ public static class GaloisTheory
 
         {
             var x = FG.QPoly();
+            var roots = IntFactorisation.SplittingField(x.Pow(4) + 1);
+            var gal = GaloisGroup(roots);
+            DisplayGroup.AreIsomorphics(gal, FG.Abelian(2, 2));
+            Console.WriteLine();
+        }
+
+        {
+            var x = FG.QPoly();
             var roots = IntFactorisation.SplittingField(x.Pow(4) - 4 * x.Pow(2) + 1);
             var gal = GaloisGroup(roots);
             DisplayGroup.AreIsomorphics(gal, FG.Abelian(2, 2));

@@ -136,7 +136,7 @@ public static partial class IntFactorisation
         var a = g[0].X;
         var g0 = g.Substitute(x);
 
-        var hs = FirrZ(r, details);
+        var hs = FirrQ(r, details);
         if (hs.Length == 1)
         {
             L.Add(f.Substitute(x));
@@ -165,6 +165,11 @@ public static partial class IntFactorisation
         }
 
         return L;
+    }
+
+    public static List<EPoly<Rational>> AlgebraicRoots(KPoly<EPoly<Rational>> f, bool details = false)
+    {
+        return AlgebraicFactors(f, details).Where(p => p.Degree == 1).Select(p => -p[0] / p[1]).Order().ToList();
     }
 
     public static EPoly<K> AlphaPrimElt<K>(KPoly<EPoly<K>> A, KPoly<EPoly<K>> newX)
