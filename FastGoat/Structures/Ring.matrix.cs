@@ -9,7 +9,7 @@ public static partial class Ring
     public static T[,] Matrix<T>(int rows, T[] coefs)
     {
         if (coefs.Length % rows != 0)
-            throw new ArgumentException();
+            throw new ArgumentException($"nb coefs = {coefs.Length} and rows = {rows}");
 
         var cols = coefs.Length / rows;
         var A = new T[rows, cols];
@@ -686,43 +686,59 @@ public static partial class Ring
         return  ((s * B.Pow(dA)) / g.Pow(dA - 1))[0];
     }
 
-    public static KPoly<K> StableGcd<K>(KPoly<K> a, KPoly<K> b)
+    static (KPoly<K>, KPoly<K>) FastBezoutInternal<K>(KPoly<K> A, KPoly<K> B, K w0, K y0, int d0, int i = 0)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
-        if (b.IsZero())
-            return a.CompareTo(a.Opp()) == -1 ? a.Opp() : a;
+        if (B.IsZero())
+            return A.CompareTo(A.Opp()) == -1 ? (A.One.Opp(), A.One) : (A.One, A.Zero);
 
-        var d = a.Degree - b.Degree;
-        var bDeg = b.Coefs.Last().Pow(d + 1);
-        var r = (bDeg * a).Div(b).rem;
-        if (bDeg.Invertible())
-            return StableGcd(b * bDeg.Inv(), r);
-        else
-            return StableGcd(b / bDeg, r);
+        var d1 = A.Degree - B.Degree;
+        var y1 = B.Coefs.Last();
+        var w1 = i == 0 ? -A.KOne : (-y0).Pow(d0) * w0.Pow(d0 - 1).Inv();
+        var b = i == 0 ? ((d0 + 1) % 2 == 0 ? A.KOne : -A.KOne) : -y0 * w1.Pow(d1);
+        var bi = b.Inv();
+        var cf = y1.Pow(d1 + 1);
+        var (q, r) = (cf * A).Div(B);
+        var (X0, Y0) = FastBezoutInternal(B, r * bi, w1, y1, d1, i + 1);
+        return (Y0 * bi * cf, X0 - (q * Y0 * bi));
     }
 
-    public static (KPoly<K> x, KPoly<K> y) StableBezout<K>(KPoly<K> a, KPoly<K> b) 
+    public static (KPoly<K>, KPoly<K>) FastBezout<K>(KPoly<K> A, KPoly<K> B)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
-        if (b.IsZero())
-            return a.CompareTo(a.Opp()) == -1 ? (a.One.Opp(), a.Zero) : (a.One, a.Zero);
 
-        var d = a.Degree - b.Degree;
-        var bDeg = b.Coefs.Last().Pow(d + 1);
-        var (q, r) = (bDeg * a).Div(b);
-        if (bDeg.Invertible())
+        if (A.Degree < B.Degree)
         {
-            var bDegi = bDeg.Inv();
-            var (x0, y0) = StableBezout(b * bDegi, r);
-            return (y0 * bDeg, x0 * bDegi - q * y0);
+            var (y, x) = FastBezout(B, A);
+            return (x, y);
         }
-        else
-        {
-            var (x0, y0) = StableBezout(b / bDeg, r);
-            return (y0 * bDeg, x0 / bDeg - q * y0);
-        }
+
+        return FastBezoutInternal(A, B, A.KOne, A.KOne, 0);
     }
 
+    // https://en.wikipedia.org/wiki/Polynomial_greatest_common_divisor#Pseudo-remainder_sequences
+    static KPoly<K> FastGCDInternal<K>(KPoly<K> A, KPoly<K> B, K w0, K y0, int d0, int i = 0)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        if (B.IsZero())
+            return A;
+    
+        var d1 = A.Degree - B.Degree;
+        var y1 = B.Coefs.Last();
+        var w1 = i == 0 ? -A.KOne : (-y0).Pow(d0) * w0.Pow(d0 - 1).Inv();
+        var b = i == 0 ? ((d0 + 1) % 2 == 0 ? A.KOne : -A.KOne) : -y0 * w1.Pow(d1);
+        var r = (y1.Pow(d1 + 1) * A).Div(B).rem * b.Inv();
+        return FastGCDInternal(B, r, w1, y1, d1, i + 1);
+    }
+
+    public static KPoly<K> FastGCD<K>(KPoly<K> A, KPoly<K> B) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        if (A.Degree < B.Degree)
+            return FastGCD(B, A);
+
+        return FastGCDInternal(A, B, A.KOne, A.KOne, 0);
+    }
+    
     public static (KMatrix<K> O, KMatrix<K> U) GramSchmidt<K>(KMatrix<K> A)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {

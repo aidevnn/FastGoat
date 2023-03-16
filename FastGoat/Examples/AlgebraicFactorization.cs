@@ -184,11 +184,11 @@ public static class AlgebraicFactorization
         SplittingField(x.Pow(4) + 5, true);
         SplittingField(x.Pow(4) + 3 * x.Pow(2) + 3, true);
 
-        SplittingField(x.Pow(4) + x + 1, true); // Time:32489 ms
-        SplittingField(x.Pow(4) + 3 * x.Pow(3) - x.Pow(2) + x + 1, true); // Time:46199 ms
+        SplittingField(x.Pow(4) + x + 1, true); // Time:16142 ms
+        SplittingField(x.Pow(4) + 3 * x.Pow(3) - x.Pow(2) + x + 1, true); // Time:24906 ms
     }
 
-    // ∛(∛2 - 1) = ∛(1/9) + ∛(2/9) - ∛(4/9)
+    // ∛(∛2 - 1) = ∛(1/9) - ∛(2/9) + ∛(4/9)
     public static void Ramanujan1()
     {
         var x = FG.QPoly();
@@ -203,7 +203,7 @@ public static class AlgebraicFactorization
         // Y^3 - 2/9 = 0 <=> Y = X/3 and X^3 - 6 = 0
         var d = AlgebraicRoots(X0.Pow(3) - 6, true).First() / 3;
 
-        // Y^3 - 4/9 = 0 <=> Y = X/3 and X^3 - 4 = 0
+        // Y^3 - 4/9 = 0 <=> Y = X/3 and X^3 - 12 = 0
         var e = AlgebraicRoots(X0.Pow(3) - 12, true).First() / 3;
 
         Console.WriteLine($"With {b.F} = 0");
@@ -214,7 +214,7 @@ public static class AlgebraicFactorization
         Console.WriteLine($"2c^2 = {2 * c.Pow(2)} and d*e = {d * e}");
         Console.WriteLine($"c - d + e = {c - d + e}");
         
-        // ∛(∛2 - 1) = ∛(1/9) + ∛(2/9) - ∛(4/9)
+        // ∛(∛2 - 1) = ∛(1/9) - ∛(2/9) + ∛(4/9)
         /***
             With b⁹ + 3·b⁶ + 3·b³ + -1 = 0
             a - 1 = b³ and a^3 = 2

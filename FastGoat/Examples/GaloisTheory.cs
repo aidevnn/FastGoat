@@ -52,8 +52,9 @@ public static class GaloisTheory
 
     public static void NormalExtensionCase()
     {
+        var x = FG.QPoly();
+        
         {
-            var x = FG.QPoly();
             var (X0, y0) = FG.EPolyXc(x.Pow(2) - 2, 'a');
             var gal = GaloisGroup(new List<EPoly<Rational>>() { y0, -y0 });
             DisplayGroup.AreIsomorphics(gal, FG.Abelian(2));
@@ -61,7 +62,6 @@ public static class GaloisTheory
         }
 
         {
-            var x = FG.QPoly();
             var (X0, y0) = FG.EPolyXc(x.Pow(2) + 4 * x - 2, 'a');
             var gal = GaloisGroup(new List<EPoly<Rational>>() { y0, -y0 - 4 });
             DisplayGroup.AreIsomorphics(gal, FG.Abelian(2));
@@ -69,7 +69,6 @@ public static class GaloisTheory
         }
 
         {
-            var x = FG.QPoly();
             var roots = IntFactorisation.SplittingField(x.Pow(3) - 3 * x - 1);
             var gal = GaloisGroup(roots);
             DisplayGroup.AreIsomorphics(gal, FG.Abelian(3));
@@ -77,7 +76,6 @@ public static class GaloisTheory
         }
 
         {
-            var x = FG.QPoly();
             var roots = IntFactorisation.SplittingField(x.Pow(4) - 4 * x.Pow(2) + 2);
             var gal = GaloisGroup(roots);
             DisplayGroup.AreIsomorphics(gal, FG.Abelian(4));
@@ -85,7 +83,6 @@ public static class GaloisTheory
         }
 
         {
-            var x = FG.QPoly();
             var roots = IntFactorisation.SplittingField(x.Pow(4) + 1);
             var gal = GaloisGroup(roots);
             DisplayGroup.AreIsomorphics(gal, FG.Abelian(2, 2));
@@ -93,7 +90,6 @@ public static class GaloisTheory
         }
 
         {
-            var x = FG.QPoly();
             var roots = IntFactorisation.SplittingField(x.Pow(4) - 4 * x.Pow(2) + 1);
             var gal = GaloisGroup(roots);
             DisplayGroup.AreIsomorphics(gal, FG.Abelian(2, 2));
@@ -101,7 +97,6 @@ public static class GaloisTheory
         }
 
         {
-            var x = FG.QPoly();
             var roots = IntFactorisation.SplittingField(x.Pow(4) + x.Pow(3) + x.Pow(2) + x + 1);
             var gal = GaloisGroup(roots);
             DisplayGroup.AreIsomorphics(gal, FG.Abelian(4));
@@ -109,7 +104,6 @@ public static class GaloisTheory
         }
 
         {
-            var x = FG.QPoly();
             var (X, y) = FG.EPolyXc(x.Pow(5) + x.Pow(4) - 4 * x.Pow(3) - 3 * x.Pow(2) + 3 * x + 1, 'y');
             var roots = IntFactorisation.AlgebraicFactors(y.F.Substitute(X)).Select(f => -f[0] / f[1]).ToList();
             var gal = GaloisGroup(roots);
@@ -118,7 +112,6 @@ public static class GaloisTheory
         }
 
         {
-            var x = FG.QPoly();
             var (X0, y0) = FG.EPolyXc(x.Pow(6) + 243, 'a');
 
             var z = y0.Pow(3) / 9;
@@ -134,7 +127,6 @@ public static class GaloisTheory
         }
 
         {
-            var x = FG.QPoly();
             var (X, y) = FG.EPolyXc(x.Pow(6) + 243, 'y');
             var roots = IntFactorisation.AlgebraicFactors(y.F.Substitute(X)).Select(f => -f[0] / f[1]).ToList();
             var gal = GaloisGroup(roots);
@@ -143,7 +135,6 @@ public static class GaloisTheory
         }
 
         {
-            var x = FG.QPoly();
             var (X, y) = FG.EPolyXc(x.Pow(6) + 12, 'y');
             var roots = IntFactorisation.AlgebraicFactors(y.F.Substitute(X)).Select(f => -f[0] / f[1]).ToList();
             var gal = GaloisGroup(roots);
@@ -152,9 +143,24 @@ public static class GaloisTheory
         }
 
         {
-            var x = FG.QPoly();
             var (X, y) = FG.EPolyXc(x.Pow(6) + x.Pow(5) - 7 * x.Pow(4) - 2 * x.Pow(3) + 7 * x.Pow(2) + 2 * x - 1, 'y');
             var roots = IntFactorisation.AlgebraicFactors(y.F.Substitute(X)).Select(f => -f[0] / f[1]).ToList();
+            var gal = GaloisGroup(roots);
+            DisplayGroup.AreIsomorphics(gal, FG.Abelian(6));
+            Console.WriteLine();
+        }
+
+        {
+            var (X, y) = FG.EPolyXc(x.Pow(6) + x.Pow(5) - 7 * x.Pow(4) - 2 * x.Pow(3) + 7 * x.Pow(2) + 2 * x - 1, 'y');
+            var roots = IntFactorisation.AlgebraicFactors(y.F.Substitute(X)).Select(f => -f[0] / f[1]).ToList();
+            var gal = GaloisGroup(roots);
+            DisplayGroup.AreIsomorphics(gal, FG.Abelian(6));
+            Console.WriteLine();
+        }
+
+        {
+            var (X, y) = FG.EPolyXc(x.Pow(7) + x.Pow(6) - 18 * x.Pow(5) - 35 * x.Pow(4) + 38 * x.Pow(3) + 104 * x.Pow(2) + 7 * x - 49, 'y');
+            var roots = IntFactorisation.AlgebraicRoots(y.F.Substitute(X));
             var gal = GaloisGroup(roots);
             DisplayGroup.AreIsomorphics(gal, FG.Abelian(6));
             Console.WriteLine();
@@ -163,8 +169,9 @@ public static class GaloisTheory
     
     public static void NormalExtensionCaseOrder8()
     {
+        var x = FG.QPoly();
+        
         {
-            var x = FG.QPoly();
             var (X0, r0) = FG.EPolyXc(x.Pow(8) - 8 * x.Pow(6) + 20 * x.Pow(4) - 16 * x.Pow(2) + 2, 'y');
 
             var roots2 = IntFactorisation.AlgebraicFactors(X0.Pow(4) - 8 * X0.Pow(3) + 20 * X0.Pow(2) - 16 * X0 + 2)
@@ -182,7 +189,6 @@ public static class GaloisTheory
         }
 
         {
-            var x = FG.QPoly();
             var (X0, r0) = FG.EPolyXc(x.Pow(8) + 1, 'y');
 
             var roots2 = IntFactorisation.AlgebraicFactors(X0.Pow(4) + 1).Select(f => -f[0] / f[1]).ToList();
@@ -199,7 +205,6 @@ public static class GaloisTheory
         }
 
         {
-            var x = FG.QPoly();
             var (X0, r0) = FG.EPolyXc(x.Pow(8) - x.Pow(4) + 1, 'y');
 
             var roots2 = IntFactorisation.AlgebraicFactors(X0.Pow(4) - X0.Pow(2) + 1).Select(f => -f[0] / f[1]).ToList();
@@ -216,7 +221,6 @@ public static class GaloisTheory
         }
 
         {
-            var x = FG.QPoly();
             var (X0, r0) = FG.EPolyXc(x.Pow(8) + 24 * x.Pow(4) + 16, 'y');
 
             var roots2 = IntFactorisation.AlgebraicFactors(X0.Pow(4) + 24 * X0.Pow(2) + 16).Select(f => -f[0] / f[1]).ToList();
@@ -233,7 +237,6 @@ public static class GaloisTheory
         }
 
         {
-            var x = FG.QPoly();
             var (X0, r0) = FG.EPolyXc(x.Pow(8) - 12 * x.Pow(6) + 36 * x.Pow(4) - 36 * x.Pow(2) + 9, 'y');
 
             var roots2 = IntFactorisation.AlgebraicFactors(X0.Pow(4) - 12 * X0.Pow(3) + 36 * X0.Pow(2) - 36 * X0 + 9)
@@ -245,6 +248,22 @@ public static class GaloisTheory
                 roots.AddRange(IntFactorisation.AlgebraicFactors(X0.Pow(2) - y).Select(f => -f[0] / f[1]));
             }
 
+            var gal = GaloisGroup(roots);
+            DisplayGroup.AreIsomorphics(gal, FG.Quaternion(8));
+            Console.WriteLine();
+        }
+
+        {
+            var (X0, r0) = FG.EPolyXc(x.Pow(8) + 24 * x.Pow(4) + 16, 'y');
+            var roots = IntFactorisation.AlgebraicRoots(r0.F.Substitute(X0));
+            var gal = GaloisGroup(roots);
+            DisplayGroup.AreIsomorphics(gal, FG.Dihedral(4));
+            Console.WriteLine();
+        }
+
+        {
+            var (X0, r0) = FG.EPolyXc(x.Pow(8) - 12 * x.Pow(6) + 36 * x.Pow(4) - 36 * x.Pow(2) + 9, 'y');
+            var roots = IntFactorisation.AlgebraicRoots(r0.F.Substitute(X0), true);
             var gal = GaloisGroup(roots);
             DisplayGroup.AreIsomorphics(gal, FG.Quaternion(8));
             Console.WriteLine();

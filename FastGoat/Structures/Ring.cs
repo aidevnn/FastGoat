@@ -61,7 +61,11 @@ public static partial class Ring
         var (x0, y0) = Bezout(b, r);
         return (y0, x0.Add(q.Mul(y0).Opp()));
     }
-
+/***
+a=q*b+r
+x0*b+y0*r
+y0*a + (x0-q*y0)*b = y0*a + x0*b - b*q*y0 = y0*a + x0*b - a*y0 + r*y0 = x0*b + y0*r
+ */
     public static Monom<Xi> Xi(string c, int n = 1) => new Monom<Xi>(new Xi(c), n);
 
     public static Indeterminates<Xi> Indeterminates(params string[] xs) => new(xs.Select(s => new Xi(s)).ToArray());

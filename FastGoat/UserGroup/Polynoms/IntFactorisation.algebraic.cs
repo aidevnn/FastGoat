@@ -118,7 +118,8 @@ public static partial class IntFactorisation
         {
             // Console.WriteLine($"s={s} Norm({g})");
             var r = Norm(g, c);
-            if (Ring.Gcd(r, r.Derivative).Degree == 0)
+            // Console.WriteLine($" = {r}");
+            if (Ring.FastGCD(r, r.Derivative).Degree == 0)
                 return (s, g.Monic, r);
 
             g = g.Substitute(x - a);
@@ -136,7 +137,7 @@ public static partial class IntFactorisation
         var a = g[0].X;
         var g0 = g.Substitute(x);
 
-        var hs = FirrQ(r, details);
+        var hs = FirrZ2(r, details);
         if (hs.Length == 1)
         {
             L.Add(f.Substitute(x));
@@ -148,7 +149,7 @@ public static partial class IntFactorisation
         foreach (var h1 in hs)
         {
             var h2 = h1.Substitute(x);
-            var h3 = Ring.StableGcd(g0, h2);
+            var h3 = Ring.FastGCD(g0, h2);
             g0 = (g0 / h3).Monic;
             var h4 = h3.Substitute(x + s * a);
             L.Add(h4.Monic);
@@ -190,7 +191,7 @@ public static partial class IntFactorisation
         // GlobalStopWatch.AddLap();
         // new object[] { $"y = {y.F.SubstituteChar('x')}", $"p0 = {p0.SubstituteChar('X')}", $"g0 = {g0.SubstituteChar('X')}" }
         //     .Println("y, p0, g0");
-        var gcd = Ring.StableGcd(p0, g0);
+        var gcd = Ring.FastGCD(p0, g0);
         // GlobalStopWatch.Show($"StableGcd\ngcd({p0},  {g0}) =\n     {gcd.Monic}\n");
         if (gcd.Degree == 0)
             throw new ArgumentException($"A={A} MinPoly={p0} A0={g0}");
@@ -282,10 +283,10 @@ public static partial class IntFactorisation
             foreach (var pi in polys)
             {
                 var (s, g, R) = SqfrNorm(pi);
-                var L = R.Degree < 13 ? FirrQ(R) : new[] { R };
+                var L = R.Degree < 13 ? FirrZ(R) : new[] { R };
                 foreach (var qj in L.Order())
                 {
-                    var f = Ring.StableGcd(g, qj.Substitute(X));
+                    var f = Ring.FastGCD(g, qj.Substitute(X));
                     if (qj.Degree > minPoly.Degree)
                     {
                         minPoly = qj;
@@ -363,7 +364,7 @@ public static partial class IntFactorisation
                 var L = Firr(R, prime);
                 foreach (var qj in L.Order())
                 {
-                    var f = Ring.StableGcd(g, qj.Substitute(X));
+                    var f = Ring.FastGCD(g, qj.Substitute(X));
                     if (qj.Degree > minPoly.Degree)
                     {
                         minPoly = qj;

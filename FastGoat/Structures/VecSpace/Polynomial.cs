@@ -1,4 +1,3 @@
-using System.Threading.Channels;
 using FastGoat.Commons;
 using FastGoat.UserGroup.Integers;
 using Microsoft.VisualBasic;
@@ -70,20 +69,17 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
     public int P => KZero.P;
     public Polynomial<K, T> Inv()
     {
-        throw new NotImplementedException();
+        if (Coefs.Count == 1)
+            return new(Indeterminates, ConstTerm.Inv());
+        
+        throw new();
     }
 
     public bool Invertible() => false;
 
-    public static Polynomial<K, T> operator /(int a, Polynomial<K, T> b)
-    {
-        throw new NotImplementedException();
-    }
+    public static Polynomial<K, T> operator /(int a, Polynomial<K, T> b) => b.Inv() * a;
 
-    public static double Abs(Polynomial<K, T> t)
-    {
-        throw new NotImplementedException();
-    }
+    public static double Abs(Polynomial<K, T> t) => throw new();
 
     public static bool IsValuedField => false;
 

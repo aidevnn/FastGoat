@@ -148,7 +148,13 @@ public static partial class IntFactorisation
         var po = a0.Details;
         var f0 = QPoly2ZnInt(f, po);
 
-        var firr0 = Firr(f0, a0).ToArray();
+        // GlobalStopWatch.AddLap();
+        // var firr0 = Firr(f0, a0).ToArray();
+        var firr0 = BerlekampProbabilisticVShoup(f0, a0).ToArray();
+        // var firr0 = BerlekampProbabilisticAECF(f0, a0).ToArray();
+        // var firr0 = CantorZassenhausVShoup(f0, a0).ToArray();
+        // GlobalStopWatch.Show("Firr");
+        
         var all = new List<KPoly<ZnBInt>>(firr0);
         var o0 = 1;
 
@@ -177,7 +183,7 @@ public static partial class IntFactorisation
 
     static KPoly<Rational>[] HenselLiftingNaive(KPoly<Rational> f, int p, int o, bool details = false)
     {
-        if (!f.Coefs.Last().Equals(f.KOne) || f.Coefs.Any(c => !c.Denom.IsOne))
+        if (!f.Coefs.Last().Equals(f.KOne) || f.Coefs.Any(c => c.Denom!=1))
             throw new ArgumentException();
 
         var (f0, firr0, allS) = HenselLifting(f, p, o);
@@ -434,6 +440,38 @@ public static partial class IntFactorisation
         return false;
     }
 
+    public static KPoly<Rational>[] FirrZ2(KPoly<Rational> f, bool details = false)
+    {
+        if (f.Degree == 1)
+            return new[] { f };
+        
+        var (f0, x0) = Deflate(f);
+        if (x0.Degree == 1)
+        {
+            return FirrZ(f0, details);
+        }
+        else if(f0.Degree == 1)
+        {
+            return FirrZ(f, details);
+        }
+        else
+        {
+            var facts = FirrZ(f0, details);
+            if (facts.Length == 1)
+                return FirrZ(f, details);
+
+            var facts2 = facts.SelectMany(f1 => FirrZ2(f1.Substitute(x0), details)).ToArray();
+            if (details)
+            {
+                Console.WriteLine($"f = {f}");
+                Console.WriteLine("Fact(f) = {0} in Z[X]", facts2.Glue("*", "({0})"));
+                Console.WriteLine();
+            }
+
+            return facts2;
+        }
+    }
+
     public static KPoly<Rational>[] FirrZ(KPoly<Rational> f, bool details = false)
     {
         var discQ = Ring.Discriminant(f).Num;
@@ -443,6 +481,9 @@ public static partial class IntFactorisation
             Console.WriteLine($"f = {f}");
             Console.WriteLine($"Disc(f) = {discQ} ~ {discDecomp.AscendingByKey().GlueMap(" * ", "{0}^{1}")}");
         }
+
+        if (f.Degree == 1)
+            return new[] { f };
 
         // if (EisensteinCriterion(f, details))
         // {

@@ -33,7 +33,7 @@ public readonly struct EPoly<K> : IVsElt<K, EPoly<K>>, IElt<EPoly<K>>, IRingElt<
 
     public EPoly<K> Inv()
     {
-        var (x, y) = P == 0 ? Ring.StableBezout(Poly, F) : Ring.Bezout(Poly, F);
+        var (x, y) = P == 0 ? Ring.FastBezout(Poly, F) : Ring.Bezout(Poly, F);
         var gcd = (Poly * x + F * y).Div(F).rem;
         return new(F, (x / gcd).Div(F).rem);
     }
