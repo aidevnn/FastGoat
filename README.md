@@ -134,6 +134,132 @@ All g, h not in Cl(g), Sum[r](Xr(g)Xr(h^−1))=  0       : True
 
 ```
 
+# Galois Theory
+
+Galois Group of polynomial $P = X^5 + X^4 + -4·X^3 + -3·X^2 + 3·X + 1$
+
+```csharp
+var x = FG.QPoly('X');
+var P = x.Pow(5) + x.Pow(4) - 4 * x.Pow(3) - 3 * x.Pow(2) + 3 * x + 1;
+var roots = IntFactorisation.AlgebraicRoots(P, details: true);
+var gal = GaloisTheory.GaloisGroup(roots);
+DisplayGroup.AreIsomorphics(gal, FG.Abelian(5));
+```
+
+will output
+```dotnetcli
+[...]
+
+f = X^5 + X^4 + -4·X^3 + -3·X^2 + 3·X + 1 with f(y) = 0
+Square free norm : Norm(f(X - 2*y) = X^25 + 15·X^24 + -2·X^23 + -1041·X^22 + -3564·X^21 + 26004·X^20 + 149688·X^19 + -250635·X^18 + -2748361·X^17 + -400851·X^16 + 27227266·X^15 + 29064870·X^14 + -153451709·X^13 + -259317243·X^12 + 486238870·X^11 + 1110255069·X^10 + -796849064·X^9 + -2553544620·X^8 + 486186008·X^7 + 3107537895·X^6 + 202314046·X^5 + -1779189126·X^4 + -284180058·X^3 + 346745367·X^2 + 17461251·X + -16101909
+         = (X^5 + 3·X^4 + -14·X^3 + -59·X^2 + -43·X + 23) * (X^5 + 3·X^4 + -14·X^3 + -37·X^2 + 23·X + 67) * (X^5 + 3·X^4 + -14·X^3 + -15·X^2 + X + 1) * (X^5 + 3·X^4 + -14·X^3 + -15·X^2 + 67·X + -43) * (X^5 + 3·X^4 + -36·X^3 + -81·X^2 + 243·X + 243)
+
+X^5 + X^4 + -4·X^3 + -3·X^2 + 3·X + 1 = (X + -y^2 + 2) * (X + y^4 + y^3 + -3·y^2 + -2·y + 1) * (X + -y^3 + 3·y) * (X + -y^4 + 4·y^2 + -2) * (X + -y)
+Are equals True
+
+Polynomial P = X^5 + X^4 + -4·X^3 + -3·X^2 + 3·X + 1
+Factorization in Q(α)[X] with P(α) = 0
+    X + -α
+    X + -α^2 + 2
+    X + -α^3 + 3·α
+    X + α^4 + α^3 + -3·α^2 + -2·α + 1
+    X + -α^4 + 4·α^2 + -2
+
+|Gal( Q(α)/Q )| = 5
+Type        AbelianGroup
+BaseGroup   S5
+
+Elements
+(1)[1] = []
+(2)[5] = [(1 2 5 3 4)]
+(3)[5] = [(1 3 2 4 5)]
+(4)[5] = [(1 4 3 5 2)]
+(5)[5] = [(1 5 4 2 3)]
+
+Gal( Q(α)/Q ) IsIsomorphicTo C5 : True
+```
+
+Computing $bf{Gal}(\mathbb{Q}(\sqrt{2}, \sqrt{3})/\mathbb{Q})=\mathbf{C_2}\times\mathbf{C_2}$
+
+```csharp
+Ring.DisplayPolynomial = MonomDisplay.Caret;
+var x = FG.QPoly('X');
+var (X, _) = FG.EPolyXc(x.Pow(2) - 2, 'a');
+var (minPoly, a0, b0) = IntFactorisation.PrimitiveElt(X.Pow(2) - 3);
+var roots = IntFactorisation.AlgebraicRoots(minPoly);
+Console.WriteLine("Q(√2, √3) = Q(α)");
+var gal = GaloisTheory.GaloisGroup(roots);
+DisplayGroup.AreIsomorphics(gal, FG.Abelian(2, 2));
+```
+
+will output
+```dotnetcli
+Q(√2, √3) = Q(α)
+Polynomial P = X^4 + -10·X^2 + 1
+Factorization in Q(α)[X] with P(α) = 0
+    X + α
+    X + -α
+    X + α^3 + -10·α
+    X + -α^3 + 10·α
+
+|Gal( Q(α)/Q )| = 4
+Type        AbelianGroup
+BaseGroup   S4
+
+Elements
+(1)[1] = []
+(2)[2] = [(1 2)(3 4)]
+(3)[2] = [(1 3)(2 4)]
+(4)[2] = [(1 4)(2 3)]
+
+Gal( Q(α)/Q ) IsIsomorphicTo C2 x C2 : True
+
+```
+
+
+With $\alpha^4-2 = 0,\ \bf{Gal}(\mathrm{Q}(\alpha, \mathrm{i})/\mathrm{Q}) = \mathbf{D_4}$
+```csharp
+Ring.DisplayPolynomial = MonomDisplay.Caret;
+var x = FG.QPoly('X');
+var (X, i) = FG.EPolyXc(x.Pow(2) + 1, 'i');
+var (minPoly, _, _) = IntFactorisation.PrimitiveElt(X.Pow(4) - 2);
+var roots = IntFactorisation.AlgebraicRoots(minPoly);
+Console.WriteLine("With α^4-2 = 0, Q(α, i) = Q(β)");
+var gal = GaloisTheory.GaloisGroup(roots, 'β');
+DisplayGroup.AreIsomorphics(gal, FG.Dihedral(4));
+```
+
+will output
+```dotnetcli
+With α^4-2 = 0, Q(α, i) = Q(β)
+Polynomial P = X^8 + 4·X^6 + 2·X^4 + 28·X^2 + 1
+Factorization in Q(β)[X] with P(β) = 0
+    X + β
+    X + -β
+    X + 5/12·β^7 + 19/12·β^5 + 5/12·β^3 + 139/12·β
+    X + 5/24·β^7 + -1/24·β^6 + 19/24·β^5 + -5/24·β^4 + 5/24·β^3 + -13/24·β^2 + 127/24·β + -29/24
+    X + 5/24·β^7 + 1/24·β^6 + 19/24·β^5 + 5/24·β^4 + 5/24·β^3 + 13/24·β^2 + 127/24·β + 29/24
+    X + -5/24·β^7 + -1/24·β^6 + -19/24·β^5 + -5/24·β^4 + -5/24·β^3 + -13/24·β^2 + -127/24·β + -29/24
+    X + -5/24·β^7 + 1/24·β^6 + -19/24·β^5 + 5/24·β^4 + -5/24·β^3 + 13/24·β^2 + -127/24·β + 29/24
+    X + -5/12·β^7 + -19/12·β^5 + -5/12·β^3 + -139/12·β
+
+|Gal( Q(β)/Q )| = 8
+Type        NonAbelianGroup
+BaseGroup   S8
+
+Elements
+(1)[1] = []
+(2)[2] = [(1 2)(3 8)(4 6)(5 7)]
+(3)[2] = [(1 3)(2 8)(4 7)(5 6)]
+(4)[2] = [(1 4)(2 7)(3 6)(5 8)]
+(5)[2] = [(1 5)(2 6)(3 7)(4 8)]
+(6)[2] = [(1 8)(2 3)(4 5)(6 7)]
+(7)[4] = [(1 6 8 7)(2 5 3 4)]
+(8)[4] = [(1 7 8 6)(2 4 3 5)]
+
+Gal( Q(β)/Q ) IsIsomorphicTo D8 : True
+```
+
 ## References
 
 [ALGÈBRE T1](https://laboutique.edpsciences.fr/produit/63/9782759803316/)
@@ -217,3 +343,8 @@ Springer. 4th Edition. 2015.
 Character Theory of Finite Groups.
 TU Kaiserslautern, SS2020.
 <i>Chapter 6. Induction and Restriction of Characters</i>
+
+[Wikipedia](https://www.wikipedia.org/)
+<b>Wikipedia.</b>
+The Free Encyclopedia.
+<i>Many algorithms and proofs</i>

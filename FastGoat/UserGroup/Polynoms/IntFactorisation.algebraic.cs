@@ -143,25 +143,29 @@ public static partial class IntFactorisation
             L.Add(f.Substitute(x));
             if (details)
                 Console.WriteLine($"f = {L[0]} is irreductible");
-            return L;
         }
-
-        foreach (var h1 in hs)
+        else
         {
-            var h2 = h1.Substitute(x);
-            var h3 = Ring.FastGCD(g0, h2);
-            g0 = (g0 / h3).Monic;
-            var h4 = h3.Substitute(x + s * a);
-            L.Add(h4.Monic);
+            foreach (var h1 in hs)
+            {
+                var h2 = h1.Substitute(x);
+                var h3 = Ring.FastGCD(g0, h2);
+                g0 = (g0 / h3).Monic;
+                var h4 = h3.Substitute(x + s * a);
+                L.Add(h4.Monic);
+            }
         }
-
+        
         if (details)
         {
-            Console.WriteLine($"With {a.F} = 0");
+            Console.WriteLine($"f = {f} with f({a.F.x}) = 0");
+            Console.WriteLine($"Square free norm : Norm(f({x.x} - {s}*{a.F.x}) = {r}");
+            Console.WriteLine($"         = {hs.Glue(" * ", "({0})")}");
+            Console.WriteLine();
             var prod = L.Aggregate(g.One, (acc, h) => acc * h);
             var seq = L.Glue(" * ", "({0})");
             Console.WriteLine($"{prod} = {seq}");
-            Console.WriteLine($"Is equal {f.Substitute(g.X).Equals(prod)}");
+            Console.WriteLine($"Are equals {f.Substitute(g.X).Equals(prod)}");
             Console.WriteLine();
         }
 
@@ -171,6 +175,12 @@ public static partial class IntFactorisation
     public static List<EPoly<Rational>> AlgebraicRoots(KPoly<EPoly<Rational>> f, bool details = false)
     {
         return AlgebraicFactors(f, details).Where(p => p.Degree == 1).Select(p => -p[0] / p[1]).Order().ToList();
+    }
+
+    public static List<EPoly<Rational>> AlgebraicRoots(KPoly<Rational> f, bool details = false)
+    {
+        var (X, y) = FG.EPolyXc(f, 'y');
+        return AlgebraicRoots(f.Substitute(X), details);
     }
 
     public static EPoly<K> AlphaPrimElt<K>(KPoly<EPoly<K>> A, KPoly<EPoly<K>> newX)

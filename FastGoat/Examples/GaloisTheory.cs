@@ -11,12 +11,12 @@ namespace FastGoat.Examples;
 
 public static class GaloisTheory
 {
-    public static ConcreteGroup<Perm> GaloisGroup<K>(List<EPoly<K>> roots) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    public static ConcreteGroup<Perm> GaloisGroup<K>(List<EPoly<K>> roots, char alpha = 'α') where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         if (roots.ToHashSet().Count != roots.Count || roots.Select(e => e.F).Distinct().Count() != 1)
             throw new("Roots must all be differents and belong to the same extensions");
 
-        var (X, a) = FG.EPolyXc(roots[0].F, 'a');
+        var (X, a) = FG.EPolyXc(roots[0].F, alpha);
         var prod = roots.Select(r => X - r).Aggregate(X.One, (acc, xa) => acc * xa);
         var minPoly = a.F.Substitute(X);
         if (roots.Count != a.F.Degree || !roots.Select(r => X - r).Aggregate(X.One, (acc, xa) => acc * xa).Equals(a.F.Substitute(X)))
@@ -42,9 +42,9 @@ public static class GaloisTheory
         }
 
         Console.WriteLine($"Polynomial P = {minPoly}");
-        roots.Select(r => X - r).Println("Factorization");
+        roots.Select(r => X - r).Println($"Factorization in Q({alpha})[X] with P({alpha}) = 0");
         Console.WriteLine();
-        var Gal = Group.Generate("Gal( Q(a)/Q )", sn, sigmas.ToArray());
+        var Gal = Group.Generate($"Gal( Q({alpha})/Q )", sn, sigmas.ToArray());
         DisplayGroup.HeadElements(Gal);
 
         return Gal;
