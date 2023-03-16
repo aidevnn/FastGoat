@@ -136,7 +136,7 @@ All g, h not in Cl(g), Sum[r](Xr(g)Xr(h^−1))=  0       : True
 
 # Galois Theory
 
-Galois Group of polynomial $P = X^5 + X^4 + -4·X^3 + -3·X^2 + 3·X + 1$
+Galois Group of polynomial $P = X^5 + X^4 - 4X^3 - 3X^2 + 3X + 1$
 
 ```csharp
 var x = FG.QPoly('X');
@@ -150,7 +150,7 @@ will output
 ```dotnetcli
 [...]
 
-f = X^5 + X^4 + -4·X^3 + -3·X^2 + 3·X + 1 with f(y) = 0
+f = X^5 + X^4 - 4·X^3 + -3·X^2 + 3·X + 1 with f(y) = 0
 Square free norm : Norm(f(X - 2*y) = X^25 + 15·X^24 + -2·X^23 + -1041·X^22 + -3564·X^21 + 26004·X^20 + 149688·X^19 + -250635·X^18 + -2748361·X^17 + -400851·X^16 + 27227266·X^15 + 29064870·X^14 + -153451709·X^13 + -259317243·X^12 + 486238870·X^11 + 1110255069·X^10 + -796849064·X^9 + -2553544620·X^8 + 486186008·X^7 + 3107537895·X^6 + 202314046·X^5 + -1779189126·X^4 + -284180058·X^3 + 346745367·X^2 + 17461251·X + -16101909
          = (X^5 + 3·X^4 + -14·X^3 + -59·X^2 + -43·X + 23) * (X^5 + 3·X^4 + -14·X^3 + -37·X^2 + 23·X + 67) * (X^5 + 3·X^4 + -14·X^3 + -15·X^2 + X + 1) * (X^5 + 3·X^4 + -14·X^3 + -15·X^2 + 67·X + -43) * (X^5 + 3·X^4 + -36·X^3 + -81·X^2 + 243·X + 243)
 
@@ -179,7 +179,7 @@ Elements
 Gal( Q(α)/Q ) IsIsomorphicTo C5 : True
 ```
 
-Computing $bf{Gal}(\mathbb{Q}(\sqrt{2}, \sqrt{3})/\mathbb{Q})=\mathbf{C_2}\times\mathbf{C_2}$
+Computing $\bf{Gal}(\mathbb{Q}(\sqrt{2}, \sqrt{3})/\mathbb{Q})=\mathbf{C_2}\times\mathbf{C_2}$
 
 ```csharp
 Ring.DisplayPolynomial = MonomDisplay.Caret;
