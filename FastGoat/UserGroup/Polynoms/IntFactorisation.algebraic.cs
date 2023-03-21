@@ -48,22 +48,29 @@ public static partial class IntFactorisation
         return (tr, norm);
     }
 
-    public static void CharacPoly<K>(EPoly<K> b) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    public static KPoly<K> CharacPoly<K>(EPoly<K> b, bool details = true) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var P = MatrixEndo(b);
-
         Console.WriteLine($"With {b.F} = 0");
         Console.WriteLine($"X0 = {b}");
         var f1 = P.Det;
+        
         var X = FG.KPoly('X', b[0]);
         var f2 = f1.Num.Coefs.Select((c, i) => c[0] * X.Pow(i)).Aggregate(X.Zero, (acc, a) => acc + a);
         var sep = YunSFF(f2);
-        var sep2 = sep.Select(e => (e.i, e.g.Substitute(X.Pow(e.q))))
-            .Select(e => e.i == 1 ? $"({e.Item2})" : $"({e.Item2})^{e.i}").Glue(" * ");
 
-        Console.WriteLine($"Characteristic Polynomial of X0 is f(X) = {sep2}");
-        Console.WriteLine("f(X0) = {0}", f1.Substitute(b.ToKPoly('x')));
-        Console.WriteLine();
+        if (details)
+        {
+            var sep2 = sep.Select(e => (e.i, e.g.Substitute(X.Pow(e.q))))
+                .Select(e => e.i == 1 ? $"({e.Item2})" : $"({e.Item2})^{e.i}").Glue(" * ");
+
+            Console.WriteLine($"Characteristic Polynomial of X0 is f(X) = {sep2}");
+            Console.WriteLine("f(X0) = {0}", f1.Substitute(b.ToKPoly('x')));
+            Console.WriteLine();
+        }
+
+        var (g, q, _) = sep[0];
+        return g.Substitute(X.Pow(q));
     }
 
     public static KPoly<K> Norm<K>(KPoly<EPoly<K>> A, char c = 'x') where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
@@ -99,10 +106,10 @@ public static partial class IntFactorisation
 
         var pow = sep.Select(e => norm.X.Pow(e.q)).Glue(fmt: "({0})");
         Console.WriteLine($"Norm(P) = f = {sep2} = [{norm}]{pow}");
-
-        var f2 = norm.Coefs.Select((e, i) => (A.KOne * e) * A.X.Pow(i)).Aggregate((a, b) => a + b);
-        var (q, r) = f2.Div(A);
-        Console.WriteLine($"f/P = {q} rem {r}");
+        //
+        // var f2 = norm.Coefs.Select((e, i) => (A.KOne * e) * A.X.Pow(i)).Aggregate((a, b) => a + b);
+        // var (q, r) = f2.Div(A);
+        // Console.WriteLine($"f/P = {q} rem {r}");
         Console.WriteLine();
     }
 
@@ -114,15 +121,14 @@ public static partial class IntFactorisation
         var x = f.X;
         var g = f.Substitute(x);
         // Console.WriteLine($"SqfrNorm({f})");
-        for (int s = 0; s < 150; s++)
+        for (int s = 1; s < 150; s++)
         {
+            g = g.Substitute(x - a);
             // Console.WriteLine($"s={s} Norm({g})");
             var r = Norm(g, c);
             // Console.WriteLine($" = {r}");
-            if (Ring.FastGCD(r, r.Derivative).Degree == 0)
+            if (Ring.Gcd(r, r.Derivative).Degree == 0)
                 return (s, g.Monic, r);
-
-            g = g.Substitute(x - a);
         }
 
         throw new Exception();
@@ -172,6 +178,12 @@ public static partial class IntFactorisation
         return L;
     }
 
+    public static List<KPoly<EPoly<Rational>>> AlgebraicFactors(KPoly<Rational> f, bool details = false)
+    {
+        var (X, y) = FG.EPolyXc(f, 'y');
+        return AlgebraicFactors(f.Substitute(X), details);
+    }
+
     public static List<EPoly<Rational>> AlgebraicRoots(KPoly<EPoly<Rational>> f, bool details = false)
     {
         return AlgebraicFactors(f, details).Where(p => p.Degree == 1).Select(p => -p[0] / p[1]).Order().ToList();
@@ -198,13 +210,9 @@ public static partial class IntFactorisation
             g0 += g1 * y.Pow(i);
         }
 
-        // GlobalStopWatch.AddLap();
-        // new object[] { $"y = {y.F.SubstituteChar('x')}", $"p0 = {p0.SubstituteChar('X')}", $"g0 = {g0.SubstituteChar('X')}" }
-        //     .Println("y, p0, g0");
         var gcd = Ring.FastGCD(p0, g0);
-        // GlobalStopWatch.Show($"StableGcd\ngcd({p0},  {g0}) =\n     {gcd.Monic}\n");
-        if (gcd.Degree == 0)
-            throw new ArgumentException($"A={A} MinPoly={p0} A0={g0}");
+        if (gcd.Degree != 1)
+            throw new ArgumentException($"A={A} MinPoly={p0} A0={g0} gcd={gcd}");
 
         return (-gcd[0]) / gcd[1];
     }
@@ -219,6 +227,17 @@ public static partial class IntFactorisation
         var a = AlphaPrimElt(g, x);
         var b = y - s * a;
         return (r, a.Poly, b.Poly);
+    }
+
+    public static (KPoly<EPoly<Rational>> X, EPoly<Rational> a, EPoly<Rational> b)[] PrimitiveElt(KPoly<Rational> f, KPoly<Rational> g)
+    {
+        var (X0, y0) = FG.EPolyXc(f, 'y');
+        var (r, a0, b0) = PrimitiveElt(g.Substitute(X0));
+        return FirrZ2(r).Select(r0 =>
+        {
+            var (X1, y1) = FG.EPolyXc(r0, 'y');
+            return (X1, a0.Substitute(y1), b0.Substitute(y1));
+        }).ToArray();
     }
 
     public static (KPoly<K> minPoly, KPoly<K> a, KPoly<K> b) PrimEltGb<K>(KPoly<EPoly<K>> f)
@@ -296,7 +315,7 @@ public static partial class IntFactorisation
                 var L = R.Degree < 13 ? FirrZ(R) : new[] { R };
                 foreach (var qj in L.Order())
                 {
-                    var f = Ring.FastGCD(g, qj.Substitute(X));
+                    var f = Ring.Gcd(g, qj.Substitute(X));
                     if (qj.Degree > minPoly.Degree)
                     {
                         minPoly = qj;

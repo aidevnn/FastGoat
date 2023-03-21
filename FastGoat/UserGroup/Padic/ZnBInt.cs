@@ -16,7 +16,7 @@ public struct ZnBInt : IElt<ZnBInt>, IRingElt<ZnBInt>, IFieldElt<ZnBInt>
     {
         if (z.IsZero())
             return 0;
-        
+
         var a0 = z.K;
         for (int k = 0; k < z.Details.O; ++k)
         {
@@ -24,9 +24,10 @@ public struct ZnBInt : IElt<ZnBInt>, IRingElt<ZnBInt>, IFieldElt<ZnBInt>
             if (a0.IsZero)
                 return k;
         }
-        
+
         return z.Details.O;
     }
+
     public static bool IsValuedField => true;
     public int P => Details.P;
 
@@ -82,10 +83,10 @@ public struct ZnBInt : IElt<ZnBInt>, IRingElt<ZnBInt>, IFieldElt<ZnBInt>
         }
         else
         {
-            var inv = (x / gcd1) % Mod;
-            var q = new ZnBInt(Details, inv * e0);
-            var r = new ZnBInt(Details, K - q.K * e.K);
-            return (q, r); // r = 0 always
+            var inv = BigInteger.Remainder(e0 * x / gcd1, Mod);
+            var q = new ZnBInt(Details, inv);
+            // var r = new ZnBInt(Details, K - q.K * e.K); // r = 0 always
+            return (q, Zero);
         }
     }
 
@@ -105,6 +106,9 @@ public struct ZnBInt : IElt<ZnBInt>, IRingElt<ZnBInt>, IFieldElt<ZnBInt>
 
     public ZnBInt Inv()
     {
+        if (K.IsZero)
+            throw new DivideByZeroException();
+
         var (x, y) = BezoutBigInteger(K, Mod);
         var gcd = K * x + Mod * y;
         if (x % gcd != 0)
@@ -214,8 +218,8 @@ public struct ZnBInt : IElt<ZnBInt>, IRingElt<ZnBInt>, IFieldElt<ZnBInt>
             return (x, 0);
         }
 
-        var q = a / b;
-        var (x0, y0) = BezoutBigInteger(b, a - b * q);
+        var (q, r) = BigInteger.DivRem(a, b);
+        var (x0, y0) = BezoutBigInteger(b, r);
         return (y0, x0 - y0 * q);
     }
 

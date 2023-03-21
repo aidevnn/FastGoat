@@ -138,7 +138,7 @@ public static partial class IntFactorisation
     static KPoly<ZnBInt> ZPoly2ZnInt(KPoly<ZnBInt> f, Modulus po) =>
         new(f.x, po.Zero, f.Coefs.Select(e => new ZnBInt(po, e.K)).ToArray());
 
-    static (KPoly<ZnBInt> f0, KPoly<ZnBInt>[] firr0, KPoly<ZnBInt>[] firr) HenselLifting(KPoly<Rational> f, int p, int o)
+    public static (KPoly<ZnBInt> f0, KPoly<ZnBInt>[] firr0, KPoly<ZnBInt>[] firr) HenselLifting(KPoly<Rational> f, int p, int o)
     {
         if (!f.Coefs.Last().Equals(f.KOne) || f.Coefs.Any(c => !c.Denom.IsOne))
             throw new ArgumentException();
@@ -181,7 +181,7 @@ public static partial class IntFactorisation
         return (f0, firr0, all.ToArray());
     }
 
-    static KPoly<Rational>[] HenselLiftingNaive(KPoly<Rational> f, int p, int o, bool details = false)
+    public static KPoly<Rational>[] HenselLiftingNaive(KPoly<Rational> f, int p, int o, bool details = false)
     {
         if (!f.Coefs.Last().Equals(f.KOne) || f.Coefs.Any(c => c.Denom!=1))
             throw new ArgumentException();
@@ -196,7 +196,7 @@ public static partial class IntFactorisation
         while (allS.Length != sz)
         {
             sz = allS.Length;
-            foreach (var combs in allS.AllCombinations().AscendingByCount())
+            foreach (var combs in allS.AllCombinations())
             {
                 if (!combs.Any())
                     continue;

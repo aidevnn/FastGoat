@@ -93,15 +93,17 @@ public readonly struct EPoly<K> : IVsElt<K, EPoly<K>>, IElt<EPoly<K>>, IRingElt<
         if (Degree == 0)
             return new(F, Poly.Pow(k));
 
-        var pi = Poly;
-        var fi = F;
-        var deg3 = F.Degree * 3;
-        var r = Enumerable.Repeat(pi, k).Aggregate(One.Poly, (acc, b) =>
-        {
-            var e0 = acc.Mul(b);
-            return e0.Degree < deg3 ? e0 : e0.Div(fi).rem;
-        });
-        return new(F, r.Div(F).rem);
+        var pi = this;
+        return Enumerable.Repeat(pi, k).Aggregate((a, b) => a * b);
+        // var pi = Poly;
+        // var fi = F;
+        // var deg3 = F.Degree * 3;
+        // var r = Enumerable.Repeat(pi, k).Aggregate(One.Poly, (acc, b) =>
+        // {
+        //     var e0 = acc.Mul(b);
+        //     return e0.Degree < deg3 ? e0 : e0.Div(fi).rem;
+        // });
+        // return new(F, r.Div(F).rem);
     }
 
     public KPoly<EPoly<K>> ToKPoly(char x) => new(x, this);
