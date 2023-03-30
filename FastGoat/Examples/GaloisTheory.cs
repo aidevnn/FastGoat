@@ -11,7 +11,8 @@ namespace FastGoat.Examples;
 
 public static class GaloisTheory
 {
-    public static ConcreteGroup<Perm> GaloisGroup<K>(List<EPoly<K>> roots, char alpha = 'α') where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    public static ConcreteGroup<Perm> GaloisGroup<K>(List<EPoly<K>> roots, char alpha = 'α')
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         if (roots.ToHashSet().Count != roots.Count || roots.Select(e => e.F).Distinct().Count() != 1)
             throw new("Roots must all be differents and belong to the same extensions");
@@ -50,10 +51,105 @@ public static class GaloisTheory
         return Gal;
     }
 
+    public static EPoly<K>[] GetBase<K>(EPoly<K> a) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var bs = Array.Empty<EPoly<K>>();
+        var n = a.F.Degree - 1;
+        for (int i = 0; i <= n; ++i)
+        {
+            var ai = a.Pow(i);
+            var bs0 = bs.Append(ai).ToArray();
+            var mat = KMatrix<K>.MergeSameRows(bs0.Select(e => e.Poly.ToVMatrix(a.F.Degree - 1)).ToArray());
+            if (mat.NullSpace().nullity == 0)
+                bs = bs0.ToArray();
+        }
+
+        return bs;
+    }
+
+    public static void ExtDegree(EPoly<Rational> a)
+    {
+        var bs = GetBase(a);
+        Console.WriteLine($"[Q(a)/Q] = {bs.Length} with a={a}");
+    }
+    
+    public static (KPoly<Rational> minPoly, EPoly<Rational> primElt) InvariantsField(EPoly<Rational>[] roots, bool details = false)
+    {
+        if (roots.Grid2D(roots).Any(e => !roots.Contains(e.t1.Substitute(e.t2))))
+            throw new();
+
+        var a = roots[0].X;
+        var n = a.F.Degree;
+
+        var rows = new HashSet<KMatrix<Rational>>();
+        foreach (var h in roots)
+        {
+            var hi = n.Range().Select(i => h.Pow(i)).ToArray();
+            var h0i = n.Range().Select(i => hi.Select((h0, j) => h0[i] - (i == j ? 1 : 0)).ToKMatrix()).ToArray();
+            rows.UnionWith(h0i);
+        }
+
+        var mat = KMatrix<Rational>.MergeSameCols(rows.ToArray());
+        var sols = mat.NullSpace().Item2;
+
+        var Rs = sols.Cols.Select(m => n.Range().Aggregate(a.Zero, (sum, i) => m[i, 0] * a.Pow(i) + sum)).Order().ToArray();
+
+        if (details)
+        {
+            Console.WriteLine("System");
+            Console.WriteLine(mat);
+            Console.WriteLine("Sols");
+            Console.WriteLine(sols);
+            Console.WriteLine();
+            Rs.Println($"Invariants");
+        }
+
+        var primElt = Rs.First(e => GetBase(e).Length * roots.Length == n);
+        foreach (var b in roots)
+        {
+            var coefs = n.Range().Select(i => (i, c: IntExt.Rng.Next(-9, 10) * Rational.KOne())).ToArray();
+            var re = coefs.Aggregate(primElt.Zero, (acc, e) => primElt.Pow(e.i) * e.c + acc); // random element x
+            var f_re = coefs.Aggregate(primElt.Zero, (acc, e) => primElt.Substitute(b).Pow(e.i) * e.c + acc); // F(x)
+
+            var str_x = new KPoly<Rational>('q', Rational.KOne(), coefs.Select(e => e.c).ToArray()).ToString();
+            var str_bx = str_x.Replace("q", "F(q)");
+
+            if (details)
+            {
+                Rs.Select(e => (e, e.Substitute(b).Equals(e))).Println();
+
+                Console.WriteLine($"PrimElt q={primElt} ");
+                Console.WriteLine($"Is [F(q) = q] {primElt.Substitute(b).Equals(primElt)}");
+                Console.WriteLine("Random Test");
+                Console.WriteLine($"  x  = s(q)    = {str_x}");
+                Console.WriteLine($"F(x) = s(F(q)) = {str_bx}");
+                Console.WriteLine($"  x  = s(q)    = {re}");
+                Console.WriteLine($"F(x) = F(s(q)) = {re.Substitute(b)}");
+                Console.WriteLine($"F(x) = s(F(q)) = {f_re}");
+                Console.WriteLine();
+            }
+
+            if (!re.Equals(re.Substitute(b)) || !re.Equals(f_re) || Rs.Any(e => !e.Substitute(b).Equals(e)))
+                throw new();
+        }
+
+        var X0 = FG.KPoly('X', a);
+        var r = IntFactorisation.Norm(X0 - primElt);
+        var sff = IntFactorisation.YunSFF(r);
+        if (sff.Count != 1 || sff[0].q != 1)
+            throw new();
+
+        var sep = sff[0];
+        Console.WriteLine($"MinPoly = {sep}");
+        ExtDegree(primElt);
+        Console.WriteLine();
+        return (sep.g, primElt);
+    }
+
     public static void NormalExtensionCase()
     {
         var x = FG.QPoly();
-        
+
         {
             var (X0, y0) = FG.EPolyXc(x.Pow(2) - 2, 'a');
             var gal = GaloisGroup(new List<EPoly<Rational>>() { y0, -y0 });
@@ -166,7 +262,7 @@ public static class GaloisTheory
             Console.WriteLine();
         }
     }
-    
+
     public static void NormalExtensionCaseOrder8()
     {
         var x = FG.QPoly();
@@ -268,5 +364,61 @@ public static class GaloisTheory
             DisplayGroup.AreIsomorphics(gal, FG.Quaternion(8));
             Console.WriteLine();
         }
+    }
+
+    static void GaloisCorrespondence(KPoly<Rational> P, int nbGens = 2)
+    {
+        var roots = IntFactorisation.AlgebraicRoots(P);
+        var gal = GaloisGroup(roots);
+
+        var allSubs = nbGens == 2
+            ? gal.Grid2D(gal).Select((e, k) => Group.Generate($"G{k}", gal, new[] { e.t1, e.t2 }))
+                .OrderByDescending(g0 => g0.Count()).ToHashSet(new GroupSetEquality<Perm>())
+            : gal.Grid3D(gal, gal).Select((e, k) => Group.Generate($"G{k}", gal, new[] { e.t1, e.t2, e.t3 }))
+                .OrderByDescending(g0 => g0.Count()).ToHashSet(new GroupSetEquality<Perm>());
+    
+        var sn = new Sn(roots.Count);
+        var idxRoots = roots.Select((c0, k) => (k, c0)).ToDictionary(e => e.c0, e => e.k);
+        var perm2roots = roots.Select(c0 => (c0, sn.CreateElement(roots.Select(c1 => idxRoots[c1.Substitute(c0)] + 1).ToArray())))
+            .ToDictionary(e => e.Item2, e => e.c0);
+    
+        foreach (var sub in allSubs)
+        {
+            var rs = sub.Select(e => perm2roots[e]).ToArray();
+            if (rs.Grid2D(rs).Any(e => !rs.Contains(e.t1.Substitute(e.t2))))
+                throw new();
+    
+            Console.WriteLine("#####################################");
+            InvariantsField(rs, details: false);
+            DisplayGroup.Head(sub);
+        }
+
+        Console.WriteLine($"############# End Galois Correspondence for polynomial P={P}");
+        Console.WriteLine();
+    }
+
+    public static void GaloisCorrespondenceExamples()
+    {
+        Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+        var x = FG.QPoly('X');
+
+        GaloisCorrespondence(x.Pow(2) + 1);
+        GaloisCorrespondence(x.Pow(4) - 10 * x.Pow(2) + 1);
+        GaloisCorrespondence(x.Pow(4) - x.Pow(2) + 1);
+        GaloisCorrespondence(x.Pow(6) + 12);
+        GaloisCorrespondence(x.Pow(4) + x.Pow(3) + x.Pow(2) + x + 1);
+        GaloisCorrespondence(x.Pow(5) + x.Pow(4) - 4 * x.Pow(3) - 3 * x.Pow(2) + 3 * x + 1);
+    
+        GaloisCorrespondence(x.Pow(8) - 12 * x.Pow(6) + 23 * x.Pow(4) - 12 * x.Pow(2) + 1);
+        GaloisCorrespondence(x.Pow(8) + 4 * x.Pow(6) + 2 * x.Pow(4) + 28 * x.Pow(2) + 1);
+        GaloisCorrespondence(x.Pow(8) - x.Pow(4) + 1);
+        GaloisCorrespondence(x.Pow(8) + 28 * x.Pow(4) + 2500);
+    
+        GaloisCorrespondence(x.Pow(6) - 30 * x.Pow(4) + 225 * x.Pow(2) + 823);
+        GaloisCorrespondence(x.Pow(6) + x.Pow(5) - 7 * x.Pow(4) - 2 * x.Pow(3) + 7 * x.Pow(2) + 2 * x - 1);
+
+        GaloisCorrespondence(x.Pow(8) - 12 * x.Pow(6) + 36 * x.Pow(4) - 36 * x.Pow(2) + 9);
+        // GaloisCorrespondence(x.Pow(10) - 2 * x.Pow(9) - 20 * x.Pow(8) + 2 * x.Pow(7) + 69 * x.Pow(6) - x.Pow(5) - 69 * x.Pow(4) +
+        //     2 * x.Pow(3) + 20 * x.Pow(2) - 2 * x - 1); // Dihedral 10
     }
 }
