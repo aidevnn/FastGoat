@@ -112,6 +112,7 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
         }
     }
 
+    public Monom<T> ExtractMonom => new Monom<T>(Indeterminates, ExtractIndeterminate);
     public Polynomial<K, T> Substitute(Polynomial<K, T> f, T xi)
     {
         var poly = Zero;

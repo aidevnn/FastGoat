@@ -12,7 +12,7 @@ public static partial class IntFactorisation
     /// <summary>
     /// Computes the square norm of a vector row or column
     /// </summary>
-    /// <param name="v">KMatrix<Rational></param>
+    /// <param name="v">Matrix of rationals</param>
     /// <returns>Rational</returns>
     /// <exception cref="ArgumentException"></exception>
     public static Rational SquareNorm2(KMatrix<Rational> v)
@@ -380,7 +380,7 @@ public static partial class IntFactorisation
             Console.WriteLine($"Monic f = {f2}");
         }
 
-        var firr = FirrZ(f2, details);
+        var firr = FirrZ2(f2, details);
 
         if (!c.Equals(c.One))
         {
@@ -442,6 +442,9 @@ public static partial class IntFactorisation
 
     public static KPoly<Rational>[] FirrZ2(KPoly<Rational> f, bool details = false)
     {
+        if (f.Coefs.Any(c => !c.Denom.IsOne))
+            throw new($"f isnt in Z[X]");
+        
         if (f.Degree == 1)
             return new[] { f };
         

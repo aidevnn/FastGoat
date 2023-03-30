@@ -2,14 +2,14 @@
 
 public class Array2Tuple<T>
 {
-    private T[] array { get; }
+    private IEnumerable<T> array { get; }
 
     public Array2Tuple(IEnumerable<T> arr)
     {
-        array = arr.ToArray();
+        array = arr;
     }
 
-    public T this[int index] => array[index];
+    public T this[int index] => array.ElementAt(index);
 
     public void Deconstruct(out T a0, out T a1)
     {

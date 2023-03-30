@@ -229,14 +229,15 @@ public static partial class IntFactorisation
         return (r, a.Poly, b.Poly);
     }
 
-    public static (KPoly<EPoly<Rational>> X, EPoly<Rational> a, EPoly<Rational> b)[] PrimitiveElt(KPoly<Rational> f, KPoly<Rational> g)
+    public static (KPoly<Rational> F, KPoly<EPoly<Rational>> X, EPoly<Rational> a, EPoly<Rational> b)[] 
+        PrimitiveElt(KPoly<Rational> f, KPoly<Rational> g)
     {
         var (X0, y0) = FG.EPolyXc(f, 'y');
         var (r, a0, b0) = PrimitiveElt(g.Substitute(X0));
         return FirrZ2(r).Select(r0 =>
         {
             var (X1, y1) = FG.EPolyXc(r0, 'y');
-            return (X1, a0.Substitute(y1), b0.Substitute(y1));
+            return (y1.F, X1, a0.Substitute(y1), b0.Substitute(y1));
         }).ToArray();
     }
 
