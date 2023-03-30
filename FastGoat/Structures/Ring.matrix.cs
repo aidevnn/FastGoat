@@ -200,6 +200,18 @@ public static partial class Ring
         return new(mat);
     }
 
+    public static KMatrix<K> ToKMatrix<K>(this IEnumerable<K> mat)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        return new(Matrix(1, mat.ToArray()));
+    }
+
+    public static KMatrix<K> ToKMatrix<K>(this IEnumerable<K> mat, int m)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        return new(Matrix(m, mat.ToArray()));
+    }
+
     public static (K[,] P, K[,] A0) ReducedRowsEchelonForm<K>(K[,] A)
         where K : IElt<K>, IRingElt<K>, IFieldElt<K>
     {
