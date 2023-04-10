@@ -407,6 +407,8 @@ public struct KMatrix<K> : IVsElt<K, KMatrix<K>>, IElt<KMatrix<K>>, IRingElt<KMa
         return new(m0);
     }
 
+    public KPoly<K> ToKPoly(char x = 'X') => new(x, KZero, this.TrimSeq().ToArray());
+
     public static KMatrix<K> operator /(int a, KMatrix<K> b) => b.Inv().Mul(a);
 
     public static KMatrix<K> operator +(KMatrix<K> a, K b) => a.Add(new(b, a.M, a.N));

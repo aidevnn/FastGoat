@@ -456,7 +456,8 @@ public static partial class Ring
         var cols = mat.GetLength(1);
         var rgCols = cols.Range();
         var rgRows = rows.Range();
-        var digitsByCols = rgCols.Select(j => rgRows.Max(i => $"{mat[i, j]}".Length)).Select(d => $"{{0,{d}}}").ToArray();
+        var digitsByCols = rgCols.Select(j => rgRows.Max(i => $"{mat[i, j]}".Length))
+            .Select(d => MatrixDisplayForm == MatrixDisplay.TableLeft ? $"{{0,-{d}}}" : $"{{0,{d}}}").ToArray();
         if (MatrixDisplayForm == MatrixDisplay.CurlyBracketNoFmt || MatrixDisplayForm == MatrixDisplay.SquareBracketNoFmt)
             digitsByCols = digitsByCols.Select(d => "{0}").ToArray();
         
@@ -471,7 +472,7 @@ public static partial class Ring
                 lt.Add($"[{s0}]");
         }
 
-        if (MatrixDisplayForm == MatrixDisplay.Table)
+        if (MatrixDisplayForm == MatrixDisplay.Table || MatrixDisplayForm == MatrixDisplay.TableLeft)
         {
             return lt.Glue("\n");
         }
@@ -490,10 +491,19 @@ public static partial class Ring
         SquareBracket,
         CurlyBracketNoFmt,
         SquareBracketNoFmt,
-        Table
+        Table,
+        TableLeft
     }
 
     public static MatrixDisplay MatrixDisplayForm { get; set; } = MatrixDisplay.Table;
+
+    public static void DisplayMatrix<T>(T[,] mat, MatrixDisplay display, string sep = ", ")
+    {
+        var prev = MatrixDisplayForm;
+        MatrixDisplayForm = display;
+        Console.WriteLine(Matrix2String(mat, sep));
+        MatrixDisplayForm = prev;
+    }
 
     public static void DisplayMatrix<T>(T[,] mat, string sep = ", ")
     {

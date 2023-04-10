@@ -90,7 +90,7 @@ public class ConcreteGroup<T> : IGroup<T> where T : struct, IElt<T>
         return other?.Hash == Hash;
     }
 
-    public int Hash { get; protected set; }
+    public int Hash { get; init; }
 
     public IEnumerable<T> GetGenerators()
     {
@@ -148,6 +148,11 @@ public class ConcreteGroup<T> : IGroup<T> where T : struct, IElt<T>
 
         var isos = Group.AllMorphisms(this, gu, Group.MorphismType.Isomorphism);
         return isos.Any(h => h.Count != 0);
+    }
+
+    public void SetName(string name)
+    {
+        Name = name;
     }
 
     public override int GetHashCode()

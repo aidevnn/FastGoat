@@ -73,6 +73,14 @@ public static partial class IntFactorisation
         return g.Substitute(X.Pow(q));
     }
 
+    public static KPoly<K> CharacPoly2<K>(EPoly<K> b, char c = 'x') where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var C = FG.KPoly(c, b);
+        var norm = Norm(C - b, c);
+        var sep = YunSFF(norm);
+        return sep.Select(e => (e.i, e.g.Substitute(norm.X.Pow(e.q)))).First().Item2.SubstituteChar(c);
+    }
+
     public static KPoly<K> Norm<K>(KPoly<EPoly<K>> A, char c = 'x') where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var n = A.Degree;
@@ -127,7 +135,7 @@ public static partial class IntFactorisation
             // Console.WriteLine($"s={s} Norm({g})");
             var r = Norm(g, c);
             // Console.WriteLine($" = {r}");
-            if (Ring.Gcd(r, r.Derivative).Degree == 0)
+            if (Ring.FastGCD(r, r.Derivative).Degree == 0) // dilemma between Ring.Gcd and Ring.FastGCD
                 return (s, g.Monic, r);
         }
 

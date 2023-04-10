@@ -30,6 +30,7 @@ public readonly struct EPoly<K> : IVsElt<K, EPoly<K>>, IElt<EPoly<K>>, IRingElt<
     public int CompareTo(EPoly<K> other) => Poly.CompareTo(other.Poly);
 
     public int P => F.P;
+    public EPoly<K> Clone => new(F, Poly);
 
     public EPoly<K> Inv()
     {

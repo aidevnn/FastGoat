@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Numerics;
 using FastGoat.Commons;
 using FastGoat.Examples;
 using FastGoat.Structures;
