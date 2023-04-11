@@ -1,3 +1,4 @@
+using System.Numerics;
 using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.GenericGroup;
@@ -15,6 +16,35 @@ public static partial class FG
     public static KPoly<ZnInt> ZPoly(int p, char x = 'x') => new KPoly<ZnInt>(x, ZnInt.KZero(p)).X;
     public static KPoly<ZnBInt> ZbPoly(int p, char x = 'x') => new KPoly<ZnBInt>(x, ZnBInt.KZero(p)).X;
     public static KPoly<Rational> QPoly(char x = 'x') => new KPoly<Rational>(x);
+    public static KPoly<Cplx> CplxPoly(char x = 'x') => new KPoly<Cplx>(x);
+
+    public static Cplx NSolve(KPoly<Cplx> P)
+    {
+        var dP = P.Derivative;
+        var ai = Cplx.CZero;
+        var aj = new Cplx(Double.Pi + Complex.ImaginaryOne);
+        while ((ai - aj).NormInf > 1e-16)
+        {
+            ai = aj;
+            aj = ai - (P.Substitute(ai) / dP.Substitute(ai)); // Newton iteration
+        }
+
+        return aj;
+    }
+
+    public static Cplx[] NRoots(KPoly<Cplx> P)
+    {
+        var P0 = P;
+        var roots = new List<Cplx>();
+        while (P0.Degree > 0)
+        {
+            var a0 = NSolve(P0);
+            roots.Add(a0);
+            P0 /= P0.X - a0;
+        }
+
+        return roots.Order().ToArray();
+    }
 
     public static KPoly<K> KPoly<K>(char x, K scalar) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
