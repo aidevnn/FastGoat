@@ -206,9 +206,16 @@ public static class GaloisTheory
         return (sep.g, primElt);
     }
 
-    public static IEnumerable<GaloisCorrespondence> SubFields(KPoly<Rational> P, int nbGens = 2, char primEltChar = 'y', bool details = false)
+    public static IEnumerable<GaloisCorrespondence> SubFields(KPoly<Rational> P, int nbGens = 2, char primEltChar = 'y',
+        bool details = false)
     {
-        var roots = IntFactorisation.AlgebraicRoots(P, details);
+        var roots = IntFactorisation.AlgebraicRoots(P, details: details);
+        return SubFields(roots, nbGens, primEltChar, details);
+    }
+    
+    public static IEnumerable<GaloisCorrespondence> SubFields(List<EPoly<Rational>> roots, int nbGens = 2, char primEltChar = 'y', bool details = false)
+    {
+        var P = roots[0].F;
         var gal = GaloisGroup(roots, primEltChar, details);
 
         var allSubs = nbGens == 2

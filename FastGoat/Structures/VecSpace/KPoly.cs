@@ -119,12 +119,12 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
         return acc;
     }
 
-    public KPoly<EPoly<K>> Substitute(KPoly<EPoly<K>> f)
+    public KPoly<T> Substitute<T>(KPoly<T> f) where T : struct, IVsElt<K, T>, IElt<T>, IRingElt<T>, IFieldElt<T>
     {
-        var poly = new KPoly<EPoly<K>>(f.x, f.KZero, Coefs.Select(k => k * f.KOne).ToArray());
+        var poly = new KPoly<T>(f.x, f.KZero, Coefs.Select(k => k * f.KOne).ToArray());
         return poly.Substitute(f);
     }
-
+    
     public KPoly<K> Add(KPoly<K> e)
     {
         var maxDegree = Math.Max(Degree, e.Degree);

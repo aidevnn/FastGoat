@@ -359,6 +359,16 @@ public static partial class IntFactorisation
         return (new(f.x, f.KZero, coefs), f.X.Pow(gcd));
     }
 
+    public static (KPoly<K> nf, KPoly<K> nx) Deflate<K>(KPoly<K> f, int n) 
+        where K : struct, IFieldElt<K>, IRingElt<K>, IElt<K>
+    {
+        var (f0, x0) = Deflate(f);
+        if (x0.Degree % n != 0)
+            throw new();
+        
+        return (f0.Substitute(f.X.Pow(x0.Degree / n)), f.X.Pow(n));
+    }
+
     public static KPoly<Rational>[] FirrQ(KPoly<Rational> f, bool details = false)
     {
         var m0 = f[f.Degree];
@@ -443,7 +453,7 @@ public static partial class IntFactorisation
     public static KPoly<Rational>[] FirrZ2(KPoly<Rational> f, bool details = false)
     {
         if (f.Coefs.Any(c => !c.Denom.IsOne))
-            throw new($"f isnt in Z[X]");
+            throw new($"f isnt in Z[X] : {f}");
         
         if (f.Degree == 1)
             return new[] { f };
