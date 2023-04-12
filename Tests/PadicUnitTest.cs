@@ -12,7 +12,7 @@ public class PadicUnitTest
     public void Test1ThrowException()
     {
         Assert.Throws<ArgumentException>(() => Valuation.Infinity.V);
-        Assert.Throws<ArgumentException>(() => ZnBInt.KZero(1));
+        Assert.Throws<ArgumentException>(() => ZnBInt.ZnZero(1));
         Assert.Throws<ArgumentException>(() => new PadicGAP(6, 5));
         Assert.Throws<ArgumentException>(() => new PadicGAP(3, -5));
         Assert.Throws<ArgumentException>(() => new PadicZealous(-3, -5));

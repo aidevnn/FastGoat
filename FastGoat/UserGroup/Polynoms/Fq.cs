@@ -20,7 +20,7 @@ public struct Fq : IGroup<EPoly<ZnInt>>
         ((int p, int m), int[] coefs) = PolynomExt.GetConwayPoly(Q);
         P = p;
         M = m;
-        F = new(x, ZnInt.KZero(p), coefs.Select(i => new ZnInt(p, i)).ToArray());
+        F = new(x, ZnInt.ZnZero(p), coefs.Select(i => new ZnInt(p, i)).ToArray());
         Hash = (Q, "fq").GetHashCode();
         Name = $"F{Q}";
         X = new(F);

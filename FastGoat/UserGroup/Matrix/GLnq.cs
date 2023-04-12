@@ -54,7 +54,7 @@ public class GLnq : IGroup<MatFq>
                         u is int u1 ? new EPoly<ZnInt>(Fq.F, Fq.F.One.Mul(u1)) :
                         throw new GroupException(GroupExceptionType.GroupDef))
                     .Select(e => e.Poly.Coefs.Select(ei => new ZnInt(Fq.P, ei.K)).ToArray())
-                    .Select(e => new EPoly<ZnInt>(Fq.F, new KPoly<ZnInt>(Fq.F.x, ZnInt.KZero(Fq.P), e)))
+                    .Select(e => new EPoly<ZnInt>(Fq.F, new KPoly<ZnInt>(Fq.F.x, ZnInt.ZnZero(Fq.P), e)))
                     .ToArray();
 
                 var hash = table0.Aggregate(0, (acc, a) => a.GetHashCode() + Fq.Q * acc);

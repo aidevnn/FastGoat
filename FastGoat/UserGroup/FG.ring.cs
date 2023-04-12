@@ -13,8 +13,8 @@ namespace FastGoat.UserGroup;
 
 public static partial class FG
 {
-    public static KPoly<ZnInt> ZPoly(int p, char x = 'x') => new KPoly<ZnInt>(x, ZnInt.KZero(p)).X;
-    public static KPoly<ZnBInt> ZbPoly(int p, char x = 'x') => new KPoly<ZnBInt>(x, ZnBInt.KZero(p)).X;
+    public static KPoly<ZnInt> ZPoly(int p, char x = 'x') => new KPoly<ZnInt>(x, ZnInt.ZnZero(p)).X;
+    public static KPoly<ZnBInt> ZbPoly(int p, char x = 'x') => new KPoly<ZnBInt>(x, ZnBInt.ZnZero(p)).X;
     public static KPoly<Rational> QPoly(char x = 'x') => new KPoly<Rational>(x);
     public static KPoly<Cplx> CplxPoly(char x = 'x') => new KPoly<Cplx>(x);
 
@@ -162,7 +162,7 @@ public static partial class FG
 
     public static FracPoly<Rational> QFracPoly(char x = 'x') => KFracPoly(x, Rational.KZero());
 
-    public static FracPoly<ZnInt> ZFracPoly(int p, char x = 'x') => KFracPoly(x, ZnInt.KZero(p));
+    public static FracPoly<ZnInt> ZFracPoly(int p, char x = 'x') => KFracPoly(x, ZnInt.ZnZero(p));
 
     public static (KPoly<FracPoly<ZnInt>> x, FracPoly<ZnInt> t) FpT_Poly(int p, (char x, char t) xt)
     {

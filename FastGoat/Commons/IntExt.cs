@@ -541,7 +541,7 @@ namespace FastGoat.Commons
         /// <returns>The solution of the equation, or -1 if no solution exists.</returns>
         public static int Solve_k_pow_m_equal_one_mod_n_strict(int n, int m)
         {
-            var seq = Enumerable.Range(2, n - 2);
+            var seq = Enumerable.Range(1, n - 1).Reverse();
             var criteria = seq.Where(i => Gcd(i, n) == 1 && PowModEqualOne(i, m, n));
             return criteria.FirstOrDefault(-1);
         }

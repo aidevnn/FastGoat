@@ -5,11 +5,11 @@ using FastGoat.UserGroup.Integers;
 
 namespace FastGoat.UserGroup.Padic;
 
-public struct ZnBInt : IElt<ZnBInt>, IRingElt<ZnBInt>, IFieldElt<ZnBInt>
+public struct ZnBInt : IElt<ZnBInt>, IRingElt<ZnBInt>, IFieldElt<ZnBInt>, IVsElt<Rational, ZnBInt>
 {
     public BigInteger Mod => Details.Mod;
     public BigInteger K { get; }
-    public static ZnBInt KZero(int mod, int o = 1) => new(mod, 0, o);
+    public static ZnBInt ZnZero(int mod, int o = 1) => new(mod, 0, o);
     public Modulus Details { get; }
 
     public static double Abs(ZnBInt z)
@@ -182,7 +182,7 @@ public struct ZnBInt : IElt<ZnBInt>, IRingElt<ZnBInt>, IFieldElt<ZnBInt>
     public static IEnumerable<ZnBInt> Generate(int mod, int o = 1)
     {
         for (int k = 0; k < mod.Pow(o); ++k)
-            yield return KZero(mod, o) * k;
+            yield return ZnZero(mod, o) * k;
     }
 
     public static (ZnBInt trunc, ZnBInt rem) Truncate(ZnBInt z, Modulus details)
@@ -191,7 +191,7 @@ public struct ZnBInt : IElt<ZnBInt>, IRingElt<ZnBInt>, IFieldElt<ZnBInt>
             throw new($"tau:{details} sigma:{z.Details}");
 
         if (details.O > z.Details.O)
-            return (KZero(z.P), new(details, z.K));
+            return (ZnZero(z.P), new(details, z.K));
 
         var k0 = z.K % details.Mod;
         var mod1 = new Modulus(z.P, z.Details.O - details.O);
@@ -260,4 +260,26 @@ public struct ZnBInt : IElt<ZnBInt>, IRingElt<ZnBInt>, IFieldElt<ZnBInt>
     public static ZnBInt operator /(ZnBInt a, int b) => a.Div(a.One.Mul(b)).quo;
 
     public static ZnBInt operator /(int a, ZnBInt b) => b.Inv().Mul(a);
+    public Rational KZero => Rational.KZero();
+    public Rational KOne => Rational.KOne();
+    public ZnBInt KMul(Rational k)
+    {
+        var num = new ZnBInt(Details, K * k.Num);
+        var denom = new ZnBInt(Details, k.Denom);
+        return num / denom;
+    }
+
+    public static ZnBInt operator +(ZnBInt a, Rational b) => a + a.One.KMul(b);
+
+    public static ZnBInt operator +(Rational a, ZnBInt b) => b + b.One.KMul(a);
+
+    public static ZnBInt operator -(ZnBInt a, Rational b) => a - a.One.KMul(b);
+
+    public static ZnBInt operator -(Rational a, ZnBInt b) => b - b.One.KMul(a);
+    
+    public static ZnBInt operator *(ZnBInt a, Rational b) => a.KMul(b);
+
+    public static ZnBInt operator *(Rational a, ZnBInt b) => b.KMul(a);
+
+    public static ZnBInt operator /(ZnBInt a, Rational b) => a / a.One.KMul(b);
 }

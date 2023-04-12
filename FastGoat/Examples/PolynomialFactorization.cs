@@ -87,7 +87,7 @@ public static class PolynomialFactorization
         var p = 5;
         for (int i = 0; i < 4 * n; i++)
         {
-            var f = RandPoly(ZnInt.KZero(p), p, n);
+            var f = RandPoly(ZnInt.ZnZero(p), p, n);
             Console.WriteLine($"{{0,{-7 * (n + 1)}}} is irreductible : {{1}}", f, IsIrreductibleFp(f));
         }
     }
@@ -324,7 +324,7 @@ public static class PolynomialFactorization
             var n = 2 + IntExt.Rng.Next(11);
             var degrees = IntExt.Partitions32[n].Where(l => l.All(i => i != 1)).OrderBy(i => IntExt.Rng.NextDouble()).First()
                 .ToArray();
-            var f = RandPoly(ZnInt.KZero(p), p, degrees);
+            var f = RandPoly(ZnInt.ZnZero(p), p, degrees);
             DisplayFactorization(f, a0);
         }
     }
