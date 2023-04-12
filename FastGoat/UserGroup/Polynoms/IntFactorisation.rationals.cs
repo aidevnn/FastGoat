@@ -129,10 +129,15 @@ public static partial class IntFactorisation
     static KPoly<Rational> ZPoly2QPoly(KPoly<ZnBInt> f) =>
         new(f.x, Rational.KZero(), f.Coefs.Select(e => new Rational(e.K * 2 <= e.Mod ? e.K : e.K - e.Mod)).ToArray());
 
-    static KPoly<ZnBInt> QPoly2ZnInt(KPoly<Rational> f, Modulus po)
+    public static KPoly<ZnBInt> QPoly2ZnInt(KPoly<Rational> f, Modulus po)
     {
         var coefs = f.Coefs.Select(e => new ZnBInt(po, e.Num)).ToArray();
         return new(f.x, po.Zero, coefs);
+    }
+    static KPoly<ZnInt> QPoly2ZnInt(KPoly<Rational> f, int p)
+    {
+        var coefs = f.Coefs.Select(e => new ZnInt(p, (int)e.Num)).ToArray();
+        return new(f.x, ZnInt.ZnZero(p), coefs);
     }
 
     static KPoly<ZnBInt> ZPoly2ZnInt(KPoly<ZnBInt> f, Modulus po) =>
@@ -144,7 +149,7 @@ public static partial class IntFactorisation
             throw new ArgumentException();
 
         var ai0 = (new Un(p)).GetGenerators().First()[new(p, 1)];
-        var a0 = ZnBInt.KZero(p) + ai0.K;
+        var a0 = ZnBInt.ZnZero(p) + ai0.K;
         var po = a0.Details;
         var f0 = QPoly2ZnInt(f, po);
 
@@ -247,7 +252,7 @@ public static partial class IntFactorisation
         var m = n + s;
         var mat = new KMatrix<Rational>(Rational.KZero(), m, m);
 
-        var Fp = QPoly2ZnInt(F, new(p, sigma));
+        var Fp = QPoly2ZnInt(F, new Modulus(p, sigma));
         for (int i = 0; i < s; i++)
             mat.Coefs[i, i] = Rational.KOne();
 
@@ -518,4 +523,99 @@ public static partial class IntFactorisation
 
         return new[] { f };
     }
+
+    public static KPoly<ZnBInt>[] FirrFp(KPoly<Rational> f, int p, bool details = false)
+    {
+        if (!IntExt.Primes10000.Contains(p))
+            throw new($"p = {p} isnt prime");
+        
+        var ai0 = (new Un(p)).GetGenerators().First()[new(p, 1)];
+        var a0 = ZnBInt.ZnZero(p) + ai0.K;
+        var po = a0.Details;
+        var f0 = QPoly2ZnInt(f, po);
+        return BerlekampProbabilisticAECF(f0, a0).ToArray();
+    }
+
+    public static KPoly<ZnInt>[] FirrFp2(KPoly<Rational> f, int p, bool details = false)
+    {
+        if (!IntExt.Primes10000.Contains(p))
+            throw new($"p = {p} isnt prime");
+        
+        var ai0 = (new Un(p)).GetGenerators().First()[new(p, 1)];
+        var a0 = ZnInt.ZnZero(p) + ai0.K;
+        var f0 = QPoly2ZnInt(f, p);
+        return BerlekampProbabilisticAECF(f0, a0).ToArray();
+    }
+
+    public static (int p, KPoly<ZnBInt>[] factors) FirrFp(KPoly<Rational> f, bool details = false)
+    {
+        var discQ = Ring.Discriminant(f).Num;
+        var discDecomp = IntExt.PrimesDec(discQ);
+        if (details)
+        {
+            Console.WriteLine($"f = {f}");
+            Console.WriteLine($"Disc(f) = {discQ} ~ {discDecomp.AscendingByKey().GlueMap(" * ", "{0}^{1}")}");
+        }
+
+        foreach (var p in IntExt.Primes10000.Except(discDecomp.Keys))
+        {
+            try
+            {
+                var listIrr0 = FirrFp(f, p, details);
+                if (listIrr0.Length != f.Degree)
+                    throw new();
+
+                if (details)
+                {
+                    var ai0 = (new Un(p)).GetGenerators().First()[new(p, 1)];
+                    var a0 = ZnBInt.ZnZero(p) + ai0.K;
+                    var po = a0.Details;
+                    var f0 = QPoly2ZnInt(f, po);
+                    Console.WriteLine($"Prime P = {p}");
+                    Console.WriteLine($"f = {f0} mod {p}");
+                    Console.WriteLine("Fact(f) = {0} mod {1}", listIrr0.Glue("*", "({0})"), p);
+                    Console.WriteLine();
+                }
+                
+                return (p, listIrr0);
+            }
+            catch (Exception e)
+            {
+                if (details)
+                    Console.WriteLine($"#### Prime {p} wont work ####");
+            }
+        }
+        
+        throw new();
+    }
+
+    public static List<ZnBInt> FpRoots(KPoly<Rational> f, bool details = false)
+    {
+        return FirrFp(f, details).factors.Where(p => p.Degree == 1).Select(p => -p[0] / p[1]).Order().ToList();
+    }
+    
+    public static IEnumerable<int[]> ChebotarevTypes(KPoly<Rational> f, int N, bool details = false)
+    {
+        var discQ = Ring.Discriminant(f).Num;
+        var discDecomp = IntExt.PrimesDec(discQ);
+        if (details)
+        {
+            Console.WriteLine($"f = {f}");
+            Console.WriteLine($"Disc(f) = {discQ} ~ {discDecomp.AscendingByKey().GlueMap(" * ", "{0}^{1}")}");
+        }
+
+        var k = 1;
+        foreach (var p in IntExt.Primes10000.Except(discDecomp.Keys).Take(N))
+        {
+            var listIrr0 = FirrFp(f, p);
+            var type = listIrr0.Select(g => g.Degree).Order().ToArray();
+            if (details)
+            {
+                Console.WriteLine("#{2,-3} P = {0} shape [{1}]", p, type.Glue(", "), k++);
+            }
+
+            yield return type;
+        }
+    }
+
 }
