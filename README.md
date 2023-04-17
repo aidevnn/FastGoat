@@ -348,3 +348,14 @@ TU Kaiserslautern, SS2020.
 <b>Wikipedia.</b>
 The Free Encyclopedia.
 <i>Many algorithms and proofs</i>
+
+[WolframCloud](https://mathematica.wolframcloud.com/)
+<b>Wolfram Research.</b>
+WOLFRAM CLOUD Integrated Access to Computational Intelligence
+<i>2023 Wolfram Research, Inc.</i>
+
+[Pari/GP](http://pari.math.u-bordeaux.fr/)
+<b>The PARI Group.</b>
+PARI/GP Number Theory-oriented Computer Algebra System.
+Bordeaux.
+<i>Version 2.15.x; 2020-2022.</i>

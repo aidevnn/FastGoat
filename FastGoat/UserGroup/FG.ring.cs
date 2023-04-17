@@ -23,7 +23,7 @@ public static partial class FG
         var dP = P.Derivative;
         var ai = Cplx.CZero;
         var aj = new Cplx(Double.Pi + Complex.ImaginaryOne);
-        while ((ai - aj).NormInf > 1e-16)
+        while ((ai - aj).NormInf > 1e-14)
         {
             ai = aj;
             aj = ai - (P.Substitute(ai) / dP.Substitute(ai)); // Newton iteration
@@ -45,6 +45,11 @@ public static partial class FG
 
         return roots.Order().ToArray();
     }
+
+    public static KPoly<Cplx> ToCPoly(this KPoly<Rational> P) => new (P.x, Cplx.CZero, P.Coefs.Select(c => c * Cplx.COne).ToArray());
+
+    public static KPoly<Cplx> ToCPoly(this KPoly<EPoly<Rational>> P, Cplx e) =>
+        new(P.x, Cplx.CZero, P.Coefs.Select(c => c.Poly.Substitute(e)).ToArray());
 
     public static KPoly<K> KPoly<K>(char x, K scalar) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {

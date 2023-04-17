@@ -81,6 +81,16 @@ public static partial class IntFactorisation
         return sep.Select(e => (e.i, e.g.Substitute(norm.X.Pow(e.q)))).First().Item2.SubstituteChar(c);
     }
 
+    public static KPoly<K> MinPolynomial<K>(KPoly<EPoly<K>> A, char c = 'x') where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var norm = Norm(A, c);
+        var sep = YunSFF(norm);
+        if (sep.Count > 1)
+            throw new();
+        
+        return sep.Select(e => (e.i, e.g.Substitute(norm.X.Pow(e.q)))).First().Item2.SubstituteChar(c);
+    }
+
     public static KPoly<K> Norm<K>(KPoly<EPoly<K>> A, char c = 'x') where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var n = A.Degree;
@@ -129,14 +139,15 @@ public static partial class IntFactorisation
         var x = f.X;
         var g = f.Substitute(x);
         // Console.WriteLine($"SqfrNorm({f})");
-        for (int s = 1; s < 150; s++)
+        for (int s = 0; s < 150; s++)
         {
-            g = g.Substitute(x - a);
             // Console.WriteLine($"s={s} Norm({g})");
             var r = Norm(g, c);
             // Console.WriteLine($" = {r}");
             if (Ring.FastGCD(r, r.Derivative).Degree == 0) // dilemma between Ring.Gcd and Ring.FastGCD
                 return (s, g.Monic, r);
+            
+            g = g.Substitute(x - a);
         }
 
         throw new Exception();
@@ -321,7 +332,7 @@ public static partial class IntFactorisation
             foreach (var pi in polys)
             {
                 var (s, g, R) = SqfrNorm(pi);
-                var L = R.Degree < 13 ? FirrZ(R) : new[] { R };
+                var L = R.Degree < 13 ? FirrZ2(R, true) : new[] { R };
                 foreach (var qj in L.Order())
                 {
                     var f = Ring.Gcd(g, qj.Substitute(X));

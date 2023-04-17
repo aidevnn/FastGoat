@@ -8,44 +8,57 @@ namespace FastGoat.UserGroup.Polynoms;
 
 public readonly struct Cplx : IElt<Cplx>, IRingElt<Cplx>, IFieldElt<Cplx>, IVsElt<Rational, Cplx>
 {
-    public const double Eps7 = 1e-7;
-    public const double Eps14 = 1e-14;
+    public const int Digits = 8;
+    public const double Eps8 = 1e-8;
+    public const double Eps15 = 1e-15;
     public Complex K { get; }
     public double RealPart => K.Real;
     public double ImaginaryPart => K.Imaginary;
     public double Magnitude => K.Magnitude;
+
+    public double Phase
+    {
+        get
+        {
+            var p = K.Phase;
+            return p > 0 ? p : Double.Pi * 2 + p;
+        }
+    }
     public double NormInf => Double.Max(Double.Abs(K.Real), Double.Abs(K.Imaginary));
     public double Norm1 => Double.Abs(K.Real) + Double.Abs(K.Imaginary);
     public Cplx(Complex k)
     {
-        var a0 = double.Abs(k.Real) < Eps14 ? 0.0 : k.Real;
-        var b0 = double.Abs(k.Imaginary) < Eps14 ? 0.0 : k.Imaginary;
+        var a0 = double.Abs(k.Real) < Eps15 ? 0.0 : k.Real;
+        var b0 = double.Abs(k.Imaginary) < Eps15 ? 0.0 : k.Imaginary;
         var k0 = a0 + Complex.ImaginaryOne * b0;
-        K = k0.Magnitude < Eps14 ? Complex.Zero : k0;
+        var nInf = Double.Abs(Double.Max(Double.Abs(k0.Real), Double.Abs(k0.Imaginary)));
+        K = nInf < Eps15 ? Complex.Zero : k0;
         Hash = K.GetHashCode();
     }
 
-    public bool Equals(Cplx other) => Sub(other).NormInf < Eps7;
+    public bool Equals(Cplx other) => Sub(other).NormInf < Eps8;
 
     public int CompareTo(Cplx other)
     {
         var mag = K.Magnitude.CompareTo(other.K.Magnitude);
-        if (Double.Abs(K.Magnitude - other.K.Magnitude) > Eps7)
+        if (Double.Abs(K.Magnitude - other.K.Magnitude) > Eps8)
             return mag;
 
-        return K.Phase.CompareTo(other.K.Phase);
+        return Phase.CompareTo(other.Phase);
     }
 
     public int Hash { get; init; }
-    public bool IsZero() => K.Magnitude < Eps7;
-    public bool IsReal() => Double.Abs(K.Imaginary) < Eps7;
-    public bool IsImaginary() => Double.Abs(K.Real) < Eps7;
+    public bool IsZero() => K.Magnitude < Eps8;
+    public bool IsReal() => Double.Abs(K.Imaginary) < Eps8;
+    public bool IsImaginary() => Double.Abs(K.Real) < Eps8;
 
     public static Cplx I => new(Complex.ImaginaryOne);
 
     public static Cplx CZero => new(Complex.Zero);
 
     public static Cplx COne => new(Complex.One);
+    public static Cplx Sqrt(Cplx e) => new(Complex.Sqrt(e.K));
+    public static KPoly<Cplx> X => new('X', CZero, new[] { CZero, COne });
     public Cplx Zero => new(Complex.Zero);
     public Cplx One => new(Complex.One);
     public Cplx Add(Cplx e) => new(K + e.K);
@@ -103,26 +116,26 @@ public readonly struct Cplx : IElt<Cplx>, IRingElt<Cplx>, IFieldElt<Cplx>, IVsEl
 
     public override string ToString()
     {
-        if (K.Magnitude < Eps7)
+        if (K.Magnitude < Eps8)
             return "0";
-        if ((K - Complex.One).Magnitude < Eps7)
+        if ((K - Complex.One).Magnitude < Eps8)
             return "1";
-        if ((K + Complex.One).Magnitude < Eps7)
+        if ((K + Complex.One).Magnitude < Eps8)
             return "-1";
 
         var sep = (Ring.DisplayPolynomial & MonomDisplay.Star) == MonomDisplay.Star ? "*" : "·";
 
-        var a0 = $"{Double.Round(K.Real, 7)}";
-        var b0 = Double.Abs(K.Imaginary - 1.0) < Eps7
+        var a0 = $"{Double.Round(K.Real, Digits)}";
+        var b0 = Double.Abs(K.Imaginary - 1.0) < Eps8
             ? "I"
-            : Double.Abs(K.Imaginary + 1.0) < Eps7
+            : Double.Abs(K.Imaginary + 1.0) < Eps8
                 ? "-I"
                 : $"{Double.Round(K.Imaginary, 7)}{sep}I";
 
-        if (Double.Abs(K.Imaginary) < Eps7)
+        if (Double.Abs(K.Imaginary) < Eps8)
             return a0;
 
-        if (Double.Abs(K.Real) < Eps7)
+        if (Double.Abs(K.Real) < Eps8)
             return b0;
 
         return $"({a0} + {b0})";

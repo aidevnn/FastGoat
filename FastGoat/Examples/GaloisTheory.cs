@@ -110,7 +110,7 @@ public static class GaloisTheory
         if (!a.F.Equals(b.F))
             throw new("Elements must belong to the same field");
 
-        var n = b.F.Degree - 1;
+        var n = b.F.Degree;
         var bs = GetBase(a);
         var mat = KMatrix<K>.MergeSameRows(bs.Append(b).Select(e => e.Poly.ToVMatrix(n)).ToArray());
         var ns = mat.NullSpace();
@@ -209,7 +209,7 @@ public static class GaloisTheory
     public static IEnumerable<GaloisCorrespondence> SubFields(KPoly<Rational> P, int nbGens = 2, char primEltChar = 'y',
         bool details = false)
     {
-        var roots = IntFactorisation.AlgebraicRoots(P, details: details);
+        var roots = IntFactorisation.AlgebraicRoots(P, details);
         return SubFields(roots, nbGens, primEltChar, details);
     }
     

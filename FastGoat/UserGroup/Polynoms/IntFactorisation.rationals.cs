@@ -374,49 +374,28 @@ public static partial class IntFactorisation
         return (f0.Substitute(f.X.Pow(x0.Degree / n)), f.X.Pow(n));
     }
 
-    public static KPoly<Rational>[] FirrQ(KPoly<Rational> f, bool details = false)
+    public static (KPoly<Rational> newP, Rational c) QPoly2ZPoly(KPoly<Rational> f)
     {
-        var m0 = f[f.Degree];
-        var f0 = f.Monic;
-        var denoms = f.Monic.Coefs.Select(e => e.Denom).Distinct().Where(e => !e.IsOne).ToArray();
+        var ct = f.Coefs.Last();
+        if (!ct.Equals(f.KOne))
+        {
+            var ans = QPoly2ZPoly(f.Monic);
+            return (ct * ans.newP, ans.c);
+        }
+        
+        var n = f.Degree;
+        var denoms = f.Coefs.Select(e => e.Denom).Distinct().ToArray();
         if (denoms.Length == 0)
             denoms = new[] { BigInteger.One, };
 
-        var gcd = IntExt.GcdBigInt(denoms);
-        var lcm = denoms.Select(e => e / gcd).Aggregate(BigInteger.One, (acc, a) => acc * a);
-        var ct = new Rational(lcm) * new Rational(gcd);
-        var f1 = f0 * ct;
-        var c = f1[f1.Degree];
-        var f2 = c.Pow(f1.Degree - 1) * f1.Substitute(f1.X / c);
+        var lcm = IntExt.LcmBigInt(denoms);
+        var c0 = IntExt.PrimesDecompositionBigInt(BigInteger.Abs(lcm)).GroupBy(e => e).ToDictionary(e => e.Key, e => e.Count());
+        var c1 = c0.ToDictionary(e => e.Key, e => e.Value % n == 0 ? e.Value / n : e.Value)
+            .Aggregate(BigInteger.One, (prod, e) => prod * BigInteger.Pow(e.Key, e.Value));
+        var c2 = new Rational(c1);
 
-        if (!c.Equals(c.One) && details)
-        {
-            Console.WriteLine($"f0 = {f}");
-            Console.WriteLine($"Monic f = {f2}");
-        }
-
-        var firr = FirrZ2(f2, details);
-
-        if (!c.Equals(c.One))
-        {
-            var firr0 = firr.Select(g => g.Substitute(g.X * c).Monic).ToArray();
-            var m = m0 * ct.Inv() * c.Pow(f1.Degree - 1).Inv() *
-                    firr.Select(g => g.Substitute(g.X * c)[g.Degree]).Aggregate(new Rational(1), (acc, a) => a * acc);
-            if (details)
-            {
-                Console.WriteLine("Finalize");
-                if (!m.Equals(m.One))
-                    Console.WriteLine("Fact(f0) = {0}*{1} in Z[X]", m, firr0.Order().Glue("*", "({0})"));
-                else
-                    Console.WriteLine("Fact(f0) = {0} in Z[X]", firr0.Order().Glue("*", "({0})"));
-
-                Console.WriteLine();
-            }
-
-            return firr0;
-        }
-
-        return firr;
+        var f2 =  f.Substitute(f.X / c2);
+        return (f2, c2);
     }
 
     public static bool EisensteinCriterion(KPoly<Rational> f, bool details = false)

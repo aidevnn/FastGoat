@@ -9,9 +9,8 @@ using FastGoat.UserGroup.Polynoms;
 
 namespace FastGoat.Examples;
 
-public static class GaloisCorrespondenceExamples
+public static class GaloisApplications
 {
-    
     static List<ConcreteGroup<Perm>> MaxSubGr(List<ConcreteGroup<Perm>> allSubGr, ConcreteGroup<Perm> g)
     {
         var allMax = new List<ConcreteGroup<Perm>>();
@@ -207,7 +206,7 @@ public static class GaloisCorrespondenceExamples
     // Quaternion Galois Group With assistance of the New Bing 
     public static void Example4()
     {
-        Ring.DisplayPolynomial = MonomDisplay.Caret;
+        Ring.DisplayPolynomial = MonomDisplay.StarCaret;
         var x = FG.QPoly('X');
         var (minPoly1, X, sqrt2, sqrt3) = IntFactorisation.PrimitiveElt(x.Pow(2) - 2, x.Pow(2) - 3).First();
         var (minPoly2, _, e0) = IntFactorisation.PrimitiveElt(X.Pow(2) - ((2 + sqrt2) * (3 + sqrt3)));
