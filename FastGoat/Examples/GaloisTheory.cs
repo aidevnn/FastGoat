@@ -225,7 +225,7 @@ public static class GaloisTheory
 
         var sn = new Sn(roots.Count);
         var idxRoots = roots.Select((c0, k) => (k, c0)).ToDictionary(e => e.c0, e => e.k);
-        var perm2roots = roots.Select(c0 => (c0, sn.CreateElement(roots.Select(c1 => idxRoots[c1.Substitute(c0)] + 1).ToArray())))
+        var perm2roots = roots.Select(c0 => (c0, sn.CreateElement(roots.Select(c1 => idxRoots[c0.Substitute(c1)] + 1).ToArray())))
             .ToDictionary(e => e.Item2, e => e.c0);
 
         var i = 1;

@@ -306,6 +306,10 @@ Elements
 Gal( Q(β)/Q ) IsIsomorphicTo D8 : True
 ```
 
+## Illustration
+
+![Polynomial P=X^2-5 with Galois Group C5x:C4](./C5x:C4.png "C5x:C4 Lattice")
+
 ## References
 
 [ALGÈBRE T1](https://laboutique.edpsciences.fr/produit/63/9782759803316/)
