@@ -12,9 +12,9 @@ namespace FastGoat.Examples;
 
 public static class GaloisApplicationsPart2
 {
-    static void CheckChebotarev(KPoly<Rational> P, int nb, ConcreteGroup<Perm> gal, bool detail = false)
+    public static void CheckChebotarev(KPoly<Rational> P, ConcreteGroup<Perm> gal, int maxP, int maxM = 100, bool detail = false)
     {
-        var lt = IntFactorisation.ChebotarevTypes(P, nb, detail)
+        var lt = IntFactorisation.ChebotarevTypes(P, maxP, maxPm: maxM, details: detail)
             .GroupBy(e => e.Deconstruct())
             .ToDictionary(e => e.Key, e => e.Count());
 
@@ -23,9 +23,76 @@ public static class GaloisApplicationsPart2
         types.Keys.OrderBy(e => e.ToString()).ToDictionary(e => e, e => types[e]).Println($"Expected types");
 
         var d = gal.Count();
-        lt.Keys.OrderBy(e => e.ToString()).ToDictionary(e => e, e => (1.0 * d * lt[e]) / nb).Println("Actual types");
+        var nb = lt.Sum(e => e.Value);
+        lt.Keys.OrderBy(e => e.ToString()).ToDictionary(e => e, e => Double.Round((1.0 * d * lt[e]) / nb)).Println("Actual types");
 
         Console.WriteLine();
+    }
+
+    static Dictionary<Array2Tuple<int>, int> GroupTypes(ConcreteGroup<Perm> gal)
+    {
+        var res = gal.Select(perm => IntExt.PermutationToCycles(perm.Sn.N, perm.Table).Select(l => l.Length).Order().Deconstruct())
+            .GroupBy(e => e).ToDictionary(e => e.Key, e => e.Count());
+
+        return res;
+    }
+
+    static double DistanceTypes(Dictionary<Array2Tuple<int>, int> actual, Dictionary<Array2Tuple<int>, int> expected)
+    {
+        var d = expected.Sum(e => e.Value);
+        var nb = actual.Sum(e => e.Value);
+        return expected.Select(e => actual.TryGetValue(e.Key, out var ae) ? Double.Abs((1.0 * d * ae) / nb - e.Value) : e.Value)
+            .Average();
+    }
+
+    public static void GaloisGroupChebotarev(KPoly<Rational> P, int maxP, int maxPm = 100, bool detail = false)
+    {
+        var deg = P.Degree;
+        if (deg > 7)
+            throw new("Deg(P) greater than 7 isnt supported");
+
+        if (IntFactorisation.FirrZ2(P).Length != 1)
+            throw new($"P = {P} isnt irreductible");
+
+        var sym = new Symm(deg);
+        var transSubGr = sym.TransitiveSubGroups().Select(e => Group.Generate(e.name, sym, e.gens))
+            .Select(g => (g, GroupTypes(g))).Select(e => (e.Item2.Keys.OrderBy(a => a.ToString()).ToArray(), (e.Item2, e.g)))
+            .ToArray();
+        var transTypes = transSubGr.Select(e => e.Item1).ToArray();
+
+        var types = new Dictionary<Array2Tuple<int>, int>();
+        foreach (var ct in IntFactorisation.ChebotarevTypes(P, maxP, maxPm: maxPm, details: detail))
+        {
+            var ctype = ct.Order().Deconstruct();
+            if (!types.ContainsKey(ctype))
+                types[ctype] = 1;
+            else
+                types[ctype] = types[ctype] + 1;
+
+            if (types.Sum(e => e.Value) < 10)
+                continue;
+
+            var sel1 = transTypes.Where(tp => tp.ToHashSet().IsSupersetOf(types.Keys)).ToArray();
+            var sel2 = sel1.Select(e => transSubGr.First(f => f.Item1.Equals(e)).Item2)
+                .Select(e => (e, DistanceTypes(types, e.Item1))).OrderBy(e => e.Item2).ToArray();
+
+            if (detail)
+            {
+                types.OrderByDescending(e => e.Key.ToString()).Println("types");
+                var d0 = sel2[0].Item2;
+                sel2.Select(e => new { e.e.g.Name, dist = e.Item2 }).Println("Distances");
+            }
+
+            if (sel1.Length == 1 || sel2[1].Item2 / sel2[0].Item2 > 5) // testing precision
+            {
+                Console.WriteLine($"P = {P}");
+                var g = sel2[0].e.g;
+                DisplayGroup.Head(g);
+                return;
+            }
+        }
+
+        throw new();
     }
 
     static (KPoly<Rational> newP, KPoly<Rational> c) RewriteQuadraticPolynomial(KPoly<Rational> p, char c = 'a')
@@ -61,15 +128,15 @@ public static class GaloisApplicationsPart2
 
     public static void ChebotarevExamples()
     {
-        Ring.DisplayPolynomial = MonomDisplay.Caret;
-        var x = FG.QPoly('X');
+        Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+        var x = FG.QPoly('x');
 
         {
             var P = x.Pow(3) - 3 * x - 1;
             var rootsK = IntFactorisation.AlgebraicRoots(P);
             var gal = GaloisTheory.GaloisGroup(rootsK, details: true);
 
-            CheckChebotarev(P, 20, gal);
+            CheckChebotarev(P, gal, 100);
         }
 
         {
@@ -77,7 +144,7 @@ public static class GaloisApplicationsPart2
             var rootsK = IntFactorisation.AlgebraicRoots(P);
             var gal = GaloisTheory.GaloisGroup(rootsK, details: true);
 
-            CheckChebotarev(P, 30, gal);
+            CheckChebotarev(P, gal, 100);
         }
 
         {
@@ -85,7 +152,7 @@ public static class GaloisApplicationsPart2
             var rootsK = IntFactorisation.AlgebraicRoots(P);
             var gal = GaloisTheory.GaloisGroup(rootsK, details: true);
 
-            CheckChebotarev(P, 20, gal);
+            CheckChebotarev(P, gal, 100);
         }
 
         {
@@ -93,7 +160,7 @@ public static class GaloisApplicationsPart2
             var rootsK = IntFactorisation.AlgebraicRoots(P);
             var gal = GaloisTheory.GaloisGroup(rootsK, details: true);
 
-            CheckChebotarev(P, 30, gal);
+            CheckChebotarev(P, gal, 100);
         }
 
         {
@@ -101,12 +168,12 @@ public static class GaloisApplicationsPart2
             var rootsK = IntFactorisation.AlgebraicRoots(P);
             var gal = GaloisTheory.GaloisGroup(rootsK, details: true);
 
-            CheckChebotarev(P, 30, gal);
+            CheckChebotarev(P, gal, 100);
         }
 
         {
             var P = x.Pow(4) + x + 1;
-            CheckChebotarev(P, 60, new Symm(4), true); // slow
+            CheckChebotarev(P, new Symm(4), 100, detail: true);
         }
 
         {
@@ -114,9 +181,65 @@ public static class GaloisApplicationsPart2
             var s5 = new Sn(5);
             var gal = Group.Generate("C5 x: C4", s5, s5[(2, 3, 5, 4)], s5[(1, 2, 3, 4, 5)]);
             DisplayGroup.HeadElements(gal);
-            CheckChebotarev(P, 60, gal, true); // slow
+            CheckChebotarev(P, gal, 100, detail: true);
+        }
+
+        {
+            var P = x.Pow(7) - 14 * x.Pow(5) + 56 * x.Pow(3) - 56 * x + 22;
+            var s7 = new Sn(7);
+            var gal = Group.Generate("C7 x: C3", s7, s7[(1, 2, 3, 4, 5, 6, 7)], s7[(2, 3, 5), (4, 7, 6)]);
+            DisplayGroup.HeadElements(gal);
+            CheckChebotarev(P, gal, 100, detail: true);
+        }
+
+        {
+            var P = x.Pow(6) + 2 * x.Pow(5) + 3 * x.Pow(4) + 4 * x.Pow(3) + 5 * x.Pow(2) + 6 * x + 7;
+            var s6 = new Sn(6);
+            var gal = Group.Generate("PGL(2, 5)", s6, s6[(3, 6, 5, 4)], s6[(1, 2, 5), (3, 4, 6)]);
+            DisplayGroup.Head(gal);
+            CheckChebotarev(P, gal, 1200, 1200, detail: true);
         }
     }
+
+    public static void GaloisGroupTransitivityExamples()
+    {
+        Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+        var x = FG.QPoly();
+        GaloisGroupChebotarev(x.Pow(3) - 3 * x - 1, 100, detail: true);
+        GaloisGroupChebotarev(x.Pow(4) + x.Pow(3) + x.Pow(2) + x + 1, 100, detail: true);
+        GaloisGroupChebotarev(x.Pow(5) + x.Pow(4) - 4 * x.Pow(3) - 3 * x.Pow(2) + 3 * x + 1, 100, detail: true);
+        GaloisGroupChebotarev(x.Pow(6) + 243, 100, detail: true);
+        GaloisGroupChebotarev(x.Pow(4) + x + 1, 100, detail: true);
+        GaloisGroupChebotarev(x.Pow(5) + 2, 100, detail: true);
+        GaloisGroupChebotarev(x.Pow(7) - 14 * x.Pow(5) + 56 * x.Pow(3) - 56 * x + 22, 100);
+
+        // JL.Milnes exercice 4.6 page 60 without using the “polgalois” command in PARI
+        GaloisGroupChebotarev(x.Pow(6) + 2 * x.Pow(5) + 3 * x.Pow(4) + 4 * x.Pow(3) + 5 * x.Pow(2) + 6 * x + 7, 1500, maxPm: 1500, detail: true);
+    }
+    /***
+        f = x^6 + 2*x^5 + 3*x^4 + 4*x^3 + 5*x^2 + 6*x + 7
+        Disc(f) = 157351936 ~ 2^16 * 7^4
+        #1   P = 3 shape [6]
+        #2   P = 5 shape [3, 3]
+        #3   P = 11 shape [6]
+        #4   P = 13 shape [1, 5]
+        #5   P = 17 shape [1, 5]
+        #6   P = 19 shape [1, 1, 4]
+        #7   P = 23 shape [1, 1, 4]
+        #8   P = 29 shape [1, 5]
+        #9   P = 31 shape [1, 1, 4]
+        #10  P = 37 shape [3, 3]
+        types
+            [(6), 2]
+            [(3, 3), 2]
+            [(1, 5), 3]
+            [(1, 1, 4), 3]
+        Distances
+            { Name = L(6):2 = PGL(2,5) = S_5(6), dist = 7.428571428571429 }
+            { Name = S6, dist = 59.27272727272727 }
+        P = x^6 + 2*x^5 + 3*x^4 + 4*x^3 + 5*x^2 + 6*x + 7
+        |L(6):2 = PGL(2,5) = S_5(6)| = 120
+     */
 
     public static void Example_Computing_Cos_2Pi_over_5()
     {

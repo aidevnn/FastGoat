@@ -311,7 +311,7 @@ Conway polynomials for finite fields
 [AECF](https://hal.archives-ouvertes.fr/AECF/)
 <b>Alin Bostan, Frédéric Chyzak, Marc Giusti, Romain Lebreton, Grégoire Lecerf, Bruno Salvy, Éric Schost.</b>
 Algorithmes Efficaces en Calcul Formel.
-Édition web 1.1
+Édition web 1.1, 2018
 <i>Chapitre IV Factorisation des polynômes.</i>
 
 [hal-01444183](https://hal.archives-ouvertes.fr/hal-01444183)
@@ -359,3 +359,9 @@ WOLFRAM CLOUD Integrated Access to Computational Intelligence
 PARI/GP Number Theory-oriented Computer Algebra System.
 Bordeaux.
 <i>Version 2.15.x; 2020-2022.</i>
+
+[milneFT](https://www.jmilne.org/math/CourseNotes/ft.html)
+<b>Milne, James S.</b>
+Fields and Galois Theory.
+Ed web v5.10, 2022.
+<i>Chapter 4. Computing Galois Groups.</i>
