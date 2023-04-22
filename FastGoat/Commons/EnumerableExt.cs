@@ -398,10 +398,10 @@ public class SetEquality<T> : EqualityComparer<HashSet<T>> where T : IEquatable<
 }
 
 /// <summary>
-/// Represents an EqualityComparer for IEnumerable of type T, where T is IEquatable and IComparable.
+/// Represents an EqualityComparer for IEnumerable of type T, where T is IEquatable.
 /// </summary>
 /// <typeparam name="T">The type of the elements of the IEnumerable.</typeparam>
-public class SequenceEquality<T> : EqualityComparer<IEnumerable<T>> where T : IEquatable<T>, IComparable<T>
+public class SequenceEquality<T> : EqualityComparer<IEnumerable<T>> where T : IEquatable<T>
 {
     /// <summary>
     /// Compares two IEnumerable objects for equality.

@@ -29,7 +29,7 @@ public static class PolynomExt
     /// <summary>
     /// Represents a dictionary of all Conway Polynomials.
     /// </summary>
-    private static readonly Dictionary<int, Dictionary<int, int[]>> AllConwayPolys;
+    public static readonly Dictionary<int, Dictionary<int, int[]>> AllConwayPolys;
 
     /// <summary>
     /// Gets the Conway polynomial of a given integer q.
@@ -52,7 +52,17 @@ public static class PolynomExt
 
             return ((p, m), new[] { p - e, 1 });
         }
-        return ((p, m), AllConwayPolys[p][m]);
+
+        if (AllConwayPolys.ContainsKey(p))
+        {
+            var allCP = AllConwayPolys[p];
+            if (allCP.ContainsKey(m))
+                return ((p, m), AllConwayPolys[p][m]);
+            else
+                return ((p, m), Array.Empty<int>());
+        }
+        else
+            return ((p, m), Array.Empty<int>());
     }
 
     // http://www.math.rwth-aachen.de/~Frank.Luebeck/data/ConwayPol/index.html

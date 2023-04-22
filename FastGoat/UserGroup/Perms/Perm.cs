@@ -6,7 +6,9 @@ namespace FastGoat.UserGroup.Perms;
 public enum DisplayPerm
 {
     Table,
-    Cycles
+    Cycles,
+    TableComma,
+    CyclesComma
 }
 
 public struct Perm : IElt<Perm>
@@ -56,15 +58,30 @@ public struct Perm : IElt<Perm>
         return Hash;
     }
 
+    public int[] PermType => IntExt.PermutationToCycles(Sn.N, Table).Select(l => l.Length).Order().ToArray();
+    public int Sgn => (-1).Pow(IntExt.PermutationToCycles(Sn.N, Table).Length);
+    public string PermTypeStr => $"({PermType.Glue(" ")})";
+    public string SgnStr => Sgn == 1 ? "(+)" : "(-)";
+
     public override string ToString()
     {
         if (Style == DisplayPerm.Table)
             return $"[{Table.Select(a => a + 1).Glue(" ")}]";
+        if (Style == DisplayPerm.TableComma)
+            return $"[{Table.Select(a => a + 1).Glue(", ")}]";
 
         var orbits = IntExt.PermutationToCycles(Sn.N, Table);
         var cycles = orbits.Where(a => a.Length > 1).ToArray();
-        var strCycles = cycles.Select(a => $"({a.Select(b => b + 1).Glue(" ")})").Glue();
-        return $"[{strCycles}]";
+        if (Style == DisplayPerm.Cycles)
+        {
+            var strCycles = cycles.Select(a => $"({a.Select(b => b + 1).Glue(" ")})").Glue();
+            return $"[{strCycles}]";
+        }
+        else
+        {
+            var strCycles = cycles.Select(a => $"({a.Select(b => b + 1).Glue(", ")})").Glue(", ");
+            return $"[{strCycles}]";
+        }
     }
 
     public override bool Equals(object? obj)

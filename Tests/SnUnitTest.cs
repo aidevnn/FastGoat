@@ -90,6 +90,6 @@ public class SnUnitTest
             }
             , s3.Contains
         );
-        Assert.Equal(3, s3.SubGroupsGenerators().Count());
+        Assert.Equal(3, s3.TransitiveSubGroups().Count());
     }
 }

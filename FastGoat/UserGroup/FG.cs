@@ -26,8 +26,8 @@ public static partial class FG
         if (k < 1)
             throw new Exception();
         
-        if (CyclotomicPolynomials.ContainsKey(k))
-            return CyclotomicPolynomials[k];
+        if (CyclotomicPolynomials.TryGetValue(k, out var polynomial))
+            return polynomial;
 
         var x = QPoly('X');
         var divs = IntExt.Dividors(k);
