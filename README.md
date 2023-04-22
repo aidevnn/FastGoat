@@ -134,6 +134,52 @@ All g, h not in Cl(g), Sum[r](Xr(g)Xr(h^−1))=  0       : True
 
 ```
 
+## Polynomial with Galois group 
+
+Computing Galois Group of irreductible polynomial $P=X^7-8X^5-2X^4+16X^3+6X^2-6X-2$ from [GroupName](https://people.maths.bris.ac.uk/~matyd/GroupNames/1/C7sC3.html) website
+
+```csharp
+Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+var x = FG.QPoly('X');
+var P = x.Pow(7) - 8 * x.Pow(5) - 2 * x.Pow(4) + 16 * x.Pow(3) + 6 * x.Pow(2) - 6 * x - 2; // GroupNames website
+GaloisApplicationsPart2.GaloisGroupChebotarev(P, detail: true);
+```
+will output
+```dotnetcli
+f = X^7 + -8*X^5 + -2*X^4 + 16*X^3 + 6*X^2 + -6*X + -2
+Disc(f) = 1817487424 ~ 2^6 * 73^4
+#1   P = 3 shape [7]
+#2   P = 5 shape [1, 3, 3]
+#3   P = 7 shape [7]
+#4   P = 11 shape [1, 3, 3]
+#5   P = 13 shape [1, 3, 3]
+#6   P = 17 shape [7]
+#7   P = 19 shape [1, 3, 3]
+#8   P = 23 shape [1, 3, 3]
+#9   P = 29 shape [1, 3, 3]
+#10  P = 31 shape [1, 3, 3]
+actual types
+    [(7), 3]
+    [(1, 3, 3), 7]
+expected types
+    [(7), 6]
+    [(1, 3, 3), 14]
+    [(1, 1, 1, 1, 1, 1, 1), 1]
+Distances
+    { Name = F_21(7) = 7:3, order = 21, dist = 0.6666666666666664 }
+    { Name = F_42(7) = 7:6, order = 42, dist = 8.8 }
+    { Name = L(7) = L(3,2), order = 168, dist = 25.6 }
+    { Name = A7, order = 2520, dist = 380 }
+    { Name = S7, order = 5040, dist = 538.6666666666666 }
+
+P = X^7 + -8*X^5 + -2*X^4 + 16*X^3 + 6*X^2 + -6*X + -2
+Gal(P) = F_21(7) = 7:3
+|F_21(7) = 7:3| = 21
+Type        NonAbelianGroup
+BaseGroup   S7
+SuperGroup  |Symm7| = 5040
+```
+
 # Galois Theory
 
 Galois Group of polynomial $P = X^5 + X^4 - 4X^3 - 3X^2 + 3X + 1$
