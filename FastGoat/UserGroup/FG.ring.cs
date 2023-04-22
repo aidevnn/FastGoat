@@ -18,12 +18,13 @@ public static partial class FG
     public static KPoly<Rational> QPoly(char x = 'x') => new KPoly<Rational>(x);
     public static KPoly<Cplx> CplxPoly(char x = 'x') => new KPoly<Cplx>(x);
 
-    public static Cplx NSolve(KPoly<Cplx> P)
+    public static Cplx NSolve(KPoly<Cplx> P, double epsilon = 1e-14, int maxLoop = 200)
     {
         var dP = P.Derivative;
         var ai = Cplx.CZero;
         var aj = new Cplx(Double.Pi + Complex.ImaginaryOne);
-        while ((ai - aj).NormInf > 1e-14)
+        var i = 0;
+        while ((ai - aj).NormInf > epsilon && i++ < maxLoop)
         {
             ai = aj;
             aj = ai - (P.Substitute(ai) / dP.Substitute(ai)); // Newton iteration
@@ -32,18 +33,18 @@ public static partial class FG
         return aj;
     }
 
-    public static Cplx[] NRoots(KPoly<Cplx> P)
+    public static Cplx[] NRoots(KPoly<Cplx> P, double epsilon = 1e-14, int maxLoop = 200)
     {
         var P0 = P;
         var roots = new List<Cplx>();
         while (P0.Degree > 0)
         {
-            var a0 = NSolve(P0);
+            var a0 = NSolve(P0, epsilon);
             roots.Add(a0);
             P0 /= P0.X - a0;
         }
 
-        return roots.Order().ToArray();
+        return roots.ToArray();
     }
 
     public static KPoly<Cplx> ToCPoly(this KPoly<Rational> P) => new (P.x, Cplx.CZero, P.Coefs.Select(c => c * Cplx.COne).ToArray());

@@ -134,6 +134,7 @@ public static partial class IntFactorisation
         var coefs = f.Coefs.Select(e => new ZnBInt(po, e.Num)).ToArray();
         return new(f.x, po.Zero, coefs);
     }
+
     static KPoly<ZnInt> QPoly2ZnInt(KPoly<Rational> f, int p)
     {
         var coefs = f.Coefs.Select(e => new ZnInt(p, (int)e.Num)).ToArray();
@@ -159,7 +160,7 @@ public static partial class IntFactorisation
         // var firr0 = BerlekampProbabilisticAECF(f0, a0).ToArray();
         // var firr0 = CantorZassenhausVShoup(f0, a0).ToArray();
         // GlobalStopWatch.Show("Firr");
-        
+
         var all = new List<KPoly<ZnBInt>>(firr0);
         var o0 = 1;
 
@@ -188,7 +189,7 @@ public static partial class IntFactorisation
 
     public static KPoly<Rational>[] HenselLiftingNaive(KPoly<Rational> f, int p, int o, bool details = false)
     {
-        if (!f.Coefs.Last().Equals(f.KOne) || f.Coefs.Any(c => c.Denom!=1))
+        if (!f.Coefs.Last().Equals(f.KOne) || f.Coefs.Any(c => c.Denom != 1))
             throw new ArgumentException();
 
         var (f0, firr0, allS) = HenselLifting(f, p, o);
@@ -355,7 +356,7 @@ public static partial class IntFactorisation
         throw new();
     }
 
-    public static (KPoly<K> nf, KPoly<K> nx) Deflate<K>(KPoly<K> f) 
+    public static (KPoly<K> nf, KPoly<K> nx) Deflate<K>(KPoly<K> f)
         where K : struct, IFieldElt<K>, IRingElt<K>, IElt<K>
     {
         var pows = f.Coefs.Select((c, i) => (c, i)).Where(e => e.i != 0 && !e.c.IsZero()).ToArray();
@@ -364,13 +365,13 @@ public static partial class IntFactorisation
         return (new(f.x, f.KZero, coefs), f.X.Pow(gcd));
     }
 
-    public static (KPoly<K> nf, KPoly<K> nx) Deflate<K>(KPoly<K> f, int n) 
+    public static (KPoly<K> nf, KPoly<K> nx) Deflate<K>(KPoly<K> f, int n)
         where K : struct, IFieldElt<K>, IRingElt<K>, IElt<K>
     {
         var (f0, x0) = Deflate(f);
         if (x0.Degree % n != 0)
             throw new();
-        
+
         return (f0.Substitute(f.X.Pow(x0.Degree / n)), f.X.Pow(n));
     }
 
@@ -382,7 +383,7 @@ public static partial class IntFactorisation
             var ans = QPoly2ZPoly(f.Monic);
             return (ct * ans.newP, ans.c);
         }
-        
+
         var n = f.Degree;
         var denoms = f.Coefs.Select(e => e.Denom).Distinct().ToArray();
         if (denoms.Length == 0)
@@ -394,7 +395,7 @@ public static partial class IntFactorisation
             .Aggregate(BigInteger.One, (prod, e) => prod * BigInteger.Pow(e.Key, e.Value));
         var c2 = new Rational(c1);
 
-        var f2 =  f.Substitute(f.X / c2);
+        var f2 = f.Substitute(f.X / c2);
         return (f2, c2);
     }
 
@@ -438,16 +439,16 @@ public static partial class IntFactorisation
     {
         if (f.Coefs.Any(c => !c.Denom.IsOne))
             throw new($"f isnt in Z[X] : {f}");
-        
+
         if (f.Degree == 1)
             return new[] { f };
-        
+
         var (f0, x0) = Deflate(f);
         if (x0.Degree == 1)
         {
             return FirrZ(f0, details);
         }
-        else if(f0.Degree == 1)
+        else if (f0.Degree == 1)
         {
             return FirrZ(f, details);
         }
@@ -503,13 +504,25 @@ public static partial class IntFactorisation
         return new[] { f };
     }
 
+    public static KPoly<EPoly<ZnInt>>[] FirrFq(KPoly<Rational> f, int q, bool details = false)
+    {
+        var dec = IntExt.PrimesDec(q);
+        if (dec.Count != 1)
+            throw new($"q = {q} isnt prime or power of prime");
+
+        var (p, n) = dec.First();
+        var fq = new Fq(q, 'a');
+        var f0 = new KPoly<EPoly<ZnInt>>(f.x, fq.Zero, f.Coefs.Select(c => ((int)c.Num) * fq.One).ToArray());
+        return BerlekampProbabilisticAECF(f0, fq.One.X).ToArray();
+    }
+
     public static KPoly<ZnBInt>[] FirrFp(KPoly<Rational> f, int p, bool details = false)
     {
         if (!IntExt.Primes10000.Contains(p))
             throw new($"p = {p} isnt prime");
-        
-        var ai0 = (new Un(p)).GetGenerators().First()[new(p, 1)];
-        var a0 = ZnBInt.ZnZero(p) + ai0.K;
+
+        var e = IntExt.Solve_k_pow_m_equal_one_mod_n_strict(p, p - 1);
+        var a0 = new ZnBInt(p, e, 1);
         var po = a0.Details;
         var f0 = QPoly2ZnInt(f, po);
         return BerlekampProbabilisticAECF(f0, a0).ToArray();
@@ -519,7 +532,7 @@ public static partial class IntFactorisation
     {
         if (!IntExt.Primes10000.Contains(p))
             throw new($"p = {p} isnt prime");
-        
+
         var ai0 = (new Un(p)).GetGenerators().First()[new(p, 1)];
         var a0 = ZnInt.ZnZero(p) + ai0.K;
         var f0 = QPoly2ZnInt(f, p);
@@ -555,7 +568,7 @@ public static partial class IntFactorisation
                     Console.WriteLine("Fact(f) = {0} mod {1}", listIrr0.Glue("*", "({0})"), p);
                     Console.WriteLine();
                 }
-                
+
                 return (p, listIrr0);
             }
             catch (Exception e)
@@ -564,7 +577,7 @@ public static partial class IntFactorisation
                     Console.WriteLine($"#### Prime {p} wont work ####");
             }
         }
-        
+
         throw new();
     }
 
@@ -572,10 +585,10 @@ public static partial class IntFactorisation
     {
         return FirrFp(f, details).factors.Where(p => p.Degree == 1).Select(p => -p[0] / p[1]).Order().ToList();
     }
-    
-    public static IEnumerable<int[]> ChebotarevTypes(KPoly<Rational> f, int N, bool details = false)
+
+    public static IEnumerable<int[]> ChebotarevTypes(KPoly<Rational> f, int maxP, int maxPm = 200, bool details = false)
     {
-        var discQ = Ring.Discriminant(f).Num;
+        var discQ = BigInteger.Abs(Ring.Discriminant(f).Num);
         var discDecomp = IntExt.PrimesDec(discQ);
         if (details)
         {
@@ -584,8 +597,11 @@ public static partial class IntFactorisation
         }
 
         var k = 1;
-        foreach (var p in IntExt.Primes10000.Except(discDecomp.Keys).Take(N))
+        foreach (var p in IntExt.Primes10000.Where(p => p <= maxP))
         {
+            if (BigInteger.Remainder(discQ, p) == 0)
+                continue;
+
             var listIrr0 = FirrFp(f, p);
             var type = listIrr0.Select(g => g.Degree).Order().ToArray();
             if (details)
@@ -594,7 +610,40 @@ public static partial class IntFactorisation
             }
 
             yield return type;
+            // var n = (int)(Double.Log2(maxPm) / Double.Log2(p));
+            // for (int m = 1; m <= n; m++)
+            // {
+            //     if (m == 1)
+            //     {
+            //         if (BigInteger.Remainder(discQ, p) == 0)
+            //             continue;
+            //
+            //         var listIrr0 = FirrFp(f, p);
+            //         var type = listIrr0.Select(g => g.Degree).Order().ToArray();
+            //         if (details)
+            //         {
+            //             Console.WriteLine("#{2,-3} P = {0} shape [{1}]", p, type.Glue(", "), k++);
+            //         }
+            //
+            //         yield return type;
+            //     }
+            //     else
+            //     {
+            //         var q = p.Pow(m);
+            //         if (BigInteger.Remainder(discQ, q) == 0 || !PolynomExt.AllConwayPolys.ContainsKey(p) ||
+            //             !PolynomExt.AllConwayPolys[p].ContainsKey(m))
+            //             continue;
+            //
+            //         var listIrr0 = FirrFq(f, q);
+            //         var type = listIrr0.Select(g => g.Degree).Order().ToArray();
+            //         if (details)
+            //         {
+            //             Console.WriteLine("#{4,-3} P^m = {0}^{1} = {2} shape [{3}]", p, m, q, type.Glue(", "), k++);
+            //         }
+            //
+            //         yield return type;
+            //     }
+            // }
         }
     }
-
 }

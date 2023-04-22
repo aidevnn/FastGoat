@@ -30,7 +30,6 @@ public static class GaloisTheory
             throw new("Extension must be normal");
 
         var n = a.F.Degree;
-        var Fi = roots.Select((k, i) => (k, i)).ToDictionary(e => e.i, e => e.k.Poly);
         var idx = roots.Select((k, i) => (k, i)).ToDictionary(e => e.k, e => e.i);
 
         var sn = new Sn(n);
@@ -40,7 +39,7 @@ public static class GaloisTheory
             var s_j = new List<int>();
             for (int i = 0; i < n; i++)
             {
-                var asj = Fi[i].Substitute(roots[j]);
+                var asj = roots[j].Substitute(roots[i]);
                 s_j.Add(idx[asj]);
             }
 
@@ -240,7 +239,7 @@ public static class GaloisTheory
 
             if (details)
                 Console.WriteLine("#####################################");
-            var inv = GaloisTheory.InvariantsField(rs, details);
+            var inv = InvariantsField(rs, details);
             if (details)
                 DisplayGroup.Head(subGr);
 

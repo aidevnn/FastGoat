@@ -62,6 +62,17 @@ public readonly struct EPoly<K> : IVsElt<K, EPoly<K>>, IElt<EPoly<K>>, IRingElt<
         return Poly.Coefs.Select((k, i) => k * f.Pow(i)).Aggregate(f.Zero, (acc, a) => acc + a);
     }
 
+    public EPoly<K> Compose(int k)
+    {
+        if (k < 0)
+            throw new();
+
+        if (k == 0)
+            return X;
+
+        return Substitute(Compose(k - 1));
+    }
+
     public EPoly<K> Add(EPoly<K> e)
     {
         return new(F, Poly.Add(e.Poly));
