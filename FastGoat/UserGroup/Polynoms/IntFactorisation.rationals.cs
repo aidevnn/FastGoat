@@ -194,7 +194,9 @@ public static partial class IntFactorisation
         // return Double.Sqrt(n + 1) * Double.Pow(2, n) * norm;
 
         var nu = Nu(f);
-        Console.WriteLine($"nu = {nu} => {Double.Log(2 * nu)} ~ {Double.Log(n + 1) / 2 + n + normb}");
+        if (details)
+            Console.WriteLine($"nu = {nu} => {Double.Log(2 * nu)} ~ {Double.Log(n + 1) / 2 + n + normb}");
+        
         var all = IntExt.Primes10000.Where(p => !BigInteger.Remainder(disc, p).IsZero).Take(150)
             .Select(p => (p, s: (int)((Double.Log(n + 1) / 2 + n * Double.Log(2) + normb) / Double.Log(p)) + 1))
             .OrderByDescending(e => e.s).ToArray();
@@ -304,7 +306,8 @@ public static partial class IntFactorisation
                     allS = allS.Except(combs).ToArray();
 
                     nbCombs = combs.Length;
-                    Console.WriteLine($"@@@@@@@@ itr:{itr} nbCombs:{nbCombs}");
+                    if (details)
+                        Console.WriteLine($"@@@@@@@@ itr:{itr} nbCombs:{nbCombs}");
                     break;
                 }
             }
@@ -320,7 +323,8 @@ public static partial class IntFactorisation
         var check = f.Equals(listIrr.Aggregate((a, b) => a * b));
         if (!check)
         {
-            Console.WriteLine($"@@@@@@@@@@ {f} <> {listIrr.Aggregate((a, b) => a * b)} @@@@@@@@@@");
+            if (details)
+                Console.WriteLine($"@@@@@@@@@@ {f} <> {listIrr.Aggregate((a, b) => a * b)} @@@@@@@@@@");
             throw new Exception();
         }
 
@@ -483,7 +487,7 @@ public static partial class IntFactorisation
         return (f0.Substitute(f.X.Pow(x0.Degree / n)), f.X.Pow(n));
     }
 
-    public static (KPoly<Rational> nf, Rational c) ConstCoefBase(KPoly<Rational> f)
+    public static (KPoly<Rational> nf, Rational c) ConstCoefBase(KPoly<Rational> f, bool details = false)
     {
         var deg = f.Degree;
         var coefs = f.Coefs.Select(c => Rational.Absolute(c)).ToArray();
@@ -498,13 +502,13 @@ public static partial class IntFactorisation
         var res = dico.Aggregate((a, b) => a.Intersect(b)).Aggregate(BigInteger.One, (prod, k) => k * prod);
         var gcd = new Rational(res);
         var nf = f.Substitute(f.X * (f.KOne * gcd)).Monic;
-        if (!gcd.Num.IsOne)
+        if (!gcd.Num.IsOne && details)
             Console.WriteLine($"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Simplify f={f} and nf={nf} and c={gcd}");
 
         return (nf, gcd);
     }
 
-    public static (KPoly<Rational> nf, Rational c) ConstCoef(KPoly<Rational> f)
+    public static (KPoly<Rational> nf, Rational c) ConstCoef(KPoly<Rational> f, bool details = false)
     {
         if (f.Coefs.Any(c => !c.Denom.IsOne))
         {
@@ -513,11 +517,11 @@ public static partial class IntFactorisation
 
         var f0 = f.Monic;
         var ng0 = (f0.Zero, Rational.KZero());
-        var ng1 = ConstCoefBase(f0);
+        var ng1 = ConstCoefBase(f0, details);
         while (!ng0.Equals(ng1))
         {
             ng0 = ng1;
-            var ng2 = ConstCoefBase(ng1.nf);
+            var ng2 = ConstCoefBase(ng1.nf, details);
             ng1 = (ng2.nf, ng1.c * ng2.c);
         }
 
@@ -621,7 +625,7 @@ public static partial class IntFactorisation
 
     public static KPoly<Rational>[] FirrZ(KPoly<Rational> P, bool details = false)
     {
-        var (f, c) = ConstCoef(P);
+        var (f, c) = ConstCoef(P, details);
         var discQ = Ring.Discriminant(f).Num;
         var discDecomp = IntExt.PrimesDec(discQ);
         if (details)

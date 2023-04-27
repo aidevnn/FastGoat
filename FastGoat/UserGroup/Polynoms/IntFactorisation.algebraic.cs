@@ -146,21 +146,21 @@ public static partial class IntFactorisation
             {
                 var g = f.Substitute(x - a * s);
                 // Console.WriteLine($"s={s} Norm({g})");
-                Console.WriteLine($"s={s})");
-                Console.WriteLine($"Norm({g}");
+                // Console.WriteLine($"s={s})");
+                // Console.WriteLine($"Norm({g}");
                 var r = Norm(g);
-                Console.WriteLine($" = {r}");
+                if (onlyIntegers && r.Coefs.Any(c0 => c0 is Rational c1 && !c1.IsInteger()))
+                    continue;
+
+                // Console.WriteLine($" = {r}");
                 if (Ring.Gcd(r, r.Derivative).Degree == 0) // dilemma between Ring.Gcd and Ring.FastGCD
                 {
-                    if (onlyIntegers && r.Coefs.Any(c0 => c0 is Rational c1 && !c1.IsInteger()))
-                        continue;
-
                     return (s, g.Monic, r);
                 }
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                // Console.WriteLine(e);
             }
         }
 
@@ -181,8 +181,8 @@ public static partial class IntFactorisation
             {
                 var g = f.Substitute(x - a * s);
                 // Console.WriteLine($"s={s} Norm({g})");
-                Console.WriteLine($"s={s})");
-                Console.WriteLine($"Norm({g}");
+                // Console.WriteLine($"s={s})");
+                // Console.WriteLine($"Norm({g}");
                 var r = Norm(g);
                 if (onlyIntegers && r.Coefs.Any(c0 => !c0.IsInteger()))
                     continue;
@@ -190,7 +190,7 @@ public static partial class IntFactorisation
                 var (p, o) = PSigma(r).First();
                 var pz = new PadicZealous(p, o);
                 var r0 = new KPoly<PadicZealous>(r.x, pz, r.Coefs.Select(c => new PadicZealous(p, o, c)).ToArray());
-                Console.WriteLine($"{(p, o)} r0 = {r0}");
+                // Console.WriteLine($"{(p, o)} r0 = {r0}");
                 if (Ring.Gcd(r0, r0.Derivative).Degree == 0) // dilemma between Ring.Gcd and Ring.FastGCD
                 {
                     return (s, g.Monic, r);
@@ -198,7 +198,7 @@ public static partial class IntFactorisation
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                // Console.WriteLine(e);
             }
         }
 
