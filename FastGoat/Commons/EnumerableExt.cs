@@ -264,6 +264,20 @@ public static class EnumerableExt
     }
 
     /// <summary>
+    /// Generates all possible combinations of elements in a given sequence with at least m elements.
+    /// </summary>
+    /// <typeparam name="T">The type of the elements in the sequence.</typeparam>
+    /// <param name="m">The minimum elements of the combinaison.</param>
+    /// <param name="seq">The sequence of elements to generate combinations from.</param>
+    /// <returns>An enumerable of arrays containing all possible combinations of elements from the given sequence.</returns>
+    public static IEnumerable<T[]> AllCombinationsFromM<T>(this IEnumerable<T> seq, int m)
+    {
+        var enumerable = seq as T[] ?? seq.ToArray();
+        var n = enumerable.Count();
+        return IntExt.YieldAllCombsFromMtoN(m, n).Select(comb => comb.Zip(enumerable).Where(e => e.First).Select(e => e.Second).ToArray());
+    }
+
+    /// <summary>
     /// Generates a sequence of sequences by combining elements from the given enumerables.
     /// </summary>
     /// <typeparam name="T">The type of the elements in the enumerables.</typeparam>

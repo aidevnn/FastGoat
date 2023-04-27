@@ -21,24 +21,7 @@ public static partial class Ring
         if (b.IsZero())
             return a.CompareTo(a.Opp()) == -1 ? a.Opp() : a;
         
-        if (a.CompareTo(b) == -1)
-        {
-            if(a.IsZero())
-                return b.CompareTo(b.Opp()) == -1 ? b.Opp() : b;
-            
-            var a0 = b.Div(a).rem;
-            if (a0.Equals(b))
-            {
-                Console.WriteLine(new { a, b, a0 });
-                return a.One;
-            }
-
-            return Gcd(a, a0);
-        }
-        else
-        {
-            return Gcd(b, a.Div(b).rem);
-        }
+        return Gcd(b, a.Div(b).rem);
     }
 
     public static T Gcd<T>(T[] arr) where T : IElt<T>, IRingElt<T>

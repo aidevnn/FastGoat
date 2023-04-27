@@ -112,7 +112,7 @@ public static class PolynomialFactorizationPart2
         for (int j = 0; j < 20; j++)
         {
             var amp = IntExt.Rng.Next(2, 29);
-            var n = 2 + IntExt.Rng.Next(11);
+            var n = 2 + IntExt.Rng.Next(20);
             var degrees = IntExt.Partitions32[n].Where(l => l.All(i => i != 1) && l.Count > 1)
                 .OrderBy(i => IntExt.Rng.NextDouble())
                 .FirstOrDefault(new int[] { 2, 3, 4 }.ToList())

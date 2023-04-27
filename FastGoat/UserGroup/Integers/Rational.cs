@@ -97,8 +97,6 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
     public Rational Inv() => new(Denom, Num);
     public bool Invertible() => !IsZero();
     public bool IsInteger() => Denom.IsOne;
-    public static implicit operator double(Rational e) => (double)e.Num / (double)e.Denom;
-
     public override int GetHashCode() => Hash;
     public override string ToString()
     {
@@ -118,6 +116,20 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
         }
     }
 
+    public Rational Round
+    {
+        get
+        {
+            var (q, r) = BigInteger.DivRem(Num, Denom);
+            var rs = r.Sign;
+            var r0 = r * rs * 2;
+            if (r0 < Denom || (r0 == Denom && BigInteger.IsEvenInteger(q)))
+                return new(q, 1);
+
+            return new(q + rs, 1);
+        }
+    }
+    public static implicit operator double(Rational e) => (double)e.Num / (double)e.Denom;
     public static Rational Absolute(Rational e) => new(BigInteger.Abs(e.Num), e.Denom);
     public static Rational operator +(Rational a, Rational b) => a.Add(b);
     public static Rational operator +(int a, Rational b) => b.Add(b.One.Mul(a));

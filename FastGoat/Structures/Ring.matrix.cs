@@ -211,6 +211,31 @@ public static partial class Ring
     {
         return new(Matrix(m, mat.ToArray()));
     }
+    
+    public static K SquareNorm2<K>(KMatrix<K> mat)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        if (mat.M == 1)
+        {
+            var sq = mat.KZero;
+            for (int i = 0; i < mat.N; i++)
+                sq += mat.Coefs[0, i] * mat.Coefs[0, i];
+
+            return sq;
+        }
+            
+        if (mat.N == 1)
+        {
+            var sq = mat.KZero;
+            for (int i = 0; i < mat.M; i++)
+                sq += mat.Coefs[i, 0] * mat.Coefs[i, 0];
+
+            return sq;
+        }
+
+        throw new("SquareNorm2");
+    }
+
 
     public static (K[,] P, K[,] A0) ReducedRowsEchelonForm<K>(K[,] A)
         where K : IElt<K>, IRingElt<K>, IFieldElt<K>
@@ -774,6 +799,38 @@ public static partial class Ring
             {
                 var uij = u[i, j] = ((A.GetCol(i).T * vs[j]) / (vs[j].T * vs[j]))[0, 0];
                 vs[i] -= uij * vs[j];
+            }
+        }
+
+        return (KMatrix<K>.MergeSameRows(vs), new(u));
+    }
+
+    public static (KMatrix<K> O, KMatrix<K> U) GramSchmidt2<K>(KMatrix<K> A, bool details = false)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var n = A.M;
+        var vs = new KMatrix<K>[n];
+        var u = Diagonal(A.KOne, n);
+        var allCols = A.Cols;
+        for (int i = 0; i < n; i++)
+        {
+            vs[i] = allCols[i];
+            for (int j = 0; j < i; j++)
+            {
+                var sum0 = A.KZero;
+                var sum1 = A.KZero;
+                for (int k = 0; k < n; k++)
+                {
+                    sum0 += vs[i].Coefs[k, 0] * vs[j].Coefs[k, 0];
+                    sum1 += vs[j].Coefs[k, 0] * vs[j].Coefs[k, 0];
+                }
+            
+                // var uij = u[i, j] = (ScalarProduct(vs[i], vs[j]) / ScalarProduct(vs[j], vs[j]));
+                var uij = u[i, j] = sum0 / sum1;
+            
+                // vs[i] -= uij * vs[j];
+                for (int k = 0; k < n; k++)
+                    vs[i].Coefs[k, 0] -= uij * vs[j].Coefs[k, 0];
             }
         }
 

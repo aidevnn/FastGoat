@@ -32,7 +32,7 @@ public static partial class IntFactorisation
     /// <param name="j"></param>
     /// <param name="A"></param>
     /// <typeparam name="T"></typeparam>
-    static void SwapRows<T>(int i, int j, T[,] A)
+    public static void SwapRows<T>(int i, int j, T[,] A)
     {
         var cols = A.GetLength(1);
         for (int k = 0; k < cols; k++)
@@ -51,7 +51,81 @@ public static partial class IntFactorisation
         return new(q + rs, 1);
     }
 
-    public static KMatrix<Rational> LLL(KMatrix<Rational> v)
+    public static KMatrix<Rational> LLL(KMatrix<Rational> A)
+    {
+        var n = A.N;
+        var w = A.Cols;
+        var (Ws, M) = Ring.GramSchmidt2(A);
+
+        var ws = Ws.Cols;
+        var N = M.Coefs;
+        int i = 1;
+        while (i < n)
+        {
+            for (int j = i - 1; j >= 0; j--)
+            {
+                var ruij = N[i, j].Round;
+                // w[i] -= ruij * w[j];
+                for (int k = 0; k < n; k++)
+                    w[i].Coefs[k, 0] -= ruij * w[j].Coefs[k, 0];
+
+                for (int k = 0; k <= j; k++)
+                {
+                    N[i, k] -= ruij * N[j, k];
+                }
+            }
+
+            if (i >= 1)
+            {
+                // var wsip2 = Ring.SquareNorm2(ws[i - 1]);
+                // var wsi2 = Ring.SquareNorm2(ws[i]);
+                var wsip2 = A.KZero;
+                var wsi2 = A.KZero;
+                for (int k = 0; k < n; k++)
+                {
+                    wsip2 += ws[i - 1].Coefs[k, 0] * ws[i - 1].Coefs[k, 0];
+                    wsi2 += ws[i].Coefs[k, 0] * ws[i].Coefs[k, 0];
+                }
+
+                if (wsip2.CompareTo(2 * wsi2) > 0)
+                {
+                    var a = N[i, i - 1];
+                    var b = a * wsip2 / (wsi2 + a.Pow(2) * wsip2);
+                    // (ws[i - 1], ws[i]) = (ws[i] + a * ws[i - 1], ws[i - 1] - b * (ws[i] + a * ws[i - 1]));
+                    // (w[i - 1], w[i]) = (w[i], w[i - 1]);
+                    for (int k = 0; k < n; k++)
+                    {
+                        (ws[i - 1].Coefs[k, 0], ws[i].Coefs[k, 0]) = (ws[i].Coefs[k, 0] + a * ws[i - 1].Coefs[k, 0],
+                            ws[i - 1].Coefs[k, 0] - b * (ws[i].Coefs[k, 0] + a * ws[i - 1].Coefs[k, 0]));
+                        (w[i - 1].Coefs[k, 0], w[i].Coefs[k, 0]) = (w[i].Coefs[k, 0], w[i - 1].Coefs[k, 0]);
+                    }
+
+                    // IntFactorisation.SwapRows(i - 1, i, N);
+                    for (int k = 0; k < n; k++)
+                        (N[i - 1, k], N[i, k]) = (N[i, k], N[i - 1, k]);
+
+                    for (int k = i - 1; k < n; k++)
+                    {
+                        (N[k, i - 1], N[k, i]) = (b * N[k, i - 1] + (1 - a * b) * N[k, i], N[k, i - 1] - a * N[k, i]);
+                    }
+
+                    i--;
+                }
+                else
+                {
+                    i++;
+                }
+            }
+            else
+            {
+                i++;
+            }
+        }
+
+        return KMatrix<Rational>.MergeSameRows(w);
+    }
+    
+    public static KMatrix<Rational> LLLtheoric(KMatrix<Rational> v)
     {
         var n = v.N;
         var w = v.Cols;
@@ -113,9 +187,16 @@ public static partial class IntFactorisation
     static IEnumerable<(int p, int s)> PSigma(KPoly<Rational> f, bool details = false)
     {
         var disc = Ring.Discriminant(f).Num;
+
+        var n = f.Degree;
+        var norm = f.Coefs.Select(e => Double.Abs(e)).Max();
+        var normb = f.Coefs.Select(e => BigInteger.Log(BigInteger.Abs(e.Num)) - BigInteger.Log(e.Denom)).Max();
+        // return Double.Sqrt(n + 1) * Double.Pow(2, n) * norm;
+
         var nu = Nu(f);
+        Console.WriteLine($"nu = {nu} => {Double.Log(2 * nu)} ~ {Double.Log(n + 1) / 2 + n + normb}");
         var all = IntExt.Primes10000.Where(p => !BigInteger.Remainder(disc, p).IsZero).Take(150)
-            .Select(p => (p, s: (int)(Double.Log(2 * nu) / Double.Log(p)) + 1))
+            .Select(p => (p, s: (int)((Double.Log(n + 1) / 2 + n * Double.Log(2) + normb) / Double.Log(p)) + 1))
             .OrderByDescending(e => e.s).ToArray();
 
         foreach (var (p, s) in all)
@@ -126,7 +207,7 @@ public static partial class IntFactorisation
         // throw new ArgumentException("Prime not found");
     }
 
-    static KPoly<Rational> ZPoly2QPoly(KPoly<ZnBInt> f) =>
+    public static KPoly<Rational> ZPoly2QPoly(KPoly<ZnBInt> f) =>
         new(f.x, Rational.KZero(), f.Coefs.Select(e => new Rational(e.K * 2 <= e.Mod ? e.K : e.K - e.Mod)).ToArray());
 
     public static KPoly<ZnBInt> QPoly2ZnInt(KPoly<Rational> f, Modulus po)
@@ -199,14 +280,21 @@ public static partial class IntFactorisation
 
         var listIrr = new List<KPoly<Rational>>();
         var sz = 0;
+        var nbCombs = 1;
+        var itr = 0;
+
+        if (details)
+            Console.WriteLine($"######## Candidate Prime P = {p}; Sigma = {o}; P^o={BigInteger.Pow(p, o)}");
+
         while (allS.Length != sz)
         {
             sz = allS.Length;
-            foreach (var combs in allS.AllCombinations())
-            {
-                if (!combs.Any())
-                    continue;
+            if (details)
+                Console.WriteLine($"######## Nb Combinaisons : 2^{sz} = {BigInteger.Pow(2, sz)} ########");
 
+            foreach (var combs in allS.AllCombinationsFromM(nbCombs))
+            {
+                itr++;
                 var H = combs.Aggregate(xp.One, (acc, a) => a * acc);
                 var G = ZPoly2QPoly(H);
                 if (F.Div(G).rem.IsZero())
@@ -214,6 +302,9 @@ public static partial class IntFactorisation
                     listIrr.Add(G);
                     F /= G;
                     allS = allS.Except(combs).ToArray();
+
+                    nbCombs = combs.Length;
+                    Console.WriteLine($"@@@@@@@@ itr:{itr} nbCombs:{nbCombs}");
                     break;
                 }
             }
@@ -229,6 +320,7 @@ public static partial class IntFactorisation
         var check = f.Equals(listIrr.Aggregate((a, b) => a * b));
         if (!check)
         {
+            Console.WriteLine($"@@@@@@@@@@ {f} <> {listIrr.Aggregate((a, b) => a * b)} @@@@@@@@@@");
             throw new Exception();
         }
 
@@ -245,7 +337,6 @@ public static partial class IntFactorisation
 
         return listIrr0;
     }
-
 
     static KMatrix<Rational> Lattice(KPoly<Rational> F, KPoly<ZnBInt>[] irrs, int n, int p, int sigma, int tau)
     {
@@ -286,7 +377,7 @@ public static partial class IntFactorisation
         {
             try
             {
-                return SearchVanHoeij(f, p, max);
+                return SearchVanHoeij(f, p, max).Item3;
             }
             catch (Exception e)
             {
@@ -297,7 +388,7 @@ public static partial class IntFactorisation
         throw new();
     }
 
-    static KPoly<Rational>[] SearchVanHoeij(KPoly<Rational> P, int p, int max = 2)
+    public static (int sigma, int tau, KPoly<Rational>[]) SearchVanHoeij(KPoly<Rational> P, int p, int max = 2)
     {
         var n = P.Degree;
         var x = FG.ZPoly(p);
@@ -345,7 +436,7 @@ public static partial class IntFactorisation
                 Console.WriteLine("Fact(f) = {0} in Z[X]", polys.Glue("*", "({0})"));
                 Console.WriteLine($"f = Prod[Fact(f)] : {P.Equals(polys.Aggregate(one1, (prod, e) => prod * e))}");
                 Console.WriteLine();
-                return polys;
+                return (sigma2, tau, polys);
             }
             catch (Exception e)
             {
@@ -356,7 +447,24 @@ public static partial class IntFactorisation
         throw new();
     }
 
-    public static (KPoly<K> nf, KPoly<K> nx) Deflate<K>(KPoly<K> f)
+    public static (KPoly<K> nf, KPoly<K> nx) DeflateMin<K>(KPoly<K> f)
+        where K : struct, IFieldElt<K>, IRingElt<K>, IElt<K>
+    {
+        var pows = f.Coefs.Select((c, i) => (c, i)).Where(e => e.i != 0 && !e.c.IsZero()).ToArray();
+        if (pows.Length == 0)
+            return (f, f.X);
+
+        var gcd = IntExt.Gcd(pows.Select(e => e.i).ToArray());
+        var divs = IntExt.Dividors(gcd).Where(k => k != 1).Append(gcd).Distinct().Order().ToArray();
+        if (divs.Length == 0)
+            return (f, f.X);
+
+        var div = divs.Min();
+        var coefs = f.Coefs.Where((c, i) => i % div == 0).ToArray();
+        return (new(f.x, f.KZero, coefs), f.X.Pow(div));
+    }
+
+    public static (KPoly<K> nf, KPoly<K> nx) DeflateMax<K>(KPoly<K> f)
         where K : struct, IFieldElt<K>, IRingElt<K>, IElt<K>
     {
         var pows = f.Coefs.Select((c, i) => (c, i)).Where(e => e.i != 0 && !e.c.IsZero()).ToArray();
@@ -365,14 +473,55 @@ public static partial class IntFactorisation
         return (new(f.x, f.KZero, coefs), f.X.Pow(gcd));
     }
 
-    public static (KPoly<K> nf, KPoly<K> nx) Deflate<K>(KPoly<K> f, int n)
+    public static (KPoly<K> nf, KPoly<K> nx) DeflateByN<K>(KPoly<K> f, int n)
         where K : struct, IFieldElt<K>, IRingElt<K>, IElt<K>
     {
-        var (f0, x0) = Deflate(f);
+        var (f0, x0) = DeflateMax(f);
         if (x0.Degree % n != 0)
             throw new();
 
         return (f0.Substitute(f.X.Pow(x0.Degree / n)), f.X.Pow(n));
+    }
+
+    public static (KPoly<Rational> nf, Rational c) ConstCoefBase(KPoly<Rational> f)
+    {
+        var deg = f.Degree;
+        var coefs = f.Coefs.Select(c => Rational.Absolute(c)).ToArray();
+
+        var dico = coefs.Select((c, i) => (c.Num, i)).Where(e => !e.Num.IsZero && e.i != deg)
+            .Select(e => IntExt.PrimesDec(e.Num).Where(kp => kp.Value >= deg - e.i).Select(kp => kp.Key))
+            .ToArray();
+
+        if (dico.Length == 0)
+            return (f, Rational.KOne());
+
+        var res = dico.Aggregate((a, b) => a.Intersect(b)).Aggregate(BigInteger.One, (prod, k) => k * prod);
+        var gcd = new Rational(res);
+        var nf = f.Substitute(f.X * (f.KOne * gcd)).Monic;
+        if (!gcd.Num.IsOne)
+            Console.WriteLine($"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Simplify f={f} and nf={nf} and c={gcd}");
+
+        return (nf, gcd);
+    }
+
+    public static (KPoly<Rational> nf, Rational c) ConstCoef(KPoly<Rational> f)
+    {
+        if (f.Coefs.Any(c => !c.Denom.IsOne))
+        {
+            return (f, Rational.KOne());
+        }
+
+        var f0 = f.Monic;
+        var ng0 = (f0.Zero, Rational.KZero());
+        var ng1 = ConstCoefBase(f0);
+        while (!ng0.Equals(ng1))
+        {
+            ng0 = ng1;
+            var ng2 = ConstCoefBase(ng1.nf);
+            ng1 = (ng2.nf, ng1.c * ng2.c);
+        }
+
+        return (ng1.nf, ng1.c);
     }
 
     public static (KPoly<Rational> newP, Rational c) QPoly2ZPoly(KPoly<Rational> f)
@@ -443,7 +592,7 @@ public static partial class IntFactorisation
         if (f.Degree == 1)
             return new[] { f };
 
-        var (f0, x0) = Deflate(f);
+        var (f0, x0) = DeflateMin(f);
         if (x0.Degree == 1)
         {
             return FirrZ(f0, details);
@@ -470,8 +619,9 @@ public static partial class IntFactorisation
         }
     }
 
-    public static KPoly<Rational>[] FirrZ(KPoly<Rational> f, bool details = false)
+    public static KPoly<Rational>[] FirrZ(KPoly<Rational> P, bool details = false)
     {
+        var (f, c) = ConstCoef(P);
         var discQ = Ring.Discriminant(f).Num;
         var discDecomp = IntExt.PrimesDec(discQ);
         if (details)
@@ -481,7 +631,7 @@ public static partial class IntFactorisation
         }
 
         if (f.Degree == 1)
-            return new[] { f };
+            return new[] { P };
 
         // if (EisensteinCriterion(f, details))
         // {
@@ -492,7 +642,7 @@ public static partial class IntFactorisation
         {
             try
             {
-                return HenselLiftingNaive(f, p, o, details);
+                return HenselLiftingNaive(f, p, o, details).Select(f0 => f0.Substitute(f0.X / c).Monic).ToArray();
             }
             catch (Exception)
             {
@@ -501,7 +651,29 @@ public static partial class IntFactorisation
             }
         }
 
-        return new[] { f };
+        return new[] { P };
+    }
+
+    public static (int p, int sigma, KPoly<Rational>[]) FirrZtest(KPoly<Rational> f)
+    {
+        var discQ = Ring.Discriminant(f).Num;
+        var discDecomp = IntExt.PrimesDec(discQ);
+        Console.WriteLine($"f = {f}");
+        Console.WriteLine($"Disc(f) = {discQ} ~ {discDecomp.AscendingByKey().GlueMap(" * ", "{0}^{1}")}");
+
+        foreach (var (p, o) in PSigma(f))
+        {
+            try
+            {
+                return (p, o, HenselLiftingNaive(f, p, o, true));
+            }
+            catch (Exception)
+            {
+                Console.WriteLine($"#### Prime {p} and Sigma {o} wont work ####");
+            }
+        }
+
+        throw new();
     }
 
     public static KPoly<EPoly<ZnInt>>[] FirrFq(KPoly<Rational> f, int q, bool details = false)

@@ -96,6 +96,13 @@ public static class GaloisApplications
         GaloisCorrespondence(extTowers);
     }
     
+    public static void GaloisCorrespondence(List<EPoly<Rational>> roots, int nbGens = 2)
+    {
+        var subFields = GaloisTheory.SubFields(roots).ToArray();
+        var extTowers = ExtensionsTower(subFields);
+        GaloisCorrespondence(extTowers);
+    }
+
     public static void GaloisCorrespondence(GaloisCorrespondence[][] exts)
     {
         var subFields = exts.SelectMany(e => e.Select(gc => gc.primElt)).Distinct().ToArray();

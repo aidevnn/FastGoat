@@ -13,6 +13,23 @@ namespace FastGoat.UserGroup;
 
 public static partial class FG
 {
+    public static Rational Comb(int k, int n)
+    {
+        var c = Rational.KOne();
+        if (k > n || k < 0)
+            return c;
+        
+        var num = c;
+        var denom = c;
+        k = 2 * k > n ? n - k : k;
+        for (int i = 0; i < k; i++)
+        {
+            num *= (n - i);
+            denom *= (i + 1);
+        }
+
+        return num / denom;
+    }
     public static KPoly<ZnInt> ZPoly(int p, char x = 'x') => new KPoly<ZnInt>(x, ZnInt.ZnZero(p)).X;
     public static KPoly<ZnBInt> ZbPoly(int p, char x = 'x') => new KPoly<ZnBInt>(x, ZnBInt.ZnZero(p)).X;
     public static KPoly<Rational> QPoly(char x = 'x') => new KPoly<Rational>(x);

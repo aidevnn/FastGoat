@@ -44,6 +44,17 @@ public static class PolynomialFactorization
         }
     }
 
+    public static KPoly<K> RandPolyStrict<K>(K scalar, int p, int[] degrees)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        while (true)
+        {
+            var f = degrees.Select(n => RandPolySepStrict(scalar, p, n)).Aggregate((a, b) => a * b).Monic;
+            if (f.Degree > 1)
+                return f;
+        }
+    }
+
     public static KPoly<K> RandPolySep<K>(K scalar, int p, int n) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         while (true)
