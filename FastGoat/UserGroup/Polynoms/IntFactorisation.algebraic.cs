@@ -188,16 +188,16 @@ public static partial class IntFactorisation
                     continue;
 
                 var (p, o) = PSigma(r).First();
-                var pz = new PadicZealous(p, o);
-                var r0 = new KPoly<PadicZealous>(r.x, pz, r.Coefs.Select(c => new PadicZealous(p, o, c)).ToArray());
+                var r0 = QPoly2ZnInt(r, new Modulus(p, o));
                 // Console.WriteLine($"{(p, o)} r0 = {r0}");
-                if (Ring.Gcd(r0, r0.Derivative).Degree == 0) // dilemma between Ring.Gcd and Ring.FastGCD
+                if (Ring.FastGCD(r0, r0.Derivative).Degree == 0) // dilemma between Ring.Gcd and Ring.FastGCD
                 {
                     return (s, g.Monic, r);
                 }
             }
             catch (Exception e)
             {
+                Console.WriteLine(e.Message);
                 // Console.WriteLine(e);
             }
         }

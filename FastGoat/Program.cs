@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.Tracing;
+using System.Globalization;
 using System.Numerics;
 using System.Security.Principal;
 using FastGoat.Commons;
@@ -39,7 +40,7 @@ string fmt(double a, int O) => String.Format($"{{0:E{O}}}", a);
 
 void BigRealAdd()
 {
-    // RngSeed(1231545);
+    RngSeed(1231545);
     var k = 20000;
     var M = 1000;
     var E = 6;
@@ -48,14 +49,14 @@ void BigRealAdd()
         .Select(_ => (GenBR((-M * M, M * M), (-2 * E, 2 * E), O), GenBR((-M, M), (-E, E), O)))
         .Select(e => Rng.NextDouble() < 0.025 ? (e.Item1, e.Item1) : Rng.NextDouble() < 0.5 ? e : (e.Item2, e.Item1))
         .ToArray();
-    GlobalStopWatch.Restart();
+    GlobalStopWatch.AddLap();
     var err = Double.Pow(10, -O + 2);
     foreach (var (a, b) in lt)
     {
         var a_b = a + b;
         var a_b2 = a.ToDouble + b.ToDouble;
         var diff = Double.Abs(a_b.ToDouble - a_b2) * Double.Pow(10, -a_b.V);
-        if (diff > err)
+        if ((!a_b.IsZero() && diff > err) || (a_b.IsZero() && Double.Abs(a_b2) > err))
         {
             Console.WriteLine(new
                 { a, ad = $"{fmt(a.ToDouble, O)}", a0 = a.Details, b, bd = $"{fmt(b.ToDouble, O)}", b0 = b.Details });
@@ -90,7 +91,7 @@ void BigRealMul()
         var a_b = a * b;
         var a_b2 = a.ToDouble * b.ToDouble;
         var diff = Double.Abs(a_b.ToDouble - a_b2) * Double.Pow(10, -a_b.V);
-        if (diff > err)
+        if ((!a_b.IsZero() && diff > err) || (a_b.IsZero() && Double.Abs(a_b2) > err))
         {
             Console.WriteLine(new
                 { a, ad = $"{fmt(a.ToDouble, O)}", a0 = a.Details, b, bd = $"{fmt(b.ToDouble, O)}", b0 = b.Details });
@@ -122,7 +123,7 @@ void BigRealKMul()
         var a_b = a * b;
         var a_b2 = a.ToDouble * b;
         var diff = Double.Abs(a_b.ToDouble - a_b2) * Double.Pow(10, -a_b.V);
-        if (diff > err)
+        if ((!a_b.IsZero() && diff > err) || (a_b.IsZero() && Double.Abs(a_b2) > err))
         {
             Console.WriteLine(new
                 { a, ad = $"{fmt(a.ToDouble, O)}", a0 = a.Details, b, b0 = BigReal.FromBigInteger(b, O) });
@@ -156,11 +157,11 @@ void BigRealDiv()
     {
         if (b.IsZero())
             continue;
-        
+
         var a_b = a / b;
         var a_b2 = a.ToDouble / b.ToDouble;
         var diff = Double.Abs(a_b.ToDouble - a_b2) * Double.Pow(10, -a_b.V);
-        if (diff > err)
+        if ((!a_b.IsZero() && diff > err) || (a_b.IsZero() && Double.Abs(a_b2) > err))
         {
             Console.WriteLine(new
                 { a, ad = $"{fmt(a.ToDouble, O)}", a0 = a.Details, b });
@@ -254,7 +255,7 @@ void BigRealRat()
         var a_b = a;
         var a_b2 = (double)a.ToRational;
         var diff = Double.Abs(a_b.ToDouble - a_b2) * Double.Pow(10, -a_b.V);
-        if (diff > err)
+        if ((!a_b.IsZero() && diff > err) || (a_b.IsZero() && Double.Abs(a_b2) > err))
         {
             Console.WriteLine(
                 new
@@ -267,6 +268,72 @@ void BigRealRat()
     }
 
     GlobalStopWatch.Show("END BigRealRat");
+}
+
+void BigRealInv()
+{
+    // RngSeed(1231545);
+    var k = 20000;
+    var M = 1000;
+    var E = 6;
+    var O = 14;
+    var lt = k.Range().Select(_ => GenBR((-M * M, M * M), (-2 * E, 2 * E), O)).ToArray();
+    GlobalStopWatch.AddLap();
+    var err = Double.Pow(10, -O + 3);
+    foreach (var a in lt)
+    {
+        var a_b = a.Inv();
+        var a_b2 = 1.0 / a.ToDouble;
+        var diff = Double.Abs(a_b.ToDouble - a_b2) * Double.Pow(10, -a_b.V);
+        if ((!a_b.IsZero() && diff > err) || (a_b.IsZero() && Double.Abs(a_b2) > err))
+        {
+            Console.WriteLine(
+                new
+                {
+                    a, a_b.Details, a_b, a_bd = $"{fmt(a_b.ToDouble, O)}", a_bd2 = $"{fmt(a_b2, O)}", diff,
+                    epsilon = err
+                });
+            Console.WriteLine();
+        }
+    }
+
+    GlobalStopWatch.Show("END BigRealInv");
+}
+
+void BigRealRound()
+{
+    // RngSeed(1231545);
+    var k = 2000;
+    var M = 1000;
+    var E = 6;
+    var O = 14;
+    var lt = k.Range().Select(_ => GenBR((-M * M, M * M), (-2 * E, 2 * E), O))
+        .Concat(k.Range().Select(_ => GenBR((-M * M, M * M), (0, 0), O))).ToArray();
+    GlobalStopWatch.AddLap();
+    foreach (var a in lt)
+    {
+        for (int i = 0; i <= O / 2; i++)
+        {
+            var err = Double.Pow(10, -i);
+
+            var a_b = BigReal.Round(a, i);
+            var a_b2 = Double.Round(a.ToDouble, i, MidpointRounding.ToEven);
+            var diff = Double.Abs(a_b.ToDouble - a_b2) * Double.Pow(10, -a_b.V);
+            if ((!a_b.IsZero() && diff > err) || (a_b.IsZero() && Double.Abs(a_b2) > err))
+            {
+                Console.WriteLine(
+                    new
+                    {
+                        i, a = a.Details, ad = $"{fmt(a.ToDouble, O)}", a_b.Details, a_b,
+                        a_bd = $"{fmt(a_b.ToDouble, O)}", a_bd2 = $"{fmt(a_b2, O)}", diff,
+                        epsilon = err
+                    });
+                Console.WriteLine();
+            }
+        }
+    }
+
+    GlobalStopWatch.Show("END BigRealRound");
 }
 
 // From AECF page 362
@@ -299,6 +366,12 @@ void LLL_Application_Pi()
     Console.WriteLine();
     Console.WriteLine(lll);
     var l0 = lll.GetCol(0).ToArray();
+
+    var N2 = N * N;
+    var cols = lll.Cols.Where(l => l.Aggregate(Rational.KZero(), (acc, v) => acc + v.Pow(2)).CompareTo(N.One * 200 * 200) == -1)
+        .ToArray();
+    cols.Select(l => l.T).Println();
+
     Console.WriteLine(l0.Glue("; "));
     var sum = l0.SkipLast(1).Select((v, i) => (i, v)).Aggregate(pi.Zero, (acc, c) => acc + c.v * pi.Pow(c.i));
     Console.WriteLine(sum);
@@ -314,19 +387,53 @@ void LLL_Application_Pi()
     Console.WriteLine($"{Nalpha0.Num / Nalpha0.Denom}");
 }
 
+// {
+//     // LLL_Application_Pi();
+//
+//     GlobalStopWatch.Restart();
+//     GlobalStopWatch.AddLap();
+//
+//     BigRealBInt();
+//     BigRealStr();
+//     BigRealAdd();
+//     BigRealMul();
+//     BigRealKMul();
+//     BigRealDiv();
+//     BigRealInv();
+//     BigRealRat();
+//     BigRealRound();
+//
+//     GlobalStopWatch.Show("END");
+// }
+
 {
-    // LLL_Application_Pi(); // TODO using BigReal with LLL lattice reduction instead of Rational
-    
-    GlobalStopWatch.Restart();
-    GlobalStopWatch.AddLap();
-    
-    BigRealBInt();
-    BigRealStr();
-    BigRealAdd();
-    BigRealMul();
-    BigRealKMul();
-    BigRealDiv();
-    BigRealRat();
-    
-    GlobalStopWatch.Show("END");
+    LLL_Application_Pi();
+    var x = FG.QPoly();
+    var P = x.Pow(4) - 7 * x.Pow(2) + 10;
+    FG.NRoots(P.ToCPoly()).Println();
+
+    var Px = P.ToBcPoly();
+    var roots = FG.NRoots(Px);
+    roots.Order().Println();
+    var prod = roots.Aggregate(Px.One, (acc, r) => acc * (Px.X - r));
+    Console.WriteLine(prod);
+    Console.WriteLine(prod.ToRatPoly());
+
+    var sqrt2 = BigCplx.NthRoot(Px.KOne * 2, 2);
+    var sqrt5 = BigCplx.NthRoot(Px.KOne * 5, 2);
+    var x150 = BigCplx.NthRoot(Px.KOne * 150, 4);
+    Console.WriteLine(sqrt2.ToString());
+    Console.WriteLine(sqrt5.ToString());
+    Console.WriteLine(x150.ToString());
+    Console.WriteLine(x150.Pow(4).ToString());
+
+    var i = BigCplx.BgI();
+    var a = 1 + i;
+    Console.WriteLine(a);
+    Console.WriteLine(a + a);
+    Console.WriteLine(a * 5);
+    Console.WriteLine(BigCplx.MagnitudeBigReal(a));
+    var b = BigCplx.NthRoot(-i.One * 150, 4);
+    Console.WriteLine(b);
+    Console.WriteLine(b.Pow(4));
 }

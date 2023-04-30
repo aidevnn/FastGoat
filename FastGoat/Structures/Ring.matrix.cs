@@ -808,7 +808,7 @@ public static partial class Ring
     public static (KMatrix<K> O, KMatrix<K> U) GramSchmidt2<K>(KMatrix<K> A, bool details = false)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
-        var n = A.M;
+        var (m, n) = A.Dim;
         var vs = new KMatrix<K>[n];
         var u = Diagonal(A.KOne, n);
         var allCols = A.Cols;
@@ -819,7 +819,7 @@ public static partial class Ring
             {
                 var sum0 = A.KZero;
                 var sum1 = A.KZero;
-                for (int k = 0; k < n; k++)
+                for (int k = 0; k < m; k++)
                 {
                     sum0 += vs[i].Coefs[k, 0] * vs[j].Coefs[k, 0];
                     sum1 += vs[j].Coefs[k, 0] * vs[j].Coefs[k, 0];
@@ -829,7 +829,7 @@ public static partial class Ring
                 var uij = u[i, j] = sum0 / sum1;
             
                 // vs[i] -= uij * vs[j];
-                for (int k = 0; k < n; k++)
+                for (int k = 0; k < m; k++)
                     vs[i].Coefs[k, 0] -= uij * vs[j].Coefs[k, 0];
             }
         }

@@ -18,7 +18,7 @@ public static partial class FG
         var c = Rational.KOne();
         if (k > n || k < 0)
             return c;
-        
+
         var num = c;
         var denom = c;
         k = 2 * k > n ? n - k : k;
@@ -30,10 +30,12 @@ public static partial class FG
 
         return num / denom;
     }
+
     public static KPoly<ZnInt> ZPoly(int p, char x = 'x') => new KPoly<ZnInt>(x, ZnInt.ZnZero(p)).X;
     public static KPoly<ZnBInt> ZbPoly(int p, char x = 'x') => new KPoly<ZnBInt>(x, ZnBInt.ZnZero(p)).X;
-    public static KPoly<Rational> QPoly(char x = 'x') => new KPoly<Rational>(x);
-    public static KPoly<Cplx> CplxPoly(char x = 'x') => new KPoly<Cplx>(x);
+    public static KPoly<Rational> QPoly(char x = 'x') => new(x);
+    public static KPoly<Cplx> CplxPoly(char x = 'x') => new(x);
+    public static KPoly<BigCplx> BCplxPoly(int o = 40, char x = 'x') => new KPoly<BigCplx>(x, BigCplx.BcZero(o)).X;
 
     public static Cplx NSolve(KPoly<Cplx> P, double epsilon = 1e-14, int maxLoop = 200)
     {
@@ -64,7 +66,75 @@ public static partial class FG
         return roots.ToArray();
     }
 
-    public static KPoly<Cplx> ToCPoly(this KPoly<Rational> P) => new (P.x, Cplx.CZero, P.Coefs.Select(c => c * Cplx.COne).ToArray());
+    public static BigCplx NSolve(KPoly<BigCplx> P, int maxLoop = 200)
+    {
+        var dP = P.Derivative;
+        var ai = P.KZero;
+        var i = 0;
+        var aj = new BigCplx(BigReal.Pi(ai.O), BigReal.E(ai.O));
+        while (!(ai - aj).IsZero() && i++ < maxLoop)
+        {
+            ai = aj;
+            aj = ai - (P.Substitute(ai) / dP.Substitute(ai)); // Newton iteration
+        }
+
+        return aj;
+    }
+
+    public static BigCplx[] NRoots(KPoly<BigCplx> P, int maxLoop = 200)
+    {
+        var P0 = P;
+        var roots = new List<BigCplx>();
+        while (P0.Degree > 0)
+        {
+            var a0 = NSolve(P0, maxLoop);
+            roots.Add(a0);
+            P0 /= P0.X - a0;
+        }
+
+        return roots.ToArray();
+    }
+
+    public static KPoly<Cplx> ToCPoly(this KPoly<Rational> P) => new(P.x, Cplx.CZero, P.Coefs.Select(c => c * Cplx.COne).ToArray());
+
+    public static KPoly<BigCplx> ToBcPoly(this KPoly<Rational> P, int O = 40) =>
+        new(P.x, BigCplx.BcZero(O), P.Coefs.Select(c => BigCplx.BcOne(O) * BigCplx.FromRational(c, O)).ToArray());
+
+    public static KPoly<BigCplx> ToBcPoly(this KPoly<BigCplx> P, int O = 40) =>
+        new(P.x, BigCplx.BcZero(O), P.Coefs.Select(c => c.ToBigCplx(O)).ToArray());
+
+    public static KPoly<Rational> ToRatPoly(this KPoly<BigCplx> P)
+    {
+        var one = P.KOne;
+
+        Rational Cv(BigCplx r)
+        {
+            if (!r.ImaginaryPart.IsZero())
+                throw new("Only real numbers allowed");
+            
+            if (r.IsZero())
+                return Rational.KZero();
+
+            return BigReal.Round(r.RealPart, one.O - 4).ToRational;
+        }
+
+        return new(P.x, Rational.KZero(), P.Coefs.Select(Cv).ToArray());
+    }
+
+    public static KPoly<Rational> ToRatPoly(this KPoly<BigReal> P)
+    {
+        var one = P.KOne;
+
+        Rational Cv(BigReal r)
+        {
+            if (r.IsZero())
+                return Rational.KZero();
+
+            return BigReal.Round(r, one.O - 4).ToRational;
+        }
+
+        return new(P.x, Rational.KZero(), P.Coefs.Select(Cv).ToArray());
+    }
 
     public static KPoly<Cplx> ToCPoly(this KPoly<EPoly<Rational>> P, Cplx e) =>
         new(P.x, Cplx.CZero, P.Coefs.Select(c => c.Poly.Substitute(e)).ToArray());
@@ -143,7 +213,7 @@ public static partial class FG
         return (x0, c0 * x0.One);
     }
 
-    public static (KPoly<EPoly<K>> X,EPoly<K> c) EPolyXc<K>(KPoly<K> f, char c, char x = 'X')
+    public static (KPoly<EPoly<K>> X, EPoly<K> c) EPolyXc<K>(KPoly<K> f, char c, char x = 'X')
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var c0 = EPoly(f, c);
@@ -220,7 +290,7 @@ public static partial class FG
     {
         return new GLn<K>(n, scalar);
     }
-    
+
     public static GLn<K> GLnK<K>(string name, int n, K scalar) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         return new GLn<K>(name, n, scalar);
@@ -252,7 +322,7 @@ public static partial class FG
         var a = e.ToPolynomial(t.Indeterminates, t.Indeterminates[0]);
         return NumberFieldQ(a);
     }
-    
+
     public static (EPolynomial<Rational> x, EPolynomial<Rational> p0) NumberFieldQ(KPoly<Rational> e, string x, string p0)
     {
         var all = new[] { x, p0, "_t_" };
@@ -272,8 +342,9 @@ public static partial class FG
         var nbf = NumberFieldQ(new[] { a, b });
         return (nbf[0], nbf[1]);
     }
-    
-    public static (EPolynomial<Rational> e0, EPolynomial<Rational> e1, EPolynomial<Rational> p0) NumberFieldQ((KPoly<Rational>, string) e0,
+
+    public static (EPolynomial<Rational> e0, EPolynomial<Rational> e1, EPolynomial<Rational> p0) NumberFieldQ(
+        (KPoly<Rational>, string) e0,
         (KPoly<Rational>, string) e1, string p0, params string[] others)
     {
         var all = new[] { e0.Item2, e1.Item2, p0, "_t_" }.ToArray();

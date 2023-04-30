@@ -116,7 +116,7 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
         }
     }
 
-    public Rational Round
+    public Rational RoundEven
     {
         get
         {

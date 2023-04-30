@@ -56,15 +56,28 @@ public static partial class IntFactorisation
         var n = A.N;
         var w = A.Cols;
         var (Ws, M) = Ring.GramSchmidt2(A);
+        // Console.WriteLine(Ws);
+        // Console.WriteLine();
+        // Console.WriteLine(M);
+        // Console.WriteLine();
 
         var ws = Ws.Cols;
         var N = M.Coefs;
         int i = 1;
+        var step = 0;
         while (i < n)
         {
+            // Console.WriteLine(new { i, step });
+            // ++step;
+            // Console.WriteLine(new KMatrix<Rational>(N));
+            // Console.WriteLine();
+            // Console.WriteLine(KMatrix<Rational>.MergeSameRows(w));
+            // Console.WriteLine("press enter...");
+            // Console.ReadLine();
+            
             for (int j = i - 1; j >= 0; j--)
             {
-                var ruij = N[i, j].Round;
+                var ruij = N[i, j].RoundEven;
                 // w[i] -= ruij * w[j];
                 for (int k = 0; k < n; k++)
                     w[i].Coefs[k, 0] -= ruij * w[j].Coefs[k, 0];

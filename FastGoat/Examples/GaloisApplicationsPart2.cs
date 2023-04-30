@@ -29,7 +29,7 @@ public static class GaloisApplicationsPart2
         Console.WriteLine();
     }
 
-    static Dictionary<Array2Tuple<int>, int> GroupTypes(ConcreteGroup<Perm> gal)
+    public static Dictionary<Array2Tuple<int>, int> GroupTypes(ConcreteGroup<Perm> gal)
     {
         var res = gal.Select(perm => IntExt.PermutationToCycles(perm.Sn.N, perm.Table).Select(l => l.Length).Order().Deconstruct())
             .GroupBy(e => e).ToDictionary(e => e.Key, e => e.Count());
@@ -45,7 +45,7 @@ public static class GaloisApplicationsPart2
             .Average();
     }
 
-    public static ConcreteGroup<Perm> GaloisGroupChebotarev(KPoly<Rational> P, int maxP = 100, int maxPm = 100, bool detail = false)
+    public static ConcreteGroup<Perm> GaloisGroupChebotarev(KPoly<Rational> P, int maxP = 100, int maxPm = 100, bool details = false)
     {
         var deg = P.Degree;
         if (deg > 7)
@@ -61,7 +61,7 @@ public static class GaloisApplicationsPart2
         var transTypes = transSubGr.Select(e => e.Item1).ToArray();
 
         var types = new Dictionary<Array2Tuple<int>, int>();
-        foreach (var ct in IntFactorisation.ChebotarevTypes(P, maxP, maxPm: maxPm, details: detail))
+        foreach (var ct in IntFactorisation.ChebotarevTypes(P, maxP, maxPm: maxPm, details: details))
         {
             var ctype = ct.Order().Deconstruct();
             if (!types.ContainsKey(ctype))
@@ -78,7 +78,7 @@ public static class GaloisApplicationsPart2
 
             if (sel1.Length == 1 || sel2[1].Item2 / sel2[0].Item2 > 5) // testing precision
             {
-                if (detail)
+                if (details)
                 {
                     types.OrderByDescending(e => e.Key.ToString()).Println("actual types");
                     sel2[0].e.Item1.OrderByDescending(e => e.Key.ToString()).Println("expected types");
@@ -208,16 +208,16 @@ public static class GaloisApplicationsPart2
     {
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
         var x = FG.QPoly();
-        GaloisGroupChebotarev(x.Pow(3) - 3 * x - 1, detail: true);
-        GaloisGroupChebotarev(x.Pow(4) + x.Pow(3) + x.Pow(2) + x + 1, detail: true);
-        GaloisGroupChebotarev(x.Pow(5) + x.Pow(4) - 4 * x.Pow(3) - 3 * x.Pow(2) + 3 * x + 1, detail: true);
-        GaloisGroupChebotarev(x.Pow(6) + 243, detail: true);
-        GaloisGroupChebotarev(x.Pow(4) + x + 1, detail: true);
-        GaloisGroupChebotarev(x.Pow(5) + 2, detail: true);
-        GaloisGroupChebotarev(x.Pow(7) - 14 * x.Pow(5) + 56 * x.Pow(3) - 56 * x + 22, detail: true);
+        GaloisGroupChebotarev(x.Pow(3) - 3 * x - 1, details: true);
+        GaloisGroupChebotarev(x.Pow(4) + x.Pow(3) + x.Pow(2) + x + 1, details: true);
+        GaloisGroupChebotarev(x.Pow(5) + x.Pow(4) - 4 * x.Pow(3) - 3 * x.Pow(2) + 3 * x + 1, details: true);
+        GaloisGroupChebotarev(x.Pow(6) + 243, details: true);
+        GaloisGroupChebotarev(x.Pow(4) + x + 1, details: true);
+        GaloisGroupChebotarev(x.Pow(5) + 2, details: true);
+        GaloisGroupChebotarev(x.Pow(7) - 14 * x.Pow(5) + 56 * x.Pow(3) - 56 * x + 22, details: true);
 
         // JL.Milnes exercice 4.6 page 60 without using the “polgalois” command in PARI
-        GaloisGroupChebotarev(x.Pow(6) + 2 * x.Pow(5) + 3 * x.Pow(4) + 4 * x.Pow(3) + 5 * x.Pow(2) + 6 * x + 7, detail: true);
+        GaloisGroupChebotarev(x.Pow(6) + 2 * x.Pow(5) + 3 * x.Pow(4) + 4 * x.Pow(3) + 5 * x.Pow(2) + 6 * x + 7, details: true);
     }
     /***
         f = x^6 + 2*x^5 + 3*x^4 + 4*x^3 + 5*x^2 + 6*x + 7

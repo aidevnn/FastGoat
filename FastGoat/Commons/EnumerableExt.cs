@@ -22,20 +22,28 @@ public static class EnumerableExt
     }
 
     /// <summary>
-    /// Prints the object to the console with a header and a format. 
+    /// Prints the list of objects to the console with a header and a formats. 
     /// </summary>
-    /// <param name="v">The object to be printed.</param>
+    /// <param name="list">The list of objects to be printed.</param>
     /// <param name="header">The header that will be printed before the object.</param>
-    /// <param name="fmt">The format of the output.</param>
-    public static void Println(this object v, string header = "Lines", string fmt = "    {0}")
+    /// <param name="fmtObjects">The format of objects to output.</param>
+    /// <param name="fmtLines">The format of lines to output.</param>
+    public static void Println<T>(this IEnumerable<T> list, Func<T,T> fmtObjects, string header = "Lines", string fmtLines = "    {0}") 
     {
         Console.WriteLine(header);
-        if (v is ITuple v0)
-            Console.WriteLine(v0.Length.Range().Select(i => v0[i]).Glue("\n", fmt));
-        else if (v is IEnumerable v1)
-            Console.WriteLine(v1.Cast<object>().Glue("\n", fmt));
-        else
-            Console.WriteLine(fmt, v);
+        Console.WriteLine(list.Select(fmtObjects).Glue("\n", fmtLines));
+    }
+
+    /// <summary>
+    /// Prints the list of objects to the console with a header and a formats. 
+    /// </summary>
+    /// <param name="list">The list of objects to be printed.</param>
+    /// <param name="header">The header that will be printed before the object.</param>
+    /// <param name="fmtLines">The format of lines to output.</param>
+    public static void Println<T>(this IEnumerable<T> list, string header = "Lines", string fmtLines = "    {0}") 
+    {
+        Console.WriteLine(header);
+        Console.WriteLine(list.Glue("\n", fmtLines));
     }
 
     /// <summary>
