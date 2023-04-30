@@ -431,6 +431,12 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
         return new(k, d, o);
     }
 
+    public static BigReal FromBigIntegerAndExponent(BigInteger r, int v, int o)
+    {
+        var k = Clamp(r, o);
+        return new(k, v, o);
+    }
+
     public static BigReal FromRational(Rational r, int o)
     {
         var num = FromBigInteger(r.Num, o);
