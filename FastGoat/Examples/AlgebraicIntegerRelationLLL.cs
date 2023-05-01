@@ -1,6 +1,7 @@
 using System.Numerics;
 using FastGoat.Commons;
 using FastGoat.Structures;
+using FastGoat.Structures.GenericGroup;
 using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup;
 using FastGoat.UserGroup.Integers;
@@ -14,23 +15,23 @@ public static class AlgebraicIntegerRelationLLL
     {
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
     }
+
     public static Rational[] AlphaBetaPolynomial(BigCplx alpha, BigCplx beta, int d, int O)
     {
         Console.WriteLine("Start LLL algorithm");
         var pi = BigReal.Pi(alpha.O);
         var N = BigReal.FromBigInteger(BigInteger.Pow(10, O), alpha.O);
         var mat = new KMatrix<Rational>(Rational.KZero(), d, d).Zero;
-        var tmp = alpha.One;
+        var ai = alpha.One;
         for (int i = 0; i < mat.M - 1; i++)
         {
             mat.Coefs[i, i] = Rational.KOne();
-            var ai = tmp;
             var aipi = ai.RealPart + pi * ai.ImaginaryPart; // Re(𝛼^i) + π * Im(𝛼^i)
             mat.Coefs[i, mat.N - 1] = (aipi * N).ToRational.RoundEven;
-            tmp *= alpha;
+            ai *= alpha;
         }
 
-        var bpi = beta.RealPart + pi * beta.ImaginaryPart;
+        var bpi = beta.RealPart + pi * beta.ImaginaryPart; // Re(β) + π * Im(β)
         mat.Coefs[mat.N - 1, mat.N - 1] = (bpi * N).ToRational.RoundEven;
         Console.WriteLine(mat);
         var lll = IntFactorisation.LLL(mat.T);
@@ -53,11 +54,12 @@ public static class AlgebraicIntegerRelationLLL
     public static void Example1()
     {
         var d = 8;
-        var O = 20;
-        var pi = BigReal.Pi(3 * O / 2);
-        var beta = BigReal.FromBigIntegerAndExponent(BigInteger.Parse("-1669947371922907049619"), 1, O + 2);
-        var coefs = AlphaBetaPolynomial(pi, beta, d, O);
-        
+        var O1 = 20;
+        var O2 = 30;
+        var pi = BigReal.Pi(O2);
+        var beta = BigReal.FromBigIntegerAndExponent(BigInteger.Parse("-1669947371922907049619"), 1, O2);
+        var coefs = AlphaBetaPolynomial(pi, beta, d, O1);
+
         var poly = new KPoly<Rational>('x', Rational.KZero(), coefs.ToArray());
         var sum = poly.Substitute(pi);
         Console.WriteLine("Sum[ci*ai] : {0}", sum.ToDouble);
@@ -66,25 +68,26 @@ public static class AlgebraicIntegerRelationLLL
         Console.WriteLine("factor : {0}", fact.ToDouble);
         var P = poly / fact.ToRational.RoundEven;
         Console.WriteLine($"beta = {P.SubstituteChar('π')}");
-        
+
         var betaExpected = (5 * pi.Pow(2) / 24) * (3 * pi.Pow(4) - 28 * pi.Pow(2) - 24);
         Console.WriteLine("Expected beta : {0}", betaExpected.ToDouble);
-        Console.WriteLine("Are Equals {0}", betaExpected.ToBigReal(O).Equals(P.Substitute(pi).ToBigReal(O)));
+        Console.WriteLine("Are Equals {0}", betaExpected.ToBigReal(O1).Equals(P.Substitute(pi).ToBigReal(O1)));
     }
 
     public static void Example2()
     {
         var d = 17;
-        var O = 80;
-        var alpha = BigReal.NthRoot(3, 4, 3 * O / 2) - BigReal.NthRoot(2, 4, 3 * O / 2);
+        var O1 = 80;
+        var O2 = 120;
+        var alpha = BigReal.NthRoot(3, 4, O2) - BigReal.NthRoot(2, 4, O2);
         var beta = alpha.Pow(d - 1);
         Console.WriteLine(new { alpha, beta });
-        var coefs = AlphaBetaPolynomial(alpha, beta, d, O);
+        var coefs = AlphaBetaPolynomial(alpha, beta, d, O1);
         Console.WriteLine(coefs.Glue("; "));
-        
+
         var poly = new KPoly<Rational>('x', Rational.KZero(), coefs.ToArray());
         Console.WriteLine(poly.Substitute(alpha));
-        Console.WriteLine(beta.ToBigReal(O));
+        Console.WriteLine(beta.ToBigReal(O1));
         var fact = (poly.Substitute(alpha) / beta);
         Console.WriteLine(fact);
         var P = poly.X.Pow(16) - poly / fact.ToRational.RoundEven;
@@ -94,7 +97,7 @@ public static class AlgebraicIntegerRelationLLL
         IntFactorisation.PrimitiveElt(x.Pow(4) - 2, x.Pow(4) - 3).Println(); // more faster
     }
 
-    static EPoly<Rational>[] ConjugatesOfBeta(EPoly<Rational> scalar, BigCplx alpha, BigCplx beta, int d, int O)
+    static ConcreteGroup<EPoly<Rational>> ConjugatesOfBeta(KAut<Rational> bsKAut, BigCplx alpha, BigCplx beta, int d, int O)
     {
         GlobalStopWatch.AddLap();
         var coefs = AlphaBetaPolynomial(alpha, beta, d, O);
@@ -105,103 +108,100 @@ public static class AlgebraicIntegerRelationLLL
         Console.WriteLine(P.Substitute(alpha));
         Console.WriteLine((alpha, "=> ", beta));
         Console.WriteLine();
-        
+
         if (!beta.ToBigCplx(O).Equals(P.Substitute(alpha).ToBigCplx(O)))
             throw new();
-        
-        var stack = new Stack<EPoly<Rational>>(new[] { P.Substitute(scalar.X) });
-        for (int i = 0; i < d; i++)
-        {
-            var p0 = P.Substitute(stack.Peek());
-            if (stack.Contains(p0))
-                break;
-        
-            stack.Push(p0);
-        }
-        
-        stack.Println("Conjugates");
+
+        var fy = P.Substitute(bsKAut.Neutral());
+        var subGr = Group.Generate("Conjugates", bsKAut, fy);
+        DisplayGroup.HeadElements(subGr);
         GlobalStopWatch.Show("Conjugates");
         Console.WriteLine();
 
-        return stack.ToArray();
+        return subGr;
+    }
+
+    public static ConcreteGroup<EPoly<Rational>> GaloisGroupNumericRoots(BigCplx alpha, BigCplx[] cplxRoots, KPoly<Rational> P, int O)
+    {
+        P = P.SubstituteChar('y');
+        var y = FG.EPoly(P, 'y');
+        var kAut = new KAut<Rational>(P);
+        var subGrGal = Group.Generate(kAut, kAut.Neutral());
+        Console.WriteLine(new { alpha });
+        if (P.Substitute(-y).IsZero())
+            subGrGal = Group.Generate("Conjugates", kAut, -y);
+
+        DisplayGroup.HeadElements(subGrGal);
+
+        cplxRoots.Println("All Complex Roots");
+        while (subGrGal.Count() < cplxRoots.Length)
+        {
+            var remains = cplxRoots.ToHashSet();
+            var sz = 0;
+            while (sz != remains.Count)
+            {
+                sz = remains.Count;
+                var tmp0 = subGrGal.Select(fy => fy.Poly.Substitute(alpha)).ToHashSet();
+                var tmp1 = new HashSet<BigCplx>();
+                foreach (var e in remains)
+                {
+                    var res0 = subGrGal.Select(fy => fy.Poly.Substitute(e)).ToHashSet();
+                    if (res0.All(e1 => tmp0.Min(e2 => (e2 - e1).Magnitude) > 1e-12))
+                    {
+                        tmp0.UnionWith(res0);
+                        tmp1.Add(e);
+                    }
+                }
+
+                remains = tmp1.ToHashSet();
+            }
+
+            remains.Println($"Remaining roots {remains.Count}");
+            if (remains.Count == 0)
+                break;
+
+            var beta2 = remains.First(b => (alpha - b).Magnitude > 1e-12);
+            var gr = ConjugatesOfBeta(kAut, alpha, beta2, P.Degree + 1, O);
+            subGrGal = Group.DirectProduct("SubGr(Gal(P))", gr, subGrGal);
+        }
+
+        subGrGal.SetName("Gal( Q(y)/Q )");
+        return subGrGal;
+    }
+
+    public static ConcreteGroup<EPoly<Rational>> GaloisGroupLLL(KPoly<Rational> P, int O1, int O2)
+    {
+        Console.WriteLine(P);
+        GlobalStopWatch.AddLap();
+        var nRoots = FG.NRoots(P.ToBcPoly(O2));
+        GlobalStopWatch.Show("Roots");
+        
+        var alpha = nRoots[0];
+        return GaloisGroupNumericRoots(alpha, nRoots, P, O1);
     }
 
     public static void Example3()
     {
         var x = FG.QPoly();
-        var P = x.Pow(6) + 108; // S3
-        
-        var O = (P.Degree + 1).Pow(2);
         GlobalStopWatch.Restart();
-        GlobalStopWatch.AddLap();
-        var roots = FG.NRoots(P.ToBcPoly(3 * O / 2));
-        GlobalStopWatch.Show("Roots");
-        Console.WriteLine(P);
-        roots.Println();
-
-        var (X, y) = FG.EPolyXc(P, 'y');
-        var alpha = roots[0];
-        var beta = roots.First(r => !alpha.Equals(r) && !alpha.Equals(-r));
-        var stack1 = ConjugatesOfBeta(y, alpha, beta, P.Degree + 1, O);
-
-        var res = stack1.Select(fy => fy.Poly.Substitute(alpha)).ToArray();
-        roots.Println();
-        res.Println();
-        roots.Where(r1 => res.All(r2 => (r1 - r2).Magnitude > 1e-14)).Println();
-        var beta2 = roots.Where(r1 => !alpha.Equals(r1) && res.All(r2 => (r1 - r2).Magnitude > 1e-14)).First();
-        var stack2 = ConjugatesOfBeta(y, alpha, beta2, P.Degree + 1, O);
-
-        var roots3 = stack1.Grid2D(stack2).Select(e => e.t1.Substitute(e.t2)).Order().ToHashSet();
-        roots3.Println($"All Roots of P = {P}");
-        Console.WriteLine("Prod[X - ri] = {0}", roots3.Aggregate(X.One, (acc, r) => acc * (X - r)));
-        GlobalStopWatch.Show("END"); // Time:1478 ms
+        var galGr = GaloisGroupLLL(x.Pow(6) + 108, O1: 50, O2: 75); // S3
+        DisplayGroup.HeadElements(galGr);
+        var X = FG.KPoly('X', galGr.Neutral());
+        Console.WriteLine("Prod[X - ri] = {0}", galGr.Aggregate(X.One, (acc, r) => acc * (X - r)));
+        GlobalStopWatch.Show("END"); // Time:242 ms
     }
-    
+
     public static void Example4()
     {
         var x = FG.QPoly();
-        var P = x.Pow(8) + 4324 * x.Pow(4) + 7496644; // D8
-
-        var O1 = 60;
-        var O2 = 120;
         GlobalStopWatch.Restart();
-        GlobalStopWatch.AddLap();
-        var roots = FG.NRoots(P.ToBcPoly(O2)).Order().ToArray();
-        GlobalStopWatch.Show("Roots");
-        Console.WriteLine(P);
-        roots.Println();
-
-        var (X, y) = FG.EPolyXc(P, 'y');
-        var alpha = roots[0];
-        var beta1 = roots.First(r => !alpha.Equals(r));
-        var stack1 = ConjugatesOfBeta(y, alpha, beta1, P.Degree + 1, O1);
-
-        var res1 = stack1.Select(fy => fy.Poly.Substitute(alpha)).ToArray();
-        roots.Println();
-        res1.Println();
-        var remains1 = roots.Where(r1 => res1.All(r2 => (r1 - r2).Magnitude > 1e-14)).ToArray();
-        remains1.Println();
-        var beta2 = remains1.First();
-        var stack2 = ConjugatesOfBeta(y, alpha, beta2, P.Degree + 1, O1);
-        var roots3 = stack1.Grid2D(stack2).Select(e => e.t1.Substitute(e.t2)).Order().ToHashSet();
-        roots3.Println("Roots");
-       
-        var res2 = roots3.Select(fy => fy.Poly.Substitute(alpha)).ToArray();
-        roots.Println();
-        res2.Println();
-        var remains2 = remains1.Where(r1 => res2.All(r2 => (r1 - r2).Magnitude > 1e-14)).ToArray();
-        remains2.Println();
-        var beta3 = remains2.First();
-        var stack3 = ConjugatesOfBeta(y, alpha, beta3, P.Degree + 1, O1);
-
-        var roots4 = roots3.Grid2D(stack3).Select(e => e.t1.Substitute(e.t2)).Order().ToHashSet();
-        var roots5 = roots4.Grid2D(roots4).Select(e => e.t1.Substitute(e.t2)).Order().ToHashSet();
-
-        roots5.Println($"All Roots of P = {P}");
-        Console.WriteLine("Prod[X - ri] = {0}", roots5.Aggregate(X.One, (acc, r) => acc * (X - r)));
-        GlobalStopWatch.Show("END"); // Time:3272 ms
+        var galGr = GaloisGroupLLL(x.Pow(8) + 4324 * x.Pow(4) + 7496644, O1: 60, O2: 120); // D8
+        DisplayGroup.HeadElements(galGr);
+        var X = FG.KPoly('X', galGr.Neutral());
+        Console.WriteLine("Prod[X - ri] = {0}", galGr.Aggregate(X.One, (acc, r) => acc * (X - r)));
+        GlobalStopWatch.Show("END"); // Time:1533 ms
     }
-    
+
     public static void Example5()
     {
         var x = FG.QPoly();
@@ -210,28 +210,11 @@ public static class AlgebraicIntegerRelationLLL
         var O1 = 80;
         var O2 = 150;
         GlobalStopWatch.Restart();
-        GlobalStopWatch.AddLap();
-        var roots = FG.NRoots(P.ToBcPoly(O2)).Order().ToArray();
-        GlobalStopWatch.Show("Roots");
-        Console.WriteLine(P);
-        roots.Println();
-
-        var (X, y) = FG.EPolyXc(P, 'y');
-        var alpha = roots[0];
-        var beta1 = roots.First(r => !alpha.Equals(r));
-        var stack1 = ConjugatesOfBeta(y, alpha, beta1, P.Degree + 1, O1);
-
-        var res1 = stack1.Select(fy => fy.Poly.Substitute(alpha)).ToArray();
-        roots.Println();
-        res1.Println();
-        var remains1 = roots.Where(r1 => res1.All(r2 => (r1 - r2).Magnitude > 1e-14)).ToArray();
-        remains1.Println();
-        var beta2 = remains1.First();
-        var stack2 = ConjugatesOfBeta(y, alpha, beta2, P.Degree + 1, O1);
-        var roots3 = stack1.Grid2D(stack2).Select(e => e.t1.Substitute(e.t2)).Order().ToHashSet();
-        roots3.Println($"All Roots of P = {P}");
-        Console.WriteLine("Prod[X - ri] = {0}", roots3.Aggregate(X.One, (acc, r) => acc * (X - r)));
-        GlobalStopWatch.Show("END"); // Time:7015 ms
+        var galGr = GaloisGroupLLL(P, O1, O2);
+        DisplayGroup.HeadElements(galGr);
+        var X = FG.KPoly('X', galGr.Neutral());
+        Console.WriteLine("Prod[X - ri] = {0}", galGr.Aggregate(X.One, (acc, r) => acc * (X - r)));
+        GlobalStopWatch.Show("END"); // Time:2491
     }
 
     public static void Example6()
@@ -242,41 +225,15 @@ public static class AlgebraicIntegerRelationLLL
         var O1 = 120;
         var O2 = 240;
         GlobalStopWatch.Restart();
+        var galGr = GaloisGroupLLL(P, O1, O2);
+        DisplayGroup.HeadElements(galGr);
+        var X = FG.KPoly('X', galGr.Neutral());
+        Console.WriteLine("Prod[X - ri] = {0}", galGr.Aggregate(X.One, (acc, r) => acc * (X - r)));
+        GlobalStopWatch.Show("END Roots"); // Time:9671 ms
         GlobalStopWatch.AddLap();
-        var roots = FG.NRoots(P.ToBcPoly(O2)).Order().ToArray();
-        GlobalStopWatch.Show("Roots");
-        Console.WriteLine(P);
-        roots.Println();
-
-        var (X, y) = FG.EPolyXc(P, 'y');
-        var alpha = roots[0];
-        var beta1 = roots.First(r => !alpha.Equals(r));
-        var stack1 = ConjugatesOfBeta(y, alpha, beta1, P.Degree + 1, O1);
-
-        var res1 = stack1.Select(fy => fy.Poly.Substitute(alpha)).ToArray();
-        roots.Println();
-        res1.Println();
-        var remains1 = roots.Where(r1 => res1.All(r2 => (r1 - r2).Magnitude > 1e-14)).ToArray();
-        remains1.Println();
-        var beta2 = remains1.First();
-        var stack2 = ConjugatesOfBeta(y, alpha, beta2, P.Degree + 1, O1);
-        var roots3 = stack1.Grid2D(stack2).Select(e => e.t1.Substitute(e.t2)).Order().ToHashSet();
-        roots3.Println("Roots");
-       
-        var res2 = roots3.Select(fy => fy.Poly.Substitute(alpha)).ToArray();
-        roots.Println();
-        res2.Println();
-        var remains2 = remains1.Where(r1 => res2.All(r2 => (r1 - r2).Magnitude > 1e-14)).ToArray();
-        remains2.Println();
-        var beta3 = remains2.First();
-        var stack3 = ConjugatesOfBeta(y, alpha, beta3, P.Degree + 1, O1);
-
-        var roots4 = roots3.Grid2D(stack3).Select(e => e.t1.Substitute(e.t2)).Order().ToHashSet();
-        var roots5 = roots4.Grid2D(roots4).Select(e => e.t1.Substitute(e.t2)).Order().ToHashSet();
-
-        roots5.Println($"All Roots of P = {P}");
-        Console.WriteLine("Prod[X - ri] = {0}", roots5.Aggregate(X.One, (acc, r) => acc * (X - r)));
-        GlobalStopWatch.Show("END"); // Time:32494 ms
+        GaloisApplications.GaloisCorrespondence(galGr.ToList());
+        GlobalStopWatch.Show("END GaloisCorrespondence"); // Time:2282 ms
+        GlobalStopWatch.Show("END A4"); // Time:11953 ms
     }
 
     public static void Example7()
@@ -287,135 +244,57 @@ public static class AlgebraicIntegerRelationLLL
         var O1 = 120;
         var O2 = 240;
         GlobalStopWatch.Restart();
+        var galGr = GaloisGroupLLL(P, O1, O2);
+        DisplayGroup.HeadElements(galGr);
+        var X = FG.KPoly('X', galGr.Neutral());
+        Console.WriteLine("Prod[X - ri] = {0}", galGr.Aggregate(X.One, (acc, r) => acc * (X - r)));
+        GlobalStopWatch.Show("END Roots"); // Time:56588 ms
         GlobalStopWatch.AddLap();
-        var roots = FG.NRoots(P.ToBcPoly(O2)).Order().ToArray();
-        GlobalStopWatch.Show("Roots");
-        Console.WriteLine(P);
-        roots.Println();
-
-        var (X, y) = FG.EPolyXc(P, 'y');
-        var alpha = roots[0];
-        var beta1 = roots.First(r => !alpha.Equals(r));
-        var stack1 = ConjugatesOfBeta(y, alpha, beta1, P.Degree + 1, O1);
-
-        var res1 = stack1.Select(fy => fy.Poly.Substitute(alpha)).ToArray();
-        roots.Println();
-        res1.Println();
-        var remains1 = roots.Where(r1 => res1.All(r2 => (r1 - r2).Magnitude > 1e-14)).ToArray();
-        remains1.Println();
-        var beta2 = remains1.First();
-        var stack2 = ConjugatesOfBeta(y, alpha, beta2, P.Degree + 1, O1);
-        var roots3 = stack1.Grid2D(stack2).Select(e => e.t1.Substitute(e.t2)).Order().ToHashSet();
-        roots3.Println("Roots");
-       
-        var res2 = roots3.Select(fy => fy.Poly.Substitute(alpha)).ToArray();
-        roots.Println();
-        res2.Println();
-        var remains2 = remains1.Where(r1 => res2.All(r2 => (r1 - r2).Magnitude > 1e-14)).ToArray();
-        remains2.Println();
-        var beta3 = remains2.First();
-        var stack3 = ConjugatesOfBeta(y, alpha, beta3, P.Degree + 1, O1);
-
-        var roots4 = roots3.Grid2D(stack3).Select(e => e.t1.Substitute(e.t2)).Order().ToHashSet();
-        var roots5 = roots4.Grid2D(roots4).Select(e => e.t1.Substitute(e.t2)).Order().ToHashSet();
-
-        roots5.Println($"All Roots of P = {P}");
-        Console.WriteLine("Prod[X - ri] = {0}", roots5.Aggregate(X.One, (acc, r) => acc * (X - r)));
-        GlobalStopWatch.Show("END"); // Time:100134 ms
+        GaloisApplications.GaloisCorrespondence(galGr.ToList());
+        GlobalStopWatch.Show("END GaloisCorrespondence"); // Time:5618 ms
+        GlobalStopWatch.Show("END C5x:C4"); // Time:62206 ms
     }
 
     public static void Example8()
     {
         var x = FG.QPoly();
         var P = x.Pow(18) + 171 * x.Pow(12) + 5130 * x.Pow(6) + 27; // C6x:C3
-        
+
         var O1 = 120;
         var O2 = 400;
         GlobalStopWatch.Restart();
+        var galGr = GaloisGroupLLL(P, O1, O2);
+        DisplayGroup.HeadElements(galGr);
+        var X = FG.KPoly('X', galGr.Neutral());
+        Console.WriteLine("Prod[X - ri] = {0}", galGr.Aggregate(X.One, (acc, r) => acc * (X - r)));
+        GlobalStopWatch.Show("END Roots"); // Time:53376 ms
         GlobalStopWatch.AddLap();
-        var roots = FG.NRoots(P.ToBcPoly(O2)).Order().ToArray();
-        GlobalStopWatch.Show("Roots");
-        Console.WriteLine(P);
-        roots.Println();
-
-        var (X, y) = FG.EPolyXc(P, 'y');
-        var alpha = roots[0];
-        var beta1 = roots.First(r => !alpha.Equals(r));
-        var stack1 = ConjugatesOfBeta(y, alpha, beta1, P.Degree + 1, O1);
-
-        var res1 = stack1.Select(fy => fy.Poly.Substitute(alpha)).ToArray();
-        roots.Println();
-        res1.Println();
-        var remains1 = roots.Where(r1 => res1.All(r2 => (r1 - r2).Magnitude > 1e-14)).ToArray();
-        remains1.Println();
-        var beta2 = remains1.First();
-        var stack2 = ConjugatesOfBeta(y, alpha, beta2, P.Degree + 1, O1);
-        var roots3 = stack1.Grid2D(stack2).Select(e => e.t1.Substitute(e.t2)).Order().ToHashSet();
-        roots3.Println("Roots");
-       
-        var res2 = roots3.Select(fy => fy.Poly.Substitute(alpha)).ToArray();
-        roots.Println();
-        res2.Println();
-        var remains2 = remains1.Where(r1 => res2.All(r2 => (r1 - r2).Magnitude > 1e-14)).ToArray();
-        remains2.Println();
-        var beta3 = remains2.First();
-        var stack3 = ConjugatesOfBeta(y, alpha, beta3, P.Degree + 1, O1);
-
-        var roots4 = roots3.Grid2D(stack3).Select(e => e.t1.Substitute(e.t2)).Order().ToHashSet();
-        var roots5 = roots4.Grid2D(roots4).Select(e => e.t1.Substitute(e.t2)).Order().ToHashSet();
-        
-        roots5.Println("Roots");
-        
-        var res3 = roots5.Select(fy => fy.Poly.Substitute(alpha)).ToArray();
-        roots.Println();
-        res3.Println();
-        var remains3 = remains2.Where(r1 => res3.All(r2 => (r1 - r2).Magnitude > 1e-14)).ToArray();
-        remains3.Println();
-        var beta4 = remains3.First();
-        var stack4 = ConjugatesOfBeta(y, alpha, beta4, P.Degree + 1, O1);
-
-        var roots6 = roots5.Grid2D(stack4).Select(e => e.t1.Substitute(e.t2)).Order().ToHashSet();
-        var roots7 = roots6.Grid2D(roots6).Select(e => e.t1.Substitute(e.t2)).Order().ToHashSet();
-        
-        roots7.Println($"All Roots of P = {P}");
-        Console.WriteLine("Prod[X - ri] = {0}", roots7.Aggregate(X.One, (acc, r) => acc * (X - r)));
-        GlobalStopWatch.Show("END");
+        GaloisApplications.GaloisCorrespondence(galGr.ToList());
+        GlobalStopWatch.Show("END GaloisCorrespondence"); // Time:5503 ms
+        GlobalStopWatch.Show("END C6x:C3"); // Time:58879 ms
     }
 
     public static void Example9()
     {
         var x = FG.QPoly();
         var P = x.Pow(21) - 84 * x.Pow(19) + 2436 * x.Pow(17) - 31136 * x.Pow(15) + 2312 * x.Pow(14) + 203840 * x.Pow(13) -
-            30688 * x.Pow(12) - 733824 * x.Pow(11) + 152992 * x.Pow(10) + 1480192 * x.Pow(9) - 359296 * x.Pow(8) - 1628096 * x.Pow(7) +
-            413952 * x.Pow(6) + 892416 * x.Pow(5) - 225792 * x.Pow(4) - 189952 * x.Pow(3) + 50176 * x.Pow(2) + 3584 * x - 512; // C7x:C3
+                30688 * x.Pow(12) - 733824 * x.Pow(11) + 152992 * x.Pow(10) + 1480192 * x.Pow(9) - 359296 * x.Pow(8) -
+                1628096 * x.Pow(7) +
+                413952 * x.Pow(6) + 892416 * x.Pow(5) - 225792 * x.Pow(4) - 189952 * x.Pow(3) + 50176 * x.Pow(2) + 3584 * x -
+                512; // C7x:C3
 
         var O1 = 250;
         var O2 = 500;
         GlobalStopWatch.Restart();
+        var galGr = GaloisGroupLLL(P, O1, O2);
+        DisplayGroup.HeadElements(galGr);
+        var X = FG.KPoly('X', galGr.Neutral());
+        Console.WriteLine("Prod[X - ri] = {0}", galGr.Aggregate(X.One, (acc, r) => acc * (X - r)));
+        GlobalStopWatch.Show("END Roots"); // Time:347172 ms ~ 6 min
         GlobalStopWatch.AddLap();
-        var roots = FG.NRoots(P.ToBcPoly(O2)).Order().ToArray();
-        GlobalStopWatch.Show("Roots");
-        Console.WriteLine(P);
-        roots.Println();
-
-        var (X, y) = FG.EPolyXc(P, 'y');
-        var alpha = roots[0];
-        var beta1 = roots.First(r => !alpha.Equals(r));
-        var stack1 = ConjugatesOfBeta(y, alpha, beta1, P.Degree + 1, O1);
-
-        var res1 = stack1.Select(fy => fy.Poly.Substitute(alpha)).ToArray();
-        roots.Println();
-        res1.Println();
-        var remains1 = roots.Where(r1 => res1.All(r2 => (r1 - r2).Magnitude > 1e-14)).ToArray();
-        remains1.Println();
-        var beta2 = remains1.First();
-        var stack2 = ConjugatesOfBeta(y, alpha, beta2, P.Degree + 1, O1);
-        var roots3 = stack1.Grid2D(stack2).Select(e => e.t1.Substitute(e.t2)).Order().ToHashSet();
-        roots3.Println($"All Roots of P = {P}");
-        Console.WriteLine("Prod[X - ri] = {0}", roots3.Aggregate(X.One, (acc, r) => acc * (X - r)));
-        GlobalStopWatch.Show("END"); // 386912 ms
-        
-        GaloisApplications.GaloisCorrespondence(roots3.ToList());
+        GaloisApplications.GaloisCorrespondence(galGr.ToList());
+        GlobalStopWatch.Show("END GaloisCorrespondence"); // Time:114437 ms ~ 2 min
+        GlobalStopWatch.Show("END C7x:C3"); // Time:461609 ms ~ 8 min
     }
 /*
 With P = X^21 + -84*X^19 + 2436*X^17 + -31136*X^15 + 2312*X^14 + 203840*X^13 + -30688*X^12 + -733824*X^11 + 152992*X^10 + 1480192*X^9 + -359296*X^8 + -1628096*X^7 + 413952*X^6 + 892416*X^5 + -225792*X^4 + -189952*X^3 + 50176*X^2 + 3584*X + -512

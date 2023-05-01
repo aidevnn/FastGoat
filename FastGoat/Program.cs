@@ -406,6 +406,7 @@ void LLL_Application_Pi()
 //     GlobalStopWatch.Show("END");
 // }
 
+void test()
 {
     LLL_Application_Pi();
     var x = FG.QPoly();
@@ -436,4 +437,15 @@ void LLL_Application_Pi()
     var b = BigCplx.NthRoot(-i.One * 150, 4);
     Console.WriteLine(b);
     Console.WriteLine(b.Pow(4));
+}
+
+{
+    GlobalStopWatch.Bench(5, "Example3 S3", AlgebraicIntegerRelationLLL.Example3);
+    // GlobalStopWatch.Bench(5, "Example3 S3", AlgebraicIntegerRelationLLL.Example3);
+    // GlobalStopWatch.Bench(5, "Example4 D8", AlgebraicIntegerRelationLLL.Example4);
+    // GlobalStopWatch.Bench(5, "Example4 D8", AlgebraicIntegerRelationLLL.Example4);
+    // GlobalStopWatch.Bench(5, "Example5 D10", AlgebraicIntegerRelationLLL.Example5);
+    // GlobalStopWatch.Bench(5, "Example5 D10", AlgebraicIntegerRelationLLL.Example5);
+    GlobalStopWatch.Bench(5, "Example6 A4", AlgebraicIntegerRelationLLL.Example6);
+    GlobalStopWatch.Bench(5, "Example6 A4", AlgebraicIntegerRelationLLL.Example6);
 }
