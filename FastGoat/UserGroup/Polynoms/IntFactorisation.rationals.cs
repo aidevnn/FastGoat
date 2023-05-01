@@ -81,11 +81,9 @@ public static partial class IntFactorisation
                 // w[i] -= ruij * w[j];
                 for (int k = 0; k < n; k++)
                     w[i].Coefs[k, 0] -= ruij * w[j].Coefs[k, 0];
-
+                
                 for (int k = 0; k <= j; k++)
-                {
                     N[i, k] -= ruij * N[j, k];
-                }
             }
 
             if (i >= 1)
@@ -96,8 +94,8 @@ public static partial class IntFactorisation
                 var wsi2 = A.KZero;
                 for (int k = 0; k < n; k++)
                 {
-                    wsip2 += ws[i - 1].Coefs[k, 0] * ws[i - 1].Coefs[k, 0];
-                    wsi2 += ws[i].Coefs[k, 0] * ws[i].Coefs[k, 0];
+                    wsip2 += ws[i - 1].Coefs[k, 0].Pow(2);
+                    wsi2 += ws[i].Coefs[k, 0].Pow(2);
                 }
 
                 if (wsip2.CompareTo(2 * wsi2) > 0)
@@ -108,8 +106,8 @@ public static partial class IntFactorisation
                     // (w[i - 1], w[i]) = (w[i], w[i - 1]);
                     for (int k = 0; k < n; k++)
                     {
-                        (ws[i - 1].Coefs[k, 0], ws[i].Coefs[k, 0]) = (ws[i].Coefs[k, 0] + a * ws[i - 1].Coefs[k, 0],
-                            ws[i - 1].Coefs[k, 0] - b * (ws[i].Coefs[k, 0] + a * ws[i - 1].Coefs[k, 0]));
+                        var tmp = ws[i].Coefs[k, 0] + a * ws[i - 1].Coefs[k, 0];
+                        (ws[i - 1].Coefs[k, 0], ws[i].Coefs[k, 0]) = (tmp, ws[i - 1].Coefs[k, 0] - b * tmp);
                         (w[i - 1].Coefs[k, 0], w[i].Coefs[k, 0]) = (w[i].Coefs[k, 0], w[i - 1].Coefs[k, 0]);
                     }
 
@@ -117,9 +115,10 @@ public static partial class IntFactorisation
                     for (int k = 0; k < n; k++)
                         (N[i - 1, k], N[i, k]) = (N[i, k], N[i - 1, k]);
 
+                    var coef = 1 - a * b;
                     for (int k = i - 1; k < n; k++)
                     {
-                        (N[k, i - 1], N[k, i]) = (b * N[k, i - 1] + (1 - a * b) * N[k, i], N[k, i - 1] - a * N[k, i]);
+                        (N[k, i - 1], N[k, i]) = (b * N[k, i - 1] + coef * N[k, i], N[k, i - 1] - a * N[k, i]);
                     }
 
                     i--;

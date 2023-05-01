@@ -159,19 +159,19 @@ public static class GaloisTheory
         }
 
         var primElt = Rs.First(e => GetBase(e).Length * roots.Length == n);
-        foreach (var b in roots)
+        
+        if (details)
         {
-            var coefs = n.Range().Select(i => (i, c: IntExt.Rng.Next(-9, 10) * Rational.KOne())).ToArray();
-            var re = coefs.Aggregate(primElt.Zero, (acc, e) => primElt.Pow(e.i) * e.c + acc); // random element x
-            var f_re = coefs.Aggregate(primElt.Zero, (acc, e) => primElt.Substitute(b).Pow(e.i) * e.c + acc); // F(x)
-
-            var str_x = new KPoly<Rational>('q', Rational.KOne(), coefs.Select(e => e.c).ToArray()).ToString();
-            var str_bx = str_x.Replace("q", "F(q)");
-
-            if (details)
+            foreach (var b in roots)
             {
-                Rs.Select(e => (e, e.Substitute(b).Equals(e))).Println();
+                var coefs = n.Range().Select(i => (i, c: IntExt.Rng.Next(-9, 10) * Rational.KOne())).ToArray();
+                var re = coefs.Aggregate(primElt.Zero, (acc, e) => primElt.Pow(e.i) * e.c + acc); // random element x
+                var f_re = coefs.Aggregate(primElt.Zero, (acc, e) => primElt.Substitute(b).Pow(e.i) * e.c + acc); // F(x)
 
+                var str_x = new KPoly<Rational>('q', Rational.KOne(), coefs.Select(e => e.c).ToArray()).ToString();
+                var str_bx = str_x.Replace("q", "F(q)");
+
+                Rs.Select(e => (e, e.Substitute(b).Equals(e))).Println();
                 Console.WriteLine($"PrimElt q={primElt} ");
                 Console.WriteLine($"Is [F(q) = q] {primElt.Substitute(b).Equals(primElt)}");
                 Console.WriteLine("Random Test");
@@ -181,10 +181,10 @@ public static class GaloisTheory
                 Console.WriteLine($"F(x) = F(s(q)) = {re.Substitute(b)}");
                 Console.WriteLine($"F(x) = s(F(q)) = {f_re}");
                 Console.WriteLine();
-            }
 
-            if (!re.Equals(re.Substitute(b)) || !re.Equals(f_re) || Rs.Any(e => !e.Substitute(b).Equals(e)))
-                throw new();
+                if (!re.Equals(re.Substitute(b)) || !re.Equals(f_re) || Rs.Any(e => !e.Substitute(b).Equals(e)))
+                    throw new();
+            }
         }
 
         var X0 = FG.KPoly('X', a);

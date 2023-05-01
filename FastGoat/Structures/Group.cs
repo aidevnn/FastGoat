@@ -246,16 +246,18 @@ public static partial class Group
         return new ConcreteGroup<T>(name, g, generators);
     }
 
-    public static ConcreteGroup<T> DirectProduct<T>(ConcreteGroup<T> g1, ConcreteGroup<T> g2) where T : struct, IElt<T>
+    public static ConcreteGroup<T> DirectProduct<T>(string name, ConcreteGroup<T> g1, ConcreteGroup<T> g2) where T : struct, IElt<T>
     {
         if (!g1.BaseGroup.Equals(g2.BaseGroup))
             throw new GroupException(GroupExceptionType.GroupDef);
 
-        if (g1.SuperGroup is null || g2.SuperGroup is null || !g1.SuperGroup.Equals(g2.SuperGroup))
-            throw new GroupException(GroupExceptionType.GroupDef);
-
         var generators = g1.PseudoGenerators.Concat(g2.PseudoGenerators).Distinct().ToArray();
-        return new ConcreteGroup<T>($"{g1.Name} x {g2.Name}", g1.SuperGroup, generators);
+        return new ConcreteGroup<T>(name, g1.BaseGroup, generators);
+    }
+
+    public static ConcreteGroup<T> DirectProduct<T>(ConcreteGroup<T> g1, ConcreteGroup<T> g2) where T : struct, IElt<T>
+    {
+        return DirectProduct($"{g1.Name} x {g2.Name}", g1, g2);
     }
 
     public static ConcreteGroup<Coset<T>> Over<T>(this ConcreteGroup<T> g, ConcreteGroup<T> h)
