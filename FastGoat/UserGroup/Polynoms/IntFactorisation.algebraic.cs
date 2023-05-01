@@ -169,7 +169,7 @@ public static partial class IntFactorisation
 
     // Barry Trager, Algebraic Factoring
     public static (int s, KPoly<EPoly<Rational>> g, KPoly<Rational> r) SqfrNormRationals(KPoly<EPoly<Rational>> f,
-        bool onlyPositifs = false, bool onlyIntegers = false) 
+        bool onlyPositifs = false, bool onlyIntegers = false)
     {
         var a = f[0].X;
         var x = f.X;
@@ -391,7 +391,7 @@ public static partial class IntFactorisation
             {
                 var (s, g, R) = SqfrNormRationals(pi, onlyPositifs: onlyPositifs, onlyIntegers: true);
                 var L = FirrZ2(R.Monic, true);
-                foreach (var qj in L.Order())
+                foreach (var qj in L.OrderBy(l0 => l0[0].Abs()))
                 {
                     var f = Ring.FastGCD(g, qj.Substitute(X));
                     if (qj.Degree > minPoly.Degree)
