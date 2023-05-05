@@ -47,8 +47,8 @@ public readonly struct BigCplx : IElt<BigCplx>, IRingElt<BigCplx>, IFieldElt<Big
 
     public int CompareTo(BigCplx other)
     {
-        var mag = Magnitude.CompareTo(other.Magnitude);
-        if (!Sub(other).IsZero())
+        var mag = Magnitude2.CompareTo(other.Magnitude2);
+        if (mag != 0)
             return mag;
 
         return Phase.CompareTo(other.Phase);
@@ -69,6 +69,8 @@ public readonly struct BigCplx : IElt<BigCplx>, IRingElt<BigCplx>, IFieldElt<Big
     public int P => 0;
     public bool Invertible() => !IsZero();
     public bool IsZero() => RealPart.IsZero() && ImaginaryPart.IsZero();
+    public bool IsZero3d() => RealPart.IsZero3d() && ImaginaryPart.IsZero3d();
+    public bool IsZero4d() => RealPart.IsZero4d() && ImaginaryPart.IsZero4d();
 
     public BigCplx Zero => new(BigReal.BrZero(O), BigReal.BrZero(O));
     public BigCplx One => new(BigReal.BrOne(O), BigReal.BrZero(O));
@@ -116,6 +118,12 @@ public readonly struct BigCplx : IElt<BigCplx>, IRingElt<BigCplx>, IFieldElt<Big
     public BigCplx Pow10(int n) => One.Mul(10).Pow(n);
     public BigCplx ToBigCplx(int o) => new(RealPart.ToBigReal(o), ImaginaryPart.ToBigReal(o));
 
+    public string ToSciForm()
+    {
+        var fmt = $"[{{0,-{O + 7}}} ; {{1,-{O + 7}}}]";
+        return String.Format(fmt, RealPart.ToSciForm(), ImaginaryPart.ToSciForm());
+    }
+
     public override int GetHashCode() => Hash;
     public override string ToString()
     {
@@ -143,6 +151,8 @@ public readonly struct BigCplx : IElt<BigCplx>, IRingElt<BigCplx>, IFieldElt<Big
 
         return $"({a0} + {b0})";
     }
+
+    public static BigCplx Round(BigCplx c, int digits) => new(BigReal.Round(c.RealPart, digits), BigReal.Round(c.ImaginaryPart, digits));
 
     public static BigCplx FromRational(Rational r, int O)
     {

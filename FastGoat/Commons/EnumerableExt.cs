@@ -28,7 +28,8 @@ public static class EnumerableExt
     /// <param name="header">The header that will be printed before the object.</param>
     /// <param name="fmtObjects">The format of objects to output.</param>
     /// <param name="fmtLines">The format of lines to output.</param>
-    public static void Println<T>(this IEnumerable<T> list, Func<T,T> fmtObjects, string header = "Lines", string fmtLines = "    {0}") 
+    public static void Println<T>(this IEnumerable<T> list, Func<T, string> fmtObjects, string header = "Lines",
+        string fmtLines = "    {0}")
     {
         Console.WriteLine(header);
         Console.WriteLine(list.Select(fmtObjects).Glue("\n", fmtLines));
@@ -40,7 +41,7 @@ public static class EnumerableExt
     /// <param name="list">The list of objects to be printed.</param>
     /// <param name="header">The header that will be printed before the object.</param>
     /// <param name="fmtLines">The format of lines to output.</param>
-    public static void Println<T>(this IEnumerable<T> list, string header = "Lines", string fmtLines = "    {0}") 
+    public static void Println<T>(this IEnumerable<T> list, string header = "Lines", string fmtLines = "    {0}")
     {
         Console.WriteLine(header);
         Console.WriteLine(list.Glue("\n", fmtLines));
@@ -282,7 +283,8 @@ public static class EnumerableExt
     {
         var enumerable = seq as T[] ?? seq.ToArray();
         var n = enumerable.Count();
-        return IntExt.YieldAllCombsFromMtoN(m, n).Select(comb => comb.Zip(enumerable).Where(e => e.First).Select(e => e.Second).ToArray());
+        return IntExt.YieldAllCombsFromMtoN(m, n)
+            .Select(comb => comb.Zip(enumerable).Where(e => e.First).Select(e => e.Second).ToArray());
     }
 
     /// <summary>

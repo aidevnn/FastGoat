@@ -12,7 +12,7 @@
         <PackageReference Include="dotnet-t4-project-tool" Version="2.2.1" />
     </ItemGroup>
     <ItemGroup>
-        <None Update="Gp\GpEp.tt">
+        <None Update="Structures\CartesianProduct\GpEp.tt">
             <Generator>TextTemplatingFileGenerator</Generator>
             <LastGenOutput>GpEp.cs</LastGenOutput>
         </None>
@@ -26,9 +26,7 @@
         </None>
     </ItemGroup>
     <ItemGroup>
-        <Compile Update="Gp\GpEp.cs">
-            <AutoGen>True</AutoGen>
-            <DesignTime>True</DesignTime>
+        <Compile Update="Structures\CartesianProduct\GpEp.cs">
             <DependentUpon>GpEp.tt</DependentUpon>
         </Compile>
         <Compile Update="Tuple2Array.cs">

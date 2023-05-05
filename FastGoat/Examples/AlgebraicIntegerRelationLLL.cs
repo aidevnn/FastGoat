@@ -54,7 +54,7 @@ public static class AlgebraicIntegerRelationLLL
     public static void Example1()
     {
         var d = 8; // Expected polynomial degree plus one
-        var O1 = 20; // lattice minimum digits
+        var O1 = 20; // rounding digits
         var O2 = 30; // maximum precision digits
         var pi = BigReal.Pi(O2);
         var beta = BigReal.FromBigIntegerAndExponent(BigInteger.Parse("-1669947371922907049619"), 1, O2);
@@ -77,7 +77,7 @@ public static class AlgebraicIntegerRelationLLL
     public static void Example2()
     {
         var d = 17; // Expected polynomial degree plus one
-        var O1 = 80; // lattice minimum digits
+        var O1 = 80; // rounding digits
         var O2 = 120; // maximum precision digits
         var alpha = BigReal.NthRoot(3, 4, O2) - BigReal.NthRoot(2, 4, O2); // alpha = Qtrt(3) - Qtrt(2)
         var beta = alpha.Pow(d - 1);
@@ -98,7 +98,7 @@ public static class AlgebraicIntegerRelationLLL
         IntFactorisation.PrimitiveElt(x.Pow(4) - 2, x.Pow(4) - 3).Println(); // more faster
     }
 
-    static ConcreteGroup<EPoly<Rational>> ConjugatesOfBeta(KAut<Rational> bsKAut, BigCplx alpha, BigCplx beta, int d, int O)
+    static ConcreteGroup<KAut<Rational>> ConjugatesOfBeta(KAutGroup<Rational> bsKAutGroup, BigCplx alpha, BigCplx beta, int d, int O)
     {
         GlobalStopWatch.AddLap();
         var coefs = AlphaBetaPolynomial(alpha, beta, d, O);
@@ -113,8 +113,8 @@ public static class AlgebraicIntegerRelationLLL
         if (!beta.ToBigCplx(O).Equals(P.Substitute(alpha).ToBigCplx(O)))
             throw new();
 
-        var fy = P.Substitute(bsKAut.Neutral());
-        var subGr = Group.Generate("Conjugates", bsKAut, fy);
+        var fy = P.Substitute(bsKAutGroup.Neutral().E);
+        var subGr = Group.Generate("Conjugates", bsKAutGroup, fy);
         DisplayGroup.HeadElements(subGr);
         GlobalStopWatch.Show("Conjugates");
         Console.WriteLine();
@@ -122,11 +122,11 @@ public static class AlgebraicIntegerRelationLLL
         return subGr;
     }
 
-    public static ConcreteGroup<EPoly<Rational>> GaloisGroupNumericRoots(BigCplx alpha, BigCplx[] cplxRoots, KPoly<Rational> P, int O)
+    public static ConcreteGroup<KAut<Rational>> GaloisGroupNumericRoots(BigCplx alpha, BigCplx[] cplxRoots, KPoly<Rational> P, int O)
     {
         P = P.SubstituteChar('y');
         var y = FG.EPoly(P, 'y');
-        var kAut = new KAut<Rational>(P);
+        var kAut = new KAutGroup<Rational>(P);
         var subGrGal = Group.Generate(kAut, kAut.Neutral());
         Console.WriteLine(new { alpha });
         if (P.Substitute(-y).IsZero())
@@ -142,11 +142,11 @@ public static class AlgebraicIntegerRelationLLL
             while (sz != remains.Count)
             {
                 sz = remains.Count;
-                var tmp0 = subGrGal.Select(fy => fy.Poly.Substitute(alpha).ToBigCplx(O)).ToHashSet();
+                var tmp0 = subGrGal.Select(fy => fy.E.Poly.Substitute(alpha).ToBigCplx(O)).ToHashSet();
                 var tmp1 = new HashSet<BigCplx>();
                 foreach (var e in remains)
                 {
-                    var res0 = subGrGal.Select(fy => fy.Poly.Substitute(e).ToBigCplx(O)).ToHashSet();
+                    var res0 = subGrGal.Select(fy => fy.E.Poly.Substitute(e).ToBigCplx(O)).ToHashSet();
                     if (res0.All(e1 => !tmp0.Contains(e1)))
                     {
                         tmp0.UnionWith(res0);
@@ -170,7 +170,7 @@ public static class AlgebraicIntegerRelationLLL
         return subGrGal;
     }
 
-    public static ConcreteGroup<EPoly<Rational>> GaloisGroupLLL(KPoly<Rational> P, int O1, int O2)
+    public static ConcreteGroup<KAut<Rational>> GaloisGroupLLL(KPoly<Rational> P, int O1, int O2)
     {
         Console.WriteLine(P);
         GlobalStopWatch.AddLap();
@@ -185,17 +185,21 @@ public static class AlgebraicIntegerRelationLLL
     {
         var x = FG.QPoly();
         var P = x.Pow(3) + 2;
-        var roots = IntFactorisation.SplittingField(P, true); // S3
+        var roots = IntFactorisation.SplittingField(P, details: true); // S3
         var minPoly = roots[0].F.SubstituteChar('X');
 
-        var O1 = 50; // lattice minimum digits
-        var O2 = 75; // maximum precision digits
+        var O1 = 20; // rounding digits
+        var O2 = 30; // maximum precision digits
         GlobalStopWatch.Restart();
         var galGr = GaloisGroupLLL(minPoly, O1, O2);
         DisplayGroup.HeadElements(galGr);
-        var X = FG.KPoly('X', galGr.Neutral());
+        var X = FG.KPoly('X', galGr.Neutral().E);
         Console.WriteLine("Prod[X - ri] = {0}", galGr.Aggregate(X.One, (acc, r) => acc * (X - r)));
-        GlobalStopWatch.Show("END"); // Time:242 ms
+        GlobalStopWatch.Show("END"); // Time:136 ms
+        GlobalStopWatch.AddLap();
+        GaloisApplications.GaloisCorrespondence(galGr.ToList());
+        GlobalStopWatch.Show("END GaloisCorrespondence"); // Time:39 ms
+        GlobalStopWatch.Show("END S3"); // Time:175 ms
     }
 
     public static void Example4()
@@ -203,46 +207,54 @@ public static class AlgebraicIntegerRelationLLL
         var x = FG.QPoly();
         var (minPoly, _, _, _) = IntFactorisation.PrimitiveElt(x.Pow(4) - 2, x.Pow(2) + 1).First(); // Gal(Q(i, √2)/Q) = D8
 
-        var O1 = 60; // lattice minimum digits
-        var O2 = 120; // maximum precision digits
+        var O1 = 20; // rounding digits
+        var O2 = 30; // maximum precision digits
         GlobalStopWatch.Restart();
         var galGr = GaloisGroupLLL(minPoly, O1, O2);
         DisplayGroup.HeadElements(galGr);
-        var X = FG.KPoly('X', galGr.Neutral());
+        var X = FG.KPoly('X', galGr.Neutral().E);
         Console.WriteLine("Prod[X - ri] = {0}", galGr.Aggregate(X.One, (acc, r) => acc * (X - r)));
-        GlobalStopWatch.Show("END"); // Time:1533 ms
+        GlobalStopWatch.Show("END"); // Time:488 ms
+        GlobalStopWatch.AddLap();
+        GaloisApplications.GaloisCorrespondence(galGr.ToList());
+        GlobalStopWatch.Show("END GaloisCorrespondence"); // Time:185 ms
+        GlobalStopWatch.Show("END D8"); // Time:303 ms
     }
 
     public static void Example5()
     {
         var x = FG.QPoly();
         var P = x.Pow(5) - 5 * x + 12;
-        var roots = IntFactorisation.SplittingField(P, true); // D10
+        var roots = IntFactorisation.SplittingField(P, details: true); // D10
         var minPoly = roots[0].F.SubstituteChar('X');
 
-        var O1 = 80; // lattice minimum digits
-        var O2 = 150; // maximum precision digits
+        var O1 = 50; // rounding digits
+        var O2 = 60; // maximum precision digits
         GlobalStopWatch.Restart();
         var galGr = GaloisGroupLLL(minPoly, O1, O2);
         DisplayGroup.HeadElements(galGr);
-        var X = FG.KPoly('X', galGr.Neutral());
+        var X = FG.KPoly('X', galGr.Neutral().E);
         Console.WriteLine("Prod[X - ri] = {0}", galGr.Aggregate(X.One, (acc, r) => acc * (X - r)));
-        GlobalStopWatch.Show("END"); // Time:2491 ms
+        GlobalStopWatch.Show("END"); // Time:1094 ms
+        GlobalStopWatch.AddLap();
+        GaloisApplications.GaloisCorrespondence(galGr.ToList());
+        GlobalStopWatch.Show("END GaloisCorrespondence"); // Time:446 ms
+        GlobalStopWatch.Show("END D10"); // Time:1540 ms
     }
 
     public static void Example6()
     {
         var x = FG.QPoly();
         var P = x.Pow(4) + 8 * x + 12;
-        var roots = IntFactorisation.SplittingField(P, true); // A4
+        var roots = IntFactorisation.SplittingField(P, details: true); // A4
         var minPoly = roots[0].F.SubstituteChar('X');
 
-        var O1 = 120; // lattice minimum digits
-        var O2 = 240; // maximum precision digits
+        var O1 = 120; // rounding digits
+        var O2 = 150; // maximum precision digits
         GlobalStopWatch.Restart();
         var galGr = GaloisGroupLLL(minPoly, O1, O2);
         DisplayGroup.HeadElements(galGr);
-        var X = FG.KPoly('X', galGr.Neutral());
+        var X = FG.KPoly('X', galGr.Neutral().E);
         Console.WriteLine("Prod[X - ri] = {0}", galGr.Aggregate(X.One, (acc, r) => acc * (X - r)));
         GlobalStopWatch.Show("END Roots"); // Time:9671 ms
         GlobalStopWatch.AddLap();
@@ -255,21 +267,21 @@ public static class AlgebraicIntegerRelationLLL
     {
         var x = FG.QPoly();
         var P = x.Pow(5) + 2;
-        var roots = IntFactorisation.SplittingField(P, true); // C5x:C4
+        var roots = IntFactorisation.SplittingField(P, details: true); // C5x:C4
         var minPoly = roots[0].F.SubstituteChar('X');
 
-        var O1 = 120; // lattice minimum digits
-        var O2 = 240; // maximum precision digits
+        var O1 = 100; // rounding digits
+        var O2 = 120; // maximum precision digits
         GlobalStopWatch.Restart();
         var galGr = GaloisGroupLLL(minPoly, O1, O2);
         DisplayGroup.HeadElements(galGr);
-        var X = FG.KPoly('X', galGr.Neutral());
+        var X = FG.KPoly('X', galGr.Neutral().E);
         Console.WriteLine("Prod[X - ri] = {0}", galGr.Aggregate(X.One, (acc, r) => acc * (X - r)));
-        GlobalStopWatch.Show("END Roots"); // Time:56588 ms
+        GlobalStopWatch.Show("END Roots"); // Time:36888 ms
         GlobalStopWatch.AddLap();
         GaloisApplications.GaloisCorrespondence(galGr.ToList());
-        GlobalStopWatch.Show("END GaloisCorrespondence"); // Time:5618 ms
-        GlobalStopWatch.Show("END C5x:C4"); // Time:62206 ms
+        GlobalStopWatch.Show("END GaloisCorrespondence"); // Time:5415 ms
+        GlobalStopWatch.Show("END C5x:C4"); // Time:42303 ms
     }
 
     public static void Example8()
@@ -281,18 +293,18 @@ public static class AlgebraicIntegerRelationLLL
         // %1 = x^18 + 171*x^12 + 5130*x^6 + 27
         var P = x.Pow(18) + 171 * x.Pow(12) + 5130 * x.Pow(6) + 27; // C6x:C3
 
-        var O1 = 120; // lattice minimum digits
-        var O2 = 300; // maximum precision digits
+        var O1 = 120; // rounding digits
+        var O2 = 140; // maximum precision digits
         GlobalStopWatch.Restart();
         var galGr = GaloisGroupLLL(P, O1, O2);
         DisplayGroup.HeadElements(galGr);
-        var X = FG.KPoly('X', galGr.Neutral());
+        var X = FG.KPoly('X', galGr.Neutral().E);
         Console.WriteLine("Prod[X - ri] = {0}", galGr.Aggregate(X.One, (acc, r) => acc * (X - r)));
-        GlobalStopWatch.Show("END Roots"); // Time:53376 ms
+        GlobalStopWatch.Show("END Roots"); // Time:44975 ms
         GlobalStopWatch.AddLap();
         GaloisApplications.GaloisCorrespondence(galGr.ToList());
-        GlobalStopWatch.Show("END GaloisCorrespondence"); // Time:5503 ms
-        GlobalStopWatch.Show("END C6x:C3"); // Time:58879 ms
+        GlobalStopWatch.Show("END GaloisCorrespondence"); // Time:5772 ms
+        GlobalStopWatch.Show("END C6x:C3"); // Time:50747 ms
     }
 
     public static void Example9()
@@ -310,12 +322,12 @@ public static class AlgebraicIntegerRelationLLL
             1628096 * x.Pow(7) + 413952 * x.Pow(6) + 892416 * x.Pow(5) - 225792 * x.Pow(4) - 189952 * x.Pow(3) + 50176 * x.Pow(2) +
             3584 * x - 512; // C7x:C3
 
-        var O1 = 250; // lattice minimum digits
-        var O2 = 500; // maximum precision digits
+        var O1 = 250; // rounding digits
+        var O2 = 300; // maximum precision digits
         GlobalStopWatch.Restart();
         var galGr = GaloisGroupLLL(P, O1, O2);
         DisplayGroup.HeadElements(galGr);
-        var X = FG.KPoly('X', galGr.Neutral());
+        var X = FG.KPoly('X', galGr.Neutral().E);
         Console.WriteLine("Prod[X - ri] = {0}", galGr.Aggregate(X.One, (acc, r) => acc * (X - r)));
         GlobalStopWatch.Show("END Roots"); // Time:347172 ms ~ 6 min
         GlobalStopWatch.AddLap();

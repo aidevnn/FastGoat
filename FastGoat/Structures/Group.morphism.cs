@@ -241,16 +241,17 @@ public static partial class Group
         return new SemiDirectProduct<T1, T2>(name, n, theta, g);
     }
 
-    public static ConcreteGroup<EPoly<K>> KAut<K>(KPoly<K> poly) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    public static ConcreteGroup<KAut<K>> KAut<K>(KPoly<K> poly) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
-        return new ConcreteGroup<EPoly<K>>(new KAut<K>(poly));
+        return new ConcreteGroup<KAut<K>>(new KAutGroup<K>(poly));
     }
-    public static ConcreteGroup<EPoly<K>> KAut<K>(params EPoly<K>[] gens) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    public static ConcreteGroup<KAut<K>> KAut<K>(params EPoly<K>[] gens) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         if (gens.Length == 0 || gens.Select(g => g.F).Distinct().Count() != 1)
             throw new GroupException(GroupExceptionType.GroupDef);
         
         var poly = gens[0].F;
-        return new ConcreteGroup<EPoly<K>>(new KAut<K>(poly), gens);
+        var kautGr = new KAutGroup<K>(poly);
+        return new ConcreteGroup<KAut<K>>(kautGr, gens.Select(g => new KAut<K>(kautGr, g)).ToArray());
     }
 }

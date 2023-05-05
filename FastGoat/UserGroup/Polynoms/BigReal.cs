@@ -37,12 +37,6 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
 
     public bool Equals(BigReal other)
     {
-        if (V != other.V)
-            return false;
-
-        if (K == other.K)
-            return true;
-
         return Sub(other).IsZero();
         // if (NbDigits == other.NbDigits)
         //     return false;
@@ -61,15 +55,8 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
 
     public int CompareTo(BigReal other)
     {
-        var compS = K.Sign.CompareTo(other.K.Sign);
-        if (compS != 0)
-            return compS;
-
-        var compV = V.CompareTo(other.V);
-        if (compV != 0)
-            return compV;
-
-        return Sub(other).K.Sign;
+        var sub = Sub(other);
+        return sub.IsZero() ? 0 : sub.K.Sign;
         // if (NbDigits == other.NbDigits)
         //     return K.CompareTo(other.K);
         //
@@ -87,6 +74,8 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
 
     public int Hash { get; }
     public bool IsZero() => K == 0 || V < -O + 2;
+    public bool IsZero3d() => K == 0 || V < -O + 3;
+    public bool IsZero4d() => K == 0 || V < -O + 4;
 
     public BigReal Zero => new(0, 0, O);
     public BigReal One => new(1, 0, O);
@@ -211,9 +200,6 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
 
     public BigReal ToBigReal(int o)
     {
-        if (V < -o)
-            return new(0, 0, o);
-
         var k0 = Clamp(K, o);
         return new(k0, V, o);
     }
@@ -233,7 +219,7 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
         }
     }
 
-    public BigReal Absolute => new(BigInteger.Abs(K), NbDigits, O);
+    public BigReal Absolute => new(BigInteger.Abs(K), V, O);
 
     public Rational ToRational
     {
@@ -252,16 +238,21 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
             }
         }
     }
+    
+    public string ToSciForm()
+    {
+        var v = V < 0 ? $"-{-V:000}" : $"+{V:000}";
+        var s0 = K < 0 ? $"{-K}" : $"{K}";
+        var s1 = $"{s0[0]}.{s0.Skip(1).Concat(Enumerable.Repeat('0', O)).Take(O - 1).Glue()}";
+        return K < 0 ? $"-{s1}E{v}" : $"{s1}E{v}";
+    }
 
     public override string ToString()
     {
         if (IsZero())
             return Enumerable.Repeat("0", O - 1).Prepend("0.").Append("E+000").Glue();
 
-        var v = V < 0 ? $"-{-V:000}" : $"+{V:000}";
-        var s0 = K < 0 ? $"{-K}" : $"{K}";
-        var s1 = $"{s0[0]}.{s0.Skip(1).Concat(Enumerable.Repeat('0', O)).Take(O - 1).Glue()}";
-        return K < 0 ? $"-{s1}E{v}" : $"{s1}E{v}";
+        return ToSciForm();
     }
 
     public static BigReal Min(BigReal a, BigReal b) => a.CompareTo(b) <= 0 ? a : b;

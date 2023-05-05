@@ -345,6 +345,9 @@ public static partial class IntFactorisation
     public static List<EPoly<Rational>> SplittingField(KPoly<Rational> P, bool details = false, bool onlyPositifs = false)
     {
         GlobalStopWatch.Restart();
+        if (FirrZ2(P).Length > 1)
+            throw new($"{P} isnt an irreductible polynomial");
+        
         var (X, y) = FG.EPolyXc(P, 'a');
         var P0 = P.Substitute(X);
         var roots = new List<EPoly<Rational>>();
@@ -391,9 +394,9 @@ public static partial class IntFactorisation
             {
                 var (s, g, R) = SqfrNormRationals(pi, onlyPositifs: onlyPositifs, onlyIntegers: true);
                 var L = FirrZ2(R.Monic, true);
-                foreach (var qj in L.OrderBy(l0 => l0[0].Abs()))
+                foreach (var qj in L.OrderBy(e => e.Degree).ThenBy(e => Ring.Discriminant(e).Abs()))
                 {
-                    var f = Ring.FastGCD(g, qj.Substitute(X));
+                    var f = Ring.Gcd(g, qj.Substitute(X));
                     if (qj.Degree > minPoly.Degree)
                     {
                         minPoly = qj;

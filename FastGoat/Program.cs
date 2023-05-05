@@ -439,13 +439,132 @@ void test()
     Console.WriteLine(b.Pow(4));
 }
 
+void bench()
 {
-    GlobalStopWatch.Bench(5, "Example3 S3", AlgebraicIntegerRelationLLL.Example3);
     // GlobalStopWatch.Bench(5, "Example3 S3", AlgebraicIntegerRelationLLL.Example3);
-    // GlobalStopWatch.Bench(5, "Example4 D8", AlgebraicIntegerRelationLLL.Example4);
+    // GlobalStopWatch.Bench(5, "Example3 S3", AlgebraicIntegerRelationLLL.Example3);
+    GlobalStopWatch.Bench(5, "Example4 D8", AlgebraicIntegerRelationLLL.Example4);
     // GlobalStopWatch.Bench(5, "Example4 D8", AlgebraicIntegerRelationLLL.Example4);
     // GlobalStopWatch.Bench(5, "Example5 D10", AlgebraicIntegerRelationLLL.Example5);
     // GlobalStopWatch.Bench(5, "Example5 D10", AlgebraicIntegerRelationLLL.Example5);
-    GlobalStopWatch.Bench(5, "Example6 A4", AlgebraicIntegerRelationLLL.Example6);
-    GlobalStopWatch.Bench(5, "Example6 A4", AlgebraicIntegerRelationLLL.Example6);
+    // GlobalStopWatch.Bench(5, "Example6 A4", AlgebraicIntegerRelationLLL.Example6);
+    // GlobalStopWatch.Bench(5, "Example6 A4", AlgebraicIntegerRelationLLL.Example6);
+}
+
+void Quintic1()
+{
+    var x = FG.QPoly();
+    var O1 = 120;
+    var O2 = 140;
+    var P = x.Pow(5) + x.Pow(4) + 1;
+    var (f0, f1) = IntFactorisation.FirrZ(P, details: true).Order().Deconstruct();
+    var (_, X0, a0, a1) = IntFactorisation.PrimitiveElt(f0, f1)[0];
+    Console.WriteLine(P.Substitute(a0));
+    Console.WriteLine(P.Substitute(a1));
+    var facts = IntFactorisation.AlgebraicFactors(P.Substitute(X0), details: true);
+    Console.WriteLine(facts.Count(e => e.Degree > 1));
+    var (minPoly1, _, _) = IntFactorisation.PrimitiveElt(facts.First(e => e.Degree > 1));
+    IntFactorisation.FirrZ(minPoly1, details: true);
+    
+    var gal = AlgebraicIntegerRelationLLL.GaloisGroupLLL(minPoly1, O1, O2);
+    DisplayGroup.HeadElements(gal);
+    DisplayGroup.AreIsomorphics(gal, Product.Generate(new Cn(2), new Symm(3)));
+    
+    var subFields = GaloisTheory.SubFields(gal.Select(ka => ka.E).ToList(), nbGens: 3).ToArray();
+    var extTowers = GaloisApplications.ExtensionsTower(subFields);
+    GaloisApplications.GaloisCorrespondence(extTowers);
+
+    var (X1, y1) = FG.EPolyXc(minPoly1, 'y');
+    var (r0, r1) = IntFactorisation.AlgebraicRoots(f0.Substitute(X1), details: true).Deconstruct();
+    var (r2, r3, r4) = IntFactorisation.AlgebraicRoots(f1.Substitute(X1), details: true).Deconstruct();
+    
+    GaloisApplications.FindExtension(subFields, r0);
+    GaloisApplications.FindExtension(subFields, r1);
+    GaloisApplications.FindExtension(subFields, r2);
+    GaloisApplications.FindExtension(subFields, r3);
+    GaloisApplications.FindExtension(subFields, r4);
+    
+    Console.WriteLine(gal.Aggregate(X1.One, (acc, r) => acc * (X1 - r)));
+}
+
+void Cyclo11_1()
+{
+    Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+    var x = FG.QPoly();
+    var P0 = FG.CyclotomicPolynomial(11);
+    var (X0, e0) = FG.EPolyXc(P0, 'e');
+    var (minPol, e1, i0) = IntFactorisation.PrimitiveElt(X0.Pow(2) + 1);
+    Console.WriteLine(minPol);
+    IntFactorisation.FirrZ2(minPol, true);
+    var (X, y) = FG.EPolyXc(minPol, 'y');
+    var e = e1.Substitute(y);
+    var i = i0.Substitute(y);
+    Console.WriteLine("###################");
+    Console.WriteLine((X - i) * (X + i));
+    
+    var p0Roots = 10.Range(1).Select(k => e.Pow(k)).ToArray();
+    Console.WriteLine(P0);
+    Console.WriteLine(p0Roots.Aggregate(X.One, (acc, ri) => acc * (X - ri)));
+    
+    var y0k = p0Roots.Select(ek => -ek + i).ToArray();
+    var y1k = p0Roots.Select(ek => -ek - i).ToArray();
+    var roots = y0k.Union(y1k).ToList();
+    Console.WriteLine(minPol);
+    Console.WriteLine(roots.Aggregate(X.One, (acc, ri) => acc * (X - ri)));
+    
+    var gal = GaloisTheory.GaloisGroup(roots, details: true);
+    DisplayGroup.AreIsomorphics(FG.Abelian(2, 10), gal);
+    DisplayGroup.AreIsomorphics(FG.Abelian(2, 2, 5), gal);
+    
+    var cos = (e + 1 / e) / 2;
+    var sin = (e - 1 / e) / (2 * i);
+    Console.WriteLine(cos);
+    Console.WriteLine(sin);
+    Console.WriteLine(cos.Pow(2) + sin.Pow(2));
+    var P1 = IntFactorisation.MinPolynomial(X - cos).Substitute(x / 2).Monic;
+    var P2 = IntFactorisation.MinPolynomial(X - sin).Substitute(x / 2).Monic;
+    Console.WriteLine(P1);
+    Console.WriteLine(P2);
+    // IntFactorisation.SplittingField(P1, true);
+}
+
+void Cyclo11_2()
+{
+    Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+    var pRoots = new NthRootQ(44).PrimitivesRoots();
+    var gal = Group.KAut(pRoots);
+    DisplayGroup.HeadElements(gal);
+    DisplayGroup.AreIsomorphics(FG.Abelian(2, 10), gal);
+    var y = gal.Neutral().E;
+    var X = FG.KPoly('X', y);
+    
+    var i = y.Pow(11);
+    var ξ11 = y.Pow(4);
+    
+    var subFields = GaloisApplications.GaloisCorrespondence(pRoots.ToList());
+    GaloisApplications.FindExtension(subFields, i.Substitute(gal.Neutral()), "Q(i)");
+    GaloisApplications.FindExtension(subFields, ξ11.Substitute(gal.Neutral()), "Q(ξ11)");
+    
+    Console.WriteLine(ξ11);
+    Console.WriteLine(i);
+    Console.WriteLine((X - i) * (X + i));
+    Console.WriteLine(10.Range(1).Aggregate(X.One, (acc, k) => acc * (X - ξ11.Pow(k))));
+    
+    var cos = (ξ11 + 1 / ξ11) / 2;
+    var sin = (ξ11 - 1 / ξ11) / (2 * i);
+    Console.WriteLine(cos);
+    Console.WriteLine(GaloisTheory.Rewrite(ξ11, cos));
+    Console.WriteLine(sin);
+    Console.WriteLine(cos.Pow(2) + sin.Pow(2));
+    var exp_2ipi_11 = new Cnf(11);
+    Console.WriteLine(exp_2ipi_11.Re);
+    Console.WriteLine(exp_2ipi_11.Im);
+    Console.WriteLine(exp_2ipi_11.Re.Pow(2) + exp_2ipi_11.Im.Pow(2));
+}
+
+{
+    // Quintic1();
+    // Cyclo11_1();
+    // Cyclo11_2();
+    AlgebraicIntegerRelationLLL.Example6();
 }

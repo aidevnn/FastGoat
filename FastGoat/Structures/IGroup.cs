@@ -10,4 +10,6 @@ public interface IGroup<T> : IEnumerable<T>, IEquatable<IGroup<T>> where T : IEl
     T Neutral();
     T Invert(T e);
     T Op(T e1, T e2);
+
+    static virtual bool IsFiniteGroup() => true;
 }

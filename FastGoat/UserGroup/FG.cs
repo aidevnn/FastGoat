@@ -322,4 +322,6 @@ public static partial class FG
     }
 
     public static EPoly<ZnInt> FqX(int q, char x = 'x') => new Fq(q, x)[x];
+
+    public static NthRootQ NthRootQ(int n) => new(n);
 }

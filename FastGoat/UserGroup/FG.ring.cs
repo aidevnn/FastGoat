@@ -68,10 +68,17 @@ public static partial class FG
 
     public static BigCplx NSolve(KPoly<BigCplx> P, int maxLoop = 200)
     {
+        var o = P.KZero.O;
+        var aj = new BigCplx(BigReal.Pi(o), BigReal.E(o));
+        return NSolve(P, aj, maxLoop);
+    }
+
+    public static BigCplx NSolve(KPoly<BigCplx> P, BigCplx a0, int maxLoop = 200)
+    {
         var dP = P.Derivative;
-        var ai = P.KZero;
         var i = 0;
-        var aj = new BigCplx(BigReal.Pi(ai.O), BigReal.E(ai.O));
+        var ai = a0 * 1000;
+        var aj = a0;
         while (!(ai - aj).IsZero() && i++ < maxLoop)
         {
             ai = aj;
@@ -88,8 +95,9 @@ public static partial class FG
         while (P0.Degree > 0)
         {
             var a0 = NSolve(P0, maxLoop);
-            roots.Add(a0);
-            P0 /= P0.X - a0;
+            var a1 = NSolve(P, a0, maxLoop);
+            roots.Add(a1);
+            P0 /= P0.X - a1;
         }
 
         return roots.ToArray();

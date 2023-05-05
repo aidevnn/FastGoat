@@ -89,18 +89,25 @@ public static class GaloisApplications
         }
     }
 
-    public static void GaloisCorrespondence(KPoly<Rational> P, int nbGens = 2)
+    public static GaloisCorrespondence[] GaloisCorrespondence(KPoly<Rational> P, int nbGens = 2)
     {
         var subFields = GaloisTheory.SubFields(P).ToArray();
         var extTowers = ExtensionsTower(subFields);
         GaloisCorrespondence(extTowers);
+        return subFields;
     }
     
-    public static void GaloisCorrespondence(List<EPoly<Rational>> roots, int nbGens = 2)
+    public static GaloisCorrespondence[] GaloisCorrespondence(List<EPoly<Rational>> roots, int nbGens = 2)
     {
         var subFields = GaloisTheory.SubFields(roots).ToArray();
         var extTowers = ExtensionsTower(subFields);
         GaloisCorrespondence(extTowers);
+        return subFields;
+    }
+
+    public static GaloisCorrespondence[] GaloisCorrespondence(List<KAut<Rational>> roots, int nbGens = 2)
+    {
+        return GaloisCorrespondence(roots.Select(r => r.E).ToList(), nbGens);
     }
 
     public static void GaloisCorrespondence(GaloisCorrespondence[][] exts)
