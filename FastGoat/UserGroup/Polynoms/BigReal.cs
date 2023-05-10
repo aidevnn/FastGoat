@@ -7,9 +7,22 @@ using FastGoat.UserGroup.Integers;
 
 namespace FastGoat.UserGroup.Polynoms;
 
+public enum Rounding
+{
+    SciForm,
+    FixForm
+}
+
 public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<BigReal>, IVsElt<Rational, BigReal>
 {
     public static bool Debug = false;
+    public static DigitsForm Display = DigitsForm.Default;
+    
+    public enum DigitsForm
+    {
+        Default,
+        SciForm
+    }
 
     public static BigReal BrZero(int o) => o > 0 ? new(0, 0, o) : throw new();
     public static BigReal BrOne(int o) => o > 0 ? new(1, 0, o) : throw new();
@@ -35,41 +48,12 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
         Hash = (K, V, O).GetHashCode();
     }
 
-    public bool Equals(BigReal other)
-    {
-        return Sub(other).IsZero();
-        // if (NbDigits == other.NbDigits)
-        //     return false;
-        //
-        // if (NbDigits > other.NbDigits)
-        // {
-        //     var k0 = other.K * BigInteger.Pow(10, NbDigits - other.NbDigits);
-        //     return K == k0;
-        // }
-        // else
-        // {
-        //     var k0 = K * BigInteger.Pow(10, other.NbDigits - NbDigits);
-        //     return other.K == k0;
-        // }
-    }
+    public bool Equals(BigReal other) => Sub(other).IsZero();
 
     public int CompareTo(BigReal other)
     {
         var sub = Sub(other);
         return sub.IsZero() ? 0 : sub.K.Sign;
-        // if (NbDigits == other.NbDigits)
-        //     return K.CompareTo(other.K);
-        //
-        // if (NbDigits > other.NbDigits)
-        // {
-        //     var k0 = other.K * BigInteger.Pow(10, NbDigits - other.NbDigits);
-        //     return K.CompareTo(k0);
-        // }
-        // else
-        // {
-        //     var k0 = K * BigInteger.Pow(10, other.NbDigits - NbDigits);
-        //     return k0.CompareTo(other.K);
-        // }
     }
 
     public int Hash { get; }
@@ -78,11 +62,11 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
     public bool IsZero4d() => K == 0 || V < -O + 4;
 
     public BigReal Zero => new(0, 0, O);
-    public BigReal One => new(1, 0, O);
+    public BigReal One => new(BigInteger.Pow(10, O - 1), 0, O);
     public int P => 0;
     public bool Invertible() => !IsZero();
 
-    public BigReal Pow10(int n) => new(1, n, O);
+    public BigReal Pow10(int n) => new(BigInteger.Pow(10, O - 1), n, O);
     public BigReal Mul10PowN(int N) => new(K, V + N, O);
 
     public BigReal Add(BigReal e)
@@ -192,8 +176,11 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
         if (k < 0)
             return Inv().Pow(-k);
 
-        var br = this;
-        return Enumerable.Repeat(br, k).Aggregate(br.One, (acc, b) => acc * b);
+        var br = One;
+        for (int i = 0; i < k; i++)
+            br *= this;
+        
+        return br;
     }
 
     public override int GetHashCode() => Hash;
@@ -205,7 +192,6 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
     }
 
     public BigReal Round0 => Round(this);
-
     public double ToDouble
     {
         get
@@ -238,6 +224,8 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
             }
         }
     }
+
+    public int Sign => K.Sign;
     
     public string ToSciForm()
     {
@@ -249,9 +237,12 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
 
     public override string ToString()
     {
+        if (Display == DigitsForm.Default)
+            return $"{ToDouble}";
+        
         if (IsZero())
             return Enumerable.Repeat("0", O - 1).Prepend("0.").Append("E+000").Glue();
-
+        
         return ToSciForm();
     }
 
@@ -272,6 +263,9 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
         if (n % 2 == 0 && r.K.Sign == -1)
             throw new("Even NthRoot must has positive argument");
 
+        if (n == 1)
+            return r;
+
         var ai = r.Zero;
         var aj = FromDouble(Double.Pi, ai.O);
         while (!(ai - aj).IsZero())
@@ -287,44 +281,78 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
     }
 
     public BigReal RoundEven => Round0;
-
-    public static BigReal Round(BigReal br, int d = 0)
+    public static BigReal Round(BigReal br, int d = 0, MidpointRounding mid = MidpointRounding.ToEven, Rounding form = Rounding.FixForm)
     {
-        if (d > br.O)
-            throw new($"Nb digits to round < {br.O}");
+        if (d < 0)
+            throw new("Nb digits to round must be positive");
 
-        if (-br.V > d)
-            return br.Zero;
-
-        if (br.V >= br.NbDigits - 1)
+        if (form == Rounding.SciForm && d > br.NbDigits)
+            return br;
+        
+        if (form == Rounding.FixForm && br.V - 1 >= br.NbDigits)
             return br;
 
-        var d0 = d + 1 + br.V;
-        var k0 = Clamp(br.K, d0);
+        if (form == Rounding.FixForm && d > br.V + 1)
+            return br.Zero;
+
+        var d0 = form == Rounding.SciForm ? d + 1 : d + 1 + br.V;
+        var d1 = form == Rounding.SciForm ? br.V - d : -d;
+        var k0 = d0 == 0 ? BigInteger.Zero : Clamp(br.K, d0);
         var br0 = new BigReal(k0, br.V, br.O);
-        var den = new BigReal(1, -d, br.O);
+        var den = new BigReal(1, d1, br.O);
         var r = br - br0;
         var rs = r.K.Sign;
         var r0 = r * rs * 2;
+        var comp = r0.CompareTo(den);
+        
+        // var add = new BigReal(rs, d1, br.O);
+        // Console.WriteLine(new { r0, den, comp, rs, br, br0, add });
 
-        if (d == 0)
+        if (comp != 0)
         {
-            if (r0.CompareTo(den) == -1 || (r0.Equals(den) && BigInteger.IsEvenInteger(br0.K)))
+            if (comp == -1)
                 return br0;
-
-            return br0 + new BigReal(rs, br.V, br.O);
+            else
+                return br0 + new BigReal(rs, d1, br.O);
         }
         else
         {
-            // Console.WriteLine(new { br, br0, r0, den });
-            if (r0.CompareTo(den) == -1 || (r0.Equals(den) && BigInteger.IsNegative(br0.K)))
+            if (mid == MidpointRounding.ToEven)
+            {
+                if (BigInteger.IsEvenInteger(br0.K))
+                    return br0;
+                else
+                    return br0 + new BigReal(rs, d1, br.O);
+            }
+            else if(mid == MidpointRounding.ToNegativeInfinity)
+            {
+                if (rs == 1)
+                    return br0;
+                else
+                    return br0 + new BigReal(rs, d1, br.O);
+            }
+            else if(mid == MidpointRounding.ToPositiveInfinity)
+            {
+                if (rs == 1)
+                    return br0 + new BigReal(rs, d1, br.O);
+                else
+                    return br0;
+            }
+            else if (mid == MidpointRounding.ToZero)
                 return br0;
-
-            return br0 + new BigReal(k0.Sign, br.V - br0.NbDigits + 1, br.O);
+            else
+                return br0 + new BigReal(rs, d1, br.O);
         }
     }
 
-    // public static int Length(BigInteger k) => $"{BigInteger.Abs(k)}".Length;
+    public static BigReal NormN(int n, BigReal[] br)
+    {
+        if (n < 1)
+            throw new($"n={n} must be >= 1");
+
+        var sum = br.Aggregate(br[0].Zero, (acc, b0) => acc + b0.Absolute.Pow(n));
+        return NthRoot(sum, n);
+    }
     public static int Length(BigInteger k)
     {
         var k0 = BigInteger.Abs(k);
@@ -435,7 +463,7 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
         return num / denom;
     }
 
-    public static implicit operator double(BigReal r) => r.ToDouble;
+    // public static implicit operator double(BigReal r) => r.ToDouble;
     // public static implicit operator Rational(BigReal r) => r.ToRational;
 
     public static BigReal operator +(BigReal a, BigReal b) => a.Add(b);
