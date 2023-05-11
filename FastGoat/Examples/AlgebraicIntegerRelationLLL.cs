@@ -23,8 +23,10 @@ public static class AlgebraicIntegerRelationLLL
         var N = BigReal.FromBigInteger(BigInteger.Pow(10, O), alpha.O);
         var mat = new KMatrix<Rational>(Rational.KZero(), d, d).Zero;
         var ai = alpha.One;
+        var aipow = new List<BigCplx>();
         for (int i = 0; i < mat.M - 1; i++)
         {
+            aipow.Add(ai);
             mat.Coefs[i, i] = Rational.KOne();
             var aipi = ai.RealPart + pi * ai.ImaginaryPart; // Re(𝛼^i) + π * Im(𝛼^i)
             mat.Coefs[i, mat.N - 1] = (aipi * N).ToRational.RoundEven;
@@ -38,7 +40,8 @@ public static class AlgebraicIntegerRelationLLL
         Console.WriteLine();
         Console.WriteLine(lll);
 
-        var col = lll.Cols.OrderBy(l => l.Aggregate(Rational.KZero(), (acc, v) => acc + v.Pow(2))).First();
+        var col = lll.Cols
+            .OrderBy(l => l.SkipLast(1).Zip(aipow).Aggregate(-beta, (acc, v) => acc + v.First * v.Second).Magnitude2).First();
         Console.WriteLine("End LLL algorithm");
         Console.WriteLine("Possible Solution");
         Console.WriteLine(col.T);

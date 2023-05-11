@@ -56,82 +56,62 @@ public static partial class IntFactorisation
         var n = A.N;
         var w = A.Cols;
         var (Ws, M) = Ring.GramSchmidt2(A);
-        // Console.WriteLine(Ws);
-        // Console.WriteLine();
-        // Console.WriteLine(M);
-        // Console.WriteLine();
-
         var ws = Ws.Cols;
-        var N = M.Coefs;
+        var N = new KMatrix<Rational>(M.Coefs);
         int i = 1;
-        var step = 0;
         while (i < n)
         {
-            // Console.WriteLine(new { i, step });
-            // ++step;
-            // Console.WriteLine(new KMatrix<Rational>(N));
-            // Console.WriteLine();
-            // Console.WriteLine(KMatrix<Rational>.MergeSameRows(w));
-            // Console.WriteLine("press enter...");
-            // Console.ReadLine();
-            
+            var wi = w[i];
             for (int j = i - 1; j >= 0; j--)
             {
                 var ruij = N[i, j].RoundEven;
                 // w[i] -= ruij * w[j];
+                var wj = w[j];
                 for (int k = 0; k < n; k++)
-                    w[i].Coefs[k, 0] -= ruij * w[j].Coefs[k, 0];
+                    wi.Coefs[k, 0] -= ruij * wj.Coefs[k, 0];
                 
                 for (int k = 0; k <= j; k++)
-                    N[i, k] -= ruij * N[j, k];
+                    N.Coefs[i, k] -= ruij * N[j, k];
             }
 
             if (i >= 1)
             {
-                // var wsip2 = Ring.SquareNorm2(ws[i - 1]);
-                // var wsi2 = Ring.SquareNorm2(ws[i]);
                 var wsip2 = A.KZero;
                 var wsi2 = A.KZero;
+                var wsip = ws[i - 1];
+                var wsi = ws[i];
+                var wip = w[i - 1];
                 for (int k = 0; k < n; k++)
                 {
-                    wsip2 += ws[i - 1].Coefs[k, 0].Pow(2);
-                    wsi2 += ws[i].Coefs[k, 0].Pow(2);
+                    wsip2 += wsip.Coefs[k, 0].Pow(2);
+                    wsi2 += wsi.Coefs[k, 0].Pow(2);
                 }
 
                 if (wsip2.CompareTo(2 * wsi2) > 0)
                 {
                     var a = N[i, i - 1];
                     var b = a * wsip2 / (wsi2 + a.Pow(2) * wsip2);
-                    // (ws[i - 1], ws[i]) = (ws[i] + a * ws[i - 1], ws[i - 1] - b * (ws[i] + a * ws[i - 1]));
-                    // (w[i - 1], w[i]) = (w[i], w[i - 1]);
                     for (int k = 0; k < n; k++)
                     {
-                        var tmp = ws[i].Coefs[k, 0] + a * ws[i - 1].Coefs[k, 0];
-                        (ws[i - 1].Coefs[k, 0], ws[i].Coefs[k, 0]) = (tmp, ws[i - 1].Coefs[k, 0] - b * tmp);
-                        (w[i - 1].Coefs[k, 0], w[i].Coefs[k, 0]) = (w[i].Coefs[k, 0], w[i - 1].Coefs[k, 0]);
+                        var tmp = wsi.Coefs[k, 0] + a * wsip.Coefs[k, 0];
+                        (wsip.Coefs[k, 0], wsi.Coefs[k, 0]) = (tmp, wsip.Coefs[k, 0] - b * tmp);
+                        (wip.Coefs[k, 0], wi.Coefs[k, 0]) = (wi.Coefs[k, 0], wip.Coefs[k, 0]);
                     }
 
-                    // IntFactorisation.SwapRows(i - 1, i, N);
                     for (int k = 0; k < n; k++)
-                        (N[i - 1, k], N[i, k]) = (N[i, k], N[i - 1, k]);
+                        (N.Coefs[i - 1, k], N.Coefs[i, k]) = (N[i, k], N[i - 1, k]);
 
                     var coef = 1 - a * b;
                     for (int k = i - 1; k < n; k++)
-                    {
-                        (N[k, i - 1], N[k, i]) = (b * N[k, i - 1] + coef * N[k, i], N[k, i - 1] - a * N[k, i]);
-                    }
+                        (N.Coefs[k, i - 1], N.Coefs[k, i]) = (b * N[k, i - 1] + coef * N[k, i], N[k, i - 1] - a * N[k, i]);
 
                     i--;
                 }
                 else
-                {
                     i++;
-                }
             }
             else
-            {
                 i++;
-            }
         }
 
         return KMatrix<Rational>.MergeSameRows(w);

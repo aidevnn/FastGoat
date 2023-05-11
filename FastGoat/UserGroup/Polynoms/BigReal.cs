@@ -267,7 +267,7 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
             return r;
 
         var ai = r.Zero;
-        var aj = FromDouble(Double.Pi, ai.O);
+        var aj = Pi(ai.O);
         while (!(ai - aj).IsZero())
         {
             ai = aj;

@@ -9,6 +9,7 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
     public int P => 0;
     public BigInteger Num { get; }
     public BigInteger Denom { get; }
+    public int Sign => Num.Sign;
     public static Rational KZero() => new(0, 1);
 
     public static Rational KOne() => new(1, 1);
@@ -57,7 +58,7 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
 
     public double Abs() => Abs(this);
 
-    public bool Equals(Rational other) => Hash == other.Hash;
+    public bool Equals(Rational other) => Num * other.Denom == Denom * other.Num;
 
     public int CompareTo(Rational other) => (Num * other.Denom).CompareTo(other.Num * Denom);
 
@@ -129,6 +130,7 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
             return new(q + rs, 1);
         }
     }
+
     public static implicit operator double(Rational e) => (double)e.Num / (double)e.Denom;
     public static Rational Absolute(Rational e) => new(BigInteger.Abs(e.Num), e.Denom);
     public static Rational operator +(Rational a, Rational b) => a.Add(b);
