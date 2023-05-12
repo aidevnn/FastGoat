@@ -51,13 +51,13 @@ public static partial class IntFactorisation
         return new(q + rs, 1);
     }
 
-    public static KMatrix<Rational> LLL(KMatrix<Rational> A)
+    public static KMatrix<K> LLL<K>(KMatrix<K> A) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>, IFloatElt<K>
     {
         var n = A.N;
         var w = A.Cols;
         var (Ws, M) = Ring.GramSchmidt2(A);
         var ws = Ws.Cols;
-        var N = new KMatrix<Rational>(M.Coefs);
+        var N = new KMatrix<K>(M.Coefs);
         int i = 1;
         while (i < n)
         {
@@ -69,7 +69,7 @@ public static partial class IntFactorisation
                 var wj = w[j];
                 for (int k = 0; k < n; k++)
                     wi.Coefs[k, 0] -= ruij * wj.Coefs[k, 0];
-                
+
                 for (int k = 0; k <= j; k++)
                     N.Coefs[i, k] -= ruij * N[j, k];
             }
@@ -114,9 +114,9 @@ public static partial class IntFactorisation
                 i++;
         }
 
-        return KMatrix<Rational>.MergeSameRows(w);
+        return KMatrix<K>.MergeSameRows(w);
     }
-    
+
     public static KMatrix<Rational> LLLtheoric(KMatrix<Rational> v)
     {
         var n = v.N;
@@ -188,7 +188,7 @@ public static partial class IntFactorisation
         var nu = Nu(f);
         if (details)
             Console.WriteLine($"nu = {nu} => {Double.Log(2 * nu)} ~ {Double.Log(n + 1) / 2 + n + normb}");
-        
+
         var all = IntExt.Primes10000.Where(p => !BigInteger.Remainder(disc, p).IsZero).Take(150)
             .Select(p => (p, s: (int)((Double.Log(n + 1) / 2 + n * Double.Log(2) + normb) / Double.Log(p)) + 1))
             .OrderByDescending(e => e.s).ToArray();

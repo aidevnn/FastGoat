@@ -21,32 +21,33 @@ public static class AlgebraicIntegerRelationLLL
         Console.WriteLine("Start LLL algorithm");
         var pi = BigReal.Pi(alpha.O);
         var N = BigReal.FromBigInteger(BigInteger.Pow(10, O), alpha.O);
-        var mat = new KMatrix<Rational>(Rational.KZero(), d, d).Zero;
+        var mat = new KMatrix<BigReal>(pi.Zero.ToBigReal(O), d, d).Zero;
         var ai = alpha.One;
         var aipow = new List<BigCplx>();
         for (int i = 0; i < mat.M - 1; i++)
         {
             aipow.Add(ai);
-            mat.Coefs[i, i] = Rational.KOne();
+            mat.Coefs[i, i] = pi.One;
             var aipi = ai.RealPart + pi * ai.ImaginaryPart; // Re(𝛼^i) + π * Im(𝛼^i)
-            mat.Coefs[i, mat.N - 1] = (aipi * N).ToRational.RoundEven;
+            mat.Coefs[i, mat.N - 1] = (aipi * N).RoundEven;
             ai *= alpha;
         }
 
         var bpi = beta.RealPart + pi * beta.ImaginaryPart; // Re(β) + π * Im(β)
-        mat.Coefs[mat.N - 1, mat.N - 1] = (bpi * N).ToRational.RoundEven;
+        mat.Coefs[mat.N - 1, mat.N - 1] = (bpi * N).RoundEven;
         Console.WriteLine(mat);
         var lll = IntFactorisation.LLL(mat.T);
         Console.WriteLine();
         Console.WriteLine(lll);
 
         var col = lll.Cols
-            .OrderBy(l => l.SkipLast(1).Zip(aipow).Aggregate(-beta, (acc, v) => acc + v.First * v.Second).Magnitude2).First();
+            .OrderBy(l => l.SkipLast(1).Zip(aipow).Aggregate(-beta, (acc, v) => acc + BigCplx.FromBigReal(v.First) * v.Second)
+                .Magnitude2).First();
         Console.WriteLine("End LLL algorithm");
         Console.WriteLine("Possible Solution");
         Console.WriteLine(col.T);
         Console.WriteLine();
-        return col.SkipLast(1).Select(c => -c).ToArray();
+        return col.SkipLast(1).Select(c => -c.RoundEven.ToRational).ToArray();
     }
 
     public static Rational[] AlphaBetaPolynomial(BigReal alpha, BigReal beta, int d, int O)
@@ -217,11 +218,11 @@ public static class AlgebraicIntegerRelationLLL
         DisplayGroup.HeadElements(galGr);
         var X = FG.KPoly('X', galGr.Neutral().E);
         Console.WriteLine("Prod[X - ri] = {0}", galGr.Aggregate(X.One, (acc, r) => acc * (X - r)));
-        GlobalStopWatch.Show("END"); // Time:488 ms
+        GlobalStopWatch.Show("END"); // Time:266 ms
         GlobalStopWatch.AddLap();
         GaloisApplications.GaloisCorrespondence(galGr.ToList());
-        GlobalStopWatch.Show("END GaloisCorrespondence"); // Time:185 ms
-        GlobalStopWatch.Show("END D8"); // Time:303 ms
+        GlobalStopWatch.Show("END GaloisCorrespondence"); // Time:166 ms
+        GlobalStopWatch.Show("END D8"); // Time:432 ms
     }
 
     public static void Example5()
@@ -231,18 +232,18 @@ public static class AlgebraicIntegerRelationLLL
         var roots = IntFactorisation.SplittingField(P, details: true); // D10
         var minPoly = roots[0].F.SubstituteChar('X');
 
-        var O1 = 50; // rounding digits
-        var O2 = 60; // maximum precision digits
+        var O1 = 40; // rounding digits
+        var O2 = 50; // maximum precision digits
         GlobalStopWatch.Restart();
         var galGr = GaloisGroupLLL(minPoly, O1, O2);
         DisplayGroup.HeadElements(galGr);
         var X = FG.KPoly('X', galGr.Neutral().E);
         Console.WriteLine("Prod[X - ri] = {0}", galGr.Aggregate(X.One, (acc, r) => acc * (X - r)));
-        GlobalStopWatch.Show("END"); // Time:1094 ms
+        GlobalStopWatch.Show("END"); // Time:814 ms
         GlobalStopWatch.AddLap();
         GaloisApplications.GaloisCorrespondence(galGr.ToList());
-        GlobalStopWatch.Show("END GaloisCorrespondence"); // Time:446 ms
-        GlobalStopWatch.Show("END D10"); // Time:1540 ms
+        GlobalStopWatch.Show("END GaloisCorrespondence"); // Time:449 ms
+        GlobalStopWatch.Show("END D10"); // Time:1263 ms
     }
 
     public static void Example6()
@@ -252,18 +253,18 @@ public static class AlgebraicIntegerRelationLLL
         var roots = IntFactorisation.SplittingField(P, details: true); // A4
         var minPoly = roots[0].F.SubstituteChar('X');
 
-        var O1 = 120; // rounding digits
-        var O2 = 150; // maximum precision digits
+        var O1 = 110; // rounding digits
+        var O2 = 130; // maximum precision digits
         GlobalStopWatch.Restart();
         var galGr = GaloisGroupLLL(minPoly, O1, O2);
         DisplayGroup.HeadElements(galGr);
         var X = FG.KPoly('X', galGr.Neutral().E);
         Console.WriteLine("Prod[X - ri] = {0}", galGr.Aggregate(X.One, (acc, r) => acc * (X - r)));
-        GlobalStopWatch.Show("END Roots"); // Time:9671 ms
+        GlobalStopWatch.Show("END Roots"); // Time:4956 ms
         GlobalStopWatch.AddLap();
         GaloisApplications.GaloisCorrespondence(galGr.ToList());
-        GlobalStopWatch.Show("END GaloisCorrespondence"); // Time:2282 ms
-        GlobalStopWatch.Show("END A4"); // Time:11953 ms
+        GlobalStopWatch.Show("END GaloisCorrespondence"); // Time:2302 ms
+        GlobalStopWatch.Show("END A4"); // Time:7258 ms
     }
 
     public static void Example7()
@@ -273,18 +274,18 @@ public static class AlgebraicIntegerRelationLLL
         var roots = IntFactorisation.SplittingField(P, details: true); // C5x:C4
         var minPoly = roots[0].F.SubstituteChar('X');
 
-        var O1 = 100; // rounding digits
-        var O2 = 120; // maximum precision digits
+        var O1 = 80; // rounding digits
+        var O2 = 100; // maximum precision digits
         GlobalStopWatch.Restart();
         var galGr = GaloisGroupLLL(minPoly, O1, O2);
         DisplayGroup.HeadElements(galGr);
         var X = FG.KPoly('X', galGr.Neutral().E);
         Console.WriteLine("Prod[X - ri] = {0}", galGr.Aggregate(X.One, (acc, r) => acc * (X - r)));
-        GlobalStopWatch.Show("END Roots"); // Time:36888 ms
+        GlobalStopWatch.Show("END Roots"); // Time:18342 ms
         GlobalStopWatch.AddLap();
         GaloisApplications.GaloisCorrespondence(galGr.ToList());
-        GlobalStopWatch.Show("END GaloisCorrespondence"); // Time:5415 ms
-        GlobalStopWatch.Show("END C5x:C4"); // Time:42303 ms
+        GlobalStopWatch.Show("END GaloisCorrespondence"); // Time:5462 ms
+        GlobalStopWatch.Show("END C5x:C4"); // Time:23804 ms
     }
 
     public static void Example8()
@@ -303,11 +304,11 @@ public static class AlgebraicIntegerRelationLLL
         DisplayGroup.HeadElements(galGr);
         var X = FG.KPoly('X', galGr.Neutral().E);
         Console.WriteLine("Prod[X - ri] = {0}", galGr.Aggregate(X.One, (acc, r) => acc * (X - r)));
-        GlobalStopWatch.Show("END Roots"); // Time:44975 ms
+        GlobalStopWatch.Show("END Roots"); // Time:29501 ms
         GlobalStopWatch.AddLap();
         GaloisApplications.GaloisCorrespondence(galGr.ToList());
-        GlobalStopWatch.Show("END GaloisCorrespondence"); // Time:5772 ms
-        GlobalStopWatch.Show("END C6x:C3"); // Time:50747 ms
+        GlobalStopWatch.Show("END GaloisCorrespondence"); // Time:5758 ms
+        GlobalStopWatch.Show("END C6x:C3"); // Time:35259 ms
     }
 
     public static void Example9()
@@ -332,11 +333,11 @@ public static class AlgebraicIntegerRelationLLL
         DisplayGroup.HeadElements(galGr);
         var X = FG.KPoly('X', galGr.Neutral().E);
         Console.WriteLine("Prod[X - ri] = {0}", galGr.Aggregate(X.One, (acc, r) => acc * (X - r)));
-        GlobalStopWatch.Show("END Roots"); // Time:347172 ms ~ 6 min
+        GlobalStopWatch.Show("END Roots"); // Time:245963 ms ~ 4 min
         GlobalStopWatch.AddLap();
         GaloisApplications.GaloisCorrespondence(galGr.ToList());
-        GlobalStopWatch.Show("END GaloisCorrespondence"); // Time:114437 ms ~ 2 min
-        GlobalStopWatch.Show("END C7x:C3"); // Time:461609 ms ~ 8 min
+        GlobalStopWatch.Show("END GaloisCorrespondence"); // Time:119329 ms ~ 2 min
+        GlobalStopWatch.Show("END C7x:C3"); // Time:365292 ms ~ 6 min
     }
 /*
 With P = X^21 + -84*X^19 + 2436*X^17 + -31136*X^15 + 2312*X^14 + 203840*X^13 + -30688*X^12 + -733824*X^11 + 152992*X^10 + 1480192*X^9 + -359296*X^8 + -1628096*X^7 + 413952*X^6 + 892416*X^5 + -225792*X^4 + -189952*X^3 + 50176*X^2 + 3584*X + -512
