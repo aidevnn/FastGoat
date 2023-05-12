@@ -53,3 +53,8 @@ public interface IVsElt<K, T> : IEquatable<T>, IComparable<T>
     static abstract T operator *(K a, T b);
     static abstract T operator /(T a, K b);
 }
+
+public interface IFloatElt<K> where K : IElt<K>, IRingElt<K>, IFieldElt<K>
+{
+    public K RoundEven { get; }
+} 

@@ -4,7 +4,7 @@ using FastGoat.Structures.VecSpace;
 
 namespace FastGoat.UserGroup.Integers;
 
-public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<Rational>
+public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<Rational>, IFloatElt<Rational>
 {
     public int P => 0;
     public BigInteger Num { get; }
@@ -16,6 +16,7 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
 
     public static double Abs(Rational r) => Absolute(r);
     public static bool IsValuedField => true;
+
     public Rational()
     {
         Num = 1;
@@ -99,6 +100,7 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
     public bool Invertible() => !IsZero();
     public bool IsInteger() => Denom.IsOne;
     public override int GetHashCode() => Hash;
+
     public override string ToString()
     {
         if (IsZero())
