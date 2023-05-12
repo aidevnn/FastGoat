@@ -420,7 +420,7 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
         }
     }
 
-    public override string ToString() => GetString(true);
+    public override string ToString() => GetString(true).Replace("+ -", "- ");
 
     public static Polynomial<K, T> operator +(Polynomial<K, T> a, Polynomial<K, T> b) => a.Add(b);
     public static Polynomial<K, T> operator +(int a, Polynomial<K, T> b) => b.Add(b.One.Mul(a));
