@@ -120,11 +120,12 @@ public readonly struct BigCplx : IElt<BigCplx>, IRingElt<BigCplx>, IFieldElt<Big
 
     public string ToSciForm()
     {
-        var fmt = $"[{{0,-{O + 7}}} ; {{1,-{O + 7}}}]";
+        var fmt = $"[{{0,{O + 7}}} ; {{1,{O + 7}}}]";
         return String.Format(fmt, RealPart.ToSciForm(), ImaginaryPart.ToSciForm());
     }
 
     public override int GetHashCode() => Hash;
+
     public override string ToString()
     {
         if (IsZero())
@@ -137,9 +138,9 @@ public readonly struct BigCplx : IElt<BigCplx>, IRingElt<BigCplx>, IFieldElt<Big
         var sep = (Ring.DisplayPolynomial & MonomDisplay.Star) == MonomDisplay.Star ? "*" : "·";
 
         var a0 = $"{RealPart.ToDouble:G15}";
-        var b0 = (ImaginaryPart-1).IsZero()
+        var b0 = (ImaginaryPart - 1).IsZero()
             ? "I"
-            : (ImaginaryPart+1).IsZero()
+            : (ImaginaryPart + 1).IsZero()
                 ? "-I"
                 : $"{ImaginaryPart.ToDouble:G15}{sep}I";
 
@@ -152,7 +153,8 @@ public readonly struct BigCplx : IElt<BigCplx>, IRingElt<BigCplx>, IFieldElt<Big
         return $"({a0} + {b0})";
     }
 
-    public static BigCplx Round(BigCplx c, int digits) => new(BigReal.Round(c.RealPart, digits), BigReal.Round(c.ImaginaryPart, digits));
+    public static BigCplx Round(BigCplx c, int digits) =>
+        new(BigReal.Round(c.RealPart, digits), BigReal.Round(c.ImaginaryPart, digits));
 
     public static BigCplx FromRational(Rational r, int O)
     {
@@ -162,6 +164,7 @@ public readonly struct BigCplx : IElt<BigCplx>, IRingElt<BigCplx>, IFieldElt<Big
 
     public static BigCplx FromRational(Rational re, Rational im, int O) =>
         FromBigReal(BigReal.FromRational(re, O), BigReal.FromRational(im, O));
+
     public static BigCplx FromBigReal(BigReal re) => new(re, re.Zero);
     public static BigCplx FromBigReal(BigReal re, BigReal im) => new(re, im);
 
@@ -231,13 +234,13 @@ public readonly struct BigCplx : IElt<BigCplx>, IRingElt<BigCplx>, IFieldElt<Big
         return new(a.RealPart * b0, a.ImaginaryPart * b0);
     }
 
-    public static BigCplx operator *(Rational a, BigCplx b) 
+    public static BigCplx operator *(Rational a, BigCplx b)
     {
         var a0 = BigReal.FromRational(a, b.O);
         return new(b.RealPart * a0, b.ImaginaryPart * a0);
     }
 
-    public static BigCplx operator /(BigCplx a, Rational b) 
+    public static BigCplx operator /(BigCplx a, Rational b)
     {
         var b0 = BigReal.FromRational(b, a.O);
         return new(a.RealPart / b0, a.ImaginaryPart / b0);

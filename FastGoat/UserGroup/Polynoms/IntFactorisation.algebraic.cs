@@ -393,7 +393,7 @@ public static partial class IntFactorisation
             foreach (var pi in polys)
             {
                 var (s, g, R) = SqfrNormRationals(pi, onlyPositifs: onlyPositifs, onlyIntegers: true);
-                var L = FirrZ2(R.Monic, true);
+                var L = FirrZ2(R.Monic, details);
                 foreach (var qj in L.OrderBy(e => e.Degree).ThenBy(e => Ring.Discriminant(e).Abs()))
                 {
                     var f = Ring.Gcd(g, qj.Substitute(X));
