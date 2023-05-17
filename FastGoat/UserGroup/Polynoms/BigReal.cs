@@ -431,20 +431,44 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
 
     public static BigReal FromString(string s, int o)
     {
-        if (!s.Contains('E'))
+        s = s.Replace('E', 'e').Trim();
+        var s1 = s.Split('e');
+        var lt = s1[0].Split('.');
+        if (lt.Length > 2)
             throw new($"Invalid format1 for {s}, scientific format ex:1.2345E+004");
+        else if (lt.Length == 1)
+        {
+            var k = BigInteger.Parse(lt[0]);
+            var k1 = Clamp(k, o);
+            if (k1.IsZero)
+                return BrZero(o);
 
-        var s1 = s.Split('E');
-        var lt = s1[0].ToList().FindAll(c => c == '.');
+            var length = Length(k1);
+            var v = s1.Length == 1 ? 0 : int.Parse(s1[1]);
+            return new(k1, v + length - 1, o);
+        }
+        else
+        {
+            var (lt0, lt1) = (lt[0].TrimStart(), lt[1].TrimEnd());
+            var k0 = BigInteger.Parse(lt0);
+            var k1 = BigInteger.Parse(lt1);
+            var l0 = s[0] == '-' ? lt0.Length - 1 : lt0.Length;
+            var l1 = lt1.Length;
+            var sgn = k0.IsZero ? (s[0] == '-' ? -1 : 1) : k0.Sign;
+            var k = k1 * sgn + k0 * BigInteger.Pow(10, l1);
+            var k2 = Clamp(k, o);
+            if (k2.IsZero)
+                return BrZero(o);
 
-        if (lt.Count == 1 && (lt[0] == 1 || lt[0] == 2))
-            throw new($"Invalid format2 for {s}, scientific format ex:1.2345E+004");
+            var v = s1.Length == 1 ? 0 : int.Parse(s1[1]);
+            if (k0.IsZero)
+            {
+                var t0 = lt1.Length - lt1.TrimStart('0').Length;
+                v -= t0 + 1;
+            }
 
-        var s2 = s1[0].Replace(".", "");
-        var k = BigInteger.Parse(s2);
-        var k1 = Clamp(k, o);
-        var v = int.Parse(s1[1]);
-        return new(k1, v, o);
+            return new(k2, v + l0 - 1, o);
+        }
     }
 
     public static BigReal FromBigInteger(BigInteger r, int o)

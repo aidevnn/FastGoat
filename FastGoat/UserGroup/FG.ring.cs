@@ -111,7 +111,7 @@ public static partial class FG
     public static KPoly<BigCplx> ToBcPoly(this KPoly<BigCplx> P, int O = 40) =>
         new(P.x, BigCplx.BcZero(O), P.Coefs.Select(c => c.ToBigCplx(O)).ToArray());
 
-    public static KPoly<Rational> ToRatPoly(this KPoly<BigCplx> P)
+    public static KPoly<Rational> ToIntPoly(this KPoly<BigCplx> P)
     {
         var one = P.KOne;
 
@@ -123,13 +123,13 @@ public static partial class FG
             if (r.IsZero())
                 return Rational.KZero();
 
-            return BigReal.Round(r.RealPart, one.O - 4).ToRational;
+            return r.RealPart.ToBigReal(one.O - 4).ToRational.RoundEven;
         }
 
         return new(P.x, Rational.KZero(), P.Coefs.Select(Cv).ToArray());
     }
 
-    public static KPoly<Rational> ToRatPoly(this KPoly<BigReal> P)
+    public static KPoly<Rational> ToIntPoly(this KPoly<BigReal> P)
     {
         var one = P.KOne;
 
