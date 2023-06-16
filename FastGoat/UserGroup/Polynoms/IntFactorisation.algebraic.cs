@@ -1,3 +1,4 @@
+using System.Numerics;
 using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.VecSpace;
@@ -113,6 +114,27 @@ public static partial class IntFactorisation
         return res;
     }
 
+    public static KPoly<Rational> NormRationals(KPoly<EPoly<Rational>> A, char c = 'a')
+    {
+        var n = A.Degree;
+        var g0 = A[0].F;
+        var x = FG.KPoly(c, A.KZero.Poly.KZero);
+        var y = FG.KPoly(A.x, x.Zero);
+        var ga = y.Zero;
+        for (int i = 0; i <= n; i++)
+        {
+            var xi = x.Pow(i);
+            var gi = A[i].Poly.Coefs;
+            var gy = new KPoly<KPoly<Rational>>(y.x, y.KZero, gi.Select(k => k * xi).ToArray());
+            ga = ga + gy;
+        }
+
+        var yKOne = y.KOne;
+        var ug = new KPoly<KPoly<Rational>>(y.x, y.KZero, g0.Coefs.Select(k => k * yKOne).ToArray());
+        var res = Ring.FastResultant(ug, ga).SubstituteChar(y.x);
+        return res;
+    }
+
     public static void NormDetails<K>(KPoly<EPoly<K>> A, char c = 'X') where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var norm = Norm(A, c);
@@ -158,7 +180,7 @@ public static partial class IntFactorisation
                     return (s, g.Monic, r);
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 // Console.WriteLine(e);
             }
@@ -182,15 +204,17 @@ public static partial class IntFactorisation
                 var g = f.Substitute(x - a * s);
                 // Console.WriteLine($"s={s} Norm({g})");
                 // Console.WriteLine($"s={s})");
-                // Console.WriteLine($"Norm({g}");
-                var r = Norm(g);
+                Console.WriteLine($"Norm({g})");
+                var r = NormRationals(g);
+                Console.WriteLine($" = {r}");
                 if (onlyIntegers && r.Coefs.Any(c0 => !c0.IsInteger()))
                     continue;
 
-                var (p, o) = PSigma(r).First();
-                var r0 = QPoly2ZnInt(r, new Modulus(p, o));
+                // var (p, o) = PSigma(r).First();
+                // var r0 = QPoly2ZnInt(r, new Modulus(p, o));
                 // Console.WriteLine($"{(p, o)} r0 = {r0}");
-                if (Ring.FastGCD(r0, r0.Derivative).Degree == 0) // dilemma between Ring.Gcd and Ring.FastGCD
+                // if (ExternLibs.Run_polysGcd(r, r.Derivative).Degree == 0) // dilemma between Ring.Gcd and Ring.FastGCD
+                if (Ring.FastGCD(r, r.Derivative).Degree == 0) // dilemma between Ring.Gcd and Ring.FastGCD
                 {
                     return (s, g.Monic, r);
                 }
@@ -251,7 +275,7 @@ public static partial class IntFactorisation
 
     public static List<KPoly<EPoly<Rational>>> AlgebraicFactors(KPoly<Rational> f, bool details = false)
     {
-        var (X, y) = FG.EPolyXc(f, 'y');
+        var (X, _) = FG.EPolyXc(f, 'y');
         return AlgebraicFactors(f.Substitute(X), details);
     }
 
@@ -262,7 +286,7 @@ public static partial class IntFactorisation
 
     public static List<EPoly<Rational>> AlgebraicRoots(KPoly<Rational> f, bool details = false)
     {
-        var (X, y) = FG.EPolyXc(f, 'y');
+        var (X, _) = FG.EPolyXc(f, 'y');
         return AlgebraicRoots(f.Substitute(X), details);
     }
 
@@ -303,7 +327,7 @@ public static partial class IntFactorisation
     public static (KPoly<Rational> F, KPoly<EPoly<Rational>> X, EPoly<Rational> a, EPoly<Rational> b)[]
         PrimitiveElt(KPoly<Rational> f, KPoly<Rational> g)
     {
-        var (X0, y0) = FG.EPolyXc(f, 'y');
+        var (X0, _) = FG.EPolyXc(f, 'y');
         var (r, a0, b0) = PrimitiveElt(g.Substitute(X0));
         return FirrZ2(r).Select(r0 =>
         {
@@ -347,7 +371,7 @@ public static partial class IntFactorisation
         GlobalStopWatch.Restart();
         if (FirrZ2(P).Length > 1)
             throw new($"{P} isnt an irreductible polynomial");
-        
+
         var (X, y) = FG.EPolyXc(P, 'a');
         var P0 = P.Substitute(X);
         var roots = new List<EPoly<Rational>>();
@@ -394,9 +418,9 @@ public static partial class IntFactorisation
             {
                 var (s, g, R) = SqfrNormRationals(pi, onlyPositifs: onlyPositifs, onlyIntegers: true);
                 var L = FirrZ2(R.Monic, details);
-                foreach (var qj in L.OrderBy(e => e.Degree).ThenBy(e => Ring.Discriminant(e).Abs()))
+                foreach (var qj in L.OrderBy(e => e.Degree).ThenBy(e => Rational.Absolute(Ring.Discriminant(e))))
                 {
-                    var f = Ring.Gcd(g, qj.Substitute(X));
+                    var f = Ring.FastGCD(g, qj.Substitute(X));
                     if (qj.Degree > minPoly.Degree)
                     {
                         minPoly = qj;

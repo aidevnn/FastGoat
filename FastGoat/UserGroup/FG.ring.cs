@@ -105,6 +105,9 @@ public static partial class FG
 
     public static KPoly<Cplx> ToCPoly(this KPoly<Rational> P) => new(P.x, Cplx.CZero, P.Coefs.Select(c => c * Cplx.COne).ToArray());
 
+    public static KPoly<BigReal> ToBrPoly(this KPoly<Rational> P, int O = 40) =>
+        new(P.x, BigReal.BrZero(O), P.Coefs.Select(c => BigReal.BrOne(O) * BigReal.FromRational(c, O)).ToArray());
+
     public static KPoly<BigCplx> ToBcPoly(this KPoly<Rational> P, int O = 40) =>
         new(P.x, BigCplx.BcZero(O), P.Coefs.Select(c => BigCplx.BcOne(O) * BigCplx.FromRational(c, O)).ToArray());
 

@@ -359,7 +359,14 @@ public static partial class IntFactorisation
             }
         }
 
-        return LLL(mat.T);
+        // Console.WriteLine(mat.T);
+        // return LLL(mat.T);
+        var lll = ExternLibs.Run_fpLLL(mat);
+        // Console.WriteLine(lll);
+        // Console.WriteLine();
+        // Console.WriteLine(LLL(mat.T));
+        // Console.ReadLine();
+        return lll;
     }
 
     public static KPoly<Rational>[] VanHoeijFactorization(KPoly<Rational> f, int max = 2)
@@ -413,10 +420,10 @@ public static partial class IntFactorisation
             {
                 var (f0, firr0, irrs2) = HenselLifting(P, p, sigma2);
                 var lll = Lattice(P, irrs2, n, p, sigma2, tau);
-                var cols = lll.Cols;
+                var cols = lll.Cols.OrderBy(SquareNorm2).ToArray();
                 var rgM = m.Range();
                 var rgS = s.Range();
-                var t = rgM.Where(i0 => rgM.Where(j => j > i0).All(j => Double.Sqrt(SquareNorm2(cols[j])) > nu)).Min();
+                var t = rgM.Where(i0 => rgM.Where(j => j > i0).All(j => Double.Sqrt(SquareNorm2(cols[j])) > nu*nu)).Min();
 
                 var bs = (t + 1).Range().Select(i0 => cols[i0].T.Extract(0, 1, 0, s)).ToArray();
                 var coefs = bs.Select(mat => mat.Select(r => (int)r.Num).ToArray()).ToArray();
@@ -629,16 +636,17 @@ public static partial class IntFactorisation
         if (f.Degree == 1)
             return new[] { P };
 
-        // if (EisensteinCriterion(f, details))
-        // {
-        //     return new[] { f };
-        // }
+        if (EisensteinCriterion(f, details))
+        {
+            return new[] { f };
+        }
 
         foreach (var (p, o) in PSigma(f))
         {
             try
             {
                 return HenselLiftingNaive(f, p, o, details).Select(f0 => f0.Substitute(f0.X / c).Monic).ToArray();
+                // return SearchVanHoeij(f, p, 2).Item3.Select(f0 => f0.Substitute(f0.X / c).Monic).ToArray();
             }
             catch (Exception)
             {

@@ -304,7 +304,7 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
         if (Degree == 0)
             return new KPoly<K>(x, KZero, new[] { Coefs[0].Inv() });
 
-        throw new($"Polynomial {this} of degree > 0 is not invertible");
+        throw new($"Polynomial {this}={Coefs.Glue("; ")} of degree > 0 is not invertible");
     }
 
     public bool Invertible() => !IsZero() && Degree == 0;
