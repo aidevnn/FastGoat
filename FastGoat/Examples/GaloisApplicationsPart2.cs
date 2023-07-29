@@ -470,4 +470,59 @@ public static class GaloisApplicationsPart2
         Console.WriteLine(cosf.Poly.Substitute(yf));
         Console.WriteLine(minPoly.Substitute(cosf));
     }
+    
+    static void IsConstructible(int n, bool fast = true)
+    {
+        var a = Cnf.Nth(2 * n); // e(i*π/n)
+        Console.WriteLine($"a = e(i*π/{n}) and {a.E.F} = 0");
+        var a0 = FG.NRoots(a.E.F.ToBcPoly()).Where(e => e.ImaginaryPart.CompareTo(e.Zero.RealPart) == 1).MaxBy(e => e.RealPart);
+        Console.WriteLine("[ cos(π/{0}); sin(π/{0})] = {1}", n, a0.ToFixForm());
+        Console.WriteLine("cos(π/{0}) = {1}", n, a.Re.E);
+        Console.WriteLine();
+    
+        var P0 = GaloisTheory.MinPolynomial(a.Re.E, 'x');
+        Console.WriteLine($"[Q( cos(π/{n}) ) / Q] = {P0.Degree}");
+        Console.WriteLine($"    MinPolynomial P = {P0}");
+        Console.WriteLine($"    and P( cos(π/{n}) ) = 0");
+
+        if (fast)
+        {
+            var deg = P0.Degree;
+            if((new BigInteger(deg).IsPowerOfTwo))
+                Console.WriteLine($"########### cos(π/{n}) CONSTRUCTIBLE");
+            else
+                Console.WriteLine($"########### cos(π/{n}) NOT CONSTRUCTIBLE");
+    
+            Console.WriteLine();
+            return;
+        }
+
+        var (P1, c) = IntFactorisation.EquivPoly(P0);
+        P1 = P1.SubstituteChar('X');
+        Console.WriteLine($"{P0} -> {P1} and X = {1 / c} * x");
+        var subFields = GaloisTheory.SubFields(P1).ToArray();
+        var extTowers = GaloisApplications.ExtensionsTower(subFields);
+        GaloisApplications.GaloisCorrespondence(extTowers);
+        if (extTowers.Any(e => e.Select((c0, i) => (c0, i)).All(f => 2.Pow(f.i) == f.c0.SubGr.Count())))
+            Console.WriteLine($"########### cos(π/{n}) CONSTRUCTIBLE");
+        else
+            Console.WriteLine($"########### cos(π/{n}) NOT CONSTRUCTIBLE");
+    
+        Console.WriteLine();
+    }
+
+    public static void ConstructibilityFast()
+    {
+        // Fast checking Constructibility of cos(π/n) for n from 3 to 33
+        for (int n = 3; n < 34; ++n)
+            IsConstructible(n);
+    }
+    
+    public static void ConstructibilityDetails()
+    {
+        // Detailed Galois Group and Constructibility of cos(π/n) for n from 5 to 20
+        for (int n = 5; n < 20; ++n)
+            IsConstructible(n, fast: false);
+    }
+
 }
