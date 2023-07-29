@@ -11,8 +11,8 @@ using FastGoat.UserGroup.Polynoms;
 namespace FastGoat.Examples;
 
 public record GaloisCorrespondence(
-    ConcreteGroup<Perm> SubGr, 
-    EPoly<Rational>[] roots, 
+    ConcreteGroup<Perm> SubGr,
+    EPoly<Rational>[] roots,
     EPoly<Rational> primElt,
     KPoly<Rational> minPoly);
 
@@ -121,10 +121,28 @@ public static class GaloisTheory
         return a.Zero.Poly.SubstituteChar('a');
     }
 
+    public static KPoly<K> MinPolynomial<K>(EPoly<K> a, char x = 'a') where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var n0 = a.F.Degree;
+        var bs = GetBase(a);
+        var n = bs.Length;
+        var mat = KMatrix<K>.MergeSameRows(bs.Append(a.Pow(n)).Select(e => e.Poly.ToVMatrix(n0)).ToArray());
+        var ns = mat.NullSpace();
+        if (ns.nullity != 0)
+        {
+            var P = Ring.ReducedRowsEchelonForm(mat).A0.Cols.Last().ToKPoly(x);
+            return P.X.Pow(n) - P;
+        }
+
+        return a.Zero.Poly.SubstituteChar(x);
+    }
+
     public static void ExtDegree(EPoly<Rational> a)
     {
         var bs = GetBase(a);
-        Console.WriteLine($"[Q(a)/Q] = {bs.Length} with a={a}");
+        var c = a.Poly.x == 'a' ? 'y' : 'a';
+        var minPol = MinPolynomial(a, c);
+        Console.WriteLine($"[Q({c})/Q] = {bs.Length} with {c}={a} and {minPol} = 0");
     }
 
     public static (KPoly<Rational> minPoly, EPoly<Rational> primElt) InvariantsField(EPoly<Rational>[] roots, bool details = false)
@@ -159,7 +177,7 @@ public static class GaloisTheory
         }
 
         var primElt = Rs.First(e => GetBase(e).Length * roots.Length == n);
-        
+
         if (details)
         {
             foreach (var b in roots)
@@ -211,8 +229,9 @@ public static class GaloisTheory
         var roots = IntFactorisation.AlgebraicRoots(P, details);
         return SubFields(roots, nbGens, primEltChar, details);
     }
-    
-    public static IEnumerable<GaloisCorrespondence> SubFields(List<EPoly<Rational>> roots, int nbGens = 2, char primEltChar = 'y', bool details = false)
+
+    public static IEnumerable<GaloisCorrespondence> SubFields(List<EPoly<Rational>> roots, int nbGens = 2, char primEltChar = 'y',
+        bool details = false)
     {
         var P = roots[0].F;
         var gal = GaloisGroup(roots, primEltChar, details);
@@ -490,15 +509,15 @@ public static class GaloisTheory
         GaloisCorrespondence(x.Pow(6) + 12);
         GaloisCorrespondence(x.Pow(4) + x.Pow(3) + x.Pow(2) + x + 1);
         GaloisCorrespondence(x.Pow(5) + x.Pow(4) - 4 * x.Pow(3) - 3 * x.Pow(2) + 3 * x + 1); // Simple PGroup, no subField
-        
-        GaloisCorrespondence(x.Pow(8) - 12 * x.Pow(6) + 23 * x.Pow(4) - 12 * x.Pow(2) + 1, nbGens:3);
+
+        GaloisCorrespondence(x.Pow(8) - 12 * x.Pow(6) + 23 * x.Pow(4) - 12 * x.Pow(2) + 1, nbGens: 3);
         GaloisCorrespondence(x.Pow(8) + 4 * x.Pow(6) + 2 * x.Pow(4) + 28 * x.Pow(2) + 1);
-        GaloisCorrespondence(x.Pow(8) - x.Pow(4) + 1, nbGens:3);
+        GaloisCorrespondence(x.Pow(8) - x.Pow(4) + 1, nbGens: 3);
         GaloisCorrespondence(x.Pow(8) + 28 * x.Pow(4) + 2500);
-        
+
         GaloisCorrespondence(x.Pow(6) - 30 * x.Pow(4) + 225 * x.Pow(2) + 823);
         GaloisCorrespondence(x.Pow(6) + x.Pow(5) - 7 * x.Pow(4) - 2 * x.Pow(3) + 7 * x.Pow(2) + 2 * x - 1);
-        
+
         GaloisCorrespondence(x.Pow(8) - 12 * x.Pow(6) + 36 * x.Pow(4) - 36 * x.Pow(2) + 9);
         // GaloisCorrespondence(x.Pow(10) - 2 * x.Pow(9) - 20 * x.Pow(8) + 2 * x.Pow(7) + 69 * x.Pow(6) - x.Pow(5) - 69 * x.Pow(4) +
         //     2 * x.Pow(3) + 20 * x.Pow(2) - 2 * x - 1); // Dihedral 10

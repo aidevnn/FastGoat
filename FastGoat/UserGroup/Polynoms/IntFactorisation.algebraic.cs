@@ -204,9 +204,9 @@ public static partial class IntFactorisation
                 var g = f.Substitute(x - a * s);
                 // Console.WriteLine($"s={s} Norm({g})");
                 // Console.WriteLine($"s={s})");
-                Console.WriteLine($"Norm({g})");
+                // Console.WriteLine($"Norm({g})");
                 var r = NormRationals(g);
-                Console.WriteLine($" = {r}");
+                // Console.WriteLine($" = {r}");
                 if (onlyIntegers && r.Coefs.Any(c0 => !c0.IsInteger()))
                     continue;
 

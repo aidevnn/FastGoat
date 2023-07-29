@@ -124,6 +124,12 @@ public readonly struct BigCplx : IElt<BigCplx>, IRingElt<BigCplx>, IFieldElt<Big
         return String.Format(fmt, RealPart.ToSciForm(), ImaginaryPart.ToSciForm());
     }
 
+    public string ToFixForm()
+    {
+        var fmt = $"[{{0,{O + 7}}} ; {{1,{O + 7}}}]";
+        return String.Format(fmt, RealPart.ToFixForm(), ImaginaryPart.ToFixForm());
+    }
+
     public override int GetHashCode() => Hash;
 
     public override string ToString()

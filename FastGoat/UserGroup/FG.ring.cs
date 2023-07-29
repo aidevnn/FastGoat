@@ -30,6 +30,13 @@ public static partial class FG
 
         return num / denom;
     }
+    
+    public static ((int, int)[]num, (int, int)[] denom) Decomp(this Rational r)
+    {
+        var num = IntExt.PrimesDec(r.Num).Select(e => (e.Key, e.Value)).ToArray();
+        var denom = IntExt.PrimesDec(r.Denom).Select(e => (e.Key, e.Value)).ToArray();
+        return (num, denom);
+    }
 
     public static KPoly<ZnInt> ZPoly(int p, char x = 'x') => new KPoly<ZnInt>(x, ZnInt.ZnZero(p)).X;
     public static KPoly<ZnBInt> ZbPoly(int p, char x = 'x') => new KPoly<ZnBInt>(x, ZnBInt.ZnZero(p)).X;

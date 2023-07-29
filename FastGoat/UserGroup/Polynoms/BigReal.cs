@@ -235,7 +235,33 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
         var s1 = $"{s0[0]}.{s0.Skip(1).Concat(Enumerable.Repeat('0', O)).Take(O - 1).Glue()}";
         return K < 0 ? $"-{s1}E{v}" : $"{s1}E{v}";
     }
+    
+    public string ToFixForm()
+    {
+        if (-V > O)
+            return ToSciForm();
 
+        var k0 = K.Sign == 1 ? this : Opp();
+        if (V == 0)
+            return ToSciForm().Split("E")[0];
+        if (V > 0)
+        {
+            var s0 = k0.ToSciForm().Split("E")[0].Replace(".", "");
+            s0 += Enumerable.Repeat('0', V).Glue();
+            s0 = s0.InsertAt(V + 1, '.').Glue();
+            s0 = s0.TrimEnd('0').TrimEnd('.');
+            return K.Sign == 1 ? s0 : $"-{s0}";
+        }
+        else
+        {
+            var s0 = k0.ToSciForm().Split("E")[0].Replace(".", "");
+            s0 = Enumerable.Repeat('0', -V).Glue() + s0;
+            s0 = s0.InsertAt(1, '.').Glue();
+            s0 = s0.TrimEnd('0').TrimEnd('.');
+            return K.Sign == 1 ? s0 : $"-{s0}";
+        }
+    }
+    
     public override string ToString()
     {
         if (Display == DigitsForm.Default)

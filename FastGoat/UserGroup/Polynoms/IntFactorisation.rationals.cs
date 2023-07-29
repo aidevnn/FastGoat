@@ -359,14 +359,14 @@ public static partial class IntFactorisation
             }
         }
 
-        // Console.WriteLine(mat.T);
-        // return LLL(mat.T);
-        var lll = ExternLibs.Run_fpLLL(mat);
+        Console.WriteLine(mat.T);
+        return LLL(mat.T);
+        // var lll = ExternLibs.Run_fpLLL(mat);
         // Console.WriteLine(lll);
         // Console.WriteLine();
         // Console.WriteLine(LLL(mat.T));
         // Console.ReadLine();
-        return lll;
+        // return lll;
     }
 
     public static KPoly<Rational>[] VanHoeijFactorization(KPoly<Rational> f, int max = 2)
@@ -491,22 +491,45 @@ public static partial class IntFactorisation
         var deg = f.Degree;
         var coefs = f.Coefs.Select(c => Rational.Absolute(c)).ToArray();
 
-        var dico = coefs.Select((c, i) => (c.Num, i)).Where(e => !e.Num.IsZero && e.i != deg)
+        var dicoNum = coefs.Select((c, i) => (c.Num, i)).Where(e => !e.Num.IsZero && e.i != deg)
             .Select(e => IntExt.PrimesDec(e.Num).Where(kp => kp.Value >= deg - e.i).Select(kp => kp.Key))
             .ToArray();
 
-        if (dico.Length == 0)
-            return (f, Rational.KOne());
+        var dicoDenom = coefs.Select((c, i) => (c.Num, c.Denom, i)).Where(e => !e.Num.IsZero && e.i != deg)
+            .Select(e => IntExt.PrimesDec(e.Denom).Where(kp => kp.Value >= deg - e.i).Select(kp => kp.Key))
+            .ToArray();
 
-        var res = dico.Aggregate((a, b) => a.Intersect(b)).Aggregate(BigInteger.One, (prod, k) => k * prod);
-        var gcd = new Rational(res);
-        var nf = f.Substitute(f.X * (f.KOne * gcd)).Monic;
-        if (!gcd.Num.IsOne && details)
-            Console.WriteLine($"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Simplify f={f} and nf={nf} and c={gcd}");
+        var resNum = dicoNum.Length == 0
+            ? BigInteger.One
+            : dicoNum.Aggregate((a, b) => a.Intersect(b)).Aggregate(BigInteger.One, (prod, k) => k * prod);
+        var resDenom = dicoDenom.Length == 0
+            ? BigInteger.One
+            : dicoDenom.Aggregate((a, b) => a.Intersect(b)).Aggregate(BigInteger.One, (prod, k) => k * prod);
+        var c = new Rational(resNum, resDenom);
+        var nf = f.Substitute(f.X * (f.KOne * c)).Monic;
+        if (!c.Num.IsOne && details)
+            Console.WriteLine($"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Simplify f={f} and nf={nf} and c={c}");
 
-        return (nf, gcd);
+        return (nf, c);
     }
 
+    public static (KPoly<Rational> nf, Rational c) ConstCoefQ(KPoly<Rational> f, bool details = false)
+    {
+        var f0 = f.Monic;
+        var deg = f0.Degree;
+        var coefs = f0.Coefs.Select(c => Rational.Absolute(c)).ToArray();
+        var lcm = IntExt.LcmBigInt(coefs.Select(e => e.Denom).ToArray());
+
+        var c0 = IntExt.PrimesDec(lcm).Select(e => BigInteger.Pow(e.Key, e.Value / deg + (e.Value % deg != 0 ? 1 : 0)))
+            .Aggregate(BigInteger.One, (acc, e) => acc * e);
+        var c = new Rational(1, c0);
+        var nf = f0.Substitute(f0.X * (f0.KOne * c)).Monic;
+        var (nf1, c1) = ConstCoef(nf);
+        if (details)
+            Console.WriteLine($"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Simplify f={f} and nf={nf1} and c={c * c1}");
+
+        return (nf1, c * c1);
+    }
     public static (KPoly<Rational> nf, Rational c) ConstCoef(KPoly<Rational> f, bool details = false)
     {
         if (f.Coefs.Any(c => !c.Denom.IsOne))
@@ -636,10 +659,10 @@ public static partial class IntFactorisation
         if (f.Degree == 1)
             return new[] { P };
 
-        if (EisensteinCriterion(f, details))
-        {
-            return new[] { f };
-        }
+        // if (EisensteinCriterion(f, details))
+        // {
+        //     return new[] { P };
+        // }
 
         foreach (var (p, o) in PSigma(f))
         {
@@ -658,6 +681,60 @@ public static partial class IntFactorisation
         return new[] { P };
     }
 
+    public static KPoly<Rational>[] FirrQ(KPoly<Rational> P, bool details = false)
+    {
+        var (nf, c) = ConstCoefQ(P, details);
+        var (nf2, c2) = ConstCoefQ(nf, details);
+        return FirrZ2(nf2, details).Select(f0 => f0.Substitute(f0.X / (c * c2)).Monic).ToArray();
+    }
+
+    public static (KPoly<Rational>, Rational coef) EquivPoly(KPoly<Rational> P, bool details = false)
+    {
+        var (nf1, c1) = ConstCoefQ(P, details);
+        var (nf2, c2) = ConstCoefQ(nf1, details);
+        return (nf2, c1 * c2);
+    }
+
+    static IEnumerable<(KPoly<Rational>, int)> FactorsMul(KPoly<Rational> P, bool details = false)
+    {
+        if (P.Degree <= 1)
+        {
+            yield return (P, 1);
+            yield break;
+        }
+
+        var (nf1, c1) = ConstCoefQ(P, details);
+        var (nf2, c2) = ConstCoefQ(nf1, details);
+        var a = P[P.Degree];
+        yield return (a * P.One, 1);
+        foreach (var (p0, _, i0) in YunSFF(nf2))
+        {
+            foreach (var p2 in FirrZ2(p0, details))
+            {
+                yield return (p2.Substitute(p2.X / (c1 * c2)).Monic, i0);
+            }
+        }
+    }
+    
+    public static (KPoly<Rational>, int)[] FactorsQ(KPoly<Rational> P, bool details = false)
+    {
+        var list0 = FactorsMul(P, details: details).ToList();
+        var coef = list0.Where(p => p.Item1.Degree == 0).Select(p => p.Item1.Pow(p.Item2)).Aggregate(P.One, (acc, p) => acc * p);
+        var res = list0.Where(p => p.Item1.Degree > 0).Prepend((coef, 1))
+            .OrderBy(e => e.Item1.Degree)
+            .ThenBy(e => e.Item2)
+            .ThenBy(e => e.Item1).ToArray();
+
+        if (details)
+        {
+            string Fmt((KPoly<Rational>, int) e) => e.Item2 == 1 ? $"({e.Item1})" : $"({e.Item1})^{e.Item1}";
+            Console.WriteLine($"f0 = {P}");
+            Console.WriteLine("Fact(f0) = {0} in Q[X]", res.Select(Fmt).Glue("*"));
+            Console.WriteLine();
+        }
+        return res;
+    }
+    
     public static (int p, int sigma, KPoly<Rational>[]) FirrZtest(KPoly<Rational> f)
     {
         var discQ = Ring.Discriminant(f).Num;
