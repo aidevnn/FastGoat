@@ -197,7 +197,7 @@ public static partial class IntFactorisation
         var x = f.X;
         // Console.WriteLine($"SqfrNorm({f})");
         var coefs = 150.Range(onlyPositifs ? 0 : -75).OrderBy(i => Int32.Abs(i)).ToArray();
-        foreach (var s in coefs)
+        foreach (var s in coefs.Where(e => e != 0))
         {
             try
             {

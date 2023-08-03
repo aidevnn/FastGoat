@@ -78,19 +78,19 @@ public static class GaloisApplicationsPart2
 
             if (sel1.Length == 1 || sel2[1].Item2 / sel2[0].Item2 > 5) // testing precision
             {
+                var g = sel2[0].e.g;
                 if (details)
                 {
                     types.OrderByDescending(e => e.Key.ToString()).Println("actual types");
                     sel2[0].e.Item1.OrderByDescending(e => e.Key.ToString()).Println("expected types");
                     sel2.Select(e => new { e.e.g.Name, order = e.e.g.Count(), dist = e.Item2 }).Println("Distances");
                     Console.WriteLine();
+                
+                    Console.WriteLine($"P = {P}");
+                    Console.WriteLine($"Gal(P) = {g.Name}");
+                    DisplayGroup.Head(g);
                 }
 
-                Console.WriteLine($"P = {P}");
-                var g = sel2[0].e.g;
-                
-                Console.WriteLine($"Gal(P) = {g.Name}");
-                DisplayGroup.Head(g);
                 return g;
             }
         }
@@ -216,7 +216,7 @@ public static class GaloisApplicationsPart2
         GaloisGroupChebotarev(x.Pow(5) + 2, details: true);
         GaloisGroupChebotarev(x.Pow(7) - 14 * x.Pow(5) + 56 * x.Pow(3) - 56 * x + 22, details: true);
 
-        // JL.Milnes exercice 4.6 page 60 without using the “polgalois” command in PARI
+        // J.S. Milne exercice 4.6 page 60 without using the “polgalois” command in PARI
         GaloisGroupChebotarev(x.Pow(6) + 2 * x.Pow(5) + 3 * x.Pow(4) + 4 * x.Pow(3) + 5 * x.Pow(2) + 6 * x + 7, details: true);
     }
     /***
