@@ -58,10 +58,19 @@ public struct Perm : IElt<Perm>
         return Hash;
     }
 
-    public int[] PermType => IntExt.PermutationToCycles(Sn.N, Table).Select(l => l.Length).Order().ToArray();
-    public int Sgn => (-1).Pow(IntExt.PermutationToCycles(Sn.N, Table).Length);
+    public int[][] Orbits => IntExt.PermutationToCycles(Sn.N, Table);
+    public int[] PermType => Orbits.Select(l => l.Length).Order().ToArray();
+    public int Sgn => (-1).Pow(Orbits.Length);
     public string PermTypeStr => $"({PermType.Glue(" ")})";
     public string SgnStr => Sgn == 1 ? "(+)" : "(-)";
+
+    public T[] Apply<T>(T[] ts)
+    {
+        if (ts.Length != Sn.N)
+            throw new GroupException(GroupExceptionType.GroupDef);
+
+        return Table.Select(i => ts[i]).ToArray();
+    }
 
     public override string ToString()
     {
@@ -70,8 +79,7 @@ public struct Perm : IElt<Perm>
         if (Style == DisplayPerm.TableComma)
             return $"[{Table.Select(a => a + 1).Glue(", ")}]";
 
-        var orbits = IntExt.PermutationToCycles(Sn.N, Table);
-        var cycles = orbits.Where(a => a.Length > 1).ToArray();
+        var cycles = Orbits.Where(a => a.Length > 1).ToArray();
         if (Style == DisplayPerm.Cycles)
         {
             var strCycles = cycles.Select(a => $"({a.Select(b => b + 1).Glue(" ")})").Glue();

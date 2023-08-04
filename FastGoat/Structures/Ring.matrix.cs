@@ -211,7 +211,7 @@ public static partial class Ring
     {
         return new(Matrix(m, mat.ToArray()));
     }
-    
+
     public static K SquareNorm2<K>(KMatrix<K> mat)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
@@ -223,7 +223,7 @@ public static partial class Ring
 
             return sq;
         }
-            
+
         if (mat.N == 1)
         {
             var sq = mat.KZero;
@@ -350,7 +350,7 @@ public static partial class Ring
         var (m, n) = (A.GetLength(0), A.GetLength(1));
         if (m == 0 || n == 0 || m > n)
             throw new ArgumentException();
-    
+
 
         // Console.WriteLine(new { dim });
         var A0 = CloneMatrix(A);
@@ -485,7 +485,7 @@ public static partial class Ring
             .Select(d => MatrixDisplayForm == MatrixDisplay.TableLeft ? $"{{0,-{d}}}" : $"{{0,{d}}}").ToArray();
         if (MatrixDisplayForm == MatrixDisplay.CurlyBracketNoFmt || MatrixDisplayForm == MatrixDisplay.SquareBracketNoFmt)
             digitsByCols = digitsByCols.Select(d => "{0}").ToArray();
-        
+
         var lt = new List<string>();
         for (int i = 0; i < rows; i++)
         {
@@ -557,6 +557,14 @@ public static partial class Ring
         return PolyBase(f, t, f.DegreeOf(t));
     }
 
+    public static Polynomial<K, T>[] PolyBase<K, T>(Polynomial<K, T> f, string x)
+        where T : struct, IElt<T>
+        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
+    {
+        var t = f.Indeterminates[x];
+        return PolyBase(f, t, f.DegreeOf(t));
+    }
+
     public static (SortedList<Polynomial<K, T>, Polynomial<K, T>>, SortedList<int, Polynomial<K, T>>)
         Decompose<K, T>(Polynomial<K, T> f, T ft)
         where T : struct, IElt<T>
@@ -586,6 +594,15 @@ public static partial class Ring
         }
 
         return (coefs, bs);
+    }
+
+    public static (SortedList<Polynomial<K, T>, Polynomial<K, T>>, SortedList<int, Polynomial<K, T>>)
+        Decompose<K, T>(Polynomial<K, T> f, string x)
+        where T : struct, IElt<T>
+        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
+    {
+        var t = f.Indeterminates[x];
+        return Decompose(f, t);
     }
 
     public static Polynomial<K, T>[,] SylvesterMatrix<K, T>(Polynomial<K, T> f, T ft, Polynomial<K, T> g, T gt)
@@ -710,7 +727,7 @@ public static partial class Ring
         var det = FastResultant(f, g);
         return det.Mul(s).Mul(am.Inv());
     }
-    
+
     public static K FastResultant<K>(KPoly<K> A, KPoly<K> B)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
@@ -728,9 +745,9 @@ public static partial class Ring
             f = A.Coefs.Last();
             g = f * (f / g).Pow(d - 1);
         }
-        
+
         var dA = A.Degree;
-        return  ((s * B.Pow(dA)) / g.Pow(dA - 1))[0];
+        return ((s * B.Pow(dA)) / g.Pow(dA - 1))[0];
     }
 
     static (KPoly<K>, KPoly<K>) FastBezoutInternal<K>(KPoly<K> A, KPoly<K> B, K w0, K y0, int d0, int i = 0)
@@ -753,7 +770,6 @@ public static partial class Ring
     public static (KPoly<K>, KPoly<K>) FastBezout<K>(KPoly<K> A, KPoly<K> B)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
-
         if (A.Degree < B.Degree)
         {
             var (y, x) = FastBezout(B, A);
@@ -785,7 +801,7 @@ public static partial class Ring
 
         return FastGCDInternal(A, B, A.KOne, A.KOne, 0);
     }
-    
+
     public static (KMatrix<K> O, KMatrix<K> U) GramSchmidt<K>(KMatrix<K> A)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
@@ -824,10 +840,10 @@ public static partial class Ring
                     sum0 += vs[i].Coefs[k, 0] * vs[j].Coefs[k, 0];
                     sum1 += vs[j].Coefs[k, 0] * vs[j].Coefs[k, 0];
                 }
-            
+
                 // var uij = u[i, j] = (ScalarProduct(vs[i], vs[j]) / ScalarProduct(vs[j], vs[j]));
                 var uij = u[i, j] = sum0 / sum1;
-            
+
                 // vs[i] -= uij * vs[j];
                 for (int k = 0; k < m; k++)
                     vs[i].Coefs[k, 0] -= uij * vs[j].Coefs[k, 0];
