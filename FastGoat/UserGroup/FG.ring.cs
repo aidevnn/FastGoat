@@ -121,19 +121,21 @@ public static partial class FG
     public static KPoly<BigCplx> ToBcPoly(this KPoly<BigCplx> P, int O = 40) =>
         new(P.x, BigCplx.BcZero(O), P.Coefs.Select(c => c.ToBigCplx(O)).ToArray());
 
-    public static KPoly<Rational> ToIntPoly(this KPoly<BigCplx> P)
+    public static KPoly<Rational> ToIntPoly(this KPoly<BigCplx> P, int err = 4)
     {
         var one = P.KOne;
+        if (err < 4 || one.O < 2 * err)
+            throw new($"Digits err {err} must be >=4 and <=O/2");
 
         Rational Cv(BigCplx r)
         {
-            if (!r.ImaginaryPart.IsZero())
+            if (!r.ImaginaryPart.ToBigReal(one.O - err).IsZero())
                 throw new("Only real numbers allowed");
-            
-            if (r.IsZero())
+
+            if (r.ToBigCplx(one.O - err).IsZero())
                 return Rational.KZero();
 
-            return r.RealPart.ToBigReal(one.O - 4).ToRational.RoundEven;
+            return r.RealPart.ToBigReal(one.O - err).ToRational.RoundEven;
         }
 
         return new(P.x, Rational.KZero(), P.Coefs.Select(Cv).ToArray());

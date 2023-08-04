@@ -423,7 +423,7 @@ public static partial class IntFactorisation
                 var cols = lll.Cols.OrderBy(SquareNorm2).ToArray();
                 var rgM = m.Range();
                 var rgS = s.Range();
-                var t = rgM.Where(i0 => rgM.Where(j => j > i0).All(j => Double.Sqrt(SquareNorm2(cols[j])) > nu*nu)).Min();
+                var t = rgM.Where(i0 => rgM.Where(j => j > i0).All(j => Double.Sqrt(SquareNorm2(cols[j])) > nu * nu)).Min();
 
                 var bs = (t + 1).Range().Select(i0 => cols[i0].T.Extract(0, 1, 0, s)).ToArray();
                 var coefs = bs.Select(mat => mat.Select(r => (int)r.Num).ToArray()).ToArray();
@@ -530,6 +530,7 @@ public static partial class IntFactorisation
 
         return (nf1, c * c1);
     }
+
     public static (KPoly<Rational> nf, Rational c) ConstCoef(KPoly<Rational> f, bool details = false)
     {
         if (f.Coefs.Any(c => !c.Denom.IsOne))
@@ -715,12 +716,13 @@ public static partial class IntFactorisation
             }
         }
     }
-    
+
     public static (KPoly<Rational>, int)[] FactorsQ(KPoly<Rational> P, bool details = false)
     {
         var list0 = FactorsMul(P, details: details).ToList();
         var coef = list0.Where(p => p.Item1.Degree == 0).Select(p => p.Item1.Pow(p.Item2)).Aggregate(P.One, (acc, p) => acc * p);
         var res = list0.Where(p => p.Item1.Degree > 0).Prepend((coef, 1))
+            .Where(e => !e.Item1.Equals(P.One))
             .OrderBy(e => e.Item1.Degree)
             .ThenBy(e => e.Item2)
             .ThenBy(e => e.Item1).ToArray();
@@ -732,9 +734,10 @@ public static partial class IntFactorisation
             Console.WriteLine("Fact(f0) = {0} in Q[X]", res.Select(Fmt).Glue("*"));
             Console.WriteLine();
         }
+
         return res;
     }
-    
+
     public static (int p, int sigma, KPoly<Rational>[]) FirrZtest(KPoly<Rational> f)
     {
         var discQ = Ring.Discriminant(f).Num;

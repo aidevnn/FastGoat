@@ -187,6 +187,9 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
 
     public BigReal ToBigReal(int o)
     {
+        if (V < 0 && -V > o)
+            return new(0, 0, o);
+        
         var k0 = Clamp(K, o);
         return new(k0, V, o);
     }

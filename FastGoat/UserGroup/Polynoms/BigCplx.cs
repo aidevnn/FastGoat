@@ -75,6 +75,8 @@ public readonly struct BigCplx : IElt<BigCplx>, IRingElt<BigCplx>, IFieldElt<Big
     public BigCplx Zero => new(BigReal.BrZero(O), BigReal.BrZero(O));
     public BigCplx One => new(BigReal.BrOne(O), BigReal.BrZero(O));
     public BigCplx I => new(BigReal.BrZero(O), BigReal.BrOne(O));
+    public BigCplx Round0 => new(RealPart.Round0, ImaginaryPart.Round0);
+    public BigCplx RoundEven => new(RealPart.RoundEven, ImaginaryPart.RoundEven);
     public BigCplx Add(BigCplx e) => new(RealPart + e.RealPart, ImaginaryPart + e.ImaginaryPart);
 
     public BigCplx Sub(BigCplx e) => new(RealPart - e.RealPart, ImaginaryPart - e.ImaginaryPart);

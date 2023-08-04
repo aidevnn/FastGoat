@@ -1,4 +1,5 @@
 using System.Numerics;
+using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.VecSpace;
 
@@ -58,6 +59,18 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
     }
 
     public double Abs() => Abs(this);
+
+    public bool IsSquare
+    {
+        get
+        {
+            if (!Denom.IsOne)
+                return false;
+
+            var dec = IntExt.PrimesDec(Num);
+            return dec.Values.All(e => e % 2 == 0);
+        }
+    }
 
     public bool Equals(Rational other) => Num * other.Denom == Denom * other.Num;
 

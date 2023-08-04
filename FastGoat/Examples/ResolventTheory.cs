@@ -102,6 +102,12 @@ public static class ResolventTheory
         return t[0] * t[2] + t[1] * t[3];
     }
 
+    static T F1<T>(T[] t) where T : struct, IFieldElt<T>, IRingElt<T>, IElt<T>
+    {
+        var n = t.Length;
+        return t.SkipLast(1).Select((r, k) => r.Pow(n - (k + 1))).Aggregate((a, b) => a * b);
+    }
+
     static void HResolventSymbolic(KPoly<Rational> P, Perm[] H, Func<Polynomial<Rational, Xi>[], Polynomial<Rational, Xi>> f0)
     {
         var n = P.Degree;
