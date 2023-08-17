@@ -1,6 +1,8 @@
-﻿namespace FastGoat.Commons;
+﻿using System.Collections;
 
-public class Array2Tuple<T> : IEquatable<Array2Tuple<T>>
+namespace FastGoat.Commons;
+
+public class Array2Tuple<T> : IEquatable<Array2Tuple<T>>, IEnumerable<T>
 {
     private IEnumerable<T> array { get; }
 
@@ -51,12 +53,19 @@ public class Array2Tuple<T> : IEquatable<Array2Tuple<T>>
         (a0, a1, a2, a3, a4, a5, a6, a7, a8) = (this[0], this[1], this[2], this[3], this[4], this[5], this[6], this[7], this[8]);
     }
 
+    public override string ToString()
+    {
+        return $"({array.Glue(", ")})";
+    }
+
     public bool Equals(Array2Tuple<T>? other) => other != null && other.array.SequenceEqual(array);
 
     public override int GetHashCode() => (array.Count(), typeof(T)).GetHashCode();
 
-    public override string ToString()
+    public IEnumerator<T> GetEnumerator() => array.GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator()
     {
-        return $"({array.Glue(", ")})";
+        return GetEnumerator();
     }
 }

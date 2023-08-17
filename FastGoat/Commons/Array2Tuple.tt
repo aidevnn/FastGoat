@@ -9,18 +9,20 @@
         return string.Join(sep, ts.Select(t => string.Format(fmt, t)));
     }
 #>
+using System.Collections;
+
 namespace FastGoat.Commons;
 
-public class Array2Tuple<T>
+public class Array2Tuple<T> : IEquatable<Array2Tuple<T>>, IEnumerable<T>
 {
-    private T[] array { get; }
+    private IEnumerable<T> array { get; }
 
     public Array2Tuple(IEnumerable<T> arr)
     {
-        array = arr.ToArray();
+        array = arr;
     }
 
-    public T this[int index] => array[index];
+    public T this[int index] => array.ElementAt(index);
 <#
     for (int i = 2; i < 10; i++)
     {
@@ -37,4 +39,20 @@ public class Array2Tuple<T>
 <#
     }
 #>
+
+    public override string ToString()
+    {
+        return $"({array.Glue(", ")})";
+    }
+
+    public bool Equals(Array2Tuple<T>? other) => other != null && other.array.SequenceEqual(array);
+
+    public override int GetHashCode() => (array.Count(), typeof(T)).GetHashCode();
+
+    public IEnumerator<T> GetEnumerator() => array.GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
 }
