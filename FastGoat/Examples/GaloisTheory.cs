@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Numerics;
 using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.GenericGroup;
@@ -11,6 +12,8 @@ using FastGoat.UserGroup.Polynoms;
 namespace FastGoat.Examples;
 
 public record GaloisCorrespondence(
+    string primEltName,
+    string FieldName,
     ConcreteGroup<Perm> SubGr,
     EPoly<Rational>[] roots,
     EPoly<Rational> primElt,
@@ -61,22 +64,6 @@ public static class GaloisTheory
         return Gal;
     }
 
-    public static EPoly<K>[] GetBase<K>(EPoly<K> a) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
-    {
-        var bs = Array.Empty<EPoly<K>>();
-        var n = a.F.Degree - 1;
-        for (int i = 0; i <= n; ++i)
-        {
-            var ai = a.Pow(i);
-            var bs0 = bs.Append(ai).ToArray();
-            var mat = KMatrix<K>.MergeSameRows(bs0.Select(e => e.Poly.ToVMatrix(n)).ToArray());
-            if (mat.NullSpace().nullity == 0)
-                bs = bs0.ToArray();
-        }
-
-        return bs;
-    }
-
     public static (EPoly<K> W, int l) PrimitiveEltComb<K>(EPoly<K> U, EPoly<K> V) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         if (U.Degree == 0)
@@ -102,47 +89,6 @@ public static class GaloisTheory
         }
 
         throw new($"U={U} and V={V}");
-    }
-
-    public static KPoly<K> Rewrite<K>(EPoly<K> a, EPoly<K> b) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
-    {
-        if (!a.F.Equals(b.F))
-            throw new("Elements must belong to the same field");
-
-        var n = b.F.Degree;
-        var bs = GetBase(a);
-        var mat = KMatrix<K>.MergeSameRows(bs.Append(b).Select(e => e.Poly.ToVMatrix(n)).ToArray());
-        var ns = mat.NullSpace();
-        if (ns.nullity != 0)
-        {
-            return Ring.ReducedRowsEchelonForm(mat).A0.Cols.Last().ToKPoly('a');
-        }
-
-        return a.Zero.Poly.SubstituteChar('a');
-    }
-
-    public static KPoly<K> MinPolynomial<K>(EPoly<K> a, char x = 'a') where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
-    {
-        var n0 = a.F.Degree;
-        var bs = GetBase(a);
-        var n = bs.Length;
-        var mat = KMatrix<K>.MergeSameRows(bs.Append(a.Pow(n)).Select(e => e.Poly.ToVMatrix(n0)).ToArray());
-        var ns = mat.NullSpace();
-        if (ns.nullity != 0)
-        {
-            var P = Ring.ReducedRowsEchelonForm(mat).A0.Cols.Last().ToKPoly(x);
-            return P.X.Pow(n) - P;
-        }
-
-        return a.Zero.Poly.SubstituteChar(x);
-    }
-
-    public static void ExtDegree(EPoly<Rational> a)
-    {
-        var bs = GetBase(a);
-        var c = a.Poly.x == 'a' ? 'y' : 'a';
-        var minPol = MinPolynomial(a, c);
-        Console.WriteLine($"[Q({c})/Q] = {bs.Length} with {c}={a} and {minPol} = 0");
     }
 
     public static (KPoly<Rational> minPoly, EPoly<Rational> primElt) InvariantsField(EPoly<Rational>[] roots, bool details = false)
@@ -173,10 +119,31 @@ public static class GaloisTheory
             Console.WriteLine("Sols");
             Console.WriteLine(sols);
             Console.WriteLine();
-            Rs.Println($"Invariants");
+            Rs.Println($"Invariants nbRoots = {roots.Length}");
         }
 
-        var primElt = Rs.First(e => GetBase(e).Length * roots.Length == n);
+        var Rs0 = Rs.Select(e =>
+            {
+                var (_, mp0) = IntFactorisation.GetBaseAndMinPolynomial(e);
+                var d = mp0[mp0.Degree - 1] / mp0.Degree;
+                e += d;
+                mp0 = mp0.Substitute(mp0.X - d);
+                (mp0, var b0) = IntFactorisation.EquivPoly(mp0);
+                e /= b0;
+                return (e, mp0);
+            })
+            .Where(e => e.mp0.Degree * roots.Length == n)
+            .OrderBy(e => e.mp0.NbCoeffs())
+            .ThenBy(e => e.mp0.NormB(2))
+            .ThenBy(e => e.e.Poly.NormB(2))
+            .ThenBy(e => e.e.Poly.Degree)
+            .ThenBy(e => e.mp0.Degree)
+            .ToArray();
+
+        var (primElt, minPol) = Rs0.First();
+        if (Rs0.Any(e => !e.mp0.Substitute(e.e).IsZero()))
+            throw new();
+        // Rs0.Println($"Invariants nbRoots = {roots.Length}");
 
         if (details)
         {
@@ -189,7 +156,7 @@ public static class GaloisTheory
                 var str_x = new KPoly<Rational>('q', Rational.KOne(), coefs.Select(e => e.c).ToArray()).ToString();
                 var str_bx = str_x.Replace("q", "F(q)");
 
-                Rs.Select(e => (e, e.Substitute(b).Equals(e))).Println();
+                Rs0.Select(e => e.e).Select(e => (e, e.Substitute(b).Equals(e))).Println();
                 Console.WriteLine($"PrimElt q={primElt} ");
                 Console.WriteLine($"Is [F(q) = q] {primElt.Substitute(b).Equals(primElt)}");
                 Console.WriteLine("Random Test");
@@ -200,47 +167,36 @@ public static class GaloisTheory
                 Console.WriteLine($"F(x) = s(F(q)) = {f_re}");
                 Console.WriteLine();
 
-                if (!re.Equals(re.Substitute(b)) || !re.Equals(f_re) || Rs.Any(e => !e.Substitute(b).Equals(e)))
+                if (!re.Equals(re.Substitute(b)) || !re.Equals(f_re) || Rs0.Select(e => e.e).Any(e => !e.Substitute(b).Equals(e)))
                     throw new();
             }
         }
 
-        var X0 = FG.KPoly('X', a);
-        var r = IntFactorisation.Norm(X0 - primElt);
-        var sff = IntFactorisation.YunSFF(r);
-        if (sff.Count != 1 || sff[0].q != 1)
-            throw new();
-
-        var sep = sff[0];
-
         if (details)
         {
-            Console.WriteLine($"MinPoly = {sep}");
-            ExtDegree(primElt);
+            var c = a.Poly.x == 'a' ? 'y' : 'a';
+            Console.WriteLine($"[Q({c})/Q] = {minPol.Degree} with {c}={primElt} and {minPol} = 0");
             Console.WriteLine();
         }
 
-        return (sep.g, primElt);
+        return (minPol, primElt);
     }
 
-    public static IEnumerable<GaloisCorrespondence> SubFields(KPoly<Rational> P, int nbGens = 2, char primEltChar = 'y',
-        bool details = false)
+    public static IEnumerable<GaloisCorrespondence> SubFields(KPoly<Rational> P, int nbGens = 2, bool details = false)
     {
         var roots = IntFactorisation.AlgebraicRoots(P, details);
-        return SubFields(roots, nbGens, primEltChar, details);
+        return SubFields(roots, nbGens, details);
     }
 
-    public static IEnumerable<GaloisCorrespondence> SubFields(List<EPoly<Rational>> roots, int nbGens = 2, char primEltChar = 'y',
-        bool details = false)
+    public static IEnumerable<GaloisCorrespondence> SubFields(List<EPoly<Rational>> roots, int nbGens = 2, bool details = false)
     {
         var P = roots[0].F;
+        var primEltChar = roots[0].F.x;
         var gal = GaloisGroup(roots, primEltChar, details);
 
-        var allSubs = nbGens == 2
-            ? gal.Grid2D(gal).Select((e, k) => Group.Generate($"G{k}", gal, new[] { e.t1, e.t2 }))
-                .OrderByDescending(g0 => g0.Count()).ToHashSet(new GroupSetEquality<Perm>())
-            : gal.Grid3D(gal, gal).Select((e, k) => Group.Generate($"G{k}", gal, new[] { e.t1, e.t2, e.t3 }))
-                .OrderByDescending(g0 => g0.Count()).ToHashSet(new GroupSetEquality<Perm>());
+        var allSubs = gal.MultiLoop(nbGens).Select((e, k) => Group.Generate($"G{k}", gal, e.Distinct().ToArray()))
+            .Distinct(new GroupSetEquality<Perm>())
+            .OrderByDescending(g0 => g0.Count()).ToList();
 
         var sn = new Sn(roots.Count);
         var idxRoots = roots.Select((c0, k) => (k, c0)).ToDictionary(e => e.c0, e => e.k);
@@ -248,9 +204,15 @@ public static class GaloisTheory
             .ToDictionary(e => e.Item2, e => e.c0);
 
         var i = 1;
+        var alphabet = "abcdefghjklmnopqrstuvwABCDEFGHJKLMNOPQRSTUVW".Replace($"{primEltChar}", "");
+        var names = new Queue<char>(alphabet.Take(allSubs.Count - 2).Prepend(primEltChar).Append(primEltChar));
+        if (allSubs.Count > alphabet.Length)
+            throw new($"Too many subGroups nb={allSubs.Count}");
+        
         foreach (var subGr in allSubs)
         {
             subGr.SetName($"G{i++}");
+            var sfName = names.Dequeue();
 
             var rs = subGr.Select(e => perm2roots[e]).ToArray();
             if (rs.Grid2D(rs).Any(e => !rs.Contains(e.t1.Substitute(e.t2))))
@@ -262,7 +224,9 @@ public static class GaloisTheory
             if (details)
                 DisplayGroup.Head(subGr);
 
-            yield return new(subGr, rs, inv.primElt, inv.minPoly);
+            var (minPoly, c) = IntFactorisation.EquivPoly(inv.minPoly);
+            var name = minPoly.Degree == 1 ? "Q" : $"Q({sfName})";
+            yield return  new($"{sfName}", name, subGr, rs, inv.primElt / c, minPoly.SubstituteChar(sfName));
         }
 
         if (details)
@@ -493,9 +457,50 @@ public static class GaloisTheory
         }
     }
 
+
     static void GaloisCorrespondence(KPoly<Rational> P, int nbGens = 2)
     {
-        var subFields = SubFields(P, nbGens, details: true).ToArray();
+        var roots = IntFactorisation.AlgebraicRoots(P);
+        GaloisCorrespondence(roots);
+    }
+
+    public static void GaloisCorrespondence(List<EPoly<Rational>> roots, int nbGens = 2, bool details = false)
+    {
+        var subFields = SubFields(roots, nbGens, details)
+            .OrderByDescending(cor => cor.SubGr.Count())
+            .ToArray();
+
+        GaloisCorrespondence(subFields, nbGens);
+    }
+
+    public static void GaloisCorrespondence(GaloisCorrespondence[] subFields, int nbGens = 2)
+    {
+        var y = subFields[0].primElt.X;
+        var gf = FG.KAutGroup(y.F);
+        Console.WriteLine($"Galois Correspondences in Q[{y}]/({y.F})");
+        foreach (var sf in subFields)
+        {
+            var c = sf.primEltName;
+            var sfGr = Group.Generate(sf.SubGr.Name, gf, sf.roots.Select(gf.KAut).ToArray());
+            Console.WriteLine($"Correspondence {sf.SubGr.Name} <--> {sf.FieldName}/Q");
+            Console.WriteLine($"  Roots Group {sfGr.ShortName} {sfGr.GroupType}");
+            Console.WriteLine($"  Invariants SubField [{sf.FieldName}:Q] = {sf.minPoly.Degree}");
+            var Rc = sf.minPoly.Substitute(sf.primElt);
+            if (!Rc.IsZero())
+                throw new();
+
+            if (!y.Equals(sf.primElt) && sf.minPoly.Degree != 1)
+            {
+                Console.WriteLine($"    with {c} = {sf.primElt}");
+                Console.WriteLine($"    MinPoly_{c} = {sf.minPoly.SubstituteChar('X')}");
+            }
+
+            var inv = sf.roots.Select(r => sf.primElt.Substitute(r)).Distinct().ToArray();
+            if (inv.Length != 1)
+                throw new();
+        }
+
+        Console.WriteLine();
     }
 
     public static void GaloisCorrespondenceSubfieldsExamples()

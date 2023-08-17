@@ -12,20 +12,55 @@ namespace FastGoat.Examples;
 
 public static class GaloisApplicationsPart2
 {
-    public static void CheckChebotarev(KPoly<Rational> P, ConcreteGroup<Perm> gal, int maxP, int maxM = 100, bool detail = false)
+    static IEnumerable<int[]> FpFactorsTypes(KPoly<Rational> f, bool details = false)
     {
-        var lt = IntFactorisation.ChebotarevTypes(P, maxP, maxPm: maxM, details: detail)
-            .GroupBy(e => e.Deconstruct())
-            .ToDictionary(e => e.Key, e => e.Count());
+        var discQ = BigInteger.Abs(Ring.Discriminant(f).Num);
+        var discDecomp = IntExt.PrimesDec(discQ);
+        if (details)
+        {
+            Console.WriteLine($"f = {f}");
+            Console.WriteLine($"Disc(f) = {discQ} ~ {discDecomp.AscendingByKey().GlueMap(" * ", "{0}^{1}")}");
+        }
 
+        var k = 1;
+        foreach (var p in IntExt.Primes10000)
+        {
+            if (BigInteger.Remainder(discQ, p) == 0)
+                continue;
+
+            var listIrr0 = IntFactorisation.FirrFp(f, p);
+            var type = listIrr0.Select(g => g.Degree).Order().ToArray();
+            if (details)
+            {
+                Console.WriteLine("#{2,-3} P = {0} shape ({1})", p, type.Glue(", "), k++);
+            }
+
+            yield return type;
+        }
+    }
+    public static void CheckChebotarev(KPoly<Rational> P, ConcreteGroup<Perm> gal, bool detail = false)
+    {
         var types = gal.Select(perm => IntExt.PermutationToCycles(perm.Sn.N, perm.Table).Select(l => l.Length).Order().Deconstruct())
             .GroupBy(e => e).ToDictionary(e => e.Key, e => e.Count());
-        types.Keys.OrderBy(e => e.ToString()).ToDictionary(e => e, e => types[e]).Println($"Expected types");
-
         var d = gal.Count();
-        var nb = lt.Sum(e => e.Value);
-        lt.Keys.OrderBy(e => e.ToString()).ToDictionary(e => e, e => Double.Round((1.0 * d * lt[e]) / nb)).Println("Actual types");
 
+        var setTypes = types.Keys.Select(e => e.ToArray()).ToHashSet(new SequenceEquality<int>());
+        var allTypes = new List<int[]>();
+        foreach (var fpType in FpFactorsTypes(P, detail))
+        {
+            allTypes.Add(fpType);
+            setTypes.Remove(fpType);
+            if (setTypes.Count == 0)
+                break;
+        }
+
+        var lt = allTypes.GroupBy(e => e.Deconstruct()).ToDictionary(e => e.Key, e => e.Count());
+
+        var nb = lt.Sum(e => e.Value);
+        types.Keys.OrderBy(e => e.ToString()).ToDictionary(e => e, e => types[e]).Println($"Expected types");
+        lt.Keys.OrderBy(e => e.ToString()).ToDictionary(e => e, e => Double.Round((1.0 * d * lt[e]) / nb, 1)).Println("Actual types");
+
+        Console.WriteLine("######################################");
         Console.WriteLine();
     }
 
@@ -45,7 +80,7 @@ public static class GaloisApplicationsPart2
             .Average();
     }
 
-    public static ConcreteGroup<Perm> GaloisGroupChebotarev(KPoly<Rational> P, int maxP = 100, int maxPm = 100, bool details = false)
+    public static ConcreteGroup<Perm> GaloisGroupChebotarev(KPoly<Rational> P, bool details = false)
     {
         var deg = P.Degree;
         if (deg > 7)
@@ -61,7 +96,7 @@ public static class GaloisApplicationsPart2
         var transTypes = transSubGr.Select(e => e.Item1).ToArray();
 
         var types = new Dictionary<Array2Tuple<int>, int>();
-        foreach (var ct in IntFactorisation.ChebotarevTypes(P, maxP, maxPm: maxPm, details: details))
+        foreach (var ct in FpFactorsTypes(P, details: details))
         {
             var ctype = ct.Order().Deconstruct();
             if (!types.ContainsKey(ctype))
@@ -132,22 +167,22 @@ public static class GaloisApplicationsPart2
     public static void ChebotarevExamples()
     {
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
-        var x = FG.QPoly('x');
+        var x = FG.QPoly();
 
         {
             var P = x.Pow(3) - 3 * x - 1;
             var rootsK = IntFactorisation.AlgebraicRoots(P);
             var gal = GaloisTheory.GaloisGroup(rootsK, details: true);
 
-            CheckChebotarev(P, gal, 100);
+            CheckChebotarev(P, gal, detail: true);
         }
-
+        
         {
             var P = x.Pow(4) + x.Pow(3) + x.Pow(2) + x + 1;
             var rootsK = IntFactorisation.AlgebraicRoots(P);
             var gal = GaloisTheory.GaloisGroup(rootsK, details: true);
 
-            CheckChebotarev(P, gal, 100);
+            CheckChebotarev(P, gal, detail: true);
         }
 
         {
@@ -155,7 +190,7 @@ public static class GaloisApplicationsPart2
             var rootsK = IntFactorisation.AlgebraicRoots(P);
             var gal = GaloisTheory.GaloisGroup(rootsK, details: true);
 
-            CheckChebotarev(P, gal, 100);
+            CheckChebotarev(P, gal, detail: true);
         }
 
         {
@@ -163,7 +198,7 @@ public static class GaloisApplicationsPart2
             var rootsK = IntFactorisation.AlgebraicRoots(P);
             var gal = GaloisTheory.GaloisGroup(rootsK, details: true);
 
-            CheckChebotarev(P, gal, 100);
+            CheckChebotarev(P, gal, detail: true);
         }
 
         {
@@ -171,12 +206,14 @@ public static class GaloisApplicationsPart2
             var rootsK = IntFactorisation.AlgebraicRoots(P);
             var gal = GaloisTheory.GaloisGroup(rootsK, details: true);
 
-            CheckChebotarev(P, gal, 100);
+            CheckChebotarev(P, gal, detail: true);
         }
 
         {
             var P = x.Pow(4) + x + 1;
-            CheckChebotarev(P, new Symm(4), 100, detail: true);
+            var gal = new Symm(4);
+            DisplayGroup.HeadElements(gal);
+            CheckChebotarev(P, gal, detail: true);
         }
 
         {
@@ -184,7 +221,7 @@ public static class GaloisApplicationsPart2
             var s5 = new Sn(5);
             var gal = Group.Generate("C5 x: C4", s5, s5[(2, 3, 5, 4)], s5[(1, 2, 3, 4, 5)]);
             DisplayGroup.HeadElements(gal);
-            CheckChebotarev(P, gal, 100, detail: true);
+            CheckChebotarev(P, gal, detail: true);
         }
 
         {
@@ -192,7 +229,7 @@ public static class GaloisApplicationsPart2
             var s7 = new Sn(7);
             var gal = Group.Generate("C7 x: C3", s7, s7[(1, 2, 3, 4, 5, 6, 7)], s7[(2, 3, 5), (4, 7, 6)]);
             DisplayGroup.HeadElements(gal);
-            CheckChebotarev(P, gal, 100, detail: true);
+            CheckChebotarev(P, gal, detail: true);
         }
 
         {
@@ -200,7 +237,7 @@ public static class GaloisApplicationsPart2
             var s6 = new Sn(6);
             var gal = Group.Generate("PGL(2, 5)", s6, s6[(3, 6, 5, 4)], s6[(1, 2, 5), (3, 4, 6)]);
             DisplayGroup.Head(gal);
-            CheckChebotarev(P, gal, 1200, 1200, detail: true);
+            CheckChebotarev(P, gal, detail: true);
         }
     }
 
@@ -275,7 +312,7 @@ public static class GaloisApplicationsPart2
         GaloisApplications.FindExtension(subFields, sqrt5, "Q(√5)");
 
         var sqrt5c = sqrt5.Poly.Substitute(yc);
-        var rw = GaloisTheory.Rewrite(sqrt5, cos);
+        var rw = IntFactorisation.Rewrite(sqrt5, cos);
         Console.WriteLine($"{y} = {yc} with {y.F} = 0");
         Console.WriteLine($"a = √5 = {sqrt5} = {sqrt5c}");
         Console.WriteLine($"a^2 = {sqrt5.Pow(2)} = {sqrt5c.Pow(2)}");
@@ -448,7 +485,7 @@ public static class GaloisApplicationsPart2
         Console.WriteLine((sqrt17_2, sqrt17_2.Pow(2)));
         Console.WriteLine((s2_1, s2_1.Pow(2), (17 - sqrt17_2) / 2));
         Console.WriteLine((s3, s3.Pow(2)));
-        Console.WriteLine($"d = {s2_1} s3^2 = {GaloisTheory.Rewrite(s2_1, s3.Pow(2)).SubstituteChar('d')}");
+        Console.WriteLine($"d = {s2_1} s3^2 = {IntFactorisation.Rewrite(s2_1, s3.Pow(2)).SubstituteChar('d')}");
 
         // Final Boss
         var mP3 = sf3.minPoly;
@@ -479,8 +516,8 @@ public static class GaloisApplicationsPart2
         Console.WriteLine("[ cos(π/{0}); sin(π/{0})] = {1}", n, a0.ToFixForm());
         Console.WriteLine("cos(π/{0}) = {1}", n, a.Re.E);
         Console.WriteLine();
-    
-        var P0 = GaloisTheory.MinPolynomial(a.Re.E, 'x');
+
+        var (_, P0) = IntFactorisation.GetBaseAndMinPolynomial(a.Re.E, 'x');
         Console.WriteLine($"[Q( cos(π/{n}) ) / Q] = {P0.Degree}");
         Console.WriteLine($"    MinPolynomial P = {P0}");
         Console.WriteLine($"    and P( cos(π/{n}) ) = 0");
