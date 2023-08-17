@@ -118,6 +118,9 @@ public static partial class FG
     public static KPoly<BigCplx> ToBcPoly(this KPoly<Rational> P, int O = 40) =>
         new(P.x, BigCplx.BcZero(O), P.Coefs.Select(c => BigCplx.BcOne(O) * BigCplx.FromRational(c, O)).ToArray());
 
+    public static KPoly<BigCplx> ToRoundBcPoly(this KPoly<BigCplx> P, int d = 40) =>
+        new(P.x, BigCplx.Round(P.KZero, d), P.Coefs.Select(c => BigCplx.Round(c, d)).ToArray());
+
     public static KPoly<BigCplx> ToBcPoly(this KPoly<BigCplx> P, int O = 40) =>
         new(P.x, BigCplx.BcZero(O), P.Coefs.Select(c => c.ToBigCplx(O)).ToArray());
 
@@ -158,6 +161,27 @@ public static partial class FG
 
     public static KPoly<Cplx> ToCPoly(this KPoly<EPoly<Rational>> P, Cplx e) =>
         new(P.x, Cplx.CZero, P.Coefs.Select(c => c.Poly.Substitute(e)).ToArray());
+
+    public static KPoly<Rational> ToAbsKPoly(this KPoly<Rational> P) =>
+        new(P.x, P.KZero, P.Coefs.Select(c => Rational.Absolute(c)).ToArray());
+
+    public static Rational NormB(this KPoly<Rational> P, int b)
+    {
+        if (b < 1)
+            throw new();
+
+        return P.Coefs.Aggregate(P.KZero, (acc, c) => acc + Rational.Absolute(c).Pow(b));
+    }
+
+    public static Rational NormInf(this KPoly<Rational> P)
+    {
+        return P.Coefs.Max(c => Rational.Absolute(c));
+    }
+
+    public static int NbCoeffs<K>(this KPoly<K> f) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        return f.Coefs.Count(c => !c.IsZero());
+    }
 
     public static KPoly<K> KPoly<K>(char x, K scalar) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
