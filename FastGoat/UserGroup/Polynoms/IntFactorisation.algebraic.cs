@@ -471,7 +471,7 @@ public static partial class IntFactorisation
             {
                 var (s, g, R) = SqfrNormRationals(pi, onlyPositifs: onlyPositifs, onlyIntegers: true);
                 var L = FirrZ2(R.Monic, details);
-                foreach (var qj in L.OrderBy(e => e.Degree).ThenBy(e => Rational.Absolute(Ring.Discriminant(e))))
+                foreach (var qj in L.OrderBy(e => e.Degree).ThenBy(e => e.NormInf()))
                 {
                     var f = Ring.FastGCD(g, qj.Substitute(X));
                     if (qj.Degree > minPoly.Degree)
@@ -497,9 +497,11 @@ public static partial class IntFactorisation
                 }
             }
 
+            (minPoly, var c0) = EquivPoly(minPoly);
+            BPoly = BPoly.Substitute(BPoly.X * (c0 * BPoly.KOne));
             (X, new_y) = FG.EPolyXc(minPoly, 'a');
             var a = AlphaPrimElt(BPoly, X);
-            b = new_y - new_s * a;
+            b = new_y * c0 - new_s * a;
 
             if (newFactors.Count == 0)
             {
