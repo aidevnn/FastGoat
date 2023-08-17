@@ -295,7 +295,7 @@ public static class AlgebraicIntegerRelationLLL
         // ? nfsplitting(x^6+3*x^3+3)
         // time = 11 ms. !!! pari is unbeatable
         // %1 = x^18 + 171*x^12 + 5130*x^6 + 27
-        var P = x.Pow(18) + 171 * x.Pow(12) + 5130 * x.Pow(6) + 27; // C6x:C3
+        var P = x.Pow(18) + 171 * x.Pow(12) + 5130 * x.Pow(6) + 27; // C3x:C6
 
         var O1 = 120; // rounding digits
         var O2 = 140; // maximum precision digits
@@ -308,7 +308,7 @@ public static class AlgebraicIntegerRelationLLL
         GlobalStopWatch.AddLap();
         GaloisApplications.GaloisCorrespondence(galGr.ToList());
         GlobalStopWatch.Show("END GaloisCorrespondence"); // Time:5758 ms
-        GlobalStopWatch.Show("END C6x:C3"); // Time:35259 ms
+        GlobalStopWatch.Show("END C3x:C6"); // Time:35259 ms
     }
 
     public static void Example9()
