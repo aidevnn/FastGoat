@@ -562,4 +562,32 @@ public static class GaloisApplicationsPart2
             IsConstructible(n, fast: false);
     }
 
+    public static void GaloisGroupPolynomialDegree7()
+    {
+        Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+        var j = 1;
+        for (int i = 1; i < 8; i++)
+        {
+            Console.WriteLine($"Degree {i}");
+            var si = new Symm(i);
+            var subGr = si.TransitiveSubGroups().Select(e => Group.Generate(e.name, si, e.gens));
+            var isos = new Queue<ConcreteGroup<Perm>>(subGr);
+            foreach (var P in FG.GaloisGroupPolynomialsList(i))
+            {
+                var iso = isos.Dequeue();
+                var galP = GaloisGroupChebotarev(P);
+                Console.WriteLine($"P{j,-2} = {P}");
+                if (!iso.IsIsomorphicTo(galP))
+                    throw new();
+            
+                var d = Ring.Discriminant(P).IsSquare ? "\"+\"" : "\"-\"";
+                Console.WriteLine($"    Gal(P{j++}) = [{galP.Name}, {d}, {galP.Count()}, {iso.GetGenerators().Glue(" ")}]");
+            }
+
+            if (isos.Count != 0)
+                throw new();
+        
+            Console.WriteLine();
+        }
+    }
 }

@@ -399,4 +399,64 @@ public static partial class FG
         var nbf = NumberFieldQ(new[] { a, b });
         return (nbf[0], nbf[1], new EPolynomial<Rational>(xis[2], nbf[0].Basis));
     }
+
+    // Algebre Tome 1, page 415
+    public static KPoly<Rational>[] GaloisGroupPolynomialsList(int n)
+    {
+        var x = QPoly();
+        if (n == 1)
+            return new[] { x };
+        if (n == 2)
+            return new[] { x.Pow(2) + x + 1 };
+        if (n == 3)
+            return new[]
+            {
+                x.Pow(3) + x.Pow(2) - 2 * x - 1,
+                x.Pow(3) + 2
+            };
+        if (n == 4)
+            return new[]
+            {
+                x.Pow(4) + x.Pow(3) + x.Pow(2) + x + 1,
+                x.Pow(4) + 1, x.Pow(4) - 2,
+                x.Pow(4) + 8 * x + 12,
+                x.Pow(4) + x + 1
+            };
+        if (n == 5)
+            return new[]
+            {
+                x.Pow(5) + x.Pow(4) - 4 * x.Pow(3) - 3 * x.Pow(2) + 3 * x + 1,
+                x.Pow(5) - 5 * x + 12,
+                x.Pow(5) + 2,
+                x.Pow(5) + 20 * x + 16,
+                x.Pow(5) - x + 1
+            };
+        if (n == 6)
+            return new[]
+            {
+                x.Pow(6) + x.Pow(5) + x.Pow(4) + x.Pow(3) + x.Pow(2) + x + 1, x.Pow(6) + 108, x.Pow(6) + 2,
+                x.Pow(6) - 3 * x.Pow(2) - 1, x.Pow(6) + 3 * x.Pow(3) + 3,
+                x.Pow(6) - 3 * x.Pow(2) + 1, x.Pow(6) - 4 * x.Pow(2) - 1,
+                x.Pow(6) - 3 * x.Pow(5) + 6 * x.Pow(4) - 7 * x.Pow(3) + 2 * x.Pow(2) + x - 4,
+                x.Pow(6) + 2 * x.Pow(3) - 2,
+                x.Pow(6) + 6 * x.Pow(4) + 2 * x.Pow(3) + 9 * x.Pow(2) + 6 * x - 4,
+                x.Pow(6) + 2 * x.Pow(2) + 2,
+                x.Pow(6) - 2 * x.Pow(5) - 5 * x.Pow(2) - 2 * x - 1,
+                x.Pow(6) + 2 * x.Pow(4) + 2 * x.Pow(3) + x.Pow(2) + 2 * x + 2,
+                x.Pow(6) - x.Pow(5) - 10 * x.Pow(4) + 30 * x.Pow(3) - 31 * x.Pow(2) + 7 * x + 9,
+                x.Pow(6) + 24 * x - 20,
+                x.Pow(6) + x + 1
+            };
+        if (n == 7)
+            return new[]
+            {
+                x.Pow(7) + x.Pow(6) - 12 * x.Pow(5) - 7 * x.Pow(4) + 28 * x.Pow(3) + 14 * x.Pow(2) - 9 * x + 1,
+                x.Pow(7) + 7 * x.Pow(3) + 7 * x.Pow(2) + 7 * x - 1,
+                x.Pow(7) - 14 * x.Pow(5) + 56 * x.Pow(3) - 56 * x + 22,
+                x.Pow(7) + 2,
+                x.Pow(7) - 7 * x.Pow(3) + 14 * x.Pow(2) - 7 * x + 1, x.Pow(7) + 7 * x.Pow(4) + 14 * x + 3, x.Pow(7) + x + 1
+            };
+
+        throw new();
+    }
 }
