@@ -268,7 +268,7 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
     public override string ToString()
     {
         if (Display == DigitsForm.Default)
-            return $"{ToDouble}";
+            return V < 200 ? $"{ToDouble}" : $"{ToBigReal(16).ToSciForm()}";
 
         if (IsZero())
             return Enumerable.Repeat("0", O - 1).Prepend("0.").Append("E+000").Glue();
