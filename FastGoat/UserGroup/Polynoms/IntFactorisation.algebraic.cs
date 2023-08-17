@@ -9,6 +9,59 @@ namespace FastGoat.UserGroup.Polynoms;
 
 public static partial class IntFactorisation
 {
+    public static EPoly<K>[] GetBase<K>(EPoly<K> a) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var bs = Array.Empty<EPoly<K>>();
+        var n = a.F.Degree;
+        for (int i = 0; i <= n - 1; ++i)
+        {
+            var ai = a.Pow(i);
+            var bs0 = bs.Append(ai).ToArray();
+            var mat0 = KMatrix<K>.MergeSameRows(bs0.Select(e => e.Poly.ToVMatrix(n - 1)).ToArray());
+            if (mat0.NullSpace().nullity == 0)
+                bs = bs0.ToArray();
+        }
+
+        return bs;
+    }
+
+    public static KPoly<K> Rewrite<K>(EPoly<K>[] bs, EPoly<K> b, char x = 'a') where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        if (bs.Any(a => !a.F.Equals(b.F)))
+            throw new("Elements must belong to the same field");
+
+        var n = b.F.Degree;
+        var mat = KMatrix<K>.MergeSameRows(bs.Append(b).Select(e => e.Poly.ToVMatrix(n)).ToArray());
+        var ns = mat.NullSpace();
+        if (ns.nullity != 0)
+        {
+            return Ring.ReducedRowsEchelonForm(mat).A0.Cols.Last().ToKPoly(x);
+        }
+
+        return b.Zero.Poly.SubstituteChar('a');
+    }
+
+    public static KPoly<K> Rewrite<K>(EPoly<K> a, EPoly<K> b, char x = 'a') where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        return Rewrite(GetBase(a), b);
+    }
+
+    public static(EPoly<K>[], KPoly<K>) GetBaseAndMinPolynomial<K>(EPoly<K> a, char x = 'a') where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var bs = GetBase(a);
+        var n = bs.Length;
+        var P = Rewrite(bs, a.Pow(n), x);
+        return (bs, P.X.Pow(n) - P);
+    }
+
+    public static (EPoly<Rational>[], KPoly<Rational>) ExtDegree(EPoly<Rational> a)
+    {
+        var (bs, minPol) = GetBaseAndMinPolynomial(a);
+        var c = a.Poly.x == 'a' ? 'y' : 'a';
+        Console.WriteLine($"[Q({c})/Q] = {bs.Length} with {c}={a} and {minPol} = 0");
+        return (bs, minPol);
+    }
+
     public static EPoly<K>[] Ebase<K>(EPoly<K> scalar) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var n = scalar.F.Degree;
