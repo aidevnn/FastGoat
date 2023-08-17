@@ -20,7 +20,7 @@ public struct Sn : IGroup<Perm>
 
     public Sn(int n)
     {
-        if (n < 2)
+        if (n < 1)
             throw new GroupException(GroupExceptionType.GroupDef);
 
         N = Hash = n;
@@ -30,8 +30,13 @@ public struct Sn : IGroup<Perm>
 
     public IEnumerable<Perm> GetGenerators()
     {
-        yield return this[(1, 2)];
-        yield return ComposesCycles(new Tuple2Array(Enumerable.Range(1, N).ToArray()));
+        if (N > 1)
+        {
+            yield return this[(1, 2)];
+            yield return ComposesCycles(new Tuple2Array(Enumerable.Range(1, N).ToArray()));
+        }
+        else
+            yield return this[1];
     }
 
     public IEnumerable<Perm> GetElements()

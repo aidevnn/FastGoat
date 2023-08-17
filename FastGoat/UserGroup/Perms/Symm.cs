@@ -6,7 +6,7 @@ namespace FastGoat.UserGroup.Perms;
 public class Symm : ConcreteGroup<Perm>
 {
     public Symm(int n) : base($"Symm{n}",
-        n is <= 8 and > 1 ? new Sn(n) : throw new GroupException(GroupExceptionType.GroupDef))
+        n is <= 8 and > 0 ? new Sn(n) : throw new GroupException(GroupExceptionType.GroupDef))
     {
         N = n;
     }
@@ -15,6 +15,11 @@ public class Symm : ConcreteGroup<Perm>
 
     public IEnumerable<(string name, Perm[] gens)> TransitiveSubGroups()
     {
+        if (N == 1)
+        {
+            yield return ("S1", new[] { this[(1)] }); // order = 1
+        }
+
         if (N == 2)
         {
             yield return ("S2", new[] { this[(1, 2)] }); // order = 2
