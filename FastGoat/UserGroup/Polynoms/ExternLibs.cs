@@ -58,5 +58,64 @@ public static class ExternLibs
         process.Dispose();
         return P0;
     }
+    
+    static BigCplx[] ReadStr(string[] rootsStr, int O)
+    {
+        var cRoots = new List<BigCplx>();
+        foreach (var r in rootsStr)
+        {
+            if (string.IsNullOrEmpty(r))
+                continue;
+        
+            if (r.Contains(" + ") || r.Contains(" - "))
+            {
+                var s0 = r.Split(" + ");
+                var i = 1;
+                if (r.Contains(" - "))
+                {
+                    s0 = r.Split(" - ");
+                    i = -1;
+                }
+
+                var (re, im) = (s0[0], s0[1].Replace("*I", ""));
+                var bre = BigReal.FromString(re, O);
+                var bim = BigReal.FromString(im, O);
+                var rc = BigCplx.FromBigReal(bre, i * bim);
+                cRoots.Add(rc);
+            }
+            else
+            {
+                var s0 = r.Replace("*I", "");
+                var b = BigReal.FromString(s0, O);
+                var rc = !r.Contains("*I") ? BigCplx.FromBigReal(b) : BigCplx.FromBigReal(b.Zero, b);
+                cRoots.Add(rc);
+            }
+        }
+
+        return cRoots.ToArray();
+    }
+
+    public static BigCplx[] Run_arbPolyRoots(KPoly<Rational> P, int O)
+    {
+        if (P.Coefs.Any(c => !c.Denom.IsOne))
+            throw new();
+    
+        var process = new Process();
+        // assuming the gist https://gist.github.com/aidevnn/c60cdf55d2fe84a45caeb0853ed03aef
+        // is already compiled and the binary is accessible 
+    
+        process.StartInfo.FileName = "polyroots"; 
+        process.StartInfo.Arguments = string.Format("-refine {0} coeffs {1}", O, P.Coefs.Glue(" "));
+        process.StartInfo.RedirectStandardInput = false;
+        process.StartInfo.RedirectStandardOutput = true;
+        process.StartInfo.UseShellExecute = false;
+        process.Start();
+        process.WaitForExit();
+        var res = process.StandardOutput.ReadToEnd().Split("\n");
+        process.Close();
+        process.Dispose();
+
+        return ReadStr(res, O);
+    }
 
 }
