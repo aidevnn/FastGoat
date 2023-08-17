@@ -24,6 +24,7 @@ public readonly struct KAutGroup<K> : IGroup<KAut<K>> where K : struct, IElt<K>,
     public int Hash { get; }
     public string Name { get; }
 
+    public KAut<K> KAut(EPoly<K> e) => new(this, e);
     public KAut<K> this[params ValueType[] us]
     {
         get

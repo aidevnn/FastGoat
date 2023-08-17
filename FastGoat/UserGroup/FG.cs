@@ -321,6 +321,11 @@ public static partial class FG
         return Group.Generate(fq, fq[x]);
     }
 
+    public static KAutGroup<K> KAutGroup<K>(KPoly<K> P) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        return new KAutGroup<K>(P);
+    }
+
     public static EPoly<ZnInt> FqX(int q, char x = 'x') => new Fq(q, x)[x];
 
     public static NthRootQ NthRootQ(int n) => new(n);
