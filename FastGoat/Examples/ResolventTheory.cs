@@ -104,8 +104,11 @@ public static class ResolventTheory
 
     static T F1<T>(T[] t) where T : struct, IFieldElt<T>, IRingElt<T>, IElt<T>
     {
-        var n = t.Length;
-        return t.SkipLast(1).Select((r, k) => r.Pow(n - (k + 1))).Aggregate((a, b) => a * b);
+        // return t[0] - t[1];
+        // return t[0] + t[1];
+        return t[0] * t[1].Pow(2) * t[2].Pow(3) * t[3].Pow(4);
+        return t[0] * t[2] + t[1] * t[3];
+        return t[0] * t[1].Pow(2) + t[1] * t[2].Pow(2) + t[2] * t[3].Pow(2) + t[3] * t[0].Pow(2);
     }
 
     static void HResolventSymbolic(KPoly<Rational> P, Perm[] H, Func<Polynomial<Rational, Xi>[], Polynomial<Rational, Xi>> f0)
@@ -136,8 +139,17 @@ public static class ResolventTheory
         roots.Println("Roots");
 
         var proots = roots.Select(r => P0.One * r).ToArray();
-        var Q0 = HResF(H, P0.X, f0, proots);
-        Console.WriteLine($"Res(P) = {Q0}");
+        var Q0 = HResF(H, P0.X, f0, proots).ToBcPoly(digits * 2 / 3);
+        var Q1 = new KPoly<Rational>(Q0.x, Rational.KZero(), Q0.Coefs.Select(c => c.RealPart.RoundEven.ToRational).ToArray());
+        var factors = IntFactorisation.FactorsQ(Q1).OrderBy(e => e.Item1.Degree).ThenBy(e => e.Item1.NormB(2))
+            .Select(e =>
+            {
+                if (e.Item2 == 1)
+                    return e.Item1.Degree == 0 || e.Item1.Equals(e.Item1.X) ? $"{e.Item1}" : $"({e.Item1})";
+                return e.Item1.Equals(e.Item1.X) ? $"{e.Item1}^{e.Item2}" : $"({e.Item1})^{e.Item2}";
+            }).Glue(" * ");
+        Console.WriteLine($"Res(P) = {Q1}");
+        Console.WriteLine($"       = {factors}");
     }
 
     static void AnResSymb(KPoly<Rational> P)
@@ -202,6 +214,22 @@ public static class ResolventTheory
         Console.WriteLine();
     }
 
+    static void V4ResNum(KPoly<Rational> P)
+    {
+        if (P.Degree != 4)
+            throw new();
+
+        var s4 = FG.Symmetric(4);
+        var v4 = Group.Generate("V4", s4, s4[(1, 2), (3, 4)], s4[(1, 3), (2, 4)]);
+        // var v4 = Group.Generate("V4", s4, s4[(1, 2, 3, 4)]);
+        var sigV4 = Group.Cosets(s4, v4, CosetType.Left).GroupBy(e => e.Value).Select(e => e.Key.X).ToArray();
+        Console.WriteLine($"P = {P}");
+        Console.WriteLine($"V4-Resolvent");
+        HResolventNumeric(P, sigV4, F1);
+        // Console.WriteLine($"ResCub(P) = {ResCub(P)}");
+        Console.WriteLine();
+    }
+
     public static void JSMilneResolventCubic()
     {
         var x = FG.QPoly();
@@ -234,8 +262,8 @@ public static class ResolventTheory
         D8ResSymb(x.Pow(4) + x.Pow(2) + 1);
         D8ResSymb(x.Pow(4) + x + 1);
 
-        AnResSymb(x.Pow(4) + x.Pow(2) + 1); // very slow ~3min
-        AnResSymb(x.Pow(4) + x + 1); // very slow ~3min
+        // AnResSymb(x.Pow(4) + x.Pow(2) + 1); // very slow ~3min
+        // AnResSymb(x.Pow(4) + x + 1); // very slow ~3min
     }
 
     public static void ExamplesHResolventNumeric()
@@ -243,12 +271,20 @@ public static class ResolventTheory
         var x = FG.QPoly();
         AnResNum(x.Pow(3) + x + 1);
         AnResNum(x.Pow(3) - 3 * x.Pow(2) + 5);
-
+        
         AnResNum(x.Pow(4) + x.Pow(2) + 1);
+        AnResNum(x.Pow(4) + 1);
         AnResNum(x.Pow(4) + x + 1);
 
         D8ResNum(x.Pow(4) - 4 * x.Pow(2) + 2);
         D8ResNum(x.Pow(4) + x.Pow(2) + 1);
+        D8ResNum(x.Pow(4) + 1);
         D8ResNum(x.Pow(4) + x + 1);
+
+        V4ResNum(x.Pow(4) + x.Pow(3) + x.Pow(2) + x + 1);
+        V4ResNum(x.Pow(4) + 1);
+        V4ResNum(x.Pow(4) - 2);
+        V4ResNum(x.Pow(4) - 8 * x + 12);
+        V4ResNum(x.Pow(4) + x + 1);
     }
 }
