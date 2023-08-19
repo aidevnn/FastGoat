@@ -380,7 +380,7 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
             if (k.Equals(one))
                 return string.IsNullOrEmpty(sm) ? "1" : sm;
 
-            if (k.Equals(one.Opp()) && one.P == 0)
+            if (k.Equals(one.Opp()) && (one.P == 0 || $"{k}".Equals("-1")))
                 return string.IsNullOrEmpty(sm) ? "-1" : $"-{sm}";
 
             var k0 = $"{k}";

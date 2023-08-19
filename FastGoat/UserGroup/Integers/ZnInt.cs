@@ -3,8 +3,15 @@ using FastGoat.Structures;
 
 namespace FastGoat.UserGroup.Integers;
 
+public enum ZnDisplay
+{
+    Unsigned,
+    Signed
+}
+
 public readonly struct ZnInt : IElt<ZnInt>, IRingElt<ZnInt>, IFieldElt<ZnInt>
 {
+    public static ZnDisplay Display = ZnDisplay.Unsigned; 
     public int Mod { get; }
     public int K { get; }
     public int P => Mod;
@@ -44,7 +51,8 @@ public readonly struct ZnInt : IElt<ZnInt>, IRingElt<ZnInt>, IFieldElt<ZnInt>
     {
         var digits = $"{Mod}".Length;
         var fmt = $"{{0,{digits}}}";
-        return string.Format(fmt, K);
+        var k0 = Display == ZnDisplay.Unsigned ? K : 2 * K > Mod ? K - Mod : K;
+        return string.Format(fmt, k0);
     }
 
     public bool IsZero() => K == 0;
