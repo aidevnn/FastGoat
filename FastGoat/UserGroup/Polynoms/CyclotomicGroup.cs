@@ -26,12 +26,31 @@ public readonly struct CyclotomicGroupBase<K> : IGroup<EPoly<K>> where K : struc
         var nm = name;
         Name = $"U{n}({nm})";
         var poly = FG.CyclotomicPolynomial(n);
-        Poly = new KPoly<K>('ζ', scalar, poly.Coefs.Select(c => ((int)c.Num) * scalar.One).ToArray());
-        Hash = ("CF", p, Poly.Hash).GetHashCode();
+        if (scalar.P == 0)
+        {
+            Poly = new KPoly<K>('ζ', scalar, poly.Coefs.Select(c => ((int)c.Num) * scalar.One).ToArray());
+            Hash = ("CF", p, Poly.Hash).GetHashCode();
+            Console.WriteLine(new { poly });
 
-        var q = n == 2 ? 1 : IntExt.UnInvertible(n).First(e => e.Key != 1).Key;
-        var x = FG.EPoly(Poly);
-        Zeta = x.Pow(q);
+            var q = n == 2 ? 1 : IntExt.UnInvertible(n).First(e => e.Key != 1).Key;
+            var x = FG.EPoly(Poly);
+            Zeta = x.Pow(q);
+        }
+        else if (scalar is EPoly<ZnInt>)
+        {
+            var poly0 = new KPoly<K>(poly.x, scalar.Zero, poly.Coefs.Select(c => (int)c.Num * scalar.One).ToArray());
+            var facts = IntFactorisation.Firr(poly0, scalar.One * scalar.P).Order().ToArray();
+            facts.Println();
+            var poly1 = facts.First();
+            Poly = poly1.SubstituteChar('ζ');
+            Hash = ("CF", p, Poly.Hash).GetHashCode();
+
+            var q = n == 2 ? 1 : IntExt.UnInvertible(n).First(e => e.Key != 1).Key;
+            var x = FG.EPoly(Poly);
+            Zeta = x.Pow(q);
+        }
+        else
+            throw new();
     }
 
     public IEnumerator<EPoly<K>> GetEnumerator() => GetElements().GetEnumerator();

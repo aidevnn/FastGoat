@@ -40,6 +40,15 @@ public static partial class FG
         return phi;
     }
 
+    public static KPoly<K> CyclotomicPolynomial<K>(int k, K scalar) where K : struct, IFieldElt<K>, IRingElt<K>, IElt<K>
+    {
+        var P = CyclotomicPolynomial(k);
+        var one = scalar.One;
+        return new(P.x, scalar, P.Coefs.Select(c => (int)c.Num * one).ToArray());
+    }
+
+    public static KPoly<Rational>[] CyclotomicPolynomialsSequence() => CyclotomicPolynomials.Values.Order().ToArray();
+
     public static ConcreteGroup<Perm> Symmetric(int n) => new Symm(n);
 
     public static ConcreteGroup<Perm> Alternate(int n)
@@ -329,4 +338,21 @@ public static partial class FG
     public static EPoly<ZnInt> FqX(int q, char x = 'x') => new Fq(q, x)[x];
 
     public static NthRootQ NthRootQ(int n) => new(n);
+    public static NthRootFq NthRootFq(int n, int q) => new(n, q);
+    public static NthRootFq CycloFq(int q)
+    {
+        var dec = IntExt.PrimesDec(q);
+        if (dec.Count != 1)
+            throw new();
+
+        var p = dec.First().Key;
+        return new(q - 1, p);
+    }
+
+    public static (GFp gf, ConcreteGroup<EPoly<ZnInt>>) GFp(KPoly<ZnInt> f)
+    {
+        var gf = new GFp(f);
+        var gens = f.P.Range().Where(e => !f.Substitute(e).IsZero()).Select(e => gf.X - e).ToArray();
+        return (gf, Group.Generate(gf, gens));
+    }
 }
