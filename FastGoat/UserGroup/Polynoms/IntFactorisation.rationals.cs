@@ -738,28 +738,6 @@ public static partial class IntFactorisation
         return res;
     }
 
-    public static (int p, int sigma, KPoly<Rational>[]) FirrZtest(KPoly<Rational> f)
-    {
-        var discQ = Ring.Discriminant(f).Num;
-        var discDecomp = IntExt.PrimesDec(discQ);
-        Console.WriteLine($"f = {f}");
-        Console.WriteLine($"Disc(f) = {discQ} ~ {discDecomp.AscendingByKey().GlueMap(" * ", "{0}^{1}")}");
-
-        foreach (var (p, o) in PSigma(f))
-        {
-            try
-            {
-                return (p, o, HenselLiftingNaive(f, p, o, true));
-            }
-            catch (Exception)
-            {
-                Console.WriteLine($"#### Prime {p} and Sigma {o} wont work ####");
-            }
-        }
-
-        throw new();
-    }
-
     public static KPoly<EPoly<ZnInt>>[] FirrFq(KPoly<Rational> f, int q, bool details = false)
     {
         var dec = IntExt.PrimesDec(q);
@@ -782,63 +760,5 @@ public static partial class IntFactorisation
         var po = a0.Details;
         var f0 = QPoly2ZnInt(f, po);
         return BerlekampProbabilisticAECF(f0, a0).ToArray();
-    }
-
-    public static KPoly<ZnInt>[] FirrFp2(KPoly<Rational> f, int p, bool details = false)
-    {
-        if (!IntExt.Primes10000.Contains(p))
-            throw new($"p = {p} isnt prime");
-
-        var ai0 = (new Un(p)).GetGenerators().First()[new(p, 1)];
-        var a0 = ZnInt.ZnZero(p) + ai0.K;
-        var f0 = QPoly2ZnInt(f, p);
-        return BerlekampProbabilisticAECF(f0, a0).ToArray();
-    }
-
-    public static (int p, KPoly<ZnBInt>[] factors) FirrFp(KPoly<Rational> f, bool details = false)
-    {
-        var discQ = Ring.Discriminant(f).Num;
-        var discDecomp = IntExt.PrimesDec(discQ);
-        if (details)
-        {
-            Console.WriteLine($"f = {f}");
-            Console.WriteLine($"Disc(f) = {discQ} ~ {discDecomp.AscendingByKey().GlueMap(" * ", "{0}^{1}")}");
-        }
-
-        foreach (var p in IntExt.Primes10000.Except(discDecomp.Keys))
-        {
-            try
-            {
-                var listIrr0 = FirrFp(f, p, details);
-                if (listIrr0.Length != f.Degree)
-                    throw new();
-
-                if (details)
-                {
-                    var ai0 = (new Un(p)).GetGenerators().First()[new(p, 1)];
-                    var a0 = ZnBInt.ZnZero(p) + ai0.K;
-                    var po = a0.Details;
-                    var f0 = QPoly2ZnInt(f, po);
-                    Console.WriteLine($"Prime P = {p}");
-                    Console.WriteLine($"f = {f0} mod {p}");
-                    Console.WriteLine("Fact(f) = {0} mod {1}", listIrr0.Glue("*", "({0})"), p);
-                    Console.WriteLine();
-                }
-
-                return (p, listIrr0);
-            }
-            catch (Exception e)
-            {
-                if (details)
-                    Console.WriteLine($"#### Prime {p} wont work ####");
-            }
-        }
-
-        throw new();
-    }
-
-    public static List<ZnBInt> FpRoots(KPoly<Rational> f, bool details = false)
-    {
-        return FirrFp(f, details).factors.Where(p => p.Degree == 1).Select(p => -p[0] / p[1]).Order().ToList();
     }
 }
