@@ -277,4 +277,20 @@ public static partial class Group
         var quo = new Quotient<T>(g, h);
         return new ConcreteGroup<Coset<T>>(name, quo);
     }
+
+    public static ConcreteGroup<K> AddGroup<K>(string name, K scalar, params K[] gens)
+        where K : struct, IElt<K>, IRingElt<K>,IFieldElt<K>
+    {
+        var fg = new OpGroup<K>(name, scalar, FGroupOp.Additive);
+        return new ConcreteGroup<K>(fg, gens);
+    }
+
+    public static ConcreteGroup<K> MulGroup<K>(string name, K scalar, params K[] gens)
+        where K : struct, IElt<K>, IRingElt<K>,IFieldElt<K>
+    {
+        var fg = new OpGroup<K>(name, scalar, FGroupOp.Multiplicative);
+        if (gens.Length == 0)
+            gens = new[] { scalar };
+        return new ConcreteGroup<K>(fg, gens);
+    }
 }
