@@ -12,7 +12,7 @@ public struct Fq : IGroup<EPoly<ZnInt>>
     public int P { get; }
     public int M { get; }
     public KPoly<ZnInt> F { get; }
-    private EPoly<ZnInt> X { get; }
+    public EPoly<ZnInt> X { get; }
 
     public Fq(int q, char x = 'x')
     {
@@ -23,6 +23,7 @@ public struct Fq : IGroup<EPoly<ZnInt>>
         F = new(x, ZnInt.ZnZero(p), coefs.Select(i => new ZnInt(p, i)).ToArray());
         Hash = (Q, "fq").GetHashCode();
         Name = $"F{Q}";
+        FullName = Q == P ? Name : $"{Name} = F{P}({x}) = F{P}[{x}]/({F})";
         X = new(F);
     }
 
@@ -34,6 +35,7 @@ public struct Fq : IGroup<EPoly<ZnInt>>
 
     public int Hash { get; }
     public string Name { get; }
+    public string FullName { get; }
     public EPoly<ZnInt> Zero => X.Zero;
     public EPoly<ZnInt> One => X.One;
 

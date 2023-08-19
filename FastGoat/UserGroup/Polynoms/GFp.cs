@@ -27,8 +27,16 @@ public class GFp : IGroup<EPoly<ZnInt>>
         Hash = e.Hash;
     }
 
+    public GFp(string name, KPoly<ZnInt> f) : this(name, FG.EPoly(f))
+    {
+    }
+
+    public GFp(KPoly<ZnInt> f) : this($"F{f.P}/({f})", FG.EPoly(f))
+    {
+    }
+
     public KPoly<ZnInt> F { get; }
-    private EPoly<ZnInt> X { get; }
+    public EPoly<ZnInt> X { get; }
     public int M { get; }
     public int P { get; }
 
@@ -50,7 +58,7 @@ public class GFp : IGroup<EPoly<ZnInt>>
         {
             if (us[0] is char x && F.x.Equals(x))
                 return X;
-            if (us[0] is EPoly<ZnInt> e && e.Poly.Equals(F) && !e.IsZero())
+            if (us[0] is EPoly<ZnInt> e && e.P == P && e.Poly.Equals(F) && !e.IsZero())
                 return e;
             if (us[0] is int k && k != 0)
                 return X * k;
