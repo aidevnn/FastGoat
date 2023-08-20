@@ -63,15 +63,15 @@ public static class BCHcodes
 
     static (Fq fq, KPoly<ZnInt> g) GeneratorBCHmd(int m, int d) => GeneratorBCHmδ(m, d + 1);
 
-    static ZnInt[] RandWord(int k) => k.Range().Select(i => new ZnInt(2, IntExt.Rng.Next(2))).ToArray();
-    static KPoly<ZnInt> WordPoly(ZnInt[] mot) => new('x', ZnInt.ZnZero(2), mot);
+    static ZnInt[] RandWord(int k) => k.Range().Select(i => new ZnInt(2, IntExt.Rng.Next(2))).TrimSeq().ToArray();
+    static KPoly<ZnInt> WordPoly(ZnInt[] word) => new('x', ZnInt.ZnZero(2), word);
     static KPoly<ZnInt> EncodeBCH(KPoly<ZnInt> m, KPoly<ZnInt> g) => m * g;
 
     static KPoly<EPoly<ZnInt>> Syndrom(KPoly<ZnInt> m, Fq fq, int delta)
     {
         var b = fq.X;
         var X = FG.KPoly('X', b);
-        return (delta - 1).Range(1).Select(j => m.Substitute(b.Pow(j)) * X.Pow(j)).Aggregate((e0, e1) => e0 + e1);
+        return (delta).Range(1).Select(j => m.Substitute(b.Pow(j)) * X.Pow(j)).Aggregate((e0, e1) => e0 + e1);
     }
 
     static KPoly<ZnInt> Noise(KPoly<ZnInt> m, int delta)
@@ -122,11 +122,51 @@ public static class BCHcodes
 
     static string Poly2Bin(KPoly<ZnInt> P, int n) => P.Coefs.Glue().PadRight(n, '0');
 
+    static (KPoly<ZnInt> word, int nbErr) DecodeBCH(KPoly<ZnInt> received, KPoly<ZnInt> g, Fq fq, int delta)
+    {
+        var S = Syndrom(received, fq, delta);
+        var u = BerlekampMassey(S, delta).u;
+        var err = Error(u, fq.Q);
+        var decoded = received + err;
+        var word = decoded / g;
+        return (word, err.Coefs.Sum(e => e.K));
+    }
+
     static void CheckBCHmδ(int m, int delta, int nbTest)
     {
         var (fq, g) = GeneratorBCHmδ(m, delta);
-        var n0 = fq.Q - g.Degree;
-        Console.WriteLine($"BCH word {fq.Q}bit, max length {n0}");
+        var n0 = fq.Q - g.Degree - 1;
+        Console.WriteLine($"BCH word {n0}bit, encoder {fq.Q}bit, max digits errors {(delta - 1) / 2 - 1}bit");
+        Console.WriteLine($"code {g}");
+        Console.WriteLine();
+        
+        for (int k = 1; k <= nbTest; k++)
+        {
+            var word = WordPoly(RandWord(n0));
+            var encoded = EncodeBCH(word, g);
+            var received = Noise(encoded, delta);
+            var (dword, err) = DecodeBCH(received, g, fq, delta);
+            var verif = word.Equals(dword);
+            Console.WriteLine($"Word{k,-3}    : {Poly2Bin(word, n0)}");
+            Console.WriteLine($"  Received : {Poly2Bin(received, fq.Q)}");
+            Console.WriteLine($"  Decoded  : {Poly2Bin(dword, n0)}");
+            Console.WriteLine($"  NbErrors : {err}");
+            Console.WriteLine($"  Verif    : {verif}");
+            Console.WriteLine();
+            if (!verif)
+                throw new();
+        }
+        
+        Console.WriteLine($"BCH word {n0}bit, encoder {fq.Q}bit, max digits errors {(delta - 1) / 2 - 1}bit");
+        Console.WriteLine($"code {g}");
+        Console.WriteLine();
+    }
+    
+    static void CheckDetailedBCHmδ(int m, int delta, int nbTest)
+    {
+        var (fq, g) = GeneratorBCHmδ(m, delta);
+        var n0 = fq.Q - g.Degree - 1;
+        Console.WriteLine($"BCH word {n0}bit, encoder {fq.Q}bit, max digits errors {(delta - 1) / 2 - 1}bit");
         Console.WriteLine($"code {g}");
         Console.WriteLine();
         var t = (delta - 1) / 2;
@@ -158,8 +198,8 @@ public static class BCHcodes
             Console.WriteLine($"  BerlekampMassey : u = {u} and v = {v}");
 
             var v1 = (u * S).Div(x2t).rem;
-            Console.WriteLine($"  Verif Direct S : {v0.Equals(v2)}");
-            Console.WriteLine($"  Verif B-M    S : {v.Equals(v1)}");
+            Console.WriteLine($"  Verif Direct S  : {v0.Equals(v2)}");
+            Console.WriteLine($"  Verif B-M    S  : {v.Equals(v1)}");
             if (!v.Equals(v1))
                 throw new();
             Console.WriteLine($"  diff u : {u - u0}");
@@ -167,25 +207,51 @@ public static class BCHcodes
 
             var err1 = Error(u0, fq.Q);
             var err2 = Error(u, fq.Q);
-            Console.WriteLine($"Send Word{k,-2}       : {Poly2Bin(send, fq.Q)}");
+            Console.WriteLine($"Send Word{k,-3}      : {Poly2Bin(send, fq.Q)}");
             Console.WriteLine($"  Receive         : {Poly2Bin(received, fq.Q)}");
             Console.WriteLine($"  Error Expected  : {Poly2Bin(err0, fq.Q)}");
             Console.WriteLine($"  Error Direct    : {Poly2Bin(err1, fq.Q)}");
             Console.WriteLine($"  Error Indirect  : {Poly2Bin(err2, fq.Q)}");
+            Console.WriteLine($"  Nb Errors       : {err0.Coefs.Sum(a0 => a0.K)}");
 
             Console.WriteLine();
+            if (!err2.Equals(err0) || !err1.Equals(err0))
+                throw new();
         }
+    }
+
+    public static void CyclotomicClassesExamples()
+    {
+        Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+
+        // GAP examples 
+        CyclotomicClasses(2, 21).Println(si => $"[{si.Glue("; ")}]", $"CycloCls (q:2, n:21)");
+        CyclotomicClasses(10, 21).Println(si => $"[{si.Glue("; ")}]", $"CycloCls (q:10, n:21)");
+        Console.WriteLine();
+
+        // Wikipedia examples
+        GeneratorBCHmd(4, 4);
+        GeneratorBCHmd(4, 6);
+        GeneratorBCHmd(4, 8);
+
+        // Algebre Tome1, page 391-394
+        GeneratorBCHmδ(5, 7);
+        GeneratorBCHmδ(7, 19);
+        
+        // other examples
+        GeneratorBCHmδ(6, 5);
+        GeneratorBCHmδ(6, 8);
     }
 
     public static void BCH_Codes_Examples()
     {
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
 
-        CheckBCHmδ(m: 5, delta: 7, nbTest: 5); // 32bit
-        CheckBCHmδ(m: 5, delta: 9, nbTest: 5); // 32bit
+        CheckDetailedBCHmδ(m: 5, delta: 7, nbTest: 10); // word 16bit, encoder 32bit, max digits errors 2bit
+        CheckDetailedBCHmδ(m: 5, delta: 9, nbTest: 10); // word 11bit, encoder 32bit, max digits errors 3bit
         
-        CheckBCHmδ(m: 7, delta: 19, nbTest: 10); // 32bit
-        CheckBCHmδ(m: 7, delta: 25, nbTest: 10); // 32bit
+        CheckDetailedBCHmδ(m: 7, delta: 19, nbTest: 10); // word 71bit, encoder 128bit, max digits errors 8bit
+        CheckDetailedBCHmδ(m: 7, delta: 25, nbTest: 10); // word 50bit, encoder 128bit, max digits errors 11bit
     }
     /*
         Syndrom : (a^6 + a^5 + a^4 + a^2)*X^24 + (a^3 + a + 1)*X^23 + (a^6 + a^5 + a^4 + a^3 + a^2 + a)*X^22 + (a^6 + a^5 + a^3 + a + 1)*X^21 + (a^5 + a^4)*X^20 + (a^4 + a^2 + 1)*X^19 + (a^6 + a^4 + a^3 + a^2 + 1)*X^18 + (a^6 + a^2 + 1)*X^17 + (a^5 + a^4)*X^16 + (a^5 + a^4 + a^3 + a)*X^15 + (a^6 + a^5 + a^4 + a^3 + a^2)*X^14 + (a^5 + a^3 + a)*X^13 + (a^6 + a^2 + a)*X^12 + (a^6 + a^5 + a^4)*X^11 + (a^6 + a^3 + a^2)*X^10 + (a^5 + a^3 + a + 1)*X^9 + (a^6 + a^3 + a^2)*X^8 + (a^6 + a^5 + a)*X^7 + (a^4 + a^3)*X^6 + (a^5 + a^3 + a^2 + a)*X^5 + (a^5 + a^3 + a^2 + a)*X^4 + a^5*X^3 + (a^6 + a^5 + a^4 + a^3 + a^2)*X^2 + (a^6 + a^5 + a)*X
@@ -200,5 +266,20 @@ public static class BCHcodes
           Error Expected  : 00000000010000000000000000010100000000000101010000000000000000000000000000000000000100000100000000000001000000000000000000000000
           Error Direct    : 00000000010000000000000000010100000000000101010000000000000000000000000000000000000100000100000000000001000000000000000000000000
           Error Indirect  : 00000000010000000000000000010100000000000101010000000000000000000000000000000000000100000100000000000001000000000000000000000000
+     */
+    
+    public static void BCH_Codes_Batch()
+    {
+        Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+
+        CheckBCHmδ(m: 5, delta: 7, nbTest: 100); // word 16bit, encoder 32bit, max digits errors 2bit
+        CheckBCHmδ(m: 7, delta: 21, nbTest: 100); // word 64bit, encoder 128bit, max digits errors 9bit
+    }
+    /*
+    Word90     : 0010010110011011011000010100100111001101110100100010001111101011
+      Received : 00111000110011011000011111011011110111011001001110111110111111000110010000011000010011010010111000100111101101100010110101011010
+      Decoded  : 0010010110011011011000010100100111001101110100100010001111101011
+      NbErrors : 8
+      Verif    : True
      */
 }
