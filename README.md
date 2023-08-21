@@ -415,3 +415,10 @@ Bordeaux.
 Fields and Galois Theory.
 Ed web v5.10, 2022.
 <i>Chapter 4. Computing Galois Groups.</i>
+
+[ChatGPT](https://chat.openai.com/)
+<b>OpenAI.</b>
+ChatGPT
+August 3, 2023
+Version3.5
+<i>Free Research Preview.</i>
