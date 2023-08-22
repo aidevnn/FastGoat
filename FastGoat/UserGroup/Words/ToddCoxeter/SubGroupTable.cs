@@ -8,7 +8,7 @@ public class SubGroupTable
     public SubGroupTable(Header head)
     {
         header = head;
-        line = new(Symbol.One, header);
+        line = new(EqClass.One, header);
     }
 
     public SubGroupTable(SubGroupTable sgtable)
@@ -18,10 +18,10 @@ public class SubGroupTable
     }
 
     public int CountUnknown => line.CountUnknown;
-    public void Subtitute(Symbol s0, Symbol s1) => line.Subtitute(s0, s1);
+    public void Subtitute(EqClass s0, EqClass s1) => line.Subtitute(s0, s1);
     public IEnumerable<Op> GetOps() => line.GetOps();
 
-    public (Symbol, Symbol) ApplyOp(SortedDictionary<OpKey, Symbol> opsTable, HashSet<Op> newOps)
+    public (EqClass, EqClass) ApplyOp(SortedDictionary<OpKey, EqClass> opsTable, HashSet<Op> newOps)
     {
         return line.ApplyOp(opsTable, newOps);
     }

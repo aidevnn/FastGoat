@@ -3,10 +3,10 @@ namespace FastGoat.UserGroup.Words.ToddCoxeter;
 public struct OpKey : IEquatable<OpKey>, IComparable<OpKey>
 {
     public Generator g { get; }
-    public Symbol i { get; }
+    public EqClass i { get; }
     int hash { get; }
 
-    public OpKey(Symbol i0, Generator g0)
+    public OpKey(EqClass i0, Generator g0)
     {
         i = i0;
         g = g0;

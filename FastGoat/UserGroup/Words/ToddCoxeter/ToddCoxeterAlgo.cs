@@ -30,7 +30,7 @@ public static class ToddCoxeterAlgo
         while (true)
         {
             var op = tOps.NewOp();
-            if (op.i == Symbol.Unknown)
+            if (op.i == EqClass.Unknown)
                 break;
 
             if (details)

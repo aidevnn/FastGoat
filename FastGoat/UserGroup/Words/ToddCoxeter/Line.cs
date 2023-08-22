@@ -4,12 +4,12 @@ namespace FastGoat.UserGroup.Words.ToddCoxeter;
 
 public class Line
 {
-    Symbol[] row { get; }
+    EqClass[] row { get; }
     Header header { get; }
 
-    public Line(Symbol key, Header head)
+    public Line(EqClass key, Header head)
     {
-        row = new Symbol[head.Count + 1];
+        row = new EqClass[head.Count + 1];
         header = head;
         Key = key;
 
@@ -24,16 +24,16 @@ public class Line
         Key = line.Key;
     }
 
-    public Line(Symbol key, Line line)
+    public Line(EqClass key, Line line)
     {
         header = line.header;
         row = line.row.Select(s => s).ToArray();
         Key = key;
     }
 
-    public int CountUnknown => row.Count(s => s == Symbol.Unknown);
+    public int CountUnknown => row.Count(s => s == EqClass.Unknown);
 
-    public void Subtitute(Symbol s0, Symbol s1)
+    public void Subtitute(EqClass s0, EqClass s1)
     {
         for (int k = 0; k < row.Length; ++k)
         {
@@ -42,16 +42,16 @@ public class Line
         }
     }
 
-    public (Symbol, Symbol) ApplyOp(SortedDictionary<OpKey, Symbol> opsTable, HashSet<Op> newOps)
+    public (EqClass, EqClass) ApplyOp(SortedDictionary<OpKey, EqClass> opsTable, HashSet<Op> newOps)
     {
         for (int k = 0; k < header.Count; ++k)
         {
             var i = row[k];
             var g = header[k];
             var j = row[k + 1];
-            if (i == Symbol.Unknown && j == Symbol.Unknown)
+            if (i == EqClass.Unknown && j == EqClass.Unknown)
                 continue;
-            else if (i != Symbol.Unknown && j != Symbol.Unknown)
+            else if (i != EqClass.Unknown && j != EqClass.Unknown)
             {
                 var opKey = new OpKey(i, g);
                 var opiKey = new OpKey(j, g.Invert());
@@ -59,25 +59,25 @@ public class Line
                 var opiCheck = opsTable.ContainsKey(opiKey);
 
                 if (opCheck && opsTable[opKey] != j)
-                    return Symbol.MinMax(j, opsTable[opKey]);
+                    return EqClass.MinMax(j, opsTable[opKey]);
 
                 if (opiCheck && opsTable[opiKey] != i)
-                    return Symbol.MinMax(i, opsTable[opiKey]);
+                    return EqClass.MinMax(i, opsTable[opiKey]);
 
                 if (!opCheck && !opiCheck)
                     newOps.Add(Op.Create(i, g, j));
             }
-            else if (j == Symbol.Unknown)
+            else if (j == EqClass.Unknown)
             {
                 var opKey = new OpKey(i, g);
-                if (opsTable.ContainsKey(opKey))
-                    row[k + 1] = opsTable[opKey];
+                if (opsTable.TryGetValue(opKey, out var s))
+                    row[k + 1] = s;
             }
             else // if (i == Symbol.Unknown)
             {
                 var opiKey = new OpKey(j, g.Invert());
-                if (opsTable.ContainsKey(opiKey))
-                    row[k] = opsTable[opiKey];
+                if (opsTable.TryGetValue(opiKey, out var s))
+                    row[k] = s;
             }
         }
 
@@ -85,7 +85,7 @@ public class Line
     }
 
     public IEnumerable<Op> GetOps() => header.Select((g, k) => new Op(row[k], g, row[k + 1]));
-    public Symbol Key { get; }
+    public EqClass Key { get; }
 
     public string Display(int digits)
     {

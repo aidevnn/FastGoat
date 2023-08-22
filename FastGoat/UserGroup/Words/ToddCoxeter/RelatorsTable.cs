@@ -4,14 +4,14 @@ namespace FastGoat.UserGroup.Words.ToddCoxeter;
 
 public class RelatorsTable
 {
-    Dictionary<Symbol, Line> table { get; }
+    Dictionary<EqClass, Line> table { get; }
     Header header { get; }
 
     public RelatorsTable(Header head)
     {
         table = new();
         header = head;
-        table[Symbol.One] = NewLine(Symbol.One);
+        table[EqClass.One] = NewLine(EqClass.One);
     }
 
     public RelatorsTable(RelatorsTable rTable)
@@ -20,20 +20,20 @@ public class RelatorsTable
         table = rTable.table.ToDictionary(s => s.Key, l => new Line(l.Value));
     }
 
-    public bool ContainsKey(Symbol s) => table.ContainsKey(s);
-    Line NewLine(Symbol s) => new(s, header);
+    public bool ContainsKey(EqClass s) => table.ContainsKey(s);
+    Line NewLine(EqClass s) => new(s, header);
     public IEnumerable<Op> GetOps() => table.SelectMany(kv => kv.Value.GetOps());
     public int CountUnknown => table.Sum(r => r.Value.CountUnknown);
-    public void Remove(Symbol s) => table.Remove(s);
+    public void Remove(EqClass s) => table.Remove(s);
 
-    public void SubtituteRemove(Symbol s0, Symbol s1)
+    public void SubtituteRemove(EqClass s0, EqClass s1)
     {
         table.Remove(s1);
         foreach (var e in table)
             e.Value.Subtitute(s0, s1);
     }
 
-    public void SubtituteWithKey(Symbol s0, Symbol s1)
+    public void SubtituteWithKey(EqClass s0, EqClass s1)
     {
         if (!table.ContainsKey(s0))
         {
@@ -48,7 +48,7 @@ public class RelatorsTable
             e.Value.Subtitute(s0, s1);
     }
 
-    public (Symbol, Symbol) ApplyOp(SortedDictionary<OpKey, Symbol> opsTable, HashSet<Op> newOps)
+    public (EqClass, EqClass) ApplyOp(SortedDictionary<OpKey, EqClass> opsTable, HashSet<Op> newOps)
     {
         var symbols = opsTable.Values.Distinct().Ascending();
         foreach (var s in symbols)
@@ -60,7 +60,7 @@ public class RelatorsTable
         foreach (var kv in table)
         {
             var err = kv.Value.ApplyOp(opsTable, newOps);
-            if (err.Item1 != Symbol.Unknown)
+            if (err.Item1 != EqClass.Unknown)
                 return err;
         }
 

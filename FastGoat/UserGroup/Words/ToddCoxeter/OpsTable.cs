@@ -7,7 +7,7 @@ public class OpsTable
 {
     Header sgHeader { get; }
     Header relHeader { get; }
-    SortedDictionary<OpKey, Symbol> opsTable { get; }
+    SortedDictionary<OpKey, EqClass> opsTable { get; }
 
     public OpsTable(Header sgheader, Header relheader)
     {
@@ -45,7 +45,7 @@ public class OpsTable
     {
         int sz = 0;
         HashSet<Op> newOps = new();
-        (Symbol, Symbol) err = new();
+        (EqClass, EqClass) err = new();
         do
         {
             newOps.Clear();
@@ -63,9 +63,9 @@ public class OpsTable
         } while (newOps.Count != 0 || sz != sgTable.CountUnknown + rTable.CountUnknown);
     }
 
-    bool Substitute(Symbol s0, Symbol s1)
+    bool Substitute(EqClass s0, EqClass s1)
     {
-        if (s0 == Symbol.Unknown)
+        if (s0 == EqClass.Unknown)
             return true;
 
         opsTable.Clear();
@@ -95,15 +95,15 @@ public class OpsTable
         }
         else
         {
-            if (opsTable.ContainsKey(opKey))
+            if (opsTable.TryGetValue(opKey, out var s))
             {
-                var (s0, s1) = Symbol.MinMax(op.j, opsTable[opKey]);
+                var (s0, s1) = EqClass.MinMax(op.j, s);
                 Substitute(s0, s1);
             }
 
-            if (opsTable.ContainsKey(opiKey))
+            if (opsTable.TryGetValue(opiKey, out var si))
             {
-                var (s0, s1) = Symbol.MinMax(op.i, opsTable[opiKey]);
+                var (s0, s1) = EqClass.MinMax(op.i, si);
                 Substitute(s0, s1);
             }
         }
@@ -123,13 +123,13 @@ public class OpsTable
         var j = opsTable.SelectMany(e => new[] { e.Key.i, e.Value }).Descending().FirstOrDefault().Next;
 
         var sgOp = sgTable.GetOps().FirstOrDefault(op =>
-            op.i != Symbol.Unknown && op.g != Generator.Unknown && op.j == Symbol.Unknown);
-        if (sgOp.i != Symbol.Unknown && sgOp.g != Generator.Unknown && sgOp.j == Symbol.Unknown)
+            op.i != EqClass.Unknown && op.g != Generator.Unknown && op.j == EqClass.Unknown);
+        if (sgOp.i != EqClass.Unknown && sgOp.g != Generator.Unknown && sgOp.j == EqClass.Unknown)
             return new Op(sgOp.i, sgOp.g, j);
 
         var rOp = rTable.GetOps().FirstOrDefault(op =>
-            op.i != Symbol.Unknown && op.g != Generator.Unknown && op.j == Symbol.Unknown);
-        if (rOp.i != Symbol.Unknown && rOp.g != Generator.Unknown && rOp.j == Symbol.Unknown)
+            op.i != EqClass.Unknown && op.g != Generator.Unknown && op.j == EqClass.Unknown);
+        if (rOp.i != EqClass.Unknown && rOp.g != Generator.Unknown && rOp.j == EqClass.Unknown)
             return new Op(rOp.i, rOp.g, j);
 
         return new();
@@ -137,18 +137,18 @@ public class OpsTable
 
     string TableFind(OpKey opk)
     {
-        if (opsTable.ContainsKey(opk))
-            return opsTable[opk].ToString();
+        if (opsTable.TryGetValue(opk, out var sk))
+            return sk.ToString();
 
         return " ";
     }
 
-    private Dictionary<Symbol, IEnumerable<char>> elementsTable;
+    private Dictionary<EqClass, IEnumerable<char>> elementsTable;
     private char[] generators;
 
-    void ChainSymbol(Symbol s, List<OpKey> chain)
+    void ChainSymbol(EqClass s, List<OpKey> chain)
     {
-        if (s.Equals(Symbol.One))
+        if (s.Equals(EqClass.One))
             return;
 
         var prev = opsTable.First(kp => kp.Value.Equals(s));
@@ -180,7 +180,7 @@ public class OpsTable
             throw new GroupException(GroupExceptionType.GroupDef);
 
         var symbol = w.Reverse().Select(c => new Generator(c))
-            .Aggregate(Symbol.One, (i, g) => opsTable[new OpKey(i, g)]);
+            .Aggregate(EqClass.One, (i, g) => opsTable[new OpKey(i, g)]);
         return elementsTable[symbol];
     }
 
@@ -216,7 +216,7 @@ public class OpsTable
 
     public void Display()
     {
-        var digits = opsTable.Count == 0 ? 2 : opsTable.Max(p0 => Symbol.Max(p0.Key.i, p0.Value).ToString().Length);
+        var digits = opsTable.Count == 0 ? 2 : opsTable.Max(p0 => EqClass.Max(p0.Key.i, p0.Value).ToString().Length);
 
         sgTable.Display(digits);
         rTable.Display(digits);
@@ -226,7 +226,7 @@ public class OpsTable
 
     public void DisplayOps()
     {
-        var digits = opsTable.Count == 0 ? 2 : opsTable.Max(p0 => Symbol.Max(p0.Key.i, p0.Value).ToString().Length);
+        var digits = opsTable.Count == 0 ? 2 : opsTable.Max(p0 => EqClass.Max(p0.Key.i, p0.Value).ToString().Length);
         DisplayTable(digits);
         Console.WriteLine();
     }
