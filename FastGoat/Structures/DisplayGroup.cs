@@ -53,11 +53,14 @@ public static class DisplayGroup
         var k = 0;
         var digits1 = $"{g.ElementsOrders.Count}".Length;
         var digits2 = $"{g.ElementsOrders.Values.Max()}".Length;
-        var fmt = $"({{0,{digits1}}})[{{1,{digits2}}}] = {{2}}";
+        var fmt = $"({{0,{digits1}}})[{{1,{digits2}}}] = ";
 
         Console.WriteLine("Elements");
         foreach (var elt in ordered)
-            Console.WriteLine(fmt, ++k, g.ElementsOrders[elt], elt);
+        {
+            Console.Write(fmt, ++k, g.ElementsOrders[elt]);
+            Console.WriteLine(elt);
+        }
 
         Console.WriteLine();
     }

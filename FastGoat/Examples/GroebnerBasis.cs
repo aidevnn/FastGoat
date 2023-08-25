@@ -22,7 +22,7 @@ public static class GroebnerBasis
 
     public static void Example1()
     {
-        var (x, y) = Ring.Polynomial("x", "y", Rational.KZero());
+        var (x, y) = Ring.Polynomial(Rational.KZero(), "x", "y").Deconstruct();
         foreach (var order in new[] { MonomOrder.Lex, MonomOrder.GrLex })
         {
             x.Indeterminates.SetOrder(order);
@@ -40,7 +40,7 @@ public static class GroebnerBasis
 
     public static void Example2()
     {
-        var (x, y) = Ring.Polynomial("x", "y", Rational.KZero());
+        var (x, y) = Ring.Polynomial(Rational.KZero(), "x", "y").Deconstruct();
         foreach (var order in new[] { MonomOrder.Lex, MonomOrder.GrLex })
         {
             x.Indeterminates.SetOrder(order);
@@ -58,7 +58,7 @@ public static class GroebnerBasis
 
     public static void Example3()
     {
-        var (x, y, z) = Ring.Polynomial("x", "y", "z", Rational.KZero());
+        var (x, y, z) = Ring.Polynomial(Rational.KZero(), "x", "y", "z").Deconstruct();
         foreach (var order in new[] { MonomOrder.Lex, MonomOrder.GrLex })
         {
             x.Indeterminates.SetOrder(order);
@@ -76,7 +76,7 @@ public static class GroebnerBasis
 
     public static void Example4()
     {
-        var (x, y, z, t) = Ring.Polynomial("x", "y", "z", "t", Rational.KZero());
+        var (x, y, z, t) = Ring.Polynomial(Rational.KZero(), "x", "y", "z", "t").Deconstruct();
         foreach (var order in new[] { MonomOrder.Lex, MonomOrder.GrLex })
         {
             x.Indeterminates.SetOrder(order);
@@ -94,7 +94,7 @@ public static class GroebnerBasis
 
     public static void LCMexample1()
     {
-        var (x, y, t) = Ring.Polynomial("x", "y", "t", Rational.KZero());
+        var (x, y, t) = Ring.Polynomial(Rational.KZero(), "x", "y", "t").Deconstruct();
         var (e1, e2) = ( x.Pow(2) * y, x * y.Pow(2));
         var (p1, p2) = (t * e1, (1 - t) * e2);
         Console.WriteLine($"ReducedGrobnerBasis[{p1}, {p2}]{p1.Indeterminates}");
@@ -110,7 +110,7 @@ public static class GroebnerBasis
 
     public static void LCMexample2()
     {
-        var (x, y, t) = Ring.Polynomial("x", "y", "t", Rational.KZero());
+        var (x, y, t) = Ring.Polynomial(Rational.KZero(), "x", "y", "t").Deconstruct();
 
         var (e1, e2) = ((x + y).Pow(4) * (x.Pow(2) + y).Pow(2) * (x - 5 * y), (x + y) * (x.Pow(2) + y).Pow(3) * (x + 3 * y));
         var (p1, p2) = (t * e1, (1 - t) * e2);

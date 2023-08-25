@@ -107,6 +107,18 @@ public static partial class FG
     }
 
     public static WordGroup AbelianWg(params int[] seq) => AbelianWg(seq.Glue(" x ", "C{0}"), seq);
+    
+    public static WordGroup AlternateWG(int n)
+    {
+        if (n < 2 || n > 6)
+            throw new GroupException(GroupExceptionType.GroupDef);
+    
+        var rg = (n - 2).Range();
+        string s0(int e) => $"{(char)('a' + e)}";
+        var r1 = rg.Select(e => $"{s0(e)}3").Glue(", ");
+        var r2 = rg.Grid2D().Where(e => e.t1 < e.t2).Select(e => $"{s0(e.t1)}{s0(e.t2)}{s0(e.t1)}{s0(e.t2)}").Glue(", ");
+        return WordGroup($"A{n}", $"{r1}, {r2}");
+    }
 
     public static SemiDirectProduct<ZnInt, ZnInt> DihedralSdp(int n)
     {

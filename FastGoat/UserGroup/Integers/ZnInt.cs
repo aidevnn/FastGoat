@@ -16,8 +16,8 @@ public readonly struct ZnInt : IElt<ZnInt>, IRingElt<ZnInt>, IFieldElt<ZnInt>
     public int K { get; }
     public int P => Mod;
 
-    public static double Abs(ZnInt z) => z.P == 0 ? double.Abs(z.K) : z.K;
-    public static bool IsValuedField => true;
+    public static double Abs(ZnInt z) => throw new(); // z.P == 0 ? double.Abs(z.K) : z.K;
+    public static bool IsValuedField => false;
     public static ZnInt ZnZero(int m = 0) => new(m, 0);
 
     public ZnInt(int m, int k)

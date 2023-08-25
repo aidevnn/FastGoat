@@ -25,7 +25,6 @@ public class Indeterminates<T> : IEnumerable<T>, IEquatable<Indeterminates<T>> w
         // if(Content.Distinct().Count() != arr.Count()) {} // TODO warning
 
         (Graded, Reverse) = (g, r);
-        Hash = Content.Aggregate(0, (acc, a) => (acc, a.Hash).GetHashCode());
     }
 
     public Indeterminates(params T[] arr) : this(arr, true, false)
@@ -41,7 +40,6 @@ public class Indeterminates<T> : IEnumerable<T>, IEquatable<Indeterminates<T>> w
         // if(Content.Distinct().Count() != arr.Count()) {} // TODO warning
 
         SetOrder(order);
-        Hash = Content.Aggregate(0, (acc, a) => (acc, a.Hash).GetHashCode());
     }
 
     public int Length => Content.Length;
@@ -66,6 +64,13 @@ public class Indeterminates<T> : IEnumerable<T>, IEquatable<Indeterminates<T>> w
         };
     }
 
+    public void Extend(params T[] xi)
+    {
+        Content = Content.Concat(xi).ToArray();
+        if (Content.Length != Content.Distinct().Count())
+            throw new();
+    }
+
     public void Permute(int[] perm)
     {
         if (Enumerable.Range(0, Content.Length).SequenceEqual(perm.Order()))
@@ -76,8 +81,9 @@ public class Indeterminates<T> : IEnumerable<T>, IEquatable<Indeterminates<T>> w
     }
 
     public bool Contains(T t) => Content.Contains(t);
+    public bool Contains(string t) => Content.Any(xi => xi.ToString()!.Equals(t));
 
-    public int Hash { get; }
+    public int Hash => Content.Aggregate(0, (acc, a) => (acc, a.Hash).GetHashCode());
 
     public IEnumerator<T> GetEnumerator()
     {

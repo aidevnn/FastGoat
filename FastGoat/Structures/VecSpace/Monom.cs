@@ -35,6 +35,15 @@ public readonly struct Monom<T> : IElt<Monom<T>> where T : struct, IElt<T>
     private Dictionary<T, int> Content { get; }
     public Indeterminates<T> Indeterminates { get; }
     public IEnumerable<T> ContentIndeterminates => Content.Keys;
+    public IEnumerable<Monom<T>> ContentIndeterminatesMonoms
+    {
+        get
+        {
+            var monom = this;
+            return Content.Keys.Select(t => new Monom<T>(monom.Indeterminates, t, 1));
+        }
+    }
+
     public int Degree { get; }
 
     public Monom()
@@ -158,14 +167,11 @@ public readonly struct Monom<T> : IElt<Monom<T>> where T : struct, IElt<T>
 
     public (int n, Monom<T> m) D(T t)
     {
-        if (Content.ContainsKey(t))
+        if (Content.TryGetValue(t, out var n))
         {
             var (b, m) = Div(new(Indeterminates, t));
             if (b)
-            {
-                var n = Content[t];
                 return (n, m);
-            }
         }
 
         return (0, new(Indeterminates));

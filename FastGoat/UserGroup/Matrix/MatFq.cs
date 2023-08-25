@@ -26,6 +26,7 @@ public struct MatFq : IElt<MatFq>
 
     public override string ToString()
     {
-        return $"[{Table.Glue("; ", GLnq.Fmt)}]";
+        // return $"[{Table.Glue("; ", GLnq.Fmt)}]";
+        return Table.ToKMatrix(GLnq.N).ToString();
     }
 }

@@ -1,3 +1,4 @@
+using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup.Integers;
@@ -130,7 +131,7 @@ public static class SymbolicMatrix
 
     public static void QuadraticDiscriminant()
     {
-        var (x, a, b, c) = Ring.Polynomial("x", "a", "b", "c", ZnInt.ZnZero());
+        var (x, a, b, c) = Ring.Polynomial(ZnInt.ZnZero(), "x", "a", "b", "c").Deconstruct();
         var X = x.Indeterminates.First();
         var f = a * x.Pow(2) + b * x + c;
         var g = f.D(X);
@@ -151,7 +152,7 @@ public static class SymbolicMatrix
 
     public static void CubicDiscriminant()
     {
-        var (x, p, q) = Ring.Polynomial("x", "p", "q", ZnInt.ZnZero());
+        var (x, p, q) = Ring.Polynomial(ZnInt.ZnZero(), "x", "p", "q").Deconstruct();
         var X = x.Indeterminates.First();
         var f = x.Pow(3) + p * x + q;
         var g = f.D(X);
@@ -173,8 +174,7 @@ public static class SymbolicMatrix
 
     public static void CubicDiscriminantLong()
     {
-        var ps = Ring.Polynomial(ZnInt.ZnZero(), "xabcd".ToArray());
-        var (x, a, b, c, d) = (ps[0], ps[1], ps[2], ps[3], ps[4]);
+        var (x, a, b, c, d) = Ring.Polynomial(ZnInt.ZnZero(), "xabcd".ToArray()).Deconstruct();
         var X = x.Indeterminates[0];
         var f = a * x.Pow(3) + b * x.Pow(2) + c * x + d;
         var g = f.D(X);

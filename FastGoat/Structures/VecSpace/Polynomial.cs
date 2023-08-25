@@ -112,6 +112,15 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
         }
     }
 
+    public T[] ExtractAllIndeterminates
+    {
+        get
+        {
+            return Coefs.Keys.SelectMany(m => m.ContentIndeterminatesMonoms).Distinct().Order()
+                .SelectMany(e => e.ContentIndeterminates).ToArray();
+        }
+    }
+
     public Monom<T> ExtractMonom => new Monom<T>(Indeterminates, ExtractIndeterminate);
     public Polynomial<K, T> Substitute(Polynomial<K, T> f, T xi)
     {
@@ -123,6 +132,26 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
             var fn = f.Pow(n);
             var p0fn = p0 * fn;
             poly = poly + p0fn;
+        }
+
+        return poly;
+    }
+
+    public Polynomial<K, T> Substitute(Dictionary<T, Polynomial<K, T>> dico)
+    {
+        var poly = Zero;
+        foreach (var (m, c) in Coefs)
+        {
+            var poly0 = One;
+            var m0 = m;
+            foreach (var (xi, f) in dico)
+            {
+                (int n, m0) = m0.Remove(xi);
+                poly0 *= f.Pow(n);
+            }
+            
+            var p0 = new Polynomial<K, T>(m0, c);
+            poly = poly + poly0 * p0;
         }
 
         return poly;

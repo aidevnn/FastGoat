@@ -477,6 +477,7 @@ public static partial class Ring
 
     public static string Matrix2String<T>(T[,] mat, string sep = ", ")
     {
+        var cursorPos = Enumerable.Repeat(' ', Console.CursorLeft).Glue();
         var rows = mat.GetLength(0);
         var cols = mat.GetLength(1);
         var rgCols = cols.Range();
@@ -499,7 +500,7 @@ public static partial class Ring
 
         if (MatrixDisplayForm == MatrixDisplay.Table || MatrixDisplayForm == MatrixDisplay.TableLeft)
         {
-            return lt.Glue("\n");
+            return lt.Select((l, i) => i == 0 ? l : cursorPos + l).Glue("\n");
         }
         else
         {

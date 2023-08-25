@@ -27,6 +27,8 @@ public static class BCHcodes
         var q0 = new ZnInt(n, q);
         foreach (var i0 in cn)
         {
+            if (set.Any(si => si.Contains(i0.K)))
+                continue;
             var Si = new HashSet<int>() { i0.K };
             var s = 1;
             while (true)

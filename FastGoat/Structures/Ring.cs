@@ -44,11 +44,7 @@ public static partial class Ring
         var (x0, y0) = Bezout(b, r);
         return (y0, x0.Add(q.Mul(y0).Opp()));
     }
-/***
-a=q*b+r
-x0*b+y0*r
-y0*a + (x0-q*y0)*b = y0*a + x0*b - b*q*y0 = y0*a + x0*b - a*y0 + r*y0 = x0*b + y0*r
- */
+    
     public static Monom<Xi> Xi(string c, int n = 1) => new Monom<Xi>(new Xi(c), n);
 
     public static Indeterminates<Xi> Indeterminates(params string[] xs) => new(xs.Select(s => new Xi(s)).ToArray());
@@ -56,24 +52,50 @@ y0*a + (x0-q*y0)*b = y0*a + x0*b - b*q*y0 = y0*a + x0*b - a*y0 + r*y0 = x0*b + y
     public static Indeterminates<Xi> Indeterminates(params char[] xs) =>
         Indeterminates(xs.Select(c => c.ToString()).ToArray());
 
-    public static Polynomial<K, Xi>[] Polynomial<K>(K scalar, string[] xi)
+    public static Polynomial<K, Xi> ToPolynomial<K>(this Monom<Xi> xi, Polynomial<K, Xi> f)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
+        if (!xi.Indeterminates.Equals(f.Indeterminates))
+            throw new();
+        return new Polynomial<K, Xi>(xi, f.KOne) * f;
+    }
+
+    public static Polynomial<K, Xi> ToPolynomial<K>(this Xi xi, Polynomial<K, Xi> f)
+        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
+    {
+        return new Polynomial<K, Xi>(new Monom<Xi>(f.Indeterminates, xi), f.KOne) * f;
+    }
+
+    public static Polynomial<K, Xi>[] Polynomial<K>(K scalar, params string[] xi)
+        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
+    {
+        if (xi.Length == 0)
+            throw new();
+        
         var indeterminates = Indeterminates(xi);
         return xi.Select(c => new Polynomial<K, Xi>(new Monom<Xi>(indeterminates, new(c), 1), scalar.One)).ToArray();
     }
 
-    public static Polynomial<K, Xi>[] Polynomial<K>(K scalar, Indeterminates<Xi> indeterminates)
+    public static Polynomial<K, Xi>[] Polynomial<K>(K scalar, MonomOrder order, params string[] xi)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
-        return indeterminates.Content.Select(c => new Polynomial<K, Xi>(new Monom<Xi>(indeterminates, c, 1), scalar.One)).ToArray();
-    }
+        if (xi.Length == 0)
+            throw new();
 
-    public static Polynomial<K, Xi>[] Polynomial<K>(K scalar, MonomOrder order, string[] xi)
-        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
-    {
         var indeterminates = new Indeterminates<Xi>(order, xi.Select(x => new Xi(x)).ToArray());
         return xi.Select(c => new Polynomial<K, Xi>(new Monom<Xi>(indeterminates, new(c), 1), scalar.One)).ToArray();
+    }
+
+    public static Polynomial<K, Xi>[] Polynomial<K>(K scalar, char[] xi)
+        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
+    {
+        return Polynomial(scalar, xi.Select(c => $"{c}").ToArray());
+    }
+
+    public static Polynomial<K, Xi> Polynomial<K>(K scalar)
+        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
+    {
+        return Polynomial(scalar, new[] { "X" })[0];
     }
 
     public static (Polynomial<K, Xi> X,Polynomial<K, Xi>[] Xis) Polynomial<K>(K scalar, MonomOrder order, (int n, string h) e, string x0)
@@ -126,89 +148,6 @@ y0*a + (x0-q*y0)*b = y0*a + x0*b - b*q*y0 = y0*a + x0*b - a*y0 + r*y0 = x0*b + y
         var basis = new PolynomialBasis<K, Xi>(x.Indeterminates);
         return (new EPolynomial<K>(x, basis), xis.Select(xi => new EPolynomial<K>(xi, basis)).ToArray());
     }
-
-    public static Polynomial<K, Xi>[] Polynomial<K>(K scalar, char[] xi)
-        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
-    {
-        return Polynomial(scalar, xi.Select(c => $"{c}").ToArray());
-    }
-
-    public static Polynomial<K, Xi>[] Polynomial<K>(K scalar, string x0, params string[] xi)
-        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
-    {
-        return Polynomial(scalar, xi.Prepend(x0).ToArray());
-    }
-
-    public static Polynomial<K, Xi> Polynomial<K>(string x, K scalar)
-        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
-    {
-        return Polynomial(scalar, x)[0];
-    }
-
-    public static Polynomial<K, Xi> Polynomial<K>(K scalar)
-        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
-    {
-        return Polynomial("X", scalar);
-    }
-
-    public static (Polynomial<K, Xi> x1, Polynomial<K, Xi> x2)
-        Polynomial<K>(string x1, string x2, K scalar, MonomOrder order = MonomOrder.GrLex)
-        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
-    {
-        var polys = Polynomial(scalar, order, new[] { x1, x2 });
-        return (polys[0], polys[1]);
-    }
-
-    public static (Polynomial<K, Xi> x1, Polynomial<K, Xi> x2, Polynomial<K, Xi> x3)
-        Polynomial<K>(string x1, string x2, string x3, K scalar, MonomOrder order = MonomOrder.GrLex)
-        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
-    {
-        var polys = Polynomial(scalar, order, new[] { x1, x2, x3 });
-        return (polys[0], polys[1], polys[2]);
-    }
-
-    public static (Polynomial<K, Xi> x1, Polynomial<K, Xi> x2, Polynomial<K, Xi> x3, Polynomial<K, Xi> x4) Polynomial<K>(string x1,
-        string x2, string x3, string x4, K scalar, MonomOrder order = MonomOrder.GrLex)
-        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
-    {
-        var polys = Polynomial(scalar, order, new[] { x1, x2, x3, x4 });
-        return (polys[0], polys[1], polys[2], polys[3]);
-    }
-
-    public static (Polynomial<K, Xi> x1, Polynomial<K, Xi> x2, Polynomial<K, Xi> x3, Polynomial<K, Xi> x4, Polynomial<K, Xi> x5)
-        Polynomial<K>(string x1, string x2, string x3, string x4, string x5, K scalar, MonomOrder order = MonomOrder.GrLex)
-        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
-    {
-        var polys = Polynomial(scalar, order, new[] { x1, x2, x3, x4, x5 });
-        return (polys[0], polys[1], polys[2], polys[3], polys[4]);
-    }
-
-    public static (Polynomial<K, Xi> x1, Polynomial<K, Xi> x2, Polynomial<K, Xi> x3,
-        Polynomial<K, Xi> x4, Polynomial<K, Xi> x5, Polynomial<K, Xi> x6)
-        Polynomial<K>(string x1, string x2, string x3, string x4, string x5, string x6, K scalar, MonomOrder order = MonomOrder.GrLex)
-        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
-    {
-        var polys = Polynomial(scalar, order, new[] { x1, x2, x3, x4, x5, x6 });
-        return (polys[0], polys[1], polys[2], polys[3], polys[4], polys[5]);
-    }
-    
-    
-    public static (EPolynomial<K> x1, EPolynomial<K> x2)
-        EPolynomial<K>(string x1, string x2, K scalar, MonomOrder order = MonomOrder.GrLex)
-        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
-    {
-        var polys = EPolynomial(scalar, order, new[] { x1, x2 });
-        return (polys[0], polys[1]);
-    }
-
-    public static (EPolynomial<K> x1, EPolynomial<K> x2, EPolynomial<K> x3)
-        EPolynomial<K>(string x1, string x2, string x3, K scalar, MonomOrder order = MonomOrder.GrLex)
-        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
-    {
-        var polys = EPolynomial(scalar, order, new[] { x1, x2, x3 });
-        return (polys[0], polys[1], polys[2]);
-    }
-
 
     public static KPoly<K> ToKPoly<K>(this Polynomial<K, Xi> f, Xi x)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>

@@ -168,7 +168,7 @@ public struct ZnBInt : IElt<ZnBInt>, IRingElt<ZnBInt>, IFieldElt<ZnBInt>, IVsElt
     public string LandauString()
     {
         var r1 = Rational.KOne();
-        var xp = Ring.Polynomial($"{P}", r1);
+        var xp = Ring.Polynomial(r1, $"{P}")[0];
         var pstr = $"O({xp.Pow(Details.O)})";
         var sgn = Sgn;
         var p = P;

@@ -362,7 +362,7 @@ public static partial class FG
 
     public static EPolynomial<Rational> NumberFieldQ(KPoly<Rational> e, string x)
     {
-        var (_, t) = Ring.Polynomial(x, "_t_", Rational.KZero());
+        var (_, t) = Ring.Polynomial(Rational.KZero(), x, "_t_").Deconstruct();
         var a = e.ToPolynomial(t.Indeterminates, t.Indeterminates[0]);
         return NumberFieldQ(a);
     }
@@ -380,7 +380,7 @@ public static partial class FG
     public static (EPolynomial<Rational>, EPolynomial<Rational>) NumberFieldQ((KPoly<Rational>, string) e0,
         (KPoly<Rational>, string) e1)
     {
-        var (_, _, t) = Ring.Polynomial(e0.Item2, e1.Item2, "_t_", Rational.KZero());
+        var (_, _, t) = Ring.Polynomial(Rational.KZero(), e0.Item2, e1.Item2, "_t_").Deconstruct();
         var a = e0.Item1.ToPolynomial(t.Indeterminates, t.Indeterminates[0]);
         var b = e1.Item1.ToPolynomial(t.Indeterminates, t.Indeterminates[1]);
         var nbf = NumberFieldQ(new[] { a, b });

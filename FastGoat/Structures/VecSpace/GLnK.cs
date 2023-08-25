@@ -61,6 +61,16 @@ public readonly struct GLn<K> : IGroup<KMatrix<K>> where K : struct, IElt<K>, IR
     public int Hash { get; }
     public string Name { get; }
 
+    public static bool Contains(IGroup<KMatrix<K>> g, KMatrix<K> m)
+    {
+        var g0 = g is GLn<K> ? (GLn<K>)g : default;
+        var kone = g0.idN.KOne;
+        var det = m.Det;
+
+        Console.WriteLine($"GLn<K>");
+        return det.Equals(kone) || det.Equals(-kone);
+    }
+
     public KMatrix<K> this[params ValueType[] us]
     {
         get
