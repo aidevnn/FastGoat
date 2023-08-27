@@ -26,3 +26,35 @@ using FastGoat.UserGroup.Padic;
 //////////////////////////////////
 
 Console.WriteLine("Hello World");
+
+{
+    var x = Ring.Polynomial(Rational.KZero(), "x")[0];
+    Console.WriteLine(Ring.LcmPolynomial((x + 1) * (x + 5).Pow(3) * (x - 6), (x + 2) * (x + 5).Pow(2)));
+    Console.WriteLine((x + 1) * (x + 5).Pow(3) * (x + 2) * (x - 6));
+    Console.WriteLine();
+    Console.WriteLine(Ring.GcdPolynomial((x + 1) * (x + 5).Pow(3) * (x - 6), (x + 2) * (x + 5).Pow(2)));
+    Console.WriteLine((x + 5).Pow(2));
+    Console.WriteLine();
+}
+
+{
+    var x = FG.QPoly();
+    Console.WriteLine(Ring.Lcm((x + 1) * (x + 5).Pow(3) * (x - 6), (x + 2) * (x + 5).Pow(2)).Monic);
+    Console.WriteLine((x + 1) * (x + 5).Pow(3) * (x + 2) * (x - 6));
+    Console.WriteLine();
+    Console.WriteLine(Ring.Gcd((x + 1) * (x + 5).Pow(3) * (x - 6), (x + 2) * (x + 5).Pow(2)).Monic);
+    Console.WriteLine((x + 5).Pow(2));
+    Console.WriteLine();
+}
+
+{
+    var (x, y) = Ring.Polynomial(Rational.KZero(), "x", "y").Deconstruct();
+    Console.WriteLine(Ring.LcmPolynomial((x + 1) * (y + 5).Pow(3) * (x - 6), (x + 2) * (y + 5).Pow(2)));
+    Console.WriteLine(Ring.LcmPolynomial((x + 2) * (y + 5).Pow(2), (x + 1) * (y + 5).Pow(3) * (x - 6)));
+    Console.WriteLine((x + 1) * (y + 5).Pow(3) * (x + 2) * (x - 6));
+    Console.WriteLine();
+    Console.WriteLine(Ring.GcdPolynomial((x + 1) * (y + 5).Pow(3) * (x - 6), (x + 2) * (y + 5).Pow(2)));
+    Console.WriteLine(Ring.GcdPolynomial((x + 2) * (y + 5).Pow(2), (x + 1) * (y + 5).Pow(3) * (x - 6)));
+    Console.WriteLine((y + 5).Pow(2));
+    Console.WriteLine();
+}

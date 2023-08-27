@@ -24,6 +24,11 @@ public static partial class Ring
         return Gcd(b, a.Div(b).rem);
     }
 
+    public static T Lcm<T>(T a, T b) where T : IElt<T>, IRingElt<T>
+    {
+        return (a * b) / Gcd(a, b);
+    }
+
     public static T Gcd<T>(T[] arr) where T : IElt<T>, IRingElt<T>
     {
         if (arr.Length == 0)
@@ -33,6 +38,17 @@ public static partial class Ring
             return arr[0];
 
         return Gcd(arr.First(), Gcd(arr.Skip(1).ToArray()));
+    }
+
+    public static T Lcm<T>(T[] arr) where T : IElt<T>, IRingElt<T>
+    {
+        if (arr.Length == 0)
+            throw new ArgumentException();
+
+        if (arr.Length == 1)
+            return arr[0];
+
+        return Lcm(arr.First(), Lcm(arr.Skip(1).ToArray()));
     }
 
     public static (T x, T y) Bezout<T>(T a, T b) where T : IElt<T>, IRingElt<T>

@@ -14,7 +14,7 @@ public static class SymbolicMatrix
 
     public static void Mat2x2()
     {
-        var coefs = Ring.Polynomial(ZnInt.ZnZero(), "abcd".ToArray());
+        var coefs = Ring.Polynomial(Rational.KZero(), "abcd".ToArray());
         var z0 = coefs[0].Zero;
         var mat = Ring.Matrix(2, coefs);
 
@@ -29,22 +29,21 @@ public static class SymbolicMatrix
 
     public static void Mat2x2bis()
     {
-        var coefs = Ring.Polynomial(ZnInt.ZnZero(), "abba".ToArray());
-        var z0 = coefs[0].Zero;
-        var mat = Ring.Matrix(2, coefs);
+        var (a, b) = Ring.Polynomial(Rational.KZero(), "a", "b").Deconstruct();
+        var mat = Ring.Matrix(2, a, b, b, a);
 
         Console.WriteLine("Matrix");
         Ring.DisplayMatrix(mat);
 
         Console.WriteLine("CoMatrix");
-        Ring.DisplayMatrix(Ring.CoMatrix(mat, z0));
-        Console.WriteLine("Det = {0}", Ring.Determinant(mat, z0));
+        Ring.DisplayMatrix(Ring.CoMatrix(mat, a));
+        Console.WriteLine("Det = {0}", Ring.Determinant(mat, a));
         Console.WriteLine();
     }
 
     public static void Mat3x3()
     {
-        var coefs = Ring.Polynomial(ZnInt.ZnZero(), "abcdefghi".ToArray());
+        var coefs = Ring.Polynomial(Rational.KZero(), "abcdefghi".ToArray());
         var z0 = coefs[0].Zero;
         var mat = Ring.Matrix(3, coefs);
 
@@ -59,9 +58,23 @@ public static class SymbolicMatrix
 
     public static void Mat3x3bis()
     {
-        var coefs = Ring.Polynomial(ZnInt.ZnZero(), "abcbaecea".ToArray());
+        var (a, b, c, d) = Ring.Polynomial(Rational.KZero(), "abcd".ToArray()).Deconstruct();
+        var mat = Ring.Matrix(3, a, b, c, b, a, d, c, d, a);
+
+        Console.WriteLine("Matrix");
+        Ring.DisplayMatrix(mat);
+
+        Console.WriteLine("CoMatrix");
+        Ring.DisplayMatrix(Ring.CoMatrix(mat, a));
+        Console.WriteLine("Det = {0}", Ring.Determinant(mat, a));
+        Console.WriteLine();
+    }
+
+    public static void Mat4x4()
+    {
+        var coefs = Ring.Polynomial(Rational.KZero(), "abcdefghijklmnop".ToArray());
         var z0 = coefs[0].Zero;
-        var mat = Ring.Matrix(3, coefs);
+        var mat = Ring.Matrix(4, coefs);
 
         Console.WriteLine("Matrix");
         Ring.DisplayMatrix(mat);
@@ -72,39 +85,24 @@ public static class SymbolicMatrix
         Console.WriteLine();
     }
 
-    public static void Mat4x4()
-    {
-        var coefs = Ring.Polynomial(ZnInt.ZnZero(), "abcdefghijklmnop".ToArray());
-        var z0 = coefs[0].Zero;
-        var mat = Ring.Matrix(4, coefs);
-
-        Console.WriteLine("Matrix");
-        Ring.DisplayMatrix(mat);
-
-        Console.WriteLine("CoMatrix");
-        Ring.DisplayMatrix(Ring.CoMatrix(mat, z0), ",\n    ");
-        Console.WriteLine("Det = {0}", Ring.Determinant(mat, z0));
-        Console.WriteLine();
-    }
-
     public static void Mat4x4bis()
     {
-        var coefs = Ring.Polynomial(ZnInt.ZnZero(), "abcdbaefceagdfga".ToArray());
-        var z0 = coefs[0].Zero;
-        var mat = Ring.Matrix(4, coefs);
+        // var coefs = Ring.Polynomial(Rational.KZero(), "abcdbaefceagdfga".ToArray());
+        var (a, b, c, d, e, f, g) = Ring.Polynomial(Rational.KZero(), "abcdefg".ToArray()).Deconstruct();
+        var mat = Ring.Matrix(4, a, b, c, d, b, a, e, f, c, e, a, g, d, f, g, a);
 
         Console.WriteLine("Matrix");
         Ring.DisplayMatrix(mat);
 
         Console.WriteLine("CoMatrix");
-        Ring.DisplayMatrix(Ring.CoMatrix(mat, z0), ",\n    ");
-        Console.WriteLine("Det = {0}", Ring.Determinant(mat, z0));
+        Ring.DisplayMatrix(Ring.CoMatrix(mat, a));
+        Console.WriteLine("Det = {0}", Ring.Determinant(mat, a));
         Console.WriteLine();
     }
 
     public static void Mat5x5()
     {
-        var coefs = Ring.Polynomial(ZnInt.ZnZero(), "abcdefghijklmnopqrstuvwxy".ToArray());
+        var coefs = Ring.Polynomial(Rational.KZero(), "abcdefghijklmnopqrstuvwxy".ToArray());
         var z0 = coefs[0].Zero;
         var mat = Ring.Matrix(5, coefs);
 
@@ -112,14 +110,14 @@ public static class SymbolicMatrix
         Ring.DisplayMatrix(mat);
 
         Console.WriteLine("CoMatrix");
-        Ring.DisplayMatrix(Ring.CoMatrix(mat, z0), ",\n    ");
+        Ring.DisplayMatrix(Ring.CoMatrix(mat, z0));
         Console.WriteLine("Det = {0}", Ring.Determinant(mat, z0));
         Console.WriteLine();
     }
 
     public static void SylvesterMatrix()
     {
-        var x = Ring.Polynomial(ZnInt.ZnZero());
+        var x = Ring.Polynomial(Rational.KZero());
         var f = 2 * x.Pow(2) + 3 * x + 1;
         var g = 7 * x.Pow(2) + x + 3;
         Console.WriteLine(new { f, g });
@@ -131,7 +129,7 @@ public static class SymbolicMatrix
 
     public static void QuadraticDiscriminant()
     {
-        var (x, a, b, c) = Ring.Polynomial(ZnInt.ZnZero(), "x", "a", "b", "c").Deconstruct();
+        var (x, a, b, c) = Ring.Polynomial(Rational.KZero(), "x", "a", "b", "c").Deconstruct();
         var X = x.Indeterminates.First();
         var f = a * x.Pow(2) + b * x + c;
         var g = f.D(X);
@@ -152,7 +150,7 @@ public static class SymbolicMatrix
 
     public static void CubicDiscriminant()
     {
-        var (x, p, q) = Ring.Polynomial(ZnInt.ZnZero(), "x", "p", "q").Deconstruct();
+        var (x, p, q) = Ring.Polynomial(Rational.KZero(), "x", "p", "q").Deconstruct();
         var X = x.Indeterminates.First();
         var f = x.Pow(3) + p * x + q;
         var g = f.D(X);
@@ -174,7 +172,7 @@ public static class SymbolicMatrix
 
     public static void CubicDiscriminantLong()
     {
-        var (x, a, b, c, d) = Ring.Polynomial(ZnInt.ZnZero(), "xabcd".ToArray()).Deconstruct();
+        var (x, a, b, c, d) = Ring.Polynomial(Rational.KZero(), "xabcd".ToArray()).Deconstruct();
         var X = x.Indeterminates[0];
         var f = a * x.Pow(3) + b * x.Pow(2) + c * x + d;
         var g = f.D(X);
@@ -198,8 +196,7 @@ public static class SymbolicMatrix
 
     public static void QuarticDiscriminant()
     {
-        var ps = Ring.Polynomial(ZnInt.ZnZero(), "xabcde".ToArray());
-        var (x, a, b, c, d, e) = (ps[0], ps[1], ps[2], ps[3], ps[4], ps[5]);
+        var (x, a, b, c, d, e) = Ring.Polynomial(Rational.KZero(), "xabcde".ToArray()).Deconstruct();
         var X = x.Indeterminates.First();
         var f = a * x.Pow(4) + b * x.Pow(3) + c * x.Pow(2) + d * x + e;
         var g = f.D(X);

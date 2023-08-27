@@ -99,7 +99,7 @@ public static partial class Ring
         {
             var (fi, fj) = Pij[0];
             Pij.RemoveAt(0);
-            var Spol = Ring.SPolynomial(fi, fj);
+            var Spol = SPolynomial(fi, fj);
             var fk = Reduction(Spol.Sij, g.ToArray());
             if (!fk.IsZero())
             {
@@ -139,24 +139,45 @@ public static partial class Ring
     public static Polynomial<K, Xi> LcmPolynomial<K>(Polynomial<K, Xi> a, Polynomial<K, Xi> b)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
-        var ti = a.Indeterminates.Last();
+        a.Indeterminates.ExtendPrepend(new Xi("_t_"));
+        var ti = a.Indeterminates.First();
         var da = a.DegreeOf(ti);
         var db = b.DegreeOf(ti);
         if (da != 0 && db != 0)
             throw new ArgumentException();
 
-        // Console.WriteLine(new { a, b });
-        // if (a.NbIndeterminates <= 1 || b.NbIndeterminates <= 1)
-        //     throw new ArgumentException();
-
-        var mnm = new Monom<Xi>(a.Indeterminates, ti, 1);
-        var t = new Polynomial<K, Xi>(mnm, a.KOne);
+        var t = ti.ToPolynomial(a.One);
         var ord = a.Indeterminates.Order;
         a.Indeterminates.SetOrder(MonomOrder.Lex);
+        
         var gb = ReducedGrobnerBasis(t * a, (1 - t) * b);
-        var lcm = gb.Last().Monic();
+        var lcm = gb.First(e => e.Coefs.Keys.All(xi => xi[ti] == 0));
         a.Indeterminates.SetOrder(ord);
-        return lcm;
+        a.Indeterminates.Remove(ti);
+        return lcm.Monic();
     }
 
+    public static Polynomial<K, Xi> GcdPolynomial<K>(Polynomial<K, Xi> a, Polynomial<K, Xi> b)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        return ((a * b) / LcmPolynomial(a, b)).Monic();
+    }
+
+    public static Polynomial<K, Xi> LcmPolynomials<K>(Polynomial<K, Xi> a, params Polynomial<K, Xi>[] ps)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        if (ps.Length == 0)
+            return a;
+
+        return LcmPolynomial(a, LcmPolynomials(ps[0], ps.Skip(1).ToArray()));
+    }
+
+    public static Polynomial<K, Xi> GcdPolynomials<K>(Polynomial<K, Xi> a, params Polynomial<K, Xi>[] ps)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        if (ps.Length == 0)
+            return a;
+
+        return GcdPolynomial(a, GcdPolynomials(ps[0], ps.Skip(1).ToArray()));
+    }
 }

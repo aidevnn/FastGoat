@@ -37,7 +37,8 @@ public class Indeterminates<T> : IEnumerable<T>, IEquatable<Indeterminates<T>> w
         if (Content.Length == 0)
             throw new ArgumentException();
 
-        // if(Content.Distinct().Count() != arr.Count()) {} // TODO warning
+        if (Content.Distinct().Count() != arr.Count())
+            throw new();
 
         SetOrder(order);
     }
@@ -64,9 +65,25 @@ public class Indeterminates<T> : IEnumerable<T>, IEquatable<Indeterminates<T>> w
         };
     }
 
-    public void Extend(params T[] xi)
+    public void Revert() => Reverse = !Reverse;
+
+    public void ExtendPrepend(params T[] xi)
+    {
+        Content = xi.Concat(Content).ToArray();
+        if (Content.Length != Content.Distinct().Count())
+            throw new();
+    }
+
+    public void ExtendAppend(params T[] xi)
     {
         Content = Content.Concat(xi).ToArray();
+        if (Content.Length != Content.Distinct().Count())
+            throw new();
+    }
+
+    public void Remove(params T[] xi)
+    {
+        Content = Content.Except(xi).ToArray();
         if (Content.Length != Content.Distinct().Count())
             throw new();
     }

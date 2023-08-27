@@ -264,8 +264,8 @@ public readonly struct Monom<T> : IElt<Monom<T>> where T : struct, IElt<T>
         if (!a.Indeterminates.Equals(b.Indeterminates))
             throw new ArgumentException();
 
-        var da = new Dictionary<T, int>();
-        var db = new Dictionary<T, int>();
+        var da = new Dictionary<T, int>(a.Indeterminates.Length);
+        var db = new Dictionary<T, int>(a.Indeterminates.Length);
         foreach (var t in a.Indeterminates)
         {
             var at = a[t];
