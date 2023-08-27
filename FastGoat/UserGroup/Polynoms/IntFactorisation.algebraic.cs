@@ -285,13 +285,14 @@ public static partial class IntFactorisation
     // Barry Trager, Algebraic Factoring
     public static List<KPoly<EPoly<Rational>>> AlgebraicFactors(KPoly<EPoly<Rational>> f, bool details = false)
     {
-        var (s, g, r) = SqfrNormRationals(f, onlyIntegers: true);
+        var (s, g, r) = SqfrNormRationals(f);
         var L = new List<KPoly<EPoly<Rational>>>();
         var x = g.X;
         var a = g[0].X;
         var g0 = g.Substitute(x);
 
-        var hs = FirrZ2(r, details);
+        var (nf, c0) = ConstCoefQ(r);
+        var hs = FirrZ2(nf, details).Select(f0 => f0.Substitute(f0.X / c0)).ToArray();
         if (hs.Length == 1)
         {
             L.Add(f.Substitute(x));
@@ -328,7 +329,7 @@ public static partial class IntFactorisation
 
     public static List<KPoly<EPoly<Rational>>> AlgebraicFactors(KPoly<Rational> f, bool details = false)
     {
-        var (X, _) = FG.EPolyXc(f, 'y');
+        var (X, _) = FG.EPolyXc(f.Monic, 'y');
         return AlgebraicFactors(f.Substitute(X), details);
     }
 
@@ -339,7 +340,7 @@ public static partial class IntFactorisation
 
     public static List<EPoly<Rational>> AlgebraicRoots(KPoly<Rational> f, bool details = false)
     {
-        var (X, _) = FG.EPolyXc(f, 'y');
+        var (X, _) = FG.EPolyXc(f.Monic, 'y');
         return AlgebraicRoots(f.Substitute(X), details);
     }
 
