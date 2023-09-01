@@ -5,8 +5,17 @@ using FastGoat.UserGroup.Integers;
 
 namespace FastGoat.UserGroup.Padic;
 
+public enum DisplayZnBInt
+{
+    Unsigned,
+    Signed,
+    Padic,
+    Landau
+}
+
 public struct ZnBInt : IElt<ZnBInt>, IRingElt<ZnBInt>, IFieldElt<ZnBInt>, IVsElt<Rational, ZnBInt>
 {
+    public static DisplayZnBInt Display = DisplayZnBInt.Unsigned;
     public BigInteger Mod => Details.Mod;
     public BigInteger K { get; }
     public static ZnBInt ZnZero(int mod, int o = 1) => new(mod, 0, o);
@@ -153,16 +162,16 @@ public struct ZnBInt : IElt<ZnBInt>, IRingElt<ZnBInt>, IFieldElt<ZnBInt>, IVsElt
             return $"[0({pstr})]";
 
         var seq = PadicSequence().ToArray();
+        var str = new List<string>();
         for (int i = 0; i < seq.Length; i++)
         {
             var sep = P < 10 ? "" : "'";
             sep = i == 1 ? "." : sep;
             sep = i == 0 ? "" : sep;
-            s = $"{seq[i]}" + sep + s;
+            str.AddRange(new[] { sep, $"{seq[i]}" });
         }
 
-        s = s.Reverse().Glue();
-        return $"[{s}({pstr})]";
+        return $"[{str.Glue()}({pstr})]";
     }
 
     public string LandauString()
@@ -227,9 +236,22 @@ public struct ZnBInt : IElt<ZnBInt>, IRingElt<ZnBInt>, IFieldElt<ZnBInt>, IVsElt
 
     public override string ToString()
     {
-        var digits = Mod.ToString().Length;
-        var fmt = $"{{0,{digits}}}";
-        return string.Format(fmt, K);
+        if (Display == DisplayZnBInt.Unsigned)
+        {
+            var digits = Mod.ToString().Length;
+            var fmt = $"{{0,{digits}}}";
+            return string.Format(fmt, K);
+        }
+        else if (Display == DisplayZnBInt.Signed)
+        {
+            var digits = Mod.ToString().Length + 1;
+            var fmt = $"{{0,{digits}}}";
+            return string.Format(fmt, ToSignedBigInt);
+        }
+        else if (Display == DisplayZnBInt.Padic)
+            return PadicNumericString();
+        else
+            return LandauString();
     }
 
     public static ZnBInt operator +(ZnBInt a, ZnBInt b) => a.Add(b);
