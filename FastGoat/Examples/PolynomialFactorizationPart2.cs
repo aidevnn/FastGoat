@@ -49,7 +49,7 @@ public static class PolynomialFactorizationPart2
                 .FirstOrDefault(new[] { 2, 3, 4 }.ToList())
                 .ToArray();
 
-            var polys = degrees.Select(ni => PolynomialFactorization.RandPolySep(Rational.KZero(), amp, ni)).ToArray();
+            var polys = degrees.Select(ni => PolynomialFactorization.RandPolySep(Rational.KZero(), amp, ni, monic: false)).ToArray();
             var f0 = polys.Aggregate((a, b) => a * b);
             var f = new KPoly<Rational>('X', f0.KZero, f0.Coefs);
             if (Ring.Discriminant(f).IsZero()) // Separable polynomial
@@ -118,7 +118,7 @@ public static class PolynomialFactorizationPart2
                 .FirstOrDefault(new int[] { 2, 3, 4 }.ToList())
                 .ToArray();
 
-            var polys = degrees.Select(ni => PolynomialFactorization.RandPolySep(Rational.KZero(), amp, ni)).ToArray();
+            var polys = degrees.Select(ni => PolynomialFactorization.RandPolySep(Rational.KZero(), amp, ni, monic: false)).ToArray();
             var f0 = polys.Aggregate((a, b) => a * b);
             var f = new KPoly<Rational>('X', f0.KZero, f0.Coefs);
             if (Ring.Discriminant(f).IsZero()) // Separable polynomial

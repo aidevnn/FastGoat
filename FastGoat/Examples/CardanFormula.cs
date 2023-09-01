@@ -3,6 +3,7 @@ using FastGoat.Structures;
 using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup;
 using FastGoat.UserGroup.Integers;
+using FastGoat.UserGroup.Polynoms;
 using static FastGoat.UserGroup.Polynoms.IntFactorisation;
 
 namespace FastGoat.Examples;
@@ -155,7 +156,7 @@ public static class CardanFormula
         Console.WriteLine();
     }
 
-    static void ExamplesFactorsQ()
+    public static void ExamplesFactorsQ()
     {
         var x = FG.QPoly();
         FactorsQDetails(x.Pow(2) + 2);
@@ -197,16 +198,21 @@ public static class CardanFormula
                 .FirstOrDefault(new[] { 2, 3, 4 }.ToList())
                 .ToArray();
 
+            var rg = new[] { 1, 1, 1, 2, 2, 3 };
             var polys = degrees.Select(ni =>
-                    IntExt.Rng.Next(1, 9) * X.Pow(ni) + PolynomialFactorization.RandPolySep(Rational.KZero(), amp, ni))
+                    PolynomialFactorization.RandPoly(Rational.KZero(), amp, ni, false).Pow(rg[IntExt.Rng.Next(6)]))
                 .ToArray();
             var f0 = polys.Aggregate((a, b) => a * b);
             var f = new KPoly<Rational>('X', f0.KZero, f0.Coefs);
-            if (Ring.Discriminant(f).IsZero()) // Separable polynomial
-                continue;
 
             Console.WriteLine($"Random factors : [{polys.Glue(" ;  ")}]");
-            FactorsQ(f, details: true);
+            Console.WriteLine($"f0 = {f}");
+            Console.WriteLine();
+            
+            var facts = FactorsQ(f, details: true);
+            var f1 = facts.Select(e => e.Item1.Pow(e.Item2)).Aggregate((a0, a1) => a0 * a1).SubstituteChar(f0.x);
+            if (!f0.Equals(f1))
+                throw new($"f1 = {f1} f0 = {f0} => {f0.Equals(f1)}");
         }
     }
 

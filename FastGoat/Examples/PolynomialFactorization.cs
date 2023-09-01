@@ -16,10 +16,15 @@ public static class PolynomialFactorization
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
     }
     
-    static KPoly<K> RandPoly<K>(K scalar, int p, int n) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    public static KPoly<K> RandPoly<K>(K scalar, int p, int n, bool monic = true) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
-        var coefs = n.Range().Select(i => IntExt.Rng.Next(-p, p + 1) * scalar.One).TrimSeq().Append(scalar.One).ToArray();
-        return new KPoly<K>('x', scalar, coefs);
+        var coefs = n.Range().Select(i => IntExt.Rng.Next(-p, p + 1) * scalar.One).ToList();
+        if (monic)
+            coefs.Add(scalar.One);
+        else
+            coefs.Add(IntExt.Rng.Next(-p, p + 1) * scalar.One);
+        
+        return new KPoly<K>('x', scalar, coefs.TrimSeq().ToArray());
     }
 
     public static KPoly<K> RandPoly<K>(K scalar, int p, int[] degrees)
@@ -55,13 +60,13 @@ public static class PolynomialFactorization
         }
     }
 
-    public static KPoly<K> RandPolySep<K>(K scalar, int p, int n) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    public static KPoly<K> RandPolySep<K>(K scalar, int p, int n, bool monic = true) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         while (true)
         {
-            var f = RandPoly(scalar, p, n);
+            var f = RandPoly(scalar, p, n, monic);
             if (f.Degree > 1 && !Ring.Discriminant(f).IsZero())
-                return f.Monic;
+                return f;
         }
     }
 
