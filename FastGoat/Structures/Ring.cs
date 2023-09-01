@@ -141,28 +141,36 @@ public static partial class Ring
         return xi.Select(c => new Polynomial<K, Xi>(new Monom<Xi>(indeterminates, new(c), 1), scalar.One)).ToArray();
     }
 
-    public static EPolynomial<K>[] EPolynomial<K>(K scalar, MonomOrder order, (int n, string h) e)
+    public static EPolynomial<K>[] PolynomialModI<K>(MonomOrder order, string[] vs, Polynomial<K,Xi> b0, params Polynomial<K,Xi>[] bs)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
-        var xis = Polynomial(scalar, order, e);
-        var basis = new PolynomialBasis<K, Xi>(xis[0].Indeterminates);
-        return xis.Select(xi => new EPolynomial<K>(xi, basis)).ToArray();
+        var xis = vs.Select(expr => new Xi(expr)).ToArray();
+        b0.Indeterminates.ExtendAppend(xis);
+        var basis = new PolynomialBasis<K, Xi>(bs.Prepend(b0).ToArray());
+        return xis.Select(xi => new EPolynomial<K>(b0.X(xi), basis)).ToArray();
     }
 
-    public static EPolynomial<K>[] EPolynomial<K>(K scalar, MonomOrder order, string[] xis)
+    public static EPolynomial<K>[] PolynomialModI<K>(MonomOrder order, KPoly<K> P, string x0, params string[] xis)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
-        var xis0 = Polynomial(scalar, order, xis);
-        var basis = new PolynomialBasis<K, Xi>(xis0[0].Indeterminates);
-        return xis0.Select(xi => new EPolynomial<K>(xi, basis)).ToArray();
+        var ind = Indeterminates(P.x.ToString());
+        return PolynomialModI(order, xis.Prepend(x0).ToArray(), P.ToPolynomial(ind, ind.First()));
     }
 
-    public static (EPolynomial<K> X,EPolynomial<K>[] xis) EPolynomial<K>(K scalar, MonomOrder order, (int n, string h) e, string x0)
+    public static EPolynomial<K>[] PolynomialModI<K>(MonomOrder order, (int n, string h) e, Polynomial<K,Xi> b0, params Polynomial<K,Xi>[] bs)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
-        var (x, xis) = Polynomial(scalar, order, e, x0);
-        var basis = new PolynomialBasis<K, Xi>(x.Indeterminates);
-        return (new EPolynomial<K>(x, basis), xis.Select(xi => new EPolynomial<K>(xi, basis)).ToArray());
+        var digits = $"{e.n - 1}".Length;
+        var zeros = Enumerable.Repeat(0, digits).Glue();
+        var fmt = $"{{0}}{{1,{digits}:{zeros}}}";
+        var xis = e.n.Range().Select(i => string.Format(fmt, e.h, i)).ToArray();
+        return PolynomialModI(order, xis, b0, bs);
+    }
+
+    public static EPolynomial<K>[] PolynomialModI<K>(MonomOrder order, (int n, string h) e, Polynomial<K,Xi>[] bs)
+        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
+    {
+        return PolynomialModI(order, e, bs[0], bs.Skip(1).ToArray());
     }
 
     public static KPoly<K> ToKPoly<K>(this Polynomial<K, Xi> f, Xi x)

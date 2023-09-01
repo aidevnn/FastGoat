@@ -67,6 +67,14 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
     }
 
     public int P => KZero.P;
+
+    public Polynomial<K, T> X(T t)
+    {
+        if (!Indeterminates.Contains(t))
+            throw new();
+
+        return new Polynomial<K, T>(new Monom<T>(Indeterminates, t), KOne);
+    }
     public Polynomial<K, T> Inv()
     {
         if (Coefs.Count == 1)
