@@ -13,6 +13,12 @@ namespace FastGoat.UserGroup;
 
 public static partial class FG
 {
+    public static ZnInt ToZnInt(this Rational e, int p) =>
+        new ZnInt(p, (int)BigInteger.Remainder(e.Num, p)) / new ZnInt(p, (int)BigInteger.Remainder(e.Denom, p));
+
+    public static ZnBInt ToZnBInt(this Rational e, Modulus p) =>
+        new ZnBInt(p, BigInteger.Remainder(e.Num, p.Mod)) / new ZnBInt(p, BigInteger.Remainder(e.Denom, p.Mod));
+
     public static Rational Comb(int k, int n)
     {
         var c = Rational.KOne();
@@ -40,6 +46,7 @@ public static partial class FG
 
     public static KPoly<ZnInt> ZPoly(int p, char x = 'x') => new KPoly<ZnInt>(x, ZnInt.ZnZero(p)).X;
     public static KPoly<ZnBInt> ZbPoly(int p, char x = 'x') => new KPoly<ZnBInt>(x, ZnBInt.ZnZero(p)).X;
+    public static KPoly<ZnBInt> ZbPoly(int p, int o, char x = 'x') => new KPoly<ZnBInt>(x, new ZnBInt(new(p, o), 0)).X;
     public static KPoly<Rational> QPoly(char x = 'x') => new(x);
     public static KPoly<Cplx> CplxPoly(char x = 'x') => new(x);
     public static KPoly<BigCplx> BCplxPoly(int o = 40, char x = 'x') => new KPoly<BigCplx>(x, BigCplx.BcZero(o)).X;
@@ -164,6 +171,22 @@ public static partial class FG
 
     public static KPoly<Rational> ToAbsKPoly(this KPoly<Rational> P) =>
         new(P.x, P.KZero, P.Coefs.Select(c => Rational.Absolute(c)).ToArray());
+
+    public static KPoly<Rational> Primitive(this KPoly<Rational> P)
+    {
+        var lcm = new Rational(IntExt.LcmBigInt(P.Coefs.Select(e => e.Denom).Distinct().ToArray()));
+        var P0 = P * lcm; // removes denominators
+        var gcd = new Rational(IntExt.GcdBigInt(P0.Coefs.Select(e => BigInteger.Abs(e.Num)).Where(e => !e.IsZero).Distinct().ToArray()));
+        return P0 / gcd * P.LT.Sign; // makes primitive
+    }
+
+    public static KPoly<Rational> ZPoly(this KPoly<Rational> P)
+    {
+        var lcm = new Rational(IntExt.LcmBigInt(P.Coefs.Select(e => e.Denom).Distinct().ToArray()));
+        return P * lcm; // removes denominators
+    }
+
+    public static KPoly<Rational> PrimitiveZPoly(this KPoly<Rational> P) => P.ZPoly().Primitive();
 
     public static Rational NormB(this KPoly<Rational> P, int b)
     {

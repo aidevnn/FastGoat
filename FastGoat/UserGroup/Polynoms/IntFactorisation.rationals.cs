@@ -498,66 +498,59 @@ public static partial class IntFactorisation
         return (f0.Substitute(f.X.Pow(x0.Degree / n)), f.X.Pow(n));
     }
 
-    public static (KPoly<Rational> nf, Rational c) ConstCoefBase(KPoly<Rational> f, bool details = false)
+    static (KPoly<Rational> nf, Rational c) CoefDiv(KPoly<Rational> f0)
     {
+        var f = f0.ZPoly();
+        var coefs = f.Coefs.Select(c => Rational.Absolute(c)).ToArray();
+
+        var dicoNum = coefs.Select((c, i) => (c.Num, i)).Where(e => !e.Num.IsZero && e.i != 0)
+            .Select(e => IntExt.PrimesDec(e.Num).Where(kp => kp.Value >= e.i)
+                .SelectMany(kp => Enumerable.Repeat(kp.Key, kp.Value / e.i)))
+            .ToArray();
+
+        var inter = dicoNum.Aggregate((a0, b0) => a0.IntersectList(b0).ToArray());
+        var resNum = inter.Aggregate(BigInteger.One, (prod, k) => k * prod);
+        var c = new Rational(resNum);
+        var nf = f0.Substitute(f.X / c);
+        return (nf, c);
+    }
+
+    static (KPoly<Rational> nf, Rational c) CoefMul(KPoly<Rational> f0)
+    {
+        var f = f0.ZPoly();
         var deg = f.Degree;
-        var coefs = f.Monic.Coefs.Select(c => Rational.Absolute(c)).ToArray();
+        var coefs = f.Coefs.Select(c => Rational.Absolute(c)).ToArray();
 
-        var dicoNum = coefs.Select((c, i) => (c.Num, i)).Where(e => !e.Num.IsZero && deg != e.i)
-            .Select(e => IntExt.PrimesDec(e.Num).Where(kp => kp.Value >= deg - e.i).Select(kp => kp.Key))
+        var dicoNum = coefs.Select((c, i) => (c.Num, i)).Where(e => !e.Num.IsZero && e.i != deg)
+            .Select(e => IntExt.PrimesDec(e.Num).Where(kp => kp.Value >= deg - e.i)
+                .SelectMany(kp => Enumerable.Repeat(kp.Key, kp.Value / (deg - e.i))))
             .ToArray();
-
-        var dicoDenom = coefs.Select((c, i) => (c.Num, c.Denom, i)).Where(e => !e.Num.IsZero && deg != e.i)
-            .Select(e => IntExt.PrimesDec(e.Denom).Where(kp => kp.Value >= deg - e.i).Select(kp => kp.Key))
-            .ToArray();
-
-        var resNum = dicoNum.Length == 0
-            ? BigInteger.One
-            : dicoNum.Aggregate((a, b) => a.Intersect(b)).Aggregate(BigInteger.One, (prod, k) => k * prod);
-        var resDenom = dicoDenom.Length == 0
-            ? BigInteger.One
-            : dicoDenom.Aggregate((a, b) => a.Intersect(b)).Aggregate(BigInteger.One, (prod, k) => k * prod);
-        var c = new Rational(resNum, resDenom);
-        var nf = f.Substitute(f.X * (f.KOne * c));
-        if (!c.Equals(c.One) && details)
-            Console.WriteLine($"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Simplify f={f} and nf={nf} and c={c}");
+        
+        var inter = dicoNum.Aggregate((a0, b0) => a0.IntersectList(b0).ToArray());
+        var resNum = inter.Aggregate(BigInteger.One, (prod, k) => k * prod);
+        var c = new Rational(resNum);
+        var nf = f0.Substitute(f.X * c);
 
         return (nf, c);
     }
 
-    public static (KPoly<Rational> nf, Rational c) ConstCoefQ(KPoly<Rational> f, bool details = false)
+
+    public static (KPoly<Rational> nf, Rational c) ConstCoef(KPoly<Rational> f, bool details = false, bool monic = false)
     {
-        if (!f.LT.Equals(f.KOne))
-            throw new();
-        
-        var deg = f.Degree;
-        var coefs = f.Coefs.Select(c => Rational.Absolute(c)).ToArray();
-        var lcm = IntExt.LcmBigInt(coefs.Select(e => e.Denom).ToArray());
+        if (f.Degree <= 1)
+            return (f, Rational.KOne());
 
-        var c0 = IntExt.PrimesDec(lcm).Select(e => BigInteger.Pow(e.Key, e.Value / deg + (e.Value % deg != 0 ? 1 : 0)))
-            .Aggregate(BigInteger.One, (acc, e) => acc * e);
-        var c = new Rational(1, c0);
-        var nf = f.Substitute(f.X * (f.KOne * c)).Monic;
-        var (nf1, c1) = ConstCoef(nf);
-        nf1 = nf1.Monic;
-        if (details)
-            Console.WriteLine($"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Simplify f={f} and nf={nf1} and c={c * c1}");
+        var (nf1, c1) = CoefDiv(f);
+        var (nf2, c2) = CoefMul(nf1);
+        var c = c2 / c1;
 
-        return (nf1, c * c1);
-    }
+        if (!c.Equals(c.One) && details)
+            Console.WriteLine($"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Simplify f={f.Monic} to nf={nf2.Monic} and c={c}");
 
-    public static (KPoly<Rational> nf, Rational c) ConstCoef(KPoly<Rational> f, bool details = false)
-    {
-        var ng0 = (f.Zero, Rational.KZero());
-        var ng1 = ConstCoefBase(f, details);
-        while (!ng0.Equals(ng1))
-        {
-            ng0 = ng1;
-            var ng2 = ConstCoefBase(ng1.nf, details);
-            ng1 = (ng2.nf, ng1.c * ng2.c);
-        }
+        if (monic)
+            return (nf2.Monic, c);
 
-        return (ng1.nf, ng1.c);
+        return (nf2, c);
     }
 
     public static (KPoly<Rational> newP, Rational c) QPoly2ZPoly(KPoly<Rational> f)
