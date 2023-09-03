@@ -62,7 +62,19 @@ public readonly struct KAutGroup<K> : IGroup<KAut<K>> where K : struct, IElt<K>,
 
     public KAut<K> Neutral() => new(this, X);
 
-    public KAut<K> Invert(KAut<K> e) => new(this, e.E.Inv());
+    public KAut<K> Invert(KAut<K> e)
+    {
+        var n = e.E.X;
+        var tmp0 = e.E.Clone;
+        EPoly<K> tmp1;
+        do
+        {
+            tmp1 = tmp0.Clone;
+            tmp0 = e.E.Substitute(tmp1);
+        } while (!tmp0.Equals(n));
+
+        return new(this, tmp1);
+    }
 
     public KAut<K> Op(KAut<K> e1, KAut<K> e2) => new(this, e1.E.Substitute(e2.E));
     public override int GetHashCode() => Hash;
