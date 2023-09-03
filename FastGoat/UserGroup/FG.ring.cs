@@ -315,6 +315,8 @@ public static partial class FG
         return EPolyXC(KPoly(scalar, a, coefs), a, b);
     }
 
+    public static (KPoly<ZnInt>, ZnInt c) ZPolyXc(int p, char x = 'x') => (ZPoly(p, x), Un.FirstGen(p));
+
     public static EPoly<K> EPoly<K>(K scalar, char x, params int[] coefs)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {

@@ -142,7 +142,6 @@ public static partial class Group
         if (!setH.IsSubsetOf(setG))
             throw new GroupException(GroupExceptionType.NotSubGroup);
 
-        var ng = grG.Neutral();
         var ngH = new Coset<T>(grG, grH);
         foreach (var h in setH)
             cosets[h] = ngH;

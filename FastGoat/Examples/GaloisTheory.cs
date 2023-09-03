@@ -50,13 +50,14 @@ public static class GaloisTheory
             sigmas.Add(as_j);
         }
 
-        var Gal = Group.Generate($"Gal( Q({primEltChar})/Q )", sn, sigmas.ToArray());
+        var ext = a.KOne is Rational ? "Q" : a.KOne is ZnInt a0 ? $"F{a0.P}" : "K";
+        var Gal = Group.Generate($"Gal( {ext}({primEltChar})/{ext} )", sn, sigmas.ToArray());
 
         if (details)
         {
             var minPoly = a.F.Substitute(X);
             Console.WriteLine($"Polynomial P = {minPoly}");
-            roots.Select(r => X - r).Println($"Factorization in Q({primEltChar})[X] with P({primEltChar}) = 0");
+            roots.Select(r => X - r).Order().Println($"Factorization in {ext}({primEltChar})[X] with P({primEltChar}) = 0");
             Console.WriteLine();
             DisplayGroup.HeadElements(Gal);
         }

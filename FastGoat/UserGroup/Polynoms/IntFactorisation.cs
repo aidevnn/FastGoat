@@ -142,7 +142,7 @@ public static partial class IntFactorisation
             foreach (var (g, a) in polys.Where(g => g.Degree > 0).Grid2D(allF.Skip(1)))
             {
                 var g_a = g - a;
-                var gcd = Ring.Gcd(f, g_a).Monic;
+                var gcd = Ring.FastGCD(f, g_a).Monic;
                 if (gcd.Degree != 0)
                 {
                     foreach (var f1 in FirrInternal(gcd, allF))
