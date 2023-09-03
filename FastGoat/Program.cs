@@ -27,16 +27,3 @@ using FastGoat.UserGroup.Padic;
 //////////////////////////////////
 
 Console.WriteLine("Hello World");
-
-{
-    var x = FG.QPoly();
-    var P0 = x.Pow(5) + x.Pow(4) - 4 * x.Pow(3) - 3 * x.Pow(2) + 3 * x + 1;
-    var gal = AlgebraicIntegerRelationLLL.GaloisGroupLLL(P0, P0.Degree * 10, P0.Degree * 10 + 20);
-    DisplayGroup.HeadElements(gal);
-
-    foreach (var e in gal)
-    {
-        var ei = gal.Invert(e);
-        Console.WriteLine((e, ei, gal.Contains(ei), gal.Op(e, ei)));
-    }
-}
