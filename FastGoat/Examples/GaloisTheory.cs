@@ -128,7 +128,7 @@ public static class GaloisTheory
                 var d = mp0[mp0.Degree - 1] / mp0.Degree;
                 e += d;
                 mp0 = mp0.Substitute(mp0.X - d);
-                (mp0, var b0) = IntFactorisation.EquivPoly(mp0);
+                (mp0, var b0) = IntFactorisation.ConstCoef(mp0, monic: true);
                 e /= b0;
                 return (e, mp0);
             })
@@ -224,7 +224,7 @@ public static class GaloisTheory
             if (details)
                 DisplayGroup.Head(subGr);
 
-            var (minPoly, c) = IntFactorisation.EquivPoly(inv.minPoly);
+            var (minPoly, c) = IntFactorisation.ConstCoef(inv.minPoly, monic: true);
             var name = minPoly.Degree == 1 ? "Q" : $"Q({sfName})";
             yield return  new($"{sfName}", name, subGr, rs, inv.primElt / c, minPoly.SubstituteChar(sfName));
         }

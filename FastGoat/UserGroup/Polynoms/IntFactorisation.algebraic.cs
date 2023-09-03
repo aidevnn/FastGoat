@@ -46,7 +46,8 @@ public static partial class IntFactorisation
         return Rewrite(GetBase(a), b);
     }
 
-    public static(EPoly<K>[], KPoly<K>) GetBaseAndMinPolynomial<K>(EPoly<K> a, char x = 'a') where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    public static (EPoly<K>[], KPoly<K>) GetBaseAndMinPolynomial<K>(EPoly<K> a, char x = 'a')
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var bs = GetBase(a);
         var n = bs.Length;
@@ -208,14 +209,14 @@ public static partial class IntFactorisation
     }
 
     // Barry Trager, Algebraic Factoring
-    public static (int s, KPoly<EPoly<K>> g, KPoly<K> r) SqfrNorm<K>(KPoly<EPoly<K>> f, bool onlyPositifs = false,
-        bool onlyIntegers = false) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    public static (int s, KPoly<EPoly<K>> g, KPoly<K> r) SqfrNorm<K>(KPoly<EPoly<K>> f)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var a = f[0].X;
         var x = f.X;
         // Console.WriteLine($"SqfrNorm({f})");
-        var coefs = 150.Range(onlyPositifs ? 0 : -75).OrderBy(i => Int32.Abs(i)).ToArray();
-        foreach (var s in coefs)
+        var coefs = 150.Range(-74).OrderBy(i => Int32.Abs(i)).ThenAscending().ToArray();
+        foreach (var s in coefs.Where(e => e != 0))
         {
             try
             {
@@ -224,11 +225,11 @@ public static partial class IntFactorisation
                 // Console.WriteLine($"s={s})");
                 // Console.WriteLine($"Norm({g}");
                 var r = Norm(g);
-                if (onlyIntegers && r.Coefs.Any(c0 => c0 is Rational c1 && !c1.IsInteger()))
-                    continue;
+                // if (r.Coefs.Any(c0 => c0 is Rational c1 && !c1.IsInteger()))
+                //     continue;
 
                 // Console.WriteLine($" = {r}");
-                if (Ring.Gcd(r, r.Derivative).Degree == 0) // dilemma between Ring.Gcd and Ring.FastGCD
+                if (Ring.FastGCD(r, r.Derivative).Degree == 0) // dilemma between Ring.Gcd and Ring.FastGCD
                 {
                     return (s, g.Monic, r);
                 }
@@ -243,55 +244,15 @@ public static partial class IntFactorisation
     }
 
     // Barry Trager, Algebraic Factoring
-    public static (int s, KPoly<EPoly<Rational>> g, KPoly<Rational> r) SqfrNormRationals(KPoly<EPoly<Rational>> f,
-        bool onlyPositifs = false, bool onlyIntegers = false)
-    {
-        var a = f[0].X;
-        var x = f.X;
-        // Console.WriteLine($"SqfrNorm({f})");
-        var coefs = 150.Range(onlyPositifs ? 0 : -75).OrderBy(i => Int32.Abs(i)).ToArray();
-        foreach (var s in coefs.Where(e => e != 0))
-        {
-            try
-            {
-                var g = f.Substitute(x - a * s);
-                // Console.WriteLine($"s={s} Norm({g})");
-                // Console.WriteLine($"s={s})");
-                // Console.WriteLine($"Norm({g})");
-                var r = NormRationals(g);
-                // Console.WriteLine($" = {r}");
-                if (onlyIntegers && r.Coefs.Any(c0 => !c0.IsInteger()))
-                    continue;
-
-                // var (p, o) = PSigma(r).First();
-                // var r0 = QPoly2ZnInt(r, new Modulus(p, o));
-                // Console.WriteLine($"{(p, o)} r0 = {r0}");
-                // if (ExternLibs.Run_polysGcd(r, r.Derivative).Degree == 0) // dilemma between Ring.Gcd and Ring.FastGCD
-                if (Ring.FastGCD(r, r.Derivative).Degree == 0) // dilemma between Ring.Gcd and Ring.FastGCD
-                {
-                    return (s, g.Monic, r);
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-                // Console.WriteLine(e);
-            }
-        }
-
-        throw new Exception();
-    }
-
-    // Barry Trager, Algebraic Factoring
     public static List<KPoly<EPoly<Rational>>> AlgebraicFactors(KPoly<EPoly<Rational>> f, bool details = false)
     {
-        var (s, g, r) = SqfrNormRationals(f);
+        var (s, g, r) = SqfrNorm(f);
         var L = new List<KPoly<EPoly<Rational>>>();
         var x = g.X;
         var a = g[0].X;
         var g0 = g.Substitute(x);
 
-        var (nf, c0) = ConstCoefQ(r);
+        var (nf, c0) = ConstCoef(r, monic: true);
         var hs = FirrZ2(nf, details).Select(f0 => f0.Substitute(f0.X / c0)).ToArray();
         if (hs.Length == 1)
         {
@@ -420,7 +381,7 @@ public static partial class IntFactorisation
     }
 
     // Barry Trager, Algebraic Factoring
-    public static List<EPoly<Rational>> SplittingField(KPoly<Rational> P, bool details = false, bool onlyPositifs = false)
+    public static List<EPoly<Rational>> SplittingField(KPoly<Rational> P, bool details = false)
     {
         GlobalStopWatch.Restart();
         if (FirrZ2(P).Length > 1)
@@ -470,7 +431,7 @@ public static partial class IntFactorisation
 
             foreach (var pi in polys)
             {
-                var (s, g, R) = SqfrNormRationals(pi, onlyPositifs: onlyPositifs, onlyIntegers: true);
+                var (s, g, R) = SqfrNorm(pi);
                 var L = FirrZ2(R.Monic, details);
                 foreach (var qj in L.OrderBy(e => e.Degree).ThenBy(e => e.NormInf()))
                 {
@@ -498,7 +459,7 @@ public static partial class IntFactorisation
                 }
             }
 
-            (minPoly, var c0) = EquivPoly(minPoly);
+            (minPoly, var c0) = ConstCoef(minPoly, monic: true);
             BPoly = BPoly.Substitute(BPoly.X * (c0 * BPoly.KOne));
             (X, new_y) = FG.EPolyXc(minPoly, 'a');
             var a = AlphaPrimElt(BPoly, X);

@@ -27,7 +27,8 @@ public readonly struct Modulus : IEquatable<Modulus>
 
     public bool Equals(Modulus other) => P == other.P && O == other.O;
 
-    public static Modulus operator ++(Modulus i) => new Modulus(i.P, i.O + 1);
+    public static Modulus operator ++(Modulus i) => new(i.P, i.O + 1);
+    public static Modulus operator *(Modulus i, int k) => k > 0 ? new(i.P, i.O * k) : throw new();
     public ZnBInt Zero => new(this, 0);
     public override int GetHashCode() => (P, O).GetHashCode();
 

@@ -33,7 +33,8 @@ public static class CardanFormula
         if (P.Degree != 2 || !P.LT.Equals(Rational.KOne()))
             throw new("P must be monic and quadratic");
 
-        var (P1, c) = ConstCoefQ(P);
+        var (P1, c) = ConstCoef(P, monic: true);
+        P1 = P1.Monic;
         var D = P1[1].Pow(2) - 4 * P1[0];
         var (numD, _) = D.Decomp();
         var numD0 = numD.Where(e => e.Item2 % 2 != 0).ToArray();
@@ -58,7 +59,7 @@ public static class CardanFormula
         if (P.Degree != 3 || !P.LT.Equals(Rational.KOne()))
             throw new("P must be monic and cubic");
 
-        var (P1, c) = ConstCoefQ(P);
+        var (P1, c) = ConstCoef(P, monic: true);
         var (P2, t) = TransformPoly(P1);
         var (p, q) = (P2[1], P2[0]);
         var D = -4 * p.Pow(3) - 27 * q.Pow(2);
@@ -85,7 +86,7 @@ public static class CardanFormula
         var sqrtm3 = 2 * j + 1;
         Console.WriteLine((sqrtD.Pow(2), sqrtm3.Pow(2)));
         Console.WriteLine(x1.F.SubstituteChar('X'));
-        Console.WriteLine(ConstCoef(x1.F));
+        Console.WriteLine(ConstCoef(x1.F, monic: true));
         new[] { y1, y2, y3 }.Println("Roots");
         Console.WriteLine();
     }
@@ -95,7 +96,7 @@ public static class CardanFormula
         if (P.Degree != 3 || !P.LT.Equals(Rational.KOne()))
             throw new("P must be monic and cubic");
 
-        var (P1, c) = ConstCoefQ(P);
+        var (P1, c) = ConstCoef(P, monic: true);
         var (P2, t) = TransformPoly(P1);
         var (p, q) = (P2[1], P2[0]);
         var D = -4 * p.Pow(3) - 27 * q.Pow(2);

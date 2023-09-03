@@ -206,13 +206,13 @@ public static partial class IntFactorisation
 
     public static KPoly<ZnBInt> QPoly2ZnInt(KPoly<Rational> f, Modulus po)
     {
-        var coefs = f.Coefs.Select(e => new ZnBInt(po, e.Num) / new ZnBInt(po, e.Denom)).ToArray();
+        var coefs = f.Coefs.Select(e => e.ToZnBInt(po)).ToArray();
         return new(f.x, po.Zero, coefs);
     }
 
     static KPoly<ZnInt> QPoly2ZnInt(KPoly<Rational> f, int p)
     {
-        var coefs = f.Coefs.Select(e => new ZnInt(p, (int)e.Num) / new ZnInt(p, (int)e.Denom)).ToArray();
+        var coefs = f.Coefs.Select(e => e.ToZnInt(p)).ToArray();
         return new(f.x, ZnInt.ZnZero(p), coefs);
     }
 
@@ -239,15 +239,18 @@ public static partial class IntFactorisation
         var all = new List<KPoly<ZnBInt>>(firr0);
         while (po.O < o && all.Count > 1)
         {
-            ++po;
+            // ++po;
+            po *= 2;
             var tmp = new List<KPoly<ZnBInt>>();
+            
             var fa = QPoly2ZnInt(f, po);
             foreach (var g in all)
             {
                 var gi = ZPoly2ZnInt(g, po);
-                var dgi = new EPoly<ZnBInt>(gi, gi.Derivative);
-                var fi = new EPoly<ZnBInt>(gi, fa.Div(gi).rem);
-                var dfi = new EPoly<ZnBInt>(gi, fa.Derivative.Div(gi).rem);
+                var y = FG.EPoly(gi);
+                var dgi = gi.Derivative.Substitute(y); // new EPoly<ZnBInt>(gi, gi.Derivative.Div(gi).rem);
+                var fi = fa.Substitute(y); // new EPoly<ZnBInt>(gi, fa.Div(gi).rem);
+                var dfi = fa.Derivative.Substitute(y); // new EPoly<ZnBInt>(gi, fa.Derivative.Div(gi).rem);
                 var ri = ((dgi * fi) / dfi).Poly;
                 tmp.Add(gi + ri);
             }
@@ -288,7 +291,7 @@ public static partial class IntFactorisation
             {
                 itr++;
                 var H = c0 * combs.Aggregate(xp.One, (acc, a) => a * acc);
-                var G = ZPoly2QPoly(H).Monic;
+                var G = ZPoly2QPoly(H).Primitive();
                 if (F.Div(G).rem.IsZero())
                 {
                     listIrr.Add(G);
@@ -306,22 +309,26 @@ public static partial class IntFactorisation
         if (allS.Length > 0)
         {
             var Hlast = c0 * allS.Aggregate(xp.One, (acc, a) => a * acc);
-            var Glast = ZPoly2QPoly(Hlast).Monic;
+            var Glast = ZPoly2QPoly(Hlast).Primitive();
             listIrr.Add(Glast);
         }
 
+        var f1 = listIrr.Aggregate((a, b) => a * b);
         if (!f.LT.Equals(Rational.KOne()))
         {
             firr0 = firr0.Prepend(f.LT * f0.KOne * f0.One).ToArray();
-            listIrr.Insert(0, f.LT * f.One);
+            var a = f.LT / f1.LT;
+            if (!a.Equals(a.One))
+            {
+                listIrr.Insert(0, a * f.One);
+            }
         }
-        
-        var f1 = listIrr.Aggregate((a, b) => a * b);
-        var check = f.Equals(f1);
+
+        var check = f.Monic.Equals(f1.Monic);
         if (!check)
         {
             if (details)
-                Console.WriteLine($"@@@@@@@@@@ {f} <> {f1} @@@@@@@@@@");
+                Console.WriteLine($"@@@@@@@@@@ {f.Monic} <> {f1.Monic} @@@@@@@@@@");
             throw new Exception();
         }
 
@@ -332,7 +339,7 @@ public static partial class IntFactorisation
             Console.WriteLine($"Prime P = {p}; Sigma = {o}; P^o={BigInteger.Pow(p, o)} 2*Nu={2 * nu,0:0.00}");
             Console.WriteLine($"f = {f0} mod {p}");
             Console.WriteLine("Fact(f) = {0} mod {1}", firr0.Order().Glue("*", "({0})"), p);
-            Console.WriteLine("Fact(f) = {0} in Q[X]", listIrr0.Glue("*", "({0})"));
+            Console.WriteLine("Fact(f) = {0} in Z[X]", listIrr0.Glue("*", "({0})"));
             Console.WriteLine();
         }
 
@@ -443,7 +450,7 @@ public static partial class IntFactorisation
                     polys = polys.Prepend(P.LT * P.One).ToArray();
                     firr0 = firr0.Prepend(P.LT * f0.KOne * f0.One).ToArray();
                 }
-                
+
                 Console.WriteLine($"       Found Sigma = {sigma2} = {i}*Tau");
                 Console.WriteLine($"f = {f0} mod {p}");
                 Console.WriteLine("Fact(f) = {0} mod {1}", firr0.Glue("*", "({0})"), p);
@@ -650,11 +657,11 @@ public static partial class IntFactorisation
 
     public static KPoly<Rational>[] FirrZ(KPoly<Rational> P, bool details = false)
     {
+        if (P.Degree <= 1)
+            return new[] { P };
+
         var (f0, c) = ConstCoef(P, details);
-        var lcm = new Rational(IntExt.LcmBigInt(f0.Coefs.Select(e => e.Denom).Distinct().ToArray()));
-        var f1 = f0 * lcm; // removes denominators
-        var gcd = new Rational(IntExt.GcdBigInt(f1.Coefs.Select(e => BigInteger.Abs(e.Num)).Where(e => !e.IsZero).Distinct().ToArray()));
-        var f = f1 / gcd; // makes primitive
+        var f = f0.PrimitiveZPoly();
         var discQ = Ring.Discriminant(f).Num;
         var discDecomp = IntExt.PrimesDec(discQ);
         if (details)
@@ -675,9 +682,23 @@ public static partial class IntFactorisation
         {
             try
             {
-                return HenselLiftingNaive(f, p, o, details)
-                    .Select(f1 => f1.Degree == 0 ? P.LT * P.One : f1.Substitute(f1.X / c).Monic)
+                var polys = HenselLiftingNaive(f, p, o, details)
+                    .Select(f2 => f2.Degree == 0 ? P.LT * P.One : f2.Substitute(f2.X / c).Monic)
+                    .OrderBy(f2 => f2.Degree)
+                    .ThenBy(f2 => f2)
                     .ToArray();
+
+                if (polys.All(f2 => f2.Degree != 0) && !P.LT.Equals(P.KOne))
+                    polys = polys.Prepend(P.LT * P.One).ToArray();
+
+                if (details)
+                {
+                    Console.WriteLine($"P({P.x}) = {P}");
+                    Console.WriteLine($"Fact(P({P.x})) = {{0}} in Q[X]", polys.Glue("*", "({0})"));
+                    Console.WriteLine();
+                }
+
+                return polys;
                 // return SearchVanHoeij(f, p, 2).Item3.Select(f0 => f0.Substitute(f0.X / c).Monic).ToArray();
             }
             catch (Exception)
@@ -690,20 +711,6 @@ public static partial class IntFactorisation
         return new[] { P };
     }
 
-    public static KPoly<Rational>[] FirrQ(KPoly<Rational> P, bool details = false)
-    {
-        var (nf, c) = ConstCoefQ(P, details);
-        var (nf2, c2) = ConstCoefQ(nf, details);
-        return FirrZ2(nf2, details).Select(f0 => f0.Substitute(f0.X / (c * c2)).Monic).ToArray();
-    }
-
-    public static (KPoly<Rational>, Rational coef) EquivPoly(KPoly<Rational> P, bool details = false)
-    {
-        var (nf1, c1) = ConstCoefQ(P, details);
-        var (nf2, c2) = ConstCoefQ(nf1, details);
-        return (nf2, c1 * c2);
-    }
-
     static IEnumerable<(KPoly<Rational>, int)> FactorsMul(KPoly<Rational> P, bool details = false)
     {
         if (P.Degree <= 1)
@@ -712,25 +719,19 @@ public static partial class IntFactorisation
             yield break;
         }
 
-        var a = P.LT;
-        if (!a.Equals(a.One))
-            yield return (a * P.One, 1);
-        
-        foreach (var (p0, _, i0) in YunSFF(P.Monic))
+        foreach (var (p0, _, i0) in YunSFF(P))
         {
             foreach (var p2 in FirrZ2(p0, details))
             {
-                yield return (p2.Substitute(p2.X), i0);
+                yield return (p2.SubstituteChar(P.x), i0);
             }
         }
     }
 
     public static (KPoly<Rational>, int)[] FactorsQ(KPoly<Rational> P, bool details = false)
     {
-        var list0 = FactorsMul(P, details: details).ToList();
-        var coef = list0.Where(p => p.Item1.Degree == 0).Select(p => p.Item1.Pow(p.Item2)).Aggregate(P.One, (acc, p) => acc * p);
-        var res = list0.Where(p => p.Item1.Degree > 0).Prepend((coef, 1))
-            .Where(e => !e.Item1.Equals(P.One))
+        var list0 = FactorsMul(P).ToList();
+        var res = list0.Where(e => !e.Item1.Equals(P.One))
             .OrderBy(e => e.Item1.Degree)
             .ThenBy(e => e.Item2)
             .ThenBy(e => e.Item1).ToArray();
@@ -754,7 +755,7 @@ public static partial class IntFactorisation
 
         var (p, n) = dec.First();
         var fq = new Fq(q, 'a');
-        var f0 = new KPoly<EPoly<ZnInt>>(f.x, fq.Zero, f.Coefs.Select(c => ((int)c.Num) * fq.One).ToArray());
+        var f0 = new KPoly<EPoly<ZnInt>>(f.x, fq.Zero, f.Coefs.Select(c => c.ToZnInt(p) * fq.One).ToArray());
         return BerlekampProbabilisticAECF(f0, fq.One.X).ToArray();
     }
 

@@ -89,7 +89,7 @@ public readonly struct EPoly<K> : IVsElt<K, EPoly<K>>, IElt<EPoly<K>>, IRingElt<
 
     public (EPoly<K> quo, EPoly<K> rem) Div(EPoly<K> e)
     {
-        return (this * e.Inv(), Zero);
+        return (Mul(e.Inv()), Zero);
     }
 
     public EPoly<K> Mul(int k) => new(F, Poly.Mul(k).Div(F).rem);
