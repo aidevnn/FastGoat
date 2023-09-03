@@ -404,6 +404,8 @@ public static class EnumerableExt
                 yield return i;
         }
     }
+
+    public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> a) => a.OrderBy(e => IntExt.Rng.NextSingle());
 }
 
 /// <summary>
