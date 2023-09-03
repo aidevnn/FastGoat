@@ -235,10 +235,10 @@ public static class GaloisApplications
         var e = e0.Substitute(a.X);
 
         FindExtension(subFields, a.One, "Q");
-        FindExtension(subFields, a + b, "Q(a+b)");
-        FindExtension(subFields, a, "Q(a)");
-        FindExtension(subFields, b, "Q(b)");
-        FindExtension(subFields, a * b, "Q(ab)");
+        FindExtension(subFields, a + b, "Q(α+β)");
+        FindExtension(subFields, a, "Q(α)");
+        FindExtension(subFields, b, "Q(β)");
+        FindExtension(subFields, a * b, "Q(αβ)");
         FindExtension(subFields, e, "K");
     }
     

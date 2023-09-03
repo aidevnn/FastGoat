@@ -534,10 +534,9 @@ public static class GaloisApplicationsPart2
             return;
         }
 
-        var (P1, c) = IntFactorisation.ConstCoef(P0, monic: true);
-        P1 = P1.SubstituteChar('X');
-        Console.WriteLine($"{P0} -> {P1} and X = {1 / c} * x");
-        var subFields = GaloisTheory.SubFields(P1).ToArray();
+        var P1 = P0.Substitute(P0.X / 2).Monic;
+        var roots = IntFactorisation.SplittingField(P1).ToList();
+        var subFields = GaloisTheory.SubFields(roots).ToArray();
         var extTowers = GaloisApplications.ExtensionsTower(subFields);
         GaloisApplications.GaloisCorrespondence(extTowers);
         if (extTowers.Any(e => e.Select((c0, i) => (c0, i)).All(f => 2.Pow(f.i) == f.c0.SubGr.Count())))

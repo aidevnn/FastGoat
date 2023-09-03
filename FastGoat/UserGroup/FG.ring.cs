@@ -117,6 +117,9 @@ public static partial class FG
         return roots.ToArray();
     }
 
+    public static KPoly<ZnInt> ToZnPoly(this KPoly<Rational> P, int p) =>
+        new(P.x, ZnInt.ZnZero(p), P.Coefs.Select(c => c.ToZnInt(p)).ToArray());
+
     public static KPoly<Cplx> ToCPoly(this KPoly<Rational> P) => new(P.x, Cplx.CZero, P.Coefs.Select(c => c * Cplx.COne).ToArray());
 
     public static KPoly<BigReal> ToBrPoly(this KPoly<Rational> P, int O = 40) =>
