@@ -209,30 +209,24 @@ public static partial class IntFactorisation
     }
 
     // Barry Trager, Algebraic Factoring
-    public static (int s, KPoly<EPoly<K>> g, KPoly<K> r) SqfrNorm<K>(KPoly<EPoly<K>> f)
+    public static (int s, KPoly<EPoly<K>> g, KPoly<K> r) SqfrNorm<K>(KPoly<EPoly<K>> f, bool integerOnly = false)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var a = f[0].X;
         var x = f.X;
         // Console.WriteLine($"SqfrNorm({f})");
         var coefs = 150.Range(-74).OrderBy(i => Int32.Abs(i)).ThenAscending().ToArray();
-        foreach (var s in coefs.Where(e => e != 0))
+        foreach (var s in coefs)
         {
             try
             {
                 var g = f.Substitute(x - a * s);
-                // Console.WriteLine($"s={s} Norm({g})");
-                // Console.WriteLine($"s={s})");
-                // Console.WriteLine($"Norm({g}");
                 var r = Norm(g);
-                // if (r.Coefs.Any(c0 => c0 is Rational c1 && !c1.IsInteger()))
-                //     continue;
-
-                // Console.WriteLine($" = {r}");
+                if (integerOnly && r is KPoly<Rational> r0 && r0.Coefs.Any(c => !c.Denom.IsOne))
+                    continue;
+                
                 if (Ring.FastGCD(r, r.Derivative).Degree == 0) // dilemma between Ring.Gcd and Ring.FastGCD
-                {
                     return (s, g.Monic, r);
-                }
             }
             catch (Exception)
             {
@@ -246,7 +240,7 @@ public static partial class IntFactorisation
     // Barry Trager, Algebraic Factoring
     public static List<KPoly<EPoly<Rational>>> AlgebraicFactors(KPoly<EPoly<Rational>> f, bool details = false)
     {
-        var (s, g, r) = SqfrNorm(f);
+        var (s, g, r) = SqfrNorm(f, integerOnly: true);
         var L = new List<KPoly<EPoly<Rational>>>();
         var x = g.X;
         var a = g[0].X;
@@ -431,7 +425,7 @@ public static partial class IntFactorisation
 
             foreach (var pi in polys)
             {
-                var (s, g, R) = SqfrNorm(pi);
+                var (s, g, R) = SqfrNorm(pi, integerOnly: true);
                 var L = FirrZ2(R.Monic, details);
                 foreach (var qj in L.OrderBy(e => e.Degree).ThenBy(e => e.NormInf()))
                 {
@@ -483,110 +477,6 @@ public static partial class IntFactorisation
             polys = newFactors.Select(f => f.SubstituteP0b(X, a)).ToList();
             y = new_y;
         }
-    }
-
-    // Barry Trager, Algebraic Factoring
-    public static List<EPoly<ZnInt>> SplittingFieldFp(KPoly<ZnInt> P, bool details = false)
-    {
-        var prime = Un.FirstGen(P.KOne.P);
-        var (X, y) = FG.EPolyXc(P, 'a');
-        var P0 = P.Substitute(X);
-        var roots = new List<EPoly<ZnInt>>();
-        var polys = new List<KPoly<EPoly<ZnInt>>>() { P0 };
-        var minPoly = P;
-        var b = y;
-        EPoly<ZnInt> new_y;
-        var idx = 0;
-
-        if (details)
-            Console.WriteLine($"Polynomial P = {P0} in Z(a)[X] mod {prime.P}");
-
-        while (true)
-        {
-            var BPoly = X.Zero;
-            polys[idx] = polys[idx] / (X - b);
-            roots.Add(b);
-            var (k, new_s) = (0, 0);
-            var newFactors = new List<KPoly<EPoly<ZnInt>>>();
-
-            foreach (var pi in polys)
-            {
-                var (s, g, R) = SqfrNorm(pi);
-                var L = Firr(R, prime);
-                foreach (var qj in L.Order())
-                {
-                    var f = Ring.FastGCD(g, qj.Substitute(X));
-                    if (qj.Degree > minPoly.Degree)
-                    {
-                        minPoly = qj;
-                        idx = k;
-                        new_s = s;
-                        BPoly = f;
-                    }
-
-                    g /= f;
-                    f = f.Substitute(X + s * y);
-                    if (f.Degree == 1)
-                    {
-                        var r0 = -f[0] / f[1];
-                        roots.Add(r0);
-                    }
-                    else
-                    {
-                        newFactors.Add(f);
-                        ++k;
-                    }
-                }
-            }
-
-            (X, new_y) = FG.EPolyXc(minPoly, 'a');
-            var a = AlphaPrimElt(BPoly, X);
-            b = new_y - new_s * a;
-
-            if (newFactors.Count == 0)
-            {
-                if (details)
-                {
-                    Console.WriteLine($"With {new_y.F} = 0");
-                    roots.Println("Roots");
-                    Console.WriteLine("Verif [Prod(X - ri)] = {0}", roots.Select(r => X - r).Aggregate((Xi, Xj) => Xi * Xj));
-                    Console.WriteLine();
-                }
-
-                return roots;
-            }
-
-            roots = roots.Select(r => r.Substitute(a)).ToList();
-            polys = newFactors.Select(f => f.SubstituteP0b(X, a)).ToList();
-            y = new_y;
-        }
-    }
-
-    public static List<EPoly<ZnInt>> SplittingFieldFp2(KPoly<ZnInt> P, bool details = false)
-    {
-        var (X, a) = FG.EPolyXc(P, 'a');
-        var gf = new GFp("Gf", a);
-        var g = Group.Generate(gf, a);
-
-        var P0 = P.Substitute(X);
-        var roots = new List<EPoly<ZnInt>>();
-        foreach (var e in g)
-        {
-            if (P0.Div(X - e).rem.IsZero())
-                roots.Add(e);
-        }
-
-        if (details)
-        {
-            Console.WriteLine($"Polynomial P = {P0} in Z(a)[X] mod {gf.P}");
-            Console.WriteLine("Splitting field multiplicative group");
-            DisplayGroup.Head(g);
-            roots.Println("Roots");
-            Console.WriteLine("Verif [Prod(X - ri)] = {0}", roots.Select(r => X - r).Aggregate((Xi, Xj) => Xi * Xj));
-            Console.WriteLine();
-        }
-
-        return roots;
     }
 
     // Barry Trager, Algebraic Factoring
