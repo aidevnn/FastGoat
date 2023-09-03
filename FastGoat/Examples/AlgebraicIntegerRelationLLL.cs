@@ -16,9 +16,11 @@ public static class AlgebraicIntegerRelationLLL
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
     }
 
-    public static Rational[] AlphaBetaPolynomial(BigCplx alpha, BigCplx beta, int d, int O)
+    public static Rational[] AlphaBetaPolynomial(BigCplx alpha, BigCplx beta, int d, int O, bool details = true)
     {
-        Console.WriteLine("Start LLL algorithm");
+        if (details)
+            Console.WriteLine("Start LLL algorithm");
+        
         var pi = BigReal.Pi(alpha.O);
         var N = BigReal.FromBigInteger(BigInteger.Pow(10, O), alpha.O);
         var mat = new KMatrix<BigReal>(pi.Zero.ToBigReal(O), d, d).Zero;
@@ -35,24 +37,32 @@ public static class AlgebraicIntegerRelationLLL
 
         var bpi = beta.RealPart + pi * beta.ImaginaryPart; // Re(β) + π * Im(β)
         mat.Coefs[mat.N - 1, mat.N - 1] = (bpi * N).RoundEven;
-        Console.WriteLine(mat);
+        if (details)
+            Console.WriteLine(mat);
         var lll = IntFactorisation.LLL(mat.T);
-        Console.WriteLine();
-        Console.WriteLine(lll);
+        
+        if(details)
+        {
+            Console.WriteLine();
+            Console.WriteLine(lll);
+        }
 
         var col = lll.Cols
             .OrderBy(l => l.SkipLast(1).Zip(aipow).Aggregate(-beta, (acc, v) => acc + BigCplx.FromBigReal(v.First) * v.Second)
                 .Magnitude2).First();
-        Console.WriteLine("End LLL algorithm");
-        Console.WriteLine("Possible Solution");
-        Console.WriteLine(col.T);
-        Console.WriteLine();
+        if(details)
+        {
+            Console.WriteLine("End LLL algorithm");
+            Console.WriteLine("Possible Solution");
+            Console.WriteLine(col.T);
+            Console.WriteLine();
+        }
         return col.SkipLast(1).Select(c => -c.RoundEven.ToRational).ToArray();
     }
 
-    public static Rational[] AlphaBetaPolynomial(BigReal alpha, BigReal beta, int d, int O)
+    public static Rational[] AlphaBetaPolynomial(BigReal alpha, BigReal beta, int d, int O, bool details = true)
     {
-        return AlphaBetaPolynomial(BigCplx.FromBigReal(alpha), BigCplx.FromBigReal(beta), d, O);
+        return AlphaBetaPolynomial(BigCplx.FromBigReal(alpha), BigCplx.FromBigReal(beta), d, O, details);
     }
 
     public static void Example1()
@@ -102,43 +112,57 @@ public static class AlgebraicIntegerRelationLLL
         IntFactorisation.PrimitiveElt(x.Pow(4) - 2, x.Pow(4) - 3).Println(); // more faster
     }
 
-    static ConcreteGroup<KAut<Rational>> ConjugatesOfBeta(KAutGroup<Rational> bsKAutGroup, BigCplx alpha, BigCplx beta, int d, int O)
+    static ConcreteGroup<KAut<Rational>> ConjugatesOfBeta(KAutGroup<Rational> bsKAutGroup, BigCplx alpha, BigCplx beta, int d, int O,
+        bool details = true)
     {
-        GlobalStopWatch.AddLap();
-        var coefs = AlphaBetaPolynomial(alpha, beta, d, O);
+        if (details)
+            GlobalStopWatch.AddLap();
+        
+        var coefs = AlphaBetaPolynomial(alpha, beta, d, O, details);
         var P = new KPoly<Rational>('x', Rational.KZero(), coefs.ToArray());
         var fact = (P.Substitute(alpha) / beta).ToBigCplx(O);
         P /= fact.RealPart.ToRational.RoundEven;
-        Console.WriteLine(P);
-        Console.WriteLine(P.Substitute(alpha));
-        Console.WriteLine((alpha, "=> ", beta));
-        Console.WriteLine();
+        if (details)
+        {
+            Console.WriteLine(P);
+            Console.WriteLine(P.Substitute(alpha));
+            Console.WriteLine((alpha, "=> ", beta));
+            Console.WriteLine();
+        }
 
         if (!beta.ToBigCplx(O).Equals(P.Substitute(alpha).ToBigCplx(O)))
             throw new();
 
         var fy = P.Substitute(bsKAutGroup.Neutral().E);
         var subGr = Group.Generate("Conjugates", bsKAutGroup, fy);
-        DisplayGroup.HeadElements(subGr);
-        GlobalStopWatch.Show("Conjugates");
-        Console.WriteLine();
+        if (details)
+        {
+            DisplayGroup.HeadElements(subGr);
+            GlobalStopWatch.Show("Conjugates");
+            Console.WriteLine();
+        }
 
         return subGr;
     }
 
-    public static ConcreteGroup<KAut<Rational>> GaloisGroupNumericRoots(BigCplx alpha, BigCplx[] cplxRoots, KPoly<Rational> P, int O)
+    public static ConcreteGroup<KAut<Rational>> GaloisGroupNumericRoots(BigCplx alpha, BigCplx[] cplxRoots, KPoly<Rational> P, int O,
+        bool details = true)
     {
         P = P.SubstituteChar('y');
         var y = FG.EPoly(P, 'y');
         var kAut = new KAutGroup<Rational>(P);
         var subGrGal = Group.Generate(kAut, kAut.Neutral());
-        Console.WriteLine(new { alpha });
+
         if (P.Substitute(-y).IsZero())
             subGrGal = Group.Generate("Conjugates", kAut, -y);
 
-        DisplayGroup.HeadElements(subGrGal);
+        if (details)
+        {
+            Console.WriteLine(new { alpha, O });
+            DisplayGroup.HeadElements(subGrGal);
+            cplxRoots.Println("All Complex Roots");
+        }
 
-        cplxRoots.Println("All Complex Roots");
         while (subGrGal.Count() < cplxRoots.Length)
         {
             var remains = cplxRoots.ToHashSet();
@@ -161,12 +185,14 @@ public static class AlgebraicIntegerRelationLLL
                 remains = tmp1.ToHashSet();
             }
 
-            remains.Println($"Remaining roots {remains.Count}");
+            if (details)
+                remains.Println($"Remaining roots {remains.Count}");
+
             if (remains.Count == 0)
                 break;
 
             var beta2 = remains.First(b => (alpha - b).Magnitude > 1e-12);
-            var gr = ConjugatesOfBeta(kAut, alpha, beta2, P.Degree + 1, O);
+            var gr = ConjugatesOfBeta(kAut, alpha, beta2, P.Degree + 1, O, details);
             subGrGal = Group.DirectProduct("SubGr(Gal(P))", gr, subGrGal);
         }
 
@@ -174,15 +200,20 @@ public static class AlgebraicIntegerRelationLLL
         return subGrGal;
     }
 
-    public static ConcreteGroup<KAut<Rational>> GaloisGroupLLL(KPoly<Rational> P, int O1, int O2)
+    public static ConcreteGroup<KAut<Rational>> GaloisGroupLLL(KPoly<Rational> P, int O1, int O2, bool details = true)
     {
-        Console.WriteLine(P);
-        GlobalStopWatch.AddLap();
-        var nRoots = FG.NRoots(P.ToBcPoly(O2));
-        GlobalStopWatch.Show("Roots");
+        if (details)
+        {
+            Console.WriteLine(P);
+            GlobalStopWatch.AddLap();
+        }
         
+        var nRoots = FG.NRoots(P.ToBcPoly(O2));
+        if (details)
+            GlobalStopWatch.Show("Roots");
+
         var alpha = nRoots[0];
-        return GaloisGroupNumericRoots(alpha, nRoots, P, O1);
+        return GaloisGroupNumericRoots(alpha, nRoots, P, O1, details);
     }
 
     public static void Example3()
