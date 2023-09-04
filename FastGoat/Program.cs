@@ -27,13 +27,3 @@ using FastGoat.UserGroup.Padic;
 //////////////////////////////////
 
 Console.WriteLine("Hello World");
-
-{
-    for (int n = 3; n < 200; n++)
-    {
-        var un = FG.UnInt(n);
-        var seq = AbelianInvariantsFactors.Reduce(un).ToArray();
-        var ab = FG.Abelian(seq);
-        DisplayGroup.AreIsomorphics(un, ab);
-    }
-}

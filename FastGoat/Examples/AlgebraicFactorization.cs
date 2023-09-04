@@ -185,7 +185,7 @@ public static class AlgebraicFactorization
         SplittingField(x.Pow(4) + 3 * x.Pow(2) + 3, true);
 
         SplittingField(x.Pow(4) + x + 1, true); // Time:16142 ms
-        // SplittingField(x.Pow(4) + 3 * x.Pow(3) - x.Pow(2) + x + 1, true); // Time:24906 ms
+        SplittingField(x.Pow(4) + 3 * x.Pow(3) - x.Pow(2) + x + 1, true); // Time:24906 ms
     }
 
     // ∛(∛2 - 1) = ∛(1/9) - ∛(2/9) + ∛(4/9)

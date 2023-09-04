@@ -240,7 +240,7 @@ public static partial class IntFactorisation
     // Barry Trager, Algebraic Factoring
     public static List<KPoly<EPoly<Rational>>> AlgebraicFactors(KPoly<EPoly<Rational>> f, bool details = false)
     {
-        var (s, g, r) = SqfrNorm(f, integerOnly: true);
+        var (s, g, r) = SqfrNorm(f, integerOnly: f.Degree > 4);
         var L = new List<KPoly<EPoly<Rational>>>();
         var x = g.X;
         var a = g[0].X;
