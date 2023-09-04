@@ -60,18 +60,12 @@ public class CharacterTable2<T> where T : struct, IElt<T>
             return;
 
         NbGens = nbGens;
-        var subGr = new HashSet<ConcreteGroup<T>>(new IsomorphEquality<T>());
-
-        foreach (var elts in Classes.AllCombinations().Where(l => !l.Contains(Gr.Neutral()) && l.Count() <= NbGens))
-        {
-            var ge = Group.Generate($"[{Gr.ShortName}]SubGr", Gr, elts);
-            subGr.Add(ge);
-        }
-
-        foreach (var ge in subGr.Where(ge => ge.Count() < Gr.Count()).OrderByDescending(g => g.Count()))
-        {
-            InductionFromSubGroup(ge);
-        }
+        var arr = Classes.Where(e => !e.Equals(Gr.Neutral())).ToArray();
+        var g0 = arr.AllCombinationsToMofN(NbGens).Select(e => e.SelectMany(f => Classes.GetClassStabx(f)).ToArray())
+            .Select((e, i) => Group.Generate($"SubGr({i})", Gr, e)).ToHashSet(new IsomorphEquality<T>());
+        
+        foreach (var sg in g0.Where(ge => ge.Count() < Gr.Count()).OrderByDescending(sg => sg.Count()))
+            InductionFromSubGroup(sg);
     }
 
     public void SolveSumSquare()

@@ -7,7 +7,6 @@ using FastGoat.UserGroup;
 using FastGoat.UserGroup.Integers;
 using FastGoat.UserGroup.Matrix;
 using FastGoat.UserGroup.Polynoms;
-using FastGoat.UserGroup.Words;
 
 namespace FastGoat.Examples;
 
@@ -154,7 +153,6 @@ public static class CharacterTableExamples
 
     public static void ExamplesCharactersTableAbelianGroups()
     {
-        FG.CharactersTable(FG.Dihedral(8)).DisplayCells();
         FG.CharactersTable(FG.Abelian(3)).DisplayCells();
         FG.CharactersTable(FG.Abelian(2, 2)).DisplayCells();
         FG.CharactersTable(FG.Abelian(2, 3)).DisplayCells();
@@ -172,6 +170,7 @@ public static class CharacterTableExamples
         FG.CharactersTable(FG.Alternate(4)).DisplayCells();
         FG.CharactersTable(FG.Quaternion(8)).DisplayCells();
         FG.CharactersTable(FG.Dihedral(5)).DisplayCells();
+        FG.CharactersTable(FG.Dihedral(8)).DisplayCells();
         FG.CharactersTable(Group.SemiDirectProd(new Cn(5), new Cn(4))).DisplayCells();
         FG.CharactersTable(Group.SemiDirectProd(new Cn(7), new Cn(6))).DisplayCells();
         FG.CharactersTable(Group.SemiDirectProd(new Cn(11), new Cn(10))).DisplayCells();
@@ -206,21 +205,32 @@ public static class CharacterTableExamples
 
     public static void ExamplesPermGroups()
     {
+        GlobalStopWatch.Restart();
         for (int n = 3; n < 7; n++)
         {
+            GlobalStopWatch.AddLap();
             var ctAn = FG.CharactersTable2Slow(FG.Alternate(n));
+        
             if (n == 6)
                 ctAn.InductionFromSubGroups(2);
             ctAn.DisplayCells();
+            GlobalStopWatch.Show($"{ctAn.Gr}");
         }
-        
+
         for (int n = 3; n < 7; n++)
         {
+            GlobalStopWatch.AddLap();
             var ctSn = FG.CharactersTable2Slow(FG.Symmetric(n));
             ctSn.DisplayCells();
+            GlobalStopWatch.Show($"{ctSn.Gr}");
         }
     }
     /*
+        |Alt5| = 60
+        Type        NonAbelianGroup
+        BaseGroup   S5
+        SuperGroup  |Symm5| = 120
+
         [Class     1  2  3            5a            5b]
         [ Size     1 15 20            12            12]
         [                                             ]
