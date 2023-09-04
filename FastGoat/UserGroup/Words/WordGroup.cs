@@ -6,7 +6,7 @@ namespace FastGoat.UserGroup.Words;
 
 public class WordGroup : ConcreteGroup<Word>
 {
-    public WordGroup(string name, WordGroupBase wg) : base(name, wg)
+    public WordGroup(string name, WordGroupBase wg) : base(name, wg, true)
     {
         WGbase = wg;
         OpsTable = ToddCoxeterAlgo.Run(WGbase.Relators);

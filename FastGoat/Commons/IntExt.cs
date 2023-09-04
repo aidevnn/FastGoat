@@ -312,7 +312,24 @@ namespace FastGoat.Commons
                 }
             }
         }
-        
+
+        /// <summary>
+        /// Generates all possible combinations of boolean values for a given number of elements from 1 to m.
+        /// </summary>
+        /// <param name="m">The maximal number of true elements.</param>
+        /// <param name="n">The number of elements.</param>
+        /// <returns>An enumerable of enumerables containing all possible combinations of boolean values.</returns>
+        public static IEnumerable<IEnumerable<bool>> YieldAllCombsToMofN(int m, int n)
+        {
+            for (int k = 0; k <= m; k++)
+            {
+                foreach (var list in YieldCombsKinN(k, n))
+                {
+                    yield return list;
+                }
+            }
+        }
+
         /// <summary>
         /// Generates all possible combinations of boolean values for a given number of elements.
         /// </summary>

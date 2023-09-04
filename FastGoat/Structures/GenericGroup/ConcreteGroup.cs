@@ -16,21 +16,32 @@ public class ConcreteGroup<T> : IGroup<T> where T : struct, IElt<T>
         if (singleton)
         {
             Elements = new HashSet<T> { ne };
-            PseudoGenerators = new(new List<T>());
+            PseudoGenerators = new(new List<T>() { ne });
             var kp = new Dictionary<T, int> { [ne] = 1 };
             ElementsOrders = new ReadOnlyDictionary<T, int>(kp);
-            var lc = new Dictionary<T, ReadOnlyDictionary<T, int>> { [ne] = ElementsOrders };
             GroupType = GroupType.AbelianGroup;
         }
         else
         {
-            var pseudo = SuperGroup?.GetGenerators().ToList() ?? g.GetGenerators().ToList();
-            PseudoGenerators = new(pseudo);
-            Elements = SuperGroup?.GetElements().ToHashSet() ?? new HashSet<T>(g);
-            ElementsOrders = SuperGroup?.ElementsOrders ?? Group.ElementsOrders(g, Elements);
-            GroupType = SuperGroup?.GroupType ?? (Group.IsCommutative(g, PseudoGenerators)
-                ? GroupType.AbelianGroup
-                : GroupType.NonAbelianGroup);
+            if (SuperGroup is null)
+            {
+                var (tmpElements, uniqueGenerators) = Group.UniqueGenerators(this, g.ToArray());
+                Elements = new HashSet<T>(tmpElements);
+                ElementsOrders = Group.ElementsOrders(g, Elements);
+                PseudoGenerators = new(uniqueGenerators);
+                GroupType = Group.IsCommutative(g, PseudoGenerators)
+                    ? GroupType.AbelianGroup
+                    : GroupType.NonAbelianGroup;
+            }
+            else
+            {
+                Elements = SuperGroup.GetElements().ToHashSet();
+                ElementsOrders = SuperGroup.ElementsOrders;
+                PseudoGenerators = new(SuperGroup.GetGenerators().ToList());
+                GroupType = SuperGroup?.GroupType ?? (Group.IsCommutative(g, PseudoGenerators)
+                    ? GroupType.AbelianGroup
+                    : GroupType.NonAbelianGroup);
+            }
         }
     }
 
@@ -42,7 +53,6 @@ public class ConcreteGroup<T> : IGroup<T> where T : struct, IElt<T>
     {
         Name = name;
         Hash = Guid.NewGuid().GetHashCode();
-        var ne = g.Neutral();
         SuperGroup = g as ConcreteGroup<T>;
         BaseGroup = SuperGroup?.BaseGroup ?? g;
         if (SuperGroup is not null && generators.Any(e => !SuperGroup.Contains(e)))
@@ -51,11 +61,10 @@ public class ConcreteGroup<T> : IGroup<T> where T : struct, IElt<T>
         var (tmpElements, uniqueGenerators) = Group.UniqueGenerators(this, generators);
         Elements = new HashSet<T>(tmpElements);
         ElementsOrders = Group.ElementsOrders(g, Elements);
-        GroupType = Group.IsCommutative(g, generators)
+        PseudoGenerators = new(uniqueGenerators);
+        GroupType = Group.IsCommutative(g, PseudoGenerators)
             ? GroupType.AbelianGroup
             : GroupType.NonAbelianGroup;
-
-        PseudoGenerators = new(uniqueGenerators);
     }
 
     public ConcreteGroup(IGroup<T> g, T[] generators) : this(g.Name, g, generators)
@@ -68,6 +77,7 @@ public class ConcreteGroup<T> : IGroup<T> where T : struct, IElt<T>
     protected HashSet<T> Elements { get; set; }
     public bool SetEquals(IEnumerable<T> ts) => Elements.SetEquals(ts);
     public bool SubSetOf(IEnumerable<T> ts) => Elements.IsSubsetOf(ts);
+    public bool SuperSetOf(IEnumerable<T> ts) => Elements.IsSupersetOf(ts);
     public IGroup<T> BaseGroup { get; }
     public ConcreteGroup<T>? SuperGroup { get; }
     public GroupType GroupType { get; protected set; }
