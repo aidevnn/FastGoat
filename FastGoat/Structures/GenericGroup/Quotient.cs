@@ -14,15 +14,10 @@ public class Quotient<T> : IGroup<Coset<T>> where T : struct, IElt<T>
         var gName = G.Name.Contains(' ') ? $"({G.Name})" : G.Name;
         Name = $"{gName}/{hName}";
 
-        var cosets = Group.Cosets(G, H);
         Map = Group.Cosets(G, H);
         Elements = Map.Values.ToHashSet();
-        var lc = Group.LongestCycles(this, Elements);
-        var lcKeys = lc.Select(kp => kp.Key).Ascending().ToArray();
-        (_, PseudoGenerators) = Group.UniqueGenerators(this, lcKeys);
     }
 
-    private IEnumerable<Coset<T>> PseudoGenerators { get; }
     private Dictionary<T, Coset<T>> Map { get; }
     private HashSet<Coset<T>> Elements { get; }
     public Coset<T> GetRepresentative(T x) => Map[x];
@@ -39,7 +34,10 @@ public class Quotient<T> : IGroup<Coset<T>> where T : struct, IElt<T>
 
     public Coset<T> this[params ValueType[] us] => GetRepresentative(G[us]);
 
-    public IEnumerable<Coset<T>> GetGenerators() => PseudoGenerators;
+    public IEnumerable<Coset<T>> GetGenerators()
+    {
+        yield return Neutral();
+    }
 
     public Coset<T> Neutral() => GetRepresentative(H.Neutral());
 

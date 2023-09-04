@@ -80,27 +80,6 @@ public static partial class Group
         return new ReadOnlyDictionary<T, int>(orders);
     }
 
-    public static ReadOnlyDictionary<T, ReadOnlyDictionary<T, int>> LongestCycles<T>(IGroup<T> g,
-        IEnumerable<T> elements)
-        where T : struct, IElt<T>
-    {
-        var set = elements.Ascending().ToHashSet();
-        var allCycles = new Dictionary<T, ReadOnlyDictionary<T, int>>(set.Count);
-
-        while (set.Count != 0)
-        {
-            var e0 = set.First();
-            var cycle0 = Cycle(g, e0);
-            set.ExceptWith(cycle0.Keys);
-            if (e0.Equals(g.Neutral()))
-                continue;
-
-            allCycles[e0] = cycle0;
-        }
-
-        return new ReadOnlyDictionary<T, ReadOnlyDictionary<T, int>>(allCycles);
-    }
-
     public static bool IsCommutative<T>(IGroup<T> g, IEnumerable<T> ts) where T : struct, IElt<T>
     {
         var ts0 = ts.ToArray();
@@ -277,19 +256,17 @@ public static partial class Group
         return new ConcreteGroup<Coset<T>>(name, quo);
     }
 
-    public static ConcreteGroup<K> AddGroup<K>(string name, K scalar, params K[] gens)
+    public static ConcreteGroup<K> AddGroup<K>(string name, params K[] gens)
         where K : struct, IElt<K>, IRingElt<K>,IFieldElt<K>
     {
-        var fg = new OpGroup<K>(name, scalar, FGroupOp.Additive);
+        var fg = new OpGroup<K>(name, gens[0], FGroupOp.Additive);
         return new ConcreteGroup<K>(fg, gens);
     }
 
-    public static ConcreteGroup<K> MulGroup<K>(string name, K scalar, params K[] gens)
+    public static ConcreteGroup<K> MulGroup<K>(string name, params K[] gens)
         where K : struct, IElt<K>, IRingElt<K>,IFieldElt<K>
     {
-        var fg = new OpGroup<K>(name, scalar, FGroupOp.Multiplicative);
-        if (gens.Length == 0)
-            gens = new[] { scalar };
+        var fg = new OpGroup<K>(name, gens[0], FGroupOp.Multiplicative);
         return new ConcreteGroup<K>(fg, gens);
     }
 }

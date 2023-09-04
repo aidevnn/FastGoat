@@ -87,6 +87,9 @@ public static partial class FG
         return Product.GpGenerate(name, seq.Select(i => new Cn(i)).Cast<IGroup<ZnInt>>().ToArray());
     }
 
+    public static ConcreteGroup<ZnInt> UnInt(int n) =>
+        Group.MulGroup($"U{n}i", IntExt.Coprimes(n).Select(j => new ZnInt(n, j)).ToArray());
+
     public static ConcreteGroup<Ep<ZnInt>> Abelian(params int[] seq)
     {
         return Product.GpGenerate(seq.Select(i => new Cn(i)).Cast<IGroup<ZnInt>>().ToArray());

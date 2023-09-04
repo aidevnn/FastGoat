@@ -33,32 +33,7 @@ public class ZnCGroupUnitTest
     }
 
     [Fact]
-    public void Test3LongestCycle()
-    {
-        var g = Product.Group(new Zn(2), new Zn(4));
-        var elements = Group.GenerateElements(g, g[1, 0], g[0, 1]);
-        var longCycles = Group.LongestCycles(g, elements);
-        Assert.Equal(4, longCycles.Count);
-
-        Assert.Equal(1, longCycles[g[1, 0]][g[1, 0]]);
-        Assert.Equal(2, longCycles[g[1, 0]][g[0, 0]]);
-
-        Assert.Equal(1, longCycles[g[1, 2]][g[1, 2]]);
-        Assert.Equal(2, longCycles[g[1, 2]][g[0, 0]]);
-
-        Assert.Equal(1, longCycles[g[0, 1]][g[0, 1]]);
-        Assert.Equal(2, longCycles[g[0, 1]][g[0, 2]]);
-        Assert.Equal(3, longCycles[g[0, 1]][g[0, 3]]);
-        Assert.Equal(4, longCycles[g[0, 1]][g[0, 0]]);
-
-        Assert.Equal(1, longCycles[g[1, 1]][g[1, 1]]);
-        Assert.Equal(2, longCycles[g[1, 1]][g[0, 2]]);
-        Assert.Equal(3, longCycles[g[1, 1]][g[1, 3]]);
-        Assert.Equal(4, longCycles[g[1, 1]][g[0, 0]]);
-    }
-
-    [Fact]
-    public void Test4ConcreteGroup()
+    public void Test3ConcreteGroup()
     {
         var zn = new Zn(40);
         var g0 = Group.Generate(zn, zn[1]);
