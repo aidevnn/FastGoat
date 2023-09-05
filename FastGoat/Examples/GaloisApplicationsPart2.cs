@@ -348,15 +348,15 @@ public static class GaloisApplicationsPart2
         var sf3 = subFields[3];
         var (X3, y3) = FG.EPolyXc(sf3.minPoly, 'c');
         var yf = FG.NRoots(sf3.minPoly.ToCPoly())[0];
-        var roots2 = IntFactorisation.AlgebraicRoots(sf3.minPoly.Substitute(X3), true);
-        var minPoly = IntFactorisation.MinPolynomial(roots2.Aggregate(X3.One, (p0, r) => p0 * (X3 - r / 2)));
+        var minPoly = IntFactorisation.GetBaseAndMinPolynomial(cos).Item2;
+        var roots2 = IntFactorisation.AlgebraicRoots(minPoly.Substitute(X3 / 2).Monic, true).Select(r => r / 2).ToList();
         Console.WriteLine(minPoly);
 
         Console.WriteLine(new { cos });
         Console.WriteLine(cos.Poly.Substitute(yc));
         Console.WriteLine(minPoly.Substitute(cos));
 
-        var (cosf0, _) = roots2.Select(r => (r / 2, (r / 2).Poly.Substitute(yf).K))
+        var (cosf0, _) = roots2.Select(r => (r, r.Poly.Substitute(yf).K))
             .Where(e => Complex.IsRealNumber(e.K) && e.K.Real > 0)
             .MaxBy(e => e.K.Real);
 
@@ -403,7 +403,7 @@ public static class GaloisApplicationsPart2
         Console.WriteLine(new { cos });
         Console.WriteLine(new { isin });
 
-        var croots = FG.NRoots(P.ToCPoly());
+        var croots = FG.NRoots(P.ToCPoly()).Order().ToArray();
         var yc = croots[0];
         Console.WriteLine((yc, cos.Poly.Substitute(yc), isin.Poly.Substitute(yc)));
         croots.Select((c, k) => (c, (float)(2 * (k + 1)) / n, ((float)c.Magnitude, (float)(c.Phase / Double.Pi))))
@@ -422,10 +422,13 @@ public static class GaloisApplicationsPart2
 
         var sqrt17 = IntFactorisation.AlgebraicRoots(P1.Substitute(X)).First(c => c.Poly.Substitute(yc).RealPart > 0);
         var sqrt17c = sqrt17.Poly.Substitute(yc);
+        Console.WriteLine("({0})^2 =  {1} ", sqrt17, sqrt17.Pow(2));
+        Console.WriteLine("{0}^2 = {1} ", sqrt17c, sqrt17c.Pow(2));
+        Console.WriteLine();
+        
         GaloisApplications.FindExtension(subFields, sqrt17, "Q(√17)");
-
         Console.WriteLine(new { sf2 = "subField2", subGr = sf2.SubGr.ShortName, dim = sf2.roots.Length, sf2.minPoly, sf2.primElt });
-
+        
         // Stage 1
         var (X1, y1) = FG.EPolyXc(P1, 'a');
         var (f1, newP1, subs1, newPc1) = IntFactorisation.AlgebraicFactors(sf2.minPoly.Substitute(X1), true)
@@ -474,7 +477,7 @@ public static class GaloisApplicationsPart2
 
         Console.WriteLine(newPc2.Substitute(e2));
         Console.WriteLine(fc2.Substitute(xe2));
-
+        
         // Stage 3
         var (r3, a3, b3) = IntFactorisation.PrimitiveElt(newP2);
         Console.WriteLine(new { r3, a3, b3 });
@@ -486,17 +489,15 @@ public static class GaloisApplicationsPart2
         Console.WriteLine((s2_1, s2_1.Pow(2), (17 - sqrt17_2) / 2));
         Console.WriteLine((s3, s3.Pow(2)));
         Console.WriteLine($"d = {s2_1} s3^2 = {IntFactorisation.Rewrite(s2_1, s3.Pow(2)).SubstituteChar('d')}");
-
+        
         // Final Boss
-        var mP3 = sf3.minPoly;
-        var roots2 = IntFactorisation.AlgebraicRoots(mP3.Substitute(X3), true);
-
-        var minPoly = IntFactorisation.MinPolynomial(roots2.Aggregate(X3.One, (p0, r) => p0 * (X3 - r / 2)));
+        var minPoly = IntFactorisation.GetBaseAndMinPolynomial(cos).Item2;
+        var roots2 = IntFactorisation.AlgebraicRoots(minPoly.Substitute(X3 / 2).Monic, true).Select(r => r / 2).ToList();;
         Console.WriteLine(minPoly);
-        Console.WriteLine(mP3.Substitute(mP3.X * 2).Monic);
+        Console.WriteLine(sf3.minPoly);
 
         var yf = FG.NRoots(r3.ToCPoly())[0];
-        var (cosf, e3) = roots2.Select(r => (r / 2, (r / 2).Poly.Substitute(yf).K))
+        var (cosf, e3) = roots2.Select(r => (r, (r).Poly.Substitute(yf).K))
             .Where(e => Complex.IsRealNumber(e.K) && e.K.Real > 0)
             .MaxBy(e => e.K.Real);
 

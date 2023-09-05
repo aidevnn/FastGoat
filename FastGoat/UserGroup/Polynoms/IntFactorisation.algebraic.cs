@@ -140,7 +140,7 @@ public static partial class IntFactorisation
     public static KPoly<K> MinPolynomial<K>(KPoly<EPoly<K>> A, char c = 'x') where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var norm = Norm(A, c);
-        var sep = YunSFF(norm);
+        var sep = YunSFF(norm).Where(e => e.g.Degree != 0).ToList();
         if (sep.Count > 1)
             throw new();
 

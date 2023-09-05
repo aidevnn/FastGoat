@@ -126,7 +126,7 @@ public static class GaloisTheory
         var Rs0 = Rs.Select(e =>
             {
                 var (_, mp0) = IntFactorisation.GetBaseAndMinPolynomial(e);
-                var d = mp0[mp0.Degree - 1] / mp0.Degree;
+                var d = mp0.Degree < 5 ? mp0[mp0.Degree - 1] / mp0.Degree : Rational.KZero();
                 e += d;
                 mp0 = mp0.Substitute(mp0.X - d);
                 (mp0, var b0) = IntFactorisation.ConstCoef(mp0, monic: true);
