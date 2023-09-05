@@ -44,15 +44,6 @@ public static class PolynomExt
 
         var p = pm[0];
         var m = pm.Length;
-        if (m == 1)
-        {
-            var e = IntExt.Solve_k_pow_m_equal_one_mod_n_strict(p, p - 1);
-            if (e == -1)
-                throw new();
-
-            return ((p, m), new[] { p - e, 1 });
-        }
-
         if (AllConwayPolys.ContainsKey(p))
         {
             var allCP = AllConwayPolys[p];

@@ -88,7 +88,9 @@ public static class ConwayPolynoms
     public static void AutomorphismFromPoly(int p, int n, bool verbose = true)
     {
         var cnPoly = GetPoly(p, n);
-        Console.WriteLine($"Poly p={p} n={n} : {cnPoly}");
+        if (verbose)
+            Console.WriteLine($"Poly p={p} n={n} : {cnPoly}");
+        
         var x = FG.ZPoly(p);
         var q = (int)Math.Pow(p, n);
         var n1 = q - 1;
@@ -141,7 +143,9 @@ public static class ConwayPolynoms
             return ke0.Equals(e1) && ke0.Equals(e2);
         }
 
-        Console.WriteLine("Multiplication Table of F{0}", gr.Count());
+        if (verbose)
+            Console.WriteLine("Multiplication Table of F{0}", gr.Count());
+        
         var distrib = true;
         var fpspace = true;
         var fps = Enumerable.Range(0, p).ToArray();
@@ -164,14 +168,16 @@ public static class ConwayPolynoms
                 Console.WriteLine();
         }
 
-        Console.WriteLine("Check Distributivity {0}", distrib ? "Pass" : "Fail");
-        Console.WriteLine("Check Fp-Space       {0}", fpspace ? "Pass" : "Fail");
-
         if (verbose)
+        {
+            Console.WriteLine("Check Distributivity {0}", distrib ? "Pass" : "Fail");
+            Console.WriteLine("Check Fp-Space       {0}", fpspace ? "Pass" : "Fail");
             Console.WriteLine();
+        }
     }
 
-    public static void Run()
+    // Generate Fq polynomial for q < 1024, and check validity 
+    public static void RunTestFq()
     {
         var nb = 1024;
         foreach (var p in IntExt.Primes10000.Where(p => p * p < nb))
@@ -188,7 +194,7 @@ public static class ConwayPolynoms
         AutomorphismFromPoly(3, 1);
         AutomorphismFromPoly(5, 1);
         AutomorphismFromPoly(7, 1);
-
+        
         AutomorphismFromPoly(2, 2);
         AutomorphismFromPoly(3, 2);
 
@@ -198,13 +204,11 @@ public static class ConwayPolynoms
 
     public static void Bench()
     {
-        GlobalStopWatch.Time("F8", () => AutomorphismFromPoly(2, 3, verbose: false));
-        GlobalStopWatch.Time("F9", () => AutomorphismFromPoly(3, 2, verbose: false));
-        GlobalStopWatch.Time("F25", () => AutomorphismFromPoly(5, 2, verbose: false));
-        GlobalStopWatch.Time("F27", () => AutomorphismFromPoly(3, 3, verbose: false));
-        GlobalStopWatch.Time("F16", () => AutomorphismFromPoly(2, 4, verbose: false));
-        GlobalStopWatch.Time("F125", () => AutomorphismFromPoly(5, 3, verbose: false));
-        GlobalStopWatch.Time("F81", () => AutomorphismFromPoly(3, 4, verbose: false));
-        GlobalStopWatch.Time("F32", () => AutomorphismFromPoly(2, 5, verbose: false));
+        var dico = new Dictionary<int, int>() { [2] = 7, [3] = 4, [5] = 3 };
+        foreach (var (p, n) in dico)
+        {
+            foreach (var m in n.Range(1))
+                GlobalStopWatch.Bench(4, $"F{p.Pow(m)}", () => AutomorphismFromPoly(p, m, verbose: false));
+        }
     }
 }
