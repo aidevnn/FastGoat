@@ -122,7 +122,7 @@ public static class PolynomialFactorization
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var x = f.X;
-        var fSep2 = fSep.Select(e => (gxp: e.g.Substitute(x.Pow(e.q)), e.q, e.m)).ToArray();
+        var fSep2 = fSep.Where(e => e.g.Degree != 0).Select(e => (gxp: e.g.Substitute(x.Pow(e.q)), e.q, e.m)).ToArray();
         var f0 = fSep2.Aggregate(x.One, (acc, e) => acc * e.gxp.Pow(e.m));
         if (f.Equals(f0))
         {
@@ -158,7 +158,7 @@ public static class PolynomialFactorization
             return;
         }
 
-        if (fSep.All(e => e.g.Degree >= 1 && !Ring.Discriminant(e.g).IsZero()))
+        if (fSep.Where(e => e.g.Degree != 0).All(e => e.g.Degree >= 1 && !Ring.Discriminant(e.g).IsZero()))
         {
             Console.WriteLine("Prop (S4) pass");
         }
@@ -290,7 +290,6 @@ public static class PolynomialFactorization
         }
 
         {
-            Ring.DisplayPolynomial = MonomDisplay.StarPowFct;
             var x = FG.ZPoly(3);
             // x15 + 2x14 + 2x12 + x11 + 2x10 + 2x8 + x7 + 2x6 + 2x4
             var f = x.Pow(15) + 2 * x.Pow(14) + 2 * x.Pow(12) + x.Pow(11) + 2 * x.Pow(10) + 2 * x.Pow(8) + x.Pow(7) +
