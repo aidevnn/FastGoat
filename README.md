@@ -422,3 +422,15 @@ ChatGPT
 August 3, 2023
 Version3.5
 <i>Free Research Preview.</i>
+
+[fplll](https://fplll.github.io/fplll/)
+<b>The FPLLL development team.</b>
+A lattice reduction library
+may2021
+Version 5.4.1
+
+[arb](https://arblib.org/index.html)
+<b>F.Johansson</b>
+Arb a C library for arbitrary-precision ball arithmetic
+june2022
+Version 2.23
