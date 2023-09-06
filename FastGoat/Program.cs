@@ -27,9 +27,9 @@ using FastGoat.UserGroup.Padic;
 Console.WriteLine("Hello World");
 
 {
-    var s3 = ZnInt.ZnZero(3);
-    var ma3 = new[] { 1, 1, 0, 1 }.ToKMatrix(2, s3);
-    var mb3 = new[] { 0, 1, -1, 0 }.ToKMatrix(2, s3);
+    var gl3 = FG.GLnK("GL(2,F3)", 2, ZnInt.ZnZero(3));
+    var ma3 = gl3[1, 1, 0, 1];
+    var mb3 = gl3[0, 1, -1, 0];
     var sl23 = Group.MulGroup("SL(2,3)", ma3, mb3);
     DisplayGroup.Head(sl23);
 
@@ -39,9 +39,9 @@ Console.WriteLine("Hello World");
     DisplayGroup.AreIsomorphics(sl23wg, sl23);
     Console.WriteLine();
 
-    var s5 = ZnInt.ZnZero(5);
-    var ma5 = new[] { 2, 0, 0, 3 }.ToKMatrix(2, s5);
-    var mb5 = new[] { -1, 1, -1, 0 }.ToKMatrix(2, s5);
+    var gl5 = FG.GLnK("GL(2,F5)", 2, ZnInt.ZnZero(5));
+    var ma5 = gl5[2, 0, 0, 3];
+    var mb5 = gl5[-1, 1, -1, 0];
     var sl25 = Group.MulGroup("SL(2,5)", ma5, mb5);
     DisplayGroup.Head(sl25);
     var sl25wg = FG.WordGroup("SL(2,5)wg", "a5, b3, abababab, ababa-1b-1a-1b-1");
@@ -50,6 +50,8 @@ Console.WriteLine("Hello World");
     DisplayGroup.AreIsomorphics(sl25wg, sl25);
     Console.WriteLine();
 
-    var mc7 = new[] { 1, 3, 2, 5 }.ToKMatrix(2, ZnInt.ZnZero(7));
+    var gl7 = FG.GLnK("GL(2,F7)", 2, ZnInt.ZnZero(7));
+    var mc7 = gl7[1, 3, 3, 5]; // Det = 3 mod 7
     DisplayGroup.HeadElements(Group.MulGroup("T", mc7));
+    Console.WriteLine(mc7.Det);
 }
