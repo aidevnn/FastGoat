@@ -1,5 +1,6 @@
 using System.Collections;
 using FastGoat.Structures;
+using FastGoat.UserGroup.Integers;
 
 namespace FastGoat.Structures.VecSpace;
 
@@ -8,14 +9,15 @@ public readonly struct GLn<K> : IGroup<KMatrix<K>> where K : struct, IElt<K>, IR
     private KMatrix<K>[] Generators { get; }
     private KMatrix<K> idN { get; }
     public int N => idN.N;
+    public K KZero => idN.KZero;
 
     public GLn(KMatrix<K> e0, params KMatrix<K>[] others)
     {
         Generators = others.Prepend(e0).ToArray();
         idN = e0.One;
-        var one = idN.KOne;
-        if (Generators.Select(m => m.Det).Any(d => !d.Equals(one) || !d.Equals(-one)))
-            throw new Exception($"|Det| != 1");
+        var zero = idN.KZero;
+        if (Generators.Select(m => m.Det).Any(d => d.Equals(zero)))
+            throw new Exception($"|Det| == 0");
 
         Hash = Generators.Aggregate(0, (acc, m) => (acc, m.Hash).GetHashCode());
         Name = $"GL({idN.N}, {typeof(K)})";
@@ -86,10 +88,10 @@ public readonly struct GLn<K> : IGroup<KMatrix<K>> where K : struct, IElt<K>, IR
 
             if (K.IsValuedField)
             {
-                if (Math.Abs(K.Abs(det) - 1) > 1e-7)
+                if (Math.Abs(K.Abs(det)) > 1e-7)
                     throw new GroupException(GroupExceptionType.GroupDef);
             }
-            else if (!det.Equals(kone) && !det.Equals(-kone))
+            else if (det.Equals(kzero))
                 throw new GroupException(GroupExceptionType.GroupDef);
 
             return m;

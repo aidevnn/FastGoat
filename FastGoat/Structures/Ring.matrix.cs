@@ -212,6 +212,12 @@ public static partial class Ring
         return new(Matrix(m, mat.ToArray()));
     }
 
+    public static KMatrix<K> ToKMatrix<K>(this IEnumerable<int> mat, int m, K scalar)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        return new(Matrix(m, mat.Select(i => i * scalar.One).ToArray()));
+    }
+
     public static K SquareNorm2<K>(KMatrix<K> mat)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
