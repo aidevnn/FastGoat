@@ -53,8 +53,8 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
 
     public bool Equals(Polynomial<K, T> other)
     {
-        if (Hash != other.Hash)
-            return false;
+        // if (Hash != other.Hash)
+        //     return false;
 
         return Coefs.Count == other.Coefs.Count &&
                Coefs.All(e => other.Coefs.ContainsKey(e.Key) && other.Coefs[e.Key].Equals(e.Value));

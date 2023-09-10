@@ -50,7 +50,9 @@ public struct Perm : IElt<Perm>
 
     public bool Equals(Perm other)
     {
-        return Hash == other.Hash;
+        return Sn.N < 11
+            ? Hash == other.Hash
+            : Hash == other.Hash && Table.SequenceEqual(other.Table);
     }
 
     public override int GetHashCode()
