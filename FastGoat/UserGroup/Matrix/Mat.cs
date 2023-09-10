@@ -1,6 +1,7 @@
 using System.Text;
 using FastGoat.Commons;
 using FastGoat.Structures;
+using FastGoat.UserGroup.Integers;
 
 namespace FastGoat.UserGroup.Matrix;
 
@@ -35,10 +36,7 @@ public struct Mat : IElt<Mat>
 
     public override string ToString()
     {
-        var sb = new StringBuilder();
-        for (int i = 0; i < Table.Length; i += GL.N)
-            sb.AppendFormat("[{0}]", Table.Skip(i).Take(GL.N).Glue(" ", GL.Fmt));
-
-        return $"[{sb}]";
+        var mod = GL.P;
+        return Table.Select(i => new ZnInt(mod, i)).ToKMatrix(GL.N).ToString();
     }
 }
