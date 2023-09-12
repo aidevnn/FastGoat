@@ -201,13 +201,16 @@ public static partial class Group
         if (!h.SubSetOf(g))
             throw new GroupException(GroupExceptionType.NotSubGroup);
 
-        var all = new HashSet<HashSet<T>>(new SetEquality<T>());
+        var all = new HashSet<ConcreteGroup<T>>(new GroupSetEquality<T>());
         foreach (var s in g)
         {
             var si = g.Invert(s);
             var set = h.Select(x => g.Op(s, g.Op(x, si))).ToHashSet();
-            all.Add(set);
+            all.Add(Generate(g, set.ToArray()));
         }
+
+        foreach (var (sg, i) in all.Select((sg, i) => (sg, i)).OrderByDescending(e => e.sg.Count()))
+            sg.SetName($"{h.Name}[{i}]");
 
         return all.Select((set, i) => Generate($"{h.Name}[{i}]", g, set.ToArray())).ToList();
     }
@@ -229,6 +232,51 @@ public static partial class Group
         return isos.Select((h, i) => Group.Generate($"{name}[{i}]", g, h.ToArray())).ToList();
     }
 
+    public static List<ConcreteGroup<T>> IsomorphReprSubGroups<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
+    {
+        var cycles = g.Select(e => Generate(g, e)).OrderBy(g0 => g0.Count()).ToHashSet(new GroupSetEquality<T>());
+        var setIsos = new HashSet<ConcreteGroup<T>>(new IsomorphEquality<T>());
+        setIsos.UnionWith(cycles);
+
+        while (true)
+        {
+            var sz = setIsos.Count;
+            var tmp = setIsos.ToArray();
+            foreach (var (sg0, cyc) in tmp.Grid2D(cycles))
+            {
+                if (sg0.SuperSetOf(cyc) || sg0.SubSetOf(cyc))
+                    continue;
+
+                var gens = sg0.GetGenerators().Union(cyc.GetGenerators()).ToArray();
+                var sg1 = Generate(g, gens);
+                setIsos.Add(sg1);
+            }
+
+            if (setIsos.Count == sz)
+                break;
+        }
+
+        var allIsos = setIsos.OrderBy(g0 => g0.Count()).ToList();
+        for (int i = 0; i < allIsos.Count; i++)
+            allIsos[i].SetName($"SubGr{i + 1}");
+
+        return allIsos;
+    }
+
+    public static (List<ConcreteGroup<T>> isos, List<ConcreteGroup<T>> allSubGrs) AllSubGroups<T>(ConcreteGroup<T> g)
+        where T : struct, IElt<T>
+    {
+        var setIsos = IsomorphReprSubGroups(g);
+        var cap = 10 * g.Count();
+        var setConjs = new List<ConcreteGroup<T>>(cap);
+        foreach (var (iso, i) in setIsos.Select((e, i) => (e, i)).ToArray())
+        {
+            var all = IsomorphicsSubgroupsAll(g, iso, $"SubGr[{i + 1}]");
+            setConjs.AddRange(all);
+        }
+
+        return (setIsos, setConjs);
+    }
 
     public static ConcreteGroup<T> Commutator<T>(string name, ConcreteGroup<T> grG, ConcreteGroup<T> grH,
         ConcreteGroup<T> grK)
