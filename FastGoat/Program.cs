@@ -30,76 +30,32 @@ Console.WriteLine("Hello World");
 void AllSubGrs<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
 {
     GlobalStopWatch.Restart();
-    var (isos, subgs) = Group.AllSubGroups(g);
+    var table = Group.AllSubGroups(g);
+    var (isos, subgs) = (table.Keys.ToList(), table.Values.SelectMany(e => e).ToList());
     GlobalStopWatch.Show($"{g.ShortName,-15} NbClasses {isos.Count,-5} NbSubGrs {subgs.Count,-5}");
-
-    var fratGens = MaxSubGr(subgs, g).Aggregate(g.ToArray(), (acc, g0) => acc.Intersect(g0).ToArray());
-    var frat = Group.Generate($"Φ({g})", g, fratGens);
-    DisplayGroup.Head(frat);
     
-    // var lattice = SubGrLattice(isos.Keys.ToList()).ToArray();
-    // foreach (var tower in lattice.OrderBy(t => t.Count).ThenBy(t => t[1].Count()))
-    // {
-    //     string name(ConcreteGroup<T> g0) =>
-    //         isos[g0].Count == 1
-    //             ? $"{g0}[{g0.Count()}]"
-    //             : $"{g0}[{g0.Count()}](x{isos[g0].Count})";
-    //     
-    //     Console.WriteLine("    {0}", tower.Select(g0 => name(g0)).Glue("-------"));
-    // }
-}
-
-List<ConcreteGroup<T>> MaxSubGr<T>(List<ConcreteGroup<T>> allSubGr, ConcreteGroup<T> g) where T : struct, IElt<T>
-{
-    var allMax = new List<ConcreteGroup<T>>();
-    foreach (var h in allSubGr)
+    var lattice = Group.SubGroupsLattice(isos.ToList()).ToArray();
+    foreach (var tower in lattice.OrderBy(t => t.Count).ThenBy(t => t[1].Count()))
     {
-        if (g.Count() <= h.Count() || !h.SubSetOf(g))
-            continue;
-
-        allMax = allMax.Except(allMax.Where(h0 => h0.SubSetOf(h))).ToList();
-        if (allMax.All(h0 => !h.SubSetOf(h0)))
-            allMax.Add(h);
+        string name(ConcreteGroup<T> g0) =>
+            table[g0].Count == 1
+                ? $"{g0}[{g0.Count()}]"
+                : $"{g0}[{g0.Count()}](x{table[g0].Count})";
+        
+        Console.WriteLine("    {0}", tower.Select(g0 => name(g0)).Glue("-------"));
     }
 
-    return allMax;
+    Console.WriteLine();
+    var frat = Group.FrattiniSubGroup(subgs, g);
+    DisplayGroup.Head(g.Over(frat));
 }
 
-IEnumerable<List<ConcreteGroup<T>>> SubGrLattice<T>(List<ConcreteGroup<T>> allSubGr) where T : struct, IElt<T>
+void PermsGroups(int maxK = 3, int maxN = 6)
 {
-    var g0 = allSubGr.MaxBy(g => g.Count());
-    if (g0 is not null)
-    {
-        var all = new List<List<ConcreteGroup<T>>>() { new() { g0 } };
-        while (all.Count != 0)
-        {
-            var tmp = all.ToList();
-            all.Clear();
-            foreach (var lt in tmp)
-            {
-                var g = lt.Last();
-                if (g.Count() == 1)
-                {
-                    yield return lt;
-                    continue;
-                }
-
-                foreach (var h in MaxSubGr(allSubGr, g))
-                {
-                    var lt2 = lt.Append(h).ToList();
-                    all.Add(lt2);
-                }
-            }
-        }
-    }
-}
-
-void PermsGroups()
-{
-    for (int k = 0; k < 4; ++k)
+    for (int k = 0; k < maxK; ++k)
     {
         GlobalStopWatch.Restart();
-        for (int i = 3; i < 7; i++)
+        for (int i = 3; i <= maxN; i++)
         {
             AllSubGrs(FG.Alternate(i));
             AllSubGrs(FG.Symmetric(i));
@@ -170,5 +126,6 @@ void OthersGroups()
 
 {
     // PermsGroups();
-    OthersGroups();
+    // OthersGroups();
+    PermsGroups(1, 5);
 }

@@ -11,55 +11,13 @@ namespace FastGoat.Examples;
 
 public static class GaloisApplications
 {
-    static List<ConcreteGroup<Perm>> MaxSubGr(List<ConcreteGroup<Perm>> allSubGr, ConcreteGroup<Perm> g)
-    {
-        var allMax = new List<ConcreteGroup<Perm>>();
-        foreach (var h in allSubGr)
-        {
-            if (g.Count() <= h.Count() || !h.SubSetOf(g))
-                continue;
-
-            allMax = allMax.Except(allMax.Where(h0 => h0.SubSetOf(h))).ToList();
-            if (allMax.All(h0 => !h.SubSetOf(h0)))
-                allMax.Add(h);
-        }
-
-        return allMax;
-    }
-
-    static IEnumerable<List<ConcreteGroup<Perm>>> SubGrLattice(List<ConcreteGroup<Perm>> allSubGr)
-    {
-        var g0 = allSubGr.MaxBy(g => g.Count());
-        if (g0 is not null)
-        {
-            var all = new List<List<ConcreteGroup<Perm>>>() { new() { g0 } };
-            while (all.Count != 0)
-            {
-                var tmp = all.ToList();
-                all.Clear();
-                foreach (var lt in tmp)
-                {
-                    var g = lt.Last();
-                    if (g.Count() == 1)
-                    {
-                        yield return lt;
-                        continue;
-                    }
-
-                    foreach (var h in MaxSubGr(allSubGr, g))
-                    {
-                        var lt2 = lt.Append(h).ToList();
-                        all.Add(lt2);
-                    }
-                }
-            }
-        }
-    }
-
     public static GaloisCorrespondence[][] ExtensionsTower(GaloisCorrespondence[] subFields)
     {
         var gr2field = subFields.ToDictionary(e => e.SubGr, e => e);
-        return SubGrLattice(gr2field.Keys.ToList()).Select(lt =>
+        // return SubGrLattice(gr2field.Keys.ToList()).Select(lt =>
+        //     lt.Reverse<ConcreteGroup<Perm>>().Select(sg => gr2field[sg]).ToArray()
+        // ).ToArray();
+        return Group.SubGroupsLattice(gr2field.Keys.ToList()).Select(lt =>
             lt.Reverse<ConcreteGroup<Perm>>().Select(sg => gr2field[sg]).ToArray()
         ).ToArray();
     }
@@ -90,25 +48,25 @@ public static class GaloisApplications
         }
     }
 
-    public static GaloisCorrespondence[] GaloisCorrespondence(KPoly<Rational> P, int nbGens = 2)
+    public static GaloisCorrespondence[] GaloisCorrespondence(KPoly<Rational> P)
     {
-        var subFields = GaloisTheory.SubFields(P, nbGens).ToArray();
+        var subFields = GaloisTheory.SubFields(P).ToArray();
         var extTowers = ExtensionsTower(subFields);
         GaloisCorrespondence(extTowers);
         return subFields;
     }
     
-    public static GaloisCorrespondence[] GaloisCorrespondence(List<EPoly<Rational>> roots, int nbGens = 2)
+    public static GaloisCorrespondence[] GaloisCorrespondence(List<EPoly<Rational>> roots)
     {
-        var subFields = GaloisTheory.SubFields(roots, nbGens).ToArray();
+        var subFields = GaloisTheory.SubFields(roots).ToArray();
         var extTowers = ExtensionsTower(subFields);
         GaloisCorrespondence(extTowers);
         return subFields;
     }
 
-    public static GaloisCorrespondence[] GaloisCorrespondence(List<KAut<Rational>> roots, int nbGens = 2)
+    public static GaloisCorrespondence[] GaloisCorrespondence(List<KAut<Rational>> roots)
     {
-        return GaloisCorrespondence(roots.Select(r => r.E).ToList(), nbGens);
+        return GaloisCorrespondence(roots.Select(r => r.E).ToList());
     }
 
     public static void GaloisCorrespondence(GaloisCorrespondence[][] exts)

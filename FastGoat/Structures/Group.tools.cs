@@ -133,7 +133,7 @@ public static partial class Group
         var clNames = AllConjugacyClassesNames(gr);
         var digits = clNames.Max(e => $"{e.repr}".Length);
         var fmt = $"{{0,-{digits}}}";
-        
+
         foreach (var e in clNames)
         {
             if (details)
@@ -143,11 +143,11 @@ public static partial class Group
                 Console.WriteLine(
                     $"{e.name,-3} = {string.Format(fmt, e.repr)} {$"Stab({e.name})",-10}:{e.stabx.Count,-4} {$"Orb({e.name})",-10}:{e.orbx.Count,-4}");
         }
-        
+
         Console.WriteLine($"Nb Classes:{clNames.Length}");
         Console.WriteLine();
     }
-    
+
     public static void DisplayOrbx<T1, T2>(ConcreteGroup<T1> gr, T2[] set, GroupAction<T1, T2> act, bool details = false)
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
@@ -156,18 +156,18 @@ public static partial class Group
         Console.WriteLine($"Classes for action {act.Method.Name}");
         DisplayOrbx(AllOrbits(gr, set, act), details);
     }
-    
+
     public static void DisplayOrbx<T>(ConcreteGroup<T> gr, GroupAction<T, T> act)
         where T : struct, IElt<T>
     {
         DisplayOrbx(gr, gr.ToArray(), act);
     }
-    
+
     public static void DisplayConjugacyClasses<T>(ConcreteGroup<T> gr, bool details = false) where T : struct, IElt<T>
     {
         DisplayGroup.Head(gr);
         Console.WriteLine($"Classes for action {ByConjugate(gr).Method.Name}");
-        
+
         var clNames = AllConjugacyClassesNames(gr);
         var digits = clNames.Max(e => $"{e.repr}".Length);
         var fmt = $"{{0,-{digits}}}";
@@ -237,6 +237,7 @@ public static partial class Group
     {
         return IsomorphicsSubgroupsAll(g, sg, sg.Name);
     }
+
     public static List<ConcreteGroup<T>> SubGroupsConjsRepresentatives<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
     {
         var cycles = g.Select(e => Generate(g, e)).OrderBy(g0 => g0.Count()).ToHashSet(new GroupSetEquality<T>());
@@ -268,23 +269,71 @@ public static partial class Group
         return allIsos;
     }
 
-    public static (Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>> isos, List<ConcreteGroup<T>> allSubGrs) AllSubGroups<T>(ConcreteGroup<T> g)
+    public static Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>> AllSubGroups<T>(ConcreteGroup<T> g)
         where T : struct, IElt<T>
     {
-        var setIsos = SubGroupsConjsRepresentatives(g);
-        var cap = 10 * g.Count();
-        var setConjs = new List<ConcreteGroup<T>>(cap);
-        var table = new Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>>();
-        foreach (var iso in setIsos)
-        {
-            var all = IsomorphicsSubgroupsAll(g, iso);
-            table[iso] = all;
-            setConjs.AddRange(all);
-        }
-
-        return (table, setConjs);
+        return SubGroupsConjsRepresentatives(g).ToDictionary(
+            iso => iso,
+            iso => IsomorphicsSubgroupsAll(g, iso));
     }
 
+    public static List<ConcreteGroup<T>> MaximalSubGroups<T>(List<ConcreteGroup<T>> allSubGr, ConcreteGroup<T> g)
+        where T : struct, IElt<T>
+    {
+        var allMax = new List<ConcreteGroup<T>>();
+        foreach (var h in allSubGr)
+        {
+            if (g.Count() <= h.Count() || !h.SubSetOf(g))
+                continue;
+
+            allMax = allMax.Except(allMax.Where(h0 => h0.SubSetOf(h))).ToList();
+            if (allMax.All(h0 => !h.SubSetOf(h0)))
+                allMax.Add(h);
+        }
+
+        return allMax;
+    }
+    
+    public static IEnumerable<List<ConcreteGroup<T>>> SubGroupsLattice<T>(List<ConcreteGroup<T>> allSubGr) where T : struct, IElt<T>
+    {
+        var g0 = allSubGr.MaxBy(g => g.Count());
+        if (g0 is not null)
+        {
+            var all = new List<List<ConcreteGroup<T>>>() { new() { g0 } };
+            while (all.Count != 0)
+            {
+                var tmp = all.ToList();
+                all.Clear();
+                foreach (var lt in tmp)
+                {
+                    var g = lt.Last();
+                    if (g.Count() == 1)
+                    {
+                        yield return lt;
+                        continue;
+                    }
+
+                    foreach (var h in MaximalSubGroups(allSubGr, g))
+                    {
+                        var lt2 = lt.Append(h).ToList();
+                        all.Add(lt2);
+                    }
+                }
+            }
+        }
+    }
+
+    public static ConcreteGroup<T> FrattiniSubGroup<T>(List<ConcreteGroup<T>> subGroups, ConcreteGroup<T> g) where T : struct, IElt<T>
+    {
+        var fratGens = MaximalSubGroups(subGroups, g).Aggregate(g.ToArray(), (acc, g0) => acc.Intersect(g0).ToArray());
+        return Generate($"Φ({g})", g, fratGens);
+    }
+    
+    public static ConcreteGroup<T> FrattiniSubGroup<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
+    {
+        var subGroups = AllSubGroups(g).Values.SelectMany(e => e).ToList();
+        return FrattiniSubGroup(subGroups, g);
+    }
     public static ConcreteGroup<T> Commutator<T>(string name, ConcreteGroup<T> grG, ConcreteGroup<T> grH,
         ConcreteGroup<T> grK)
         where T : struct, IElt<T>

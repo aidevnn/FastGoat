@@ -183,21 +183,21 @@ public static class GaloisTheory
         return (minPol, primElt);
     }
 
-    public static IEnumerable<GaloisCorrespondence> SubFields(KPoly<Rational> P, int nbGens = 2, bool details = false)
+    public static IEnumerable<GaloisCorrespondence> SubFields(KPoly<Rational> P, bool details = false)
     {
         var roots = IntFactorisation.AlgebraicRoots(P, details);
-        return SubFields(roots, nbGens, details);
+        return SubFields(roots, details);
     }
 
-    public static IEnumerable<GaloisCorrespondence> SubFields(List<EPoly<Rational>> roots, int nbGens = 2, bool details = false)
+    public static IEnumerable<GaloisCorrespondence> SubFields(List<EPoly<Rational>> roots, bool details = false)
     {
         var P = roots[0].F;
         var primEltChar = roots[0].F.x;
         var gal = GaloisGroup(roots, primEltChar, details);
 
-        var allSubs = gal.MultiLoop(nbGens).Select((e, k) => Group.Generate($"G{k}", gal, e.Distinct().ToArray()))
-            .Distinct(new GroupSetEquality<Perm>())
-            .OrderByDescending(g0 => g0.Count()).ToList();
+        var allSubs = Group.AllSubGroups(gal).Values.SelectMany(e => e).Reverse().ToList();
+        foreach (var (e, i0) in allSubs.Select((e, i0) => (e, i0)))
+            e.SetName($"G{i0}");
 
         var sn = new Sn(roots.Count);
         var idxRoots = roots.Select((c0, k) => (k, c0)).ToDictionary(e => e.c0, e => e.k);
@@ -459,22 +459,22 @@ public static class GaloisTheory
     }
 
 
-    static void GaloisCorrespondence(KPoly<Rational> P, int nbGens = 2)
+    static void GaloisCorrespondence(KPoly<Rational> P)
     {
         var roots = IntFactorisation.AlgebraicRoots(P);
         GaloisCorrespondence(roots);
     }
 
-    public static void GaloisCorrespondence(List<EPoly<Rational>> roots, int nbGens = 2, bool details = false)
+    public static void GaloisCorrespondence(List<EPoly<Rational>> roots, bool details = false)
     {
-        var subFields = SubFields(roots, nbGens, details)
+        var subFields = SubFields(roots, details)
             .OrderByDescending(cor => cor.SubGr.Count())
             .ToArray();
 
-        GaloisCorrespondence(subFields, nbGens);
+        GaloisCorrespondence(subFields);
     }
 
-    public static void GaloisCorrespondence(GaloisCorrespondence[] subFields, int nbGens = 2)
+    public static void GaloisCorrespondence(GaloisCorrespondence[] subFields)
     {
         var y = subFields[0].primElt.X;
         var gf = FG.KAutGroup(y.F);
@@ -516,9 +516,9 @@ public static class GaloisTheory
         GaloisCorrespondence(x.Pow(4) + x.Pow(3) + x.Pow(2) + x + 1);
         GaloisCorrespondence(x.Pow(5) + x.Pow(4) - 4 * x.Pow(3) - 3 * x.Pow(2) + 3 * x + 1); // Simple PGroup, no subField
 
-        GaloisCorrespondence(x.Pow(8) - 12 * x.Pow(6) + 23 * x.Pow(4) - 12 * x.Pow(2) + 1, nbGens: 3);
+        GaloisCorrespondence(x.Pow(8) - 12 * x.Pow(6) + 23 * x.Pow(4) - 12 * x.Pow(2) + 1);
         GaloisCorrespondence(x.Pow(8) + 4 * x.Pow(6) + 2 * x.Pow(4) + 28 * x.Pow(2) + 1);
-        GaloisCorrespondence(x.Pow(8) - x.Pow(4) + 1, nbGens: 3);
+        GaloisCorrespondence(x.Pow(8) - x.Pow(4) + 1);
         GaloisCorrespondence(x.Pow(8) + 28 * x.Pow(4) + 2500);
 
         GaloisCorrespondence(x.Pow(6) - 30 * x.Pow(4) + 225 * x.Pow(2) + 823);
