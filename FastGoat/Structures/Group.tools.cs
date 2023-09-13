@@ -268,19 +268,21 @@ public static partial class Group
         return allIsos;
     }
 
-    public static (List<ConcreteGroup<T>> isos, List<ConcreteGroup<T>> allSubGrs) AllSubGroups<T>(ConcreteGroup<T> g)
+    public static (Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>> isos, List<ConcreteGroup<T>> allSubGrs) AllSubGroups<T>(ConcreteGroup<T> g)
         where T : struct, IElt<T>
     {
         var setIsos = SubGroupsConjsRepresentatives(g);
         var cap = 10 * g.Count();
         var setConjs = new List<ConcreteGroup<T>>(cap);
+        var table = new Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>>();
         foreach (var iso in setIsos)
         {
             var all = IsomorphicsSubgroupsAll(g, iso);
+            table[iso] = all;
             setConjs.AddRange(all);
         }
 
-        return (setIsos, setConjs);
+        return (table, setConjs);
     }
 
     public static ConcreteGroup<T> Commutator<T>(string name, ConcreteGroup<T> grG, ConcreteGroup<T> grH,
