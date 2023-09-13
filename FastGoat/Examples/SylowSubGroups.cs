@@ -27,14 +27,14 @@ public static class SylowSubGroups
 
     public static void ShowAll()
     {
-        List<ConcreteGroup<Mat>> all = new();
-        all.AddRange(CyclicSubGroups());
-        all.AddRange(KleinSubGroups());
-        all.AddRange(Symm3SubGroups());
+        var all = new HashSet<ConcreteGroup<Mat>>(new GroupSetEquality<Mat>());
+        all.UnionWith(CyclicSubGroups());
+        all.UnionWith(KleinSubGroups());
+        all.UnionWith(Symm3SubGroups());
         all.Add(Quaternion());
-        all.AddRange(Dihedral8SubGroups());
-        all.AddRange(Order12Subgroups());
-        all.AddRange(SylowPSubgroups());
+        all.UnionWith(Dihedral8SubGroups());
+        all.UnionWith(Order12Subgroups());
+        all.UnionWith(SylowPSubgroups());
         all.Add(SL23());
         all.Add(GL23mat);
 
@@ -45,16 +45,11 @@ public static class SylowSubGroups
             {
                 Console.WriteLine($"  {kp1.Key}");
                 Console.WriteLine($"    {kp1.OrderBy(g => g.Name).Glue(", ")}");
-                // foreach (var g in kp1.OrderBy(g => g.Name))
-                //     Console.WriteLine($"    {g.Name}");
             }
         }
 
         Console.WriteLine();
         Console.WriteLine($"Total : {all.Count}");
-
-        // var checkUniqness = all.Select(e => e.ToHashSet()).ToHashSet(new SetEquality<Mat>());
-        // Console.WriteLine(checkUniqness.Count); == 55
     }
 
     private static ConcreteGroup<Mat> Quaternion()
@@ -75,11 +70,14 @@ public static class SylowSubGroups
 
     private static List<ConcreteGroup<Mat>> CyclicSubGroups()
     {
-        var allCyclics = GL23mat.Select(e => Group.GenerateElements(GL23mat, e).ToHashSet())
-            .ToHashSet(new SetEquality<Mat>());
-        var all = allCyclics.OrderBy(a => a.Count)
-            .Select((s, i) => Group.Generate($"C{s.Count}[{i,2:00}]", GL23mat, s.ToArray())).ToList();
-        return all;
+        var allCyclics = GL23mat.Select(e => Group.Generate(GL23mat, e)).ToHashSet(new GroupSetEquality<Mat>());
+        var groups = allCyclics.GroupBy(a => a.Count()).ToDictionary(e => e.Key, e => e.ToList());
+        foreach (var (o, g) in groups)
+        {
+            var i = 1;
+            g.ForEach(g0 => g0.SetName($"C{o}[{i++,2:00}]"));
+        }
+        return groups.SelectMany(g=>g.Value).ToList();
     }
 
     private static List<ConcreteGroup<Mat>> KleinSubGroups()
@@ -104,14 +102,13 @@ public static class SylowSubGroups
     private static List<ConcreteGroup<Mat>> Dihedral8SubGroups()
     {
         var d8 = Group.SemiDirectProd(new Cn(4), new Cn(2));
-        var d80 = Group.IsomorphicSubgroup(GL23mat, d8, "D8");
-        return Group.SubGroupsConjugates(GL23mat, d80);
+        return Group.IsomorphicsSubgroupsAll(GL23mat, d8);
     }
 
     private static List<ConcreteGroup<Mat>> Order12Subgroups()
     {
         var h12u = Group.Generate("H12", GL23mat, GL23mat[2, 1, 0, 1], GL23mat[1, 2, 0, 1], GL23mat[1, 1, 0, 2]);
-        return Group.SubGroupsConjugates(GL23mat, h12u);
+        return Group.IsomorphicsSubgroupsAll(GL23mat, h12u);
     }
 
     public static void ShowGL32Elements()
@@ -138,14 +135,10 @@ public static class SylowSubGroups
         }
 
         var g1 = all[0];
-        var conj0 = Group.SubGroupsConjugates(GL23mat, g1);
-        Console.WriteLine($"Nb Conjugates  for {all[0]} : {conj0.Count}");
+        var conj1 = Group.SubGroupsInnerConjugates(GL23mat, g1);
 
-        var g2 = all.First(g => conj0.All(g0 => !g.SetEquals(g0)));
-        var conj1 = Group.SubGroupsConjugates(GL23mat, g2);
-
-        Console.WriteLine($"Nb Conjugates  for {g2} : {conj1.Count}");
-        Console.WriteLine($"Nb Isomorphics for {all[0]} : {all.Count}");
+        Console.WriteLine($"Nb Inner Conjugates for {g1} : {conj1.Count}");
+        Console.WriteLine($"Nb Isomorphics for {g1} : {all.Count}");
     }
 
     public static void ShowQuaternion()

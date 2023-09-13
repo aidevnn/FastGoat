@@ -196,7 +196,7 @@ public static partial class Group
         return new ConjugacyClasses<T>(gr);
     }
 
-    public static List<ConcreteGroup<T>> SubGroupsConjugates<T>(ConcreteGroup<T> g, ConcreteGroup<T> h) where T : struct, IElt<T>
+    public static List<ConcreteGroup<T>> SubGroupsInnerConjugates<T>(ConcreteGroup<T> g, ConcreteGroup<T> h) where T : struct, IElt<T>
     {
         if (!h.SubSetOf(g))
             throw new GroupException(GroupExceptionType.NotSubGroup);
@@ -229,10 +229,15 @@ public static partial class Group
         where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
     {
         var isos = Group.AllIsomorphisms(sg, g).Select(h => h.Image().ToHashSet()).ToHashSet(new SetEquality<T1>());
-        return isos.Select((h, i) => Group.Generate($"{name}[{i}]", g, h.ToArray())).ToList();
+        return isos.Select((h, i) => Group.Generate($"{name}[{i + 1}]", g, h.ToArray())).ToList();
     }
 
-    public static List<ConcreteGroup<T>> IsomorphReprSubGroups<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
+    public static List<ConcreteGroup<T1>> IsomorphicsSubgroupsAll<T1, T2>(ConcreteGroup<T1> g, ConcreteGroup<T2> sg)
+        where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
+    {
+        return IsomorphicsSubgroupsAll(g, sg, sg.Name);
+    }
+    public static List<ConcreteGroup<T>> SubGroupsConjsRepresentatives<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
     {
         var cycles = g.Select(e => Generate(g, e)).OrderBy(g0 => g0.Count()).ToHashSet(new GroupSetEquality<T>());
         var setIsos = new HashSet<ConcreteGroup<T>>(new IsomorphEquality<T>());
@@ -266,12 +271,12 @@ public static partial class Group
     public static (List<ConcreteGroup<T>> isos, List<ConcreteGroup<T>> allSubGrs) AllSubGroups<T>(ConcreteGroup<T> g)
         where T : struct, IElt<T>
     {
-        var setIsos = IsomorphReprSubGroups(g);
+        var setIsos = SubGroupsConjsRepresentatives(g);
         var cap = 10 * g.Count();
         var setConjs = new List<ConcreteGroup<T>>(cap);
-        foreach (var (iso, i) in setIsos.Select((e, i) => (e, i)).ToArray())
+        foreach (var iso in setIsos)
         {
-            var all = IsomorphicsSubgroupsAll(g, iso, $"SubGr[{i + 1}]");
+            var all = IsomorphicsSubgroupsAll(g, iso);
             setConjs.AddRange(all);
         }
 
