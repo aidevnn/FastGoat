@@ -135,7 +135,7 @@ public static class SylowSubGroups
         }
 
         var g1 = all[0];
-        var conj1 = Group.SubGroupsInnerConjugates(GL23mat, g1);
+        var conj1 = Group.SubGroupsConjugates(GL23mat, g1);
 
         Console.WriteLine($"Nb Inner Conjugates for {g1} : {conj1.Count}");
         Console.WriteLine($"Nb Isomorphics for {g1} : {all.Count}");

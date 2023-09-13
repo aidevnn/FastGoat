@@ -196,7 +196,7 @@ public static partial class Group
         return new ConjugacyClasses<T>(gr);
     }
 
-    public static List<ConcreteGroup<T>> SubGroupsInnerConjugates<T>(ConcreteGroup<T> g, ConcreteGroup<T> h) where T : struct, IElt<T>
+    public static List<ConcreteGroup<T>> SubGroupsConjugates<T>(ConcreteGroup<T> g, ConcreteGroup<T> h) where T : struct, IElt<T>
     {
         if (!h.SubSetOf(g))
             throw new GroupException(GroupExceptionType.NotSubGroup);
@@ -238,43 +238,49 @@ public static partial class Group
         return IsomorphicsSubgroupsAll(g, sg, sg.Name);
     }
 
-    public static List<ConcreteGroup<T>> SubGroupsConjsRepresentatives<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
+    public static Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>> AllSubGroups<T>(ConcreteGroup<T> g)
+        where T : struct, IElt<T>
     {
+        var allSubGrs = new HashSet<ConcreteGroup<T>>(new GroupSetEquality<T>());
         var cycles = g.Select(e => Generate(g, e)).OrderBy(g0 => g0.Count()).ToHashSet(new GroupSetEquality<T>());
-        var setIsos = new HashSet<ConcreteGroup<T>>(new IsomorphEquality<T>());
-        setIsos.UnionWith(cycles);
+        var table = new Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>>();
+        foreach (var cyc in cycles)
+        {
+            if (!allSubGrs.Contains(cyc))
+            {
+                var conjs = SubGroupsConjugates(g, cyc);
+                table[cyc] = conjs;
+                allSubGrs.UnionWith(conjs);
+            }
+        }
 
         while (true)
         {
-            var sz = setIsos.Count;
-            var tmp = setIsos.ToArray();
+            var sz = allSubGrs.Count;
+            var tmp = table.Keys.ToArray();
             foreach (var (sg0, cyc) in tmp.Grid2D(cycles))
             {
                 if (sg0.SuperSetOf(cyc) || sg0.SubSetOf(cyc))
                     continue;
 
                 var gens = sg0.GetGenerators().Union(cyc.GetGenerators()).ToArray();
-                var sg1 = Generate(g, gens);
-                setIsos.Add(sg1);
+                var sg1 = Group.Generate(g, gens);
+                if (!allSubGrs.Contains(sg1))
+                {
+                    var conjs = SubGroupsConjugates(g, sg1);
+                    table[sg1] = conjs;
+                    allSubGrs.UnionWith(conjs);
+                }
             }
 
-            if (setIsos.Count == sz)
+            if (allSubGrs.Count == sz)
                 break;
         }
+        
+        foreach (var (g0, i) in table.Keys.OrderBy(g0 => g0.Count()).Select((g0, i) => (g0, i)))
+            g0.SetName($"SubGr{i + 1}");
 
-        var allIsos = setIsos.OrderBy(g0 => g0.Count()).ToList();
-        for (int i = 0; i < allIsos.Count; i++)
-            allIsos[i].SetName($"SubGr{i + 1}");
-
-        return allIsos;
-    }
-
-    public static Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>> AllSubGroups<T>(ConcreteGroup<T> g)
-        where T : struct, IElt<T>
-    {
-        return SubGroupsConjsRepresentatives(g).ToDictionary(
-            iso => iso,
-            iso => IsomorphicsSubgroupsAll(g, iso));
+        return table;
     }
 
     public static List<ConcreteGroup<T>> MaximalSubGroups<T>(List<ConcreteGroup<T>> allSubGr, ConcreteGroup<T> g)
@@ -406,6 +412,18 @@ public static partial class Group
         List<ConcreteGroup<T>> chain = new() { g0 };
         DerivedChain(chain);
         return chain;
+    }
+
+    public static ConcreteGroup<T> Normalize<T>(ConcreteGroup<T> h, ConcreteGroup<T> s) where T : struct, IElt<T>
+    {
+        var n = h.Where(x => s.SetEquals(s.Select(s0 => h.Op(h.Invert(x), h.Op(s0, x))))).ToArray();
+        return Group.Generate($"N[{s}]({h})", h, n);
+    }
+
+    public static bool AreConjugate<T>(ConcreteGroup<T> g, ConcreteGroup<T> sg1, ConcreteGroup<T> sg2) where T : struct, IElt<T>
+    {
+        return sg1.ElementsOrders.Count == sg2.ElementsOrders.Count &&
+               g.Any(x => sg1.SetEquals(sg2.Select(s0 => sg1.Op(sg1.Invert(x), sg1.Op(s0, x)))));
     }
 
     public static ConcreteGroup<T> Zentrum<T>(ConcreteGroup<T> gr) where T : struct, IElt<T>
