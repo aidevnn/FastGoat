@@ -222,6 +222,21 @@ public static partial class Group
         return new SemiDirectProduct<T1, T2>(name, n, theta, g);
     }
 
+    public static List<SemiDirectProduct<T1, T2>> AllSemiDirectProd<T1, T2>(string name, ConcreteGroup<T1> n, ConcreteGroup<T2> g)
+        where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
+    {
+        var allOps = AllOpsByAutomorphisms(g, n);
+        var allSdp = new List<SemiDirectProduct<T1, T2>>();
+        foreach (var theta in allOps.Where(kp=>kp.Image().Count()>1))
+        {
+            var sdp = new SemiDirectProduct<T1, T2>(name, n, theta, g);
+            if (allSdp.All(sdp0 => !sdp.IsIsomorphicTo(sdp0)))
+                allSdp.Add(sdp);
+        }
+
+        return allSdp;
+    }
+
     public static SemiDirectProduct<T1, T2> SemiDirectProd<T1, T2>(ConcreteGroup<T1> n, ConcreteGroup<T2> g)
         where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
     {
