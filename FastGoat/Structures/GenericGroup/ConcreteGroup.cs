@@ -153,6 +153,9 @@ public class ConcreteGroup<T> : IGroup<T> where T : struct, IElt<T>
 
     public bool IsIsomorphicTo<Tu>(ConcreteGroup<Tu> gu) where Tu : struct, IElt<Tu>
     {
+        if (gu.Elements.Count != Elements.Count || GroupType != gu.GroupType)
+            return false;
+        
         if (!ElementsOrdersList().Ascending().SequenceEqual(gu.ElementsOrdersList().Ascending()))
             return false;
 
