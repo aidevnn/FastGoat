@@ -229,7 +229,10 @@ public static partial class Group
         if (!g1.BaseGroup.Equals(g2.BaseGroup))
             throw new GroupException(GroupExceptionType.GroupDef);
 
-        var generators = g1.PseudoGenerators.Concat(g2.PseudoGenerators).Distinct().ToArray();
+        var generators = g1.GetGenerators().Union(g2.GetGenerators()).ToArray();
+        if (g1.SuperGroup is not null && g1.SuperGroup.SuperSetOf(generators))
+            return new ConcreteGroup<T>(name, g1.SuperGroup, generators);
+        
         return new ConcreteGroup<T>(name, g1.BaseGroup, generators);
     }
 

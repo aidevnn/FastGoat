@@ -205,14 +205,14 @@ public static partial class Group
         foreach (var s in g)
         {
             var si = g.Invert(s);
-            var set = h.Select(x => g.Op(s, g.Op(x, si))).ToHashSet();
+            var set = h.GetGenerators().Select(x => g.Op(s, g.Op(x, si))).ToHashSet();
             all.Add(Generate(g, set.ToArray()));
         }
 
         foreach (var (sg, i) in all.Select((sg, i) => (sg, i)).OrderByDescending(e => e.sg.Count()))
             sg.SetName($"{h.Name}[{i}]");
 
-        return all.Select((set, i) => Generate($"{h.Name}[{i}]", g, set.ToArray())).ToList();
+        return all.ToList();
     }
 
     public static ConcreteGroup<T1> IsomorphicSubgroup<T1, T2>(ConcreteGroup<T1> g, ConcreteGroup<T2> sg, string name)
@@ -241,45 +241,53 @@ public static partial class Group
     public static Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>> AllSubGroups<T>(ConcreteGroup<T> g)
         where T : struct, IElt<T>
     {
-        var allSubGrs = new HashSet<ConcreteGroup<T>>(new GroupSetEquality<T>());
-        var cycles = g.Select(e => Generate(g, e)).OrderBy(g0 => g0.Count()).ToHashSet(new GroupSetEquality<T>());
-        var table = new Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>>();
-        foreach (var cyc in cycles)
+        var og = g.Count();
+        var allSubGrs = new HashSet<ConcreteGroup<T>>(20 * og, new GroupSetEquality<T>());
+        var table = new Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>>(og);
+        var count = 0;
+        foreach (var e0 in g)
         {
+            ++count;
+            var cyc = Generate(g, e0);
             if (!allSubGrs.Contains(cyc))
             {
-                var conjs = SubGroupsConjugates(g, cyc);
-                table[cyc] = conjs;
+                var conjs = table[cyc] = SubGroupsConjugates(g, cyc);
                 allSubGrs.UnionWith(conjs);
             }
         }
 
-        while (true)
+        var clsRem = table.Keys.ToHashSet(new GroupSetEquality<T>());
+        var cyclesRem = allSubGrs.ToHashSet(new GroupSetEquality<T>());
+        while (clsRem.Count != 0)
         {
-            var sz = allSubGrs.Count;
-            var tmp = table.Keys.ToArray();
-            foreach (var (sg0, cyc) in tmp.Grid2D(cycles))
+            var cls = clsRem.OrderBy(sg0 => sg0.Count()).ToArray();
+            var cycles = cyclesRem.OrderBy(sg0 => sg0.Count()).ToArray();
+            clsRem.Clear();
+            cyclesRem.Clear();
+            foreach (var (cycle, clRepr) in cycles.Grid2D(cls))
             {
-                if (sg0.SuperSetOf(cyc) || sg0.SubSetOf(cyc))
+                if (clRepr.SuperSetOf(cycle) || clRepr.SubSetOf(cycle))
                     continue;
 
-                var gens = sg0.GetGenerators().Union(cyc.GetGenerators()).ToArray();
-                var sg1 = Group.Generate(g, gens);
-                if (!allSubGrs.Contains(sg1))
+                ++count;
+                var gens = clRepr.GetGenerators().Union(cycle.GetGenerators()).ToArray();
+                var elts = GenerateElements(g, gens);
+                if (allSubGrs.All(sg => !sg.SetEquals(elts)))
                 {
-                    var conjs = SubGroupsConjugates(g, sg1);
-                    table[sg1] = conjs;
+                    var sg1 = Generate(g, gens);
+                    // var sg1 = DirectProduct(clRepr, cycle);
+                    var conjs = table[sg1] = SubGroupsConjugates(g, sg1);
                     allSubGrs.UnionWith(conjs);
+                    clsRem.Add(sg1);
+                    cyclesRem.Add(cycle);
                 }
             }
-
-            if (allSubGrs.Count == sz)
-                break;
         }
-        
+
         foreach (var (g0, i) in table.Keys.OrderBy(g0 => g0.Count()).Select((g0, i) => (g0, i)))
             g0.SetName($"SubGr{i + 1}");
 
+        // Console.WriteLine($"{g} NbLoops {count}");
         return table;
     }
 
@@ -292,14 +300,14 @@ public static partial class Group
             if (g.Count() <= h.Count() || !h.SubSetOf(g))
                 continue;
 
-            allMax = allMax.Except(allMax.Where(h0 => h0.SubSetOf(h))).ToList();
+            allMax = allMax.Except(allMax.Where(h0 => h0.SubSetOf(h)), new GroupSetEquality<T>()).ToList();
             if (allMax.All(h0 => !h.SubSetOf(h0)))
                 allMax.Add(h);
         }
 
         return allMax;
     }
-    
+
     public static IEnumerable<List<ConcreteGroup<T>>> SubGroupsLattice<T>(List<ConcreteGroup<T>> allSubGr) where T : struct, IElt<T>
     {
         var g0 = allSubGr.MaxBy(g => g.Count());
@@ -334,12 +342,13 @@ public static partial class Group
         var fratGens = MaximalSubGroups(subGroups, g).Aggregate(g.ToArray(), (acc, g0) => acc.Intersect(g0).ToArray());
         return Generate($"Φ({g})", g, fratGens);
     }
-    
+
     public static ConcreteGroup<T> FrattiniSubGroup<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
     {
         var subGroups = AllSubGroups(g).Values.SelectMany(e => e).ToList();
         return FrattiniSubGroup(subGroups, g);
     }
+
     public static ConcreteGroup<T> Commutator<T>(string name, ConcreteGroup<T> grG, ConcreteGroup<T> grH,
         ConcreteGroup<T> grK)
         where T : struct, IElt<T>
