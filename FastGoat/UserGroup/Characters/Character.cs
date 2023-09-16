@@ -81,13 +81,19 @@ public readonly struct Character<T> : IElt<Character<T>>, IRingElt<Character<T>>
         if (!Gr.SetEquals(other.Gr))
             return 1;
 
-        foreach (var e in Classes)
+        foreach (var e in Classes.OrderBy(e0 => other.Gr.ElementsOrders[e0]))
         {
-            var x = this[e]?.Module ?? Double.PositiveInfinity;
-            var y = other[e]?.Module ?? Double.PositiveInfinity;
-            var compMod = x.CompareTo(y);
+            var xr = this[e]?.Module ?? Double.PositiveInfinity;
+            var yr = other[e]?.Module ?? Double.PositiveInfinity;
+            var compMod = xr.CompareTo(yr);
             if (compMod != 0)
                 return compMod;
+
+            var xo = this[e]?.Phase ?? 2 * Double.Pi;
+            var yo = other[e]?.Phase ?? 2 * Double.Pi;
+            var compPhase = xo.CompareTo(yo);
+            if (compPhase != 0)
+                return compPhase;
         }
 
         return 0;
