@@ -61,7 +61,7 @@ public class ConcreteGroup<T> : IGroup<T> where T : struct, IElt<T>
         var (tmpElements, uniqueGenerators) = Group.UniqueGenerators(this, generators);
         Elements = new HashSet<T>(tmpElements);
         ElementsOrders = Group.ElementsOrders(g, Elements);
-        PseudoGenerators = new(uniqueGenerators);
+        PseudoGenerators = new(generators.Length <= uniqueGenerators.Count ? generators : uniqueGenerators);
         GroupType = Group.IsCommutative(g, PseudoGenerators)
             ? GroupType.AbelianGroup
             : GroupType.NonAbelianGroup;
