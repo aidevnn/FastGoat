@@ -10,10 +10,10 @@ using FastGoat.UserGroup.Words.ToddCoxeter;
 
 namespace FastGoat.Examples;
 
-public static class SylowSubGroups
+public static class GL23SubGroups
 {
     // Problem 6.23 (Project—Subgroups of GL2(3)) page 137, H.E. Rose
-    static SylowSubGroups()
+    static GL23SubGroups()
     {
         var gl23 = new GL(2, 3);
         var r0 = gl23[2, 1, 0, 1];
