@@ -48,6 +48,16 @@ public struct Cnf : IElt<Cnf>, IRingElt<Cnf>, IFieldElt<Cnf>
 
     public double Module => Abs(this);
 
+    public double Phase
+    {
+        get
+        {
+            var c = Complex.FromPolarCoordinates(1, 2 * Double.Pi / N);
+            var c0 = E.Poly.Substitute(c);
+            return c0.Phase;
+        }
+    }
+
     public Cnf(int n)
     {
         E = FG.CyclotomicEPoly(n);
@@ -209,7 +219,7 @@ public struct Cnf : IElt<Cnf>, IRingElt<Cnf>, IFieldElt<Cnf>
     {
         var c = Complex.FromPolarCoordinates(1, 2 * Double.Pi / t.N);
         var c0 = t.E.Poly.Substitute(c);
-        return Complex.Abs(c0);
+        return c0.Magnitude;
     }
 
     public static bool IsValuedField => true;
