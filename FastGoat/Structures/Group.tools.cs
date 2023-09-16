@@ -219,6 +219,11 @@ public static partial class Group
         return Generate($"{name}", g, iso.Image().ToArray());
     }
 
+    public static ConcreteGroup<T1> IsomorphicSubgroup<T1, T2>(ConcreteGroup<T1> g, ConcreteGroup<T2> sg)
+        where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
+    {
+        return IsomorphicSubgroup(g, sg, sg.Name);
+    }
     public static List<ConcreteGroup<T1>> IsomorphicsSubgroupsAll<T1, T2>(ConcreteGroup<T1> g, ConcreteGroup<T2> sg, string name)
         where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
     {
@@ -276,6 +281,92 @@ public static partial class Group
             g0.SetName($"SubGr{i + 1}");
 
         return table;
+    }
+
+    public static Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>> PSubGroups<T>(ConcreteGroup<T> g, int p) where T : struct, IElt<T>
+    {
+        if (!IntExt.Primes10000.Contains(p))
+            throw new();
+
+        var dec = IntExt.PrimesDec(g.Count());
+        if (!dec.ContainsKey(p))
+            throw new();
+
+        var og = g.Count();
+        var table = new Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>>(og, new GroupSetEquality<T>());
+        var allSubgroups = new HashSet<ConcreteGroup<T>>(og * 20, new GroupSetEquality<T>());
+
+        var pArr = new[] { p }.ToHashSet();
+        foreach (var e in g)
+        {
+            var oe = g.ElementsOrders[e];
+            if (!pArr.SetEquals(IntExt.PrimesDecomposition(oe)))
+                continue;
+
+            var cyc = Generate(g, e);
+            if (allSubgroups.Add(cyc))
+            {
+                var conjs = table[cyc] = SubGroupsConjugates(g, cyc);
+                allSubgroups.UnionWith(conjs);
+            }
+        }
+
+        var sgsRem = table.Keys.ToHashSet(new GroupSetEquality<T>());
+        var sgsPrevRem = allSubgroups.ToHashSet(new GroupSetEquality<T>());
+        while (sgsRem.Count != 0)
+        {
+            var sgs = sgsRem.OrderBy(sg => sg.Count()).ToArray();
+            var sgsPrev = sgsPrevRem.OrderBy(sg => sg.Count()).ToArray();
+            sgsRem.Clear();
+            sgsPrevRem.Clear();
+            foreach (var (sg0, sg1) in sgsPrev.Grid2D(sgs))
+            {
+                var gens = sg0.GetGenerators().Union(sg1.GetGenerators()).ToArray();
+                var elts = GenerateElements(g, gens).ToHashSet();
+                var oe = elts.Count;
+                if (!pArr.SetEquals(IntExt.PrimesDecomposition(oe)))
+                    continue;
+
+                if (allSubgroups.All(g0 => !g0.SetEquals(elts)))
+                {
+                    var sg2 = Generate(g, gens);
+                    var conjsSg2 = table[sg2] = SubGroupsConjugates(g, sg2);
+                    allSubgroups.UnionWith(conjsSg2);
+                    sgsRem.Add(sg2);
+                    sgsPrevRem.Add(sg1);
+                }
+            }
+        }
+
+        foreach (var (g0, i) in table.Keys.OrderBy(g0 => g0.Count()).Select((g0, i) => (g0, i)))
+            g0.SetName($"({g})_SubGr{i + 1}");
+
+        return table;
+    }
+
+    public static (ConcreteGroup<T> pSylow, List<ConcreteGroup<T>> Conjs) SylowPSubgroup<T>(ConcreteGroup<T> g, int p)
+        where T : struct, IElt<T>
+    {
+        var dec = IntExt.PrimesDec(g.Count());
+        var pGroups = PSubGroups(g, p);
+        var pr = p.Pow(dec[p]);
+        var (pSylow, conjs) = pGroups.First(e => e.Key.Count() == pr);
+        return (pSylow, conjs);
+    }
+
+    public static Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>> AllPSubGroups<T>(ConcreteGroup<T> g)
+        where T : struct, IElt<T>
+    {
+        var dec = IntExt.PrimesDec(g.Count());
+        return dec.Keys.Order().Select(p => PSubGroups(g, p)).SelectMany(kv => kv)
+            .ToDictionary(e => e.Key, e => e.Value, new GroupSetEquality<T>());
+    }
+
+    public static Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>> AllSylowPSubgroups<T>(ConcreteGroup<T> g)
+        where T : struct, IElt<T>
+    {
+        var dec = IntExt.PrimesDec(g.Count());
+        return dec.Keys.Order().Select(p => SylowPSubgroup(g, p)).ToDictionary(e => e.pSylow, e => e.Conjs, new GroupSetEquality<T>());
     }
 
     public static List<ConcreteGroup<T>> MaximalSubGroups<T>(List<ConcreteGroup<T>> allSubGr, ConcreteGroup<T> g)
