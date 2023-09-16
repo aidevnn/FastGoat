@@ -20,19 +20,14 @@ public static partial class FG
     {
         return new Character<T>(gr);
     }
-    public static CharacterTable2<T> CharactersTable2<T>(ConcreteGroup<T> gr) where T : struct, IElt<T>
-    {
-        return new CharacterTable2<T>(gr);
-    }
-
-    public static CharacterTable2<T> CharactersTable2Slow<T>(ConcreteGroup<T> gr, int nbGens = 2) where T : struct, IElt<T>
-    {
-        return new CharacterTable2<T>(gr, nbGens);
-    }
-
-    public static CharacterTable<T> CharactersTable<T>(ConcreteGroup<T> gr) where T : struct, IElt<T>
+    public static CharacterTable<T> CharacterTable<T>(ConcreteGroup<T> gr) where T : struct, IElt<T>
     {
         return new CharacterTable<T>(gr);
+    }
+
+    public static CharacterTable<T> CharacterTableEmpty<T>(ConcreteGroup<T> gr) where T : struct, IElt<T>
+    {
+        return new CharacterTable<T>(gr, true);
     }
 
     public static List<Character<T>> LinearCharacters<T>(ConcreteGroup<T> gr) where T : struct, IElt<T>

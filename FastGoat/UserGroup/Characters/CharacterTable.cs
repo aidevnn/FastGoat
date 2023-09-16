@@ -5,9 +5,9 @@ using FastGoat.UserGroup.Polynoms;
 
 namespace FastGoat.UserGroup.Characters;
 
-public class CharacterTable2<T> where T : struct, IElt<T>
+public class CharacterTable<T> where T : struct, IElt<T>
 {
-    public CharacterTable2(ConcreteGroup<T> gr, int nbGens = 1)
+    public CharacterTable(ConcreteGroup<T> gr, bool empty = false)
     {
         Gr = gr;
         var one = new Character<T>(gr);
@@ -15,15 +15,17 @@ public class CharacterTable2<T> where T : struct, IElt<T>
         NbClasses = Classes.Count();
         AllCharacters = NbClasses.Range().Select(i => one.Zero).ToArray();
         ChiE = AllCharacters[0] = one;
-        NbGens = nbGens;
-        if (gr.GroupType == GroupType.AbelianGroup)
+        if (!empty)
         {
-            AllCharacters = FG.LinearCharacters(Gr).ToArray();
-        }
-        else
-        {
-            DerivedSubGroupLift();
-            InductionFromSubGroups(NbGens);
+            if (gr.GroupType == GroupType.AbelianGroup)
+            {
+                AbelianTable();
+            }
+            else
+            {
+                DerivedSubGroupLift();
+                InductionFromSubGroups();
+            }
         }
     }
 
@@ -33,7 +35,20 @@ public class CharacterTable2<T> where T : struct, IElt<T>
     public ConjugacyClasses<T> Classes { get; }
     public Character<T>[] AllCharacters { get; set; }
     public int NbClasses { get; }
-    private int NbGens { get; set; }
+
+    public void ClearTable()
+    {
+        AllCharacters = NbClasses.Range().Select(i => ChiE.Zero).ToArray();
+        AllCharacters[0] = ChiE;
+    }
+
+    public void AbelianTable()
+    {
+        if (Gr.GroupType != GroupType.AbelianGroup)
+            throw new GroupException(GroupExceptionType.GroupDef);
+        
+        AllCharacters = FG.LinearCharacters(Gr).ToArray();
+    }
 
     public void DerivedSubGroupLift()
     {
@@ -41,7 +56,7 @@ public class CharacterTable2<T> where T : struct, IElt<T>
         if (dg.Count() < Gr.Count())
         {
             var quo = Gr.Over(dg);
-            var ctQuo = new CharacterTable2<Coset<T>>(quo);
+            var ctQuo = new CharacterTable<Coset<T>>(quo);
             foreach (var chi in ctQuo.AllCharacters.Where(chi => chi.HasAllValues))
             {
                 var lift = FG.Lift(chi, Classes);
@@ -54,18 +69,28 @@ public class CharacterTable2<T> where T : struct, IElt<T>
         }
     }
 
-    public void InductionFromSubGroups(int nbGens = 1)
+    public void InductionFromSubGroups()
     {
         if (AllCharacters.All(chi => chi.HasAllValues))
             return;
 
-        NbGens = nbGens;
-        var arr = Classes.Where(e => !e.Equals(Gr.Neutral())).ToArray();
-        var g0 = arr.AllCombinationsToMofN(NbGens).Select(e => e.SelectMany(f => Classes.GetClassStabx(f)).ToArray())
-            .Select((e, i) => Group.Generate($"SubGr({i})", Gr, e)).ToHashSet(new IsomorphEquality<T>());
-        
-        foreach (var sg in g0.Where(ge => ge.Count() < Gr.Count()).OrderByDescending(sg => sg.Count()))
+        var og = Gr.Count();
+        var all = Group.AllSubGroups(Gr);
+        var allSubs = all.Keys.Where(g => g.Count() != 1 && g.Count() != og).ToArray();
+        foreach (var sg in allSubs.OrderBy(sg => sg.Count()))
+        {
             InductionFromSubGroup(sg);
+            if (AllCharacters.All(chi => chi.HasAllValues))
+                return;
+        }
+
+        var allSubs2 = all.Values.SelectMany(e => e).Where(g => g.Count() != 1 && g.Count() != og).ToArray();
+        foreach (var sg in allSubs2.OrderBy(sg => sg.Count()))
+        {
+            InductionFromSubGroup(sg);
+            if (AllCharacters.All(chi => chi.HasAllValues))
+                return;
+        }
     }
 
     public void SolveSumSquare()
@@ -98,12 +123,11 @@ public class CharacterTable2<T> where T : struct, IElt<T>
             return;
 
         SolveSumSquare();
-        var ne = Gr.Neutral();
-        AllCharacters = AllCharacters.OrderBy(chi => chi[ne]?.Module ?? Double.PositiveInfinity).ToArray();
+        AllCharacters = AllCharacters.Order().ToArray();
         if (AllCharacters.All(chi => chi.HasAllValues))
             return;
 
-        var ctSubGr = new CharacterTable2<T>(subGr, NbGens);
+        var ctSubGr = new CharacterTable<T>(subGr);
         foreach (var chi in ctSubGr.AllCharacters.Where(chi => chi.HasAllValues))
         {
             var ind = FG.Induction(chi, Classes);
@@ -113,14 +137,13 @@ public class CharacterTable2<T> where T : struct, IElt<T>
         }
     }
 
-    public void InductionFromSubGroup(CharacterTable2<T> ctSubGr)
+    public void InductionFromSubGroup(CharacterTable<T> ctSubGr)
     {
         if (!ctSubGr.Gr.SubSetOf(Gr))
             return;
 
         SolveSumSquare();
-        var ne = Gr.Neutral();
-        AllCharacters = AllCharacters.OrderBy(chi => chi[ne]?.Module ?? Double.PositiveInfinity).ToArray();
+        AllCharacters = AllCharacters.Order().ToArray();
         if (AllCharacters.All(chi => chi.HasAllValues))
             return;
 
@@ -139,11 +162,11 @@ public class CharacterTable2<T> where T : struct, IElt<T>
             return;
 
         var ne = Gr.Neutral();
-        AllCharacters = AllCharacters.OrderBy(chi => chi[ne]?.Module ?? Double.PositiveInfinity).ToArray();
+        AllCharacters = AllCharacters.Order().ToArray();
         if (AllCharacters.All(chi => chi.HasAllValues))
             return;
 
-        var ctSuperGr = new CharacterTable2<T>(superGr, NbGens);
+        var ctSuperGr = new CharacterTable<T>(superGr);
         foreach (var chi in ctSuperGr.AllCharacters.Where(chi => chi.HasAllValues))
         {
             var res = FG.Restriction(chi, Classes);
@@ -160,13 +183,13 @@ public class CharacterTable2<T> where T : struct, IElt<T>
             RestrictionFromSuperGroup(superGr);
     }
 
-    public void RestrictionFromSuperGroup(CharacterTable2<T> ctSuperGr)
+    public void RestrictionFromSuperGroup(CharacterTable<T> ctSuperGr)
     {
         if (!Gr.SubSetOf(ctSuperGr.Gr))
             return;
 
         var ne = Gr.Neutral();
-        AllCharacters = AllCharacters.OrderBy(chi => chi[ne]?.Module ?? Double.PositiveInfinity).ToArray();
+        AllCharacters = AllCharacters.Order().ToArray();
         if (AllCharacters.All(chi => chi.HasAllValues))
             return;
 
@@ -263,23 +286,24 @@ public class CharacterTable2<T> where T : struct, IElt<T>
         var clggi = Classes.ToDictionary(e => e, e => Classes.GetRepresentative(Gr.Invert(e)));
 
         var chis = AllCharacters;
-        Console.WriteLine("All i,                 Sum[g](Xi(g)Xi(g^−1))= |G|      : {0}",
+        Console.WriteLine("All i,                 Sum[g](Xi(g)Xi(g^−1)) = |G|      : {0}",
             rg.All(i => ggi.Aggregate(e0.Zero, (sum, kp) => sum + chis[i][kp.g]!.Value * chis[i][kp.gi]!.Value)
                 .Equals(e0.One * Gr.Count())));
-        Console.WriteLine("All i <> j,            Sum[g](Xi(g)Xj(g^−1))=  0       : {0}",
+        Console.WriteLine("All i <> j,            Sum[g](Xi(g)Xj(g^−1)) =  0       : {0}",
             allCombs.All(e => ggi.Aggregate(e0.Zero, (sum, kp) => sum + chis[e.i][kp.g]!.Value * chis[e.j][kp.gi]!.Value).IsZero()));
 
-        Console.WriteLine("All g, h in Cl(g),     Sum[r](Xr(g)Xr(h^−1))= |Cl(g)|  : {0}",
+        Console.WriteLine("All g, h in Cl(g),     Sum[r](Xr(g)Xr(h^−1)) = |Cl(g)|  : {0}",
             clggi.All(kp =>
                 rg.Aggregate(e0.Zero, (sum, r) => sum + chis[r][kp.Key]!.Value * chis[r][kp.Value]!.Value)
                     .Equals(e0.One * Ocl[kp.Key])));
-        Console.WriteLine("All g, h not in Cl(g), Sum[r](Xr(g)Xr(h^−1))=  0       : {0}",
+        Console.WriteLine("All g, h not in Cl(g), Sum[r](Xr(g)Xr(h^−1)) =  0       : {0}",
             allCombs.All(e =>
                 rg.Aggregate(e0.Zero, (sum, r) => sum + chis[r][e.gi]!.Value * chis[r][clggi[e.gj]]!.Value).IsZero()));
     }
 
     public void DisplayCells()
     {
+        AllCharacters = AllCharacters.Order().ToArray();
         var form = Ring.MatrixDisplayForm;
         Ring.MatrixDisplayForm = Ring.MatrixDisplay.Table;
         var Cells = new ACell[NbClasses + 3, NbClasses + 2];

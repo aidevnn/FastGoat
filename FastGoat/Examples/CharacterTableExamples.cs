@@ -151,55 +151,52 @@ public static class CharacterTableExamples
         TableCmCn(3, 4);
     }
 
-    public static void ExamplesCharactersTableAbelianGroups()
+    public static void ExamplesCharacterTableAbelianGroups()
     {
-        FG.CharactersTable(FG.Abelian(3)).DisplayCells();
-        FG.CharactersTable(FG.Abelian(2, 2)).DisplayCells();
-        FG.CharactersTable(FG.Abelian(2, 3)).DisplayCells();
-        FG.CharactersTable(FG.Abelian(6)).DisplayCells();
-        FG.CharactersTable(FG.Abelian(4)).DisplayCells();
-        FG.CharactersTable(FG.Abelian(2, 4)).DisplayCells();
-        FG.CharactersTable(FG.Abelian(2, 2, 2)).DisplayCells();
-        FG.CharactersTable(FG.Abelian(2, 2, 3)).DisplayCells();
+        FG.CharacterTable(FG.Abelian(3)).DisplayCells();
+        FG.CharacterTable(FG.Abelian(2, 2)).DisplayCells();
+        FG.CharacterTable(FG.Abelian(2, 3)).DisplayCells();
+        FG.CharacterTable(FG.Abelian(6)).DisplayCells();
+        FG.CharacterTable(FG.Abelian(4)).DisplayCells();
+        FG.CharacterTable(FG.Abelian(2, 4)).DisplayCells();
+        FG.CharacterTable(FG.Abelian(2, 2, 2)).DisplayCells();
+        FG.CharacterTable(FG.Abelian(2, 2, 3)).DisplayCells();
     }
 
-    public static void ExamplesLiftDerivedGroup()
+    public static void MoreExamples()
     {
-        FG.CharactersTable(FG.Symmetric(3)).DisplayCells();
-        FG.CharactersTable(FG.Dihedral(4)).DisplayCells();
-        FG.CharactersTable(FG.Alternate(4)).DisplayCells();
-        FG.CharactersTable(FG.Quaternion(8)).DisplayCells();
-        FG.CharactersTable(FG.Dihedral(5)).DisplayCells();
-        FG.CharactersTable(FG.Dihedral(8)).DisplayCells();
-        FG.CharactersTable(Group.SemiDirectProd(new Cn(5), new Cn(4))).DisplayCells();
-        FG.CharactersTable(Group.SemiDirectProd(new Cn(7), new Cn(6))).DisplayCells();
-        FG.CharactersTable(Group.SemiDirectProd(new Cn(11), new Cn(10))).DisplayCells();
-        FG.CharactersTable(Group.SemiDirectProd(new Cn(13), new Cn(12))).DisplayCells();
-    }
+        FG.CharacterTable(FG.Symmetric(3)).DisplayCells();
+        FG.CharacterTable(FG.Dihedral(4)).DisplayCells();
+        FG.CharacterTable(FG.Alternate(4)).DisplayCells();
+        FG.CharacterTable(FG.Quaternion(8)).DisplayCells();
+        FG.CharacterTable(FG.Dihedral(5)).DisplayCells();
+        FG.CharacterTable(FG.Dihedral(8)).DisplayCells();
+        FG.CharacterTable(Group.SemiDirectProd(new Cn(5), new Cn(4))).DisplayCells();
+        FG.CharacterTable(Group.SemiDirectProd(new Cn(7), new Cn(6))).DisplayCells();
+        FG.CharacterTable(Group.SemiDirectProd(new Cn(11), new Cn(10))).DisplayCells();
+        FG.CharacterTable(Group.SemiDirectProd(new Cn(13), new Cn(12))).DisplayCells();
+        
+        FG.CharacterTable(Group.SemiDirectProd(new Cn(3), new Cn(4))).DisplayCells();
+        FG.CharacterTable(Group.SemiDirectProd(new Cn(4), new Cn(4))).DisplayCells();
+        FG.CharacterTable(Group.SemiDirectProd(new Cn(7), new Cn(3))).DisplayCells();
+        FG.CharacterTable(Group.SemiDirectProd(new Cn(9), new Cn(3))).DisplayCells();
+        FG.CharacterTable(Group.SemiDirectProd(new Cn(3), new Cn(8))).DisplayCells();
+        FG.CharacterTable(Group.SemiDirectProd(FG.Abelian(3, 3), new Cn(4))).DisplayCells();
 
-    public static void ExamplesTwoMissingCharacters()
-    {
-        FG.CharactersTable(Group.SemiDirectProd(new Cn(3), new Cn(4))).DisplayCells();
-        FG.CharactersTable(Group.SemiDirectProd(new Cn(4), new Cn(4))).DisplayCells();
-        FG.CharactersTable(Group.SemiDirectProd(new Cn(7), new Cn(3))).DisplayCells();
-        FG.CharactersTable(Group.SemiDirectProd(new Cn(9), new Cn(3))).DisplayCells();
-        FG.CharactersTable(Group.SemiDirectProd(new Cn(3), new Cn(8))).DisplayCells();
-        FG.CharactersTable(Group.SemiDirectProd(FG.Abelian(3, 3), new Cn(4))).DisplayCells();
-
-        FG.CharactersTable(FG.Dihedral(6)).DisplayCells();
-        FG.CharactersTable(FG.DiCyclic(3)).DisplayCells();
-        FG.CharactersTable(FG.SemiDihedral(4)).DisplayCells();
+        FG.CharacterTable(FG.Dihedral(6)).DisplayCells();
+        FG.CharacterTable(FG.DiCyclic(3)).DisplayCells();
+        FG.CharacterTable(FG.SemiDihedral(4)).DisplayCells();
     }
 
     public static void ExamplesPQgroups()
     {
         for (int i = 2; i <= 16; i++)
-            FG.CharactersTable2(FG.DihedralSdp(i)).DisplayCells();
+            FG.CharacterTable(FG.DihedralSdp(i)).DisplayCells();
 
         var pqGroups = 31.Range(2).SelectMany(i => FG.FrobeniusSdp(i)).ToArray();
         foreach (var g in pqGroups)
         {
-            FG.CharactersTable2(g).DisplayCells();
+            FG.CharacterTable(g).DisplayCells();
         }
     }
 
@@ -209,10 +206,7 @@ public static class CharacterTableExamples
         for (int n = 3; n < 7; n++)
         {
             GlobalStopWatch.AddLap();
-            var ctAn = FG.CharactersTable2Slow(FG.Alternate(n));
-        
-            if (n == 6)
-                ctAn.InductionFromSubGroups(2);
+            var ctAn = FG.CharacterTable(FG.Alternate(n));
             ctAn.DisplayCells();
             GlobalStopWatch.Show($"{ctAn.Gr}");
         }
@@ -220,7 +214,7 @@ public static class CharacterTableExamples
         for (int n = 3; n < 7; n++)
         {
             GlobalStopWatch.AddLap();
-            var ctSn = FG.CharactersTable2Slow(FG.Symmetric(n));
+            var ctSn = FG.CharacterTable(FG.Symmetric(n));
             ctSn.DisplayCells();
             GlobalStopWatch.Show($"{ctSn.Gr}");
         }
@@ -314,14 +308,14 @@ public static class CharacterTableExamples
         var b0 = gl[2, 1, 2, 0];
 
         var gl23 = Group.Generate(gl, a0, b0);
-        var ctGL23 = FG.CharactersTable2Slow(gl23);
+        var ctGL23 = FG.CharacterTable(gl23);
         ctGL23.DisplayCells();
     
         var a = gl[1, 1, 0, 1];
         var b = gl[0, 1, 2, 0];
 
         var sl23 = Group.Generate("SL(2,3)", gl, a, b);
-        var ctSL23 = FG.CharactersTable2(sl23);
+        var ctSL23 = FG.CharacterTable(sl23);
         ctSL23.RestrictionFromSuperGroup(ctGL23);
         ctSL23.DisplayCells();
     }
@@ -369,35 +363,34 @@ public static class CharacterTableExamples
     public static void OtherExamples()
     {
         {
-            FG.CharactersTable2(FG.DiCyclicSdp(5)).DisplayCells();
-            FG.CharactersTable2(FG.DiCyclicSdp(6)).DisplayCells();
-            FG.CharactersTable2(FG.DiCyclicSdp(7)).DisplayCells();
-            FG.CharactersTable2(FG.DiCyclicSdp(8)).DisplayCells();
+            FG.CharacterTable(FG.DiCyclicSdp(5)).DisplayCells();
+            FG.CharacterTable(FG.DiCyclicSdp(6)).DisplayCells();
+            FG.CharacterTable(FG.DiCyclicSdp(7)).DisplayCells();
+            FG.CharacterTable(FG.DiCyclicSdp(8)).DisplayCells();
         }
 
         {
-            FG.CharactersTable2(Group.SemiDirectProd(FG.Abelian(4, 4), FG.Abelian(3))).DisplayCells();
-            FG.CharactersTable2(Group.SemiDirectProd(FG.Abelian(3), FG.Symmetric(3))).DisplayCells();
-            FG.CharactersTable2(Group.SemiDirectProd(FG.Abelian(3, 3), FG.Abelian(8))).DisplayCells();
-            FG.CharactersTable2(Group.SemiDirectProd(FG.Abelian(5), FG.Abelian(8))).DisplayCells();
-            FG.CharactersTable2(Group.SemiDirectProd(FG.Abelian(4), FG.Abelian(4))).DisplayCells();
-            FG.CharactersTable2(Group.SemiDirectProd(FG.Abelian(4), FG.Abelian(4))).DisplayCells();
+            FG.CharacterTable(Group.SemiDirectProd(FG.Abelian(4, 4), FG.Abelian(3))).DisplayCells();
+            FG.CharacterTable(Group.SemiDirectProd(FG.Abelian(3), FG.Symmetric(3))).DisplayCells();
+            FG.CharacterTable(Group.SemiDirectProd(FG.Abelian(3, 3), FG.Abelian(8))).DisplayCells();
+            FG.CharacterTable(Group.SemiDirectProd(FG.Abelian(5), FG.Abelian(8))).DisplayCells();
+            FG.CharacterTable(Group.SemiDirectProd(FG.Abelian(4), FG.Abelian(4))).DisplayCells();
         }
 
         {
             var E = FG.WordGroup("E", "a4, d6, adad, a3da3d");
             var Esdp = Group.SemiDirectProd(FG.Abelian(3), FG.DihedralSdp(4));
             DisplayGroup.AreIsomorphics(Esdp, E);
-            FG.CharactersTable2Slow(E).DisplayCells();
-            FG.CharactersTable2Slow(Esdp).DisplayCells();
+            FG.CharacterTable(E).DisplayCells();
+            FG.CharacterTable(Esdp).DisplayCells();
         }
         
         {
             var f8 = Group.SemiDirectProd(FG.Abelian(2, 2, 2), FG.Abelian(7));
-            FG.CharactersTable2(f8).DisplayCells();
+            FG.CharacterTable(f8).DisplayCells();
             
             var gr = Group.SemiDirectProd(f8, FG.Abelian(3));
-            FG.CharactersTable2Slow(gr).DisplayCells();
+            FG.CharacterTable(gr).DisplayCells();
         }
     }
 }
