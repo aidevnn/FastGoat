@@ -315,7 +315,9 @@ public static class CharacterTableExamples
         var b = gl[0, 1, 2, 0];
 
         var sl23 = Group.Generate("SL(2,3)", gl, a, b);
-        var ctSL23 = FG.CharacterTable(sl23);
+        var ctSL23 = FG.CharacterTableEmpty(sl23);
+        ctSL23.DerivedSubGroupLift();
+        ctSL23.DisplayCells();
         ctSL23.RestrictionFromSuperGroup(ctGL23);
         ctSL23.DisplayCells();
     }
