@@ -59,7 +59,7 @@ public static class SylowTheorems
         }
     }
 
-    static ConcreteGroup<Ep<ZnInt>> AbelianElementaryDecompositions<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
+    static ConcreteGroup<Ep<ZnInt>> AbelianElementariesFactors<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
     {
         if (g.GroupType == GroupType.NonAbelianGroup)
             throw new();
@@ -81,10 +81,16 @@ public static class SylowTheorems
 
         var abElems = FG.Abelian(elems.Order().ToArray());
         abElems.SetName($"({abElems.Name})elem");
-        var abInv = FG.Abelian(AbelianInvariantsFactors.Reduce(g).Order().ToArray());
+        var invFacts = AbelianInvariantsFactors.Reduce(g).Order().ToArray();
+        var abInv = FG.Abelian(invFacts);
         abInv.SetName($"({abInv.Name})inv");
+        
         DisplayGroup.AreIsomorphics(abElems, g);
         DisplayGroup.AreIsomorphics(abInv, g);
+        var elems2 = invFacts.SelectMany(f => IntExt.PrimesDec(f).Select(kv => kv.Key.Pow(kv.Value))).Order().ToArray();
+        var abElems2 = FG.Abelian(elems2.Order().ToArray());
+        abElems2.SetName($"({abElems2.Name})elem2");
+        Console.WriteLine($"{abElems} set equal {abElems2} : {abElems2.SetEquals(abElems)}");
         Console.WriteLine();
         return abElems;
     }
@@ -109,13 +115,13 @@ public static class SylowTheorems
         SylowSecondTheorem(Group.SemiDirectProd(new Cn(5), new Cn(4)));
     }
 
-    public static void AbelianElementaryDecompositionsExamples()
+    public static void AbelianElementariesFactorsExamples()
     {
-        AbelianElementaryDecompositions(FG.Abelian(2, 4, 6));
-        AbelianElementaryDecompositions(FG.Abelian(2, 3, 8));
-        AbelianElementaryDecompositions(FG.Abelian(3, 4, 4));
-        AbelianElementaryDecompositions(FG.Abelian(6, 8, 18));
-        AbelianElementaryDecompositions(FG.Abelian(8, 18, 30));
+        AbelianElementariesFactors(FG.Abelian(2, 4, 6));
+        AbelianElementariesFactors(FG.Abelian(2, 3, 8));
+        AbelianElementariesFactors(FG.Abelian(3, 4, 4));
+        AbelianElementariesFactors(FG.Abelian(6, 8, 18));
+        AbelianElementariesFactors(FG.Abelian(8, 18, 30));
     }
 
     public static void PQGroups()

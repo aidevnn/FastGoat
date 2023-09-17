@@ -95,6 +95,16 @@ public static partial class FG
         return Product.GpGenerate(seq.Select(i => new Cn(i)).Cast<IGroup<ZnInt>>().ToArray());
     }
 
+    public static ConcreteGroup<Ep<ZnInt>> ElementaryAbelian(int q)
+    {
+        var dec = IntExt.PrimesDec(q);
+        if (dec.Count != 1)
+            throw new GroupException(GroupExceptionType.GroupDef);
+
+        var (p, n) = dec.First();
+        return Abelian(Enumerable.Repeat(p, n).ToArray());
+    }
+
     public static WordGroup AbelianWg(string name, params int[] seq)
     {
         if (seq.Length > 5 || seq.Min() <= 1)
@@ -111,6 +121,16 @@ public static partial class FG
 
     public static WordGroup AbelianWg(params int[] seq) => AbelianWg(seq.Glue(" x ", "C{0}"), seq);
     
+    public static WordGroup ElementaryAbelianWg(int q)
+    {
+        var dec = IntExt.PrimesDec(q);
+        if (dec.Count != 1)
+            throw new GroupException(GroupExceptionType.GroupDef);
+
+        var (p, n) = dec.First();
+        return AbelianWg(Enumerable.Repeat(p, n).ToArray());
+    }
+
     public static WordGroup AlternateWG(int n)
     {
         if (n < 2 || n > 6)
