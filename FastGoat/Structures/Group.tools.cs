@@ -86,13 +86,14 @@ public static partial class Group
         where T : struct, IElt<T>
     {
         var act = ByConjugate(gr);
-        var alpha = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        var alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        string alpha(int i) => i >= 0 ? i < 52 ? $"{alphabet[i]}" : $"cl{i}" : throw new();
         var allClasses = AllOrbits(gr, gr.Order().ToArray(), act);
         var classNames = allClasses.GroupBy(e => gr.ElementsOrders[e.Key])
             .ToDictionary(
                 e => e.Key,
                 e => e.OrderBy(f => f.Value.Orbx.Count)
-                    .Select((f, i) => e.Count() == 1 ? ($"{e.Key}", f) : ($"{e.Key}{alpha[i]}", f)).ToArray()
+                    .Select((f, i) => e.Count() == 1 ? ($"{e.Key}", f) : ($"{e.Key}{alpha(i)}", f)).ToArray()
             ).SelectMany(e => e.Value).Select(e => (e.Item1, e.f.Key, e.f.Value.Stabx, e.f.Value.Orbx))
             .OrderBy(e => gr.ElementsOrders[e.Key]).ThenBy(e => e.Orbx.Count).ThenBy(e => e.Item1)
             .ToArray();
