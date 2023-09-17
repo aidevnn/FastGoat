@@ -197,6 +197,9 @@ public static partial class Group
         if (!h.SubSetOf(g))
             throw new GroupException(GroupExceptionType.NotSubGroup);
 
+        if (g.GroupType == GroupType.AbelianGroup)
+            return new() { h };
+
         var all = new HashSet<ConcreteGroup<T>>(new GroupSetEquality<T>());
         foreach (var (s, i) in g.OrderBy(s => g.ElementsOrders[s]).Select((s, i) => (s, i + 1)))
         {
@@ -265,6 +268,9 @@ public static partial class Group
             sgsPrevRem.Clear();
             foreach (var (sg0, sg1) in sgsPrev.Grid2D(sgs))
             {
+                if (sg0.SuperSetOf(sg1) || sg0.SubSetOf(sg1))
+                    continue;
+                
                 var gens = sg0.GetGenerators().Union(sg1.GetGenerators()).ToArray();
                 var elts = GenerateElements(g, gens).ToHashSet();
                 if (allSubGrs.All(g0 => !g0.SetEquals(elts)))
