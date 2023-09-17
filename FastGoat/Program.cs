@@ -48,9 +48,10 @@ Console.WriteLine("Hello World");
         .Println();
     Group.AllSylowPSubgroups(FG.Symmetric(5)).Select(e => $"{e.Key.ShortName} NbConjs {e.Value.Count}").Println();
     
+    Group.AllSylowPSubgroups(Product.Generate(new Cn(3), FG.Dihedral(5))).Select(e => $"{e.Key.ShortName} NbConjs {e.Value.Count}")
+        .Println();
+    Group.AllSylowPSubgroups(Group.SemiDirectProd(FG.Abelian(3, 3), FG.Abelian(8))).Select(e => $"{e.Key.ShortName} NbConjs {e.Value.Count}")
+        .Println();
     Group.AllSylowPSubgroups(FG.Abelian(6, 8, 18)).Select(e => $"{e.Key.ShortName} NbConjs {e.Value.Count}")
         .Println();
-    foreach (var (g0, _) in Group.AllPSubGroups(FG.Abelian(6, 8, 18)))
-        Console.WriteLine(
-            $"{g0.ShortName} Iso:[{AbelianInvariantsFactors.Reduce(g0).Order().Glue("x", "C{0}")}] Orders:[{g0.ElementsOrders.Values.Distinct().Order().Glue(", ")}]");
 }
