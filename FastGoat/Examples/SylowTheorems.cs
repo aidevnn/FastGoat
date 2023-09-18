@@ -4,6 +4,7 @@ using FastGoat.Structures.CartesianProduct;
 using FastGoat.Structures.GenericGroup;
 using FastGoat.UserGroup;
 using FastGoat.UserGroup.Integers;
+using FastGoat.UserGroup.Matrix;
 
 namespace FastGoat.Examples;
 
@@ -96,7 +97,7 @@ public static class SylowTheorems
     }
 
     // H.E.Rose, 10.2 Frattini and Fitting Subgroups page221
-    static void FittingSubgroupProperties<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
+    static ConcreteGroup<T> FittingSubgroupProperties<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
     {
         var tableSubgroups = Group.AllSubGroups(g);
         var frat = Group.FrattiniSubGroup(tableSubgroups);
@@ -132,6 +133,8 @@ public static class SylowTheorems
         DisplayGroup.AreIsomorphics(fitting1, fitting2);
         Console.WriteLine($"{frat} is subgroup of {fitting1} {frat.SubSetOf(fitting1)}");
         Console.WriteLine();
+
+        return fitting1;
     }
 
     public static void FirstTheoremExamples()
@@ -208,5 +211,15 @@ public static class SylowTheorems
         FittingSubgroupProperties(FG.Dihedral(5));
         FittingSubgroupProperties(FG.DiCyclic(4));
         FittingSubgroupProperties(FG.DiCyclic(5));
+        
+        
+        var gl = new GL(2, 3);
+        var sl23 = Group.Generate("SL2(3)", gl, gl[1, 1, 0, 1], gl[0, 1, 2, 0]);
+        var fitSl23 = FittingSubgroupProperties(sl23);
+        DisplayGroup.AreIsomorphics(fitSl23, FG.Quaternion(8));
+        Console.WriteLine();
+        
+        var E = FG.WordGroup("E24", "a4, b2, c3, bab = a3, bcb = c, aca3 = c2");
+        FittingSubgroupProperties(E);
     }
 }
