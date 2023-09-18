@@ -270,7 +270,7 @@ public static partial class Group
             {
                 if (sg0.SuperSetOf(sg1) || sg0.SubSetOf(sg1))
                     continue;
-                
+
                 var gens = sg0.GetGenerators().Union(sg1.GetGenerators()).ToArray();
                 var elts = GenerateElements(g, gens).ToHashSet();
                 if (allSubGrs.All(g0 => !g0.SetEquals(elts)))
@@ -292,10 +292,14 @@ public static partial class Group
                 cg0.SetName($"{g0}-Cj{j + 1}");
         }
 
+        var (k, v) = table.First(g0 => g0.Key.Count() == og);
+        k.SetName(g.Name);
+        v.First().SetName(g.Name);
         return table;
     }
 
-    public static Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>> PSubGroups<T>(ConcreteGroup<T> g, int p) where T : struct, IElt<T>
+    public static Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>> PSubGroups<T>(ConcreteGroup<T> g, int p)
+        where T : struct, IElt<T>
     {
         if (!IntExt.Primes10000.Contains(p))
             throw new();
@@ -386,6 +390,22 @@ public static partial class Group
         return dec.Keys.Order().Select(p => SylowPSubgroup(g, p)).ToDictionary(e => e.pSylow, e => e.Conjs, new GroupSetEquality<T>());
     }
 
+    public static Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>> AllSylowPSubgroups<T>
+        (Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>> tableSubgroups) where T : struct, IElt<T>
+    {
+        var g = tableSubgroups.MaxBy(g0 => g0.Key.Count()).Key;
+        var og = g.Count();
+        var dec = IntExt.PrimesDec(og);
+        var prs = dec.Select(kv => kv.Key.Pow(kv.Value)).ToArray();
+        return tableSubgroups.Where(kv => prs.Contains(kv.Key.Count())).ToDictionary(kv => kv.Key, kv => kv.Value);
+    }
+
+    public static List<ConcreteGroup<T>> AllNormalSubgroups<T>(Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>> tableSubgroups)
+        where T : struct, IElt<T>
+    {
+        return tableSubgroups.Where(kv => kv.Value.Count == 1).Select(kv => kv.Key).ToList();
+    }
+
     public static List<ConcreteGroup<T>> MaximalSubGroups<T>(List<ConcreteGroup<T>> allSubGr, ConcreteGroup<T> g)
         where T : struct, IElt<T>
     {
@@ -432,16 +452,17 @@ public static partial class Group
         }
     }
 
-    public static ConcreteGroup<T> FrattiniSubGroup<T>(List<ConcreteGroup<T>> subGroups, ConcreteGroup<T> g) where T : struct, IElt<T>
+    public static ConcreteGroup<T> FrattiniSubGroup<T>(Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>> tableSubgroups) where T : struct, IElt<T>
     {
+        var g = tableSubgroups.MaxBy(g0 => g0.Key.Count()).Key;
+        var subGroups = tableSubgroups.Values.SelectMany(g0 => g0).ToList();
         var fratGens = MaximalSubGroups(subGroups, g).Aggregate(g.ToArray(), (acc, g0) => acc.Intersect(g0).ToArray());
         return Generate($"Φ({g})", g, fratGens);
     }
 
     public static ConcreteGroup<T> FrattiniSubGroup<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
     {
-        var subGroups = AllSubGroups(g).Values.SelectMany(e => e).ToList();
-        return FrattiniSubGroup(subGroups, g);
+        return FrattiniSubGroup(AllSubGroups(g));
     }
 
     public static ConcreteGroup<T> Commutator<T>(string name, ConcreteGroup<T> grG, ConcreteGroup<T> grH,
@@ -600,5 +621,15 @@ public static partial class Group
         List<ConcreteGroup<T>> chain = new() { z0 };
         ZentrumsChainFast(g, chain);
         return chain;
+    }
+
+    public static bool IsNilpotent<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
+    {
+        return ZentrumsChainFast(g).Last().Count() == g.Count();
+    }
+
+    public static bool IsSoluble<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
+    {
+        return DerivedChain(g).Last().Count() == 1;
     }
 }
