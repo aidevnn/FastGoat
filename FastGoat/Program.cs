@@ -27,7 +27,8 @@ using FastGoat.UserGroup.Padic;
 
 Console.WriteLine("Hello World");
 
-int GLnpOrder(int n, int p) => p.Pow(n * (n - 1) / 2) * n.Range().Select(k => p.Pow(n - k) - 1).Aggregate(1, (acc, pk) => acc * pk);
+BigInteger GLnpOrder(int n, int p) => BigInteger.Pow(p, n * (n - 1) / 2) * n.Range().Select(k => p.Pow(n - k) - 1)
+    .Aggregate(BigInteger.One, (acc, pk) => acc * pk);
 
 IEnumerable<(int n, int p, int o)> CandidatesGLnp(int maxOrder)
 {
@@ -37,21 +38,21 @@ IEnumerable<(int n, int p, int o)> CandidatesGLnp(int maxOrder)
         if (oGL2p > maxOrder)
             break;
         else
-            yield return (2, p, oGL2p);
+            yield return (2, p, (int)oGL2p);
         for (int n = 3;; n++)
         {
             var oGLnp = GLnpOrder(n, p);
             if (oGLnp > maxOrder)
                 break;
             else
-                yield return (n, p, oGLnp);
+                yield return (n, p, (int)oGLnp);
         }
     }
 }
 
 void GLnp(int n, int p)
 {
-    if (!Primes10000.Contains(p))
+    if (!Primes10000.Contains(p) || n < 2)
         throw new();
 
     var G = FG.ElementaryAbelian(p.Pow(n));
@@ -59,7 +60,12 @@ void GLnp(int n, int p)
     var og = GLnpOrder(n, p);
     Console.WriteLine($"|GL{n}({p})| = {og}");
     GlobalStopWatch.AddLap();
-    var AutG = Group.AutomorphismGroup(G);
+    var allAutG = Group.AllAutomorphisms(G);
+    var autG = new AutomorphismGroup<Ep<ZnInt>>(G);
+    var og0 = G.Count() - 1;
+    var gen00 = allAutG.First(a => Group.Cycle(autG, new Automorphism<Ep<ZnInt>>(autG, a.HomMap)).Count == 2);
+    var gen01 = allAutG.First(a => Group.Cycle(autG,  new Automorphism<Ep<ZnInt>>(autG, a.HomMap)).Count == og0);
+    var AutG = Group.Generate(autG, new(autG, gen00.HomMap), new(autG, gen01.HomMap));
     Console.WriteLine($"|Aut({G})| = {AutG.Count()}");
     GlobalStopWatch.Show($"Aut({G})");
 
@@ -115,7 +121,7 @@ void GLnp(int n, int p)
     }
 
     GlobalStopWatch.Show($"Solve Groebner : {gens.Count}");
-
+    
     var G1 = Group.Generate(GLnp.Name, GLnp, gens.ToArray());
     var o0 = G1.ElementsOrders.Values.Where(k => k != 1).Min();
     var o1 = G1.ElementsOrders.Values.Where(k => k != 1).Max();
@@ -137,8 +143,51 @@ void GLnp(int n, int p)
     Console.WriteLine();
 }
 
+void GLnpRand(int n, int p)
 {
-    var candidates = CandidatesGLnp(2500).OrderBy(e => e.o).ToArray();
+    if (!Primes10000.Contains(p) || n < 2)
+        throw new();
+    
+    var og = GLnpOrder(n, p);
+    var og0 = p.Pow(n) - 1;
+    var GLnp = FG.GLnp(n, p);
+    Console.WriteLine($"###################### |{GLnp}| = {og} ######################");
+
+    Mat Rand(int o)
+    {
+        for (int k = 0; k < 10000; ++k)
+        {
+            var t0 = (n * n).Range().Select(i => Rng.Next(p)).ToArray();
+            var mat = GLnp.Create(t0);
+            if (GLnp.Det(mat) == 0)
+                continue;
+
+            var o0 = Group.Cycle(GLnp, mat).Count;
+            if (o0 == o)
+                return mat;
+        }
+
+        throw new();
+    }
+
+    GlobalStopWatch.AddLap();
+    var gen0 = Rand(2);
+    var gen1 = Rand(og0);
+    GlobalStopWatch.Show("Search");
+    
+    Console.WriteLine("Gen0 Order 2");
+    Console.WriteLine(gen0);
+    Console.WriteLine($"Gen1 Order {og0}");
+    Console.WriteLine(gen1);
+    GlobalStopWatch.AddLap();
+    var G = Group.Generate(GLnp, gen0, gen1);
+    DisplayGroup.Head(G);
+    GlobalStopWatch.Show("Generate");
+    Console.WriteLine();
+}
+
+{
+    var candidates = CandidatesGLnp(13000).OrderBy(e => e.o).ToArray();
     candidates.Println();
     foreach (var (n, p, o) in candidates)
     {
@@ -146,6 +195,15 @@ void GLnp(int n, int p)
     }
     
     GLnp(4, 2);
+}
+
+{
+    var candidates = CandidatesGLnp(1500000).OrderBy(e => e.o).ToArray();
+    candidates.Println();
+    foreach (var (n, p, o) in candidates)
+    {
+        GLnpRand(n, p);
+    }
 }
 
 /*###################### C2 x C2 x C2 x C2 ######################
@@ -178,3 +236,21 @@ void GLnp(int n, int p)
    GL(4,2) IsIsomorphicTo Aut[C2 x C2 x C2 x C2] : True
    # Isomorphism Time:56487 ms
 */
+
+
+/*###################### |GL(3,5)| = 1488000 ######################
+   # Search Time:19 ms
+   Gen0 Order 2
+   [1, 3, 0]
+   [0, 4, 0]
+   [2, 3, 4]
+   Gen1 Order 124
+   [4, 4, 3]
+   [1, 2, 1]
+   [3, 3, 3]
+   |GL(3,5)| = 1488000
+   Type        NonAbelianGroup
+   BaseGroup   GL(3,5)
+
+   # Generate Time:17513 ms
+ */
