@@ -95,6 +95,45 @@ public static class SylowTheorems
         return abElems;
     }
 
+    // H.E.Rose, 10.2 Frattini and Fitting Subgroups page221
+    static void FittingSubgroupProperties<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
+    {
+        var tableSubgroups = Group.AllSubGroups(g);
+        var frat = Group.FrattiniSubGroup(tableSubgroups);
+        var tableSylows = Group.AllSylowPSubgroups(tableSubgroups);
+        var allNormalSubgroups = Group.AllNormalSubgroups(tableSubgroups);
+
+        ConcreteGroup<T> PRadical(List<ConcreteGroup<T>> sylows)
+        {
+            return Group.Generate(g, sylows.Aggregate(g.ToArray(), (acc, g0) => acc.Intersect(g0).ToArray()));
+        }
+
+        // Nilpotency definition
+        var fitting1 = Group.Generate($"F({g})", g,
+            allNormalSubgroups.Where(n => Group.IsNilpotent(n)).SelectMany(g0 => g0.GetGenerators()).ToArray());
+        
+        // PSylows property
+        var fitting2 = Group.Generate($"F({g})2", g, tableSylows.SelectMany(kv => PRadical(kv.Value).GetGenerators()).ToArray());
+        
+        DisplayGroup.Head(g);
+        DisplayGroup.Head(frat);
+        DisplayGroup.Head(fitting1);
+        if (fitting1.GroupType == GroupType.AbelianGroup)
+        {
+            var ab = FG.Abelian(AbelianInvariantsFactors.Reduce(fitting1).OrderDescending().ToArray());
+            if (ab.Count() > 1)
+                DisplayGroup.AreIsomorphics(fitting1, ab);
+        }
+        else if (Group.IsNilpotent(g))
+        {
+            DisplayGroup.AreIsomorphics(fitting1, g);
+        }
+        
+        DisplayGroup.AreIsomorphics(fitting1, fitting2);
+        Console.WriteLine($"{frat} is subgroup of {fitting1} {frat.SubSetOf(fitting1)}");
+        Console.WriteLine();
+    }
+
     public static void FirstTheoremExamples()
     {
         SylowFirstTheorem(FG.Dihedral(4));
@@ -154,5 +193,20 @@ public static class SylowTheorems
         }
 
         Console.WriteLine("############## PASS ##############");
+    }
+
+    public static void FittingSubgroupExample()
+    {
+        FittingSubgroupProperties(FG.Symmetric(3));
+        FittingSubgroupProperties(FG.Symmetric(4));
+        FittingSubgroupProperties(FG.Symmetric(5));
+        FittingSubgroupProperties(FG.Alternate(5));
+        FittingSubgroupProperties(new Cn(32));
+        FittingSubgroupProperties(FG.Dihedral(6));
+        
+        FittingSubgroupProperties(FG.Dihedral(4));
+        FittingSubgroupProperties(FG.Dihedral(5));
+        FittingSubgroupProperties(FG.DiCyclic(4));
+        FittingSubgroupProperties(FG.DiCyclic(5));
     }
 }
