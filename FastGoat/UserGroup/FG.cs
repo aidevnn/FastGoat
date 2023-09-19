@@ -220,7 +220,7 @@ public static partial class FG
         return all;
     }
 
-    public static WordGroup DiCyclic(int n) => new WordGroup($"Dic{n}", $"a{n} = b2, b2 = abab");
+    public static WordGroup DiCyclic(int n) => new($"Dic{n}wg", $"a{n} = b2, b2 = abab");
 
     public static ConcreteGroup<Mat> Quaternion(int k)
     {
@@ -374,6 +374,7 @@ public static partial class FG
 
     public static NthRootQ NthRootQ(int n) => new(n);
     public static NthRootFq NthRootFq(int n, int q) => new(n, q);
+    public static NthRootFp NthRootFp(int n, int p) => new(n, p);
     public static NthRootFq CycloFq(int q)
     {
         var dec = IntExt.PrimesDec(q);

@@ -20,6 +20,9 @@ public readonly struct ZnInt : IElt<ZnInt>, IRingElt<ZnInt>, IFieldElt<ZnInt>
     public static bool IsValuedField => false;
     public static ZnInt ZnZero(int m = 0) => new(m, 0);
 
+    public static ZnInt ZpZero(int p = 2) =>
+        IntExt.Primes10000.Contains(p) ? new(p, 0) : throw new GroupException(GroupExceptionType.GroupDef);
+
     public ZnInt(int m, int k)
     {
         Mod = m;

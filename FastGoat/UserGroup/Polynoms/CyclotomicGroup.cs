@@ -18,7 +18,7 @@ public readonly struct CyclotomicGroupBase<K> : IGroup<EPoly<K>> where K : struc
     {
         N = n;
         var p = scalar.P;
-        if (p > 2)
+        if (p > 1)
         {
             if (n % p == 0)
                 throw new ArgumentException($"In {name}, P={p} divide N={n}");
@@ -30,6 +30,18 @@ public readonly struct CyclotomicGroupBase<K> : IGroup<EPoly<K>> where K : struc
         if (scalar.P == 0)
         {
             Poly = new KPoly<K>('ζ', scalar, poly.Coefs.Select(c => ((int)c.Num) * scalar.One).ToArray());
+            Hash = ("CF", p, Poly.Hash).GetHashCode();
+
+            var q = n == 2 ? 1 : IntExt.UnInvertible(n).First(e => e.Key != 1).Key;
+            var x = FG.EPoly(Poly);
+            Zeta = x.Pow(q);
+        }
+        else if (scalar is ZnInt s1)
+        {
+            var a0 = IntExt.Solve_k_pow_m_equal_one_mod_n_strict(p, p - 1);
+            var poly0 = new KPoly<ZnInt>(poly.x, s1.Zero, poly.Coefs.Select(c => (int)c.Num * s1.One).ToArray());
+            var facts = IntFactorisation.Firr(poly0, new ZnInt(p, a0)).Order().ToArray();
+            Poly = new KPoly<K>('ζ', scalar.One, facts.First().Coefs.Cast<K>().ToArray());
             Hash = ("CF", p, Poly.Hash).GetHashCode();
 
             var q = n == 2 ? 1 : IntExt.UnInvertible(n).First(e => e.Key != 1).Key;
@@ -107,6 +119,23 @@ public class NthRootQ : ConcreteGroup<EPoly<Rational>>
     public int N => CG.N;
     public KPoly<EPoly<Rational>> X => CG.X;
     public EPoly<Rational>[] PrimitivesRoots() => ElementsOrders.Where(e => e.Value == N).Select(e => e.Key).Order().ToArray();
+}
+
+public class NthRootFp : ConcreteGroup<EPoly<ZnInt>>
+{
+    public NthRootFp(int n, int p) : this(new CyclotomicGroupBase<ZnInt>(ZnInt.ZpZero(p), n, $"F{p}"))
+    {
+    }
+
+    private NthRootFp(CyclotomicGroupBase<ZnInt> cg) : base(cg)
+    {
+        CG = cg;
+    }
+
+    public CyclotomicGroupBase<ZnInt> CG { get; }
+    public int N => CG.N;
+    public KPoly<EPoly<ZnInt>> X => CG.X;
+    public EPoly<ZnInt>[] PrimitivesRoots() => ElementsOrders.Where(e => e.Value == N).Select(e => e.Key).Order().ToArray();
 }
 
 public class NthRootFq : ConcreteGroup<EPoly<EPoly<ZnInt>>>
