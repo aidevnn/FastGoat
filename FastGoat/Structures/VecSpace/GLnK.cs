@@ -88,7 +88,7 @@ public readonly struct GLn<K> : IGroup<KMatrix<K>> where K : struct, IElt<K>, IR
 
             if (K.IsValuedField)
             {
-                if (Math.Abs(K.Abs(det)) > 1e-7)
+                if (Math.Abs(K.Abs(det)) < 1e-7)
                     throw new GroupException(GroupExceptionType.GroupDef);
             }
             else if (det.Equals(kzero))

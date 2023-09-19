@@ -63,7 +63,7 @@ public class GL : IGroup<Mat>
         var table0 = MatrixExt.ModP(P, table);
         for (int i = 0; i < at.Table.Length; i++)
         {
-            table0[at.Table[i]] = value.Table[i] % P;
+            table0[at.Table[i]] = IntExt.AmodP(value.Table[i], P);
         }
 
         return Create(table0);
@@ -81,7 +81,7 @@ public class GL : IGroup<Mat>
             if (us.Length != N * N)
                 throw new GroupException(GroupExceptionType.GroupDef);
 
-            var table = us.Select(i => (int)i).Select(i => i % P).ToArray();
+            var table = us.Select(i => (int)i).Select(i => IntExt.AmodP(i, P)).ToArray();
             var hash = IntExt.GenHash(P, table);
             return new(this, hash, table);
         }
