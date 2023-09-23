@@ -28,6 +28,7 @@ public readonly struct Automorphism<T> : IMap<T, T>, IElt<Automorphism<T>> where
     public AutomorphismGroup<T> AutGroup { get; }
 
     public ConcreteGroup<T> Domain => AutGroup.G;
+    public Automorphism<T> Invert() => AutGroup.Invert(this);
 
     public IEnumerable<T> Kernel()
     {
