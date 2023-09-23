@@ -4,7 +4,7 @@ public class IsomorphEquality<T> :EqualityComparer<ConcreteGroup<T>> where T : s
 {
     public override bool Equals(ConcreteGroup<T>? x, ConcreteGroup<T>? y)
     {
-        return x is not null && y is not null && (x.SetEquals(y) || x.IsIsomorphicTo(y));
+        return x is not null && y is not null && x.IsIsomorphicTo(y);
     }
 
     public override int GetHashCode(ConcreteGroup<T> obj) => (obj.Count(), obj.GroupType).GetHashCode();
