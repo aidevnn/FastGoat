@@ -156,6 +156,13 @@ public class CharacterTable<T> where T : struct, IElt<T>
         }
     }
 
+    public void InductionFromSubGroup<T2>(ConcreteGroup<T2> sg) where T2 : struct, IElt<T2>
+    {
+        var sg0 = Group.IsomorphicSubgroup(Gr, sg);
+        foreach (var sg1 in Group.SubGroupsConjugates(Gr, sg0))
+            InductionFromSubGroup(sg1);
+    }
+
     public void RestrictionFromSuperGroup(ConcreteGroup<T> superGr)
     {
         if (!Gr.SubSetOf(superGr))
