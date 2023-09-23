@@ -186,14 +186,19 @@ public static partial class Group
     public static bool IsGroup<T>(IGroup<T> g, IEnumerable<T> elements) where T : struct, IElt<T>
     {
         var group = elements.ToHashSet();
-        if (!group.Contains(g.Neutral()))
+        var n = g.Neutral();
+        if (!group.Contains(n))
             return false;
 
-        if (group.Any(e => !group.Contains(g.Invert(e))))
+        if (group.Select(e => (e, ei: g.Invert(e))).Any(a => !group.Contains(a.ei) || !g.Op(a.e, a.ei).Equals(n)))
             return false;
 
         var cayleyTable = CayleyTable(g, group.ToArray());
-        return IsGroup(cayleyTable);
+        var isLatinSquare = IsGroup(cayleyTable);
+        if (!isLatinSquare)
+            return false;
+
+        return group.Grid3D(group, group).All(e => g.Op(e.t1, g.Op(e.t2, e.t3)).Equals(g.Op(g.Op(e.t1, e.t2), e.t3)));
     }
 
     public static bool IsGroup<T>(IGroup<T> g) where T : struct, IElt<T>
