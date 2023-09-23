@@ -2,7 +2,8 @@ using FastGoat.Commons;
 
 namespace FastGoat.Structures.GenericGroup;
 
-public readonly struct Homomorphism<T1, T2> : IMap<T1, T2> where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
+public readonly struct Homomorphism<T1, T2> : IElt<Homomorphism<T1, T2>>, IMap<T1, T2>
+    where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
 {
     public IReadOnlyDictionary<T1, T2> HomMap { get; }
 
@@ -15,9 +16,12 @@ public readonly struct Homomorphism<T1, T2> : IMap<T1, T2> where T1 : struct, IE
     }
 
     public bool Equals(IMap<T1, T2>? other) => other?.Hash == Hash;
+    public bool Equals(Homomorphism<T1, T2> other) => (other.IsNull && IsNull) || other.Hash == Hash;
 
     public int CompareTo(IMap<T1, T2>? other) => other is null ? 1 : IMap<T1, T2>.CompareMap(this, other);
+    public int CompareTo(Homomorphism<T1, T2> other) => other.IsNull ? 1 : IMap<T1, T2>.CompareMap(this, other);
 
+    public bool IsNull => HomMap is null;
     public int Count => HomMap.Count;
     public int Hash { get; }
     public ConcreteGroup<T1> Domain { get; }
@@ -36,6 +40,9 @@ public readonly struct Homomorphism<T1, T2> : IMap<T1, T2> where T1 : struct, IE
 
     public override string ToString()
     {
+        if (IsNull)
+            return "null";
+        
         return HomMap.AscendingByKey().GlueMap();
     }
 }
