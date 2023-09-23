@@ -25,7 +25,10 @@ public class ConcreteGroup<T> : IGroup<T> where T : struct, IElt<T>
         {
             if (SuperGroup is null)
             {
-                var (tmpElements, uniqueGenerators) = Group.UniqueGenerators(this, g.ToArray());
+                var gens = g.GetGenerators().ToArray();
+                var (tmpElements, uniqueGenerators) = gens.Length == 0 || (gens.Length == 1 && gens.Contains(g.Neutral()))
+                    ? Group.UniqueGenerators(this, g.ToArray())
+                    : Group.UniqueGenerators(this, gens);
                 Elements = new HashSet<T>(tmpElements);
                 ElementsOrders = Group.ElementsOrders(g, Elements);
                 PseudoGenerators = new(uniqueGenerators);
@@ -61,7 +64,7 @@ public class ConcreteGroup<T> : IGroup<T> where T : struct, IElt<T>
         var (tmpElements, uniqueGenerators) = Group.UniqueGenerators(this, generators);
         Elements = new HashSet<T>(tmpElements);
         ElementsOrders = Group.ElementsOrders(g, Elements);
-        PseudoGenerators = new(generators.Length <= uniqueGenerators.Count ? generators : uniqueGenerators);
+        PseudoGenerators = new(uniqueGenerators);
         GroupType = Group.IsCommutative(g, PseudoGenerators)
             ? GroupType.AbelianGroup
             : GroupType.NonAbelianGroup;

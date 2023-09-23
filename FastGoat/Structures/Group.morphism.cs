@@ -69,8 +69,8 @@ public static partial class Group
             return new();
 
         var map = HomomorphismMap(g, h, pMap);
-        if (map.Any(kp => g.ElementsOrders[kp.Key] != h.ElementsOrders[kp.Value]))
-            return new();
+        // if (map.Any(kp => g.ElementsOrders[kp.Key] != h.ElementsOrders[kp.Value]))
+        //     return new();
 
         return map;
     }
@@ -98,6 +98,7 @@ public static partial class Group
         where T2 : struct, IElt<T2>
     {
         var gGens = bg.GetGenerators().ToArray();
+        // gGens.Println();
         ConcreteGroup<T1> g1;
         if (bg is ConcreteGroup<T1> gi)
             g1 = gi;
@@ -116,7 +117,7 @@ public static partial class Group
             .ToArray();
 
         var ng = g1.Count();
-        // Console.WriteLine(gpMap.Aggregate(1, (acc, b) => acc * b.Length));
+        // Console.WriteLine(gpMap.Aggregate(BigInteger.One, (acc, b) => acc * b.Length));
         foreach (var arr in gpMap.MultiLoop())
         {
             var map = arr.ToDictionary(t => t.g, t => t.a);
@@ -129,7 +130,7 @@ public static partial class Group
             else
             {
                 var iso = Group.IsomorphismMap(g1, g2, map);
-                if (iso.Count == ng && iso.Values.Count() == ng)
+                if (iso.Count == ng && iso.Values.Distinct().Count() == ng)
                     yield return new(g1, iso);
             }
         }
@@ -148,6 +149,14 @@ public static partial class Group
         return AllIsomorphisms(g, g);
     }
 
+    public static List<Homomorphism<T, T>> AllInnerAutomorphisms<T>(ConcreteGroup<T> g)
+        where T : struct, IElt<T>
+    {
+        var act = ByConjugate(g);
+        return g.Select(x => new Homomorphism<T, T>(g, IsomorphismMap(g, g, g.GetGenerators().ToDictionary(e => e, e => act(x, e)))))
+            .ToList();
+    }
+
     public static ConcreteGroup<Automorphism<T>> AutomorphismGroup<T>(ConcreteGroup<T> g)
         where T : struct, IElt<T>
     {
@@ -156,6 +165,25 @@ public static partial class Group
         var autG = Generate($"Aut[{g.Name}]", bgAut,
             allAut.Select(aut => new Automorphism<T>(bgAut, aut.HomMap)).ToArray());
         return autG;
+    }
+
+    public static ConcreteGroup<Automorphism<T>> InnerAutomorphismGroup<T>(ConcreteGroup<T> g)
+        where T : struct, IElt<T>
+    {
+        var bgAut = new AutomorphismGroup<T>(g);
+        var allAut = AllInnerAutomorphisms(g);
+        var autG = Generate($"Inn[{g.Name}]", bgAut,
+            allAut.Select(aut => new Automorphism<T>(bgAut, aut.HomMap)).ToArray());
+        return autG;
+    }
+
+    public static (ConcreteGroup<Automorphism<T>> aut, ConcreteGroup<Automorphism<T>> innAut, ConcreteGroup<Automorphism<T>> outAut)
+        OuterAutomorphismGroup<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
+    {
+        var autG = AutomorphismGroup(g);
+        var innG = InnerAutomorphismGroup(g);
+        var q = autG.Over(innG, $"Out[{g.Name}]");
+        return (autG, innG, IsomorphicSubgroup(autG, q));
     }
 
     public static List<Homomorphism<T1, T2>> AllHomomorphisms<T1, T2>(IGroup<T1> bg, ConcreteGroup<T2> g2)
@@ -227,7 +255,7 @@ public static partial class Group
     {
         var allOps = AllOpsByAutomorphisms(g, n);
         var allSdp = new List<SemiDirectProduct<T1, T2>>();
-        foreach (var theta in allOps.Where(kp=>kp.Image().Count()>1))
+        foreach (var theta in allOps.Where(kp => kp.Image().Count() > 1))
         {
             var sdp = new SemiDirectProduct<T1, T2>(name, n, theta, g);
             if (allSdp.All(sdp0 => !sdp.IsIsomorphicTo(sdp0)))
@@ -243,7 +271,8 @@ public static partial class Group
         return SemiDirectProd("", n, g);
     }
 
-    public static SemiDirectProduct<T1, T2> SemiDirectProd<T1, T2>(ConcreteGroup<T1> n, Homomorphism<T2, Automorphism<T1>> theta, ConcreteGroup<T2> g)
+    public static SemiDirectProduct<T1, T2> SemiDirectProd<T1, T2>(ConcreteGroup<T1> n, Homomorphism<T2, Automorphism<T1>> theta,
+        ConcreteGroup<T2> g)
         where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
     {
         return new SemiDirectProduct<T1, T2>("", n, theta, g);
@@ -260,11 +289,12 @@ public static partial class Group
     {
         return new ConcreteGroup<KAut<K>>(new KAutGroup<K>(poly));
     }
+
     public static ConcreteGroup<KAut<K>> KAut<K>(params EPoly<K>[] gens) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         if (gens.Length == 0 || gens.Select(g => g.F).Distinct().Count() != 1)
             throw new GroupException(GroupExceptionType.GroupDef);
-        
+
         var poly = gens[0].F;
         var kautGr = new KAutGroup<K>(poly);
         return new ConcreteGroup<KAut<K>>(kautGr, gens.Select(g => new KAut<K>(kautGr, g)).ToArray());

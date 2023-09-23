@@ -118,7 +118,7 @@ public static partial class Group
         var cosets = new Dictionary<T, Coset<T>>();
         var setH = grH.ToHashSet();
         var setG = grG.ToHashSet();
-        if (!setH.IsSubsetOf(setG))
+        if (!setH.IsSubsetOf(setG) || !grH.BaseGroup.Equals(grG.BaseGroup))
             throw new GroupException(GroupExceptionType.NotSubGroup);
 
         var ngH = new Coset<T>(grG, grH);
@@ -244,8 +244,6 @@ public static partial class Group
     public static ConcreteGroup<Coset<T>> Over<T>(this ConcreteGroup<T> g, ConcreteGroup<T> h)
         where T : struct, IElt<T>
     {
-        if (h.SuperGroup is null || !h.SuperGroup.Equals(g))
-            throw new GroupException(GroupExceptionType.NotSubGroup);
         var quo = new Quotient<T>(g, h);
         return new ConcreteGroup<Coset<T>>(quo);
     }
@@ -253,8 +251,6 @@ public static partial class Group
     public static ConcreteGroup<Coset<T>> Over<T>(this ConcreteGroup<T> g, ConcreteGroup<T> h, string name)
         where T : struct, IElt<T>
     {
-        if (h.SuperGroup is null || !h.SuperGroup.Equals(g))
-            throw new GroupException(GroupExceptionType.NotSubGroup);
         var quo = new Quotient<T>(g, h);
         return new ConcreteGroup<Coset<T>>(name, quo);
     }
