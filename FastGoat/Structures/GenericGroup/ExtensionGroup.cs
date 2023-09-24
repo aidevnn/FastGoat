@@ -3,55 +3,44 @@ using FastGoat.Structures.CartesianProduct;
 
 namespace FastGoat.Structures.GenericGroup;
 
-public readonly struct ExtensionGroup<Tn, Tg> : IGroup<Ep2<Tn, Tg>> where Tg : struct, IElt<Tg> where Tn : struct, IElt<Tn>
+public class ExtensionGroup<Tn, Tg> : ConcreteGroup<Ep2<Tn, Tg>> where Tg : struct, IElt<Tg> where Tn : struct, IElt<Tn>
 {
     public MapGroups<Ep2<Tg, Tg>, Tn> Map { get; }
-    public Homomorphism<Tg, Automorphism<Tn>> L { get; }
+    public MapGroups<Tg, Automorphism<Tn>> L { get; }
     public ConcreteGroup<Tg> G { get; }
     public ConcreteGroup<Tn> N { get; }
-    private HashSet<Ep2<Tn, Tg>> Elements { get; }
 
-    public ExtensionGroup(ConcreteGroup<Tn> n, Homomorphism<Tg, Automorphism<Tn>> l, MapGroups<Ep2<Tg, Tg>, Tn> map, ConcreteGroup<Tg> g)
+    public ExtensionGroup(ConcreteGroup<Tn> n, MapGroups<Tg, Automorphism<Tn>> l, MapGroups<Ep2<Tg, Tg>, Tn> map, ConcreteGroup<Tg> g)
+    :base("Ext",  Product.Group(n, g), true)
     {
         G = g;
         N = n;
         Map = map;
-        L = new(G, new Dictionary<Tg, Automorphism<Tn>>(l.HomMap));
+        L = l.Clone();
         var nName = N.Name.Contains('x') ? $"({N})" : $"{N}";
         var gName = G.Name.Contains('x') ? $"({G})" : $"{G}";
         Name = $"{nName} . {gName}";
-        Elements = Product.Generate(N, G).ToHashSet();
+
+        List<Ep2<Tn, Tg>> generators = new List<Ep2<Tn, Tg>>();
+        foreach (var e in G.GetGenerators())
+            generators.Add(Product.Elt(N.Neutral(), e));
+
+        foreach (var e in N.GetGenerators())
+            generators.Add(Product.Elt(e, G.Neutral()));
+        
+        var (tmpElements, uniqueGenerators) = Group.UniqueGenerators(this, generators.ToArray());
+        PseudoGenerators = new(uniqueGenerators);
+        Elements = tmpElements;
+        ElementsOrders = Group.ElementsOrders(this, Elements);
+        GroupType = Group.IsCommutative(this, PseudoGenerators)
+            ? GroupType.AbelianGroup
+            : GroupType.NonAbelianGroup;
         Hash = (Name, Elements.Count).GetHashCode();
     }
 
-    public IEnumerator<Ep2<Tn, Tg>> GetEnumerator() => Elements.GetEnumerator();
+    public override Ep2<Tn, Tg> Neutral() => new(N.Neutral(), G.Neutral());
 
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return GetEnumerator();
-    }
-
-    public bool Equals(IGroup<Ep2<Tn, Tg>>? other) => other?.Hash == Hash;
-
-    public int Hash { get; }
-    public string Name { get; }
-
-    public Ep2<Tn, Tg> this[params ValueType[] us] => new(N[us[0]], G[us[1]]);
-
-    public IEnumerable<Ep2<Tn, Tg>> GetElements() => Elements;
-
-    public IEnumerable<Ep2<Tn, Tg>> GetGenerators()
-    {
-        foreach (var g0 in G)
-            yield return new(N.Neutral(), g0);
-
-        foreach (var n0 in N)
-            yield return new(n0, G.Neutral());
-    }
-
-    public Ep2<Tn, Tg> Neutral() => new(N.Neutral(), G.Neutral());
-
-    public Ep2<Tn, Tg> Invert(Ep2<Tn, Tg> e)
+    public override Ep2<Tn, Tg> Invert(Ep2<Tn, Tg> e)
     {
         // var (n, t) = (e.E1, e.E2);
         // var ni = N.Invert(n);
@@ -67,7 +56,7 @@ public readonly struct ExtensionGroup<Tn, Tg> : IGroup<Ep2<Tn, Tg>> where Tg : s
         return new(m, gi);
     }
 
-    public Ep2<Tn, Tg> Op(Ep2<Tn, Tg> e1, Ep2<Tn, Tg> e2)
+    public override Ep2<Tn, Tg> Op(Ep2<Tn, Tg> e1, Ep2<Tn, Tg> e2)
     {
         // “twisted” multiplication ·ω on N × G by (m, s) ·ω (n, t) := (mnω(s, t), st);
         // var (m, n, s, t) = (e1.E1, e2.E1, e1.E2, e2.E2);
@@ -76,8 +65,9 @@ public readonly struct ExtensionGroup<Tn, Tg> : IGroup<Ep2<Tn, Tg>> where Tg : s
         // return new(N.Op(mn, Map[new(s, t)]), st);
         var (n1, n2, g1, g2) = (e1.E1, e2.E1, e1.E2, e2.E2);
         var nop = N.Op(L[g2].Invert()[n1], n2);
+        var fi = N.Invert(Map[new(g1, g2)]);
         var g1g2 = G.Op(g1, g2);
-        return new(N.Op(Map[new(g1, g2)], nop), g1g2);
+        return new(N.Op(fi, nop), g1g2);
     }
 
     public override int GetHashCode() => Hash;

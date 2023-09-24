@@ -33,6 +33,7 @@ public readonly struct MapGroups<T1, T2> : IElt<MapGroups<T1, T2>>, IMap<T1, T2>
     }
 
     public MapGroups<T1, T2> Create(T2[] arr) => new(Domain, G2, arr);
+    public MapGroups<T1, T2> Clone() => new(Domain, G2, Map);
 
     public bool Equals(IMap<T1, T2>? other)
     {
@@ -72,6 +73,6 @@ public readonly struct MapGroups<T1, T2> : IElt<MapGroups<T1, T2>>, IMap<T1, T2>
     public override int GetHashCode() => Hash;
     public override string ToString()
     {
-        return map.GlueMap("; ", "{0}->[{1}]");
+        return map.AscendingByKey().GlueMap("; ", "{0}->[{1}]");
     }
 }
