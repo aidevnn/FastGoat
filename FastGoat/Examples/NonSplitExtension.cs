@@ -33,7 +33,17 @@ public static class NonSplitExtension
         }
     }
 
+
     static void SplittingGroups<T1, T2, T3>(ConcreteGroup<T1> G, ConcreteGroup<T2> GH, ConcreteGroup<T3> H)
+        where T1 : struct, IElt<T1>
+        where T2 : struct, IElt<T2>
+        where T3 : struct, IElt<T3>
+    {
+        AllSplittingGroups(G, GH, H).ToArray();
+    }
+
+    public static IEnumerable<(Homomorphism<T1,T2>i,Homomorphism<T2,T3> p,Homomorphism<T3,T2> s)> 
+        AllSplittingGroups<T1, T2, T3>(ConcreteGroup<T1> G, ConcreteGroup<T2> GH, ConcreteGroup<T3> H)
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
         where T3 : struct, IElt<T3>
@@ -45,6 +55,7 @@ public static class NonSplitExtension
         var homI = Group.AllHomomorphisms(G, GH);
         var homP = Group.AllHomomorphisms(GH, H);
         var isoS = Group.AllIsomorphisms(H, GH);
+        var nullIso = new Homomorphism<T3, T2>();
 
         // Im(i) = Ker(p)
         var allImI = homI.Select(hi => (i: hi, im: hi.Image().ToHashSet())).Where(e => e.im.Count > 1).ToArray();
@@ -69,10 +80,14 @@ public static class NonSplitExtension
             foreach (var s in allIsoS)
             {
                 Console.WriteLine("    [{0}]", s);
+                yield return (i, p, s);
             }
 
             if (allIsoS.Length == 0)
+            {
                 Console.WriteLine("    Not Found");
+                yield return (i, p, nullIso);
+            }
 
             Console.WriteLine();
         }
