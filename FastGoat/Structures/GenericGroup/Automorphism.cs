@@ -20,7 +20,7 @@ public readonly struct Automorphism<T> : IMap<T, T>, IElt<Automorphism<T>> where
         AutGroup = aut;
     }
 
-    public bool Equals(Automorphism<T> other) => Hash == other.Hash;
+    public bool Equals(Automorphism<T> other) => Hash == other.Hash && IMap<T, T>.EqualiltyMap(this, other);
 
     public int CompareTo(Automorphism<T> other) => IMap<T,T>.CompareMap(this, other);
 
