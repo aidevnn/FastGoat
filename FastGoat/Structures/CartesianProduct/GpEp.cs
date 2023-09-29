@@ -90,6 +90,11 @@ public readonly struct Ep2<T1, T2> : IElt<Ep2<T1, T2>> where T1 : struct, IElt<T
     public int Hash { get; }
     public override int GetHashCode() => Hash;
     public override string ToString() => $"({E1}, {E2})";
+
+    public void Deconstruct(out T1 e1, out T2 e2)
+    {
+        (e1, e2) = (E1, E2);
+    }
 }
 
 public static partial class Product
@@ -216,6 +221,11 @@ public readonly struct Ep3<T1, T2, T3> : IElt<Ep3<T1, T2, T3>> where T1 : struct
     public int Hash { get; }
     public override int GetHashCode() => Hash;
     public override string ToString() => $"({E1}, {E2}, {E3})";
+
+    public void Deconstruct(out T1 e1, out T2 e2, out T3 e3)
+    {
+        (e1, e2, e3) = (E1, E2, E3);
+    }
 }
 
 public static partial class Product
@@ -267,8 +277,8 @@ public readonly struct Gp4<T1, T2, T3, T4> : IGroup<Ep4<T1, T2, T3, T4>> where T
     public Ep4<T1, T2, T3, T4> Invert(Ep4<T1, T2, T3, T4> e) =>
         new(G1.Invert(e.E1), G2.Invert(e.E2), G3.Invert(e.E3), G4.Invert(e.E4));
 
-    public Ep4<T1, T2, T3, T4> Op(Ep4<T1, T2, T3, T4> e1, Ep4<T1, T2, T3, T4> e2) => new(G1.Op(e1.E1, e2.E1),
-        G2.Op(e1.E2, e2.E2), G3.Op(e1.E3, e2.E3), G4.Op(e1.E4, e2.E4));
+    public Ep4<T1, T2, T3, T4> Op(Ep4<T1, T2, T3, T4> e1, Ep4<T1, T2, T3, T4> e2) =>
+        new(G1.Op(e1.E1, e2.E1), G2.Op(e1.E2, e2.E2), G3.Op(e1.E3, e2.E3), G4.Op(e1.E4, e2.E4));
 
     public Ep4<T1, T2, T3, T4> this[params ValueType[] us]
     {
@@ -356,6 +366,11 @@ public readonly struct Ep4<T1, T2, T3, T4> : IElt<Ep4<T1, T2, T3, T4>> where T1 
     public int Hash { get; }
     public override int GetHashCode() => Hash;
     public override string ToString() => $"({E1}, {E2}, {E3}, {E4})";
+
+    public void Deconstruct(out T1 e1, out T2 e2, out T3 e3, out T4 e4)
+    {
+        (e1, e2, e3, e4) = (E1, E2, E3, E4);
+    }
 }
 
 public static partial class Product
@@ -372,8 +387,8 @@ public static partial class Product
         return new(e1, e2, e3, e4);
     }
 
-    public static ConcreteGroup<Ep4<T1, T2, T3, T4>> Generate<T1, T2, T3, T4>(IGroup<T1> g1, IGroup<T2> g2,
-        IGroup<T3> g3, IGroup<T4> g4)
+    public static ConcreteGroup<Ep4<T1, T2, T3, T4>> Generate<T1, T2, T3, T4>(IGroup<T1> g1, IGroup<T2> g2, IGroup<T3> g3,
+        IGroup<T4> g4)
         where T1 : struct, IElt<T1> where T2 : struct, IElt<T2> where T3 : struct, IElt<T3> where T4 : struct, IElt<T4>
     {
         return new(Group(g1, g2, g3, g4));
@@ -406,15 +421,13 @@ public readonly struct Gp5<T1, T2, T3, T4, T5> : IGroup<Ep5<T1, T2, T3, T4, T5>>
 
     public bool Equals(IGroup<Ep5<T1, T2, T3, T4, T5>>? other) => other?.Hash == Hash;
     public int Hash { get; }
+    public Ep5<T1, T2, T3, T4, T5> Neutral() => new(G1.Neutral(), G2.Neutral(), G3.Neutral(), G4.Neutral(), G5.Neutral());
 
-    public Ep5<T1, T2, T3, T4, T5> Neutral() =>
-        new(G1.Neutral(), G2.Neutral(), G3.Neutral(), G4.Neutral(), G5.Neutral());
+    public Ep5<T1, T2, T3, T4, T5> Invert(Ep5<T1, T2, T3, T4, T5> e) =>
+        new(G1.Invert(e.E1), G2.Invert(e.E2), G3.Invert(e.E3), G4.Invert(e.E4), G5.Invert(e.E5));
 
-    public Ep5<T1, T2, T3, T4, T5> Invert(Ep5<T1, T2, T3, T4, T5> e) => new(G1.Invert(e.E1), G2.Invert(e.E2),
-        G3.Invert(e.E3), G4.Invert(e.E4), G5.Invert(e.E5));
-
-    public Ep5<T1, T2, T3, T4, T5> Op(Ep5<T1, T2, T3, T4, T5> e1, Ep5<T1, T2, T3, T4, T5> e2) => new(
-        G1.Op(e1.E1, e2.E1), G2.Op(e1.E2, e2.E2), G3.Op(e1.E3, e2.E3), G4.Op(e1.E4, e2.E4), G5.Op(e1.E5, e2.E5));
+    public Ep5<T1, T2, T3, T4, T5> Op(Ep5<T1, T2, T3, T4, T5> e1, Ep5<T1, T2, T3, T4, T5> e2) => new(G1.Op(e1.E1, e2.E1),
+        G2.Op(e1.E2, e2.E2), G3.Op(e1.E3, e2.E3), G4.Op(e1.E4, e2.E4), G5.Op(e1.E5, e2.E5));
 
     public Ep5<T1, T2, T3, T4, T5> this[params ValueType[] us]
     {
@@ -511,12 +524,17 @@ public readonly struct Ep5<T1, T2, T3, T4, T5> : IElt<Ep5<T1, T2, T3, T4, T5>> w
     public int Hash { get; }
     public override int GetHashCode() => Hash;
     public override string ToString() => $"({E1}, {E2}, {E3}, {E4}, {E5})";
+
+    public void Deconstruct(out T1 e1, out T2 e2, out T3 e3, out T4 e4, out T5 e5)
+    {
+        (e1, e2, e3, e4, e5) = (E1, E2, E3, E4, E5);
+    }
 }
 
 public static partial class Product
 {
-    public static Gp5<T1, T2, T3, T4, T5> Group<T1, T2, T3, T4, T5>(IGroup<T1> g1, IGroup<T2> g2, IGroup<T3> g3,
-        IGroup<T4> g4, IGroup<T5> g5)
+    public static Gp5<T1, T2, T3, T4, T5> Group<T1, T2, T3, T4, T5>(IGroup<T1> g1, IGroup<T2> g2, IGroup<T3> g3, IGroup<T4> g4,
+        IGroup<T5> g5)
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
         where T3 : struct, IElt<T3>
@@ -536,8 +554,8 @@ public static partial class Product
         return new(e1, e2, e3, e4, e5);
     }
 
-    public static ConcreteGroup<Ep5<T1, T2, T3, T4, T5>> Generate<T1, T2, T3, T4, T5>(IGroup<T1> g1, IGroup<T2> g2,
-        IGroup<T3> g3, IGroup<T4> g4, IGroup<T5> g5)
+    public static ConcreteGroup<Ep5<T1, T2, T3, T4, T5>> Generate<T1, T2, T3, T4, T5>(IGroup<T1> g1, IGroup<T2> g2, IGroup<T3> g3,
+        IGroup<T4> g4, IGroup<T5> g5)
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
         where T3 : struct, IElt<T3>
@@ -578,15 +596,14 @@ public readonly struct Gp6<T1, T2, T3, T4, T5, T6> : IGroup<Ep6<T1, T2, T3, T4, 
     public bool Equals(IGroup<Ep6<T1, T2, T3, T4, T5, T6>>? other) => other?.Hash == Hash;
     public int Hash { get; }
 
-    public Ep6<T1, T2, T3, T4, T5, T6> Neutral() => new(G1.Neutral(), G2.Neutral(), G3.Neutral(), G4.Neutral(),
-        G5.Neutral(), G6.Neutral());
+    public Ep6<T1, T2, T3, T4, T5, T6> Neutral() =>
+        new(G1.Neutral(), G2.Neutral(), G3.Neutral(), G4.Neutral(), G5.Neutral(), G6.Neutral());
 
-    public Ep6<T1, T2, T3, T4, T5, T6> Invert(Ep6<T1, T2, T3, T4, T5, T6> e) => new(G1.Invert(e.E1), G2.Invert(e.E2),
-        G3.Invert(e.E3), G4.Invert(e.E4), G5.Invert(e.E5), G6.Invert(e.E6));
+    public Ep6<T1, T2, T3, T4, T5, T6> Invert(Ep6<T1, T2, T3, T4, T5, T6> e) => new(G1.Invert(e.E1), G2.Invert(e.E2), G3.Invert(e.E3),
+        G4.Invert(e.E4), G5.Invert(e.E5), G6.Invert(e.E6));
 
-    public Ep6<T1, T2, T3, T4, T5, T6> Op(Ep6<T1, T2, T3, T4, T5, T6> e1, Ep6<T1, T2, T3, T4, T5, T6> e2) => new(
-        G1.Op(e1.E1, e2.E1), G2.Op(e1.E2, e2.E2), G3.Op(e1.E3, e2.E3), G4.Op(e1.E4, e2.E4), G5.Op(e1.E5, e2.E5),
-        G6.Op(e1.E6, e2.E6));
+    public Ep6<T1, T2, T3, T4, T5, T6> Op(Ep6<T1, T2, T3, T4, T5, T6> e1, Ep6<T1, T2, T3, T4, T5, T6> e2) => new(G1.Op(e1.E1, e2.E1),
+        G2.Op(e1.E2, e2.E2), G3.Op(e1.E3, e2.E3), G4.Op(e1.E4, e2.E4), G5.Op(e1.E5, e2.E5), G6.Op(e1.E6, e2.E6));
 
     public Ep6<T1, T2, T3, T4, T5, T6> this[params ValueType[] us]
     {
@@ -624,28 +641,22 @@ public readonly struct Gp6<T1, T2, T3, T4, T5, T6> : IGroup<Ep6<T1, T2, T3, T4, 
     public IEnumerable<Ep6<T1, T2, T3, T4, T5, T6>> GetGenerators()
     {
         foreach (var e in G1.GetGenerators())
-            yield return new Ep6<T1, T2, T3, T4, T5, T6>(e, G2.Neutral(), G3.Neutral(), G4.Neutral(), G5.Neutral(),
-                G6.Neutral());
+            yield return new Ep6<T1, T2, T3, T4, T5, T6>(e, G2.Neutral(), G3.Neutral(), G4.Neutral(), G5.Neutral(), G6.Neutral());
 
         foreach (var e in G2.GetGenerators())
-            yield return new Ep6<T1, T2, T3, T4, T5, T6>(G1.Neutral(), e, G3.Neutral(), G4.Neutral(), G5.Neutral(),
-                G6.Neutral());
+            yield return new Ep6<T1, T2, T3, T4, T5, T6>(G1.Neutral(), e, G3.Neutral(), G4.Neutral(), G5.Neutral(), G6.Neutral());
 
         foreach (var e in G3.GetGenerators())
-            yield return new Ep6<T1, T2, T3, T4, T5, T6>(G1.Neutral(), G2.Neutral(), e, G4.Neutral(), G5.Neutral(),
-                G6.Neutral());
+            yield return new Ep6<T1, T2, T3, T4, T5, T6>(G1.Neutral(), G2.Neutral(), e, G4.Neutral(), G5.Neutral(), G6.Neutral());
 
         foreach (var e in G4.GetGenerators())
-            yield return new Ep6<T1, T2, T3, T4, T5, T6>(G1.Neutral(), G2.Neutral(), G3.Neutral(), e, G5.Neutral(),
-                G6.Neutral());
+            yield return new Ep6<T1, T2, T3, T4, T5, T6>(G1.Neutral(), G2.Neutral(), G3.Neutral(), e, G5.Neutral(), G6.Neutral());
 
         foreach (var e in G5.GetGenerators())
-            yield return new Ep6<T1, T2, T3, T4, T5, T6>(G1.Neutral(), G2.Neutral(), G3.Neutral(), G4.Neutral(), e,
-                G6.Neutral());
+            yield return new Ep6<T1, T2, T3, T4, T5, T6>(G1.Neutral(), G2.Neutral(), G3.Neutral(), G4.Neutral(), e, G6.Neutral());
 
         foreach (var e in G6.GetGenerators())
-            yield return new Ep6<T1, T2, T3, T4, T5, T6>(G1.Neutral(), G2.Neutral(), G3.Neutral(), G4.Neutral(),
-                G5.Neutral(), e);
+            yield return new Ep6<T1, T2, T3, T4, T5, T6>(G1.Neutral(), G2.Neutral(), G3.Neutral(), G4.Neutral(), G5.Neutral(), e);
     }
 
     public IEnumerable<Ep6<T1, T2, T3, T4, T5, T6>> GetElements()
@@ -698,12 +709,17 @@ public readonly struct Ep6<T1, T2, T3, T4, T5, T6> : IElt<Ep6<T1, T2, T3, T4, T5
     public int Hash { get; }
     public override int GetHashCode() => Hash;
     public override string ToString() => $"({E1}, {E2}, {E3}, {E4}, {E5}, {E6})";
+
+    public void Deconstruct(out T1 e1, out T2 e2, out T3 e3, out T4 e4, out T5 e5, out T6 e6)
+    {
+        (e1, e2, e3, e4, e5, e6) = (E1, E2, E3, E4, E5, E6);
+    }
 }
 
 public static partial class Product
 {
-    public static Gp6<T1, T2, T3, T4, T5, T6> Group<T1, T2, T3, T4, T5, T6>(IGroup<T1> g1, IGroup<T2> g2, IGroup<T3> g3,
-        IGroup<T4> g4, IGroup<T5> g5, IGroup<T6> g6)
+    public static Gp6<T1, T2, T3, T4, T5, T6> Group<T1, T2, T3, T4, T5, T6>(IGroup<T1> g1, IGroup<T2> g2, IGroup<T3> g3, IGroup<T4> g4,
+        IGroup<T5> g5, IGroup<T6> g6)
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
         where T3 : struct, IElt<T3>
@@ -725,8 +741,8 @@ public static partial class Product
         return new(e1, e2, e3, e4, e5, e6);
     }
 
-    public static ConcreteGroup<Ep6<T1, T2, T3, T4, T5, T6>> Generate<T1, T2, T3, T4, T5, T6>(IGroup<T1> g1,
-        IGroup<T2> g2, IGroup<T3> g3, IGroup<T4> g4, IGroup<T5> g5, IGroup<T6> g6)
+    public static ConcreteGroup<Ep6<T1, T2, T3, T4, T5, T6>> Generate<T1, T2, T3, T4, T5, T6>(IGroup<T1> g1, IGroup<T2> g2,
+        IGroup<T3> g3, IGroup<T4> g4, IGroup<T5> g5, IGroup<T6> g6)
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
         where T3 : struct, IElt<T3>

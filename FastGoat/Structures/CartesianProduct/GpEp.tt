@@ -11,6 +11,8 @@
     }
 #>
 using System.Collections;
+using FastGoat.Structures.GenericGroup;
+
 namespace FastGoat.Structures.CartesianProduct;
 
 <#
@@ -176,6 +178,11 @@ public readonly struct <#= epk #> : IElt<<#= epk #>> <#= whereTn #>
         public int Hash { get; }
         public override int GetHashCode() => Hash;
         public override string ToString() => $"(<#= Glue(Ei, ", ", "{{{0}}}") #>)";
+
+        public void Deconstruct(<#= Glue(Tiei, ", ", "out {0}") #>)
+        {
+            (<#= Glue(ei, ", ") #>) = (<#= Glue(Ei, ", ") #>);
+        }
 }
 
 public static partial class Product
