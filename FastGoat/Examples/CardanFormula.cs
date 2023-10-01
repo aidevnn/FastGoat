@@ -28,32 +28,6 @@ public static class CardanFormula
         return (P.Substitute(P.X - t), t);
     }
 
-    static KPoly<EPoly<Rational>>[] FactorsQuadratic(KPoly<Rational> P, bool details = true, char a = 'a')
-    {
-        if (P.Degree != 2 || !P.LT.Equals(Rational.KOne()))
-            throw new("P must be monic and quadratic");
-
-        var (P1, c) = ConstCoef(P, monic: true);
-        P1 = P1.Monic;
-        var D = P1[1].Pow(2) - 4 * P1[0];
-        var (numD, _) = D.Decomp();
-        var numD0 = numD.Where(e => e.Item2 % 2 != 0).ToArray();
-        if (numD0.Length == 0)
-            throw new("P must be irreductible");
-
-        var D0 = numD0.Select(e => new Rational(e.Item1)).Aggregate((a0, a1) => a0 * a1);
-        var (X, y) = FG.EPolyXc(P.X.Pow(2) - D0, a, P.x);
-        var P2 = P1.Substitute(X);
-        var res = AlgebraicFactors(P2).Select(p => p.Substitute(p.X / (p.KOne * c)).Monic).ToArray();
-        if (details)
-        {
-            res.Println($"    D = {D} and {y} = Sqrt({D0})");
-            Console.WriteLine();
-        }
-
-        return res;
-    }
-
     static void Cubic(KPoly<Rational> P)
     {
         if (P.Degree != 3 || !P.LT.Equals(Rational.KOne()))
@@ -102,7 +76,7 @@ public static class CardanFormula
         var D = -4 * p.Pow(3) - 27 * q.Pow(2);
         var x = P.X;
 
-        var (u3, v3) = FactorsQuadratic(x.Pow(2) + 27 * q * x - 27 * p.Pow(3), false).Select(e => -e[0]).Deconstruct();
+        var (u3, v3) = FactorsQuadratic(x.Pow(2) + 27 * q * x - 27 * p.Pow(3), false).roots.Select(e => -e[0]).Deconstruct();
         var D0 = u3.X.Pow(2)[0];
 
         var r3 = AlgebraicRoots(x.Pow(2) + 3);

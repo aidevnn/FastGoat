@@ -56,6 +56,21 @@ public static partial class IntFactorisation
         return (bs, P.X.Pow(n) - P);
     }
 
+    public static KPoly<K> CheckQuadraticMinPolynomial<K>(EPoly<K> a, char x = 'a')
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var n = a.F.Degree;
+        var mat = KMatrix<K>.MergeSameRows(3.Range().Select(k => (a.Pow(k)).Poly.ToVMatrix(n)).ToArray());
+        var ns = mat.NullSpace();
+        if (ns.nullity != 0)
+        {
+            var P = Ring.ReducedRowsEchelonForm(mat).A0.Cols.Last().ToKPoly(x);
+            return P.X.Pow(2) - P;
+        }
+
+        return a.Zero.Poly.SubstituteChar('a');
+    }
+
     public static (EPoly<Rational>[], KPoly<Rational>) ExtDegree(EPoly<Rational> a)
     {
         var (bs, minPol) = GetBaseAndMinPolynomial(a);
@@ -298,6 +313,57 @@ public static partial class IntFactorisation
     {
         var (X, _) = FG.EPolyXc(f.Monic, 'y');
         return AlgebraicRoots(f.Substitute(X), details);
+    }
+
+    public static (Rational disc, KPoly<EPoly<Rational>>[] roots) FactorsQuadratic(KPoly<Rational> P, bool details = true, char a = 'a')
+    {
+        if (P.Degree != 2 || !P.LT.Equals(Rational.KOne()))
+            throw new("P must be monic and quadratic");
+
+        var (P1, c) = ConstCoef(P, monic: true);
+        P1 = P1.Monic;
+        var D = P1[1].Pow(2) - 4 * P1[0];
+        var (numD, _) = D.Decomp();
+        var numD0 = numD.Where(e => e.Item2 % 2 != 0).ToArray();
+        if (numD0.Length == 0)
+            throw new("P must be irreductible");
+
+        var D0 = numD0.Select(e => new Rational(e.Item1)).Aggregate((a0, a1) => a0 * a1);
+        var (X, y) = FG.EPolyXc(P.X.Pow(2) - D0, a, P.x);
+        var P2 = P1.Substitute(X);
+        var res = AlgebraicFactors(P2).Select(p => p.Substitute(p.X / (p.KOne * c)).Monic).ToArray();
+        if (details)
+        {
+            res.Println($"    D = {D} and {y} = Sqrt({D0})");
+            Console.WriteLine();
+        }
+
+        return (D0, res);
+    }
+
+    public static Polynomial<Rational, Xi> PrettyPrintCnf(Cnf cf)
+    {
+        var e = cf.Simplify().E;
+        if (e.Degree == 0)
+            return e.Poly.ToPolynomial(Ring.Polynomial(Rational.KZero()));
+
+        var minPol = CheckQuadraticMinPolynomial(e);
+        if (minPol.Degree != 2)
+            return cf.E.Poly.ToPolynomial(Ring.Polynomial(Rational.KZero(), MonomOrder.RevLex, $"ξ{cf.N}")[0]);
+
+        var (disc, roots) = FactorsQuadratic(minPol, details: false);
+        var (x0, x1) = (-roots[0][0] / roots[0][1], -roots[1][0] / roots[1][1]);
+        var cplx0 = new Cplx(Complex.FromPolarCoordinates(cf.Module, cf.Phase));
+        var sqrtD = new Cplx(Complex.Sqrt((double)disc));
+
+        var adisc = disc * disc.Sign;
+        var ind = adisc.Equals(disc.One)
+            ? (disc.Sign == 1 ? "a" : "I")
+            : (disc.Sign == 1 ? $"\u221a{disc}" : $"I\u221a{-disc}");
+        if (x0.Poly.Substitute(sqrtD).Equals(cplx0))
+            return x0.Poly.ToPolynomial(Ring.Polynomial(Rational.KZero(), MonomOrder.RevLex, ind)[0]);
+        else
+            return x1.Poly.ToPolynomial(Ring.Polynomial(Rational.KZero(), MonomOrder.RevLex, ind)[0]);
     }
 
     public static EPoly<K> AlphaPrimElt<K>(KPoly<EPoly<K>> A, KPoly<EPoly<K>> newX)
