@@ -1,3 +1,4 @@
+using System.Numerics;
 using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.GenericGroup;
@@ -46,7 +47,7 @@ public class CharacterTable<T> where T : struct, IElt<T>
     {
         if (Gr.GroupType != GroupType.AbelianGroup)
             throw new GroupException(GroupExceptionType.GroupDef);
-        
+
         AllCharacters = FG.LinearCharacters(Gr).ToArray();
     }
 
@@ -308,32 +309,96 @@ public class CharacterTable<T> where T : struct, IElt<T>
                 rg.Aggregate(e0.Zero, (sum, r) => sum + chis[r][e.gi]!.Value * chis[r][clggi[e.gj]]!.Value).IsZero()));
     }
 
+    public static (string c, string minus_c, string conj_c, string minus_conj) PrettyPrintCnf(Cnf c)
+    {
+        var cStr = $"{c}";
+        if (!cStr.Contains(' ') || cStr.Contains('I'))
+            return (cStr, $"{-c}", $"{c.Conj}", $"{-c.Conj}");
+
+        if (c.Im.IsZero())
+        {
+            var p0 = IntFactorisation.PrettyPrintCnf(c);
+            if (!$"{p0}".Contains('ξ'))
+            {
+                var p1 = -p0;
+                var p2 = p0;
+                var p3 = -p2;
+                return ($"{p0}", $"{p1}", $"{p2}", $"{p3}");
+            }
+        }
+        else
+        {
+            var p0 = IntFactorisation.PrettyPrintCnf(c);
+            if (!$"{p0}".Contains('ξ'))
+            {
+                var p1 = -p0;
+                var p2 = IntFactorisation.PrettyPrintCnf(c.Conj);
+                var p3 = -p2;
+                return ($"{p0}", $"{p1}", $"{p2}", $"{p3}");
+            }
+        }
+
+        return (cStr, $"{-c}", $"{c.Conj}", $"{-c.Conj}");
+    }
+
+    private string[,] PrepareTable()
+    {
+        var idxs = NbClasses.Range().Grid2D().ToArray();
+        var allCnfs = idxs.Select(e =>AllCharacters[e.t1][Classes.GetRepresentative(e.t2)])
+            .Where(e => e.HasValue).Select(e =>  e!.Value.Simplify()).ToHashSet();
+        var cnf2str = new Dictionary<Cnf, string>(NbClasses.Pow(2));
+
+        foreach (var c in allCnfs)
+        {
+            if (!cnf2str.ContainsKey(c))
+            {
+                var (c0, c1, c2, c3) = PrettyPrintCnf(c);
+                cnf2str[c] = c0;
+                if (!c.IsZero())
+                {
+                    cnf2str[-c] = c1;
+                    if (!c.Im.IsZero())
+                    {
+                        cnf2str[c.Conj] = c2;
+                        cnf2str[-c.Conj] = c3;
+                    }
+                }
+            }
+        }
+
+        var cellStrs = new string[NbClasses, NbClasses];
+        foreach (var (i, j) in idxs)
+        {
+            var c = AllCharacters[i][Classes.GetRepresentative(j)];
+            cellStrs[i, j] = !c.HasValue ? "#" : " " + cnf2str[c.Value];
+        }
+
+        return cellStrs;
+    }
+
     public void DisplayCells()
     {
         AllCharacters = AllCharacters.Order().ToArray();
         var form = Ring.MatrixDisplayForm;
         Ring.MatrixDisplayForm = Ring.MatrixDisplay.Table;
-        var Cells = new ACell[NbClasses + 3, NbClasses + 2];
+        var Cells = new string[NbClasses + 3, NbClasses + 2];
+        var StrTable = PrepareTable();
         for (int i = 0; i < NbClasses + 3; i++)
         {
             for (int j = 0; j < NbClasses + 2; j++)
             {
                 if (i == 0)
-                    Cells[i, j] = j == 0 ? new Label("Class") : j == 1 ? new Label("   ") : new Label(Classes.GetClassName(j - 2));
+                    Cells[i, j] = j == 0 ? "Class" : j == 1 ? "   " : Classes.GetClassName(j - 2);
                 else if (i == 1)
-                    Cells[i, j] = j == 0 ? new Label("Size") :
-                        j == 1 ? new Label("   ") : new Label($"{Classes.GetClassOrbx(j - 2).Count()}");
+                    Cells[i, j] = j == 0 ? "Size" : j == 1 ? "   " : $"{Classes.GetClassOrbx(j - 2).Count()}";
                 else if (i == 2)
-                    Cells[i, j] = new Label(" ");
+                    Cells[i, j] = " ";
 
                 if (j == 0 && i > 2)
-                    Cells[i, j] = new Label($"X.{i - 2}");
+                    Cells[i, j] = $"Ꭓ.{i - 2}";
 
                 if (j > 1 && i > 2)
-                {
-                    var e = AllCharacters[i - 3][Classes.GetRepresentative(j - 2)];
-                    Cells[i, j] = e.HasValue ? new CnfCell(e!.Value.Simplify()) : new CnfCell();
-                }
+                    Cells[i, j] = StrTable[i - 3, j - 2];
             }
         }
 
