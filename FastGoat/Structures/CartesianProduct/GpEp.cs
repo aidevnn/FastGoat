@@ -80,7 +80,7 @@ public readonly struct Ep2<T1, T2> : IElt<Ep2<T1, T2>> where T1 : struct, IElt<T
         Hash = (e1.Hash, e2.Hash).GetHashCode();
     }
 
-    public bool Equals(Ep2<T1, T2> other) => other.Hash == Hash;
+    public bool Equals(Ep2<T1, T2> other) => other.Hash == Hash && (E1, E2).Equals((other.E1, other.E2));
 
     public int CompareTo(Ep2<T1, T2> other)
     {
@@ -211,7 +211,7 @@ public readonly struct Ep3<T1, T2, T3> : IElt<Ep3<T1, T2, T3>> where T1 : struct
         Hash = (e1.Hash, e2.Hash, e3.Hash).GetHashCode();
     }
 
-    public bool Equals(Ep3<T1, T2, T3> other) => other.Hash == Hash;
+    public bool Equals(Ep3<T1, T2, T3> other) => other.Hash == Hash && (E1, E2, E3).Equals((other.E1, other.E2, other.E3));
 
     public int CompareTo(Ep3<T1, T2, T3> other)
     {
@@ -356,7 +356,8 @@ public readonly struct Ep4<T1, T2, T3, T4> : IElt<Ep4<T1, T2, T3, T4>> where T1 
         Hash = (e1.Hash, e2.Hash, e3.Hash, e4.Hash).GetHashCode();
     }
 
-    public bool Equals(Ep4<T1, T2, T3, T4> other) => other.Hash == Hash;
+    public bool Equals(Ep4<T1, T2, T3, T4> other) =>
+        other.Hash == Hash && (E1, E2, E3, E4).Equals((other.E1, other.E2, other.E3, other.E4));
 
     public int CompareTo(Ep4<T1, T2, T3, T4> other)
     {
@@ -514,7 +515,8 @@ public readonly struct Ep5<T1, T2, T3, T4, T5> : IElt<Ep5<T1, T2, T3, T4, T5>> w
         Hash = (e1.Hash, e2.Hash, e3.Hash, e4.Hash, e5.Hash).GetHashCode();
     }
 
-    public bool Equals(Ep5<T1, T2, T3, T4, T5> other) => other.Hash == Hash;
+    public bool Equals(Ep5<T1, T2, T3, T4, T5> other) =>
+        other.Hash == Hash && (E1, E2, E3, E4, E5).Equals((other.E1, other.E2, other.E3, other.E4, other.E5));
 
     public int CompareTo(Ep5<T1, T2, T3, T4, T5> other)
     {
@@ -699,7 +701,9 @@ public readonly struct Ep6<T1, T2, T3, T4, T5, T6> : IElt<Ep6<T1, T2, T3, T4, T5
         Hash = (e1.Hash, e2.Hash, e3.Hash, e4.Hash, e5.Hash, e6.Hash).GetHashCode();
     }
 
-    public bool Equals(Ep6<T1, T2, T3, T4, T5, T6> other) => other.Hash == Hash;
+    public bool Equals(Ep6<T1, T2, T3, T4, T5, T6> other) => other.Hash == Hash &&
+                                                             (E1, E2, E3, E4, E5, E6).Equals((other.E1, other.E2, other.E3, other.E4,
+                                                                 other.E5, other.E6));
 
     public int CompareTo(Ep6<T1, T2, T3, T4, T5, T6> other)
     {

@@ -170,7 +170,7 @@ public readonly struct <#= epk #> : IElt<<#= epk #>> <#= whereTn #>
                 Hash = (<#= Glue(hshei, ", ") #>).GetHashCode();
         }
 
-        public bool Equals(<#= epk #> other) => other.Hash == Hash;
+        public bool Equals(<#= epk #> other) => other.Hash == Hash && (<#= Glue(Ei, ", ") #>).Equals((<#= Glue(compi, ", ") #>));
         public int CompareTo(<#= epk #> other)
         {
                 return (<#= Glue(Ei, ", ") #>).CompareTo((<#= Glue(compi, ", ") #>));
