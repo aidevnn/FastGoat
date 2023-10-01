@@ -14,11 +14,13 @@ namespace FastGoat.UserGroup;
 public static partial class FG
 {
     private static Dictionary<int, KPoly<Rational>> CyclotomicPolynomials { get; }
+    private static Dictionary<int,CnfSimplify> CnfSimplifyMap { get; }
 
     static FG()
     {
         var x = QPoly('X');
         CyclotomicPolynomials = new() { [1] = x - 1 };
+        CnfSimplifyMap = new();
     }
 
     public static KPoly<Rational> CyclotomicPolynomial(int k)
@@ -48,6 +50,14 @@ public static partial class FG
     }
 
     public static KPoly<Rational>[] CyclotomicPolynomialsSequence() => CyclotomicPolynomials.Values.Order().ToArray();
+
+    public static CnfSimplify CnfSimplify(int ord)
+    {
+        if (CnfSimplifyMap.TryGetValue(ord, out var infos))
+            return infos;
+
+        return CnfSimplifyMap[ord] = new CnfSimplify(ord);
+    }
 
     public static ConcreteGroup<Perm> Symmetric(int n) => new Symm(n);
 

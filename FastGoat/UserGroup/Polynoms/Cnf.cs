@@ -65,7 +65,7 @@ public struct Cnf : IElt<Cnf>, IRingElt<Cnf>, IFieldElt<Cnf>
         Hash = 1;
     }
 
-    private Cnf(int n, EPoly<Rational> e)
+    public Cnf(int n, EPoly<Rational> e)
     {
         E = e;
         N = n;
@@ -126,58 +126,19 @@ public struct Cnf : IElt<Cnf>, IRingElt<Cnf>, IFieldElt<Cnf>
     public Cnf Mul(Rational k) => new(N, k * E);
 
     public Cnf Pow(int k) => new(N, E.Pow(k));
-    public Cnf Simplify() => Simplify(this);
+    public Cnf Simplify() => FG.CnfSimplify(N).Simplify(this).Item1;
 
     public override int GetHashCode() => Hash;
 
     public override string ToString()
     {
-        var cf = Simplify(this);
+        var (cf, p0) = FG.CnfSimplify(N).Simplify(this);
         var letter = cf.N == 4 ? "I" : $"ξ{cf.N}";
         var ind = Ring.Indeterminates(letter);
-        var poly = cf.E.Poly.ToPolynomial(ind, ind[0]);
-        return $"{poly}";
-    }
+        ind.SetOrder(MonomOrder.RevLex);
 
-    public static Cnf Simplify(Cnf c)
-    {
-        if (c.IsZero())
-            return CnfZero;
-
-        var a = c.E.X;
-        var a0 = a.One;
-        var n0 = c.N;
-        for (int i = 0; i <= n0; i++)
-        {
-            var cfe = c.E;
-            var t = cfe.Div(a0).quo;
-            if (t.Poly.Degree == 0)
-            {
-                var gcd = IntExt.Gcd(n0, i);
-                var n1 = n0 / gcd;
-                var i1 = i / gcd;
-                var a1 = FG.CyclotomicEPoly(n1).Pow(i1);
-                var a2 = new Cnf(n1, t.Poly[0] * a1);
-                return a2;
-            }
-
-            a0 *= a;
-        }
-
-        var p0 = (c.E.Poly - c.E.Poly[0]);
-        var t0 = p0.Coefs.Select((e, i) => (e, i)).Where(e => !e.e.IsZero()).ToArray();
-        var gcd0 = IntExt.Gcd(t0.Select(e => e.i).ToArray());
-        if (gcd0 > 1 && n0 % gcd0 == 0)
-        {
-            var xp = p0.X;
-            var n1 = n0 / gcd0;
-            var p1 = t0.Aggregate(c.E.Poly[0] * xp.One, (sum, e) => sum + e.e * xp.Pow(e.i / gcd0));
-            var a1 = FG.CyclotomicEPoly(n1);
-            var c1 = new Cnf(n1, a1.One * p1);
-            return c1;
-        }
-
-        return c;
+        var polStr = p0.ToPolynomial(ind, ind[0]);
+        return $"{polStr}";
     }
 
     public static Cnf operator +(Cnf a, Cnf b) => a.Add(b);
