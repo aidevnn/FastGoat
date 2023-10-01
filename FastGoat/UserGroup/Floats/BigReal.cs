@@ -1,11 +1,9 @@
-using System.IO.Pipes;
 using System.Numerics;
-using System.Runtime.CompilerServices;
 using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.UserGroup.Integers;
 
-namespace FastGoat.UserGroup.Polynoms;
+namespace FastGoat.UserGroup.Floats;
 
 public enum Rounding
 {

@@ -2,6 +2,7 @@ using System.Numerics;
 using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.VecSpace;
+using FastGoat.UserGroup.Floats;
 using FastGoat.UserGroup.Integers;
 using FastGoat.UserGroup.Padic;
 

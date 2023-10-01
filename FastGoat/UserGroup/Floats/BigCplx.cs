@@ -3,7 +3,7 @@ using FastGoat.Structures;
 using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup.Integers;
 
-namespace FastGoat.UserGroup.Polynoms;
+namespace FastGoat.UserGroup.Floats;
 
 public readonly struct BigCplx : IElt<BigCplx>, IRingElt<BigCplx>, IFieldElt<BigCplx>, IVsElt<Rational, BigCplx>
 {

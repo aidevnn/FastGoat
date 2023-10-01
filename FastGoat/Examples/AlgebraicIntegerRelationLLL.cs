@@ -4,6 +4,7 @@ using FastGoat.Structures;
 using FastGoat.Structures.GenericGroup;
 using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup;
+using FastGoat.UserGroup.Floats;
 using FastGoat.UserGroup.Integers;
 using FastGoat.UserGroup.Polynoms;
 

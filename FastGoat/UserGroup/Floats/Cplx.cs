@@ -1,10 +1,9 @@
-using System.Net;
 using System.Numerics;
 using FastGoat.Structures;
 using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup.Integers;
 
-namespace FastGoat.UserGroup.Polynoms;
+namespace FastGoat.UserGroup.Floats;
 
 public readonly struct Cplx : IElt<Cplx>, IRingElt<Cplx>, IFieldElt<Cplx>, IVsElt<Rational, Cplx>
 {
