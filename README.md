@@ -115,22 +115,23 @@ NormalGroup |N| = 7
 Displaying characters table for the group $C_7 \rtimes C_3$ in $\textbf{S}_7$
 
 ```csharp
-FG.CharactersTable2(g21).DisplayCells();
+FG.CharacterTable(g21).DisplayCells();
 ```
 will output
 ```dotnetcli
-[Class     1       3a       3b                                     7a                                     7b]
-[ Size     1        7        7                                      3                                      3]
-[                                                                                                           ]
-[  X.1     1        1        1                                      1                                      1]
-[  X.2     1       ξ3 -ξ3 + -1                                      1                                      1]
-[  X.3     1 -ξ3 + -1       ξ3                                      1                                      1]
-[  X.4     3        0        0 ξ21¹¹ + -ξ21⁹ + ξ21⁸ + ξ21⁴ + ξ21 + -1   -ξ21¹¹ + ξ21⁹ + -ξ21⁸ + -ξ21⁴ + -ξ21]
-[  X.5     3        0        0   -ξ21¹¹ + ξ21⁹ + -ξ21⁸ + -ξ21⁴ + -ξ21 ξ21¹¹ + -ξ21⁹ + ξ21⁸ + ξ21⁴ + ξ21 + -1]
-All i,                 Sum[g](Xi(g)Xi(g^−1))= |G|      : True
-All i <> j,            Sum[g](Xi(g)Xj(g^−1))=  0       : True
-All g, h in Cl(g),     Sum[r](Xr(g)Xr(h^−1))= |Cl(g)|  : True
-All g, h not in Cl(g), Sum[r](Xr(g)Xr(h^−1))=  0       : True
+
+[Class      1   3a   3b              7a              7b]
+[ Size      1    7    7               3               3]
+[                                                      ]
+[  Ꭓ.1      1    1    1               1               1]
+[  Ꭓ.2      1  ξ3²   ξ3               1               1]
+[  Ꭓ.3      1   ξ3  ξ3²               1               1]
+[  Ꭓ.4      3    0    0  -1/2 + 1/2·I√7  -1/2 - 1/2·I√7]
+[  Ꭓ.5      3    0    0  -1/2 - 1/2·I√7  -1/2 + 1/2·I√7]
+All i,                 Sum[g](Xi(g)Xi(g^−1)) = |G|      : True
+All i <> j,            Sum[g](Xi(g)Xj(g^−1)) =  0       : True
+All g, h in Cl(g),     Sum[r](Xr(g)Xr(h^−1)) = |Cl(g)|  : True
+All g, h not in Cl(g), Sum[r](Xr(g)Xr(h^−1)) =  0       : True
 
 ```
 
