@@ -62,22 +62,29 @@ public struct Cnf : IElt<Cnf>, IRingElt<Cnf>, IFieldElt<Cnf>
     {
         E = FG.CyclotomicEPoly(n);
         N = n;
-        Hash = (N, E.Hash).GetHashCode();
+        Hash = 1;
     }
 
     private Cnf(int n, EPoly<Rational> e)
     {
         E = e;
         N = n;
-        Hash = (N, E.Hash).GetHashCode();
+        Hash = 1;
     }
+
+    public Complex ToComplex => Complex.FromPolarCoordinates(Module, Phase);
 
     public bool Equals(Cnf other) => (this - other).IsZero();
 
     public int CompareTo(Cnf other)
     {
-        var e = (this - other).E;
-        return e.CompareTo(e.Zero);
+        var ce = ToComplex;
+        var co = other.ToComplex;
+        var compMod = ce.Magnitude.CompareTo(co.Magnitude);
+        if (compMod != 0)
+            return compMod;
+
+        return ce.Phase.CompareTo(co.Phase);
     }
 
     public int Hash { get; }

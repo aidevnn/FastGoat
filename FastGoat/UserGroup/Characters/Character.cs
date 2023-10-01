@@ -1,3 +1,4 @@
+using System.Numerics;
 using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.GenericGroup;
@@ -83,15 +84,13 @@ public readonly struct Character<T> : IElt<Character<T>>, IRingElt<Character<T>>
 
         foreach (var e in Classes.OrderBy(e0 => other.Gr.ElementsOrders[e0]))
         {
-            var xr = this[e]?.Module ?? Double.PositiveInfinity;
-            var yr = other[e]?.Module ?? Double.PositiveInfinity;
-            var compMod = xr.CompareTo(yr);
+            var ce = this[e]?.ToComplex ?? Complex.Infinity;
+            var co = other[e]?.ToComplex ?? Complex.Infinity;
+            var compMod = ce.Magnitude.CompareTo(co.Magnitude);
             if (compMod != 0)
                 return compMod;
 
-            var xo = this[e]?.Phase ?? 2 * Double.Pi;
-            var yo = other[e]?.Phase ?? 2 * Double.Pi;
-            var compPhase = xo.CompareTo(yo);
+            var compPhase = ce.Phase.CompareTo(co.Phase);
             if (compPhase != 0)
                 return compPhase;
         }
