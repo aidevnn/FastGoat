@@ -263,14 +263,14 @@ public static partial class Group
     public static ConcreteGroup<K> AddGroup<K>(string name, params K[] gens)
         where K : struct, IElt<K>, IRingElt<K>,IFieldElt<K>
     {
-        var fg = new OpGroup<K>(name, gens[0], FGroupOp.Additive);
-        return new ConcreteGroup<K>(fg, gens);
+        var fg = new OpGroup<K>(name, gens, FGroupOp.Additive);
+        return new ConcreteGroup<K>(fg);
     }
 
     public static ConcreteGroup<K> MulGroup<K>(string name, params K[] gens)
         where K : struct, IElt<K>, IRingElt<K>,IFieldElt<K>
     {
-        var fg = new OpGroup<K>(name, gens[0], FGroupOp.Multiplicative);
-        return new ConcreteGroup<K>(fg, gens);
+        var fg = new OpGroup<K>(name, gens, FGroupOp.Multiplicative);
+        return new ConcreteGroup<K>(fg);
     }
 }

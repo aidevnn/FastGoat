@@ -12,12 +12,26 @@ public class OpGroup<K> : IGroup<K> where K : struct, IFieldElt<K>, IRingElt<K>,
 {
     private K neutral { get; }
     public FGroupOp FGroupOp { get; }
+    public K[] PseudoGenerators { get; }
     public OpGroup(string name, K scalar, FGroupOp fGroupOp)
     {
         Name = name;
         neutral = fGroupOp == FGroupOp.Additive ? scalar.Zero : scalar.One;
         FGroupOp = fGroupOp;
         Hash = (name, neutral, fGroupOp).GetHashCode();
+        PseudoGenerators = new[] { scalar };
+    }
+
+    public OpGroup(string name, K[] gens, FGroupOp fGroupOp)
+    {
+        if (gens.Length == 0)
+            throw new GroupException(GroupExceptionType.GroupDef);
+        var scalar = gens[0];
+        Name = name;
+        neutral = fGroupOp == FGroupOp.Additive ? scalar.Zero : scalar.One;
+        FGroupOp = fGroupOp;
+        Hash = (name, neutral, fGroupOp).GetHashCode();
+        PseudoGenerators = gens.ToArray();
     }
 
     public IEnumerator<K> GetEnumerator() => GetElements().GetEnumerator();
@@ -50,10 +64,7 @@ public class OpGroup<K> : IGroup<K> where K : struct, IFieldElt<K>, IRingElt<K>,
         yield return neutral;
     }
 
-    public IEnumerable<K> GetGenerators()
-    {
-        yield return neutral;
-    }
+    public IEnumerable<K> GetGenerators() => PseudoGenerators;
 
     public K Neutral() => neutral;
 
