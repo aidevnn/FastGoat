@@ -5,12 +5,12 @@ namespace FastGoat.Structures.GenericGroup;
 
 public class ExtensionGroup<Tn, Tg> : ConcreteGroup<Ep2<Tn, Tg>> where Tg : struct, IElt<Tg> where Tn : struct, IElt<Tn>
 {
-    public MapGroups<Ep2<Tg, Tg>, Tn> Map { get; }
-    public MapGroups<Tg, Automorphism<Tn>> L { get; }
+    public MapElt<Ep2<Tg, Tg>, Tn> Map { get; }
+    public MapElt<Tg, Automorphism<Tn>> L { get; }
     public ConcreteGroup<Tg> G { get; }
     public ConcreteGroup<Tn> N { get; }
 
-    public ExtensionGroup(ConcreteGroup<Tn> n, MapGroups<Tg, Automorphism<Tn>> l, MapGroups<Ep2<Tg, Tg>, Tn> map, ConcreteGroup<Tg> g)
+    public ExtensionGroup(ConcreteGroup<Tn> n, MapElt<Tg, Automorphism<Tn>> l, MapElt<Ep2<Tg, Tg>, Tn> map, ConcreteGroup<Tg> g)
     :base("Ext",  Product.Group(n, g), true)
     {
         G = g;

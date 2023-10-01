@@ -15,8 +15,8 @@ public static class NonSplitExtensionPart2
     // Alejandro Adem, R. James Milgram
     // Cohomology of Finite Groups
     // Chapter I Group Extensions, Simple Algebras and Cohomology
-    static bool CheckTwistedL<Tn, Tg>(ConcreteGroup<Tn> N, ConcreteGroup<Tg> G, MapGroups<Tg, Automorphism<Tn>> L,
-        MapGroups<Ep2<Tg, Tg>, Tn> w)
+    static bool CheckTwistedL<Tn, Tg>(ConcreteGroup<Tn> N, ConcreteGroup<Tg> G, MapElt<Tg, Automorphism<Tn>> L,
+        MapElt<Ep2<Tg, Tg>, Tn> w)
         where Tg : struct, IElt<Tg>
         where Tn : struct, IElt<Tn>
     {
@@ -41,7 +41,7 @@ public static class NonSplitExtensionPart2
     // Alejandro Adem, R. James Milgram
     // Cohomology of Finite Groups
     // Chapter I Group Extensions, Simple Algebras and Cohomology
-    static HashSet<(MapGroups<Tg, Automorphism<Tn>>, MapGroups<Ep2<Tg, Tg>, Tn>)> TwistedL<Tn, Tg>(ConcreteGroup<Tn> N, ConcreteGroup<Tg> G)
+    public static HashSet<(MapElt<Tg, Automorphism<Tn>>, MapElt<Ep2<Tg, Tg>, Tn>)> TwistedL<Tn, Tg>(ConcreteGroup<Tn> N, ConcreteGroup<Tg> G)
         where Tg : struct, IElt<Tg> 
         where Tn : struct, IElt<Tn>
     {
@@ -54,7 +54,7 @@ public static class NonSplitExtensionPart2
         var nAN = autN.Neutral();
         var arrG = G.Where(g0 => !g0.Equals(nG)).ToArray();
 
-        var allTwisted = new HashSet<(MapGroups<Tg, Automorphism<Tn>>, MapGroups<Ep2<Tg, Tg>, Tn>)>();
+        var allTwisted = new HashSet<(MapElt<Tg, Automorphism<Tn>>, MapElt<Ep2<Tg, Tg>, Tn>)>();
         var we = GxG.Where(e => e.E1.Equals(nG) || e.E2.Equals(nG)).ToArray();
         var we_nN = we.Select(e => (e, nN)).ToArray();
         var rem = GxG.Except(we).ToArray();
@@ -67,13 +67,13 @@ public static class NonSplitExtensionPart2
 
         var allL = autN.MultiLoop(og - 1).Select(l => arrG.Zip(l).Prepend((nG, nAN)).ToDictionary(e => e.Item1, e => e.Item2))
             .Where(L => innN.SuperSetOf(GxG.Select(e => autN.Op(L[e.E1].Invert(), autN.Op(L[e.E2].Invert(), L[G.Op(e.E1, e.E2)])))))
-            .Select(m => new MapGroups<Tg, Automorphism<Tn>>(G, autN, m))
+            .Select(m => new MapElt<Tg, Automorphism<Tn>>(G, autN, m))
             .ToHashSet();
     
         foreach (var l in N.MultiLoop(nb))
         {
             var l0 = l.ToArray();
-            var map = new MapGroups<Ep2<Tg, Tg>, Tn>(GxG, N, rem.Zip(l0).Concat(we_nN).ToDictionary(a => a.Item1, a => a.Item2));
+            var map = new MapElt<Ep2<Tg, Tg>, Tn>(GxG, N, rem.Zip(l0).Concat(we_nN).ToDictionary(a => a.Item1, a => a.Item2));
             foreach (var L in allL)
             {
                 if (CheckTwistedL(N, G, L, map))
@@ -95,8 +95,8 @@ public static class NonSplitExtensionPart2
         {
             var ext = new ExtensionGroup<Tn, Tg>(N, L, map, G);
             var isGroup = Group.IsGroup(ext);
-            if (!isGroup)
-                continue;
+            // if (!isGroup)
+            //     continue;
 
             Console.WriteLine($"{N} \u22b2 E{++count,-2} \u2192 {G}");
             yield return ext;
@@ -125,8 +125,9 @@ public static class NonSplitExtensionPart2
         var (c2, c4, d8, q8) = (new Cn(2), new Cn(4), FG.Dihedral(4), FG.Quaternion(8));
         var sm8 = new dynamic[] { d8, q8 };
         var k = 1;
-        foreach (var ext in NonSplitExtensions(c4, c2).ToHashSet(new IsomorphEquality<Ep2<ZnInt, ZnInt>>()))
+        foreach (var ext0 in NonSplitExtensions(c4, c2).ToHashSet(new IsomorphEquality<Ep2<ZnInt, ZnInt>>()))
         {
+            var ext = (ExtensionGroup<ZnInt, ZnInt>)ext0;
             ext.SetName($"({ext.Name})_{k++}");
             DisplayGroup.HeadElements(ext);
             if (ext.GroupType == GroupType.AbelianGroup)
@@ -139,6 +140,11 @@ public static class NonSplitExtensionPart2
                 Console.WriteLine($"{ext} is isomorphic to {iso}");
             }
 
+            Console.WriteLine("L : G -> Aut(N)");
+            Console.WriteLine(ext.L);
+            Console.WriteLine("f : G x G -> N");
+            Console.WriteLine(ext.Map);
+            Console.WriteLine();
             NonSplitExtension.AllSplittingGroups(c4, ext, c2).First();
             Console.WriteLine();
         }
