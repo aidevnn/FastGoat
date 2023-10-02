@@ -7,7 +7,7 @@ using FastGoat.UserGroup.Integers;
 
 namespace FastGoat.UserGroup.Polynoms;
 
-public struct CnfSimplify
+public struct CnfBasis
 {
     public int Order { get; }
     public int[] Factors { get; }
@@ -16,7 +16,7 @@ public struct CnfSimplify
     public Dictionary<int, int[]> RelativeIndexes { get; }
     public ConcreteGroup<Ep<ZnInt>> Gr { get; }
 
-    public CnfSimplify(int ord)
+    public CnfBasis(int ord)
     {
         Order = ord;
         CyclotomicPolynomial = FG.CyclotomicPolynomial(ord);
@@ -63,7 +63,7 @@ public struct CnfSimplify
             RelativeIndexes[key] = idxs.ToArray();
         }
     }
-
+    
     public (Cnf, KPoly<Rational>) Simplify(Cnf c)
     {
         if (c.N == 1 || c.N == 4)

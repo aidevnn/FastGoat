@@ -126,13 +126,13 @@ public struct Cnf : IElt<Cnf>, IRingElt<Cnf>, IFieldElt<Cnf>
     public Cnf Mul(Rational k) => new(N, k * E);
 
     public Cnf Pow(int k) => new(N, E.Pow(k));
-    public Cnf Simplify() => FG.CnfSimplify(N).Simplify(this).Item1;
+    public Cnf Simplify() => FG.CnfBasis(N).Simplify(this).Item1;
 
     public override int GetHashCode() => Hash;
 
     public override string ToString()
     {
-        var (cf, p0) = FG.CnfSimplify(N).Simplify(this);
+        var (cf, p0) = FG.CnfBasis(N).Simplify(this);
         var letter = cf.N == 4 ? "I" : $"ξ{cf.N}";
         var ind = Ring.Indeterminates(letter);
         ind.SetOrder(MonomOrder.RevLex);
