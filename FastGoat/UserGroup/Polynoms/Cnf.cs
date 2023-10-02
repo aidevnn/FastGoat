@@ -12,7 +12,7 @@ public struct Cnf : IElt<Cnf>, IRingElt<Cnf>, IFieldElt<Cnf>
     {
         I = new Cnf(4);
         CnfZero = new Cnf(1).Zero;
-        CnfOne = new Cnf(1);
+        CnfOne = new Cnf(1).One;
     }
 
     public static Cnf Nth(int k) => new(k);

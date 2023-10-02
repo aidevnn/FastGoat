@@ -75,7 +75,7 @@ public struct CnfBasis
         if (c.E.Degree == 0)
         {
             var p = c.E.Poly;
-            return (new(1, new(CyclotomicPolynomial, p)), p);
+            return (new(1, new(p.X - 1, p)), p);
         }
         
         if (c.N != Order)
