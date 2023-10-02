@@ -68,9 +68,9 @@ public readonly struct Character<T> : IElt<Character<T>>, IRingElt<Character<T>>
 
         foreach (var g in Classes)
         {
-            var c0 = Map.ContainsKey(g);
-            var c1 = other.Map.ContainsKey(g);
-            if (!c0 || !c1 || !Map[g]!.Value.Equals(other.Map[g]!.Value))
+            var c0 = Map.TryGetValue(g, out Cnf? e0) && e0.HasValue;
+            var c1 = other.Map.TryGetValue(g, out Cnf? e1) && e1.HasValue;
+            if (!c0 || !c1 || !e0!.Value.Equals(e1!.Value))
                 return false;
         }
 
@@ -82,15 +82,47 @@ public readonly struct Character<T> : IElt<Character<T>>, IRingElt<Character<T>>
         if (!Gr.SetEquals(other.Gr))
             return 1;
 
-        foreach (var e in Classes.OrderBy(e0 => other.Gr.ElementsOrders[e0]))
+        // Character One priority 
+        if (Equals(One))
+            return -1;
+        
+        if (other.Equals(One))
+            return 1;
+
+        // Then by dimension
+        var dimThis = this[Gr.Neutral()]?.Module ?? Double.PositiveInfinity;
+        var dimOther = other[Gr.Neutral()]?.Module ?? Double.PositiveInfinity;
+        var compDim = dimThis.CompareTo(dimOther);
+        if (compDim != 0)
+            return compDim;
+
+        // Then all values
+        var avThis = HasAllValues;
+        var avOther = other.HasAllValues;
+        var compAV = avThis.CompareTo(avOther);
+        if (compAV != 0 || !avThis)
+            return compAV;
+
+        // Then rational count
+        var t = this;
+        var ratThis = Classes.Count(e => (t[e]?.E.Degree ?? 1) == 0);
+        var ratOther = Classes.Count(e => (other[e]?.E.Degree ?? 1) == 0);
+        var compRat = ratThis.CompareTo(ratOther);
+        if (compRat != 0)
+            return -compRat;
+
+        // Then by content
+        var cls = Classes;
+        foreach (var e in Classes.OrderBy(e => cls.GetIndex(e)))
         {
-            var ce = this[e]?.ToComplex ?? Complex.Infinity;
-            var co = other[e]?.ToComplex ?? Complex.Infinity;
-            var compMod = ce.Magnitude.CompareTo(co.Magnitude);
+            var (cnfThis, cnfOther) = (this[e], other[e]);
+            var cplxThis = cnfThis?.ToComplex ?? Complex.Infinity;
+            var cplxOther = cnfOther?.ToComplex ?? Complex.Infinity;
+            var compMod = cplxThis.Magnitude.CompareTo(cplxOther.Magnitude);
             if (compMod != 0)
                 return compMod;
 
-            var compPhase = ce.Phase.CompareTo(co.Phase);
+            var compPhase = cplxThis.Phase.CompareTo(cplxOther.Phase);
             if (compPhase != 0)
                 return compPhase;
         }
@@ -104,7 +136,7 @@ public readonly struct Character<T> : IElt<Character<T>>, IRingElt<Character<T>>
     {
         var str = new List<string>();
         var cl = Classes;
-        foreach (var (e, c0) in Map.OrderBy(e => cl.GetClassName(e.Key)))
+        foreach (var (e, c0) in Map.OrderBy(e => cl.GetIndex(e.Key)))
         {
             var t = Classes.GetClassName(e);
             if (!c0.HasValue)
