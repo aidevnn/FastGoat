@@ -62,8 +62,8 @@ public static class NonSplitExtensionPart2
     
         var max1 = BigInteger.Pow(autN.Count(), og - 1);
         var max2 = BigInteger.Pow(N.Count(), nb);
-        if (max1 * max2 > 5000)
-            throw new($"too much iterations, {max1}x{max2}={max1*max2} > 5000");
+        if (max1 * max2 > 15000)
+            throw new($"too much iterations, {max1}x{max2}={max1*max2} > 15000");
 
         var allL = autN.MultiLoop(og - 1).Select(l => arrG.Zip(l).Prepend((nG, nAN)).ToDictionary(e => e.Item1, e => e.Item2))
             .Where(L => innN.SuperSetOf(GxG.Select(e => autN.Op(L[e.E1].Invert(), autN.Op(L[e.E2].Invert(), L[G.Op(e.E1, e.E2)])))))

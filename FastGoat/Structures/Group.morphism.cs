@@ -1,4 +1,5 @@
 using FastGoat.Commons;
+using FastGoat.Structures.CartesianProduct;
 using FastGoat.Structures.GenericGroup;
 using FastGoat.Structures.VecSpace;
 
@@ -298,5 +299,24 @@ public static partial class Group
         var poly = gens[0].F;
         var kautGr = new KAutGroup<K>(poly);
         return new ConcreteGroup<KAut<K>>(kautGr, gens.Select(g => new KAut<K>(kautGr, g)).ToArray());
+    }
+
+    public static ExtensionGroup<Tn, Tg> ExtensionGroup<Tn, Tg>(ConcreteGroup<Tn> n, MapElt<Tg, Automorphism<Tn>> l,
+        MapElt<Ep2<Tg, Tg>, Tn> map, ConcreteGroup<Tg> g)
+        where Tg : struct, IElt<Tg> where Tn : struct, IElt<Tn>
+    {
+        return new ExtensionGroup<Tn, Tg>(n, l, map, g);
+    }
+
+    public static ExtensionGroup<Tn, Tg> ExtensionGroup<Tn, Tg>(ConcreteGroup<Tn> n, MapElt<Tg, Automorphism<Tn>> l,
+        MapElt<Ep<Tg>, Tn> map, ConcreteGroup<Tg> g)
+        where Tg : struct, IElt<Tg> where Tn : struct, IElt<Tn>
+    {
+        if (map.map.Keys.Any(m => m.Ei.Length != 2))
+            throw new();
+
+        var map0 = map.map.ToDictionary(e => new Ep2<Tg, Tg>(e.Key.Ei[0], e.Key.Ei[1]), e => e.Value);
+        var gxg = Product.Generate(g, g);
+        return new ExtensionGroup<Tn, Tg>(n, l, new(gxg, n, map0), g);
     }
 }

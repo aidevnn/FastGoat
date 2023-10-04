@@ -259,6 +259,18 @@ public static class EnumerableExt
             yield return p;
     }
 
+    public static IEnumerable<T> SkipAt<T>(this IEnumerable<T> ts, int index)
+    {
+        int k = 0;
+        foreach (var t in ts)
+        {
+            if (index != k)
+                yield return t;
+
+            ++k;
+        }
+    }
+
     /// <summary>
     /// Generates all possible combinations of elements in a given sequence.
     /// </summary>

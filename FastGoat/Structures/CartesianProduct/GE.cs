@@ -27,6 +27,7 @@ public readonly struct Gp<T> : IGroup<Ep<T>> where T : struct, IElt<T>
     public Ep<T> Neutral() => new(Gi.Select(g => g.Neutral()).ToArray());
     public Ep<T> Invert(Ep<T> e) => new(Gi.Select((g, i) => g.Invert(e.Ei[i])).ToArray());
     public Ep<T> Op(Ep<T> e1, Ep<T> e2) => new(Gi.Select((g, i) => g.Op(e1.Ei[i], e2.Ei[i])).ToArray());
+    public Ep<T> Act(T t, Ep<T> e) => new(Gi.Select((g, i) => g.Op(t, e.Ei[i])).ToArray());
 
     public Ep<T> this[params ValueType[] us]
     {
@@ -79,7 +80,13 @@ public struct Ep<T> : IElt<Ep<T>> where T : IElt<T>
 {
     public T[] Ei { get; }
 
-    public Ep(T[] ei)
+    public Ep()
+    {
+        Ei = new T[] { };
+        Hash = 0;
+    }
+
+    public Ep(params T[] ei)
     {
         Ei = ei;
         Hash = ei.Aggregate(0, (acc, e) => (acc, e).GetHashCode());
@@ -96,6 +103,7 @@ public struct Ep<T> : IElt<Ep<T>> where T : IElt<T>
     }
 
     public T this[int index] => Ei[index];
+    public Ep<T> SkipAt(int i) => new(Ei.SkipAt(i).ToArray());
 
     public int Hash { get; }
     public override int GetHashCode() => Hash;

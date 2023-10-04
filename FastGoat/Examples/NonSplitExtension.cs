@@ -43,15 +43,19 @@ public static class NonSplitExtension
     }
 
     public static IEnumerable<(Homomorphism<T1,T2>i,Homomorphism<T2,T3> p,Homomorphism<T3,T2> s)> 
-        AllSplittingGroups<T1, T2, T3>(ConcreteGroup<T1> G, ConcreteGroup<T2> GH, ConcreteGroup<T3> H)
+        AllSplittingGroups<T1, T2, T3>(ConcreteGroup<T1> G, ConcreteGroup<T2> GH, ConcreteGroup<T3> H, bool details = true)
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
         where T3 : struct, IElt<T3>
     {
-        Console.WriteLine("1 -----> G:{0} -----> GH:{1} -----> H:{2} -----> 1", G, GH, H);
-        Console.WriteLine("G  --i--> GH");
-        Console.WriteLine("GH --p--> H");
-        Console.WriteLine("H  --s--> GH");
+        if (details)
+        {
+            Console.WriteLine("1 -----> G:{0} -----> GH:{1} -----> H:{2} -----> 1", G, GH, H);
+            Console.WriteLine("G  --i--> GH");
+            Console.WriteLine("GH --p--> H");
+            Console.WriteLine("H  --s--> GH");
+        }
+        
         var homI = Group.AllHomomorphisms(G, GH);
         var homP = Group.AllHomomorphisms(GH, H);
         var isoS = Group.AllIsomorphisms(H, GH);
@@ -65,27 +69,33 @@ public static class NonSplitExtension
             .SelectMany(e1 => allKerP.Where(e2 => e1.im.SetEquals(e2.ker)).Select(e2 => (e1.i, e2.p)))
             .ToArray();
 
-        Console.WriteLine("Searching 1 -----> G --i--> GH --p--> H -----> 1 with Im(i)=Ker(p)");
+        if (details)
+            Console.WriteLine("Searching 1 -----> G --i--> GH --p--> H -----> 1 with Im(i)=Ker(p)");
         foreach (var (i, p) in ImIeqKerP)
         {
-            Console.WriteLine("Morphism 'i' from G to GH");
-            Console.WriteLine("    [{0}]", i);
-            Console.WriteLine("Morphism 'p' from GH to H");
-            Console.WriteLine("    [{0}]", p);
+            if (details)
+            {
+                Console.WriteLine("Morphism 'i' from G to GH");
+                Console.WriteLine("    [{0}]", i);
+                Console.WriteLine("Morphism 'p' from GH to H");
+                Console.WriteLine("    [{0}]", p);
 
-            Console.WriteLine("Isomorphism 's' from H to GH");
+                Console.WriteLine("Isomorphism 's' from H to GH");
+            }
             var allIsoS = isoS
                 .Where(s0 => s0.Count == H.Count() && H.All(h => p.Domain.Contains(s0[h]) && p[s0[h]].Equals(h)))
                 .ToArray();
             foreach (var s in allIsoS)
             {
-                Console.WriteLine("    [{0}]", s);
+                if (details)
+                    Console.WriteLine("    [{0}]", s);
                 yield return (i, p, s);
             }
 
             if (allIsoS.Length == 0)
             {
-                Console.WriteLine("    Not Found");
+                if (details)
+                    Console.WriteLine("    Not Found");
                 yield return (i, p, nullIso);
             }
 

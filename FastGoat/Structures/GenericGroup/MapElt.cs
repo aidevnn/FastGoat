@@ -15,13 +15,6 @@ public readonly struct MapElt<T1, T2> : IElt<MapElt<T1, T2>>, IMap<T1, T2> where
         Hash = (Domain.Count(), G2.Count()).GetHashCode();
     }
 
-    public MapElt(ConcreteGroup<T1> g1, ConcreteGroup<T2> g2, T2[] arr)
-    {
-        (Domain, G2) = (g1, g2);
-        map = Domain.Select((e, i) => (e, i)).ToDictionary(e => e.e, e => arr[e.i]);
-        Hash = (Domain.Count(), G2.Count()).GetHashCode();
-    }
-
     public MapElt(ConcreteGroup<T1> g1, ConcreteGroup<T2> g2, Dictionary<T1, T2> map0)
     {
         (Domain, G2) = (g1, g2);
@@ -29,7 +22,6 @@ public readonly struct MapElt<T1, T2> : IElt<MapElt<T1, T2>>, IMap<T1, T2> where
         Hash = (Domain.Count(), G2.Count()).GetHashCode();
     }
 
-    public MapElt<T1, T2> Create(T2[] arr) => new(Domain, G2, arr);
     public MapElt<T1, T2> Clone() => new(Domain, G2, Map);
 
     public bool Equals(IMap<T1, T2>? other)
