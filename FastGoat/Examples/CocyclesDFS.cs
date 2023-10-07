@@ -526,4 +526,120 @@ public static class CocyclesDFS
 
         Console.WriteLine($"AllExts : {infosSubGroups.Count}");
     }
+
+    public static void ExampleAll16Orders()
+    {
+        var allOrder4 = BuildExtensions(new HashSet<ConcreteGroup<ZnInt>>() { new Cn(2) })
+            .OrderBy(e => e.Item1.GroupType)
+            .ThenByDescending(e => e.Item1.ElementsOrders.Values.Max())
+            .ThenBy(e => e.Item2).ToArray();
+        var allOrder8 = BuildExtensions(allOrder4.Select(e => e.Item1)
+                .ToHashSet(new IsomorphEquality<Ep2<ZnInt, Ep<ZnInt>>>()))
+            .OrderBy(e => e.Item1.GroupType)
+            .ThenByDescending(e => e.Item1.ElementsOrders.Values.Max())
+            .ThenBy(e => e.Item2).ToArray();
+        var allOrder16 = BuildExtensions(allOrder8.Select(e => e.Item1)
+                .ToHashSet(new IsomorphEquality<Ep2<Ep2<ZnInt, Ep<ZnInt>>, Ep<ZnInt>>>()))
+            .OrderBy(e => e.Item1.GroupType)
+            .ThenByDescending(e => e.Item1.ElementsOrders.Values.Max())
+            .ThenBy(e => e.Item2).ToArray();
+
+        Console.Clear();
+        foreach (var (g, k, infos) in allOrder4.Select((e, k) => (e.Item1, k + 1, e.Item2)))
+        {
+            Console.WriteLine("##########################################################");
+            Console.WriteLine($"################ Ext no {k,3} found   ######################");
+            Console.WriteLine("##########################################################");
+            g.SetName($"Sm4[{k}]");
+            DisplayGroup.HeadOrders(g);
+            Console.WriteLine($"AllSubGr:{infos.Item1} AllConjsCl:{infos.Item2} AllNorms:{infos.Item3}");
+            Console.WriteLine();
+        }
+
+        foreach (var (g, k, infos) in allOrder8.Select((e, k) => (e.Item1, k + 1, e.Item2)))
+        {
+            Console.WriteLine("##########################################################");
+            Console.WriteLine($"################ Ext no {k,3} found   ######################");
+            Console.WriteLine("##########################################################");
+            g.SetName($"Sm8[{k}]");
+            DisplayGroup.HeadOrders(g);
+            Console.WriteLine($"AllSubGr:{infos.Item1} AllConjsCl:{infos.Item2} AllNorms:{infos.Item3}");
+            Console.WriteLine();
+        }
+
+        foreach (var (g, k, infos) in allOrder16.Select((e, k) => (e.Item1, k + 1, e.Item2)))
+        {
+            Console.WriteLine("##########################################################");
+            Console.WriteLine($"################ Ext no {k,3} found   ######################");
+            Console.WriteLine("##########################################################");
+            g.SetName($"Sm16[{k}]");
+            DisplayGroup.HeadOrders(g);
+            Console.WriteLine($"AllSubGr:{infos.Item1} AllConjsCl:{infos.Item2} AllNorms:{infos.Item3}");
+            Console.WriteLine();
+        }
+    }
+
+    public static void ExampleAll31Orders()
+    {
+        var allAb16 = IntExt.Partitions32[4].Select(l => FG.Abelian(l.Select(k => 2.Pow(k)).ToArray()))
+            .ToHashSet(); // 5 groups
+
+        var allSdp16 = Group.AllSemiDirectProd("C8x:C2", FG.Abelian(8), new Cn(2))
+            .Concat(Group.AllSemiDirectProd("(C4xC2)x:C2", FG.Abelian(4, 2), new Cn(2)))
+            .Concat(Group.AllSemiDirectProd("C4x:C4", FG.Abelian(4), new Cn(4)))
+            .ToHashSet(new IsomorphEquality<Ep2<Ep<ZnInt>, ZnInt>>()); // 7 groups
+
+        var c2 = new Cn(2);
+        var c2q8 = Product.Generate(new Cn(2), FG.Quaternion(8));
+        var q16 = Product.Generate(Group.Generate("C1", c2, c2[0]), FG.Quaternion(16));
+        q16.SetName("Q16");
+
+        var all = new List<dynamic>();
+        foreach (var (g, infos) in BuildExtensions(new HashSet<ConcreteGroup<Ep2<ZnInt, Mat>>>() { q16, c2q8 }))
+        {
+            all.Add(g);
+            Console.WriteLine("##########################################################");
+            Console.WriteLine($"################ Ext no {all.Count,3} found   ######################");
+            Console.WriteLine("##########################################################");
+            g.SetName($"Sm32[{all.Count}]");
+            DisplayGroup.HeadOrders(g);
+            Console.WriteLine($"AllSubGr:{infos.Item1} AllConjsCl:{infos.Item2} AllNorms:{infos.Item3}");
+            Console.WriteLine();
+        }
+
+        foreach (var (g, infos) in BuildExtensions(allSdp16))
+        {
+            if (all.Count == 51)
+                break;
+
+            if (all.Any(g0 => g.IsIsomorphicTo(g0)))
+                continue;
+
+            all.Add(g);
+            Console.WriteLine("##########################################################");
+            Console.WriteLine($"################ Ext no {all.Count,3} found   ######################");
+            Console.WriteLine("##########################################################");
+            g.SetName($"Sm32[{all.Count}]");
+            DisplayGroup.HeadOrders(g);
+            Console.WriteLine($"AllSubGr:{infos.Item1} AllConjsCl:{infos.Item2} AllNorms:{infos.Item3}");
+            Console.WriteLine();
+        }
+
+        foreach (var (g, infos) in BuildExtensions(allAb16))
+        {
+            if (all.Any(g0 => g.IsIsomorphicTo(g0)))
+                continue;
+
+            all.Add(g);
+            Console.WriteLine("##########################################################");
+            Console.WriteLine($"################ Ext no {all.Count,3} found   ######################");
+            Console.WriteLine("##########################################################");
+            g.SetName($"Sm32[{all.Count}]");
+            DisplayGroup.HeadOrders(g);
+            Console.WriteLine($"AllSubGr:{infos.Item1} AllConjsCl:{infos.Item2} AllNorms:{infos.Item3}");
+            Console.WriteLine();
+            if (all.Count == 51)
+                break;
+        }
+    }
 }
