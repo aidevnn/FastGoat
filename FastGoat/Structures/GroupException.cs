@@ -6,7 +6,7 @@ public enum GroupExceptionType
     BaseGroup,
     NotSubGroup,
     NotNormal,
-    OnlyCyclicGroups,
+    OnlyAbelianGroups,
     SemiDirectProductDontExist,
     NotIrreductiblePolynom
 }
@@ -25,8 +25,7 @@ public class GroupException : Exception
             GroupExceptionType.BaseGroup => "Groups or Elements do not belong to the base group",
             GroupExceptionType.NotSubGroup => "Not a valid subgroup",
             GroupExceptionType.NotNormal => "Not a normal subgroup",
-            GroupExceptionType.OnlyCyclicGroups =>
-                "Only cyclic groups are allowed at this time for semi-direct product",
+            GroupExceptionType.OnlyAbelianGroups => "Only abelians groups are allowed for invariants decomposition",
             GroupExceptionType.SemiDirectProductDontExist => "Semi-direct product does not exists",
             GroupExceptionType.NotIrreductiblePolynom => "Polynom must be monic irreductible",
             _ => "Unexpected error"

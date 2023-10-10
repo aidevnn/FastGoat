@@ -632,4 +632,26 @@ public static partial class Group
     {
         return DerivedChain(g).Last().Count() == 1;
     }
+    
+    public static List<(T g, int o)> AbelianInvariants<T>(ConcreteGroup<T> gr) where T : struct, IElt<T>
+    {
+        if (gr.GroupType == GroupType.NonAbelianGroup)
+            throw new GroupException(GroupExceptionType.OnlyAbelianGroups);
+        
+        var facts = new List<(T g, int o)>();
+        var g0 = gr;
+        var ng = new HashSet<T>() { gr.Neutral() };
+        var step = 1;
+        while (g0.Count() > 1)
+        {
+            var p = g0.ElementsOrders.OrderBy(e => e.Key).MaxBy(e => e.Value);
+            var h = Generate($"C{p.Value}", g0, p.Key);
+            var k = g0.Over(h, "K");
+            var injCan = AllMorphisms(k, gr, MorphismType.Isomorphism).First(iso => ng.SetEquals(iso.Image().Intersect(h)));
+            g0 = Generate($"G{step++}", gr, injCan.Image().ToArray());
+            facts.Add((p.Key, p.Value));
+        }
+
+        return facts;
+    }
 }
