@@ -27,31 +27,3 @@ using FastGoat.UserGroup.Padic;
 //////////////////////////////////
 
 Console.WriteLine("Hello World");
-
-{
-    var G = FG.Abelian(4, 6, 18);
-    var abInvs = Group.AbelianInvariants(G);
-    var Gs = abInvs.Select(e => Group.Generate($"C{e.o}", G, e.g)).ToArray();
-    Gs.Select(g => $"{g.ShortName,-40} generator {g.GetGenerators().First()}").Println($"{G.ShortName}");
-}
-
-{
-    var G = FG.Abelian(20, 30);
-    var abInvs = Group.AbelianInvariants(G);
-    var Gs = abInvs.Select(e => Group.Generate($"C{e.o}", G, e.g)).ToArray();
-    Gs.Select(g => $"{g.ShortName,-40} generator {g.GetGenerators().First()}").Println($"{G.ShortName}");
-}
-
-{
-    var G = FG.Abelian(14, 21);
-    var abInvs = Group.AbelianInvariants(G);
-    var Gs = abInvs.Select(e => Group.Generate($"C{e.o}", G, e.g)).ToArray();
-    Gs.Select(g => $"{g.ShortName,-40} generator {g.GetGenerators().First()}").Println($"{G.ShortName}");
-}
-
-{
-    var G = FG.Abelian(8, 18, 30);
-    var abInvs = Group.AbelianInvariants(G);
-    var Gs = abInvs.Select(e => Group.Generate($"C{e.o}", G, e.g)).ToArray();
-    Gs.Select(g => $"{g.ShortName,-40} generator {g.GetGenerators().First()}").Println($"{G.ShortName}");
-}
