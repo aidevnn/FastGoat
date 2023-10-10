@@ -20,6 +20,11 @@ public static partial class Group
         return acc;
     }
 
+    public static T OpSeq<T>(this IGroup<T> g, IEnumerable<T> seq) where T : struct, IElt<T>
+    {
+        return seq.Aggregate(g.Neutral(), (acc, e) => g.Op(acc, e));
+    }
+
     public static HashSet<T> GenerateElements<T>(IGroup<T> bg, HashSet<T> elements, List<T> generators)
         where T : struct, IElt<T>
     {
