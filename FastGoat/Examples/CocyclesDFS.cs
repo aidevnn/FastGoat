@@ -507,6 +507,23 @@ public static class CocyclesDFS
         Console.WriteLine($"AllExts : {infosSubGroups.Count}");
     }
 
+    private static void DisplayInfosGroups<Tg>((ConcreteGroup<Tg>, (int, int, int))[] all6Order, int countStart = 0)
+        where Tg : struct, IElt<Tg>
+    {
+        foreach (var (g, k, infos) in all6Order.Select((e, k) => (e.Item1, countStart + k + 1, e.Item2)))
+        {
+            var og = g.Count();
+            var name = $"Sm{og}[{k}]";
+            Console.WriteLine("##########################################################");
+            Console.WriteLine($"#################  {name,10} found   ####################");
+            Console.WriteLine("##########################################################");
+            g.SetName($"Sm{og}[{k}]");
+            DisplayGroup.HeadOrders(g);
+            Console.WriteLine($"AllSubGr:{infos.Item1} AllConjsCl:{infos.Item2} AllNorms:{infos.Item3}");
+            Console.WriteLine();
+        }
+    }
+
     public static void ExampleAll16Orders()
     {
         var allOrder4 = BuildExtensions(new HashSet<ConcreteGroup<ZnInt>>() { new Cn(2) })
