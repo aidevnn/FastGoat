@@ -283,23 +283,6 @@ public static class CocyclesDFS
             return G.Grid3D(G, G).All(e => TwoCocycleCondition(f.map, e.t1, e.t2, e.t3));
         }
 
-        private static bool SubMap(MapElt<Ep<Tg>, Tn> map, HashSet<Ep<Tg>> keySubmap, Dictionary<Ep<Tg>, Tn> subMap)
-        {
-            if (map.map.Count < subMap.Count)
-                return false;
-
-            if (!keySubmap.IsSubsetOf(map.map.Keys))
-                return false;
-
-            return keySubmap.All(k => subMap[k].Equals(map[k]));
-        }
-
-        private static bool CheckSubMap(HashSet<MapElt<Ep<Tg>, Tn>> allMaps, Dictionary<Ep<Tg>, Tn> map)
-        {
-            var setKeys = map.Keys.ToHashSet();
-            return allMaps.Any(map0 => SubMap(map0, setKeys, map));
-        }
-
         public Dictionary<Ep<Tg>, Tn> TwoCocyclesUpdate(Dictionary<Ep<Tg>, Tn> prev, List<(Tg r, Tg s, Tn n)> set)
         {
             if (set.Any(e => prev.ContainsKey(new(e.r, e.s))))
@@ -311,9 +294,6 @@ public static class CocyclesDFS
             var next = prev.ToDictionary(e => e.Key, e => e.Value);
             foreach (var (r, s, n) in set)
                 next[new(r, s)] = n;
-
-            if (CheckSubMap(AllMapsTwo, next))
-                return prev;
 
             var pmap1 = next.Select(e => (e.Key, e.Value)).ToArray();
             if (pmap1.Grid2D(pmap1).Any(e => !TwoCocycleCondition(next, e.t1.Item1, e.t2.Item1)))
