@@ -136,6 +136,29 @@ public static class CocyclesDFS
         // All_1_Cocycles(c2c2, c2c2c2);
     }
 
+    private static Tn[] ArrImages<Tn, Tg>(MapElt<Ep<Tg>, Tn> mapElt, ConcreteGroup<Tg> G)
+        where Tg : struct, IElt<Tg>
+        where Tn : struct, IElt<Tn>
+    {
+        return mapElt.map.OrderKeys(G).Select(m => m.Value).ToArray();
+    }
+
+    private static IOrderedEnumerable<MapElt<Ep<Tg>, Tn>> OrderMaps<Tn, Tg>(this IEnumerable<MapElt<Ep<Tg>, Tn>> maps, ConcreteGroup<Tg> G)
+        where Tg : struct, IElt<Tg>
+        where Tn : struct, IElt<Tn>
+    {
+        return maps.OrderBy(m => m,
+            Comparer<MapElt<Ep<Tg>, Tn>>.Create((m0, m1) => ArrImages(m0, G).SequenceCompareTo(ArrImages(m1, G))));
+    }
+
+    private static IOrderedEnumerable<KeyValuePair<Ep<Tg>, Tn>> OrderKeys<Tn, Tg>(this IEnumerable<KeyValuePair<Ep<Tg>, Tn>> kvs,
+        ConcreteGroup<Tg> G)
+        where Tg : struct, IElt<Tg>
+        where Tn : struct, IElt<Tn>
+    {
+        return kvs.OrderByDescending(kv => kv.Key.Ei.Count(e => e.Equals(G.Neutral()))).ThenBy(kv => kv.Key);
+    }
+
     public class TwoCocyclesDFS<Tn, Tg> where Tn : struct, IElt<Tn> where Tg : struct, IElt<Tg>
     {
         public ConcreteGroup<Tg> G { get; }
@@ -143,6 +166,7 @@ public static class CocyclesDFS
         public Gp<Tg> Gr { get; }
         public ConcreteGroup<Ep2<Tg, Tg>> GxG2 { get; }
         public ConcreteGroup<Ep3<Tg, Tg, Tg>> GxGxG { get; }
+        public ConcreteGroup<Tn> ZentrumN { get; }
         public ConcreteGroup<Tn> N { get; }
         public MapElt<Tg, Automorphism<Tn>> L { get; }
         public Dictionary<MapElt<Ep<Tg>, Tn>, HashSet<MapElt<Ep<Tg>, Tn>>> AllCosets { get; }
@@ -166,6 +190,8 @@ public static class CocyclesDFS
             AllCosets = new();
             StartN = Group.AllSubGroups(N).Keys.SelectMany(sg => sg.GetGenerators()).Prepend(N.Neutral()).Distinct().ToArray();
             AllLambda = new();
+
+            ZentrumN = Group.Zentrum(N);
         }
 
         public HashSet<MapElt<Ep<Tg>, Tn>> AllTwoCocycles()
@@ -186,10 +212,7 @@ public static class CocyclesDFS
             step = 0;
             All2Cocycles(map);
             Console.WriteLine();
-            Console.WriteLine($"Coset Size:{AllCoboundaries.Count}");
-            Console.WriteLine($"Nb  Cosets:{AllCosets.Count}");
-            Console.WriteLine($"Total Sols:{AllCoboundaries.Count * AllCosets.Count}");
-            Console.WriteLine("############# COMPLETE ##############");
+            Console.WriteLine($"## COMPLETE ## Coset Size:{AllCoboundaries.Count,4} Nb Cosets:{AllCosets.Count,4} Total Sols:{AllCoboundaries.Count * AllCosets.Count}");
 
             return AllCosets.Keys.ToHashSet();
         }
@@ -205,8 +228,8 @@ public static class CocyclesDFS
 
             if (g.Equals(G.Neutral()))
                 return;
-
-            foreach (var n in N)
+            
+            foreach (var n in ZentrumN)
             {
                 ++step;
                 var c1 = c.Append(new(g, n)).ToDictionary(e => e.Key, e => e.Value);
@@ -240,7 +263,7 @@ public static class CocyclesDFS
         private void All2Coboundaries()
         {
             var arrG = G.Where(g => !g.Equals(G.Neutral())).ToArray();
-            AllLambda = N.MultiLoop(arrG.Length)
+            AllLambda = ZentrumN.MultiLoop(arrG.Length)
                 .Select(l => arrG.Zip(l).Append((G.Neutral(), N.Neutral())).ToDictionary(e => e.Item1, e => e.Item2))
                 .Select(m => new MapElt<Tg, Tn>(G, N, m)).ToHashSet();
 
@@ -252,19 +275,9 @@ public static class CocyclesDFS
             AllCoboundaries = maps.Select(map => new MapElt<Ep<Tg>, Tn>(GxG, N, map)).Distinct().Where(f => ValidMap(f)).ToHashSet();
         }
 
-        private Tn[] ArrImages(MapElt<Ep<Tg>, Tn> mapElt)
-        {
-            return mapElt.map.OrderByDescending(m => m.Key.Ei.Count(ei => ei.Equals(G.Neutral())))
-                .ThenBy(m => m.Key)
-                .ThenBy(m => m.Value)
-                .Select(m => m.Value)
-                .ToArray();
-        }
-
         private void All2Cocycles(Dictionary<Ep<Tg>, Tn> map)
         {
-            Console.Write(
-                $"{Lbl,-6} step:{++step,-5} MapLength:{map.Count,4} NbSols:{AllCosets.Count,3}/{AllCoboundaries.Count * AllCosets.Count}");
+            Console.Write($"{Lbl,-8} step:{++step,-5} NbSols:{AllCosets.Count,3}/{AllCoboundaries.Count * AllCosets.Count}");
             Console.CursorLeft = 0;
 
             var lG = G.GetGenerators().Where(e => !e.Equals(G.Neutral())).Distinct().ToArray();
@@ -276,7 +289,7 @@ public static class CocyclesDFS
                 return;
 
             var (r, s) = startG.Ei.Deconstruct();
-            foreach (var n in StartN)
+            foreach (var n in ZentrumN)
             {
                 var next = TwoCocyclesUpdate(map, new() { (r, s, n) });
                 if (next.Count == map.Count)
@@ -293,14 +306,13 @@ public static class CocyclesDFS
                     {
                         var prevMaps = AllCosets.Keys.ToArray();
                         var allSols = AllCoboundaries.Select(e => Group_GxG_N.Op(e, sol)).ToHashSet();
-                        var sol0 = allSols.OrderBy(m => m,
-                            Comparer<MapElt<Ep<Tg>, Tn>>.Create((m0, m1) => ArrImages(m0).SequenceCompareTo(ArrImages(m1)))).First();
+                        var sol0 = allSols.OrderMaps(G).First();
                         if (AllCosets.ContainsKey(sol0))
-                            Console.WriteLine("#???????????????????");
+                            Console.WriteLine($"#??????????????? Zentrum bug fix");
+
 
                         AllCosets[sol0] = allSols;
-                        Console.Write(
-                            $"{Lbl,-6} step:{++step,-5}                NbSols:{AllCosets.Count,3}/{AllCoboundaries.Count * AllCosets.Count}");
+                        Console.Write($"{Lbl,-8} step:{++step,-5} NbSols:{AllCosets.Count,3}/{AllCoboundaries.Count * AllCosets.Count}");
                         Console.CursorLeft = 0;
 
                         // Z2 group of 2cocycles structure
@@ -310,19 +322,15 @@ public static class CocyclesDFS
                             var sol1 = Group_GxG_N.Op(e0, e1);
                             if (AllCosets.Values.All(cos => !cos.Contains(sol1)) && ValidMap(sol1))
                             {
-                                Console.Write(
-                                    $"{Lbl,-6} step:{++step,-5}                NbSols:{AllCosets.Count,3}/{AllCoboundaries.Count * AllCosets.Count}");
-                                Console.CursorLeft = 0;
-
                                 var allSols1 = AllCoboundaries.Select(e => Group_GxG_N.Op(e, sol1)).ToHashSet();
-                                var sol2 = allSols1.OrderBy(m => m,
-                                        Comparer<MapElt<Ep<Tg>, Tn>>.Create((m0, m1) =>
-                                            ArrImages(m0).SequenceCompareTo(ArrImages(m1))))
-                                    .First();
+                                var sol2 = allSols1.OrderMaps(G).First();
                                 if (AllCosets.ContainsKey(sol2))
-                                    Console.WriteLine("##??????????????????");
+                                    Console.WriteLine($"##?????????????? Zentrum bug fix");
 
                                 AllCosets[sol2] = allSols1;
+                                
+                                Console.Write($"{Lbl,-8} step:{++step,-5} NbSols:{AllCosets.Count,3}/{AllCoboundaries.Count * AllCosets.Count}");
+                                Console.CursorLeft = 0;
                             }
                         }
                     }
@@ -475,7 +483,8 @@ public static class CocyclesDFS
     {
         var autN = Group.AutomorphismGroup(N);
         var allOps = Group.AllHomomorphisms(G, autN);
-        Console.WriteLine($"N:{N.ShortName} and G:{G.ShortName}");
+        Console.WriteLine("Start Search All ext N -> E -> G");
+        Console.WriteLine($"    with N:{N.ShortName} and G:{G.ShortName}");
         Ring.MatrixDisplayForm = Ring.MatrixDisplay.SquareBracket;
         var all = new Dictionary<MapElt<Tg, Automorphism<Tn>>, HashSet<MapElt<Ep<Tg>, Tn>>>();
         var lbl = 0;
@@ -523,8 +532,6 @@ public static class CocyclesDFS
         where Tn : struct, IElt<Tn>
     {
         var all = All_2_Cocycles_N_G(N, G, trivialActionOnly: false);
-        Console.WriteLine("Start Search All ext");
-        var (nb0, nb1) = (0, 0);
         var allExt = new HashSet<ExtensionGroup<Tn, Tg>>();
         foreach (var (L, tws) in all)
         {
@@ -578,7 +585,7 @@ public static class CocyclesDFS
         var listIsos = new HashSet<ConcreteGroup<Ep2<Tn, Tg>>>(new IsomorphEquality<Ep2<Tn, Tg>>());
 
         var found = 0;
-        foreach (var (ext, i) in allExts.Select((ext, i) => (ext, i)))
+        foreach (var (ext, i) in allExts.Select((ext, i) => (ext, i + 1)))
         {
             Console.Write($"Progress:{i,5} / {allExts.Count} Found:{found}");
             Console.CursorLeft = 0;
@@ -593,13 +600,16 @@ public static class CocyclesDFS
                 }
                 catch (Exception e)
                 {
-                    // Console.WriteLine(e);
+                    Console.WriteLine("@???????????????????????????????????????????????????????????");
                     // TODO why some twisted actions wont give a group
                 }
             }
 
-            if (!Group.IsGroup(ext))
-                continue;
+            // if (!Group.IsGroup(ext))
+            // {
+            //     Console.WriteLine("@@??????????????????????????????????????????????????????????");
+            //     continue;
+            // }
 
             if (!listIsos.Add(ext))
                 continue;
@@ -714,12 +724,9 @@ public static class CocyclesDFS
 
     public static void AllGroupsOrder_12_24()
     {
+        var c2 = FG.Abelian(2);
         var c3 = FG.Abelian(3);
         var ab4 = new[] { FG.Abelian(2, 2), FG.Abelian(4) };
-        var c2a = Product.Generate(FG.Abelian(1), FG.Abelian(2)); // for generic type compatibility
-        c2a.SetName("C2");
-        var c3a = Product.Generate(FG.Abelian(1), FG.Abelian(3)); // for generic type compatibility
-        c3a.SetName("C3");
 
         var allOrder8 = BuildExtensions(ab4.ToHashSet())
             .OrderBy(e => e.Item1.GroupType)
@@ -732,8 +739,8 @@ public static class CocyclesDFS
             .ThenByDescending(e => e.Item1.ElementsOrders.Values.Max())
             .ThenBy(e => e.Item2).ToArray();
 
-        var tuple24 = allOrder12.Select(e => (e.Item1, c2a))
-            .Concat(allOrder8.Select(e => (e.Item1, c3a)))
+        var tuple24 = allOrder12.Select(e => (e.Item1, c2))
+            .Concat(allOrder8.Select(e => (e.Item1, c3)))
             .ToArray();
         var allOrder24 = BuildExtensions(tuple24)
             .OrderBy(e => e.Item1.GroupType)
