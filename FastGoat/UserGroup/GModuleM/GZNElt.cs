@@ -5,7 +5,7 @@ using FastGoat.Structures.VecSpace;
 
 namespace FastGoat.UserGroup.GModuleM;
 
-public readonly struct GZNElt<Tn, Tg> : IGmoduleMElt<Tn, Tg, GZNElt<Tn, Tg>>, IElt<GZNElt<Tn, Tg>>
+public readonly struct GZNElt<Tn, Tg> : IGmoduleNElt<Tn, Tg, GZNElt<Tn, Tg>>, IElt<GZNElt<Tn, Tg>>
     where Tg : struct, IElt<Tg>
     where Tn : struct, IElt<Tn>
 {

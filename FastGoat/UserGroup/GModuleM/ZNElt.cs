@@ -6,7 +6,7 @@ using FastGoat.UserGroup.Integers;
 
 namespace FastGoat.UserGroup.GModuleM;
 
-public readonly struct ZNElt<T> : IGmoduleMElt<T, ZnInt, ZNElt<T>>, IElt<ZNElt<T>> where T : struct, IElt<T>
+public readonly struct ZNElt<T> : IGmoduleNElt<T, ZnInt, ZNElt<T>>, IElt<ZNElt<T>> where T : struct, IElt<T>
 {
     public SortedList<Xi, ZnInt> Coefs { get; }
     public int Ord { get; }

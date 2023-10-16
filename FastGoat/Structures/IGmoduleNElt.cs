@@ -1,9 +1,9 @@
 namespace FastGoat.Structures;
 
-public interface IGmoduleMElt<N, G, T> : IEquatable<T>, IComparable<T>
+public interface IGmoduleNElt<N, G, T> : IEquatable<T>, IComparable<T>
     where N : struct, IElt<N>
     where G : struct, IElt<G>
-    where T : struct, IElt<T>, IGmoduleMElt<N, G, T>
+    where T : struct, IElt<T>, IGmoduleNElt<N, G, T>
 {
     T Add(T n);
     T Sub(T n);
@@ -16,4 +16,5 @@ public interface IGmoduleMElt<N, G, T> : IEquatable<T>, IComparable<T>
     static abstract T operator -(T a, T b);
     static abstract T operator -(T a);
     static abstract T operator *(G a, T b);
+    static abstract T operator *(int k, T b);
 }
