@@ -114,16 +114,48 @@ public static class Solver
         return sys;
     }
 
-    public static (Xi, Tn)[][] SolveEq2Cocycle<Tn, Tg>(GZNElt<Tn, Tg> gz, MapElt<Tg,Automorphism<Tn>> L)
+    public static (Xi, Tn)[][] SolveEq2Cocycles<Tn, Tg>(GZNElt<Tn, Tg> gz, MapElt<Tg, Automorphism<Tn>> L)
         where Tg : struct, IElt<Tg>
         where Tn : struct, IElt<Tn>
     {
-        if(gz.IsKnown())
+        if (gz.IsKnown())
             return Array.Empty<(Xi, Tn)[]>();
 
         var (N, G) = (gz.N, gz.G);
         var xis = gz.GetUnknowns();
-        
+
         return N.MultiLoop(xis.Length).Select(l => xis.Zip(l).ToArray()).Where(b => gz.Substitute(b).Act(L).IsZero()).ToArray();
+    }
+
+    public static IEnumerable<List<(Xi, Tn)>> SolveEq2Cocycles<Tn, Tg>
+        (HashSet<GZNElt<Tn, Tg>> sys, List<(Xi, Tn)> sols, MapElt<Tg, Automorphism<Tn>> L)
+        where Tg : struct, IElt<Tg>
+        where Tn : struct, IElt<Tn>
+    {
+        var eq = sys.Order().First();
+        var newSols = SolveEq2Cocycles(eq, L);
+        foreach (var sol in newSols)
+        {
+            var sols0 = sols.Concat(sol).ToList();
+            var newSys = sys.Select(gz0 => gz0.Substitute(sol).Act(L)).Where(gz0 => !gz0.IsZero()).Distinct().ToHashSet();
+            if (newSys.Count == 0)
+            {
+                yield return sols0;
+                continue;
+            }
+            
+            foreach (var sol1 in SolveEq2Cocycles(newSys, sols0, L))
+                yield return sol1;
+        }
+    }
+
+    public static IEnumerable<List<(Xi, Tn)>> SolveEq2Cocycles<Tn, Tg>(ConcreteGroup<Tn> N, ConcreteGroup<Tg> G, MapElt<Tg, Automorphism<Tn>> L)
+        where Tg : struct, IElt<Tg>
+        where Tn : struct, IElt<Tn>
+    {
+        var map = MapCocycles(N, G);
+        var sys = TwoCocycleCondition(map);
+        foreach (var sol in SolveEq2Cocycles(sys, new(), L))
+            yield return sol;
     }
 }

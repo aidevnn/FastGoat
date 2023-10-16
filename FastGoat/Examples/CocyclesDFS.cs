@@ -476,7 +476,7 @@ public static class CocyclesDFS
         }
     }
 
-    static Dictionary<MapElt<Tg, Automorphism<Tn>>, HashSet<MapElt<Ep<Tg>, Tn>>> All_2_Cocycles_N_G<Tn, Tg>(ConcreteGroup<Tn> N,
+    public static Dictionary<MapElt<Tg, Automorphism<Tn>>, HashSet<MapElt<Ep<Tg>, Tn>>> All_2_Cocycles_N_G<Tn, Tg>(ConcreteGroup<Tn> N,
         ConcreteGroup<Tg> G, bool trivialActionOnly = true)
         where Tg : struct, IElt<Tg>
         where Tn : struct, IElt<Tn>
