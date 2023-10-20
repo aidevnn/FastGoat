@@ -79,7 +79,7 @@ public struct ExtensionGroupBase<Tn, Tg> : IGroup<Ep2<Tn, Tg>> where Tg : struct
     public Ep2<Tn, Tg> Op(Ep2<Tn, Tg> e1, Ep2<Tn, Tg> e2)
     {
         var (n1, n2, g1, g2) = (e1.E1, e2.E1, e1.E2, e2.E2);
-        var nop = N.Op(L[g2].Invert()[n1], n2);
+        var nop = N.Op(L[G.Invert(g2)][n1], n2);
         var fi = N.Invert(Map[new(g1, g2)]);
         var g1g2 = G.Op(g1, g2);
         return new(N.Op(fi, nop), g1g2);

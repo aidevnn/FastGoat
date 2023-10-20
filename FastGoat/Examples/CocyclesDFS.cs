@@ -136,6 +136,13 @@ public static class CocyclesDFS
         // All_1_Cocycles(c2c2, c2c2c2);
     }
 
+    public static MapElt<Tg, Tn> ToMapElt<Tg, Tn>(this IMap<Tg, Tn> imap, ConcreteGroup<Tn> N)
+        where Tg : struct, IElt<Tg>
+        where Tn : struct, IElt<Tn>
+    {
+        return new(imap.Domain, N, new(imap.Domain.ToDictionary(e => e, e => imap[e])));
+    }
+
     private static Tn[] ArrImages<Tn, Tg>(MapElt<Ep<Tg>, Tn> mapElt, ConcreteGroup<Tg> G)
         where Tg : struct, IElt<Tg>
         where Tn : struct, IElt<Tn>
@@ -143,7 +150,8 @@ public static class CocyclesDFS
         return mapElt.map.OrderKeys(G).Select(m => m.Value).ToArray();
     }
 
-    private static IOrderedEnumerable<MapElt<Ep<Tg>, Tn>> OrderMaps<Tn, Tg>(this IEnumerable<MapElt<Ep<Tg>, Tn>> maps, ConcreteGroup<Tg> G)
+    public static IOrderedEnumerable<MapElt<Ep<Tg>, Tn>> OrderMaps<Tn, Tg>(this IEnumerable<MapElt<Ep<Tg>, Tn>> maps,
+        ConcreteGroup<Tg> G)
         where Tg : struct, IElt<Tg>
         where Tn : struct, IElt<Tn>
     {
@@ -151,7 +159,7 @@ public static class CocyclesDFS
             Comparer<MapElt<Ep<Tg>, Tn>>.Create((m0, m1) => ArrImages(m0, G).SequenceCompareTo(ArrImages(m1, G))));
     }
 
-    private static IOrderedEnumerable<KeyValuePair<Ep<Tg>, Tn>> OrderKeys<Tn, Tg>(this IEnumerable<KeyValuePair<Ep<Tg>, Tn>> kvs,
+    public static IOrderedEnumerable<KeyValuePair<Ep<Tg>, Tn>> OrderKeys<Tn, Tg>(this IEnumerable<KeyValuePair<Ep<Tg>, Tn>> kvs,
         ConcreteGroup<Tg> G)
         where Tg : struct, IElt<Tg>
         where Tn : struct, IElt<Tn>
@@ -212,7 +220,8 @@ public static class CocyclesDFS
             step = 0;
             All2Cocycles(map);
             Console.WriteLine();
-            Console.WriteLine($"## COMPLETE ## Coset Size:{AllCoboundaries.Count,4} Nb Cosets:{AllCosets.Count,4} Total Sols:{AllCoboundaries.Count * AllCosets.Count}");
+            Console.WriteLine(
+                $"## COMPLETE ## Coset Size:{AllCoboundaries.Count,4} Nb Cosets:{AllCosets.Count,4} Total Sols:{AllCoboundaries.Count * AllCosets.Count}");
 
             return AllCosets.Keys.ToHashSet();
         }
@@ -228,7 +237,7 @@ public static class CocyclesDFS
 
             if (g.Equals(G.Neutral()))
                 return;
-            
+
             foreach (var n in ZentrumN)
             {
                 ++step;
@@ -260,7 +269,7 @@ public static class CocyclesDFS
             }
         }
 
-        private void All2Coboundaries()
+        public void All2Coboundaries()
         {
             var arrG = G.Where(g => !g.Equals(G.Neutral())).ToArray();
             AllLambda = ZentrumN.MultiLoop(arrG.Length)
@@ -312,7 +321,8 @@ public static class CocyclesDFS
 
 
                         AllCosets[sol0] = allSols;
-                        Console.Write($"{Lbl,-8} step:{++step,-5} NbSols:{AllCosets.Count,3}/{AllCoboundaries.Count * AllCosets.Count}");
+                        Console.Write(
+                            $"{Lbl,-8} step:{++step,-5} NbSols:{AllCosets.Count,3}/{AllCoboundaries.Count * AllCosets.Count}");
                         Console.CursorLeft = 0;
 
                         // Z2 group of 2cocycles structure
@@ -328,8 +338,9 @@ public static class CocyclesDFS
                                     Console.WriteLine($"##?????????????? Zentrum bug fix");
 
                                 AllCosets[sol2] = allSols1;
-                                
-                                Console.Write($"{Lbl,-8} step:{++step,-5} NbSols:{AllCosets.Count,3}/{AllCoboundaries.Count * AllCosets.Count}");
+
+                                Console.Write(
+                                    $"{Lbl,-8} step:{++step,-5} NbSols:{AllCosets.Count,3}/{AllCoboundaries.Count * AllCosets.Count}");
                                 Console.CursorLeft = 0;
                             }
                         }
@@ -459,7 +470,7 @@ public static class CocyclesDFS
                 if (bg1_g2 && bg1g2_g3 && !bg2_g3 && bg1_g2g3)
                 {
                     var (ng1_g2, ng1g2_g3, ng1_g2g3) = (next[g1_g2], next[g1g2_g3], next[g1_g2g3]);
-                    var ng2_g3 = L[g1].Invert()[N.Op(N.Invert(ng1_g2g3), N.Op(ng1_g2, ng1g2_g3))];
+                    var ng2_g3 = L[G.Invert(g1)][N.Op(N.Op(ng1_g2, ng1g2_g3), N.Invert(ng1_g2g3))];
                     return TwoCocyclesUpdate(prev, set.Append((g2, g3, ng2_g3)).ToList());
                 }
 
@@ -474,6 +485,29 @@ public static class CocyclesDFS
 
             return next;
         }
+    }
+
+    public static Dictionary<MapElt<Tg, Automorphism<Tn>>, TwoCocyclesDFS<Tn, Tg>> TwoCocycles<Tn, Tg>(ConcreteGroup<Tn> N,
+        ConcreteGroup<Tg> G, bool trivialActionOnly = true)
+        where Tg : struct, IElt<Tg>
+        where Tn : struct, IElt<Tn>
+    {
+        var autN = Group.AutomorphismGroup(N);
+        var allOps = Group.AllHomomorphisms(G, autN);
+        var trivL = new Homomorphism<Tg, Automorphism<Tn>>(G, G.ToDictionary(e => e, _ => autN.Neutral()));
+        if (trivialActionOnly)
+            allOps = new() { trivL };
+        return allOps.Select(L => new MapElt<Tg, Automorphism<Tn>>(G, autN, new(L.HomMap)))
+            .Select((L, lbl) => new TwoCocyclesDFS<Tn, Tg>(N, G, L, $"Lbl{lbl}/{allOps.Count}"))
+            .ToDictionary(e => e.L, e => e);
+    }
+
+    public static TwoCocyclesDFS<Tn, Tg> TwoCocycles<Tn, Tg>(ConcreteGroup<Tn> N, ConcreteGroup<Tg> G, MapElt<Tg, Automorphism<Tn>> L,
+        string lbl = "test")
+        where Tg : struct, IElt<Tg>
+        where Tn : struct, IElt<Tn>
+    {
+        return new TwoCocyclesDFS<Tn, Tg>(N, G, L, lbl);
     }
 
     public static Dictionary<MapElt<Tg, Automorphism<Tn>>, HashSet<MapElt<Ep<Tg>, Tn>>> All_2_Cocycles_N_G<Tn, Tg>(ConcreteGroup<Tn> N,
@@ -565,7 +599,7 @@ public static class CocyclesDFS
             yield return tuple;
     }
 
-    static IEnumerable<(ConcreteGroup<Ep2<Tn, Tg>>, (int, int, int))> BuildExtensions<Tn, Tg>(
+    public static IEnumerable<(ConcreteGroup<Ep2<Tn, Tg>>, (int, int, int))> BuildExtensions<Tn, Tg>(
         (ConcreteGroup<Tn> N, ConcreteGroup<Tg> G)[] AllNG)
         where Tn : struct, IElt<Tn>
         where Tg : struct, IElt<Tg>
@@ -584,10 +618,9 @@ public static class CocyclesDFS
         var abTypes = new HashSet<int[]>(new SequenceEquality<int>());
         var listIsos = new HashSet<ConcreteGroup<Ep2<Tn, Tg>>>(new IsomorphEquality<Ep2<Tn, Tg>>());
 
-        var found = 0;
         foreach (var (ext, i) in allExts.Select((ext, i) => (ext, i + 1)))
         {
-            Console.Write($"Progress:{i,5} / {allExts.Count} Found:{found}");
+            Console.Write($"Progress:{i,5} / {allExts.Count} Found:{listIsos.Count}");
             Console.CursorLeft = 0;
 
             if (ext.GroupType == GroupType.AbelianGroup)
@@ -605,11 +638,24 @@ public static class CocyclesDFS
                 }
             }
 
-            // if (!Group.IsGroup(ext))
+            if (!Group.IsGroup(ext))
+            {
+                Console.WriteLine("@@??????????????????????????????????????????????????????????");
+                continue;
+            }
+
+            // var cg = (ConcreteGroup<Ep2<Tn, Tg>>)ext;
+            // var res = Parallel.ForEach(listIsos, (g0, state) =>
             // {
-            //     Console.WriteLine("@@??????????????????????????????????????????????????????????");
+            //     // unexpected behaviour
+            //     if (cg.IsIsomorphicTo(g0))
+            //         state.Stop();
+            // });
+            //     
+            // if (!res.IsCompleted)
             //     continue;
-            // }
+            // else
+            //     listIsos.Add(ext);
 
             if (!listIsos.Add(ext))
                 continue;
@@ -617,7 +663,6 @@ public static class CocyclesDFS
             var allSubs = Group.AllSubGroups(ext);
             var info0 = details(allSubs);
 
-            ++found;
             yield return (ext, info0);
 
             infosSubGroups[ext] = allSubs;
@@ -627,10 +672,10 @@ public static class CocyclesDFS
         Console.WriteLine($"AllExts Found : {infosSubGroups.Count}");
     }
 
-    private static void DisplayInfosGroups<Tg>((ConcreteGroup<Tg>, (int, int, int))[] all6Order, int countStart = 0)
+    public static void DisplayInfosGroups<Tg>((ConcreteGroup<Tg>, (int, int, int))[] elts, int countStart = 0)
         where Tg : struct, IElt<Tg>
     {
-        foreach (var (g, k, infos) in all6Order.Select((e, k) => (e.Item1, countStart + k + 1, e.Item2)))
+        foreach (var (g, k, infos) in elts.Select((e, k) => (e.Item1, countStart + k + 1, e.Item2)))
         {
             var og = g.Count();
             var name = $"Sm{og}[{k}]";
@@ -697,7 +742,7 @@ public static class CocyclesDFS
         {
             if (l0.Count + l1.Count == 51)
                 break;
-
+            
             if (l0.Any(g0 => g.IsIsomorphicTo(g0.Item1)))
                 continue;
 
@@ -720,6 +765,8 @@ public static class CocyclesDFS
         DisplayInfosGroups(l0.ToArray(), countStart: 0);
         DisplayInfosGroups(l1.ToArray(), countStart: l0.Count);
         DisplayInfosGroups(l2.ToArray(), countStart: l0.Count + l1.Count);
+
+        Console.Beep(); // ~50min
     }
 
     public static void AllGroupsOrder_12_24()
