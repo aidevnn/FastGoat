@@ -834,4 +834,34 @@ public static class CocyclesDFS
 
         Console.Beep();
     }
+    
+    public static void ExampleAll81Orders()
+    {
+        var c3 = (ConcreteGroup<ZnInt>)(new Cn(3));
+        var allOrder9 = BuildExtensions(new [] { (c3, c3) })
+            .OrderBy(e => e.Item1.GroupType)
+            .ThenByDescending(e => e.Item1.ElementsOrders.Values.Max())
+            .ThenBy(e => e.Item2).ToArray();
+
+        var allOrder27 = BuildExtensions(allOrder9.Select(e => (e.Item1, c3)).ToArray())
+            .OrderBy(e => e.Item1.GroupType)
+            .ThenByDescending(e => e.Item1.ElementsOrders.Values.Max())
+            .ThenBy(e => e.Item2).ToArray();
+
+        (allOrder27[2], allOrder27[3]) = (allOrder27[3], allOrder27[2]);
+        var allOrder81 = BuildExtensions(allOrder27.Select(e => (e.Item1, c3)).ToArray())
+            .Take(15)
+            .OrderBy(e => e.Item1.GroupType)
+            .ThenByDescending(e => e.Item1.ElementsOrders.Values.Max())
+            .ThenBy(e => e.Item2).ToArray();
+
+        Console.Clear();
+
+        DisplayInfosGroups(allOrder9);
+        DisplayInfosGroups(allOrder27);
+        DisplayInfosGroups(allOrder81);
+
+        Console.Beep(); // ~30min
+    }
+
 }
