@@ -36,5 +36,12 @@ public readonly struct AbelianDirectSum<T> where T : struct, IElt<T>
     }
 
     public Ep<ZnInt> GEltToCan(T g) => ToCanonic[g];
+
+    public Dictionary<T, ZnInt> GEltToCanMap(T g)
+    {
+        var decomp = Decomp.ToArray();
+        return ToCanonic[g].Ei.Select((ei, k) => (ei, k)).ToDictionary(a => decomp[a.k].g, a => a.ei);
+    }
+
     public T CanToGElt(Ep<ZnInt> z) => FromCanonic[z];
 }
