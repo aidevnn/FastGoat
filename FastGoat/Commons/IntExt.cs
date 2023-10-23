@@ -723,7 +723,7 @@ public static class IntExt
     /// <returns>The least common multiple of the integers in the array.</returns>
     public static int Lcm(int[] arr)
     {
-        return arr.Aggregate((a, b) => a * b) / Gcd(arr);
+        return arr.Length == 1 ? arr[0] : arr.Aggregate((a, b) => a * b) / Gcd(arr);
     }
 
     /// <summary>
