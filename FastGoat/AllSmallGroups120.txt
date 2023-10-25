@@ -1,4 +1,4 @@
-gap> for k in [2..120] do
+gap> for k in [2..127] do
 > asm:= AllSmallGroups(k);
 > Print("Order=", k, " Count=", Size(asm), "\n");
 > i:=1;
@@ -1482,3 +1482,48 @@ No : 44, Name : C2 x C6 x D10
 No : 45, Name : C2 x C10 x S3
 No : 46, Name : C2 x C2 x D30
 No : 47, Name : C30 x C2 x C2
+
+Order=121 Count=2
+No : 1, Name : C121
+No : 2, Name : C11 x C11
+
+Order=122 Count=2
+No : 1, Name : D122
+No : 2, Name : C122
+
+Order=123 Count=1
+No : 1, Name : C123
+
+Order=124 Count=4
+No : 1, Name : C31 : C4
+No : 2, Name : C124
+No : 3, Name : D124
+No : 4, Name : C62 x C2
+
+Order=125 Count=5
+No : 1, Name : C125
+No : 2, Name : C25 x C5
+No : 3, Name : (C5 x C5) : C5
+No : 4, Name : C25 : C5
+No : 5, Name : C5 x C5 x C5
+
+Order=126 Count=16
+No : 1, Name : C7 : C18
+No : 2, Name : C2 x (C7 : C9)
+No : 3, Name : C7 x D18
+No : 4, Name : C9 x D14
+No : 5, Name : D126
+No : 6, Name : C126
+No : 7, Name : C3 x (C7 : C6)
+No : 8, Name : S3 x (C7 : C3)
+No : 9, Name : C7 : (C3 x S3)
+No : 10, Name : C6 x (C7 : C3)
+No : 11, Name : C3 x C3 x D14
+No : 12, Name : C21 x S3
+No : 13, Name : C3 x D42
+No : 14, Name : C7 x ((C3 x C3) : C2)
+No : 15, Name : (C3 x C3) : D14
+No : 16, Name : C42 x C3
+
+Order=127 Count=1
+No : 1, Name : C127
