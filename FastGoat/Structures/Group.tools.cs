@@ -647,8 +647,8 @@ public static partial class Group
             var p = g0.ElementsOrders.OrderBy(e => e.Key).MaxBy(e => e.Value);
             var h = Generate($"C{p.Value}", g0, p.Key);
             var k = g0.Over(h, "K");
-            var injCan = AllMorphisms(k, gr, MorphismType.Isomorphism).First(iso => ng.SetEquals(iso.Image().Intersect(h)));
-            g0 = Generate($"G{step++}", gr, injCan.Image().ToArray());
+            var injCan = AllMorphisms(k, g0, MorphismType.Isomorphism).First(iso => ng.SetEquals(iso.Image().Intersect(h)));
+            g0 = Generate($"G{step++}", g0, injCan.Image().ToArray());
             facts.Add((p.Key, p.Value));
         }
 
