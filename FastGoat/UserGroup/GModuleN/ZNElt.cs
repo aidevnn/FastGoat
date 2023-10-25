@@ -4,8 +4,6 @@ using FastGoat.Structures.CartesianProduct;
 using FastGoat.Structures.GenericGroup;
 using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup.Integers;
-using FqPoly = FastGoat.Structures.VecSpace.Polynomial<FastGoat.Structures.VecSpace.EPoly<FastGoat.UserGroup.Integers.ZnInt>,
-        FastGoat.Structures.VecSpace.Xi>;
 
 namespace FastGoat.UserGroup.GModuleN;
 
@@ -15,25 +13,23 @@ public readonly struct ZNElt<Tn, Tg> : IElt<ZNElt<Tn, Tg>>
 {
     public AbelianDirectSum<Tn> Nab { get; }
     public ConcreteGroup<Tn> N => Nab.Ab;
-    public Dictionary<Tn, FqPoly> Coefs { get; }
+    public Dictionary<Tn, Polynomial<ZnInt, Xi>> Coefs { get; }
     public Indeterminates<Xi> Indeterminates { get; }
     public MapElt<Tg, Automorphism<Tn>> L { get; }
 
-    public ZNElt(EPoly<ZnInt> scalar, Indeterminates<Xi> ind, AbelianDirectSum<Tn> N0, MapElt<Tg, Automorphism<Tn>> L0)
+    public ZNElt(Indeterminates<Xi> ind, AbelianDirectSum<Tn> N0, MapElt<Tg, Automorphism<Tn>> L0)
     {
         (Nab, L) = (N0, L0);
         Indeterminates = ind;
-        KZero = scalar.Zero;
         var zero = Zero;
         Coefs = Nab.Decomp.ToDictionary(e => e.g, _ => zero);
         Hash = (N, ind).GetHashCode();
     }
 
-    public ZNElt(EPoly<ZnInt> scalar, Indeterminates<Xi> ind, AbelianDirectSum<Tn> N0, MapElt<Tg, Automorphism<Tn>> L0, Xi[] xs)
+    public ZNElt(Indeterminates<Xi> ind, AbelianDirectSum<Tn> N0, MapElt<Tg, Automorphism<Tn>> L0, Xi[] xs)
     {
         (Nab, L) = (N0, L0);
         Indeterminates = ind;
-        KZero = scalar.Zero;
         var zero = Zero;
         if (xs.Length != Nab.Decomp.Count)
             throw new();
@@ -41,23 +37,20 @@ public readonly struct ZNElt<Tn, Tg> : IElt<ZNElt<Tn, Tg>>
         Coefs = Nab.Decomp.Zip(xs.Select(x => zero.X(x))).ToDictionary(e => e.First.g, e => e.Second);
         Hash = (N, ind).GetHashCode();
     }
-
-
-    public ZNElt(EPoly<ZnInt> scalar, Indeterminates<Xi> ind, AbelianDirectSum<Tn> N0, MapElt<Tg, Automorphism<Tn>> L0, Dictionary<Tn, FqPoly> map)
+    
+    public ZNElt(Indeterminates<Xi> ind, AbelianDirectSum<Tn> N0, MapElt<Tg, Automorphism<Tn>> L0, Dictionary<Tn, Polynomial<ZnInt, Xi>> map)
     {
         (Nab, L) = (N0, L0);
         Coefs = new(map);
         Indeterminates = ind;
-        KZero = scalar.Zero;
         Hash = (N, ind).GetHashCode();
     }
 
-    public EPoly<ZnInt> KZero { get; }
-
-    public FqPoly Zero => new(Indeterminates, KZero);
+    public Polynomial<ZnInt, Xi> Zero => new(Indeterminates, new ZnInt(0, 0));
+    public ZNElt<Tn, Tg> ZNZero => new(Indeterminates, Nab, L);
 
     public int Hash { get; }
-    public FqPoly this[Tn n] => Coefs.TryGetValue(n, out var e) ? e : Zero;
+    public Polynomial<ZnInt, Xi> this[Tn n] => Coefs.TryGetValue(n, out var e) ? e : Zero;
 
     public bool Equals(ZNElt<Tn, Tg> other)
     {
@@ -75,28 +68,28 @@ public readonly struct ZNElt<Tn, Tg> : IElt<ZNElt<Tn, Tg>>
     {
         var elt = this;
         var map = Nab.Decomp.Select(e => (e, elt[e.g] + n[e.g])).ToDictionary(e => e.e.g, e => e.Item2);
-        return new(KZero, Indeterminates, Nab, L, map);
+        return new(Indeterminates, Nab, L, map);
     }
 
     public ZNElt<Tn, Tg> Sub(ZNElt<Tn, Tg> n)
     {
         var elt = this;
         var map = Nab.Decomp.Select(e => (e, elt[e.g] - n[e.g])).ToDictionary(e => e.e.g, e => e.Item2);
-        return new(KZero, Indeterminates, Nab, L, map);
+        return new(Indeterminates, Nab, L, map);
     }
 
     public ZNElt<Tn, Tg> Opp()
     {
         var elt = this;
         var map = Nab.Decomp.Select(e => (e, -elt[e.g])).ToDictionary(e => e.e.g, e => e.Item2);
-        return new(KZero, Indeterminates, Nab, L, map);
+        return new(Indeterminates, Nab, L, map);
     }
 
     public ZNElt<Tn, Tg> Act(int k)
     {
         var elt = this;
         var map = Nab.Decomp.Select(e => (e, k * elt[e.g])).ToDictionary(e => e.e.g, e => e.Item2);
-        return new(KZero, Indeterminates, Nab, L, map);
+        return new(Indeterminates, Nab, L, map);
     }
 
     public ZNElt<Tn, Tg> Act(Tg g)
@@ -118,12 +111,25 @@ public readonly struct ZNElt<Tn, Tg> : IElt<ZNElt<Tn, Tg>>
             kv => arr.Select(a => coefs[a.Key] * a.Value[kv.Key].K).Aggregate((e0, e1) => e0 + e1)
         );
 
-        return new(KZero, Indeterminates, Nab, L, map0);
+        return new(Indeterminates, Nab, L, map0);
     }
 
     public bool IsZero() => Coefs.Values.All(e => e.IsZero() || e.LeadingDetails.lc.IsZero());
     public bool IsKnown() => Coefs.Values.All(e => e.IsZero() || e.LeadingDetails.lm.Degree == 0);
 
+    public ZNElt<Tn, Tg> Substitue(Polynomial<ZnInt, Xi> P, Xi xi)
+    {
+        var map = Coefs.ToDictionary(e => e.Key, e => e.Value.Substitute(P, xi));
+        return new(Indeterminates, Nab, L, map);
+    }
+
+    public ZNElt<Tn, Tg> Simplify()
+    {
+        var z = this;
+        var map = Nab.Decomp.ToDictionary(e => e.g, e => Mod(z[e.g], e.o));
+        return new(z.Indeterminates, z.Nab, z.L, map);
+    }
+    
     public override int GetHashCode() => Hash;
 
     public override string ToString()
@@ -133,6 +139,14 @@ public readonly struct ZNElt<Tn, Tg> : IElt<ZNElt<Tn, Tg>>
 
         var coefs = Coefs.OrderBy(e => e.Key).Where(e => !e.Value.IsZero()).Select(e => $"({e.Value})*{e.Key}");
         return coefs.Glue(" + ");
+    }
+
+    public static Polynomial<ZnInt, Xi> Mod(Polynomial<ZnInt, Xi> P, int o)
+    {
+        var coefs = P.Coefs.Select(e => (e.Key, IntExt.AmodP(e.Value.K, o)))
+            .Where(e => e.Item2 != 0)
+            .ToDictionary(e => e.Key, e => new ZnInt(0, e.Item2));
+        return new(P.Indeterminates, new ZnInt(0, 0), new(coefs));
     }
 
     public static ZNElt<Tn, Tg> operator +(ZNElt<Tn, Tg> a, ZNElt<Tn, Tg> b) => a.Add(b);
