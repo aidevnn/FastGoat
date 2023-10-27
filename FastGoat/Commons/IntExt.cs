@@ -380,8 +380,11 @@ public static class IntExt
     /// <returns>The greatest common divisor of the two integers.</returns>
     public static int Gcd(int a, int b)
     {
-        if (b == 0)
-            return a < 0 ? -a : a;
+        if (a == 0 && b == 0)
+            throw new($"Gcd(0,0) dont exists");
+
+        if (a * b == 0)
+            return (a + b) < 0 ? -(a + b) : a + b;
 
         var q = a / b;
         var r = a - b * q;
