@@ -22,7 +22,7 @@ public readonly struct ZNElt<Tn, Tg> : IElt<ZNElt<Tn, Tg>>
         (Nab, L) = (N0, L0);
         Indeterminates = ind;
         var zero = Zero;
-        Coefs = Nab.Decomp.ToDictionary(e => e.g, _ => zero);
+        Coefs = Nab.DecompElementary.ToDictionary(e => e.g, _ => zero);
         Hash = (N, ind).GetHashCode();
     }
 
@@ -31,10 +31,10 @@ public readonly struct ZNElt<Tn, Tg> : IElt<ZNElt<Tn, Tg>>
         (Nab, L) = (N0, L0);
         Indeterminates = ind;
         var zero = Zero;
-        if (xs.Length != Nab.Decomp.Count)
+        if (xs.Length != Nab.DecompElementary.Count)
             throw new();
 
-        Coefs = Nab.Decomp.Zip(xs.Select(x => zero.X(x))).ToDictionary(e => e.First.g, e => e.Second);
+        Coefs = Nab.DecompElementary.Zip(xs.Select(x => zero.X(x))).ToDictionary(e => e.First.g, e => e.Second);
         Hash = (N, ind).GetHashCode();
     }
     
@@ -55,40 +55,40 @@ public readonly struct ZNElt<Tn, Tg> : IElt<ZNElt<Tn, Tg>>
     public bool Equals(ZNElt<Tn, Tg> other)
     {
         var elt = this;
-        return Nab.Decomp.All(n => other[n.g].Equals(elt[n.g]));
+        return Nab.DecompElementary.All(n => other[n.g].Equals(elt[n.g]));
     }
 
     public int CompareTo(ZNElt<Tn, Tg> other)
     {
         var elt = this;
-        return Nab.Decomp.Select(n => elt[n.g].CompareTo(other[n.g])).FirstOrDefault(k => k != 0, 0);
+        return Nab.DecompElementary.Select(n => elt[n.g].CompareTo(other[n.g])).FirstOrDefault(k => k != 0, 0);
     }
 
     public ZNElt<Tn, Tg> Add(ZNElt<Tn, Tg> n)
     {
         var elt = this;
-        var map = Nab.Decomp.Select(e => (e, elt[e.g] + n[e.g])).ToDictionary(e => e.e.g, e => e.Item2);
+        var map = Nab.DecompElementary.Select(e => (e, elt[e.g] + n[e.g])).ToDictionary(e => e.e.g, e => e.Item2);
         return new(Indeterminates, Nab, L, map);
     }
 
     public ZNElt<Tn, Tg> Sub(ZNElt<Tn, Tg> n)
     {
         var elt = this;
-        var map = Nab.Decomp.Select(e => (e, elt[e.g] - n[e.g])).ToDictionary(e => e.e.g, e => e.Item2);
+        var map = Nab.DecompElementary.Select(e => (e, elt[e.g] - n[e.g])).ToDictionary(e => e.e.g, e => e.Item2);
         return new(Indeterminates, Nab, L, map);
     }
 
     public ZNElt<Tn, Tg> Opp()
     {
         var elt = this;
-        var map = Nab.Decomp.Select(e => (e, -elt[e.g])).ToDictionary(e => e.e.g, e => e.Item2);
+        var map = Nab.DecompElementary.Select(e => (e, -elt[e.g])).ToDictionary(e => e.e.g, e => e.Item2);
         return new(Indeterminates, Nab, L, map);
     }
 
     public ZNElt<Tn, Tg> Act(int k)
     {
         var elt = this;
-        var map = Nab.Decomp.Select(e => (e, k * elt[e.g])).ToDictionary(e => e.e.g, e => e.Item2);
+        var map = Nab.DecompElementary.Select(e => (e, k * elt[e.g])).ToDictionary(e => e.e.g, e => e.Item2);
         return new(Indeterminates, Nab, L, map);
     }
 
@@ -105,7 +105,7 @@ public readonly struct ZNElt<Tn, Tg> : IElt<ZNElt<Tn, Tg>>
         // arr
         // a->y1*a+y2*b
         // b->z1*a+z2*b
-        var arr = Nab.Decomp.Select(e => (e.g, Nab0.GEltToCanMap(L0[g][e.g]))).ToDictionary(a => a.g, a => a.Item2);
+        var arr = Nab.DecompElementary.Select(e => (e.g, Nab0.GEltToElemMap(L0[g][e.g]))).ToDictionary(a => a.g, a => a.Item2);
         var map0 = coefs.ToDictionary(
             kv => kv.Key,
             kv => arr.Select(a => coefs[a.Key] * a.Value[kv.Key].K).Aggregate((e0, e1) => e0 + e1)
@@ -117,16 +117,35 @@ public readonly struct ZNElt<Tn, Tg> : IElt<ZNElt<Tn, Tg>>
     public bool IsZero() => Coefs.Values.All(e => e.IsZero() || e.LeadingDetails.lc.IsZero());
     public bool IsKnown() => Coefs.Values.All(e => e.IsZero() || e.LeadingDetails.lm.Degree == 0);
 
-    public ZNElt<Tn, Tg> Substitue(Polynomial<ZnInt, Xi> P, Xi xi)
+    public ZNElt<Tn, Tg> Substitute(Polynomial<ZnInt, Xi> P, Xi xi)
     {
         var map = Coefs.ToDictionary(e => e.Key, e => e.Value.Substitute(P, xi));
         return new(Indeterminates, Nab, L, map);
     }
 
+    public ZNElt<Tn, Tg> Substitute((Polynomial<ZnInt, Xi> P, Xi xi)[] subs)
+    {
+        var z0 = this;
+        return subs.Aggregate(z0, (acc, zi) => acc.Substitute(zi.P, zi.xi)).Simplify();
+    }
+
+    public ZNElt<Tn, Tg> SubstituteMod(Polynomial<ZnInt, Xi> x, Polynomial<ZnInt, Xi> s)
+    {
+        var dMap = Nab.DecompElementaryMap;
+        var map = Coefs.ToDictionary(e => e.Key, e => e.Value.SubstituteMod(dMap[e.Key], x, s));
+        return new(Indeterminates, Nab, L, map);
+    }
+
+    public ZNElt<Tn, Tg> SubstituteMod((Polynomial<ZnInt, Xi> x, Polynomial<ZnInt, Xi> s)[] subs)
+    {
+        var z0 = this;
+        return subs.Aggregate(z0, (acc, zi) => acc.SubstituteMod(zi.x, zi.s)).Simplify();
+    }
+
     public ZNElt<Tn, Tg> Simplify()
     {
         var z = this;
-        var map = Nab.Decomp.ToDictionary(e => e.g, e => Mod(z[e.g], e.o));
+        var map = Nab.DecompElementary.ToDictionary(e => e.g, e => z[e.g].Mod(e.o));
         return new(z.Indeterminates, z.Nab, z.L, map);
     }
     
@@ -139,14 +158,6 @@ public readonly struct ZNElt<Tn, Tg> : IElt<ZNElt<Tn, Tg>>
 
         var coefs = Coefs.OrderBy(e => e.Key).Where(e => !e.Value.IsZero()).Select(e => $"({e.Value})*{e.Key}");
         return coefs.Glue(" + ");
-    }
-
-    public static Polynomial<ZnInt, Xi> Mod(Polynomial<ZnInt, Xi> P, int o)
-    {
-        var coefs = P.Coefs.Select(e => (e.Key, IntExt.AmodP(e.Value.K, o)))
-            .Where(e => e.Item2 != 0)
-            .ToDictionary(e => e.Key, e => new ZnInt(0, e.Item2));
-        return new(P.Indeterminates, new ZnInt(0, 0), new(coefs));
     }
 
     public static ZNElt<Tn, Tg> operator +(ZNElt<Tn, Tg> a, ZNElt<Tn, Tg> b) => a.Add(b);
