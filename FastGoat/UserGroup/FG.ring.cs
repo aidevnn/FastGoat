@@ -369,6 +369,54 @@ public static partial class FG
         return new GLn<K>(name, n, scalar);
     }
 
+    public static Polynomial<ZnInt, T> ToZnInt<T>(this Polynomial<ZnInt, T> P, int mod) where T : struct, IElt<T>
+    {
+        return new Polynomial<ZnInt, T>(P.Indeterminates, ZnInt.ZnZero(mod),
+            new(P.Coefs.ToDictionary(kv => kv.Key, kv => new ZnInt(mod, kv.Value.K))));
+    }
+
+    public static Polynomial<ZnInt, Xi> Mod(this Polynomial<ZnInt, Xi> P, int mod)
+    {
+        var coefs = P.Coefs.Select(e => (e.Key, IntExt.AmodP(e.Value.K, mod)))
+            .Where(e => e.Item2 != 0)
+            .ToDictionary(e => e.Key, e => new ZnInt(P.P, e.Item2));
+        return new(P.Indeterminates, new ZnInt(P.P, 0), new(coefs));
+    }
+    
+    public static Polynomial<ZnInt, Xi> SubstituteMod(this Polynomial<ZnInt, Xi> P, int mod, 
+        Polynomial<ZnInt, Xi> x, Polynomial<ZnInt, Xi> s)
+    {
+        if (mod < 2)
+            throw new($"Mod = {mod} must be greater or equal 2");
+        
+        if (s.IsZero())
+            return P.Substitute(P.KZero, x.ExtractIndeterminate);
+        
+        var xi = x.ExtractMonom;
+        var (k0, k1) = (P[xi], x[xi]);
+        if (k0.IsZero())
+            return P;
+
+        var (m0, m1) = (new ZnInt(mod, k0.K), new ZnInt(mod, k1.K));
+        var r = mod.Range().FirstOrDefault(i => m0.Equals(i * m1), -1);
+        if (r == -1)
+        {
+            Console.WriteLine("Problem");
+            throw new($"Substitution Problem mod={mod} P = {P}, x={x} and s={s}");
+        }
+
+        var acc = P.Zero;
+        foreach (var (mn, c) in P.Coefs)
+        {
+            if (!mn.Equals(xi))
+                acc += new Polynomial<ZnInt, Xi>(mn, c);
+            else
+                acc += r * s;
+        }
+
+        return acc;
+    }
+
     public static EPolynomial<Rational>[] NumberFieldQ(Polynomial<Rational, Xi>[] basis)
     {
         var e0 = basis[0];
