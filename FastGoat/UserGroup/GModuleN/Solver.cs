@@ -78,7 +78,7 @@ public static class ZNSolver
         return (cr, cnext);
     }
 
-    public static (SysReduction sred, CrMap<Tn, Tg> mapNext) SolveSystem<Tn, Tg>(CrMap<Tn, Tg> map, Queue<Xi> qis)
+    public static (SysReduction sred, CrMap<Tn, Tg> mapNext) SysSolveStep<Tn, Tg>(CrMap<Tn, Tg> map, Queue<Xi> qis)
         where Tg : struct, IElt<Tg>
         where Tn : struct, IElt<Tn>
     {
@@ -93,7 +93,7 @@ public static class ZNSolver
         if (sys1.Length == 0)
         {
             var a0 = pZero.Indeterminates.First();
-            return (new(pZero, pZero.X(a0), a0, pZero, 0), map);
+            return (new(pZero, pZero.X(a0), 1, a0, pZero, 0), map);
         }
 
         var (eq, mod, invs, ords, lt, lc) =  sys1.First();
@@ -109,7 +109,7 @@ public static class ZNSolver
             var expr = lc * X;
             var sub = (X - ki * eq).Mod(mod) + mod * eq.X(xq);
             var map0 = map.ToDictionary(e => e.Key, e => e.Value.Substitute(sub, xi).Simplify());
-            return (new(eq, expr, xi, sub, mod), new(map0));
+            return (new(eq, expr, ords[lc.K], xi, sub, mod), new(map0));
         }
         else
         {
@@ -131,7 +131,7 @@ public static class ZNSolver
             // Console.WriteLine(new { eq, eq1, eq2, expr, xi, sub });
 
             var map0 = map.ToDictionary(e => e.Key, e => e.Value.Substitute(sub, xi).Simplify());
-            return (new(eq, expr, xi, sub, mod), new(map0));
+            return (new(eq, expr, ords[lc0.K], xi, sub, mod), new(map0));
         }
     }
 
@@ -171,25 +171,65 @@ public static class ZNSolver
             .ToArray();
     }
 
-    public static int NbPossibilities<Tn, Tg>(CrMap<Tn, Tg> map)
+    public static CrMap<Tn, Tg> SysRewrite<Tn, Tg>(CrMap<Tn, Tg> map)
         where Tg : struct, IElt<Tg>
         where Tn : struct, IElt<Tn>
     {
-        var prod = 1;
-        var map0 = new CrMap<Tn, Tg>(map.ToDictionary(e => e.Key, e => e.Value));
-        while (map0.Any(e => !e.Value.IsZero()))
+        var map0 = map.ToDictionary(e => e.Key, e => e.Value);
+        var mapElt0 = map.First();
+        var zero = mapElt0.Value.Zero;
+        var xis = zero.Indeterminates.ToArray();
+        var subsMns = new Queue<Monom<Xi>>(xis.Select(xi => new Monom<Xi>(zero.Indeterminates, xi)).OrderDescending());
+        var eqXis = map0.SelectMany(e => e.Value.Coefs.SelectMany(c => c.Value.ExtractAllIndeterminates)).Distinct().ToArray();
+        var eqMns = new Queue<Monom<Xi>>(eqXis.Select(xi => new Monom<Xi>(zero.Indeterminates, xi)).OrderDescending());
+        while (eqMns.Count != 0)
         {
-            var sys = SysEquations(map0);
-            if (sys.Length == 0)
-                break;
-
-            var (eq, mod, invs, ords, lt, lc) = sys.First();
-            prod *= ords[lc.K];
-            var xi = lt.ContentIndeterminates.First();
-            map0 = new(map0.ToDictionary(e => e.Key, e => e.Value.Substitute(eq.Zero, xi).Simplify()));
+            var em = eqMns.Dequeue();
+            var sm = subsMns.Peek();
+            if (em.Equals(sm))
+                subsMns.Dequeue();
+            else if (em.CompareTo(sm) == -1)
+            {
+                subsMns.Dequeue();
+                var sxi = sm.ContentIndeterminates.First();
+                var sX = zero.X(sxi);
+                var exi = em.ContentIndeterminates.First();
+                map0 = map0.ToDictionary(e => e.Key, e => e.Value.Substitute(sX, exi).Simplify());
+            }
         }
 
-        return prod;
+        return new(map0);
+    }
+    
+    public static (int nbPos, CrMap<Tn, Tg>) SysReduction<Tn, Tg>(CrMap<Tn, Tg> c2)
+        where Tg : struct, IElt<Tg>
+        where Tn : struct, IElt<Tn>
+    {
+        var map0 = SysRewrite(c2);
+        var mapC2 = new CrMap<Tn, Tg>(map0.ToDictionary(e => e.Key, e => e.Value));
+        var nbPos = 1;
+        var listReds = new List<SysReduction>();
+        var qis = new Queue<Xi>(mapC2.Values.First().Indeterminates.Where(xi => xi.xi.Contains('q')));
+        while (mapC2.Values.Any(z => !z.IsZero()))
+        {
+            var (sred, mapNext) = SysSolveStep(mapC2, qis);
+            listReds.Add(sred);
+            var p0 = sred.expr;
+            nbPos *= sred.order;
+            Console.WriteLine($"Variable:{p0} Nb Possibilities:{sred.order} Total:{nbPos}");
+            mapC2 = mapNext;
+        }
+
+        var mapElt0 = map0.First();
+        var zero = mapElt0.Value.Zero;
+        Console.WriteLine();
+        listReds.Println("Step by step");
+        Console.WriteLine($"## Solutions Size : {nbPos}");
+        var ind = zero.Indeterminates;
+        var subs = ind.Except(listReds.Select(s => s.expr.ExtractIndeterminate)).Select(xi => (zero, xi)).ToArray();
+        var map1 = map0.ToDictionary(e => e.Key, e => e.Value.Substitute(subs));
+        var map2 = SysRewrite(new CrMap<Tn, Tg>(map1));
+        return (nbPos, map2);
     }
 
     public static (int nbPos, CrMap<Tn, Tg>) Reduce2Coboundaries<Tn, Tg>(ConcreteGroup<Tn> N, ConcreteGroup<Tg> G,
@@ -199,31 +239,10 @@ public static class ZNSolver
     {
         Console.WriteLine($"2Coboundaries {N.ShortName} and {G.ShortName}");
         var (c1, c2) = LRCochain(N, G, L, r: 1);
-
-        var mapC2 = new CrMap<Tn, Tg>(c2.ToDictionary(e => e.Key, e => e.Value));
-        var listReds = new List<SysReduction>();
-        var qis = new Queue<Xi>(mapC2.Values.First().Indeterminates.Where(xi => xi.xi.Contains('q')));
-        while (mapC2.Values.Any(z => !z.IsZero()))
-        {
-            var (sred, mapNext) = SolveSystem(mapC2, qis);
-            listReds.Add(sred);
-            mapC2 = mapNext;
-        }
-
-        var mapElt0 = mapC2.First();
-        var Nab = mapElt0.Value.Nab;
-        Console.WriteLine();
-        listReds.Println("Step by step");
-        var zero = mapElt0.Value.Zero;
-        var ind = zero.Indeterminates;
-        var subs = ind.Except(listReds.Select(s => s.xi)).Select(xi => (zero, xi)).ToArray();
-        var map0 = c2.ToDictionary(e => e.Key, e => e.Value.Substitute(subs));
-        map0.OrderKeys(G).Println($"All 2Coboundaries with Z(N)~Z({Nab.AbElementaries})");
-        var nbPos = NbPossibilities(new CrMap<Tn, Tg>(map0));
-        Console.WriteLine($"## Coset Size:{nbPos,6}");
-        Console.WriteLine();
-        
-        return (nbPos, new CrMap<Tn, Tg>(map0));
+        var Nab = c2.Values.First().Nab;
+        var (nb, map) = SysReduction(c2);
+        map.OrderKeys(G).Println($"All 2Coboundaries with Z(N)~Z({Nab.AbElementaries})");
+        return (nb, map);
     }
 
     public static (int nbPos, CrMap<Tn, Tg> map1) Reduce2Cocycles<Tn, Tg>(ConcreteGroup<Tn> N, ConcreteGroup<Tg> G,
@@ -240,7 +259,7 @@ public static class ZNSolver
 
         while (mapC3.Values.Any(z => !z.IsZero()))
         {
-            var (sred, mapNext) = SolveSystem(mapC3, qis);
+            var (sred, mapNext) = SysSolveStep(mapC3, qis);
             listReds.Add(sred);
             mapC3 = mapNext;
         }
@@ -251,15 +270,11 @@ public static class ZNSolver
 
         var subs = listReds.Select(s => (s.substitutionExpr, s.xi)).ToArray();
         var map0 = c2.ToDictionary(e => e.Key, e => e.Value.Substitute(subs).Simplify());
-        map0.OrderKeys(G).Println($"All 2Cocycles with Z(N)~Z({Nab.AbElementaries})");
-        var nbPos = NbPossibilities(new CrMap<Tn, Tg>(map0));
-        Console.WriteLine($"## Total Sols:{nbPos,6}");
-        Console.WriteLine();
-        var map1 = new CrMap<Tn, Tg>(map0);
+        var (nb, map1) = SysReduction(new CrMap<Tn, Tg>(map0));
+        map1.OrderKeys(G).Println($"All 2Cocycles with Z(N)~Z({Nab.AbElementaries})");
         var cm = Dr(map1);
         if (!cm.IsZero())
             throw new("@@@@@@@@@@@@@@@@@@@@@@");
-
-        return (nbPos, map1);
+        return (nb, map1);
     }
 }
