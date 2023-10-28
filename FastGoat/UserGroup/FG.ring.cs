@@ -382,40 +382,6 @@ public static partial class FG
             .ToDictionary(e => e.Key, e => new ZnInt(P.P, e.Item2));
         return new(P.Indeterminates, new ZnInt(P.P, 0), new(coefs));
     }
-    
-    public static Polynomial<ZnInt, Xi> SubstituteMod(this Polynomial<ZnInt, Xi> P, int mod, 
-        Polynomial<ZnInt, Xi> x, Polynomial<ZnInt, Xi> s)
-    {
-        if (mod < 2)
-            throw new($"Mod = {mod} must be greater or equal 2");
-        
-        if (s.IsZero())
-            return P.Substitute(P.KZero, x.ExtractIndeterminate);
-        
-        var xi = x.ExtractMonom;
-        var (k0, k1) = (P[xi], x[xi]);
-        if (k0.IsZero())
-            return P;
-
-        var (m0, m1) = (new ZnInt(mod, k0.K), new ZnInt(mod, k1.K));
-        var r = mod.Range().FirstOrDefault(i => m0.Equals(i * m1), -1);
-        if (r == -1)
-        {
-            Console.WriteLine("Problem");
-            throw new($"Substitution Problem mod={mod} P = {P}, x={x} and s={s}");
-        }
-
-        var acc = P.Zero;
-        foreach (var (mn, c) in P.Coefs)
-        {
-            if (!mn.Equals(xi))
-                acc += new Polynomial<ZnInt, Xi>(mn, c);
-            else
-                acc += r * s;
-        }
-
-        return acc;
-    }
 
     public static EPolynomial<Rational>[] NumberFieldQ(Polynomial<Rational, Xi>[] basis)
     {

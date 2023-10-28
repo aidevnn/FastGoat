@@ -129,19 +129,6 @@ public readonly struct ZNElt<Tn, Tg> : IElt<ZNElt<Tn, Tg>>
         return subs.Aggregate(z0, (acc, zi) => acc.Substitute(zi.P, zi.xi)).Simplify();
     }
 
-    public ZNElt<Tn, Tg> SubstituteMod(Polynomial<ZnInt, Xi> x, Polynomial<ZnInt, Xi> s)
-    {
-        var dMap = Nab.DecompElementaryMap;
-        var map = Coefs.ToDictionary(e => e.Key, e => e.Value.SubstituteMod(dMap[e.Key], x, s));
-        return new(Indeterminates, Nab, L, map);
-    }
-
-    public ZNElt<Tn, Tg> SubstituteMod((Polynomial<ZnInt, Xi> x, Polynomial<ZnInt, Xi> s)[] subs)
-    {
-        var z0 = this;
-        return subs.Aggregate(z0, (acc, zi) => acc.SubstituteMod(zi.x, zi.s)).Simplify();
-    }
-
     public ZNElt<Tn, Tg> Simplify()
     {
         var z = this;
