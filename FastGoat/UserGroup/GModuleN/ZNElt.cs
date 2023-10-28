@@ -48,6 +48,7 @@ public readonly struct ZNElt<Tn, Tg> : IElt<ZNElt<Tn, Tg>>
 
     public Polynomial<ZnInt, Xi> Zero => new(Indeterminates, new ZnInt(0, 0));
     public ZNElt<Tn, Tg> ZNZero => new(Indeterminates, Nab, L);
+    public ConcreteGroup<Tg> G => L.Domain;
 
     public int Hash { get; }
     public Polynomial<ZnInt, Xi> this[Tn n] => Coefs.TryGetValue(n, out var e) ? e : Zero;
@@ -143,8 +144,11 @@ public readonly struct ZNElt<Tn, Tg> : IElt<ZNElt<Tn, Tg>>
         if (IsZero())
             return "0";
 
-        var coefs = Coefs.OrderBy(e => e.Key).Where(e => !e.Value.IsZero()).Select(e => $"({e.Value})*{e.Key}");
-        return coefs.Glue(" + ");
+        var coefs = Coefs;
+        return Nab.DecompElementary
+            .Where(e => !coefs[e.g].IsZero())
+            .Select(e => $"({coefs[e.g]})*{e.g}")
+            .Glue(" + ");
     }
 
     public static ZNElt<Tn, Tg> operator +(ZNElt<Tn, Tg> a, ZNElt<Tn, Tg> b) => a.Add(b);
