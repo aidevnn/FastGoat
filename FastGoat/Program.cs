@@ -39,71 +39,56 @@ void SolveTwoCohom<Tn, Tg>(ConcreteGroup<Tn> N, ConcreteGroup<Tg> G, bool detail
     {
         var L = op.ToMapElt(autN);
         var lbl = $"Lbl{i}/{ops.Count}";
-        var prod = LSolveTwoCohom(N, G, L, r: 1, lbl, details);
-        LSolveTwoCohom(N, G, L, r: 2, lbl, details);
+        Console.WriteLine($"############# {lbl,-12} #############");
+        var nbCobs = LSolveTwoCohom(N, G, L, r: 1);
+        var nbCocs = LSolveTwoCohom(N, G, L, r: 2);
+        Console.WriteLine($"#### {lbl} |B2|:{nbCobs} |Z2|:{nbCocs} |H2|:{nbCocs / nbCobs}");
+        Console.WriteLine();
         
         var max = BigInteger.Pow(N.Count(), G.Count() - 1);
         if (details && max < 7000)
         {
             var all = CocyclesDFS.TwoCocycles(N, G, L, lbl);
             all.AllTwoCocycles();
-            if (all.AllCoboundaries.Count != prod)
+            if (all.AllCoboundaries.Count != nbCobs || all.AllCosets.Sum(c => c.Value.Count) != nbCocs)
                 throw new("###############");
-            
+
             // foreach (var c in all.AllCoboundaries)
             //     c.Map.OrderKeys(G).Println("Coboundary");
-            
+
             // foreach (var c in all.AllCosets.Values.SelectMany(vs => vs))
             //     c.Map.OrderKeys(G).Println("Cocycle");
         }
     }
 }
 
-int LSolveTwoCohom<Tn, Tg>(ConcreteGroup<Tn> N, ConcreteGroup<Tg> G, MapElt<Tg, Automorphism<Tn>> L, int r, string lbl = "test",
-    bool details = false)
+int LSolveTwoCohom<Tn, Tg>(ConcreteGroup<Tn> N, ConcreteGroup<Tg> G, MapElt<Tg, Automorphism<Tn>> L, int r)
     where Tg : struct, IElt<Tg>
     where Tn : struct, IElt<Tn>
 {
     var (cr, cnext) = ZNSolver.LRCochain(N, G, L, r);
     // var Cnextnext = Dr(Cnext); // always zero
 
-    Console.WriteLine($"############# {lbl,-12} #############");
     cr.OrderKeys(G).Println($"C{r}");
     cnext.OrderKeys(G).Println($"C{r + 1}");
-    // Cnextnext.OrderKeys(G).Println($"C{r + 2}");
+    // Cnextnext.OrderKeys(G).Println($"C{r + 2}"); 
 
     if (r == 1)
     {
-        var (prod, map) = ZNSolver.Reduce2Coboundaries(N, G, L);
-        map.OrderKeys(G).Println("All 2Coboundaries");
-        return prod;
+        var (nb2Cobs, _) = ZNSolver.Reduce2Coboundaries(N, G, L);
+        return nb2Cobs;
     }
 
     if (r == 2)
     {
-        ZNSolver.Reduce2Cocycles(N, G, L);
-        return -1;
+        var (nb2Cocs, _) = ZNSolver.Reduce2Cocycles(N, G, L);
+        return nb2Cocs;
     }
 
     return -1;
 }
 
 {
-    var (N, G) = (FG.Abelian(2, 2), FG.Abelian(2, 2));
-    // RCochain(N, G, details: true);
-    // RCochain(N, G, details: true);
+    var (N, G) = (FG.Abelian(4, 4), FG.Abelian(2));
     SolveTwoCohom(N, G, details: true);
 }
-
-// {
-//     var N = FG.Abelian(4, 6);
-//     var Nab = new AbelianDirectSum<Ep<ZnInt>>(N);
-//     DisplayGroup.HeadElements(N);
-//     DisplayGroup.HeadElements(Nab.AbCanonic);
-//     DisplayGroup.HeadElements(Nab.AbElementaries);
-//     
-//     foreach (var n in N.Order())
-//     {
-//         Console.WriteLine($"n = {n} --Can--> {Nab.GEltToCan(n)} --Elem--> {Nab.GEltToElem(n)}");
-//     }
-// }
