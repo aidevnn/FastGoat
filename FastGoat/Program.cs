@@ -58,6 +58,11 @@ void SolveTwoCohom<Tn, Tg>(ConcreteGroup<Tn> N, ConcreteGroup<Tg> G, bool detail
 }
 
 {
+    var (N, G) = (FG.Abelian(2), FG.Abelian(2));
+    SolveTwoCohom(N, G, details: true);
+}
+
+{
     var (N, G) = (FG.Abelian(4), FG.Abelian(2));
     SolveTwoCohom(N, G, details: true);
 }
@@ -88,6 +93,16 @@ void SolveTwoCohom<Tn, Tg>(ConcreteGroup<Tn> N, ConcreteGroup<Tg> G, bool detail
 }
 
 {
+    var (N, G) = (FG.Abelian(2, 8), FG.Abelian(2));
+    SolveTwoCohom(N, G, details: true);
+}
+
+{
+    var (N, G) = (FG.Abelian(16), FG.Abelian(2));
+    SolveTwoCohom(N, G, details: true);
+}
+
+{
     var (N, G) = (FG.Abelian(4), FG.Abelian(2, 2));
     SolveTwoCohom(N, G, details: true);
 }
@@ -114,6 +129,21 @@ void SolveTwoCohom<Tn, Tg>(ConcreteGroup<Tn> N, ConcreteGroup<Tg> G, bool detail
 
 {
     var (N, G) = (FG.Abelian(3, 3), FG.Abelian(3));
+    SolveTwoCohom(N, G, details: true);
+}
+
+{
+    var (N, G) = (FG.Abelian(8), FG.Abelian(4));
+    SolveTwoCohom(N, G, details: true);
+}
+
+{
+    var (N, G) = (FG.Abelian(2, 4), FG.Abelian(4));
+    SolveTwoCohom(N, G, details: true);
+}
+
+{
+    var (N, G) = (FG.Abelian(8), FG.Abelian(2, 2));
     SolveTwoCohom(N, G, details: true);
 }
 
