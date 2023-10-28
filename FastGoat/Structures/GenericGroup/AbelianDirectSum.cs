@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using FastGoat.Commons;
 using FastGoat.Structures.CartesianProduct;
 using FastGoat.UserGroup;
@@ -55,7 +56,21 @@ public readonly struct AbelianDirectSum<T> where T : struct, IElt<T>
         var isoMap2 = Group.IsomorphismMap(Ab, AbElementaries, pMap2);
         ToElementaries = new(isoMap2);
         FromElementaries = isoMap2.ToDictionary(e => e.Value, e => e.Key);
+
+        ElemOrders = new(DecompElementary.Select(e => e.o).Distinct().ToDictionary(
+            e => e,
+            e => new ReadOnlyDictionary<int, int>((new Cn(e)).ElementsOrders.ToDictionary(a => a.Key.K, a => a.Value))
+        ));
+
+        ElemInvertible = new(DecompElementary.Select(e => e.o).Distinct().ToDictionary(
+            e => e,
+            e => new ReadOnlyDictionary<int, int>(IntExt.UnInvertible(e))
+        ));
     }
+
+    public ReadOnlyDictionary<int, ReadOnlyDictionary<int, int>> ElemInvertible { get; }
+
+    public ReadOnlyDictionary<int, ReadOnlyDictionary<int, int>> ElemOrders { get; }
 
     public T CanToGElt(Ep<ZnInt> z) => FromCanonic[z];
     public Ep<ZnInt> GEltToCan(T g) => ToCanonic[g];
