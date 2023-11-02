@@ -104,6 +104,21 @@ public readonly struct Monom<T> : IElt<Monom<T>> where T : struct, IElt<T>
         Hash = (Indeterminates.Hash, (s.Hash, n)).GetHashCode();
     }
 
+    public Monom(Indeterminates<T> indeterminates, Monom<T> mn)
+    {
+        Indeterminates = indeterminates;
+        Content = mn.Content.Where(e => indeterminates.Contains(e.Key)).ToDictionary(e => e.Key, e => e.Value);
+        Degree = Content.Sum(e => e.Value);
+        Hash = Indeterminates.Hash;
+        foreach (var t in Indeterminates)
+        {
+            if (!Content.ContainsKey(t))
+                continue;
+
+            Hash = (Hash, (t.Hash, Content[t])).GetHashCode();
+        }
+    }
+
     private Monom(Indeterminates<T> indeterminates, Dictionary<T, int> content)
     {
         Indeterminates = indeterminates;
@@ -120,6 +135,7 @@ public readonly struct Monom<T> : IElt<Monom<T>> where T : struct, IElt<T>
     }
 
     public bool IsOne => Content.Count == 0;
+    public Monom<T> One => new(Indeterminates);
 
     public Monom<T> Mul(Monom<T> g)
     {
@@ -211,6 +227,14 @@ public readonly struct Monom<T> : IElt<Monom<T>> where T : struct, IElt<T>
         }
 
         var sgn = Indeterminates.Reverse ? -1 : 1;
+        foreach (var c in Indeterminates)
+        {
+            var comp = this[c].CompareTo(other[c]);
+            if (comp != 0)
+                return sgn * comp;
+        }
+
+        return 0;
         return sgn * ToTuples().SequenceCompareTo(other.ToTuples());
     }
 
@@ -245,9 +269,9 @@ public readonly struct Monom<T> : IElt<Monom<T>> where T : struct, IElt<T>
 
         return s;
     }
-    
+
     private static string superscripts = "⁰¹²³⁴⁵⁶⁷⁸⁹";
-    
+
     public static Monom<T> Gcd(Monom<T> a, Monom<T> b)
     {
         if (!a.Indeterminates.Equals(b.Indeterminates))
