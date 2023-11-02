@@ -4,9 +4,4 @@ using FastGoat.UserGroup.Integers;
 
 namespace FastGoat.UserGroup.GModuleN;
 
-public record EquationInfos(Polynomial<ZnInt, Xi> equation, 
-    int mod, 
-    ReadOnlyDictionary<int, int> invertibles, 
-    ReadOnlyDictionary<int, int> orders, 
-    Monom<Xi> lm, 
-    ZnInt lc);
+public record EquationInfos(Polynomial<ZnInt, Xi> equation, int mod, Monom<Xi> lma, ZnInt lca);
