@@ -125,8 +125,8 @@ public static partial class Ring
         xi = lex ? xi : xi.OrderDescending().ToArray();
         var indeterminates = new Indeterminates<Xi>(order, xi.Select(x => new Xi(x)).ToArray());
         var xis = xi.Select(c => new Polynomial<K, Xi>(new Monom<Xi>(indeterminates, new(c), 1), scalar.One)).ToArray();
-        var X0 = xis.First(e0 => !e0[new Monom<Xi>(indeterminates, new(x0))].IsZero());
-        var Xis = xis.Where(e0 => e0[new Monom<Xi>(indeterminates, new(x0))].IsZero()).ToArray();
+        var X0 = xis.First(e0 => !e0[new Monom<Xi>(indeterminates, new Xi(x0))].IsZero());
+        var Xis = xis.Where(e0 => e0[new Monom<Xi>(indeterminates, new Xi(x0))].IsZero()).ToArray();
         return (X0, Xis);
     }
 

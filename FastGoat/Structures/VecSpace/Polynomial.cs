@@ -68,6 +68,14 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
 
     public int P => KZero.P;
 
+    public Polynomial<K, T> Recreate(Indeterminates<T> ind)
+    {
+        var coefs = Coefs.Where(e=>!e.Value.IsZero()).ToDictionary(e => new Monom<T>(ind, e.Key), e => e.Value);
+        return new(ind, KZero, new(coefs));
+    }
+
+    public Polynomial<K, T> Recreate() => Recreate(Indeterminates);
+
     public Polynomial<K, T> X(T t)
     {
         if (!Indeterminates.Contains(t))
