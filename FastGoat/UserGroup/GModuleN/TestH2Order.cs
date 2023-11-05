@@ -27,7 +27,7 @@ public static class TestH2Order
     {
         var dec = IntExt.PrimesDec(k);
         return dec.Select(e => IntExt.Partitions32[e.Value].Select(l => l.Select(i => e.Key.Pow(i)).ToArray())).MultiLoop()
-            .Select(l => FG.Abelian(l.SelectMany(i => i).ToArray())).ToList();
+            .Select(l => FG.Abelian(l.SelectMany(i => i).OrderDescending().ToArray())).ToList();
     }
 
     public static void TestAllAbelianGroup()

@@ -143,6 +143,18 @@ public readonly struct ZNElt<Tn, Tg> : IElt<ZNElt<Tn, Tg>>
     public bool IsZero() => Coefs.Values.All(e => e.IsZero() || e.LeadingDetails.lc.IsZero());
     public bool IsKnown() => Coefs.Values.All(e => e.IsZero() || e.LeadingDetails.lm.Degree == 0);
 
+    public Tn Expand
+    {
+        get
+        {
+            if (Coefs.Values.Any(e => e.Degree > 0))
+                throw new();
+
+            var n = N;
+            return n.OpSeq(Coefs.Select(e => n.Times(e.Key, e.Value.ConstTerm.K)));
+        }
+    }
+
     public ZNElt<Tn, Tg> Substitute(Polynomial<ZnInt, Xi> P, Xi xi)
     {
         var map = Coefs.ToDictionary(e => e.Key, e => e.Value.Substitute(P, xi));
