@@ -107,7 +107,7 @@ public struct Ep<T> : IElt<Ep<T>> where T : IElt<T>
 
     public int Hash { get; }
     public override int GetHashCode() => Hash;
-    public override string ToString() => $"({Ei.Glue(", ")})";
+    public override string ToString() => Ei.Length == 1 ? $"{Ei[0]}" : $"({Ei.Glue(", ")})";
 }
 
 public static partial class Product
@@ -115,6 +115,11 @@ public static partial class Product
     public static Gp<T> Gp<T>(params IGroup<T>[] gn) where T : struct, IElt<T>
     {
         return new(gn);
+    }
+
+    public static Gp<T> Gp<T>(IGroup<T> gn, int n) where T : struct, IElt<T>
+    {
+        return new(Enumerable.Repeat(gn, n).ToArray());
     }
 
     public static Ep<T> Ep<T>(params T[] en) where T : struct, IElt<T>
@@ -131,4 +136,15 @@ public static partial class Product
     {
         return new(Gp(gn));
     }
+
+    public static ConcreteGroup<Ep<T>> GpGenerate<T>(string name, IGroup<T> g, int n) where T : struct, IElt<T>
+    {
+        return new(name, Gp(Enumerable.Repeat(g, n).ToArray()));
+    }
+
+    public static ConcreteGroup<Ep<T>> GpGenerate<T>(IGroup<T> g, int n) where T : struct, IElt<T>
+    {
+        return new(Gp(Enumerable.Repeat(g, n).ToArray()));
+    }
+
 }
