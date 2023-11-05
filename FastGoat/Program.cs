@@ -61,10 +61,9 @@ void ExplicitTwoCohom<Tn, Tg>(ConcreteGroup<Tn> N, ConcreteGroup<Tg> G, MapElt<T
     ZNSolver.DisplayCrMap(maps2Cobs);
     DisplayGroup.Head(g2Cohs);
     CocyclesDFS.DisplayMapElt("H2", g2Cohs.Select(e => e.X).ToArray());
-    // CocyclesDFS.DisplayMapElt("B2", g2Cobs.ToArray());
-    // CocyclesDFS.DisplayMapElt("Z2", g2Cocs.ToArray());
 }
 
+// H2(D8, C4)
 {
     var (N, G) = (new Cn(4), FG.Dihedral(4));
     SolveTwoCohom(N, G);
