@@ -164,7 +164,20 @@ public static class CocyclesDFS
         where Tg : struct, IElt<Tg>
         where Tn : struct, IElt<Tn>
     {
-        return kvs.OrderByDescending(kv => kv.Key.Ei.Count(e => e.Equals(G.Neutral()))).ThenBy(kv => kv.Key);
+        return kvs.OrderByDescending(kv => kv.Key.Ei.Any(e => e.Equals(G.Neutral())) ? 1 : 0).ThenBy(kv => kv.Key);
+    }
+
+    public static void DisplayMapElt<Tn, Tg>(string title, params MapElt<Ep<Tg>, Tn>[] crMaps)
+        where Tg : struct, IElt<Tg>
+        where Tn : struct, IElt<Tn>
+    {
+        var c0 = crMaps[0];
+        var G = (ConcreteGroup<Tg>)(((Gp<Tg>)c0.Domain.BaseGroup).Gi[0]);
+        var table = c0.map.OrderKeys(G).SelectMany(e => crMaps.Select(c => c[e.Key]).Cast<object>().Prepend(e.Key)).ToArray();
+        var mat = Ring.Matrix(c0.Map.Count, table);
+        Console.WriteLine(title);
+        Ring.DisplayMatrix(mat, sep: " ");
+        Console.WriteLine();
     }
 
     public class TwoCocyclesDFS<Tn, Tg> where Tn : struct, IElt<Tn> where Tg : struct, IElt<Tg>
