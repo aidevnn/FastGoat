@@ -116,13 +116,23 @@ public readonly struct CrMap<Tn, Tg> : IEnumerable<KeyValuePair<Ep<Tg>, ZNElt<Tn
         return new(map);
     }
 
+    public MapElt<Ep<Tg>, Tn> ToMapElt
+    {
+        get
+        {
+            var ct = ConsTerm();
+            if (!Equals(ct))
+                throw new();
+            
+            var gr = Product.GpGenerate(G, R);
+            return new MapElt<Ep<Tg>, Tn>(gr, N, ct.ToDictionary(e => e.Key, e => e.Value.Expand));
+        }
+    }
+
     public ConcreteGroup<MapElt<Ep<Tg>, Tn>> ToGroupMapElt(string name = "")
     {
-        var gr = Product.GpGenerate(G, R);
-        var N0 = N;
-        var gens = Generators().Select(e => e.map.Map.ToDictionary(e0 => e0.Key, e0 => e0.Value.Expand))
-            .Select(m => new MapElt<Ep<Tg>, Tn>(gr, N0, m)).ToArray();
-        var mapGr = new MapGroupBase<Ep<Tg>, Tn>(gr, N0);
+        var gens = Generators().Select(e => e.map.ToMapElt).ToArray();
+        var mapGr = new MapGroupBase<Ep<Tg>, Tn>(gens.First().Domain, N);
         var g = Group.Generate(mapGr, gens);
         if (!string.IsNullOrEmpty(name))
             g.SetName(name);
