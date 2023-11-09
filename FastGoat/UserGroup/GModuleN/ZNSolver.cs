@@ -136,8 +136,8 @@ public static class ZNSolver
         var zi = ind.Chunk(od).Select(xi => new ZNElt<Tn, Tg>(ind, Nab, L, xi)).ToArray();
         var map0 = Gr0.OrderBy(ep => ep.Ei.Count(ei => !ei.Equals(G.Neutral()))).ThenBy(ep => ep)
             .Zip(zi.Prepend(z0)).ToDictionary(e => e.First, e => e.Second);
-        var map = G.SelectMany(g =>
-            map0.ToDictionary(e => Grp.Act(g, e.Key), e => e.Value.Act(g).Simplify())).ToDictionary(e => e.Key, e => e.Value);
+        var map = G.SelectMany(g => map0.ToDictionary(e => Grp.Act(g, e.Key), e => e.Value.Act(g).Simplify()))
+            .ToDictionary(e => e.Key, e => e.Value);
         return new(map);
     }
 
@@ -161,125 +161,106 @@ public static class ZNSolver
         return (cr, cnext);
     }
 
-    public static (SysReduction sred, CrMap<Tn, Tg> mapNext) SysSolveStep<Tn, Tg>(CrMap<Tn, Tg> map, Queue<Xi> qis)
+    static (Monom<Xi> x, ZnInt z) LT(Polynomial<ZnInt, Xi> eq, IDictionary<int, int> orders, bool descending = true)
+    {
+        if (eq.Degree == 0)
+        {
+            var (lc, lm, _) = eq.LeadingDetails;
+            return (lm, lc);
+        }
+
+        if (descending)
+            return eq.Coefs.Where(e => !e.Key.IsOne).Select(e => (e.Key, e.Value)).OrderByDescending(e0 => e0.Key)
+                .MaxBy(e0 => orders[e0.Value.K]);
+
+        return eq.Coefs.Where(e => !e.Key.IsOne).Select(e => (e.Key, e.Value)).OrderBy(e0 => e0.Key)
+            .MaxBy(e0 => orders[e0.Value.K]);
+    }
+
+    public static (SysReduction sred, CrMap<Tn, Tg> mapNext) SysSolveStep<Tn, Tg>(CrMap<Tn, Tg> cr, Queue<Xi> qis)
         where Tg : struct, IElt<Tg>
         where Tn : struct, IElt<Tn>
     {
-        if (map.Count == 0 || map.Keys.Select(e => e.Ei.Length).Distinct().Count() != 1)
+        if (cr.Count == 0 || cr.Keys.Select(e => e.Ei.Length).Distinct().Count() != 1)
             throw new("Unexpected situation 1");
 
-        var mapElt0 = map.First();
-        var zero = mapElt0.Value.ZNZero;
+        var zero = cr.ZNZero;
         var pZero = zero.Zero;
         var Nab = zero.Nab;
+        var G = zero.G;
         var allOrders = Nab.ElemOrders;
         var invs = Nab.ElemInvertible;
+        var r = cr.R;
+        var decomp = Nab.DecompElementary;
 
-        var sys1 = SysEquations(map);
+        var sys0 = cr.OrderKeys(G).SelectMany(v => decomp.Select(e => (n: v.Value[e.g], e.o))).Where(e => e.n.Degree != 0).ToArray();
+        var sys1 = sys0.Select(e => (eq: e.n, e.o, mn: LT(e.n, allOrders[e.o], r == 2)))
+            .Select(e => new EquationInfos(e.eq, e.o, e.mn.x, e.mn.z))
+            .OrderByDescending(ei => invs[ei.mod].ContainsKey(ei.lca.K) ? 1 : 0)
+            .ThenByDescending(ei => allOrders[ei.mod][ei.lca.K])
+            .ThenByDescending(ei => ei.equation.ConstTerm.IsZero())
+            .ThenBy(ei => ei.equation.ExtractAllIndeterminates.Length)
+            .ThenByDescending(e => e.lma)
+            .ThenBy(e => e.lca.K)
+            .ToArray();
+
         if (sys1.Length == 0)
         {
             var a0 = pZero.Indeterminates.First();
-            return (new(pZero, pZero.X(a0), 1, a0, pZero, 0), map);
+            return (new(pZero, pZero.X(a0), 1, a0, pZero, 0), cr);
         }
 
         var (eq, mod, lt, lc) = sys1.First();
         var ords = allOrders[mod];
         var xis = lt.ContentIndeterminates.ToArray();
         if (xis.Length != 1)
-            throw new("Unexpected situation 2");
+        {
+            var a0 = pZero.Indeterminates.First();
+            return (new(pZero, pZero.X(a0), 1, a0, pZero, 0), cr);
+        }
 
         var xq = qis.Dequeue();
         if (invs[mod].TryGetValue(lc.K, out var ki))
         {
             var xi = xis[0];
             var X = eq.X(xi);
-            var expr = lc * X;
+            var expr = X;
             var sub = (X - ki * eq).Mod(mod) + mod * eq.X(xq);
-            var map0 = map.ToDictionary(e => e.Key, e => e.Value.Substitute(sub, xi).Simplify());
+            var map0 = cr.ToDictionary(e => e.Key, e => e.Value.Substitute(sub, xi).Simplify());
             return (new(eq, expr, ords[lc.K], xi, sub, mod), new(map0));
         }
         else
         {
-            var dec = IntExt.PrimesDec(mod);
-            var (p, q) = dec.First();
-            var pi = (q - 1).Range(1).Select(i => p.Pow(i)).ToArray();
-            var pq = pi.Last(pq => eq.Coefs.All(c => c.Value.K % pq == 0));
+            var gcd = IntExt.Gcd(eq.Coefs.Where(c => !c.Value.IsZero() && !c.Key.IsOne).Select(e => e.Value.K).ToArray());
             var eq1 = new Polynomial<ZnInt, Xi>(eq.Indeterminates, eq.KZero,
-                new(eq.Coefs.ToDictionary(e => e.Key, e => new ZnInt(e.Value.Mod, e.Value.K / pq))));
+                new(eq.Coefs.Where(c => !c.Value.IsZero() && !c.Key.IsOne)
+                    .ToDictionary(e => e.Key, e => new ZnInt(e.Value.Mod, e.Value.K / gcd))));
             var (m1, k0) = eq1.Coefs.OrderByDescending(c => c.Key).First(c => invs[mod].ContainsKey(c.Value.K));
             var xi = m1.ContentIndeterminates.First();
             var lc0 = eq[m1];
+
+            var (k, d) = mod.Range().Select(k => (k, IntExt.AmodP(lc0.K * k + eq.ConstTerm.K, mod))).OrderBy(e => e.Item2).First();
             var X = eq.X(xi);
-            var expr = lc0 * X;
-            var k1 = mod / pq;
-            var eq2 = eq1 - k1 * eq1.X(xq);
+            var expr = X;
+            var eq2 = eq1 - ords[lc.K] * eq1.X(xq);
             ki = invs[mod][k0.K];
-            var sub = (X - ki * eq2).Mod(mod);
-            // Console.WriteLine(new { eq, eq1, eq2, expr, xi, sub });
+            var sub = (X - ki * eq2 + k).Mod(mod);
 
-            var map0 = map.ToDictionary(e => e.Key, e => e.Value.Substitute(sub, xi).Simplify());
-            return (new(eq, expr, ords[lc0.K], xi, sub, mod), new(map0));
+            var map0 = cr.ToDictionary(e => e.Key, e => e.Value.Substitute(sub, xi).Simplify());
+            return (new(eq, expr, ords[lc.K], xi, sub, mod), new(map0));
         }
     }
 
-    public static EquationInfos[] SysEquations<Tn, Tg>(CrMap<Tn, Tg> map)
+    public static CrMap<Tn, Tg> SysRewrite<Tn, Tg>(CrMap<Tn, Tg> cr)
         where Tg : struct, IElt<Tg>
         where Tn : struct, IElt<Tn>
     {
-        if (map.Count == 0 || map.Keys.Select(e => e.Ei.Length).Distinct().Count() != 1)
-            throw new("Unexpected situation 1");
-
-        var r = map.R;
-        var mapElt0 = map.First();
-        var zero = mapElt0.Value.ZNZero;
-        var Nab = zero.Nab;
-        var allOrders = Nab.ElemOrders;
-        var invs = Nab.ElemInvertible;
-        var sys0 = map.Values.SelectMany(v => Nab.DecompElementary.Select(e => (n: v[e.g], e.o))).Where(e => !e.n.IsZero())
-            .ToArray();
-        if (sys0.Length == 0)
-            return Array.Empty<EquationInfos>();
-
-        (Monom<Xi> x, ZnInt z) LT(Polynomial<ZnInt, Xi> eq, int o)
-        {
-            if (eq.Degree == 0)
-            {
-                var (lc, lm, _) = eq.LeadingDetails;
-                return (lm, lc);
-            }
-
-            if (r == 2)
-                return eq.Coefs.Where(e => !e.Key.IsOne).Select(e => (e.Key, e.Value)).OrderByDescending(e0 => e0.Key)
-                    .MaxBy(e0 => allOrders[o][e0.Value.K]);
-
-            return eq.Coefs.Where(e => !e.Key.IsOne).Select(e => (e.Key, e.Value)).OrderBy(e0 => e0.Key)
-                .MaxBy(e0 => allOrders[o][e0.Value.K]);
-        }
-
-        return sys0.GroupBy(e => e.n)
-            .Select(e => (eq: e.Key, o: e.Min(a0 => a0.o)))
-            .Select(e => (e.eq, e.o, mn: LT(e.eq, e.o)))
-            .Select(e => new EquationInfos(e.eq, e.o, e.mn.x, e.mn.z))
-            .OrderByDescending(ei => invs[ei.mod].ContainsKey(ei.lca.K) ? ei.mod : (!ei.equation.ConstTerm.IsZero() ? 1 : 0))
-            .ThenByDescending(ei => allOrders[ei.mod][ei.lca.K])
-            .ThenBy(ei => ei.equation.ExtractAllIndeterminates.Length)
-            .ThenByDescending(e => e.lma)
-            // .ThenBy(e => e.equation.ConstTerm)
-            .ThenBy(e => e.lca.K)
-            .ToArray();
-    }
-
-    public static CrMap<Tn, Tg> SysRewrite<Tn, Tg>(CrMap<Tn, Tg> map)
-        where Tg : struct, IElt<Tg>
-        where Tn : struct, IElt<Tn>
-    {
-        var map0 = map.ToDictionary(e => e.Key, e => e.Value);
-        var mapElt0 = map.First();
-        var zero = mapElt0.Value.Zero;
+        var map = cr.Clone;
+        var zero = map.ZZero;
         var xis = zero.Indeterminates.ToArray();
-        var subsMns = new Queue<Monom<Xi>>(xis.Select(xi => new Monom<Xi>(zero.Indeterminates, xi)).OrderDescending());
-        var eqXis = map0.SelectMany(e => e.Value.Coefs.SelectMany(c => c.Value.ExtractAllIndeterminates)).Distinct().ToArray();
+        var eqXis = map.ExtractAllIndeterminates;
         var eqMns = new Queue<Monom<Xi>>(eqXis.Select(xi => new Monom<Xi>(zero.Indeterminates, xi)).OrderDescending());
+        var subsMns = new Queue<Monom<Xi>>(xis.Select(xi => new Monom<Xi>(zero.Indeterminates, xi)).OrderDescending());
         while (eqMns.Count != 0)
         {
             var em = eqMns.Dequeue();
@@ -292,143 +273,81 @@ public static class ZNSolver
                 var sxi = sm.ContentIndeterminates.First();
                 var sX = zero.X(sxi);
                 var exi = em.ContentIndeterminates.First();
-                map0 = map0.ToDictionary(e => e.Key, e => e.Value.Substitute(sX, exi).Simplify());
+                map = map.Substitute(sX, exi);
             }
         }
 
-        return new(map0);
+        return new(map);
     }
 
     public static (List<SysReduction> sreds, CrMap<Tn, Tg>) SysReduction<Tn, Tg>(CrMap<Tn, Tg> c2, bool details = false)
         where Tg : struct, IElt<Tg>
         where Tn : struct, IElt<Tn>
     {
-        var map0 = SysRewrite(c2);
-        var mapC2 = new CrMap<Tn, Tg>(map0.ToDictionary(e => e.Key, e => e.Value));
+        var mapI = SysRewrite(c2);
+        var mapC2 = new CrMap<Tn, Tg>(mapI.ToDictionary(e => e.Key, e => e.Value));
         var listReds = new List<SysReduction>();
-        var qis = new Queue<Xi>(mapC2.Values.First().Indeterminates.Where(xi => xi.xi.Contains('q')));
+        var qis = new Queue<Xi>(mapC2.ZZero.Indeterminates.Where(xi => xi.xi.Contains('q')));
         while (!mapC2.IsZero())
         {
-            var (sred, mapNext) = SysSolveStep(mapC2, qis);
+            (var sred, mapC2) = SysSolveStep(mapC2, qis);
             listReds.Add(sred);
-            mapC2 = mapNext;
         }
 
-        var nbPos = listReds.Aggregate(1, (acc, sred) => acc * sred.order);
-        var mapElt0 = map0.First();
-        var zero = mapElt0.Value.Zero;
+        var zero = mapI.ZZero;
         var ind = zero.Indeterminates;
-        var subs = ind.Except(listReds.Select(s => s.expr.ExtractIndeterminate)).Select(xi => (zero, xi)).ToArray();
-        var map1 = map0.ToDictionary(e => e.Key, e => e.Value.Substitute(subs));
-        var map2 = SysRewrite(new CrMap<Tn, Tg>(map1));
+        var subs = ind.Except(listReds.Select(s => s.xi)).Select(xi => (zero, xi)).ToArray();
+        var mapF = mapI.Substitute(subs);
         if (details)
         {
             Console.WriteLine();
             listReds.Println("Step by step SysReduction");
-            Console.WriteLine($"## Solutions Size : {nbPos}");
+            var dim = listReds.Aggregate(1, (acc, sred) => acc * sred.order);
+            Console.WriteLine($"## Solutions Size : {dim}");
         }
 
-        return (listReds, map2.Add(mapC2));
+        return (listReds, mapF);
     }
 
-    public static (SysReduction, CrMap<Tn, Tg>) SysFullRewriteStep<Tn, Tg>(CrMap<Tn, Tg> map, Queue<Xi> qis)
+    public static CrMap<Tn, Tg> SysFullReduction<Tn, Tg>(CrMap<Tn, Tg> cr)
         where Tg : struct, IElt<Tg>
         where Tn : struct, IElt<Tn>
     {
-        var mapElt0 = map.First();
-        var zero = mapElt0.Value.ZNZero;
-        var pZero = zero.Zero;
-        var Nab = zero.Nab;
-        var allOrders = Nab.ElemOrders;
-        var invs = Nab.ElemInvertible;
-
-        var sys1 = SysEquations(map);
-        // sys1.Println("Sys1");
-        var a0 = pZero.Indeterminates.Last();
-        if (sys1.All(e => e.equation.Degree == 0))
+        var zero = cr.ZZero;
+        var ind = zero.Indeterminates;
+        var gens = cr.Generators();
+        var lt = new List<(int ord, CrMap<Tn, Tg> map)>();
+        foreach (var (ord, g) in gens.OrderByDescending(e => e.ord))
         {
-            if (sys1.Length != 0)
-            {
-                var (eq0, mod0, lm0, lc0) = sys1.First();
-                return (new(eq0, eq0.X(a0), 1, a0, pZero, mod0), map);
-            }
-
-            return (new(pZero, pZero.X(a0), 1, a0, pZero, 0), map);
+            var tmp = lt.Zip(ind).Aggregate(cr.Zero, (acc, e) => acc.Add(e.First.map.Mul(zero.X(e.Second))));
+            var g0 = SysRepresentative(tmp.Add(g));
+            var ord0 = g0.Cycle().Length;
+            if (ord0 != 1)
+                lt.Add((ord0, g0));
         }
 
-        var eqInfos = sys1.First(e => e.equation.Degree == 1);
-        var (eq, mod, lm, lc) = eqInfos;
-        var ords = allOrders[mod];
-        var xis = lm.ContentIndeterminates.ToArray();
-        if (xis.Length != 1)
-            throw new("Unexpected situation 2");
-
-        var c = eq.ConstTerm;
-        var xi = xis[0];
-        if (!invs[mod].TryGetValue(lc.K, out var ki))
-        {
-            if (!c.IsZero())
-            {
-                var (k, d) = mod.Range().Select(k => (k, IntExt.AmodP(lc.K * k + c.K, mod))).OrderBy(e => e.Item2).First();
-                var sub = (pZero + k).Mod(mod);
-                var sred = new SysReduction(eq, eq.X(xi), ords[lc.K], xi, sub, mod);
-                var map2 = map.ToDictionary(e => e.Key, e => e.Value.Substitute(sub, xi).Simplify());
-                return (sred, new(map2));
-            }
-            else
-            {
-                var map2 = map.ToDictionary(e => e.Key, e => e.Value.Substitute(pZero, xi).Simplify());
-                return (new(eq, eq.X(xi), ords[lc.K], xi, pZero, mod), new(map2));
-            }
-        }
-        else
-        {
-            if (eq.ExtractAllIndeterminates.Length == 1)
-            {
-                if (lc.K == 1)
-                {
-                    var xq = qis.Dequeue();
-                    var map2 = map.ToDictionary(e => e.Key, e => e.Value.Substitute(mod * eq.X(xq), xi).Simplify());
-                    return (new(eq, eq, ords[lc.K], xi, mod * eq.X(xq), mod), new(map2));
-                }
-                else
-                {
-                    var xq = qis.Dequeue();
-                    var map2 = map.ToDictionary(e => e.Key, e => e.Value.Substitute(mod * eq.X(xq), xi).Simplify());
-                    return (new(eq, eq.X(xi), ords[lc.K], xi, ki * eq.X(xi), mod), new(map2));
-                }
-            }
-            else
-            {
-                var xq = qis.Dequeue();
-                var sub = (eq.X(xi) - ki * eq).Mod(mod) + mod * eq.X(xq);
-                var map2 = map.ToDictionary(e => e.Key, e => e.Value.Substitute(sub, xi).Simplify());
-                return (new(eq, eq.X(xi), ords[lc.K], xi, sub, mod), new(map2));
-            }
-        }
+        return lt.OrderByDescending(e => e.ord).Zip(ind)
+            .Aggregate(cr.Zero, (acc, e) => acc.Add(e.First.map.Mul(zero.X(e.Second))));
     }
 
-    public static CrMap<Tn, Tg> SysFullRewrite<Tn, Tg>(CrMap<Tn, Tg> map, bool details = false)
+    public static CrMap<Tn, Tg> SysRepresentative<Tn, Tg>(CrMap<Tn, Tg> cr, bool details = false)
         where Tg : struct, IElt<Tg>
         where Tn : struct, IElt<Tn>
     {
-        var map0 = new CrMap<Tn, Tg>(map.ToDictionary(e => e.Key, e => e.Value));
-        var map1 = new CrMap<Tn, Tg>(map.ToDictionary(e => e.Key, e => e.Value.ZNZero));
+        var map0 = cr.Clone;
         var listReds = new List<SysReduction>();
         var qis = new Queue<Xi>(map0.Values.First().Indeterminates.Where(xi => xi.xi.Contains('q')));
-        var ltMap = new List<CrMap<Tn, Tg>>() { map0.Clone };
-        while (!map0.Equals(map1))
+        var ltMap = new List<CrMap<Tn, Tg>>() { cr.ConsTerm(), cr.Clone };
+        while (!map0.Equals(map0.ConsTerm()))
         {
-            map1 = map0.Clone;
-            (var sred, map0) = SysFullRewriteStep(map0, qis);
+            (var sred, map0) = SysSolveStep(map0, qis);
             ltMap.Add(map0);
-
             if (sred.mod != 0)
                 listReds.Add(sred);
         }
 
-        var subs = listReds.Where(s => !s.substitutionExpr.IsZero()).Select(s => (s.substitutionExpr, s.xi)).ToArray();
-        var map2 = map.ToDictionary(e => e.Key, e => e.Value.Substitute(subs).Simplify());
+        var subs = listReds.Select(s => (s.substitutionExpr, s.xi)).ToArray();
+        var map2 = cr.Substitute(subs);
         var map3 = SysRewrite(new CrMap<Tn, Tg>(map2));
         if (details)
         {
@@ -447,7 +366,7 @@ public static class ZNSolver
     {
         var (c1, c2) = LRCochain(N, G, L, r: 1);
         var Nab = c2.Values.First().Nab;
-        var (sreds, map) = SysReduction(c2);
+        var (sreds, map) = SysReduction(SysFullReduction(c2));
         var nb = sreds.Aggregate(1, (acc, sred) => acc * sred.order);
 
         if (details)
@@ -480,7 +399,7 @@ public static class ZNSolver
         var Nab = mapC3.Values.First().Nab;
         var subs = listReds.Select(s => (s.substitutionExpr, s.xi)).ToArray();
         var map0 = c2.Substitute(subs);
-        var (sreds, map1) = SysReduction(map0, details);
+        var (sreds, map1) = SysReduction(SysFullReduction(map0), details);
 
         var nb = sreds.Aggregate(1, (acc, sred) => acc * sred.order);
 
@@ -497,136 +416,6 @@ public static class ZNSolver
             throw new("@@@@@@@@@@@@@@@@@@@@@@");
 
         return new(nb, sreds, map1);
-    }
-
-    public static void Reduce2Cohomologies<Tn, Tg>(ConcreteGroup<Tn> N, ConcreteGroup<Tg> G,
-        MapElt<Tg, Automorphism<Tn>> L, string lbl = "test", bool details = false)
-        where Tg : struct, IElt<Tg>
-        where Tn : struct, IElt<Tn>
-    {
-        Console.WriteLine($"############# {lbl,-12} #############");
-        Console.WriteLine($"H2(G, N) with N:{N.ShortName} and G:{G.ShortName}");
-        var sols2Cobs = Reduce2Coboundaries(N, G, L);
-        var sols2Cocs = Reduce2Cocycles(N, G, L);
-        var (nb2Cobs, sred2Cobs, map2Cobs) = sols2Cobs;
-        var (nb2Cocs, sred2Cocs, map2Cocs) = sols2Cocs;
-        var nb2Cohs = nb2Cocs / nb2Cobs;
-        var nab = map2Cobs.Nab;
-        // if (nab.DecompElementary.Any(e => !IntExt.Primes10000.Contains(e.o)))
-        //     throw new("Elementary decomposition of N must contains only simple pGroups");
-
-        Console.WriteLine($"#### {lbl} |B2|:{nb2Cobs} |Z2|:{nb2Cocs} |H2|:{nb2Cohs}");
-        Console.WriteLine();
-
-        if (nb2Cobs == 1 || nb2Cohs == 1 || nb2Cocs == 1)
-            return;
-
-        var ind = sols2Cocs.allMaps.Values.First().Indeterminates;
-        var zero = map2Cocs.PZero;
-
-        var map2Cobs0 = map2Cobs.Recreate(ind);
-        var gens2Cobs = map2Cobs0.Generators();
-        var gens2Cocs = map2Cocs.Generators();
-
-        Console.WriteLine($"B2(G,N):{nb2Cobs}");
-        if (details)
-            DisplayCrMap($"2Coboundaries gens ords:[{gens2Cobs.Select(g => g.ord).Glue(" ")}]",
-                gens2Cobs.Select(g => g.map).ToArray());
-
-        Console.WriteLine($"Z2(G,N):{nb2Cocs}");
-        if (details)
-            DisplayCrMap($"2Cocycles ords:[{gens2Cocs.Select(g => g.ord).Glue(" ")}]", gens2Cocs.Select(g => g.map).ToArray());
-
-        var (sreds, _) = SysReduction(map2Cobs0);
-        var nb0 = sreds.Aggregate(1, (acc, s) => acc * s.order);
-        var lt = new List<(int ord, CrMap<Tn, Tg> map)>();
-        var map02 = map2Cobs0.Clone;
-
-        foreach (var (ord, map) in gens2Cocs.OrderByDescending(e => e.ord))
-        {
-            var ai = zero.Indeterminates.First(xi => xi.xi.Contains('q'));
-
-            var mapi = map.Mul(zero.X(ai));
-            var mapai = map02.Add(mapi);
-            var (sr, mr) = SysReduction(mapai);
-            var nb1 = sr.Aggregate(1, (acc, s) => acc * s.order);
-            if (nb0 < nb1)
-            {
-                lt.Add((ord, map));
-                map02 = mr.Clone;
-                nb0 = nb1;
-            }
-        }
-
-        var ais = zero.Indeterminates.Where(xi => xi.xi.Contains('a')).ToArray();
-        var mapf = ais.Zip(lt).Select(e => e.Second.map.Mul(zero.X(e.First))).Aggregate((a0, a1) => a0.Add(a1));
-        var (sf, mf) = SysReduction(mapf);
-        var genf = mf.Generators().Select(e => e.map).Prepend(mf.Zero).ToArray();
-        var nb2Cohs0 = genf.Length;
-
-        if (details)
-        {
-            DisplayCrMap($"2Cohomologies Reprs Tmp:{nb2Cohs0}", genf);
-        }
-
-        if (nb2Cohs == nb2Cohs0)
-        {
-            Console.WriteLine($"@H2(G,N):{nb2Cohs0} Expected:{nb2Cohs}");
-            if (details)
-                DisplayCrMap("2Cohomologies Reprs", genf);
-        }
-        else
-        {
-            var set = new HashSet<CrMap<Tn, Tg>>() { mf.Zero };
-            var listReprs = new List<(int ord, CrMap<Tn, Tg> map, HashSet<CrMap<Tn, Tg>> reprs)>();
-            listReprs.Add((1, mf.Zero, new() { mf.Zero }));
-            foreach (var (ord, map) in lt)
-            {
-                var set0 = new HashSet<CrMap<Tn, Tg>>();
-                var arr = set.ToArray();
-                var set1 = new HashSet<CrMap<Tn, Tg>>(set);
-                for (int i = 1; i < ord; i++)
-                {
-                    var m1 = map.Mul(i);
-                    var m2 = SysFullRewrite(map2Cobs0.Add(m1), details).ConsTerm();
-
-                    if (!m2.IsZero())
-                    {
-                        set0.Add(m2);
-                        foreach (var m3 in arr)
-                        {
-                            var m4 = SysFullRewrite(map2Cobs0.Add(m2).Add(m3)).ConsTerm();
-                            set1.Add(m4);
-                        }
-                    }
-                }
-
-                set.Clear();
-                set.UnionWith(set1);
-                listReprs.Add((ord, map, set0));
-            }
-
-            if (listReprs.Sum(e => e.reprs.Count) == nb2Cohs)
-            {
-                Console.WriteLine($"%H2(G,N):{set.Count} Expected:{nb2Cohs}");
-                if (details)
-                    DisplayCrMap("2Cohomologies Reprs", listReprs.SelectMany(e => e.reprs).ToArray());
-            }
-            else if (set.Count == nb2Cohs)
-            {
-                Console.WriteLine($"*H2(G,N):{set.Count} Expected:{nb2Cohs}");
-                if (details)
-                    DisplayCrMap("2Cohomologies Reprs", set.ToArray());
-            }
-            else
-            {
-                DisplayCrMap($"ERROR genf:{genf.Length} Expected:{nb2Cohs}", genf);
-                DisplayCrMap($"ERROR listReprs:{listReprs.Sum(e => e.reprs.Count)} Expected:{nb2Cohs}", listReprs.SelectMany(e => e.reprs).ToArray());
-                DisplayCrMap($"ERROR set:{set.Count} Expected:{nb2Cohs}", set.ToArray());
-
-                throw new("########");
-            }
-        }
     }
 
     public static (SysSolution<Tn, Tg> sols2Cobs, SysSolution<Tn, Tg> sols2Cocs)
@@ -654,5 +443,142 @@ public static class ZNSolver
         }
 
         return (sols2Cobs, sols2Cocs);
+    }
+
+    public static void Reduce2Cohomologies<Tn, Tg>(ConcreteGroup<Tn> N, ConcreteGroup<Tg> G,
+        MapElt<Tg, Automorphism<Tn>> L, string lbl = "test", bool details = false)
+        where Tg : struct, IElt<Tg>
+        where Tn : struct, IElt<Tn>
+    {
+        Console.WriteLine($"############# {lbl,-12} #############");
+        Console.WriteLine($"H2(G, N) with N:{N.ShortName} and G:{G.ShortName}");
+        var sols2Cobs = Reduce2Coboundaries(N, G, L);
+        var sols2Cocs = Reduce2Cocycles(N, G, L);
+        var (nb2Cobs, sred2Cobs, map2Cobs) = sols2Cobs;
+        var (nb2Cocs, sred2Cocs, map2Cocs) = sols2Cocs;
+        var nb2Cohs = nb2Cocs / nb2Cobs;
+
+        Console.WriteLine($"#### {lbl} |B2|:{nb2Cobs} |Z2|:{nb2Cocs} |H2|:{nb2Cohs}");
+        Console.WriteLine();
+
+        if (nb2Cobs == 1 || nb2Cohs == 1 || nb2Cocs == 1)
+            return;
+
+        var ind = sols2Cocs.allMaps.Values.First().Indeterminates;
+        var zero = map2Cocs.ZZero;
+        var crZero = map2Cocs.Zero;
+
+        var map2Cobs0 = map2Cobs.Recreate(ind);
+        var gens2Cobs = map2Cobs0.Generators();
+        var gens2Cocs = map2Cocs.Generators();
+
+        Console.WriteLine($"B2(G,N):{nb2Cobs}={sred2Cobs.Select(s => s.order).Glue("x")}");
+        if (details)
+            DisplayCrMap($"2Coboundaries gens ords:[{gens2Cobs.Select(g => g.ord).Glue(" ")}]",
+                gens2Cobs.Select(g => g.map).ToArray());
+
+        Console.WriteLine($"Z2(G,N):{nb2Cocs}={sred2Cocs.Select(s => s.order).Glue("x")}");
+        if (details)
+            DisplayCrMap($"2Cocycles ords:[{gens2Cocs.Select(g => g.ord).Glue(" ")}]", gens2Cocs.Select(g => g.map).ToArray());
+
+        var nb2Cobs0 = gens2Cobs.Aggregate(1, (acc, g) => acc * g.ord);
+        if (nb2Cobs0 != nb2Cobs)
+        {
+            Console.WriteLine($"2Cobs:[{gens2Cobs.Select(e => e.ord).Glue("x")}]={nb2Cobs0} Expected:{nb2Cobs}");
+            throw new("??????gens2Cobs??????");
+        }
+        //
+        // var nb2Cocs0 = gens2Cocs.Aggregate(1, (acc, g) => acc * g.ord);
+        // if (nb2Cocs0 != nb2Cocs)
+        // {
+        //     Console.WriteLine($"2Cocs:[{gens2Cocs.Select(e => e.ord).Glue("x")}]={nb2Cocs0} Expected:{nb2Cocs}");
+        //     throw new("??????gens2Cocs??????");
+        // }
+
+        var (sreds, _) = SysReduction(map2Cobs0);
+        var nb0 = sreds.Aggregate(1, (acc, s) => acc * s.order);
+        var lt = new List<(int ord, CrMap<Tn, Tg> map)>();
+        var map02 = map2Cobs0.Clone;
+
+        var k0 = 1;
+        foreach (var (ord, map) in gens2Cocs.OrderByDescending(e => e.ord))
+        {
+            if (nb0 == nb2Cocs)
+                break;
+
+            Console.CursorLeft = 0;
+            var ai = zero.Indeterminates.Except(map02.ExtractAllIndeterminates).Last();
+
+            var mapi = map.Mul(zero.X(ai));
+            var mapai = map02.Add(mapi);
+            var (sr, mr) = SysReduction(mapai);
+            var nb1 = sr.Aggregate(1, (acc, s) => acc * s.order);
+
+            if (nb0 < nb1)
+            {
+                lt.Add((ord, map));
+                map02 = mr.Clone;
+                nb0 = nb1;
+            }
+
+            Console.Write($"Step:{k0++} Gens:{lt.Count}/{gens2Cocs.Length} Dim:{nb0}/{nb2Cocs}");
+        }
+
+        Console.CursorLeft = 40;
+        Console.WriteLine();
+
+        var listReprs = new List<HashSet<CrMap<Tn, Tg>>>();
+        listReprs.Add(new() { crZero });
+        var gens = gens2Cobs.Select(e => e.map).ToList();
+        foreach (var (ord, map) in lt)
+        {
+            var set0 = new HashSet<CrMap<Tn, Tg>>() { crZero };
+            var map2Cobs1 = gens.Zip(ind).Aggregate(map2Cobs0.Zero, (acc, e) => acc.Add(e.First.Mul(zero.X(e.Second))));
+            for (int i = 1; i < ord; i++)
+            {
+                var m1 = map.Mul(i);
+                var m2 = SysRepresentative(map2Cobs1.Add(m1), details).ConsTerm();
+                set0.Add(m2);
+            }
+
+            listReprs.Add(set0);
+            gens.Add(map);
+        }
+
+        var nb2Cohs2 = listReprs.Aggregate(1, (acc, l) => acc * l.Count);
+        if (nb2Cohs2 == nb2Cohs)
+        {
+            var set = new List<CrMap<Tn, Tg>>();
+            k0 = 1;
+            foreach (var comb in listReprs.MultiLoop())
+            {
+                Console.Write($"Cosets:{k0++}/{nb2Cohs}");
+                Console.CursorLeft = 0;
+                var map0 = comb.Aggregate(crZero, (acc, l) => acc.Add(l));
+                set.Add(map0);
+            }
+
+            Console.CursorLeft = 20;
+            Console.WriteLine();
+            Console.WriteLine($"H2(G,N):{set.Count} Expected:{nb2Cohs}");
+            if (details)
+                DisplayCrMap("2Cohomologies Reprs", set.ToArray());
+
+            if (set.Count != nb2Cohs)
+                throw new("########");
+        }
+        else
+        {
+            Console.WriteLine($"ERROR H2(G,N):Expected:{nb2Cohs}");
+            Console.WriteLine($"    listReprs:{listReprs.Select(e => e.Count).Glue(" x ")}={nb2Cohs2}");
+
+            if (listReprs.Sum(l => l.Count) < 20)
+                DisplayCrMap($"listReprs:{nb2Cohs2} Expected:{nb2Cohs}", listReprs.SelectMany(e => e).ToArray());
+
+            DisplayCrMap($"2Coboundaries gens ords:[{gens2Cobs.Select(g => g.ord).Glue(" ")}]",
+                gens2Cobs.Select(g => g.map).ToArray());
+            DisplayCrMap($"2Cocycles ords:[{gens2Cocs.Select(g => g.ord).Glue(" ")}]", gens2Cocs.Select(g => g.map).ToArray());
+            throw new("########");
+        }
     }
 }
