@@ -24,6 +24,11 @@ public readonly struct CrMap<Tn, Tg> : IEnumerable<KeyValuePair<Ep<Tg>, ZNElt<Tn
         Map = map;
     }
 
+    public CrMap(CrMap<Tn,Tg>cr)
+    {
+        Map = new(cr.ToDictionary(e => e.Key, e => e.Value));
+    }
+
     public int R => Map.Count == 0 ? 0 : Map.First().Key.Ei.Length;
     public Gp<Tg> Gr => Product.Gp(G, R);
     public AbelianDirectSum<Tn> Nab => Map.First().Value.Nab;
@@ -32,10 +37,9 @@ public readonly struct CrMap<Tn, Tg> : IEnumerable<KeyValuePair<Ep<Tg>, ZNElt<Tn
     public bool IsZero() => Map.Values.All(c => c.IsZero());
     public CrMap<Tn, Tg> Zero => new(Map.ToDictionary(e => e.Key, e => e.Value.ZNZero));
     public ZNElt<Tn, Tg> ZNZero => Map.First().Value.ZNZero;
-    public Polynomial<ZnInt, Xi> PZero => Map.First().Value.Zero;
-    public CrMap<Tn, Tg> Clone => Recreate();
+    public Polynomial<ZnInt, Xi> ZZero => Map.First().Value.Zero;
+    public CrMap<Tn, Tg> Clone => new(this);
     public CrMap<Tn, Tg> Recreate(Indeterminates<Xi> ind) => new(Map.ToDictionary(e => e.Key, e => e.Value.Recreate(ind)));
-    public CrMap<Tn, Tg> Recreate() => new(Map.ToDictionary(e => e.Key, e => e.Value.Recreate()));
 
     public CrMap<Tn, Tg> Substitute(Polynomial<ZnInt, Xi> P, Xi xi) =>
         new(Map.ToDictionary(e => e.Key, e => e.Value.Substitute(P, xi).Simplify()));
@@ -67,7 +71,7 @@ public readonly struct CrMap<Tn, Tg> : IEnumerable<KeyValuePair<Ep<Tg>, ZNElt<Tn
     public CrMap<Tn, Tg> ConsTerm()
     {
         var xis = Map.SelectMany(e => e.Value.Coefs.Values.SelectMany(p => p.ExtractAllIndeterminates)).ToHashSet();
-        var zero = PZero;
+        var zero = ZZero;
         var subs = xis.Select(xi => (zero, xi)).ToArray();
         return Substitute(subs);
     }
@@ -94,7 +98,7 @@ public readonly struct CrMap<Tn, Tg> : IEnumerable<KeyValuePair<Ep<Tg>, ZNElt<Tn
 
     public (int ord, CrMap<Tn, Tg> map)[] Generators()
     {
-        var zero = PZero;
+        var zero = ZZero;
         var xis = Map.SelectMany(e => e.Value.Coefs.Values.SelectMany(p => p.ExtractAllIndeterminates)).ToHashSet();
         if (xis.Count == 0)
             return new[] { (1, Zero) };
