@@ -194,29 +194,29 @@ public static class ZNSolver
         var decomp = Nab.DecompElementary;
 
         var sys0 = cr.OrderKeys(G).SelectMany(v => decomp.Select(e => (n: v.Value[e.g], e.o))).Where(e => e.n.Degree != 0).ToArray();
-        var sys1 = sys0.Select(e => (eq: e.n, e.o, mn: LT(e.n, allOrders[e.o], r == 2)))
-            .Select(e => new EquationInfos(e.eq, e.o, e.mn.x, e.mn.z))
-            .OrderByDescending(ei => invs[ei.mod].ContainsKey(ei.lca.K) ? 1 : 0)
-            .ThenByDescending(ei => allOrders[ei.mod][ei.lca.K])
-            .ThenByDescending(ei => ei.equation.ConstTerm.IsZero())
-            .ThenBy(ei => ei.equation.ExtractAllIndeterminates.Length)
-            .ThenByDescending(e => e.lma)
-            .ThenBy(e => e.lca.K)
+        var sys1 = sys0.Select(e => (eq: e.n, eql: e.n.ExtractAllIndeterminates.Length, e.o, mn: LT(e.n, allOrders[e.o], r == 2)))
+            .Select(e => (e.eq, e.eql, mod: e.o, lm: e.mn.x, lc: e.mn.z))
+            .OrderByDescending(ei => invs[ei.mod].ContainsKey(ei.lc.K) ? 1 : 0)
+            .ThenByDescending(ei => allOrders[ei.mod][ei.lc.K])
+            .ThenByDescending(ei => ei.eq.ConstTerm.IsZero())
+            .ThenBy(ei => ei.eql)
+            .ThenByDescending(e => e.lm)
+            .ThenBy(e => e.lc.K)
             .ToArray();
 
         if (sys1.Length == 0)
         {
             var a0 = pZero.Indeterminates.First();
-            return (new(pZero, pZero.X(a0), 1, a0, pZero, 0), cr);
+            return (new(pZero, 1, a0, pZero, 0), cr);
         }
 
-        var (eq, mod, lt, lc) = sys1.First();
+        var (eq, eql, mod, lm, lc) = sys1.First();
         var ords = allOrders[mod];
-        var xis = lt.ContentIndeterminates.ToArray();
+        var xis = lm.ContentIndeterminates.ToArray();
         if (xis.Length != 1)
         {
             var a0 = pZero.Indeterminates.First();
-            return (new(pZero, pZero.X(a0), 1, a0, pZero, 0), cr);
+            return (new(pZero, 1, a0, pZero, 0), cr);
         }
 
         var xq = qis.Dequeue();
@@ -227,7 +227,7 @@ public static class ZNSolver
             var expr = X;
             var sub = (X - ki * eq).Mod(mod) + mod * eq.X(xq);
             var map0 = cr.ToDictionary(e => e.Key, e => e.Value.Substitute(sub, xi).Simplify());
-            return (new(eq, expr, ords[lc.K], xi, sub, mod), new(map0));
+            return (new(eq, ords[lc.K], xi, sub, mod), new(map0));
         }
         else
         {
@@ -247,7 +247,7 @@ public static class ZNSolver
             var sub = (X - ki * eq2 + k).Mod(mod);
 
             var map0 = cr.ToDictionary(e => e.Key, e => e.Value.Substitute(sub, xi).Simplify());
-            return (new(eq, expr, ords[lc.K], xi, sub, mod), new(map0));
+            return (new(eq, ords[lc.K], xi, sub, mod), new(map0));
         }
     }
 
@@ -445,8 +445,9 @@ public static class ZNSolver
         return (sols2Cobs, sols2Cocs);
     }
 
-    public static void Reduce2Cohomologies<Tn, Tg>(ConcreteGroup<Tn> N, ConcreteGroup<Tg> G,
-        MapElt<Tg, Automorphism<Tn>> L, string lbl = "test", bool details = false)
+    public static (CrMap<Tn, Tg>[] sols2Cohs, SysSolution<Tn, Tg> sols2Cobs, SysSolution<Tn, Tg> sols2Cocs) 
+        Reduce2Cohomologies<Tn, Tg>(ConcreteGroup<Tn> N, ConcreteGroup<Tg> G, MapElt<Tg, Automorphism<Tn>> L, string lbl = "test", 
+            bool details = false)
         where Tg : struct, IElt<Tg>
         where Tn : struct, IElt<Tn>
     {
@@ -457,20 +458,31 @@ public static class ZNSolver
         var (nb2Cobs, sred2Cobs, map2Cobs) = sols2Cobs;
         var (nb2Cocs, sred2Cocs, map2Cocs) = sols2Cocs;
         var nb2Cohs = nb2Cocs / nb2Cobs;
+        var allCosets = new List<CrMap<Tn, Tg>>();
 
         Console.WriteLine($"#### {lbl} |B2|:{nb2Cobs} |Z2|:{nb2Cocs} |H2|:{nb2Cohs}");
         Console.WriteLine();
 
-        if (nb2Cobs == 1 || nb2Cohs == 1 || nb2Cocs == 1)
-            return;
-
-        var ind = sols2Cocs.allMaps.Values.First().Indeterminates;
         var zero = map2Cocs.ZZero;
+        var ind = zero.Indeterminates;
         var crZero = map2Cocs.Zero;
 
         var map2Cobs0 = map2Cobs.Recreate(ind);
         var gens2Cobs = map2Cobs0.Generators();
         var gens2Cocs = map2Cocs.Generators();
+
+        // if (nb2Cobs == 1)
+        // {
+        //     var sols2Cobs0 = new SysSolution<Tn, Tg>(1, new(), crZero);
+        //     allCosets = gens2Cocs.Select(e => e.map).Prepend(crZero).ToList();
+        //     return (allCosets.ToArray(), sols2Cobs0, sols2Cocs);
+        // }
+        //
+        // if (nb2Cohs == 1)
+        // {
+        //     allCosets.Add(crZero);
+        //     return (allCosets.ToArray(), sols2Cocs, sols2Cocs);
+        // }
 
         Console.WriteLine($"B2(G,N):{nb2Cobs}={sred2Cobs.Select(s => s.order).Glue("x")}");
         if (details)
@@ -495,8 +507,7 @@ public static class ZNSolver
         //     throw new("??????gens2Cocs??????");
         // }
 
-        var (sreds, _) = SysReduction(map2Cobs0);
-        var nb0 = sreds.Aggregate(1, (acc, s) => acc * s.order);
+        var nb0 = nb2Cobs;
         var lt = new List<(int ord, CrMap<Tn, Tg> map)>();
         var map02 = map2Cobs0.Clone;
 
@@ -507,7 +518,7 @@ public static class ZNSolver
                 break;
 
             Console.CursorLeft = 0;
-            var ai = zero.Indeterminates.Except(map02.ExtractAllIndeterminates).Last();
+            var ai = ind.Except(map02.ExtractAllIndeterminates).Last();
 
             var mapi = map.Mul(zero.X(ai));
             var mapai = map02.Add(mapi);
@@ -548,24 +559,27 @@ public static class ZNSolver
         var nb2Cohs2 = listReprs.Aggregate(1, (acc, l) => acc * l.Count);
         if (nb2Cohs2 == nb2Cohs)
         {
-            var set = new List<CrMap<Tn, Tg>>();
             k0 = 1;
             foreach (var comb in listReprs.MultiLoop())
             {
                 Console.Write($"Cosets:{k0++}/{nb2Cohs}");
                 Console.CursorLeft = 0;
                 var map0 = comb.Aggregate(crZero, (acc, l) => acc.Add(l));
-                set.Add(map0);
+                allCosets.Add(map0);
             }
 
             Console.CursorLeft = 20;
             Console.WriteLine();
-            Console.WriteLine($"H2(G,N):{set.Count} Expected:{nb2Cohs}");
+            Console.WriteLine($"H2(G,N):{allCosets.Count}={listReprs.Select(e => e.Count).Glue("x")} Expected:{nb2Cohs}");
             if (details)
-                DisplayCrMap("2Cohomologies Reprs", set.ToArray());
+                DisplayCrMap("2Cohomologies Reprs", allCosets.ToArray());
 
-            if (set.Count != nb2Cohs)
+            if (allCosets.Count != nb2Cohs)
                 throw new("########");
+
+            var (sreds, map2Cobs1) = SysReduction(map2Cobs0);
+            var sols2Cobs0 = new SysSolution<Tn, Tg>(nb2Cobs, sreds, map2Cobs1);
+            return (allCosets.ToArray(), sols2Cobs0, sols2Cocs);
         }
         else
         {
