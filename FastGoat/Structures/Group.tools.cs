@@ -637,6 +637,9 @@ public static partial class Group
     {
         if (gr.GroupType == GroupType.NonAbelianGroup)
             throw new GroupException(GroupExceptionType.OnlyAbelianGroups);
+
+        if (gr.Count() == 1)
+            return new() { (gr.Neutral(), 1) };
         
         var facts = new List<(T g, int o)>();
         var g0 = gr;
@@ -653,5 +656,10 @@ public static partial class Group
         }
 
         return facts;
+    }
+
+    public static AbelianDirectSum<T> AbelianDirectSum<T>(ConcreteGroup<T> gr) where T : struct, IElt<T>
+    {
+        return new(gr);
     }
 }
