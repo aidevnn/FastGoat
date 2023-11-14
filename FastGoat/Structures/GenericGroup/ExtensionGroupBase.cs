@@ -30,8 +30,8 @@ public struct ExtensionGroupBase<Tn, Tg> : IGroup<Ep2<Tn, Tg>> where Tg : struct
             PseudoGenerators.Add(Product.Elt(e, G.Neutral()));
 
         Hash = (Name, Elements.Count).GetHashCode();
-        // IsGroup = Group.IsGroup(this, Elements);
-        IsGroup = true;
+        IsGroup = Group.IsGroup(this, Elements);
+        // IsGroup = true;
     }
     
     public bool IsGroup { get; }
