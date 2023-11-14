@@ -375,6 +375,12 @@ public static partial class FG
             new(P.Coefs.ToDictionary(kv => kv.Key, kv => new ZnInt(mod, kv.Value.K))));
     }
 
+    public static Polynomial<Rational, T> ToRationalPoly<T>(this Polynomial<ZnInt, T> P) where T : struct, IElt<T>
+    {
+        return new Polynomial<Rational, T>(P.Indeterminates, Rational.KZero(),
+            new(P.Coefs.ToDictionary(kv => kv.Key, kv => new Rational(kv.Value.K))));
+    }
+
     public static Polynomial<ZnInt, Xi> Mod(this Polynomial<ZnInt, Xi> P, int mod)
     {
         var coefs = P.Coefs.Select(e => (e.Key, IntExt.AmodP(e.Value.K, mod)))
