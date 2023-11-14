@@ -9,13 +9,13 @@ namespace FastGoat.Structures.GenericGroup;
 public readonly struct AbelianDirectSum<T> where T : struct, IElt<T>
 {
     public ConcreteGroup<T> Ab { get; }
-    
+
     public List<(T g, int o)> Decomp { get; }
     public Dictionary<T, int> DecompMap { get; }
     public ConcreteGroup<Ep<ZnInt>> AbCanonic { get; }
     private Dictionary<T, Ep<ZnInt>> ToCanonic { get; }
     private Dictionary<Ep<ZnInt>, T> FromCanonic { get; }
-    
+
     public List<(T g, int o)> DecompElementary { get; }
     public Dictionary<T, int> DecompElementaryMap { get; }
     public ConcreteGroup<Ep<ZnInt>> AbElementaries { get; }
@@ -41,7 +41,7 @@ public readonly struct AbelianDirectSum<T> where T : struct, IElt<T>
         ToCanonic = new(isoMap1);
         FromCanonic = isoMap1.ToDictionary(e => e.Value, e => e.Key);
 
-        DecompElementary = Decomp.SelectMany(e => IntExt.PrimesDec(e.o)
+        DecompElementary = Decomp.SelectMany(e => (e.o == 1 ? new Dictionary<int, int>() { [1] = 1 } : IntExt.PrimesDec(e.o))
                 .Select(kv => kv.Key.Pow(kv.Value))
                 .Select(pk => (G.Times(e.g, e.o / pk), pk)))
             .OrderBy(e => e.pk).ToList();
@@ -57,31 +57,32 @@ public readonly struct AbelianDirectSum<T> where T : struct, IElt<T>
         ToElementaries = new(isoMap2);
         FromElementaries = isoMap2.ToDictionary(e => e.Value, e => e.Key);
 
-        ElemOrders = new(DecompElementary.Select(e => e.o).Distinct().ToDictionary(
-            e => e,
-            e => new ReadOnlyDictionary<int, int>((new Cn(e)).ElementsOrders.ToDictionary(a => a.Key.K, a => a.Value))
-        ));
-
-        ElemInvertible = new(DecompElementary.Select(e => e.o).Distinct().ToDictionary(
-            e => e,
-            e => new ReadOnlyDictionary<int, int>(IntExt.UnInvertible(e))
-        ));
+        var mods = DecompElementary.Select(e => e.o).Distinct().Order().ToDictionary(k => k, k => k.Range());
+        ElemOrders = mods.Keys.ToDictionary(e => e, e => (new Cn(e)).ElementsOrders.ToDictionary(a => a.Key.K, a => a.Value));
+        ElemInvertible = mods.Keys.ToDictionary(e => e, e => IntExt.UnInvertible(e));
+        ElemSolve = mods.ToDictionary(
+            m => m.Key,
+            m => m.Value.Grid2D(m.Value).ToDictionary(
+                e => e,
+                e => m.Value.MinBy(k => IntExt.AmodP(e.t1 * k + e.t2, m.Key))));
     }
 
-    public ReadOnlyDictionary<int, ReadOnlyDictionary<int, int>> ElemInvertible { get; }
-
-    public ReadOnlyDictionary<int, ReadOnlyDictionary<int, int>> ElemOrders { get; }
+    public Dictionary<int, Dictionary<int, int>> ElemInvertible { get; }
+    public Dictionary<int, Dictionary<int, int>> ElemOrders { get; }
+    public Dictionary<int, Dictionary<(int, int), int>> ElemSolve { get; }
 
     public T CanToGElt(Ep<ZnInt> z) => FromCanonic[z];
     public Ep<ZnInt> GEltToCan(T g) => ToCanonic[g];
+
     public Dictionary<T, ZnInt> GEltToCanMap(T g)
     {
         var decomp = Decomp.ToArray();
         return ToCanonic[g].Ei.Select((ei, k) => (ei, k)).ToDictionary(a => decomp[a.k].g, a => a.ei);
     }
-    
+
     public T ElemToGElt(Ep<ZnInt> z) => FromElementaries[z];
     public Ep<ZnInt> GEltToElem(T g) => ToElementaries[g];
+
     public Dictionary<T, ZnInt> GEltToElemMap(T g)
     {
         var decompElem = DecompElementary.ToArray();
