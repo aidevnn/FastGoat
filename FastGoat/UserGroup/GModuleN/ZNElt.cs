@@ -58,6 +58,21 @@ public readonly struct ZNElt<Tn, Tg> : IElt<ZNElt<Tn, Tg>>
 
     public ZNElt<Tn, Tg> Clone => new(this, Coefs.ToDictionary(e => e.Key, e => e.Value * 1));
 
+    public ZNElt<Tn, Tg>[] Decomp
+    {
+        get
+        {
+            var ind = Indeterminates;
+            var nab = Nab;
+            var l = L;
+            var coefs = Coefs;
+            var zero = Zero;
+            return Coefs.Keys.Select(e => coefs.ToDictionary(k => k.Key, k => k.Key.Equals(e) ? k.Value : zero))
+                .Select(m => new ZNElt<Tn, Tg>(ind, nab, l, m))
+                .ToArray();
+        }
+    }
+
     public ZNElt<Tn, Tg> Recreate(Indeterminates<Xi> ind)
     {
         var map = Coefs.ToDictionary(e => e.Key, e => e.Value.Recreate(ind));

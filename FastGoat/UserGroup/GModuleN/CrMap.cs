@@ -129,6 +129,18 @@ public readonly struct CrMap<Tn, Tg> : IEnumerable<KeyValuePair<Ep<Tg>, ZNElt<Tn
         }
     }
 
+    public CrMap<Tn, Tg>[] Decomp
+    {
+        get
+        {
+            var map = Map;
+            var gr = Gr;
+            var maps = gr.ToDictionary(g => g, g => map[g].Decomp);
+            var nb = maps.First().Value.Length;
+            return nb.Range().Select(k => new CrMap<Tn, Tg>(gr.ToDictionary(g => g, g => maps[g][k]))).ToArray();
+        }
+    }
+
     public ConcreteGroup<MapElt<Ep<Tg>, Tn>> ToGroupMapElt(string name = "")
     {
         var gens = Generators().Select(e => e.map.ToMapElt).ToArray();
