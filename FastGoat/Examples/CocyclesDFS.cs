@@ -629,6 +629,15 @@ public static class CocyclesDFS
         where Tg : struct, IElt<Tg>
     {
         var allExts = AllNG.SelectMany(e => AllExt(e.N, e.G)).ToList();
+        foreach (var ext in BuildExtensions(allExts))
+            yield return ext;
+    }
+
+    public static IEnumerable<(ConcreteGroup<Ep2<Tn, Tg>>, (int, int, int))> BuildExtensions<Tn, Tg>(
+        List<ExtensionGroup<Tn, Tg>> allExts)
+        where Tn : struct, IElt<Tn>
+        where Tg : struct, IElt<Tg>
+    {
         var infosSubGroups =
             new Dictionary<ConcreteGroup<Ep2<Tn, Tg>>,
                 Dictionary<ConcreteGroup<Ep2<Tn, Tg>>, List<ConcreteGroup<Ep2<Tn, Tg>>>>>();
@@ -662,19 +671,6 @@ public static class CocyclesDFS
                 continue;
             }
 
-            // var cg = (ConcreteGroup<Ep2<Tn, Tg>>)ext;
-            // var res = Parallel.ForEach(listIsos, (g0, state) =>
-            // {
-            //     // unexpected behaviour
-            //     if (cg.IsIsomorphicTo(g0))
-            //         state.Stop();
-            // });
-            //     
-            // if (!res.IsCompleted)
-            //     continue;
-            // else
-            //     listIsos.Add(ext);
-
             if (!listIsos.Add(ext))
                 continue;
 
@@ -690,13 +686,14 @@ public static class CocyclesDFS
         Console.WriteLine($"AllExts Found : {infosSubGroups.Count}");
     }
 
-    public static void DisplayInfosGroups<Tg>((ConcreteGroup<Tg>, (int, int, int))[] elts, int countStart = 0, bool naming = true)
+    public static void DisplayInfosGroups<Tg>((ConcreteGroup<Tg>, (int, int, int))[] elts, int countStart = 0, bool naming = true,
+        string prefix = "Sm")
         where Tg : struct, IElt<Tg>
     {
         foreach (var (g, k, infos) in elts.Select((e, k) => (e.Item1, countStart + k + 1, e.Item2)))
         {
             var og = g.Count();
-            var name = naming ? $"Sm{og}[{k}]" : g.Name;
+            var name = naming ? $"{prefix}{og}[{k}]" : g.Name;
             Console.WriteLine("##########################################################");
             Console.WriteLine($"#################  {name,10} found   ####################");
             Console.WriteLine("##########################################################");
@@ -707,14 +704,15 @@ public static class CocyclesDFS
         }
     }
 
-    public static void DisplayInfosGroups<Tg>(IEnumerable<ConcreteGroup<Tg>> gs, bool naming = false) where Tg : struct, IElt<Tg>
+    public static void DisplayInfosGroups<Tg>(IEnumerable<ConcreteGroup<Tg>> gs, bool naming = false, string prefix = "Sm")
+        where Tg : struct, IElt<Tg>
     {
         DisplayInfosGroups(
             gs.Select(e => (e, SubGroupsDetails(e)))
                 .OrderBy(e => e.Item1.GroupType)
                 .ThenByDescending(e => e.Item1.ElementsOrders.Values.Max())
                 .ThenBy(e => e.Item2).ToArray()
-            , naming: naming);
+            , naming: naming, prefix: prefix);
     }
 
     public static void ExampleAll16Orders()
@@ -904,7 +902,7 @@ public static class CocyclesDFS
             .OrderBy(e => e.Item1.GroupType)
             .ThenByDescending(e => e.Item1.ElementsOrders.Values.Max())
             .ThenBy(e => e.Item2).ToArray();
-    
+
         var allOrder18 = BuildExtensions(ab9.ToHashSet())
             .OrderBy(e => e.Item1.GroupType)
             .ThenByDescending(e => e.Item1.ElementsOrders.Values.Max())
@@ -916,13 +914,13 @@ public static class CocyclesDFS
             .Concat(allOrder12.Select(e => (e.Item1, c3)))
             .Concat(allOrder18.Select(e => (e.Item1, c2)))
             .ToArray();
-    
+
         var allOrder36 = BuildExtensions(tuple36)
             // .Take(14) // stop 
             .OrderBy(e => e.Item1.GroupType)
             .ThenByDescending(e => e.Item1.ElementsOrders.Values.Max())
             .ThenBy(e => e.Item2).ToArray();
-    
+
         Console.Clear();
 
         DisplayInfosGroups(allOrder12);
@@ -931,7 +929,7 @@ public static class CocyclesDFS
 
         Console.Beep();
     }
-    
+
     public static void ExampleAll42Order()
     {
         var (c7, c3, c2) = (FG.Abelian(7), FG.Abelian(3), FG.Abelian(2));
@@ -991,7 +989,7 @@ public static class CocyclesDFS
             .OrderBy(e => e.Item1.GroupType)
             .ThenByDescending(e => e.Item1.ElementsOrders.Values.Max())
             .ThenBy(e => e.Item2).ToArray();
-    
+
         var tuple6 = new[] { FG.DihedralSdp(3), Product.Generate(new Cn(2), new Cn(3)) };
         var allOrder30 = BuildExtensions(tuple6.Select(e => (FG.Abelian(5), e)).ToArray())
             .OrderBy(e => e.Item1.GroupType)
@@ -1012,5 +1010,4 @@ public static class CocyclesDFS
 
         Console.Beep();
     }
-
 }
