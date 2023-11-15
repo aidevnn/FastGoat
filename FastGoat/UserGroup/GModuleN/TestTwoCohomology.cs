@@ -19,7 +19,7 @@ public static class TestTwoCohomology
         {
             var L = op.ToMapElt(autN);
             var lbl = $"Lbl{i}/{ops.Count}";
-            ZNSolver.TwoCohomologyOrder(N, G, L, lbl);
+            ZNSolver.RCohomologyOrder(N, G, L, lbl: lbl);
         }
     }
 
@@ -33,7 +33,7 @@ public static class TestTwoCohomology
         {
             var L = op.ToMapElt(autN);
             var lbl = $"Lbl{i}/{ops.Count}";
-            ZNSolver.Reduce2Cohomologies(N, G, L, lbl);
+            ZNSolver.ReduceCohomologies(N, G, L, lbl: lbl);
         }
     }
 
@@ -47,7 +47,7 @@ public static class TestTwoCohomology
         {
             var L = op.ToMapElt(autN);
             var lbl = $"Lbl{i}/{ops.Count}";
-            var (cosets, (nb2Cobs, _, maps2Cobs), (nb2Cocs, _, maps2Cocs)) = ZNSolver.Reduce2Cohomologies(N, G, L, lbl);
+            var (cosets, (nb2Cobs, _, maps2Cobs), (nb2Cocs, _, maps2Cocs)) = ZNSolver.ReduceCohomologies(N, G, L, lbl: lbl);
             if (nb2Cocs > 1100)
                 continue;
 
