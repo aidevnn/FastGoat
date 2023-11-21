@@ -162,18 +162,14 @@ public static class ZNSolver
         return (cr, cnext);
     }
 
-    static (Monom<Xi> x, ZnInt z) LT(Polynomial<ZnInt, Xi> eq, IDictionary<int, int> orders, bool descending = true)
+    static (Monom<Xi> x, ZnInt z) LT(Polynomial<ZnInt, Xi> eq, Dictionary<int, int> orders)
     {
         if (eq.Degree == 0)
         {
             var (lc, lm, _) = eq.LeadingDetails;
             return (lm, lc);
         }
-
-        if (descending)
-            return eq.Coefs.Where(e => !e.Key.IsOne).Select(e => (e.Key, e.Value)).OrderByDescending(e0 => e0.Key)
-                .MaxBy(e0 => orders[e0.Value.K]);
-
+        
         return eq.Coefs.Where(e => !e.Key.IsOne).Select(e => (e.Key, e.Value)).OrderBy(e0 => e0.Key)
             .MaxBy(e0 => orders[e0.Value.K]);
     }
@@ -196,7 +192,7 @@ public static class ZNSolver
         var decomp = Nab.DecompElementary;
 
         var sys0 = cr.OrderKeys(G).SelectMany(v => decomp.Select(e => (n: v.Value[e.g], e.o))).Where(e => e.n.Degree != 0).ToArray();
-        var sys1 = sys0.Select(e => (eq: e.n, eql: e.n.ExtractAllIndeterminates.Length, e.o, mn: LT(e.n, allOrders[e.o], r == 2)))
+        var sys1 = sys0.Select(e => (eq: e.n, eql: e.n.ExtractAllIndeterminates.Length, e.o, mn: LT(e.n, allOrders[e.o])))
             .Select(e => (e.eq, e.eql, mod: e.o, lm: e.mn.x, lc: e.mn.z))
             .OrderByDescending(ei => invs[ei.mod].ContainsKey(ei.lc.K) ? 1 : 0)
             .ThenByDescending(ei => allOrders[ei.mod][ei.lc.K])
