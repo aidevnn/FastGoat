@@ -75,6 +75,160 @@ IEnumerable<(ConcreteGroup<Ep2<Tn, Tg>> ext, Dictionary<ConcreteGroup<Ep2<Tn, Tg
 
 {
     GlobalStopWatch.Restart();
+    var g0 = FG.Abelian(2, 4);
+    var allExts = AllExtensions(N: g0, G: g0);
+    var nonSplits = allExts.Where(extInfos =>
+    {
+        if (extInfos.ext.GroupType == GroupType.AbelianGroup)
+            return false;
+
+        // Normal Subgroup C2 x C4
+        var lt0 = extInfos.allSubs.Where(e => 
+                e.Value.Count == 1 && 
+                e.Key.GroupType == GroupType.AbelianGroup && 
+                e.Key.IsIsomorphicTo(g0))
+            .ToArray();
+        if (lt0.Length == 0)
+            return false;
+
+        // Ext/(C2 x C4) is isomorphic to C2 x C4
+        var lt1 = lt0.Select(e => extInfos.ext.Over(e.Key)).Where(e => e.GroupType == GroupType.AbelianGroup && e.IsIsomorphicTo(g0))
+            .ToArray();
+        if (lt1.Length == 0)
+            return false;
+
+        return NonSplitExtension.AllSplittingGroups(g0, extInfos.ext, g0, details: false).Any(e => e.s.IsNull);
+    }).Take(10).ToArray();
+    CocyclesDFS.DisplayInfosGroups(nonSplits.Select(e => (e.ext, e.infos)).ToArray(), naming: true, prefix: "Ext");
+    GlobalStopWatch.Show();
+    Console.Beep();
+}
+
+//
+// ############# Lbl1/32      #############
+// H2(G, N) with N:|Z(C2 x C4)| = 8 and G:|C2 x C4| = 8
+// #### |B2|:65536 |Z2|:8388608 |H2|:128
+// 
+// Step:9 Gens:6/16 Dim:8388608/8388608
+// B2(G,N):65536=4x4x4x4x4x2x2x2x2x2x2
+// Z2(G,N):8388608=4x4x4x4x4x4x4x2x2x2x2x2x2x2x2x2
+// Cosets:128/128
+// H2(G,N):128=1x4x2x2x2x2x2 Expected:128
+// ##########################################################
+// #################    Ext64[1] found   ####################
+// ##########################################################
+// |Ext64[1]| = 64
+// Type        NonAbelianGroup
+// BaseGroup   (C2 x C4) . (C2 x C4)
+// 
+// Elements Orders : [1]:1, [2]:15, [4]:48
+// 
+// AllSubGr:185 AllConjsCl:129 AllNorms:73
+// 
+// ##########################################################
+// #################    Ext64[2] found   ####################
+// ##########################################################
+// |Ext64[2]| = 64
+// Type        NonAbelianGroup
+// BaseGroup   (C2 x C4) . (C2 x C4)
+// 
+// Elements Orders : [1]:1, [2]:7, [4]:56
+// 
+// AllSubGr:121 AllConjsCl:97 AllNorms:73
+// 
+// ##########################################################
+// #################    Ext64[3] found   ####################
+// ##########################################################
+// |Ext64[3]| = 64
+// Type        NonAbelianGroup
+// BaseGroup   (C2 x C4) . (C2 x C4)
+// 
+// Elements Orders : [1]:1, [2]:7, [4]:24, [8]:32
+// 
+// AllSubGr:81 AllConjsCl:71 AllNorms:61
+// 
+// ##########################################################
+// #################    Ext64[4] found   ####################
+// ##########################################################
+// |Ext64[4]| = 64
+// Type        NonAbelianGroup
+// BaseGroup   (C2 x C4) . (C2 x C4)
+// 
+// Elements Orders : [1]:1, [2]:7, [4]:24, [8]:32
+// 
+// AllSubGr:77 AllConjsCl:59 AllNorms:41
+// 
+// ##########################################################
+// #################    Ext64[5] found   ####################
+// ##########################################################
+// |Ext64[5]| = 64
+// Type        NonAbelianGroup
+// BaseGroup   (C2 x C4) . (C2 x C4)
+// 
+// Elements Orders : [1]:1, [2]:3, [4]:12, [8]:48
+// 
+// AllSubGr:37 AllConjsCl:33 AllNorms:29
+// 
+// ##########################################################
+// #################    Ext64[6] found   ####################
+// ##########################################################
+// |Ext64[6]| = 64
+// Type        NonAbelianGroup
+// BaseGroup   (C2 x C4) . (C2 x C4)
+// 
+// Elements Orders : [1]:1, [2]:15, [4]:48
+// 
+// AllSubGr:201 AllConjsCl:165 AllNorms:129
+// 
+// ##########################################################
+// #################    Ext64[7] found   ####################
+// ##########################################################
+// |Ext64[7]| = 64
+// Type        NonAbelianGroup
+// BaseGroup   (C2 x C4) . (C2 x C4)
+// 
+// Elements Orders : [1]:1, [2]:7, [4]:56
+// 
+// AllSubGr:113 AllConjsCl:89 AllNorms:65
+// 
+// ##########################################################
+// #################    Ext64[8] found   ####################
+// ##########################################################
+// |Ext64[8]| = 64
+// Type        NonAbelianGroup
+// BaseGroup   (C2 x C4) . (C2 x C4)
+// 
+// Elements Orders : [1]:1, [2]:7, [4]:24, [8]:32
+// 
+// AllSubGr:73 AllConjsCl:59 AllNorms:45
+// 
+// ##########################################################
+// #################    Ext64[9] found   ####################
+// ##########################################################
+// |Ext64[9]| = 64
+// Type        NonAbelianGroup
+// BaseGroup   (C2 x C4) . (C2 x C4)
+// 
+// Elements Orders : [1]:1, [2]:7, [4]:24, [8]:32
+// 
+// AllSubGr:81 AllConjsCl:73 AllNorms:65
+// 
+// ##########################################################
+// #################   Ext64[10] found   ####################
+// ##########################################################
+// |Ext64[10]| = 64
+// Type        NonAbelianGroup
+// BaseGroup   (C2 x C4) . (C2 x C4)
+// 
+// Elements Orders : [1]:1, [2]:7, [4]:8, [8]:16, [16]:32
+// 
+// AllSubGr:45 AllConjsCl:33 AllNorms:21
+// 
+// #  Time:203557 ms
+// 
+
+{
+    GlobalStopWatch.Restart();
     var allExts = AllExtensions(N: FG.Abelian(2), G: FG.Abelian(4, 4)).ToArray();
     CocyclesDFS.DisplayInfosGroups(allExts.Select(e => (e.ext, e.infos)).ToArray(), naming: true, prefix: "Ext");
     GlobalStopWatch.Show();
