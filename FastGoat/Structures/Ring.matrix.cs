@@ -161,6 +161,27 @@ public static partial class Ring
         return B;
     }
 
+    public static void SwapCols<T>(int i, int j, T[,] A) where T : IElt<T>, IRingElt<T>
+    {
+        var rows = A.GetLength(0);
+        for (int k = 0; k < rows; k++)
+            (A[k, i], A[k, j]) = (A[k, j].Opp(), A[k, i]);
+    }
+
+    public static void MulCols<K>(int i, K a, K[,] A) where K : IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var rows = A.GetLength(0);
+        for (int k = 0; k < rows; k++)
+            A[k, i] *= a;
+    }
+
+    public static void CombineCols<K>(int i, int j, K a, K[,] A) where K : IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var rows = A.GetLength(0);
+        for (int k = 0; k < rows; k++)
+            A[k, i] = A[k, i].Add(A[k, j].Mul(a));
+    }
+
     public static void SwapRows<T>(int i, int j, T[,] A) where T : IElt<T>, IRingElt<T>
     {
         var cols = A.GetLength(1);
