@@ -99,11 +99,15 @@ public static class NonSplitExtension
                 yield return (i, p, nullIso);
             }
 
-            Console.WriteLine();
+            if (details)
+                Console.WriteLine();
         }
 
-        Console.WriteLine("End");
-        Console.WriteLine();
+        if (details)
+        {
+            Console.WriteLine("End");
+            Console.WriteLine();
+        }
     }
 
     public static void SearchingQuartenion()
