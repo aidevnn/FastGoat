@@ -690,13 +690,18 @@ public static class CocyclesDFS
         string prefix = "Sm")
         where Tg : struct, IElt<Tg>
     {
+        var names = elts.Select((e, i) => (e.Item1, i + 1))
+            .ToDictionary(e => e.Item1, e => naming ? $"{prefix}{e.Item1.Count()}[{e.Item2}]" : e.Item1.Name);
+        var maxLt = names.Max(e => e.Value.Length);
+        var lt = Enumerable.Repeat('#', maxLt + 4).Glue();
+        var line = $"#################{lt}#################";
+        var fmt = $"#################  {{0,{-maxLt}}}  #################";
         foreach (var (g, k, infos) in elts.Select((e, k) => (e.Item1, countStart + k + 1, e.Item2)))
         {
-            var og = g.Count();
-            var name = naming ? $"{prefix}{og}[{k}]" : g.Name;
-            Console.WriteLine("##########################################################");
-            Console.WriteLine($"#################  {name,10} found   ####################");
-            Console.WriteLine("##########################################################");
+            var name = names[g];
+            Console.WriteLine(line);
+            Console.WriteLine(fmt, name);
+            Console.WriteLine(line);
             g.SetName(name);
             DisplayGroup.HeadOrders(g);
             Console.WriteLine($"AllSubGr:{infos.Item1} AllConjsCl:{infos.Item2} AllNorms:{infos.Item3}");
