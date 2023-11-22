@@ -239,23 +239,35 @@ void NameGroup<T>(Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>> subGroups
 //     GlobalStopWatch.Show($"Nb Ext42:{allExts42.Length}");
 //     Console.Beep();
 // }
+//
+// {
+//     GlobalStopWatch.Restart();
+//     var allExts10 = AllExtensions2((FG.Abelian(5), FG.Abelian(2))).ToArray();
+//     var tuples20 = TestTwoCohomology.AllAbelianGroupsOrder(4).Select(e => (FG.Abelian(5), e)).ToArray();
+//     var allExts20 = AllExtensions2(tuples20).ToArray();
+//     var tuples40 = TestTwoCohomology.AllAbelianGroupsOrder(4).Select(e => (FG.Abelian(2, 5), e)).ToArray();
+//     var allExts40 = AllExtensions2(tuples40)
+//         .OrderBy(e => e.ext.GroupType)
+//         .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
+//         .ThenBy(e => e.infos).ToArray();
+//
+//     CocyclesDFS.DisplayInfosGroups(allExts10.Select(e => (e.ext, e.infos)).ToArray(), naming: false);
+//     GlobalStopWatch.Show($"Nb Ext10:{allExts10.Length}");
+//     CocyclesDFS.DisplayInfosGroups(allExts20.Select(e => (e.ext, e.infos)).ToArray(), naming: false);
+//     GlobalStopWatch.Show($"Nb Ext20:{allExts20.Length}");
+//     CocyclesDFS.DisplayInfosGroups(allExts40.Select(e => (e.ext, e.infos)).ToArray(), naming: false);
+//     GlobalStopWatch.Show($"Nb Ext40:{allExts40.Length}");
+//     Console.Beep();
+// }
 
 {
     GlobalStopWatch.Restart();
-    var allExts10 = AllExtensions2((FG.Abelian(5), FG.Abelian(2))).ToArray();
-    var tuples20 = TestTwoCohomology.AllAbelianGroupsOrder(4).Select(e => (FG.Abelian(5), e)).ToArray();
-    var allExts20 = AllExtensions2(tuples20).ToArray();
-    var tuples40 = TestTwoCohomology.AllAbelianGroupsOrder(4).Select(e => (FG.Abelian(2, 5), e)).ToArray();
-    var allExts40 = AllExtensions2(tuples40)
+    var exts = AllExtensions2((FG.Abelian(4, 4), FG.Abelian(2)))
         .OrderBy(e => e.ext.GroupType)
         .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
         .ThenBy(e => e.infos).ToArray();
 
-    CocyclesDFS.DisplayInfosGroups(allExts10.Select(e => (e.ext, e.infos)).ToArray(), naming: false);
-    GlobalStopWatch.Show($"Nb Ext10:{allExts10.Length}");
-    CocyclesDFS.DisplayInfosGroups(allExts20.Select(e => (e.ext, e.infos)).ToArray(), naming: false);
-    GlobalStopWatch.Show($"Nb Ext20:{allExts20.Length}");
-    CocyclesDFS.DisplayInfosGroups(allExts40.Select(e => (e.ext, e.infos)).ToArray(), naming: false);
-    GlobalStopWatch.Show($"Nb Ext40:{allExts40.Length}");
+    CocyclesDFS.DisplayInfosGroups(exts.Select(e => (e.ext, e.infos)).ToArray(), naming: false);
+    GlobalStopWatch.Show($"Nb Ext:{exts.Length}");
     Console.Beep();
 }
