@@ -297,6 +297,31 @@ void Order32()
     Console.Beep();
 }
 
+void Order56()
+{
+    GlobalStopWatch.Restart();
+    nbOps = 2;
+    var allExts28 = AllExtensions2((FG.Abelian(7), FG.Abelian(4)), (FG.Abelian(7), FG.Abelian(2, 2)))
+        .OrderBy(e => e.ext.GroupType)
+        .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
+        .ThenBy(e => e.infos).ToArray();
+
+    var allExts56 = AllExtensions2(
+            (FG.Abelian(2, 7), FG.Abelian(4)),
+            (FG.Abelian(2, 7), FG.Abelian(2, 2)),
+            (FG.Abelian(2, 2, 2), FG.Abelian(7)))
+        .Take(13)
+        .OrderBy(e => e.ext.GroupType)
+        .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
+        .ThenBy(e => e.infos).ToArray();
+
+    CocyclesDFS.DisplayInfosGroups(allExts28.Select(e => (e.ext, e.infos)).ToArray(), naming: false);
+    GlobalStopWatch.Show($"Nb Ext56:{allExts28.Length}");
+    CocyclesDFS.DisplayInfosGroups(allExts56.Select(e => (e.ext, e.infos)).ToArray(), naming: false);
+    GlobalStopWatch.Show($"Nb Ext56:{allExts56.Length}");
+    Console.Beep();
+}
+
 void Order81()
 {
     GlobalStopWatch.Restart();
@@ -316,7 +341,7 @@ void Order81()
     CocyclesDFS.DisplayInfosGroups(allExts27.Select(e => (e.ext, e.infos)).ToArray(), naming: false);
     GlobalStopWatch.Show($"Nb Ext27:{allExts27.Length}");
     CocyclesDFS.DisplayInfosGroups(allExts81.Select(e => (e.ext, e.infos)).ToArray(), naming: false);
-    GlobalStopWatch.Show($"Nb Ext81:{allExts81.Length}"); // # Nb Ext81:15 Time:515792 ms
+    GlobalStopWatch.Show($"Nb Ext81:{allExts81.Length}"); // # Nb Ext81:15 Time:489456 ms
 
     Console.Beep();
 }
@@ -327,5 +352,6 @@ void Order81()
     // Order32();
     // Order40();
     // Order42();
+    Order56();
     // Order81();
 }
