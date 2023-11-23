@@ -435,3 +435,15 @@ Version 5.4.1
 Arb a C library for arbitrary-precision ball arithmetic
 june2022
 Version 2.23
+
+[milneCFT](https://www.jmilne.org/math/CourseNotes/cft.html)
+<b>Milne, James S.</b>
+Class Field Theory.
+Ed web v4.03, 2020.
+<i>Chapter 2. The Cohomology of Groups.</i>
+
+[Cohomology of Finite Groups](https://link.springer.com/book/10.1007/978-3-662-06280-7)
+<b>Alejandro Adem, R. James Milgram.</b>
+Cohomology of Finite Groups Springer.
+Second Edition 2004. 
+<i>Chapter 1. Group Extensions, Simple Algebras and Cohomology</i>
