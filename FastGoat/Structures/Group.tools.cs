@@ -278,7 +278,8 @@ public static partial class Group
                     var sg2 = Generate(g, gens);
                     var conjsSg2 = table[sg2] = SubGroupsConjugates(g, sg2);
                     allSubGrs.UnionWith(conjsSg2);
-                    sgsRem.Add(sg2);
+                    // sgsRem.Add(sg2);
+                    sgsRem.UnionWith(conjsSg2);
                     sgsPrevRem.Add(sg1);
                 }
             }
@@ -349,6 +350,7 @@ public static partial class Group
                     var conjsSg2 = table[sg2] = SubGroupsConjugates(g, sg2);
                     allSubgroups.UnionWith(conjsSg2);
                     sgsRem.Add(sg2);
+                    // sgsRem.UnionWith(conjsSg2);
                     sgsPrevRem.Add(sg1);
                 }
             }
