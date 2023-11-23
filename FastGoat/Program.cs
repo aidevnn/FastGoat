@@ -28,6 +28,7 @@ using FastGoat.UserGroup.Padic;
 //////////////////////////////////
 
 Console.WriteLine("Hello World");
+var nbOps = 10000;
 
 IEnumerable<(CrMap<Tn, Tg> c, ConcreteGroup<Ep2<Tn, Tg>> ext, Dictionary<ConcreteGroup<Ep2<Tn, Tg>>,
     List<ConcreteGroup<Ep2<Tn, Tg>>>> allSubs, (int, int, int) infos)> AllExtensions<Tn, Tg>(ConcreteGroup<Tn> N, ConcreteGroup<Tg> G)
@@ -38,7 +39,7 @@ IEnumerable<(CrMap<Tn, Tg> c, ConcreteGroup<Ep2<Tn, Tg>> ext, Dictionary<Concret
     var autN = Group.AutomorphismGroup(N);
     var ops = Group.AllHomomorphisms(G, autN);
     var dicExts = new Dictionary<(int, int, int), HashSet<ConcreteGroup<Ep2<Tn, Tg>>>>();
-    foreach (var (op, i) in ops.Select((l, i) => (l, i + 1)))
+    foreach (var (op, i) in ops.Select((l, i) => (l, i + 1)).Take(nbOps))
     {
         var L = op.ToMapElt(autN);
         var lbl = $"Lbl{i}/{ops.Count}";
@@ -124,10 +125,10 @@ Dictionary<ConcreteGroup<T>, ConcreteGroup<T>[]>
         .ThenByDescending(e => e.Count())
         .ToArray();
     return properNormalSubGroups.ToDictionary(n => n,
-            n => otherSubroups.OrderByDescending(e => subGroups.Any(kv => kv.Key.SetEquals(e)))
+            n => otherSubroups.OrderByDescending(e => subGroups.Any(kv => kv.Key.SetEquals(e)) ? e.Count() : 0)
                 .ThenBy(e => e.Count())
-                .FirstOrDefault(e => e.Count() * n.Count() == og && n.Intersect(e).Count() == 1, tr))
-        .Where(e => e.Value.Count() != 1).ToDictionary(e => e.Key, e => new[] { e.Value });
+                .Where(e => e.Count() * n.Count() == og && n.Intersect(e).Count() == 1).ToArray())
+        .Where(e => e.Value.Length != 0).ToDictionary(e => e.Key, e => e.Value);
 }
 
 Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>>
@@ -153,9 +154,14 @@ void NameGroup<T>(Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>> subGroups
         if (dic.Count != 0)
         {
             var (k, h) = dic.Select(e => (e.Key, e.Value[0]))
-                .OrderByDescending(e => subGroups.Any(kv => kv.Key.SetEquals(e.Key)) && subGroups.Any(kv => kv.Key.SetEquals(e.Item2)))
-                .ThenByDescending(e => e.Key.Count())
-                .ThenByDescending(e => e.Item2.GroupType == GroupType.AbelianGroup)
+                .OrderByDescending(e => subGroups.Any(kv => kv.Key.SetEquals(e.Key)) &&
+                                        subGroups.Any(kv => kv.Key.SetEquals(e.Item2))) // direct product
+                .ThenByDescending(e => e.Key.GroupType == GroupType.AbelianGroup && e.Item2.Count() == 2) // dihedral
+                .ThenByDescending(e => e.Key.GroupType == GroupType.AbelianGroup &&
+                                       e.Key.Name.Count(c => c == 'C') == 1 &&
+                                       e.Item2.GroupType == GroupType.AbelianGroup &&
+                                       e.Item2.Name.Count(c => c == 'C') == 1) // pq-group
+                .ThenByDescending(e => subGroups.Any(kv => kv.Key.SetEquals(e.Item2)) ? e.Item2.Count() : e.Key.Count())
                 .First();
             var subGroupsK = SubGroupRes(k, subGroups);
             var subGroupsH = SubGroupRes(h, subGroups);
@@ -176,98 +182,150 @@ void NameGroup<T>(Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>> subGroups
     }
 }
 
-// {
-//     GlobalStopWatch.Restart();
-//     var tuples16 = TestTwoCohomology.AllAbelianGroupsOrder(8).Select(e => (e, FG.Abelian(2))).ToArray();
-//     var allExts16 = AllExtensions2(tuples16)
-//         .OrderBy(e => e.ext.GroupType)
-//         .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
-//         .ThenBy(e => e.infos).ToArray();
-//
-//     CocyclesDFS.DisplayInfosGroups(allExts16.Select(e => (e.ext, e.infos)).ToArray(), naming: false);
-//     GlobalStopWatch.Show($"Nb Ext16:{allExts16.Length}");
-//     Console.Beep();
-// }
-
-// {
-//     GlobalStopWatch.Restart();
-//     var tuples8 = TestTwoCohomology.AllAbelianGroupsOrder(4).Select(e => (e, FG.Abelian(2)));
-//     var allExts8 = AllExtensions2(tuples8.ToArray()).ToArray();
-//     
-//     var tuples12a = TestTwoCohomology.AllAbelianGroupsOrder(4).Select(e => (e, FG.Abelian(3)));
-//     var tuples12b = TestTwoCohomology.AllAbelianGroupsOrder(6).Select(e => (e, FG.Abelian(2)));
-//     var tuples12 = tuples12a.Concat(tuples12b).ToArray();
-//     var allExts12 = AllExtensions2(tuples12).ToArray();
-//     
-//     var tuples24a = allExts8.Select(e => (e.ext, FG.Abelian(3)));
-//     var tuples24b = allExts12.Select(e => (e.ext, FG.Abelian(2)));
-//     var tuples24 = tuples24a.Concat(tuples24b).ToArray();
-//     var allExts24 = AllExtensions2(tuples24)
-//         .OrderBy(e => e.ext.GroupType)
-//         .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
-//         .ThenBy(e => e.infos).ToArray();
-//
-//     CocyclesDFS.DisplayInfosGroups(allExts8.Select(e => (e.ext, e.infos)).ToArray(), naming: false);
-//     GlobalStopWatch.Show($"Nb Ext8:{allExts8.Length}");
-//     CocyclesDFS.DisplayInfosGroups(allExts12.Select(e => (e.ext, e.infos)).ToArray(), naming: false);
-//     GlobalStopWatch.Show($"Nb Ext12:{allExts12.Length}");
-//     CocyclesDFS.DisplayInfosGroups(allExts24.Select(e => (e.ext, e.infos)).ToArray(), naming: false);
-//     GlobalStopWatch.Show($"Nb Ext24:{allExts24.Length}");
-//     Console.Beep();
-// }
-
-// {
-//     GlobalStopWatch.Restart();
-//     var tuples14 = TestTwoCohomology.AllAbelianGroupsOrder(7).Select(e => (e, FG.Abelian(2)));
-//     var allExts14 = AllExtensions2(tuples14.ToArray()).ToArray();
-//     var tuples21 = TestTwoCohomology.AllAbelianGroupsOrder(7).Select(e => (e, FG.Abelian(3)));
-//     var allExts21 = AllExtensions2(tuples21.ToArray()).ToArray();
-//
-//     var tuples42a = allExts14.Select(e => (e.ext, FG.Abelian(3)));
-//     var tuples42b = allExts21.Select(e => (e.ext, FG.Abelian(2)));
-//     var tuples42 = tuples42a.Concat(tuples42b).ToArray();
-//     var allExts42 = AllExtensions2(tuples42)
-//         .OrderBy(e => e.ext.GroupType)
-//         .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
-//         .ThenBy(e => e.infos).ToArray();
-//
-//     CocyclesDFS.DisplayInfosGroups(allExts14.Select(e => (e.ext, e.infos)).ToArray(), naming: false);
-//     GlobalStopWatch.Show($"Nb Ext14:{allExts14.Length}");
-//     CocyclesDFS.DisplayInfosGroups(allExts21.Select(e => (e.ext, e.infos)).ToArray(), naming: false);
-//     GlobalStopWatch.Show($"Nb Ext21:{allExts21.Length}");
-//     CocyclesDFS.DisplayInfosGroups(allExts42.Select(e => (e.ext, e.infos)).ToArray(), naming: false);
-//     GlobalStopWatch.Show($"Nb Ext42:{allExts42.Length}");
-//     Console.Beep();
-// }
-//
-// {
-//     GlobalStopWatch.Restart();
-//     var allExts10 = AllExtensions2((FG.Abelian(5), FG.Abelian(2))).ToArray();
-//     var tuples20 = TestTwoCohomology.AllAbelianGroupsOrder(4).Select(e => (FG.Abelian(5), e)).ToArray();
-//     var allExts20 = AllExtensions2(tuples20).ToArray();
-//     var tuples40 = TestTwoCohomology.AllAbelianGroupsOrder(4).Select(e => (FG.Abelian(2, 5), e)).ToArray();
-//     var allExts40 = AllExtensions2(tuples40)
-//         .OrderBy(e => e.ext.GroupType)
-//         .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
-//         .ThenBy(e => e.infos).ToArray();
-//
-//     CocyclesDFS.DisplayInfosGroups(allExts10.Select(e => (e.ext, e.infos)).ToArray(), naming: false);
-//     GlobalStopWatch.Show($"Nb Ext10:{allExts10.Length}");
-//     CocyclesDFS.DisplayInfosGroups(allExts20.Select(e => (e.ext, e.infos)).ToArray(), naming: false);
-//     GlobalStopWatch.Show($"Nb Ext20:{allExts20.Length}");
-//     CocyclesDFS.DisplayInfosGroups(allExts40.Select(e => (e.ext, e.infos)).ToArray(), naming: false);
-//     GlobalStopWatch.Show($"Nb Ext40:{allExts40.Length}");
-//     Console.Beep();
-// }
-
+void Order16()
 {
     GlobalStopWatch.Restart();
-    var exts = AllExtensions2((FG.Abelian(4, 4), FG.Abelian(2)))
+    nbOps = 4;
+    var allExts16 = AllExtensions2(TestTwoCohomology.AllAbelianGroupsOrder(8).Select(e => (e, FG.Abelian(2))).ToArray())
+        .OrderBy(e => e.ext.GroupType)
+        .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
+        .ThenBy(e => e.infos).ToArray();
+
+    CocyclesDFS.DisplayInfosGroups(allExts16.Select(e => (e.ext, e.infos)).ToArray(), naming: false);
+    GlobalStopWatch.Show($"Nb Ext16:{allExts16.Length}");
+    Console.Beep();
+}
+
+void Order24()
+{
+    GlobalStopWatch.Restart();
+    nbOps = 3;
+    var tuples8 = TestTwoCohomology.AllAbelianGroupsOrder(4).Select(e => (e, FG.Abelian(2)));
+    var allExts8 = AllExtensions2(tuples8.ToArray()).ToArray();
+
+    var tuples12a = TestTwoCohomology.AllAbelianGroupsOrder(4).Select(e => (e, FG.Abelian(3)));
+    var tuples12b = TestTwoCohomology.AllAbelianGroupsOrder(6).Select(e => (e, FG.Abelian(2)));
+    var tuples12 = tuples12a.Concat(tuples12b).ToArray();
+    var allExts12 = AllExtensions2(tuples12).ToArray();
+
+    var tuples24a = allExts8.Select(e => (e.ext, FG.Abelian(3)));
+    var tuples24b = allExts12.Select(e => (e.ext, FG.Abelian(2)));
+    var tuples24 = tuples24a.Concat(tuples24b).ToArray();
+    var allExts24 = AllExtensions2(tuples24)
+        .OrderBy(e => e.ext.GroupType)
+        .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
+        .ThenBy(e => e.infos).ToArray();
+
+    CocyclesDFS.DisplayInfosGroups(allExts8.Select(e => (e.ext, e.infos)).ToArray(), naming: false);
+    GlobalStopWatch.Show($"Nb Ext8:{allExts8.Length}");
+    CocyclesDFS.DisplayInfosGroups(allExts12.Select(e => (e.ext, e.infos)).ToArray(), naming: false);
+    GlobalStopWatch.Show($"Nb Ext12:{allExts12.Length}");
+    CocyclesDFS.DisplayInfosGroups(allExts24.Select(e => (e.ext, e.infos)).ToArray(), naming: false);
+    GlobalStopWatch.Show($"Nb Ext24:{allExts24.Length}");
+    Console.Beep();
+}
+
+void Order42()
+{
+    GlobalStopWatch.Restart();
+    nbOps = 4;
+    var tuples14 = TestTwoCohomology.AllAbelianGroupsOrder(7).Select(e => (e, FG.Abelian(2)));
+    var allExts14 = AllExtensions2(tuples14.ToArray()).ToArray();
+    var tuples21 = TestTwoCohomology.AllAbelianGroupsOrder(7).Select(e => (e, FG.Abelian(3)));
+    var allExts21 = AllExtensions2(tuples21.ToArray()).ToArray();
+
+    var tuples42a = allExts14.Select(e => (e.ext, FG.Abelian(3)));
+    var tuples42b = allExts21.Select(e => (e.ext, FG.Abelian(2)));
+    var tuples42 = tuples42a.Concat(tuples42b).ToArray();
+    var allExts42 = AllExtensions2(tuples42)
+        .OrderBy(e => e.ext.GroupType)
+        .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
+        .ThenBy(e => e.infos).ToArray();
+
+    CocyclesDFS.DisplayInfosGroups(allExts14.Select(e => (e.ext, e.infos)).ToArray(), naming: false);
+    GlobalStopWatch.Show($"Nb Ext14:{allExts14.Length}");
+    CocyclesDFS.DisplayInfosGroups(allExts21.Select(e => (e.ext, e.infos)).ToArray(), naming: false);
+    GlobalStopWatch.Show($"Nb Ext21:{allExts21.Length}");
+    CocyclesDFS.DisplayInfosGroups(allExts42.Select(e => (e.ext, e.infos)).ToArray(), naming: false);
+    GlobalStopWatch.Show($"Nb Ext42:{allExts42.Length}");
+    Console.Beep();
+}
+
+void Order40()
+{
+    GlobalStopWatch.Restart();
+    nbOps = 4;
+    var allExts10 = AllExtensions2((FG.Abelian(5), FG.Abelian(2))).ToArray();
+    var tuples20 = TestTwoCohomology.AllAbelianGroupsOrder(4).Select(e => (FG.Abelian(5), e)).ToArray();
+    var allExts20 = AllExtensions2(tuples20).ToArray();
+    var tuples40 = TestTwoCohomology.AllAbelianGroupsOrder(4).Select(e => (FG.Abelian(2, 5), e)).ToArray();
+    var allExts40 = AllExtensions2(tuples40)
+        .OrderBy(e => e.ext.GroupType)
+        .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
+        .ThenBy(e => e.infos).ToArray();
+
+    CocyclesDFS.DisplayInfosGroups(allExts10.Select(e => (e.ext, e.infos)).ToArray(), naming: false);
+    GlobalStopWatch.Show($"Nb Ext10:{allExts10.Length}");
+    CocyclesDFS.DisplayInfosGroups(allExts20.Select(e => (e.ext, e.infos)).ToArray(), naming: false);
+    GlobalStopWatch.Show($"Nb Ext20:{allExts20.Length}");
+    CocyclesDFS.DisplayInfosGroups(allExts40.Select(e => (e.ext, e.infos)).ToArray(), naming: false);
+    GlobalStopWatch.Show($"Nb Ext40:{allExts40.Length}");
+    Console.Beep();
+}
+
+void Order32()
+{
+    GlobalStopWatch.Restart();
+    var exts = AllExtensions2(
+            (FG.Abelian(16), FG.Abelian(2)),
+            (FG.Abelian(2, 8), FG.Abelian(2)),
+            (FG.Abelian(4, 4), FG.Abelian(2)),
+            (FG.Abelian(2, 2, 4), FG.Abelian(2)),
+            (FG.Abelian(2, 4), FG.Abelian(4)),
+            (FG.Abelian(2, 2, 2), FG.Abelian(4)),
+            (FG.Abelian(8), FG.Abelian(2, 2)),
+            (FG.Abelian(2, 4), FG.Abelian(2, 2)),
+            (FG.Abelian(2, 2, 2), FG.Abelian(2, 2)))
+        .Take(51)
         .OrderBy(e => e.ext.GroupType)
         .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
         .ThenBy(e => e.infos).ToArray();
 
     CocyclesDFS.DisplayInfosGroups(exts.Select(e => (e.ext, e.infos)).ToArray(), naming: false);
-    GlobalStopWatch.Show($"Nb Ext:{exts.Length}");
+    GlobalStopWatch.Show($"Nb Ext:{exts.Length}"); // # Nb Ext:51 Time:781578 ms ~ 13min
+
     Console.Beep();
+}
+
+void Order81()
+{
+    GlobalStopWatch.Restart();
+    nbOps = 2;
+    var allExts27 = AllExtensions2((FG.Abelian(9), FG.Abelian(3)), (FG.Abelian(3, 3), FG.Abelian(3)))
+        .OrderBy(e => e.ext.GroupType)
+        .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
+        .ThenBy(e => e.infos).ToArray();
+
+    (allExts27[2], allExts27[4]) = (allExts27[4], allExts27[2]);
+    var allExts81 = AllExtensions2(allExts27.Select(e => (e.ext, FG.Abelian(3))).ToArray())
+        .Take(15)
+        .OrderBy(e => e.ext.GroupType)
+        .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
+        .ThenBy(e => e.infos).ToArray();
+
+    CocyclesDFS.DisplayInfosGroups(allExts27.Select(e => (e.ext, e.infos)).ToArray(), naming: false);
+    GlobalStopWatch.Show($"Nb Ext27:{allExts27.Length}");
+    CocyclesDFS.DisplayInfosGroups(allExts81.Select(e => (e.ext, e.infos)).ToArray(), naming: false);
+    GlobalStopWatch.Show($"Nb Ext81:{allExts81.Length}"); // # Nb Ext81:15 Time:515792 ms
+
+    Console.Beep();
+}
+
+{
+    // Order16();
+    // Order24();
+    // Order32();
+    // Order40();
+    // Order42();
+    // Order81();
 }
