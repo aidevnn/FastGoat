@@ -11,6 +11,7 @@ public readonly struct EPolynomial<K> : IVsElt<K, EPolynomial<K>>, IElt<EPolynom
 
     public static bool IsValuedField => false;
     public static double Abs(EPolynomial<K> e) => throw new NotImplementedException();
+
     public EPolynomial(Polynomial<K, Xi> num, PolynomialBasis<K, Xi> basis)
     {
         if (!num.Indeterminates.Equals(basis.Indeterminates))
@@ -89,6 +90,7 @@ public readonly struct EPolynomial<K> : IVsElt<K, EPolynomial<K>>, IElt<EPolynom
 
     public EPolynomial<K> Inv() => new(Denom, Num, Basis);
     public bool Invertible() => !IsZero();
+
     public EPolynomial<K> Mul(int k)
     {
         var num = Basis.Rem(k * Num);

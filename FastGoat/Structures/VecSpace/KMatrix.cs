@@ -13,6 +13,7 @@ public struct KMatrix<K> : IVsElt<K, KMatrix<K>>, IElt<KMatrix<K>>, IRingElt<KMa
 
     public static double Abs(KMatrix<K> m) => K.IsValuedField ? K.Abs(m.Det) : throw new NotImplementedException();
     public static bool IsValuedField => K.IsValuedField;
+
     public KMatrix(K scalar, int m, int n)
     {
         Coefs = new K[m, n];
@@ -228,6 +229,7 @@ public struct KMatrix<K> : IVsElt<K, KMatrix<K>>, IElt<KMatrix<K>>, IRingElt<KMa
     }
 
     public bool Invertible() => !IsZero();
+
     public KMatrix<K> Pow(int k)
     {
         if (M != N)

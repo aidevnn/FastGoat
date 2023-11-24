@@ -160,7 +160,7 @@ public readonly struct BigCplx : IElt<BigCplx>, IRingElt<BigCplx>, IFieldElt<Big
 
         if (ImaginaryPart.K > 0)
             return $"({a0} + {b0})";
-        
+
         return $"({a0} + {b0})".Replace("+ -", "- ");
     }
 

@@ -25,7 +25,7 @@ public readonly struct EPoly<K> : IVsElt<K, EPoly<K>>, IElt<EPoly<K>>, IRingElt<
         Hash = (Poly.Hash, f.Hash).GetHashCode();
     }
 
-    public bool Equals(EPoly<K> other) =>  Poly.Equals(other.Poly); // Avoid collisions
+    public bool Equals(EPoly<K> other) => Poly.Equals(other.Poly); // Avoid collisions
 
     public int CompareTo(EPoly<K> other) => Poly.CompareTo(other.Poly);
 

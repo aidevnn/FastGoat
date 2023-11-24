@@ -13,6 +13,7 @@ public class OpGroup<K> : IGroup<K> where K : struct, IFieldElt<K>, IRingElt<K>,
     private K neutral { get; }
     public FGroupOp FGroupOp { get; }
     public K[] PseudoGenerators { get; }
+
     public OpGroup(string name, K scalar, FGroupOp fGroupOp)
     {
         Name = name;

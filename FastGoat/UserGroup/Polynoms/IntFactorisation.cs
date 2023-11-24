@@ -218,7 +218,8 @@ public static partial class IntFactorisation
     // A Computational Introduction to Number Theory and Algebra
     // Victor Shoup
     // 20.5 Factoring polynomials: Berlekamp’s algorithm page 541
-    public static IEnumerable<KPoly<K>> BerlekampProbabilisticVShoup<K>(KPoly<K> f, K a0) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    public static IEnumerable<KPoly<K>> BerlekampProbabilisticVShoup<K>(KPoly<K> f, K a0)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var acc = a0.One;
         var allF = new List<K>() { a0.Zero };
@@ -257,7 +258,8 @@ public static partial class IntFactorisation
     }
 
     // AECF Algorithme de Berlekamp 353
-    public static IEnumerable<KPoly<K>> BerlekampProbabilisticAECF<K>(KPoly<K> f, K a0) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    public static IEnumerable<KPoly<K>> BerlekampProbabilisticAECF<K>(KPoly<K> f, K a0)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         // var irrs = PolynomialFactorization.Firr(f, a0).Order().ToArray();
         // var r = irrs.Length.Range();
@@ -401,7 +403,8 @@ public static partial class IntFactorisation
             yield return fi;
     }
 
-    public static IEnumerable<KPoly<K>> CantorZassenhausVShoup<K>(KPoly<K> F, K a0) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    public static IEnumerable<KPoly<K>> CantorZassenhausVShoup<K>(KPoly<K> F, K a0)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var acc = a0.One;
         var allF = new List<K>() { a0.Zero };

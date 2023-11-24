@@ -9,7 +9,7 @@
         <Platforms>AnyCPU;x64</Platforms>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="dotnet-t4-project-tool" Version="2.2.1" />
+        <PackageReference Include="dotnet-t4-project-tool" Version="2.2.1"/>
     </ItemGroup>
     <ItemGroup>
         <None Update="Structures\CartesianProduct\GpEp.tt">
@@ -21,8 +21,8 @@
             <LastGenOutput>Tuple2Array.cs</LastGenOutput>
         </None>
         <None Update="Commons\Array2Tuple.tt">
-          <Generator>TextTemplatingFileGenerator</Generator>
-          <LastGenOutput>Array2Tuple.cs</LastGenOutput>
+            <Generator>TextTemplatingFileGenerator</Generator>
+            <LastGenOutput>Array2Tuple.cs</LastGenOutput>
         </None>
     </ItemGroup>
     <ItemGroup>
@@ -35,9 +35,9 @@
             <DependentUpon>Tuple2Array.tt</DependentUpon>
         </Compile>
         <Compile Update="Commons\Array2Tuple.cs">
-          <AutoGen>True</AutoGen>
-          <DesignTime>True</DesignTime>
-          <DependentUpon>Array2Tuple.tt</DependentUpon>
+            <AutoGen>True</AutoGen>
+            <DesignTime>True</DesignTime>
+            <DependentUpon>Array2Tuple.tt</DependentUpon>
         </Compile>
     </ItemGroup>
 </Project>

@@ -95,7 +95,7 @@ public static class GroebnerBasis
     public static void LCMexample1()
     {
         var (t, x, y) = Ring.Polynomial(Rational.KZero(), MonomOrder.Lex, "t", "x", "y").Deconstruct();
-        var (e1, e2) = ( x.Pow(2) * y, x * y.Pow(2));
+        var (e1, e2) = (x.Pow(2) * y, x * y.Pow(2));
         var (p1, p2) = (t * e1, (1 - t) * e2);
         Console.WriteLine($"ReducedGrobnerBasis[{p1}, {p2}]{p1.Indeterminates}");
         var bs1 = Ring.ReducedGrobnerBasis(p1, p2);
@@ -122,7 +122,7 @@ public static class GroebnerBasis
         var lcm = Ring.LcmPolynomial(e1, e2);
         var gcd = e1 * e2 / lcm;
         var (f1, f2) = (e1.Div(gcd), e2.Div(gcd));
-        var (g1, g2) = ((x + y).Pow(3) *  (x - 5 * y), (x.Pow(2) + y) * (x + 3 * y));
+        var (g1, g2) = ((x + y).Pow(3) * (x - 5 * y), (x.Pow(2) + y) * (x + 3 * y));
         Console.WriteLine(new { e1 });
         Console.WriteLine(new { e2 });
         Console.WriteLine(new { lcm });

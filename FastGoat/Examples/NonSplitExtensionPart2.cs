@@ -37,12 +37,13 @@ public static class NonSplitExtensionPart2
 
         return true;
     }
-        
+
     // Alejandro Adem, R. James Milgram
     // Cohomology of Finite Groups
     // Chapter I Group Extensions, Simple Algebras and Cohomology
-    public static HashSet<(MapElt<Tg, Automorphism<Tn>>, MapElt<Ep2<Tg, Tg>, Tn>)> TwistedL<Tn, Tg>(ConcreteGroup<Tn> N, ConcreteGroup<Tg> G)
-        where Tg : struct, IElt<Tg> 
+    public static HashSet<(MapElt<Tg, Automorphism<Tn>>, MapElt<Ep2<Tg, Tg>, Tn>)> TwistedL<Tn, Tg>(ConcreteGroup<Tn> N,
+        ConcreteGroup<Tg> G)
+        where Tg : struct, IElt<Tg>
         where Tn : struct, IElt<Tn>
     {
         var og = G.Count();
@@ -59,17 +60,17 @@ public static class NonSplitExtensionPart2
         var we_nN = we.Select(e => (e, nN)).ToArray();
         var rem = GxG.Except(we).ToArray();
         var nb = rem.Length;
-    
+
         var max1 = BigInteger.Pow(autN.Count(), og - 1);
         var max2 = BigInteger.Pow(N.Count(), nb);
         if (max1 * max2 > 15000)
-            throw new($"too much iterations, {max1}x{max2}={max1*max2} > 15000");
+            throw new($"too much iterations, {max1}x{max2}={max1 * max2} > 15000");
 
         var allL = autN.MultiLoop(og - 1).Select(l => arrG.Zip(l).Prepend((nG, nAN)).ToDictionary(e => e.Item1, e => e.Item2))
             .Where(L => innN.SuperSetOf(GxG.Select(e => autN.Op(L[e.E1].Invert(), autN.Op(L[e.E2].Invert(), L[G.Op(e.E1, e.E2)])))))
             .Select(m => new MapElt<Tg, Automorphism<Tn>>(G, autN, m))
             .ToHashSet();
-    
+
         foreach (var l in N.MultiLoop(nb))
         {
             var l0 = l.ToArray();
@@ -175,7 +176,7 @@ public static class NonSplitExtensionPart2
                 var conjs = Group.SubGroupsConjugates(ext, e0);
                 if (conjs.Count == 1)
                     Console.WriteLine($"{q8} is normal subgroup of {iso}");
-            
+
                 Console.WriteLine();
                 NonSplitExtension.AllSplittingGroups(q8, ext, c2).First();
                 Console.WriteLine();
@@ -205,7 +206,7 @@ public static class NonSplitExtensionPart2
        |(C4 x C4) . C2| = 32
        Type        NonAbelianGroup
        BaseGroup   (C4 x C4) . C2
-       
+
        Elements
        ( 1)[1] = ((0, 0), 0)
        ( 2)[2] = ((0, 2), 0)
@@ -239,7 +240,7 @@ public static class NonSplitExtensionPart2
        (30)[4] = ((3, 2), 1)
        (31)[4] = ((3, 3), 0)
        (32)[4] = ((3, 3), 1)
-       
+
        (C4 x C4) . C2 IsIsomorphicTo [(C4 x C4) . C2]pg : True
        1 -----> G:C4 x C4 -----> GH:(C4 x C4) . C2 -----> H:C2 -----> 1
        G  --i--> GH

@@ -209,7 +209,7 @@ public static class GaloisTheory
         var names = new Queue<char>(alphabet.Take(allSubs.Count - 2).Prepend(primEltChar).Append(primEltChar));
         if (allSubs.Count > alphabet.Length)
             throw new($"Too many subGroups nb={allSubs.Count}");
-        
+
         foreach (var subGr in allSubs)
         {
             subGr.SetName($"G{i++}");
@@ -227,7 +227,7 @@ public static class GaloisTheory
 
             var (minPoly, c) = IntFactorisation.ConstCoef(inv.minPoly, monic: true);
             var name = minPoly.Degree == 1 ? "Q" : $"Q({sfName})";
-            yield return  new($"{sfName}", name, subGr, rs, inv.primElt / c, minPoly.SubstituteChar(sfName));
+            yield return new($"{sfName}", name, subGr, rs, inv.primElt / c, minPoly.SubstituteChar(sfName));
         }
 
         if (details)

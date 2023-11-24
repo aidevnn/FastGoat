@@ -241,6 +241,7 @@ public static class IntExt
     /// Represents the maximum of precomputed permutations.
     /// </summary>
     public const int NbPermutations = 8;
+
     private static Dictionary<int, int[][]> AllPermutations { get; }
 
     /// <summary>
@@ -736,7 +737,8 @@ public static class IntExt
     /// <param name="start">The starting value of the range (defaults to 0).</param>
     /// <param name="step">The increment between each value (defaults to 1).</param>
     /// <returns>An array of integers with a range from the given start and step values.</returns>
-    public static int[] Range(this int a, int start = 0, int step = 1) => Enumerable.Range(0, a).Select(i => start + i * step).ToArray();
+    public static int[] Range(this int a, int start = 0, int step = 1) =>
+        Enumerable.Range(0, a).Select(i => start + i * step).ToArray();
 
     /// <summary>
     /// Calculates and returns the factorial of the given integer.

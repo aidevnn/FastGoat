@@ -70,7 +70,7 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
 
     public Polynomial<K, T> Recreate(Indeterminates<T> ind)
     {
-        var coefs = Coefs.Where(e=>!e.Value.IsZero()).ToDictionary(e => new Monom<T>(ind, e.Key), e => e.Value);
+        var coefs = Coefs.Where(e => !e.Value.IsZero()).ToDictionary(e => new Monom<T>(ind, e.Key), e => e.Value);
         return new(ind, KZero, new(coefs));
     }
 
@@ -83,11 +83,12 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
 
         return new Polynomial<K, T>(new Monom<T>(Indeterminates, t), KOne);
     }
+
     public Polynomial<K, T> Inv()
     {
         if (Coefs.Count == 1)
             return new(Indeterminates, ConstTerm.Inv());
-        
+
         throw new();
     }
 
@@ -138,6 +139,7 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
     }
 
     public Monom<T> ExtractMonom => new Monom<T>(Indeterminates, ExtractIndeterminate);
+
     public Polynomial<K, T> Substitute(Polynomial<K, T> f, T xi)
     {
         var poly = Zero;
@@ -165,7 +167,7 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
                 (int n, m0) = m0.Remove(xi);
                 poly0 *= f.Pow(n);
             }
-            
+
             var p0 = new Polynomial<K, T>(m0, c);
             poly = poly + poly0 * p0;
         }
@@ -192,8 +194,8 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
         foreach (var (m, c) in Coefs)
         {
             var (n, m1) = m.Remove(xi);
-            
-            if(m1.IsOne)
+
+            if (m1.IsOne)
                 poly += c * f.Pow(n);
             else if (m1 is Monom<Xi> m2)
             {

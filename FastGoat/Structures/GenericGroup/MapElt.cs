@@ -7,6 +7,7 @@ public readonly struct MapElt<T1, T2> : IElt<MapElt<T1, T2>>, IMap<T1, T2> where
     public ConcreteGroup<T2> G2 { get; }
     public Dictionary<T1, T2> map { get; }
     public Dictionary<T1, T2> Map => new(map);
+
     public MapElt(ConcreteGroup<T1> g1, ConcreteGroup<T2> g2)
     {
         G2 = g2;
@@ -59,6 +60,7 @@ public readonly struct MapElt<T1, T2> : IElt<MapElt<T1, T2>>, IMap<T1, T2> where
     public int CompareTo(MapElt<T1, T2> other) => IMap<T1, T2>.CompareMap(this, other);
 
     public override int GetHashCode() => Hash;
+
     public override string ToString()
     {
         return map.AscendingByKey().GlueMap("; ", "{0}->[{1}]");

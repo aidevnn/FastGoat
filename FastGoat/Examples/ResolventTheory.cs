@@ -272,7 +272,7 @@ public static class ResolventTheory
         var x = FG.QPoly();
         AnResNum(x.Pow(3) + x + 1);
         AnResNum(x.Pow(3) - 3 * x.Pow(2) + 5);
-        
+
         AnResNum(x.Pow(4) + x.Pow(2) + 1);
         AnResNum(x.Pow(4) + 1);
         AnResNum(x.Pow(4) + x + 1);

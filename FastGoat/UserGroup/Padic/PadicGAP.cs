@@ -16,6 +16,7 @@ public readonly struct PadicGAP : IElt<PadicGAP>, IRingElt<PadicGAP>, IFieldElt<
 
         return p.Val.V;
     }
+
     public static bool IsValuedField => true;
     public Modulus Details { get; }
     public Valuation Val { get; }

@@ -45,12 +45,12 @@ public readonly struct ConjugacyClasses<T> : IEnumerable<T> where T : struct, IE
                 Console.WriteLine(
                     $"{e.name,-3} = {string.Format(fmt, e.repr)} {$"Stab({e.name})",-10}:{e.stabx.Count,-4} {$"Orb({e.name})",-10}:{e.orbx.Count,-4}");
         }
-        
+
         Console.WriteLine($"Nb Classes:{Classes.Length}");
         Console.WriteLine();
     }
-    
-    private (string name,T repr, HashSet<T> stabx, HashSet<T> orbx)[] Classes { get; }
+
+    private (string name, T repr, HashSet<T> stabx, HashSet<T> orbx)[] Classes { get; }
 
     private Dictionary<T, string> ClassName { get; }
     private Dictionary<T, int> Repr2Idx { get; }

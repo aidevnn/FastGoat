@@ -202,7 +202,7 @@ public readonly struct ZNElt<Tn, Tg> : IElt<ZNElt<Tn, Tg>>
         var one = Zero.One;
         return Nab.DecompElementary
             .Where(e => !coefs[e.g].IsZero())
-            .Select(e =>coefs[e.g].Equals(one)? $"{e.g}": $"({coefs[e.g]})*{e.g}")
+            .Select(e => coefs[e.g].Equals(one) ? $"{e.g}" : $"({coefs[e.g]})*{e.g}")
             .Glue(" + ");
     }
 

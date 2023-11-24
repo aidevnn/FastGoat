@@ -242,7 +242,7 @@ public static partial class IntFactorisation
             // ++po;
             po *= 2;
             var tmp = new List<KPoly<ZnBInt>>();
-            
+
             var fa = QPoly2ZnInt(f, po);
             foreach (var g in all)
             {
@@ -532,7 +532,7 @@ public static partial class IntFactorisation
             .Select(e => IntExt.PrimesDec(e.Num).Where(kp => kp.Value >= deg - e.i)
                 .SelectMany(kp => Enumerable.Repeat(kp.Key, kp.Value / (deg - e.i))))
             .ToArray();
-        
+
         var inter = dicoNum.Aggregate((a0, b0) => a0.IntersectList(b0).ToArray());
         var resNum = inter.Aggregate(BigInteger.One, (prod, k) => k * prod);
         var c = new Rational(resNum);

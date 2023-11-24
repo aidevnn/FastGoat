@@ -23,8 +23,10 @@ public readonly struct Cplx : IElt<Cplx>, IRingElt<Cplx>, IFieldElt<Cplx>, IVsEl
             return p > 0 ? p : Double.Pi * 2 + p;
         }
     }
+
     public double NormInf => Double.Max(Double.Abs(K.Real), Double.Abs(K.Imaginary));
     public double Norm1 => Double.Abs(K.Real) + Double.Abs(K.Imaginary);
+
     public Cplx(Complex k)
     {
         var a0 = double.Abs(k.Real) < EpsDouble ? 0.0 : k.Real;

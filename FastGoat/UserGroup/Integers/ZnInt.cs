@@ -11,7 +11,7 @@ public enum ZnDisplay
 
 public readonly struct ZnInt : IElt<ZnInt>, IRingElt<ZnInt>, IFieldElt<ZnInt>
 {
-    public static ZnDisplay Display = ZnDisplay.Unsigned; 
+    public static ZnDisplay Display = ZnDisplay.Unsigned;
     public int Mod { get; }
     public int K { get; }
     public int P => Mod;

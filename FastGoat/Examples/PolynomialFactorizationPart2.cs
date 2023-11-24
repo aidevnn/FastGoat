@@ -60,7 +60,7 @@ public static class PolynomialFactorizationPart2
 
             /***
              *  Examples of outputs
-             * 
+             *
                 f = X^6 + 12*X^5 + 38*X^4 + 8*X^3 + -9*X^2 + 73*X + -42
                 Disc(f) = -95855189967891 = -1^1 * 3^20 * 37^1 * 743^1
                 Prime P = 11; Sigma = 5; P^o=161051 Nu=12360.95

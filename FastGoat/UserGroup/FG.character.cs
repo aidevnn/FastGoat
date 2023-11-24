@@ -15,11 +15,12 @@ public static partial class FG
 {
     public static Complex Substitute(this KPoly<Rational> f, Complex c) => f.Coefs.Select((k, i) => k * Complex.Pow(c, i))
         .Aggregate(Complex.Zero, (sum, ci) => sum + ci);
-    
+
     public static Character<T> CharacterOne<T>(ConcreteGroup<T> gr) where T : struct, IElt<T>
     {
         return new Character<T>(gr);
     }
+
     public static CharacterTable<T> CharacterTable<T>(ConcreteGroup<T> gr) where T : struct, IElt<T>
     {
         return new CharacterTable<T>(gr);
@@ -34,7 +35,7 @@ public static partial class FG
     {
         if (gr.GroupType == GroupType.NonAbelianGroup)
             throw new GroupException(GroupExceptionType.GroupDef);
-        
+
         var facts = AbelianInvariantsFactors.Reduce(gr).ToArray();
         var gr0 = Abelian(facts);
         var isoMap = Group.AllMorphisms(gr, gr0, Group.MorphismType.Isomorphism).First();
@@ -53,9 +54,10 @@ public static partial class FG
                 var h2 = isoMap[g2];
                 mapChi[g2] = rg.Aggregate(w.One, (prod, i) => prod * wi[i].Pow(h1.Ei[i].K * h2.Ei[i].K));
             }
+
             ct.Add(new(clG, mapChi));
         }
-        
+
         return ct;
     }
 
@@ -101,7 +103,7 @@ public static partial class FG
 
             map[g] = (sum / oH);
         }
-        
+
         return new(clG, map);
     }
 }

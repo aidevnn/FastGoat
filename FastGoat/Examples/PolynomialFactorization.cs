@@ -10,12 +10,11 @@ namespace FastGoat.Examples;
 
 public static class PolynomialFactorization
 {
-
     static PolynomialFactorization()
     {
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
     }
-    
+
     public static KPoly<K> RandPoly<K>(K scalar, int p, int n, bool monic = true) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var coefs = n.Range().Select(i => IntExt.Rng.Next(-p, p + 1) * scalar.One).ToList();
@@ -23,7 +22,7 @@ public static class PolynomialFactorization
             coefs.Add(scalar.One);
         else
             coefs.Add(IntExt.Rng.Next(-p, p + 1) * scalar.One);
-        
+
         return new KPoly<K>('x', scalar, coefs.TrimSeq().ToArray());
     }
 
@@ -60,7 +59,8 @@ public static class PolynomialFactorization
         }
     }
 
-    public static KPoly<K> RandPolySep<K>(K scalar, int p, int n, bool monic = true) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    public static KPoly<K> RandPolySep<K>(K scalar, int p, int n, bool monic = true)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         while (true)
         {
@@ -371,7 +371,7 @@ public static class PolynomialFactorization
             DisplayFactorization(f, a0);
         }
     }
-    
+
     public static void BenchFactorisationFiniteFields()
     {
         for (int i = 0; i < 20; ++i)

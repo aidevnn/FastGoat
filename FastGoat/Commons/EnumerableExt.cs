@@ -433,7 +433,7 @@ public static class EnumerableExt
     }
 
     public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> a) => a.OrderBy(e => IntExt.Rng.NextSingle());
-    
+
     public static IEnumerable<IEnumerable<int>> PartitionM(int M, int L)
     {
         if (M < 1 || L > M)
@@ -446,14 +446,14 @@ public static class EnumerableExt
                 var last = prev.Count() == 0 ? int.MaxValue : prev.Last();
                 if (rem > last)
                     yield break;
-            
+
                 yield return prev.Append(rem).ToArray();
             }
             else
             {
                 var prev0 = prev.ToArray();
                 var last = prev0.Length == 0 ? int.MaxValue : prev0.Last();
-                for (int i = rem - 1; i >= rem/l; i--)
+                for (int i = rem - 1; i >= rem / l; i--)
                 {
                     if (i > last)
                         continue;
@@ -466,7 +466,6 @@ public static class EnumerableExt
 
         return PartitionMInternal(Array.Empty<int>(), M, L).Distinct(new SequenceEquality<int>());
     }
-
 }
 
 /// <summary>

@@ -187,7 +187,7 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
     {
         if (V < 0 && -V > o)
             return new(0, 0, o);
-        
+
         var k0 = Clamp(K, o);
         return new(k0, V, o);
     }
@@ -236,7 +236,7 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
         var s1 = $"{s0[0]}.{s0.Skip(1).Concat(Enumerable.Repeat('0', O)).Take(O - 1).Glue()}";
         return K < 0 ? $"-{s1}E{v}" : $"{s1}E{v}";
     }
-    
+
     public string ToFixForm()
     {
         if (-V > O)
@@ -262,7 +262,7 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
             return K.Sign == 1 ? s0 : $"-{s0}";
         }
     }
-    
+
     public override string ToString()
     {
         if (Display == DigitsForm.Default)

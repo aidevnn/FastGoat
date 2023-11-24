@@ -146,5 +146,4 @@ public static partial class Product
     {
         return new(Gp(Enumerable.Repeat(g, n).ToArray()));
     }
-
 }

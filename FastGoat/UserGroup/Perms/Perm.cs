@@ -103,14 +103,15 @@ public struct Perm : IElt<Perm>
     public static Perm operator ^(Perm a, int p) => a.BaseGroup.Times(a, p);
     public static bool operator ==(Perm a, Perm b) => a.Equals(b);
     public static bool operator !=(Perm a, Perm b) => !a.Equals(b);
-    
+
     public static int CompareOrbits(Perm a, Perm b)
     {
         if (!a.Sn.Equals(b.Sn))
             throw new();
 
         var ca = a.Orbits.Where(e => e.Length > 1).ToArray();
-        var cb = b.Orbits.Where(e => e.Length > 1).ToArray();;
+        var cb = b.Orbits.Where(e => e.Length > 1).ToArray();
+        ;
 
         var compNb = ca.Length.CompareTo(cb.Length);
         if (compNb != 0)
@@ -123,15 +124,14 @@ public struct Perm : IElt<Perm>
             var compL = e.Length.CompareTo(f.Length);
             if (compL != 0)
                 return compL;
-        
+
             var compEF = e.SequenceCompareTo(f);
             if (compEF != 0)
                 return compEF;
-
         }
 
         return 0;
     }
-    
+
     public static Comparer<Perm> OrbitsComparer => Comparer<Perm>.Create(CompareOrbits);
 }

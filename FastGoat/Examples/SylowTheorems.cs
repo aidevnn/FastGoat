@@ -85,7 +85,7 @@ public static class SylowTheorems
         var invFacts = AbelianInvariantsFactors.Reduce(g).Order().ToArray();
         var abInv = FG.Abelian(invFacts);
         abInv.SetName($"({abInv.Name})inv");
-        
+
         DisplayGroup.AreIsomorphics(abElems, g);
         DisplayGroup.AreIsomorphics(abInv, g);
         var elems2 = invFacts.SelectMany(f => IntExt.PrimesDec(f).Select(kv => kv.Key.Pow(kv.Value))).Order().ToArray();
@@ -112,10 +112,10 @@ public static class SylowTheorems
         // Nilpotency definition
         var fitting1 = Group.Generate($"F({g})", g,
             allNormalSubgroups.Where(n => Group.IsNilpotent(n)).SelectMany(g0 => g0.GetGenerators()).ToArray());
-        
+
         // PSylows property
         var fitting2 = Group.Generate($"F({g})2", g, tableSylows.SelectMany(kv => PRadical(kv.Value).GetGenerators()).ToArray());
-        
+
         DisplayGroup.Head(g);
         DisplayGroup.Head(frat);
         DisplayGroup.Head(fitting1);
@@ -129,7 +129,7 @@ public static class SylowTheorems
         {
             DisplayGroup.AreIsomorphics(fitting1, g);
         }
-        
+
         DisplayGroup.AreIsomorphics(fitting1, fitting2);
         Console.WriteLine($"{frat} is subgroup of {fitting1} {frat.SubSetOf(fitting1)}");
         Console.WriteLine();
@@ -206,19 +206,19 @@ public static class SylowTheorems
         FittingSubgroupProperties(FG.Alternate(5));
         FittingSubgroupProperties(new Cn(32));
         FittingSubgroupProperties(FG.Dihedral(6));
-        
+
         FittingSubgroupProperties(FG.Dihedral(4));
         FittingSubgroupProperties(FG.Dihedral(5));
         FittingSubgroupProperties(FG.DiCyclic(4));
         FittingSubgroupProperties(FG.DiCyclic(5));
-        
-        
+
+
         var gl = new GL(2, 3);
         var sl23 = Group.Generate("SL2(3)", gl, gl[1, 1, 0, 1], gl[0, 1, 2, 0]);
         var fitSl23 = FittingSubgroupProperties(sl23);
         DisplayGroup.AreIsomorphics(fitSl23, FG.Quaternion(8));
         Console.WriteLine();
-        
+
         var E = FG.WordGroup("E24", "a4, b2, c3, bab = a3, bcb = c, aca3 = c2");
         FittingSubgroupProperties(E);
     }

@@ -14,7 +14,7 @@ namespace FastGoat.UserGroup;
 public static partial class FG
 {
     private static Dictionary<int, KPoly<Rational>> CyclotomicPolynomials { get; }
-    private static Dictionary<int,CnfBasis> CnfBasisMap { get; }
+    private static Dictionary<int, CnfBasis> CnfBasisMap { get; }
 
     static FG()
     {
@@ -27,7 +27,7 @@ public static partial class FG
     {
         if (k < 1)
             throw new Exception();
-        
+
         if (CyclotomicPolynomials.TryGetValue(k, out var polynomial))
             return polynomial;
 
@@ -119,18 +119,18 @@ public static partial class FG
     {
         if (seq.Length > 5 || seq.Min() <= 1)
             throw new GroupException(GroupExceptionType.GroupDef);
-        
+
         var n = seq.Length.Range();
         var gens = n.Select(i => ((char)('a' + i)).ToString()).ToArray();
         var allCombs = n.SelectMany(i => n.Where(j => j > i).Select(j => (gens[i], gens[j]))).ToArray();
         var relators = gens.Select((g, i) => $"{g}{seq[i]}").Concat(allCombs.Select(e => $"{e.Item1}{e.Item2}={e.Item2}{e.Item1}"))
             .Glue(", ");
-        
+
         return new WordGroup(name, relators);
     }
 
     public static WordGroup AbelianWg(params int[] seq) => AbelianWg(seq.Glue(" x ", "C{0}"), seq);
-    
+
     public static WordGroup ElementaryAbelianWg(int q)
     {
         var dec = IntExt.PrimesDec(q);
@@ -145,7 +145,7 @@ public static partial class FG
     {
         if (n < 2 || n > 6)
             throw new GroupException(GroupExceptionType.GroupDef);
-    
+
         var rg = (n - 2).Range();
         string s0(int e) => $"{(char)('a' + e)}";
         var r1 = rg.Select(e => $"{s0(e)}3").Glue(", ");
@@ -385,6 +385,7 @@ public static partial class FG
     public static NthRootQ NthRootQ(int n) => new(n);
     public static NthRootFq NthRootFq(int n, int q) => new(n, q);
     public static NthRootFp NthRootFp(int n, int p) => new(n, p);
+
     public static NthRootFq CycloFq(int q)
     {
         var dec = IntExt.PrimesDec(q);

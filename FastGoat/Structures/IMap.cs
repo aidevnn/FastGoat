@@ -17,7 +17,7 @@ public interface IMap<T1, T2> : IElt<IMap<T1, T2>> where T1 : struct, IElt<T1> w
 
         return map1.Domain.All(e => map1[e].Equals(map2[e]));
     }
-    
+
     public static int CompareMap(IMap<T1, T2> map1, IMap<T1, T2> map2)
     {
         if (!map1.Domain.SetEquals(map2.Domain))

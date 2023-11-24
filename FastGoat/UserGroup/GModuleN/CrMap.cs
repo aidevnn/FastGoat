@@ -24,7 +24,7 @@ public readonly struct CrMap<Tn, Tg> : IEnumerable<KeyValuePair<Ep<Tg>, ZNElt<Tn
         Map = map;
     }
 
-    public CrMap(CrMap<Tn,Tg>cr)
+    public CrMap(CrMap<Tn, Tg> cr)
     {
         Map = new(cr.ToDictionary(e => e.Key, e => e.Value));
     }
@@ -123,7 +123,7 @@ public readonly struct CrMap<Tn, Tg> : IEnumerable<KeyValuePair<Ep<Tg>, ZNElt<Tn
             var ct = ConsTerm();
             if (!Equals(ct))
                 throw new();
-            
+
             var gr = Product.GpGenerate(G, R);
             return new MapElt<Ep<Tg>, Tn>(gr, N, ct.ToDictionary(e => e.Key, e => e.Value.Expand));
         }

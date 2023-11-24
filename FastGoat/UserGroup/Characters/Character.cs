@@ -85,7 +85,7 @@ public readonly struct Character<T> : IElt<Character<T>>, IRingElt<Character<T>>
         // Character One priority 
         if (Equals(One))
             return -1;
-        
+
         if (other.Equals(One))
             return 1;
 

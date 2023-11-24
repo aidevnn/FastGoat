@@ -325,6 +325,7 @@ public static class BCHcodes
                 throw new();
         }
     }
+
     /// <summary>
     /// Runs a series of examples related to cyclotomic classes and BCH codes.
     /// </summary>

@@ -20,7 +20,7 @@ public static partial class Ring
     {
         if (b.IsZero())
             return a.CompareTo(a.Opp()) == -1 ? a.Opp() : a;
-        
+
         return Gcd(b, a.Div(b).rem);
     }
 
@@ -60,7 +60,7 @@ public static partial class Ring
         var (x0, y0) = Bezout(b, r);
         return (y0, x0.Add(q.Mul(y0).Opp()));
     }
-    
+
     public static Monom<Xi> Xi(string c, int n = 1) => new Monom<Xi>(new Xi(c), n);
 
     public static Indeterminates<Xi> Indeterminates(params string[] xs) => new(xs.Select(s => new Xi(s)).ToArray());
@@ -87,7 +87,7 @@ public static partial class Ring
     {
         if (xi.Length == 0)
             throw new();
-        
+
         var indeterminates = Indeterminates(xi);
         return xi.Select(c => new Polynomial<K, Xi>(new Monom<Xi>(indeterminates, new(c), 1), scalar.One)).ToArray();
     }
@@ -114,7 +114,8 @@ public static partial class Ring
         return Polynomial(scalar, new[] { "X" })[0];
     }
 
-    public static (Polynomial<K, Xi> X,Polynomial<K, Xi>[] Xis) Polynomial<K>(K scalar, MonomOrder order, (int n, string h) e, string x0)
+    public static (Polynomial<K, Xi> X, Polynomial<K, Xi>[] Xis) Polynomial<K>(K scalar, MonomOrder order, (int n, string h) e,
+        string x0)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
         var digits = $"{e.n - 1}".Length;
@@ -155,7 +156,7 @@ public static partial class Ring
         return his.Select(hi => new EPolynomial<K>(hi, hi.One)).ToArray();
     }
 
-    public static EPolynomial<K>[] PolynomialModI<K>(string[] vs, Polynomial<K,Xi> b0, params Polynomial<K,Xi>[] bs)
+    public static EPolynomial<K>[] PolynomialModI<K>(string[] vs, Polynomial<K, Xi> b0, params Polynomial<K, Xi>[] bs)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
         var xis = vs.Select(expr => new Xi(expr)).ToArray();
@@ -171,7 +172,7 @@ public static partial class Ring
         return PolynomialModI(xis.Prepend(x0).ToArray(), P.ToPolynomial(ind, ind.First()));
     }
 
-    public static EPolynomial<K>[] PolynomialModI<K>((int n, string h) e, Polynomial<K,Xi> b0, params Polynomial<K,Xi>[] bs)
+    public static EPolynomial<K>[] PolynomialModI<K>((int n, string h) e, Polynomial<K, Xi> b0, params Polynomial<K, Xi>[] bs)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
         var digits = $"{e.n - 1}".Length;
@@ -181,7 +182,7 @@ public static partial class Ring
         return PolynomialModI(xis, b0, bs);
     }
 
-    public static EPolynomial<K>[] PolynomialModI<K>((int n, string h) e, Polynomial<K,Xi>[] bs)
+    public static EPolynomial<K>[] PolynomialModI<K>((int n, string h) e, Polynomial<K, Xi>[] bs)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
         return PolynomialModI(e, bs[0], bs.Skip(1).ToArray());

@@ -158,7 +158,7 @@ public class ConcreteGroup<T> : IGroup<T> where T : struct, IElt<T>
     {
         if (gu.Elements.Count != Elements.Count || GroupType != gu.GroupType)
             return false;
-        
+
         if (!ElementsOrdersList().Ascending().SequenceEqual(gu.ElementsOrdersList().Ascending()))
             return false;
 

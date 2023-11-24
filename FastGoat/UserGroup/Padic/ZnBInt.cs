@@ -284,6 +284,7 @@ public struct ZnBInt : IElt<ZnBInt>, IRingElt<ZnBInt>, IFieldElt<ZnBInt>, IVsElt
     public static ZnBInt operator /(int a, ZnBInt b) => b.Inv().Mul(a);
     public Rational KZero => Rational.KZero();
     public Rational KOne => Rational.KOne();
+
     public ZnBInt KMul(Rational k)
     {
         var num = new ZnBInt(Details, K * k.Num);
@@ -298,7 +299,7 @@ public struct ZnBInt : IElt<ZnBInt>, IRingElt<ZnBInt>, IFieldElt<ZnBInt>, IVsElt
     public static ZnBInt operator -(ZnBInt a, Rational b) => a - a.One.KMul(b);
 
     public static ZnBInt operator -(Rational a, ZnBInt b) => b - b.One.KMul(a);
-    
+
     public static ZnBInt operator *(ZnBInt a, Rational b) => a.KMul(b);
 
     public static ZnBInt operator *(Rational a, ZnBInt b) => b.KMul(a);

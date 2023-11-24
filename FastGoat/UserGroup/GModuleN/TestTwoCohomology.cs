@@ -118,12 +118,12 @@ public static class TestTwoCohomology
         var (ord4, ord8) = (AllAbelianGroupsOrder(4), AllAbelianGroupsOrder(8));
         var ord2_4 = ord4.Prepend(FG.Abelian(2)).ToList();
         var ord2_4_8 = ord2_4.Concat(ord8).ToList();
-        
+
         {
             var allProducts = ord2_4.Grid2D(ord2_4_8).ToList();
             allProducts.ForEach(e => SolveTwoCohom(e.t1, e.t2));
         }
-        
+
         {
             var allProducts = ord2_4_8.Grid2D(ord2_4).ToList();
             allProducts.ForEach(e => SolveTwoCohom(e.t1, e.t2));

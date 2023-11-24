@@ -21,7 +21,7 @@ public readonly struct PolynomialBasis<K, T> : IElt<PolynomialBasis<K, T>>
     {
         if (basis.Any(p => !p.Indeterminates.Equals(indeterminates)))
             throw new();
-        
+
         Indeterminates = indeterminates;
         Basis = basis;
         var n = basis.Length;
@@ -34,7 +34,7 @@ public readonly struct PolynomialBasis<K, T> : IElt<PolynomialBasis<K, T>>
             var f = Basis[i];
             if (!f.Indeterminates.Equals(Indeterminates))
                 throw new ArgumentException();
-            
+
             (LC[i], LM[i], LT[i]) = f.LeadingDetails;
             Hash = (Hash, f.Hash).GetHashCode();
         }
@@ -42,10 +42,10 @@ public readonly struct PolynomialBasis<K, T> : IElt<PolynomialBasis<K, T>>
 
     public PolynomialBasis(params Polynomial<K, T>[] basis) : this(basis[0].Indeterminates, basis)
     {
-
     }
 
     public int Hash { get; }
+
     public Polynomial<K, T> Rem(Polynomial<K, T> f)
     {
         var f0 = f;

@@ -44,6 +44,7 @@ public class Indeterminates<T> : IEnumerable<T>, IEquatable<Indeterminates<T>> w
     }
 
     public int Length => Content.Length;
+
     public MonomOrder Order =>
         (Graduate: Graded, Reverse) switch
         {
@@ -134,7 +135,7 @@ public class Indeterminates<T> : IEnumerable<T>, IEquatable<Indeterminates<T>> w
         if (obj.GetType() != this.GetType()) return false;
         return Equals((Indeterminates<T>)obj);
     }
-    
+
     public void Deconstruct(out T a, out T b)
     {
         (a, b) = (this[0], this[1]);
@@ -154,5 +155,4 @@ public class Indeterminates<T> : IEnumerable<T>, IEquatable<Indeterminates<T>> w
     {
         (a, b, c, d, e) = (this[0], this[1], this[2], this[3], this[4]);
     }
-
 }

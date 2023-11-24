@@ -54,7 +54,7 @@ public static class AlgebraicFactorization
     public static void AlgFactorization()
     {
         Ring.DisplayPolynomial = MonomDisplay.Caret;
-        
+
         {
             var i = FG.EQPoly('i', 1, 0, 1);
             var x = FG.KPoly('x', i);
@@ -213,7 +213,7 @@ public static class AlgebraicFactorization
         Console.WriteLine($"e = {e} and e^3 = {e.Pow(3)}");
         Console.WriteLine($"2c^2 = {2 * c.Pow(2)} and d*e = {d * e}");
         Console.WriteLine($"c - d + e = {c - d + e}");
-        
+
         // ∛(∛2 - 1) = ∛(1/9) - ∛(2/9) + ∛(4/9)
         /***
             With b⁹ + 3·b⁶ + 3·b³ + -1 = 0
@@ -235,7 +235,7 @@ public static class AlgebraicFactorization
         var (X0, y) = FG.EPolyXc(R, 'y');
         var a1 = a0.Substitute(y);
         var b1 = b0.Substitute(y);
-     
+
         Console.WriteLine((R, a1, b1, a1.Pow(3), b1.Pow(3)));
         CharacPoly(a1 - b1);
         var R1 = Norm(X0 - a1 + b1);
@@ -254,22 +254,22 @@ public static class AlgebraicFactorization
         var (X2, d) = FG.EPolyXc(R2, 'd');
         var a = a2.Poly.Substitute(d.Pow(2));
         var b = b2.Poly.Substitute(d.Pow(2));
-     
+
         var e = AlgebraicRoots(X2.Pow(3) - 2, true).First();
         var f = AlgebraicRoots(X2.Pow(3) - 20, true).First();
         var g = AlgebraicRoots(X2.Pow(3) - 25, true).First();
-     
+
         Console.WriteLine($"With {d.F} = 0");
         Console.WriteLine($"a = {a} and a^3 = {a.Pow(3)}");
         Console.WriteLine($"b = {b} and b^3 = {b.Pow(3)}");
         Console.WriteLine($"a - b = {a - b}");
         Console.WriteLine();
-     
+
         Console.WriteLine($"e = {e} and e^3 = {e.Pow(3)}");
         Console.WriteLine($"f = {f} and f^3 = {f.Pow(3)}");
         Console.WriteLine($"g = {g} and g^3 = {g.Pow(3)}");
         Console.WriteLine($"(e + f - g)/3 = {(e + f - g) / 3}");
-        
+
         // √(∛5 - ∛4) = (∛2 + ∛20 - ∛25) / 3
         /***
             With d⁹ + 7·d⁶ + 23·d³ + -1 = 0

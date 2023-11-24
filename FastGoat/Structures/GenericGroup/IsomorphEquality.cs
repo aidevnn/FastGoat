@@ -1,6 +1,6 @@
 namespace FastGoat.Structures.GenericGroup;
 
-public class IsomorphEquality<T> :EqualityComparer<ConcreteGroup<T>> where T : struct, IElt<T>
+public class IsomorphEquality<T> : EqualityComparer<ConcreteGroup<T>> where T : struct, IElt<T>
 {
     public override bool Equals(ConcreteGroup<T>? x, ConcreteGroup<T>? y)
     {

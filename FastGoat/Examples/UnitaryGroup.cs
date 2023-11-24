@@ -52,7 +52,7 @@ public static class UnitaryGroup
         // Check if U3(2) and the semi-direct product are isomorphic
         DisplayGroup.AreIsomorphics(u3_2, u3_2sdp);
     }
-    
+
     /// <summary>
     /// Performs operations related to the U3(3) group, which represents the unitary group in its 3x3 matrix group over
     /// finite field F9 form, and also in its permutations group forms within Symmetric group 28, and checks their isomorphism.

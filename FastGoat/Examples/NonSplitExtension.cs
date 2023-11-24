@@ -42,7 +42,7 @@ public static class NonSplitExtension
         AllSplittingGroups(G, GH, H).ToArray();
     }
 
-    public static IEnumerable<(Homomorphism<T1,T2>i,Homomorphism<T2,T3> p,Homomorphism<T3,T2> s)> 
+    public static IEnumerable<(Homomorphism<T1, T2>i, Homomorphism<T2, T3> p, Homomorphism<T3, T2> s)>
         AllSplittingGroups<T1, T2, T3>(ConcreteGroup<T1> G, ConcreteGroup<T2> GH, ConcreteGroup<T3> H, bool details = true)
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
@@ -55,7 +55,7 @@ public static class NonSplitExtension
             Console.WriteLine("GH --p--> H");
             Console.WriteLine("H  --s--> GH");
         }
-        
+
         var homI = Group.AllHomomorphisms(G, GH);
         var homP = Group.AllHomomorphisms(GH, H);
         var isoS = Group.AllIsomorphisms(H, GH);
@@ -82,6 +82,7 @@ public static class NonSplitExtension
 
                 Console.WriteLine("Isomorphism 's' from H to GH");
             }
+
             var allIsoS = isoS
                 .Where(s0 => s0.Count == H.Count() && H.All(h => p.Domain.Contains(s0[h]) && p[s0[h]].Equals(h)))
                 .ToArray();

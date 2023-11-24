@@ -228,6 +228,7 @@ public static partial class Group
     {
         return IsomorphicSubgroup(g, sg, sg.Name);
     }
+
     public static List<ConcreteGroup<T1>> IsomorphicsSubgroupsAll<T1, T2>(ConcreteGroup<T1> g, ConcreteGroup<T2> sg, string name)
         where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
     {
@@ -454,7 +455,8 @@ public static partial class Group
         }
     }
 
-    public static ConcreteGroup<T> FrattiniSubGroup<T>(Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>> tableSubgroups) where T : struct, IElt<T>
+    public static ConcreteGroup<T> FrattiniSubGroup<T>(Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>> tableSubgroups)
+        where T : struct, IElt<T>
     {
         var g = tableSubgroups.MaxBy(g0 => g0.Key.Count()).Key;
         var subGroups = tableSubgroups.Values.SelectMany(g0 => g0).ToList();
@@ -634,7 +636,7 @@ public static partial class Group
     {
         return DerivedChain(g).Last().Count() == 1;
     }
-    
+
     public static List<(T g, int o)> AbelianInvariants<T>(ConcreteGroup<T> gr) where T : struct, IElt<T>
     {
         if (gr.GroupType == GroupType.NonAbelianGroup)
@@ -642,7 +644,7 @@ public static partial class Group
 
         if (gr.Count() == 1)
             return new() { (gr.Neutral(), 1) };
-        
+
         var facts = new List<(T g, int o)>();
         var g0 = gr;
         var ng = new HashSet<T>() { gr.Neutral() };

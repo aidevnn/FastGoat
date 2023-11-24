@@ -21,7 +21,7 @@ public static class AlgebraicIntegerRelationLLL
     {
         if (details)
             Console.WriteLine("Start LLL algorithm");
-        
+
         var pi = BigReal.Pi(alpha.O);
         var N = BigReal.FromBigInteger(BigInteger.Pow(10, O), alpha.O);
         var mat = new KMatrix<BigReal>(pi.Zero.ToBigReal(O), d, d).Zero;
@@ -41,8 +41,8 @@ public static class AlgebraicIntegerRelationLLL
         if (details)
             Console.WriteLine(mat);
         var lll = IntFactorisation.LLL(mat.T);
-        
-        if(details)
+
+        if (details)
         {
             Console.WriteLine();
             Console.WriteLine(lll);
@@ -51,13 +51,14 @@ public static class AlgebraicIntegerRelationLLL
         var col = lll.Cols
             .OrderBy(l => l.SkipLast(1).Zip(aipow).Aggregate(-beta, (acc, v) => acc + BigCplx.FromBigReal(v.First) * v.Second)
                 .Magnitude2).First();
-        if(details)
+        if (details)
         {
             Console.WriteLine("End LLL algorithm");
             Console.WriteLine("Possible Solution");
             Console.WriteLine(col.T);
             Console.WriteLine();
         }
+
         return col.SkipLast(1).Select(c => -c.RoundEven.ToRational).ToArray();
     }
 
@@ -118,7 +119,7 @@ public static class AlgebraicIntegerRelationLLL
     {
         if (details)
             GlobalStopWatch.AddLap();
-        
+
         var coefs = AlphaBetaPolynomial(alpha, beta, d, O, details);
         var P = new KPoly<Rational>('x', Rational.KZero(), coefs.ToArray());
         var fact = (P.Substitute(alpha) / beta).ToBigCplx(O);
@@ -208,7 +209,7 @@ public static class AlgebraicIntegerRelationLLL
             Console.WriteLine(P);
             GlobalStopWatch.AddLap();
         }
-        
+
         var nRoots = FG.NRoots(P.ToBcPoly(O2));
         if (details)
             GlobalStopWatch.Show("Roots");

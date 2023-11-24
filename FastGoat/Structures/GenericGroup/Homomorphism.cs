@@ -42,7 +42,7 @@ public readonly struct Homomorphism<T1, T2> : IElt<Homomorphism<T1, T2>>, IMap<T
     {
         if (IsNull)
             return "null";
-        
+
         return HomMap.AscendingByKey().GlueMap("; ", "{0}->[{1}]");
     }
 }

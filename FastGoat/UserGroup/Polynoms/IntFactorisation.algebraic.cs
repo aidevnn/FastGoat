@@ -240,7 +240,7 @@ public static partial class IntFactorisation
                 var r = Norm(g);
                 if (integerOnly && r is KPoly<Rational> r0 && r0.Coefs.Any(c => !c.Denom.IsOne))
                     continue;
-                
+
                 if (Ring.FastGCD(r, r.Derivative).Degree == 0) // dilemma between Ring.Gcd and Ring.FastGCD
                     return (s, g.Monic, r);
             }
@@ -315,7 +315,8 @@ public static partial class IntFactorisation
         return AlgebraicRoots(f.Substitute(X), details);
     }
 
-    public static (Rational disc, KPoly<EPoly<Rational>>[] roots) FactorsQuadratic(KPoly<Rational> P, bool details = true, char a = 'a')
+    public static (Rational disc, KPoly<EPoly<Rational>>[] roots) FactorsQuadratic(KPoly<Rational> P, bool details = true,
+        char a = 'a')
     {
         if (P.Degree != 2 || !P.LT.Equals(Rational.KOne()))
             throw new("P must be monic and quadratic");

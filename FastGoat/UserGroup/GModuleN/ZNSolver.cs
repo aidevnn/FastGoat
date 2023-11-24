@@ -169,7 +169,7 @@ public static class ZNSolver
             var (lc, lm, _) = eq.LeadingDetails;
             return (lm, lc);
         }
-        
+
         return eq.Coefs.Where(e => !e.Key.IsOne).Select(e => (e.Key, e.Value)).OrderBy(e0 => e0.Key)
             .MaxBy(e0 => orders[e0.Value.K]);
     }
@@ -599,7 +599,7 @@ public static class ZNSolver
                 DisplayCrMap($"listReprs:{nbCohs2} Expected:{nbCohs}", listReprs.SelectMany(e => e).ToArray());
 
             DisplayCrMap($"{r}Coboundaries", mapCobs.Generators().Select(g => g.map).ToArray());
-            DisplayCrMap($"{r}Cocycles",  mapCocs.Generators().Select(g => g.map).ToArray());
+            DisplayCrMap($"{r}Cocycles", mapCocs.Generators().Select(g => g.map).ToArray());
             throw new("########");
         }
     }

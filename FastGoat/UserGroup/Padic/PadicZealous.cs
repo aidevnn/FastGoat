@@ -8,7 +8,7 @@ namespace FastGoat.UserGroup.Padic;
 public readonly struct PadicZealous : IElt<PadicZealous>, IRingElt<PadicZealous>, IFieldElt<PadicZealous>
 {
     public static PadicZealous KZero(int p, int o) => new(p, o);
-    
+
     public static double Abs(PadicZealous p)
     {
         if (p.IsZero())
@@ -16,9 +16,9 @@ public readonly struct PadicZealous : IElt<PadicZealous>, IRingElt<PadicZealous>
 
         return p.Val;
     }
-    
+
     public static bool IsValuedField => true;
-    
+
     public int N { get; }
     public int Val { get; }
     public BigInteger S { get; }

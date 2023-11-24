@@ -77,7 +77,8 @@ public static class GL23SubGroups
             var i = 1;
             g.ForEach(g0 => g0.SetName($"C{o}[{i++,2:00}]"));
         }
-        return groups.SelectMany(g=>g.Value).ToList();
+
+        return groups.SelectMany(g => g.Value).ToList();
     }
 
     private static List<ConcreteGroup<Mat>> KleinSubGroups()

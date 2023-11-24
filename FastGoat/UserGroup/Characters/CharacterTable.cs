@@ -344,8 +344,8 @@ public class CharacterTable<T> where T : struct, IElt<T>
     private string[,] PrepareTable()
     {
         var idxs = NbClasses.Range().Grid2D().ToArray();
-        var allCnfs = idxs.Select(e =>AllCharacters[e.t1][Classes.GetRepresentative(e.t2)])
-            .Where(e => e.HasValue).Select(e =>  e!.Value.Simplify()).ToHashSet();
+        var allCnfs = idxs.Select(e => AllCharacters[e.t1][Classes.GetRepresentative(e.t2)])
+            .Where(e => e.HasValue).Select(e => e!.Value.Simplify()).ToHashSet();
         var cnf2str = new Dictionary<Cnf, string>(NbClasses.Pow(2));
 
         foreach (var c in allCnfs)

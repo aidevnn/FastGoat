@@ -36,7 +36,10 @@ public static class GaloisApplications
         {
             var minPol = IntFactorisation.GetBaseAndMinPolynomial(a).Item2;
             var rows = sel.Select(e => new[]
-                    { e.e.SubGr.ShortName, $"[{e.e.FieldName}:Q] = {e.e.minPoly.Degree}", $"z = {e.pol.SubstituteChar(e.e.primEltName[0])}" })
+                {
+                    e.e.SubGr.ShortName, $"[{e.e.FieldName}:Q] = {e.e.minPoly.Degree}",
+                    $"z = {e.pol.SubstituteChar(e.e.primEltName[0])}"
+                })
                 .ToArray();
 
             var sf = sel.Last().e;
@@ -55,7 +58,7 @@ public static class GaloisApplications
         GaloisCorrespondence(extTowers);
         return subFields;
     }
-    
+
     public static GaloisCorrespondence[] GaloisCorrespondence(List<EPoly<Rational>> roots)
     {
         var subFields = GaloisTheory.SubFields(roots).ToArray();
@@ -76,7 +79,7 @@ public static class GaloisApplications
             throw new();
 
         var P = galCor.primElt.F;
-        
+
         var (X, y) = FG.EPolyXc(galCor.primElt.F, galCor.primElt.F.x);
         Console.WriteLine($"With P = {P.Substitute(X)}");
         galCor.roots.Order().Select(r => X - r).Println($"Factorization in Q({y})/Q");
@@ -85,7 +88,7 @@ public static class GaloisApplications
         DisplayGroup.HeadElements(galCor.SubGr);
         var i = 1;
         foreach (var lt in exts.OrderBy(t => t.Select(gc => gc.SubGr.Count()).ToArray(),
-                     Comparer<int[]>.Create((l1, l2) => l1.SequenceCompareTo(l2)))
+                         Comparer<int[]>.Create((l1, l2) => l1.SequenceCompareTo(l2)))
                      .ThenBy(t => t.Select(gc => gc.primEltName).ToArray(),
                          Comparer<string[]>.Create((l1, l2) => l1.SequenceCompareTo(l2))))
         {
@@ -199,7 +202,7 @@ public static class GaloisApplications
         FindExtension(subFields, a * b, "Q(αβ)");
         FindExtension(subFields, e, "K");
     }
-    
+
     /***
         With P = X^8 - 24*X^6 + 144*X^4 - 288*X^2 + 144
         Factorization in Q(y)/Q

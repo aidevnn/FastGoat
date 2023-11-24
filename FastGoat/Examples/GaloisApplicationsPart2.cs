@@ -39,6 +39,7 @@ public static class GaloisApplicationsPart2
             yield return type;
         }
     }
+
     public static void CheckChebotarev(KPoly<Rational> P, ConcreteGroup<Perm> gal, bool detail = false)
     {
         var types = gal.Select(perm => IntExt.PermutationToCycles(perm.Sn.N, perm.Table).Select(l => l.Length).Order().Deconstruct())
@@ -121,7 +122,7 @@ public static class GaloisApplicationsPart2
                     sel2[0].e.Item1.OrderByDescending(e => e.Key.ToString()).Println("expected types");
                     sel2.Select(e => new { e.e.g.Name, order = e.e.g.Count(), dist = e.Item2 }).Println("Distances");
                     Console.WriteLine();
-                
+
                     Console.WriteLine($"P = {P}");
                     Console.WriteLine($"Gal(P) = {g.Name}");
                     DisplayGroup.Head(g);
@@ -177,7 +178,7 @@ public static class GaloisApplicationsPart2
 
             CheckChebotarev(P, gal, detail: true);
         }
-        
+
         {
             var P = x.Pow(4) + x.Pow(3) + x.Pow(2) + x + 1;
             var rootsK = IntFactorisation.AlgebraicRoots(P);
@@ -426,10 +427,10 @@ public static class GaloisApplicationsPart2
         Console.WriteLine("({0})^2 =  {1} ", sqrt17, sqrt17.Pow(2));
         Console.WriteLine("{0}^2 = {1} ", sqrt17c, sqrt17c.Pow(2));
         Console.WriteLine();
-        
+
         GaloisApplications.FindExtension(subFields, sqrt17, "Q(√17)");
         Console.WriteLine(new { sf2 = "subField2", subGr = sf2.SubGr.ShortName, dim = sf2.roots.Length, sf2.minPoly, sf2.primElt });
-        
+
         // Stage 1
         var (X1, y1) = FG.EPolyXc(P1, 'a');
         var (f1, newP1, subs1, newPc1) = IntFactorisation.AlgebraicFactors(sf2.minPoly.Substitute(X1), true)
@@ -478,7 +479,7 @@ public static class GaloisApplicationsPart2
 
         Console.WriteLine(newPc2.Substitute(e2));
         Console.WriteLine(fc2.Substitute(xe2));
-        
+
         // Stage 3
         var (r3, a3, b3) = IntFactorisation.PrimitiveElt(newP2);
         Console.WriteLine(new { r3, a3, b3 });
@@ -490,10 +491,11 @@ public static class GaloisApplicationsPart2
         Console.WriteLine((s2_1, s2_1.Pow(2), (17 - sqrt17_2) / 2));
         Console.WriteLine((s3, s3.Pow(2)));
         Console.WriteLine($"d = {s2_1} s3^2 = {IntFactorisation.Rewrite(s2_1, s3.Pow(2)).SubstituteChar('d')}");
-        
+
         // Final Boss
         var minPoly = IntFactorisation.GetBaseAndMinPolynomial(cos).Item2;
-        var roots2 = IntFactorisation.AlgebraicRoots(minPoly.Substitute(X3 / 2).Monic, true).Select(r => r / 2).ToList();;
+        var roots2 = IntFactorisation.AlgebraicRoots(minPoly.Substitute(X3 / 2).Monic, true).Select(r => r / 2).ToList();
+        ;
         Console.WriteLine(minPoly);
         Console.WriteLine(sf3.minPoly);
 
@@ -509,7 +511,7 @@ public static class GaloisApplicationsPart2
         Console.WriteLine(cosf.Poly.Substitute(yf));
         Console.WriteLine(minPoly.Substitute(cosf));
     }
-    
+
     static void IsConstructible(int n, bool fast = true)
     {
         var a = Cnf.Nth(2 * n); // e(i*π/n)
@@ -527,11 +529,11 @@ public static class GaloisApplicationsPart2
         if (fast)
         {
             var deg = P0.Degree;
-            if((new BigInteger(deg).IsPowerOfTwo))
+            if ((new BigInteger(deg).IsPowerOfTwo))
                 Console.WriteLine($"########### cos(π/{n}) CONSTRUCTIBLE");
             else
                 Console.WriteLine($"########### cos(π/{n}) NOT CONSTRUCTIBLE");
-    
+
             Console.WriteLine();
             return;
         }
@@ -545,7 +547,7 @@ public static class GaloisApplicationsPart2
             Console.WriteLine($"########### cos(π/{n}) CONSTRUCTIBLE");
         else
             Console.WriteLine($"########### cos(π/{n}) NOT CONSTRUCTIBLE");
-    
+
         Console.WriteLine();
     }
 
@@ -555,7 +557,7 @@ public static class GaloisApplicationsPart2
         for (int n = 3; n < 34; ++n)
             IsConstructible(n);
     }
-    
+
     public static void ConstructibilityDetails()
     {
         // Detailed Galois Group and Constructibility of cos(π/n) for n from 5 to 20
@@ -580,14 +582,14 @@ public static class GaloisApplicationsPart2
                 Console.WriteLine($"P{j,-2} = {P}");
                 if (!iso.IsIsomorphicTo(galP))
                     throw new();
-            
+
                 var d = Ring.Discriminant(P).IsSquare ? "\"+\"" : "\"-\"";
                 Console.WriteLine($"    Gal(P{j++}) = [{galP.Name}, {d}, {galP.Count()}, {iso.GetGenerators().Glue(" ")}]");
             }
 
             if (isos.Count != 0)
                 throw new();
-        
+
             Console.WriteLine();
         }
     }

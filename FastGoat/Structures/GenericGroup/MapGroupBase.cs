@@ -12,7 +12,7 @@ public struct MapGroupBase<T1, T2> : IGroup<MapElt<T1, T2>> where T1 : struct, I
         Hash = (G1.Count(), G2.Count()).GetHashCode();
         Name = $"MapGroups({Domain},{this.G2})";
     }
-    
+
     public ConcreteGroup<T1> Domain { get; }
     public ConcreteGroup<T2> G2 { get; }
     public IEnumerator<MapElt<T1, T2>> GetEnumerator() => GetElements().GetEnumerator();
@@ -34,7 +34,7 @@ public struct MapGroupBase<T1, T2> : IGroup<MapElt<T1, T2>> where T1 : struct, I
         yield return Neutral();
     }
 
-    public IEnumerable<MapElt<T1, T2>> GetGenerators() 
+    public IEnumerable<MapElt<T1, T2>> GetGenerators()
     {
         yield return Neutral();
     }

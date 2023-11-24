@@ -175,7 +175,7 @@ public static class CharacterTableExamples
         FG.CharacterTable(Group.SemiDirectProd(new Cn(7), new Cn(6))).DisplayCells();
         FG.CharacterTable(Group.SemiDirectProd(new Cn(11), new Cn(10))).DisplayCells();
         FG.CharacterTable(Group.SemiDirectProd(new Cn(13), new Cn(12))).DisplayCells();
-        
+
         FG.CharacterTable(Group.SemiDirectProd(new Cn(3), new Cn(4))).DisplayCells();
         FG.CharacterTable(Group.SemiDirectProd(new Cn(4), new Cn(4))).DisplayCells();
         FG.CharacterTable(Group.SemiDirectProd(new Cn(7), new Cn(3))).DisplayCells();
@@ -220,85 +220,85 @@ public static class CharacterTableExamples
         }
     }
     /*
-        |Alt5| = 60
-        Type        NonAbelianGroup
-        BaseGroup   S5
-        SuperGroup  |Symm5| = 120
+       |Alt5| = 60
+       Type        NonAbelianGroup
+       BaseGroup   S5
+       SuperGroup  |Symm5| = 120
 
-        [Class     1  2  3            5a            5b]
-        [ Size     1 15 20            12            12]
-        [                                             ]
-        [  X.1     1  1  1             1             1]
-        [  X.2     3 -1  0   -ξ5³ + -ξ5² ξ5³ + ξ5² + 1]
-        [  X.3     3 -1  0 ξ5³ + ξ5² + 1   -ξ5³ + -ξ5²]
-        [  X.4     4  0  1            -1            -1]
-        [  X.5     5  1 -1             0             0]
-        All i,                 Sum[g](Xi(g)Xi(g^−1))= |G|      : True
-        All i <> j,            Sum[g](Xi(g)Xj(g^−1))=  0       : True
-        All g, h in Cl(g),     Sum[r](Xr(g)Xr(h^−1))= |Cl(g)|  : True
-        All g, h not in Cl(g), Sum[r](Xr(g)Xr(h^−1))=  0       : True
+       [Class      1   2   3            5a            5b]
+       [ Size      1  15  20            12            12]
+       [                                                ]
+       [  Ꭓ.1      1   1   1             1             1]
+       [  Ꭓ.2      3  -1   0  1/2 - 1/2·√5  1/2 + 1/2·√5]
+       [  Ꭓ.3      3  -1   0  1/2 + 1/2·√5  1/2 - 1/2·√5]
+       [  Ꭓ.4      4   0   1            -1            -1]
+       [  Ꭓ.5      5   1  -1             0             0]
+       All i,                 Sum[g](Xi(g)Xi(g^−1)) = |G|      : True
+       All i <> j,            Sum[g](Xi(g)Xj(g^−1)) =  0       : True
+       All g, h in Cl(g),     Sum[r](Xr(g)Xr(h^−1)) = |Cl(g)|  : True
+       All g, h not in Cl(g), Sum[r](Xr(g)Xr(h^−1)) =  0       : True
 
-        |Symm5| = 120
-        Type        NonAbelianGroup
-        BaseGroup   S5
+       |Symm5| = 120
+       Type        NonAbelianGroup
+       BaseGroup   S5
 
-        [Class     1 2a 2b  3  4  5  6]
-        [ Size     1 10 15 20 30 24 20]
-        [                             ]
-        [  X.1     1  1  1  1  1  1  1]
-        [  X.2     1 -1  1  1 -1  1 -1]
-        [  X.3     4  2  0  1  0 -1 -1]
-        [  X.4     4 -2  0  1  0 -1  1]
-        [  X.5     5  1  1 -1 -1  0  1]
-        [  X.6     5 -1  1 -1  1  0 -1]
-        [  X.7     6  0 -2  0  0  1  0]
-        All i,                 Sum[g](Xi(g)Xi(g^−1))= |G|      : True
-        All i <> j,            Sum[g](Xi(g)Xj(g^−1))=  0       : True
-        All g, h in Cl(g),     Sum[r](Xr(g)Xr(h^−1))= |Cl(g)|  : True
-        All g, h not in Cl(g), Sum[r](Xr(g)Xr(h^−1))=  0       : True
+       [Class      1  2a  2b   3   4   5   6]
+       [ Size      1  10  15  20  30  24  20]
+       [                                    ]
+       [  Ꭓ.1      1   1   1   1   1   1   1]
+       [  Ꭓ.2      1  -1   1   1  -1   1  -1]
+       [  Ꭓ.3      4   2   0   1   0  -1  -1]
+       [  Ꭓ.4      4  -2   0   1   0  -1   1]
+       [  Ꭓ.5      5   1   1  -1  -1   0   1]
+       [  Ꭓ.6      5  -1   1  -1   1   0  -1]
+       [  Ꭓ.7      6   0  -2   0   0   1   0]
+       All i,                 Sum[g](Xi(g)Xi(g^−1)) = |G|      : True
+       All i <> j,            Sum[g](Xi(g)Xj(g^−1)) =  0       : True
+       All g, h in Cl(g),     Sum[r](Xr(g)Xr(h^−1)) = |Cl(g)|  : True
+       All g, h not in Cl(g), Sum[r](Xr(g)Xr(h^−1)) =  0       : True
 
-        |Alt6| = 360
-        Type        NonAbelianGroup
-        BaseGroup   S6
-        SuperGroup  |Symm6| = 720
+       |Alt6| = 360
+       Type        NonAbelianGroup
+       BaseGroup   S6
+       SuperGroup  |Symm6| = 720
 
-        [Class      1  2 3a 3b  4            5a            5b]
-        [ Size      1 45 40 40 90            72            72]
-        [                                                    ]
-        [  X.1      1  1  1  1  1             1             1]
-        [  X.2      5  1  2 -1 -1             0             0]
-        [  X.3      5  1 -1  2 -1             0             0]
-        [  X.4      8  0 -1 -1  0   -ξ5³ + -ξ5² ξ5³ + ξ5² + 1]
-        [  X.5      8  0 -1 -1  0 ξ5³ + ξ5² + 1   -ξ5³ + -ξ5²]
-        [  X.6      9  1  0  0  1            -1            -1]
-        [  X.7     10 -2  1  1  0             0             0]
-        All i,                 Sum[g](Xi(g)Xi(g^−1))= |G|      : True
-        All i <> j,            Sum[g](Xi(g)Xj(g^−1))=  0       : True
-        All g, h in Cl(g),     Sum[r](Xr(g)Xr(h^−1))= |Cl(g)|  : True
-        All g, h not in Cl(g), Sum[r](Xr(g)Xr(h^−1))=  0       : True
+       [Class       1   2  3a  3b   4            5a            5b]
+       [ Size       1  45  40  40  90            72            72]
+       [                                                         ]
+       [  Ꭓ.1       1   1   1   1   1             1             1]
+       [  Ꭓ.2       5   1  -1   2  -1             0             0]
+       [  Ꭓ.3       5   1   2  -1  -1             0             0]
+       [  Ꭓ.4       8   0  -1  -1   0  1/2 - 1/2·√5  1/2 + 1/2·√5]
+       [  Ꭓ.5       8   0  -1  -1   0  1/2 + 1/2·√5  1/2 - 1/2·√5]
+       [  Ꭓ.6       9   1   0   0   1            -1            -1]
+       [  Ꭓ.7      10  -2   1   1   0             0             0]
+       All i,                 Sum[g](Xi(g)Xi(g^−1)) = |G|      : True
+       All i <> j,            Sum[g](Xi(g)Xj(g^−1)) =  0       : True
+       All g, h in Cl(g),     Sum[r](Xr(g)Xr(h^−1)) = |Cl(g)|  : True
+       All g, h not in Cl(g), Sum[r](Xr(g)Xr(h^−1)) =  0       : True
 
-        |Symm6| = 720
-        Type        NonAbelianGroup
-        BaseGroup   S6
+       |Symm6| = 720
+       Type        NonAbelianGroup
+       BaseGroup   S6
 
-        [Class      1 2a 2b 2c 3a 3b 4a 4b   5  6a  6b]
-        [ Size      1 15 15 45 40 40 90 90 144 120 120]
-        [                                             ]
-        [  X.1      1  1  1  1  1  1  1  1   1   1   1]
-        [  X.2      1 -1 -1  1  1  1 -1  1   1  -1  -1]
-        [  X.3      5  3 -1  1  2 -1  1 -1   0   0  -1]
-        [  X.4      5 -3  1  1  2 -1 -1 -1   0   0   1]
-        [  X.5      5 -1  3  1 -1  2  1 -1   0  -1   0]
-        [  X.6      5  1 -3  1 -1  2 -1 -1   0   1   0]
-        [  X.7      9  3  3  1  0  0 -1  1  -1   0   0]
-        [  X.8      9 -3 -3  1  0  0  1  1  -1   0   0]
-        [  X.9     10  2 -2 -2  1  1  0  0   0  -1   1]
-        [ X.10     10 -2  2 -2  1  1  0  0   0   1  -1]
-        [ X.11     16  0  0  0 -2 -2  0  0   1   0   0]
-        All i,                 Sum[g](Xi(g)Xi(g^−1))= |G|      : True
-        All i <> j,            Sum[g](Xi(g)Xj(g^−1))=  0       : True
-        All g, h in Cl(g),     Sum[r](Xr(g)Xr(h^−1))= |Cl(g)|  : True
-        All g, h not in Cl(g), Sum[r](Xr(g)Xr(h^−1))=  0       : True
+       [Class       1  2a  2b  2c  3a  3b  4a  4b   5  6a  6b]
+       [ Size       1  15  15  45  40  40  90  90 144 120 120]
+       [                                                     ]
+       [  Ꭓ.1       1   1   1   1   1   1   1   1   1   1   1]
+       [  Ꭓ.2       1  -1  -1   1   1   1  -1   1   1  -1  -1]
+       [  Ꭓ.3       5   1  -3   1  -1   2  -1  -1   0   1   0]
+       [  Ꭓ.4       5  -1   3   1  -1   2   1  -1   0  -1   0]
+       [  Ꭓ.5       5   3  -1   1   2  -1   1  -1   0   0  -1]
+       [  Ꭓ.6       5  -3   1   1   2  -1  -1  -1   0   0   1]
+       [  Ꭓ.7       9   3   3   1   0   0  -1   1  -1   0   0]
+       [  Ꭓ.8       9  -3  -3   1   0   0   1   1  -1   0   0]
+       [  Ꭓ.9      10   2  -2  -2   1   1   0   0   0  -1   1]
+       [ Ꭓ.10      10  -2   2  -2   1   1   0   0   0   1  -1]
+       [ Ꭓ.11      16   0   0   0  -2  -2   0   0   1   0   0]
+       All i,                 Sum[g](Xi(g)Xi(g^−1)) = |G|      : True
+       All i <> j,            Sum[g](Xi(g)Xj(g^−1)) =  0       : True
+       All g, h in Cl(g),     Sum[r](Xr(g)Xr(h^−1)) = |Cl(g)|  : True
+       All g, h not in Cl(g), Sum[r](Xr(g)Xr(h^−1)) =  0       : True
      */
 
     public static void ExamplesGL23()
@@ -310,7 +310,7 @@ public static class CharacterTableExamples
         var gl23 = Group.Generate(gl, a0, b0);
         var ctGL23 = FG.CharacterTable(gl23);
         ctGL23.DisplayCells();
-    
+
         var a = gl[1, 1, 0, 1];
         var b = gl[0, 1, 2, 0];
 
@@ -322,46 +322,46 @@ public static class CharacterTableExamples
         ctSL23.DisplayCells();
     }
     /*
-        |GL(2,3)| = 48
-        Type        NonAbelianGroup
-        BaseGroup   GL(2,3)
+       |GL(2,3)| = 48
+       Type        NonAbelianGroup
+       BaseGroup   GL(2,3)
 
-        [Class     1 2a 2b  3  4  6         8a         8b]
-        [ Size     1  1 12  8  6  8          6          6]
-        [                                                ]
-        [  X.1     1  1  1  1  1  1          1          1]
-        [  X.2     1  1 -1  1  1  1         -1         -1]
-        [  X.3     2  2  0 -1  2 -1          0          0]
-        [  X.4     2 -2  0 -1  0  1   ξ8³ + ξ8 -ξ8³ + -ξ8]
-        [  X.5     2 -2  0 -1  0  1 -ξ8³ + -ξ8   ξ8³ + ξ8]
-        [  X.6     3  3 -1  0 -1  0          1          1]
-        [  X.7     3  3  1  0 -1  0         -1         -1]
-        [  X.8     4 -4  0  1  0 -1          0          0]
-        All i,                 Sum[g](Xi(g)Xi(g^−1))= |G|      : True
-        All i <> j,            Sum[g](Xi(g)Xj(g^−1))=  0       : True
-        All g, h in Cl(g),     Sum[r](Xr(g)Xr(h^−1))= |Cl(g)|  : True
-        All g, h not in Cl(g), Sum[r](Xr(g)Xr(h^−1))=  0       : True
+       [Class      1  2a  2b   3   4   6    8a    8b]
+       [ Size      1   1  12   8   6   8     6     6]
+       [                                            ]
+       [  Ꭓ.1      1   1   1   1   1   1     1     1]
+       [  Ꭓ.2      1   1  -1   1   1   1    -1    -1]
+       [  Ꭓ.3      2   2   0  -1   2  -1     0     0]
+       [  Ꭓ.4      2  -2   0  -1   0   1  -I√2   I√2]
+       [  Ꭓ.5      2  -2   0  -1   0   1   I√2  -I√2]
+       [  Ꭓ.6      3   3   1   0  -1   0    -1    -1]
+       [  Ꭓ.7      3   3  -1   0  -1   0     1     1]
+       [  Ꭓ.8      4  -4   0   1   0  -1     0     0]
+       All i,                 Sum[g](Xi(g)Xi(g^−1)) = |G|      : True
+       All i <> j,            Sum[g](Xi(g)Xj(g^−1)) =  0       : True
+       All g, h in Cl(g),     Sum[r](Xr(g)Xr(h^−1)) = |Cl(g)|  : True
+       All g, h not in Cl(g), Sum[r](Xr(g)Xr(h^−1)) =  0       : True
 
-        |SL(2,3)| = 24
-        Type        NonAbelianGroup
-        BaseGroup   GL(2,3)
+       |SL(2,3)| = 24
+       Type        NonAbelianGroup
+       BaseGroup   GL(2,3)
 
-        [Class     1  2       3a       3b  4       6a       6b]
-        [ Size     1  1        4        4  6        4        4]
-        [                                                     ]
-        [  X.1     1  1        1        1  1        1        1]
-        [  X.2     1  1 -ξ3 + -1       ξ3  1       ξ3 -ξ3 + -1]
-        [  X.3     1  1       ξ3 -ξ3 + -1  1 -ξ3 + -1       ξ3]
-        [  X.4     2 -2       -1       -1  0        1        1]
-        [  X.5     2 -2   ξ3 + 1      -ξ3  0       ξ3 -ξ3 + -1]
-        [  X.6     2 -2      -ξ3   ξ3 + 1  0 -ξ3 + -1       ξ3]
-        [  X.7     3  3        0        0 -1        0        0]
-        All i,                 Sum[g](Xi(g)Xi(g^−1))= |G|      : True
-        All i <> j,            Sum[g](Xi(g)Xj(g^−1))=  0       : True
-        All g, h in Cl(g),     Sum[r](Xr(g)Xr(h^−1))= |Cl(g)|  : True
-        All g, h not in Cl(g), Sum[r](Xr(g)Xr(h^−1))=  0       : True
+       [Class      1   2    3a    3b   4   6a   6b]
+       [ Size      1   1     4     4   6    4    4]
+       [                                          ]
+       [  Ꭓ.1      1   1     1     1   1    1    1]
+       [  Ꭓ.2      1   1    ξ3   ξ3²   1  ξ3²   ξ3]
+       [  Ꭓ.3      1   1   ξ3²    ξ3   1   ξ3  ξ3²]
+       [  Ꭓ.4      2  -2    -1    -1   0    1    1]
+       [  Ꭓ.5      2  -2   -ξ3  -ξ3²   0  ξ3²   ξ3]
+       [  Ꭓ.6      2  -2  -ξ3²   -ξ3   0   ξ3  ξ3²]
+       [  Ꭓ.7      3   3     0     0  -1    0    0]
+       All i,                 Sum[g](Xi(g)Xi(g^−1)) = |G|      : True
+       All i <> j,            Sum[g](Xi(g)Xj(g^−1)) =  0       : True
+       All g, h in Cl(g),     Sum[r](Xr(g)Xr(h^−1)) = |Cl(g)|  : True
+       All g, h not in Cl(g), Sum[r](Xr(g)Xr(h^−1)) =  0       : True
      */
-    
+
     public static void OtherExamples()
     {
         {
@@ -386,11 +386,11 @@ public static class CharacterTableExamples
             FG.CharacterTable(E).DisplayCells();
             FG.CharacterTable(Esdp).DisplayCells();
         }
-        
+
         {
             var f8 = Group.SemiDirectProd(FG.Abelian(2, 2, 2), FG.Abelian(7));
             FG.CharacterTable(f8).DisplayCells();
-            
+
             var gr = Group.SemiDirectProd(f8, FG.Abelian(3));
             FG.CharacterTable(gr).DisplayCells();
         }
@@ -399,93 +399,95 @@ public static class CharacterTableExamples
     public static void Symmetric7CharacterTable()
     {
         GlobalStopWatch.Restart();
-        
+
         GlobalStopWatch.AddLap();
         var ctA7 = FG.CharacterTableEmpty(FG.Alternate(7));
         ctA7.DisplayCells();
-        
+
         ctA7.InductionFromSubGroup(Group.Generate("Alt6", ctA7.Gr, ctA7.Gr[(1, 2, 3)], ctA7.Gr[(1, 2, 4)], ctA7.Gr[(1, 2, 5)],
             ctA7.Gr[(1, 2, 6)]));
         ctA7.DisplayCells();
-        
+
         ctA7.InductionFromSubGroup(Group.Generate("S5", ctA7.Gr, ctA7.Gr[(1, 2), (3, 4), (5, 6, 7)], ctA7.Gr[(3, 4, 5, 6, 7)]));
         ctA7.DisplayCells();
-        
-        ctA7.InductionFromSubGroup(Group.Generate("C3 x A4", ctA7.Gr, ctA7.Gr[(1, 2), (3, 4), (5, 6, 7)], ctA7.Gr[(2, 3, 4), (5, 6, 7)]));
+
+        ctA7.InductionFromSubGroup(Group.Generate("C3 x A4", ctA7.Gr, ctA7.Gr[(1, 2), (3, 4), (5, 6, 7)],
+            ctA7.Gr[(2, 3, 4), (5, 6, 7)]));
         ctA7.DisplayCells();
-        
+
         ctA7.InductionFromSubGroup(Group.Generate("L(7)", ctA7.Gr, ctA7.Gr[(1, 2, 3, 4, 5, 6, 7)], ctA7.Gr[(1, 2), (3, 6)]));
         ctA7.DisplayCells();
         GlobalStopWatch.Show($"{ctA7.Gr}");
-        
+
         GlobalStopWatch.AddLap();
         var ctS7 = FG.CharacterTableEmpty(FG.Symmetric(7));
         ctS7.DisplayCells();
-        
+
         ctS7.InductionFromSubGroup(ctA7);
         ctS7.DisplayCells();
-        
+
         ctS7.InductionFromSubGroup(Group.Generate("Symm6", ctS7.Gr, ctS7.Gr[(1, 2)], ctS7.Gr[(1, 2, 3, 4, 5, 6)]));
         ctS7.DisplayCells();
-        
-        ctS7.InductionFromSubGroup(Group.Generate("C2 x S4", ctS7.Gr, ctS7.Gr[(6, 7)], ctS7.Gr[(4, 5)], ctS7.Gr[(3, 4)], ctS7.Gr[(2, 3)],
+
+        ctS7.InductionFromSubGroup(Group.Generate("C2 x S4", ctS7.Gr, ctS7.Gr[(6, 7)], ctS7.Gr[(4, 5)], ctS7.Gr[(3, 4)],
+            ctS7.Gr[(2, 3)],
             ctS7.Gr[(1, 2)]));
         ctS7.DisplayCells();
         GlobalStopWatch.Show($"{ctS7.Gr}");
     }
-        
+
     /*
        |Alt7| = 2520
        Type        NonAbelianGroup
        BaseGroup   S7
        SuperGroup  |Symm7| = 5040
-       
-       [Class      1   2 3a  3b   4   5   6                  7a                  7b]
-       [ Size      1 105 70 280 630 504 210                 360                 360]
-       [                                                                           ]
-       [  X.1      1   1  1   1   1   1   1                   1                   1]
-       [  X.2      6   2  3   0   0   1  -1                  -1                  -1]
-       [  X.3     10  -2  1   1   0   0   1      ξ7⁴ + ξ7² + ξ7 -ξ7⁴ - ξ7² - ξ7 - 1]
-       [  X.4     10  -2  1   1   0   0   1 -ξ7⁴ - ξ7² - ξ7 - 1      ξ7⁴ + ξ7² + ξ7]
-       [  X.5     14   2  2  -1   0  -1   2                   0                   0]
-       [  X.6     14   2 -1   2   0  -1  -1                   0                   0]
-       [  X.7     15  -1  3   0  -1   0  -1                   1                   1]
-       [  X.8     21   1 -3   0  -1   1   1                   0                   0]
-       [  X.9     35  -1 -1  -1   1   0  -1                   0                   0]
-       All i,                 Sum[g](Xi(g)Xi(g^−1))= |G|      : True
-       All i <> j,            Sum[g](Xi(g)Xj(g^−1))=  0       : True
-       All g, h in Cl(g),     Sum[r](Xr(g)Xr(h^−1))= |Cl(g)|  : True
-       All g, h not in Cl(g), Sum[r](Xr(g)Xr(h^−1))=  0       : True
-       
-       #  Time:132903 ms
-       
+
+       [Class       1   2  3a  3b   4   5   6              7a              7b]
+       [ Size       1 105  70 280 630 504 210             360             360]
+       [                                                                     ]
+       [  Ꭓ.1       1   1   1   1   1   1   1               1               1]
+       [  Ꭓ.2       6   2   3   0   0   1  -1              -1              -1]
+       [  Ꭓ.3      10  -2   1   1   0   0   1  -1/2 - 1/2·I√7  -1/2 + 1/2·I√7]
+       [  Ꭓ.4      10  -2   1   1   0   0   1  -1/2 + 1/2·I√7  -1/2 - 1/2·I√7]
+       [  Ꭓ.5      14   2  -1   2   0  -1  -1               0               0]
+       [  Ꭓ.6      14   2   2  -1   0  -1   2               0               0]
+       [  Ꭓ.7      15  -1   3   0  -1   0  -1               1               1]
+       [  Ꭓ.8      21   1  -3   0  -1   1   1               0               0]
+       [  Ꭓ.9      35  -1  -1  -1   1   0  -1               0               0]
+       All i,                 Sum[g](Xi(g)Xi(g^−1)) = |G|      : True
+       All i <> j,            Sum[g](Xi(g)Xj(g^−1)) =  0       : True
+       All g, h in Cl(g),     Sum[r](Xr(g)Xr(h^−1)) = |Cl(g)|  : True
+       All g, h not in Cl(g), Sum[r](Xr(g)Xr(h^−1)) =  0       : True
+
+       # Alt7 Time:92077 ms
+
        |Symm7| = 5040
        Type        NonAbelianGroup
        BaseGroup   S7
-       
-       [Class      1 2a  2b  2c 3a  3b  4a  4b   5  6a  6b  6c   7  10  12]
-       [ Size      1 21 105 105 70 280 210 630 504 210 420 840 720 504 420]
-       [                                                                  ]
-       [  X.1      1  1   1   1  1   1   1   1   1   1   1   1   1   1   1]
-       [  X.2      1 -1   1  -1  1   1  -1   1   1   1  -1  -1   1  -1  -1]
-       [  X.3      6  4   2   0  3   0   2   0   1  -1   1   0  -1  -1  -1]
-       [  X.4      6 -4   2   0  3   0  -2   0   1  -1  -1   0  -1   1   1]
-       [  X.5     14 -4   2   0 -1   2   2   0  -1  -1  -1   0   0   1  -1]
-       [  X.6     14  4   2   0 -1   2  -2   0  -1  -1   1   0   0  -1   1]
-       [  X.7     14  6   2   2  2  -1   0   0  -1   2   0  -1   0   1   0]
-       [  X.8     14 -6   2  -2  2  -1   0   0  -1   2   0   1   0  -1   0]
-       [  X.9     15  5  -1  -3  3   0   1  -1   0  -1  -1   0   1   0   1]
-       [ X.10     15 -5  -1   3  3   0  -1  -1   0  -1   1   0   1   0  -1]
-       [ X.11     20  0  -4   0  2   2   0   0   0   2   0   0  -1   0   0]
-       [ X.12     21  1   1  -3 -3   0  -1  -1   1   1   1   0   0   1  -1]
-       [ X.13     21 -1   1   3 -3   0   1  -1   1   1  -1   0   0  -1   1]
-       [ X.14     35 -5  -1  -1 -1  -1   1   1   0  -1   1  -1   0   0   1]
-       [ X.15     35  5  -1   1 -1  -1  -1   1   0  -1  -1   1   0   0  -1]
-       All i,                 Sum[g](Xi(g)Xi(g^−1))= |G|      : True
-       All i <> j,            Sum[g](Xi(g)Xj(g^−1))=  0       : True
-       All g, h in Cl(g),     Sum[r](Xr(g)Xr(h^−1))= |Cl(g)|  : True
-       All g, h not in Cl(g), Sum[r](Xr(g)Xr(h^−1))=  0       : True
-       
-       #  Time:490267 ms
+
+       [Class       1  2a  2b  2c  3a  3b  4a  4b   5  6a  6b  6c   7  10  12]
+       [ Size       1  21 105 105  70 280 210 630 504 210 420 840 720 504 420]
+       [                                                                     ]
+       [  Ꭓ.1       1   1   1   1   1   1   1   1   1   1   1   1   1   1   1]
+       [  Ꭓ.2       1  -1   1  -1   1   1  -1   1   1   1  -1  -1   1  -1  -1]
+       [  Ꭓ.3       6   4   2   0   3   0   2   0   1  -1   1   0  -1  -1  -1]
+       [  Ꭓ.4       6  -4   2   0   3   0  -2   0   1  -1  -1   0  -1   1   1]
+       [  Ꭓ.5      14   4   2   0  -1   2  -2   0  -1  -1   1   0   0  -1   1]
+       [  Ꭓ.6      14  -4   2   0  -1   2   2   0  -1  -1  -1   0   0   1  -1]
+       [  Ꭓ.7      14   6   2   2   2  -1   0   0  -1   2   0  -1   0   1   0]
+       [  Ꭓ.8      14  -6   2  -2   2  -1   0   0  -1   2   0   1   0  -1   0]
+       [  Ꭓ.9      15   5  -1  -3   3   0   1  -1   0  -1  -1   0   1   0   1]
+       [ Ꭓ.10      15  -5  -1   3   3   0  -1  -1   0  -1   1   0   1   0  -1]
+       [ Ꭓ.11      20   0  -4   0   2   2   0   0   0   2   0   0  -1   0   0]
+       [ Ꭓ.12      21   1   1  -3  -3   0  -1  -1   1   1   1   0   0   1  -1]
+       [ Ꭓ.13      21  -1   1   3  -3   0   1  -1   1   1  -1   0   0  -1   1]
+       [ Ꭓ.14      35   5  -1   1  -1  -1  -1   1   0  -1  -1   1   0   0  -1]
+       [ Ꭓ.15      35  -5  -1  -1  -1  -1   1   1   0  -1   1  -1   0   0   1]
+       All i,                 Sum[g](Xi(g)Xi(g^−1)) = |G|      : True
+       All i <> j,            Sum[g](Xi(g)Xj(g^−1)) =  0       : True
+       All g, h in Cl(g),     Sum[r](Xr(g)Xr(h^−1)) = |Cl(g)|  : True
+       All g, h not in Cl(g), Sum[r](Xr(g)Xr(h^−1)) =  0       : True
+
+       # Symm7 Time:379028 ms
      */
 }

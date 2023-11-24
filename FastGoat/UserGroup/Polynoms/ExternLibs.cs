@@ -15,7 +15,7 @@ public static class ExternLibs
         var matStr = string.Format("[{0}]", mat.Rows.Select(r => r.Glue(" ")).Glue(fmt: "[{0}]"));
         if (File.Exists("tmp"))
             File.Delete("tmp");
-        
+
         File.WriteAllText("tmp", matStr);
         if (matStr.Length > 30000)
             throw new($"{(mat.Dim, matStr.Length)}");
@@ -41,7 +41,6 @@ public static class ExternLibs
 
     public static KPoly<Rational> Run_polysGcd(KPoly<Rational> f, KPoly<Rational> g)
     {
-        
         var process = new Process();
         process.StartInfo.FileName = "polysgcd";
         process.StartInfo.Arguments = $"f {f.Coefs.Glue(" ")} g {g.Coefs.Glue(" ")}";
@@ -52,14 +51,14 @@ public static class ExternLibs
         process.WaitForExit();
         var res = process.StandardOutput.ReadToEnd();
         var (s0, s1) = res.Split("  ").Deconstruct();
-        
+
         var x = FG.QPoly();
         var P0 = s1.Split(" ").Select((c, i) => x.Pow(i) * new Rational(BigInteger.Parse(c))).Aggregate(x.Zero, (acc, c) => acc + c);
         process.Close();
         process.Dispose();
         return P0;
     }
-    
+
     static BigCplx[] ReadStr(string[] rootsStr, int O)
     {
         var cRoots = new List<BigCplx>();
@@ -67,7 +66,7 @@ public static class ExternLibs
         {
             if (string.IsNullOrEmpty(r))
                 continue;
-        
+
             if (r.Contains(" + ") || r.Contains(" - "))
             {
                 var s0 = r.Split(" + ");
@@ -100,12 +99,12 @@ public static class ExternLibs
     {
         if (P.Coefs.Any(c => !c.Denom.IsOne))
             throw new();
-    
+
         var process = new Process();
         // assuming the gist https://gist.github.com/aidevnn/c60cdf55d2fe84a45caeb0853ed03aef
         // is already compiled and the binary is accessible 
-    
-        process.StartInfo.FileName = "polyroots"; 
+
+        process.StartInfo.FileName = "polyroots";
         process.StartInfo.Arguments = string.Format("-refine {0} coeffs {1}", O, P.Coefs.Glue(" "));
         process.StartInfo.RedirectStandardInput = false;
         process.StartInfo.RedirectStandardOutput = true;
@@ -118,5 +117,4 @@ public static class ExternLibs
 
         return ReadStr(res, O);
     }
-
 }

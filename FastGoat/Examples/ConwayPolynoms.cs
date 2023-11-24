@@ -11,7 +11,7 @@ namespace FastGoat.Examples;
 public static class ConwayPolynoms
 {
     static Dictionary<int, Dictionary<int, KPoly<ZnInt>>> allCnPolys = new();
-    
+
     static KPoly<ZnInt> GetPoly(int p, int n)
     {
         var x = FG.ZPoly(p);
@@ -27,7 +27,7 @@ public static class ConwayPolynoms
             xPow[k] = xp - x;
         }
 
-        KPoly<ZnInt> Poly_PpowD(int d) => xPow[d];// x.Pow(p.Pow(d)) - x;
+        KPoly<ZnInt> Poly_PpowD(int d) => xPow[d]; // x.Pow(p.Pow(d)) - x;
         var seq = EnumerableExt.MultiLoop(n.Range().OrderDescending()
             .Select(i => p.Range().Select(j => j == 0 ? x.Zero : x.Pow(i) * ((n - i) % 2 == 0 ? j : p - j))));
 
@@ -80,7 +80,7 @@ public static class ConwayPolynoms
         var g = PolynomExt.GetConwayPoly(pn);
         var cnPoly0 = g.coefs.Select((k, i) => k * x.Pow(i)).Aggregate(x.Zero, (acc, xi) => acc + xi);
         var cnPoly1 = GetPoly(p, n);
-        Console.WriteLine($"Conway Poly {$"p={p} n={n} |GF({cnPoly0})| = {pn - 1}", -80} Exact:{cnPoly1.Equals(cnPoly0)}");
+        Console.WriteLine($"Conway Poly {$"p={p} n={n} |GF({cnPoly0})| = {pn - 1}",-80} Exact:{cnPoly1.Equals(cnPoly0)}");
         // var gf = new GFp($"GF({cnPoly})", FG.EPoly(FG.KPoly(ZnInt.KZero(p), 'x', cnPoly.Coefs)));
         // DisplayGroup.Head(Group.Generate(gf));
     }
@@ -90,7 +90,7 @@ public static class ConwayPolynoms
         var cnPoly = GetPoly(p, n);
         if (verbose)
             Console.WriteLine($"Poly p={p} n={n} : {cnPoly}");
-        
+
         var x = FG.ZPoly(p);
         var q = (int)Math.Pow(p, n);
         var n1 = q - 1;
@@ -145,7 +145,7 @@ public static class ConwayPolynoms
 
         if (verbose)
             Console.WriteLine("Multiplication Table of F{0}", gr.Count());
-        
+
         var distrib = true;
         var fpspace = true;
         var fps = Enumerable.Range(0, p).ToArray();
@@ -194,7 +194,7 @@ public static class ConwayPolynoms
         AutomorphismFromPoly(3, 1);
         AutomorphismFromPoly(5, 1);
         AutomorphismFromPoly(7, 1);
-        
+
         AutomorphismFromPoly(2, 2);
         AutomorphismFromPoly(3, 2);
 

@@ -17,6 +17,7 @@ public readonly struct FracPoly<K> : IVsElt<K, FracPoly<K>>, IElt<FracPoly<K>>, 
 
     public static bool IsValuedField => false;
     public static double Abs(FracPoly<K> e) => throw new NotImplementedException();
+
     public FracPoly(KPoly<K> num)
     {
         Num = num;

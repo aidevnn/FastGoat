@@ -242,7 +242,7 @@ public static partial class Group
         var generators = g1.GetGenerators().Union(g2.GetGenerators()).ToArray();
         if (g1.SuperGroup is not null && g1.SuperGroup.SuperSetOf(generators))
             return new ConcreteGroup<T>(name, g1.SuperGroup, generators);
-        
+
         return new ConcreteGroup<T>(name, g1.BaseGroup, generators);
     }
 
@@ -266,14 +266,14 @@ public static partial class Group
     }
 
     public static ConcreteGroup<K> AddGroup<K>(string name, params K[] gens)
-        where K : struct, IElt<K>, IRingElt<K>,IFieldElt<K>
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var fg = new OpGroup<K>(name, gens, FGroupOp.Additive);
         return new ConcreteGroup<K>(fg);
     }
 
     public static ConcreteGroup<K> MulGroup<K>(string name, params K[] gens)
-        where K : struct, IElt<K>, IRingElt<K>,IFieldElt<K>
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var fg = new OpGroup<K>(name, gens, FGroupOp.Multiplicative);
         return new ConcreteGroup<K>(fg);

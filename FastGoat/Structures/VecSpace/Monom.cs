@@ -35,6 +35,7 @@ public readonly struct Monom<T> : IElt<Monom<T>> where T : struct, IElt<T>
     private Dictionary<T, int> Content { get; }
     public Indeterminates<T> Indeterminates { get; }
     public IEnumerable<T> ContentIndeterminates => Content.Keys;
+
     public IEnumerable<Monom<T>> ContentIndeterminatesMonoms
     {
         get

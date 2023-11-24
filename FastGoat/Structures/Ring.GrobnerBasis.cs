@@ -149,7 +149,7 @@ public static partial class Ring
         var t = ti.ToPolynomial(a.One);
         var ord = a.Indeterminates.Order;
         a.Indeterminates.SetOrder(MonomOrder.Lex);
-        
+
         var gb = ReducedGrobnerBasis(t * a, (1 - t) * b);
         var lcm = gb.First(e => e.Coefs.Keys.All(xi => xi[ti] == 0));
         a.Indeterminates.SetOrder(ord);

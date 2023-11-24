@@ -183,7 +183,7 @@ public static class CardanFormula
             Console.WriteLine($"Random factors : [{polys.Glue(" ;  ")}]");
             Console.WriteLine($"f0 = {f}");
             Console.WriteLine();
-            
+
             var facts = FactorsQ(f, details: true);
             var f1 = facts.Select(e => e.Item1.Pow(e.Item2)).Aggregate((a0, a1) => a0 * a1).SubstituteChar(f0.x);
             if (!f0.Equals(f1))

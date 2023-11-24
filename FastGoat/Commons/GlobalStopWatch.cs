@@ -1,6 +1,7 @@
 using System.Diagnostics;
 
 namespace FastGoat.Commons;
+
 /// <summary>
 /// A static class providing global stopwatch functionality
 /// </summary>
@@ -100,7 +101,7 @@ public static class GlobalStopWatch
     /// Resets the infinite loop breaker counter
     /// </summary>
     public static void InfiniteLoopBreakerReset() => ct = 0;
-    
+
     /// <summary>
     /// Throws an exception if a specified number of iterations have been exceeded
     /// </summary>

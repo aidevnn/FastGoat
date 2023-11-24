@@ -5,12 +5,12 @@ public readonly struct KAut<K> : IElt<KAut<K>> where K : struct, IElt<K>, IRingE
     public KAutGroup<K> KAutGroup { get; }
     public EPoly<K> E { get; }
     public KAut<K> Clone => new(E.Clone);
-    
+
     public KAut(KAutGroup<K> kaut, EPoly<K> e)
     {
         if (!kaut.F.Equals(e.F))
             throw new GroupException(GroupExceptionType.GroupDef);
-        
+
         E = e;
         KAutGroup = kaut;
         Hash = (e.Hash, KAutGroup.Hash).GetHashCode();

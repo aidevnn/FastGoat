@@ -11,7 +11,7 @@ public interface IGmoduleNElt<N, G, T> : IEquatable<T>, IComparable<T>
     T Act(int k);
 
     T Act(G a);
-    
+
     static abstract T operator +(T a, T b);
     static abstract T operator -(T a, T b);
     static abstract T operator -(T a);

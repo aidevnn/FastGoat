@@ -33,7 +33,7 @@ public struct ExtensionGroupBase<Tn, Tg> : IGroup<Ep2<Tn, Tg>> where Tg : struct
         IsGroup = Group.IsGroup(this, Elements);
         // IsGroup = true;
     }
-    
+
     public bool IsGroup { get; }
 
     public List<Ep2<Tn, Tg>> PseudoGenerators { get; }

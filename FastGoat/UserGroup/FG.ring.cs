@@ -37,7 +37,7 @@ public static partial class FG
 
         return num / denom;
     }
-    
+
     public static ((int, int)[]num, (int, int)[] denom) Decomp(this Rational r)
     {
         var num = IntExt.PrimesDec(r.Num).Select(e => (e.Key, e.Value)).ToArray();
@@ -180,7 +180,8 @@ public static partial class FG
     {
         var lcm = new Rational(IntExt.LcmBigInt(P.Coefs.Select(e => e.Denom).Distinct().ToArray()));
         var P0 = P * lcm; // removes denominators
-        var gcd = new Rational(IntExt.GcdBigInt(P0.Coefs.Select(e => BigInteger.Abs(e.Num)).Where(e => !e.IsZero).Distinct().ToArray()));
+        var gcd = new Rational(
+            IntExt.GcdBigInt(P0.Coefs.Select(e => BigInteger.Abs(e.Num)).Where(e => !e.IsZero).Distinct().ToArray()));
         return P0 / gcd * P.LT.Sign; // makes primitive
     }
 

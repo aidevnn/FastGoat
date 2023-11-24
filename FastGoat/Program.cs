@@ -82,7 +82,6 @@ IEnumerable<(CrMap<Tn, Tg> c, ConcreteGroup<Ep2<Tn, Tg>> ext, Dictionary<Concret
     }
 }
 
-
 IEnumerable<(CrMap<Tn, Tg> c, ConcreteGroup<Ep2<Tn, Tg>> ext, Dictionary<ConcreteGroup<Ep2<Tn, Tg>>,
         List<ConcreteGroup<Ep2<Tn, Tg>>>> allSubs, (int, int, int) infos)>
     AllExtensions2<Tn, Tg>(params (ConcreteGroup<Tn>, ConcreteGroup<Tg>)[] tuples)
@@ -111,13 +110,11 @@ IEnumerable<(CrMap<Tn, Tg> c, ConcreteGroup<Ep2<Tn, Tg>> ext, Dictionary<Concret
     }
 }
 
-Dictionary<ConcreteGroup<T>, ConcreteGroup<T>[]>
-    IsProduct<T>(Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>> subGroups)
+Dictionary<ConcreteGroup<T>, ConcreteGroup<T>[]> IsProduct<T>(Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>> subGroups)
     where T : struct, IElt<T>
 {
     var g = subGroups.MaxBy(e => e.Key.Count()).Key;
     var og = g.Count();
-    var tr = Group.Generate("Tr", g, g.Neutral());
     var normalSubGroups = subGroups.Where(e => e.Value.Count == 1).Select(e => e.Key).ToArray();
     var otherSubroups = subGroups.OrderBy(e => e.Value.Count).SelectMany(e => e.Value).Except(normalSubGroups).ToArray();
     var properNormalSubGroups = normalSubGroups.Where(e => e.Count() != 1 && e.Count() != og)

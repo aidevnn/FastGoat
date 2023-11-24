@@ -7,6 +7,7 @@ public readonly struct KAutGroup<K> : IGroup<KAut<K>> where K : struct, IElt<K>,
 {
     public KPoly<K> F { get; }
     private EPoly<K> X { get; }
+
     public KAutGroup(KPoly<K> P)
     {
         F = P;
@@ -14,7 +15,7 @@ public readonly struct KAutGroup<K> : IGroup<KAut<K>> where K : struct, IElt<K>,
         Name = $"Q[{P.x}]/({P})";
         X = new(F);
     }
-    
+
     public IEnumerator<KAut<K>> GetEnumerator() => GetElements().GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator() => GetElements().GetEnumerator();
@@ -25,6 +26,7 @@ public readonly struct KAutGroup<K> : IGroup<KAut<K>> where K : struct, IElt<K>,
     public string Name { get; }
 
     public KAut<K> KAut(EPoly<K> e) => new(this, e);
+
     public KAut<K> this[params ValueType[] us]
     {
         get

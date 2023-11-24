@@ -22,9 +22,9 @@ public struct CnfBasis
         CyclotomicPolynomial = FG.CyclotomicPolynomial(ord);
         var deg = CyclotomicPolynomial.Degree;
         var x = FG.EPoly(CyclotomicPolynomial, 'ξ');
-        
+
         Factors = IntExt.PrimesDec(Order).Select(kv => kv.Key.Pow(kv.Value)).Order().ToArray();
-        
+
         var gr = Gr = FG.Abelian(Factors);
         var allSubgroups = Group.AllSubGroups(Gr).Keys.Where(sg => sg.Count() != 1).ToHashSet(new IsomorphEquality<Ep<ZnInt>>());
 
@@ -63,7 +63,7 @@ public struct CnfBasis
             RelativeIndexes[key] = idxs.ToArray();
         }
     }
-    
+
     public (Cnf, KPoly<Rational>) Simplify(Cnf c)
     {
         if (c.N == 1 || c.N == 4)
@@ -77,7 +77,7 @@ public struct CnfBasis
             var p = c.E.Poly;
             return (new(1, new(p.X - 1, p)), p);
         }
-        
+
         if (c.N != Order)
             throw new();
 
@@ -86,12 +86,12 @@ public struct CnfBasis
         {
             var mat = KMatrix<Rational>.MergeSameRows(matBs, matC);
             var (dim, ker) = mat.NullSpace();
-            
+
             if (dim == 1)
             {
                 var idx = RelativeIndexes[ord];
                 var x = FG.CyclotomicEPoly(ord);
-                var arr = (ord + 1).Range().Select(_=>Rational.KZero()).ToArray();
+                var arr = (ord + 1).Range().Select(_ => Rational.KZero()).ToArray();
                 foreach (var (k, v) in idx.Select((k, i) => (k, -ker[i, 0])))
                     arr[k] = v;
 

@@ -124,7 +124,7 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
         var poly = new KPoly<T>(f.x, f.KZero, Coefs.Select(k => k * f.KOne).ToArray());
         return poly.Substitute(f);
     }
-    
+
     public KPoly<K> Add(KPoly<K> e)
     {
         var maxDegree = Math.Max(Degree, e.Degree);
@@ -202,7 +202,7 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
             cache[i] = Coefs[i];
             Coefs[i] = KZero;
         }
-        
+
         for (int i = 0; i <= degree; i++)
         {
             var ai = cache[i];
@@ -215,7 +215,7 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
     {
         if (k.IsZero())
             return Zero;
-        
+
         var coefs = Coefs.Select(e => e.Mul(k)).ToArray();
         return new(x, KZero, coefs);
     }
@@ -240,7 +240,7 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
 
         if (Degree == 0)
             return new(x, KZero, new[] { this[0].Pow(k) });
-        
+
         // var prod = new KPoly<K>(x, KZero, Enumerable.Repeat(KZero, k * Degree + 1).ToArray());
         // prod.Coefs[0] = KOne;
         // var cache = Enumerable.Repeat(KZero, k * Degree + 1).ToArray();
@@ -250,7 +250,7 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
         // }
         //
         // return prod;
-        
+
         var pi = this;
         return Enumerable.Repeat(pi, k).Aggregate((a, b) => a.Mul(b));
     }
@@ -294,7 +294,7 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
 
                 quo[i - e.Degree] = qr.quo;
                 for (int j = 0; j <= i; j++)
-                    rem[j] -= e[e.Degree - i + j] *  qr.quo;
+                    rem[j] -= e[e.Degree - i + j] * qr.quo;
             }
 
             return (new(x, KZero, quo.TrimSeq().ToArray()), new(x, KZero, rem.TrimSeq().ToArray()));
