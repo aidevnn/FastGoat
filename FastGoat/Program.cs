@@ -183,7 +183,7 @@ void Order16()
 {
     GlobalStopWatch.Restart();
     nbOps = 4;
-    var allExts16 = AllExtensions2(TestTwoCohomology.AllAbelianGroupsOrder(8).Select(e => (e, FG.Abelian(2))).ToArray())
+    var allExts16 = AllExtensions2(FG.AllAbelianGroupsOfOrder(8).Select(e => (e, FG.Abelian(2))).ToArray())
         .OrderBy(e => e.ext.GroupType)
         .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
         .ThenBy(e => e.infos).ToArray();
@@ -197,11 +197,11 @@ void Order24()
 {
     GlobalStopWatch.Restart();
     nbOps = 3;
-    var tuples8 = TestTwoCohomology.AllAbelianGroupsOrder(4).Select(e => (e, FG.Abelian(2)));
+    var tuples8 = FG.AllAbelianGroupsOfOrder(4).Select(e => (e, FG.Abelian(2)));
     var allExts8 = AllExtensions2(tuples8.ToArray()).ToArray();
 
-    var tuples12a = TestTwoCohomology.AllAbelianGroupsOrder(4).Select(e => (e, FG.Abelian(3)));
-    var tuples12b = TestTwoCohomology.AllAbelianGroupsOrder(6).Select(e => (e, FG.Abelian(2)));
+    var tuples12a = FG.AllAbelianGroupsOfOrder(4).Select(e => (e, FG.Abelian(3)));
+    var tuples12b = FG.AllAbelianGroupsOfOrder(6).Select(e => (e, FG.Abelian(2)));
     var tuples12 = tuples12a.Concat(tuples12b).ToArray();
     var allExts12 = AllExtensions2(tuples12).ToArray();
 
@@ -226,9 +226,9 @@ void Order42()
 {
     GlobalStopWatch.Restart();
     nbOps = 4;
-    var tuples14 = TestTwoCohomology.AllAbelianGroupsOrder(7).Select(e => (e, FG.Abelian(2)));
+    var tuples14 = FG.AllAbelianGroupsOfOrder(7).Select(e => (e, FG.Abelian(2)));
     var allExts14 = AllExtensions2(tuples14.ToArray()).ToArray();
-    var tuples21 = TestTwoCohomology.AllAbelianGroupsOrder(7).Select(e => (e, FG.Abelian(3)));
+    var tuples21 = FG.AllAbelianGroupsOfOrder(7).Select(e => (e, FG.Abelian(3)));
     var allExts21 = AllExtensions2(tuples21.ToArray()).ToArray();
 
     var tuples42a = allExts14.Select(e => (e.ext, FG.Abelian(3)));
@@ -253,9 +253,9 @@ void Order40()
     GlobalStopWatch.Restart();
     nbOps = 4;
     var allExts10 = AllExtensions2((FG.Abelian(5), FG.Abelian(2))).ToArray();
-    var tuples20 = TestTwoCohomology.AllAbelianGroupsOrder(4).Select(e => (FG.Abelian(5), e)).ToArray();
+    var tuples20 = FG.AllAbelianGroupsOfOrder(4).Select(e => (FG.Abelian(5), e)).ToArray();
     var allExts20 = AllExtensions2(tuples20).ToArray();
-    var tuples40 = TestTwoCohomology.AllAbelianGroupsOrder(4).Select(e => (FG.Abelian(2, 5), e)).ToArray();
+    var tuples40 = FG.AllAbelianGroupsOfOrder(4).Select(e => (FG.Abelian(2, 5), e)).ToArray();
     var allExts40 = AllExtensions2(tuples40)
         .OrderBy(e => e.ext.GroupType)
         .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())

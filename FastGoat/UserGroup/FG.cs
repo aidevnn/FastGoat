@@ -115,9 +115,19 @@ public static partial class FG
         return Abelian(Enumerable.Repeat(p, n).ToArray());
     }
 
+    public static List<ConcreteGroup<Ep<ZnInt>>> AllAbelianGroupsOfOrder(int k)
+    {
+        if (k == 1)
+            return new() { Abelian(1) };
+        
+        var dec = IntExt.PrimesDec(k);
+        return dec.Select(e => IntExt.Partitions32[e.Value].Select(l => l.Select(i => e.Key.Pow(i)).ToArray())).MultiLoop()
+            .Select(l => Abelian(l.SelectMany(i => i).OrderDescending().ToArray())).ToList();
+    }
+
     public static WordGroup AbelianWg(string name, params int[] seq)
     {
-        if (seq.Length > 5 || seq.Min() <= 1)
+        if (seq.Length > 5 || seq.Min() < 1)
             throw new GroupException(GroupExceptionType.GroupDef);
 
         var n = seq.Length.Range();
@@ -139,6 +149,16 @@ public static partial class FG
 
         var (p, n) = dec.First();
         return AbelianWg(Enumerable.Repeat(p, n).ToArray());
+    }
+
+    public static List<WordGroup> AllAbelianGroupsOfOrderWg(int k)
+    {
+        if (k == 1)
+            return new() { AbelianWg(1) };
+        
+        var dec = IntExt.PrimesDec(k);
+        return dec.Select(e => IntExt.Partitions32[e.Value].Select(l => l.Select(i => e.Key.Pow(i)).ToArray())).MultiLoop()
+            .Select(l => AbelianWg(l.SelectMany(i => i).OrderDescending().ToArray())).ToList();
     }
 
     public static WordGroup AlternateWG(int n)
