@@ -1,7 +1,8 @@
 namespace FastGoat.Structures;
 
+[Flags]
 public enum GroupType
 {
-    AbelianGroup,
-    NonAbelianGroup
+    AbelianGroup = 0,
+    NonAbelianGroup = 1
 }
