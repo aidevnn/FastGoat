@@ -85,6 +85,17 @@ public class ConcreteGroup<T> : IGroup<T> where T : struct, IElt<T>
     public ConcreteGroup<T>? SuperGroup { get; }
     public GroupType GroupType { get; protected set; }
     public string Name { get; protected set; }
+
+    public string NameParenthesis
+    {
+        get
+        {
+            if (Name[0] == '(' && Name.Last() == ')')
+                return Name;
+
+            return Name.Contains(' ') ? $"({Name})" : Name;
+        }
+    }
     public virtual string[] Details => Array.Empty<string>();
     public ReadOnlyDictionary<T, int> ElementsOrders { get; protected set; }
 
