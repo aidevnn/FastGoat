@@ -28,18 +28,18 @@ using FastGoat.UserGroup.Padic;
 //////////////////////////////////
 
 Console.WriteLine("Hello World");
-var nbOps = 10000;
 
 IEnumerable<(CrMap<Tn, Tg> c, ConcreteGroup<Ep2<Tn, Tg>> ext, Dictionary<ConcreteGroup<Ep2<Tn, Tg>>,
-    List<ConcreteGroup<Ep2<Tn, Tg>>>> allSubs, (int, int, int) infos)> AllExtensions<Tn, Tg>(ConcreteGroup<Tn> N, ConcreteGroup<Tg> G)
+    List<ConcreteGroup<Ep2<Tn, Tg>>>> allSubs, (int, int, int) infos)> AllExtensions<Tn, Tg>(ConcreteGroup<Tn> N, ConcreteGroup<Tg> G
+    , int skipOps = 0, int takeOps = Int32.MaxValue, bool filter = true)
     where Tg : struct, IElt<Tg>
     where Tn : struct, IElt<Tn>
 {
     var CN = Group.Zentrum(N);
-    var autN = Group.AutomorphismGroup(N);
+    var autN = Group.AutomorphismGroup(CN);
     var ops = Group.AllHomomorphisms(G, autN);
     var dicExts = new Dictionary<(int, int, int), HashSet<ConcreteGroup<Ep2<Tn, Tg>>>>();
-    foreach (var (op, i) in ops.Select((l, i) => (l, i + 1)).Take(nbOps))
+    foreach (var (op, i) in ops.Select((l, i) => (l, i + 1)).Skip(skipOps).Take(takeOps))
     {
         var L = op.ToMapElt(autN);
         var lbl = $"Lbl{i}/{ops.Count}";
@@ -65,11 +65,14 @@ IEnumerable<(CrMap<Tn, Tg> c, ConcreteGroup<Ep2<Tn, Tg>> ext, Dictionary<Concret
                 }
                 else
                 {
-                    dicExts[infos] = new(new IsomorphEquality<Ep2<Tn, Tg>>()) { ext };
                     NameGroup(allSubs);
                     var g = allSubs.MaxBy(e => e.Key.Count()).Key;
                     ext.SetName(g.Name);
-                    yield return (c, ext, allSubs, infos);
+                    if (!filter || g.Name == $"G[{g.Count()}]")
+                    {
+                        dicExts[infos] = new(new IsomorphEquality<Ep2<Tn, Tg>>()) { ext };
+                        yield return (c, ext, allSubs, infos);
+                    }
                 }
             }
             else
@@ -84,14 +87,14 @@ IEnumerable<(CrMap<Tn, Tg> c, ConcreteGroup<Ep2<Tn, Tg>> ext, Dictionary<Concret
 
 IEnumerable<(CrMap<Tn, Tg> c, ConcreteGroup<Ep2<Tn, Tg>> ext, Dictionary<ConcreteGroup<Ep2<Tn, Tg>>,
         List<ConcreteGroup<Ep2<Tn, Tg>>>> allSubs, (int, int, int) infos)>
-    AllExtensions2<Tn, Tg>(params (ConcreteGroup<Tn>, ConcreteGroup<Tg>)[] tuples)
+    AllExtensions2<Tn, Tg>(int skipOps, int takeOps, bool filter, params (ConcreteGroup<Tn>, ConcreteGroup<Tg>)[] tuples)
     where Tg : struct, IElt<Tg>
     where Tn : struct, IElt<Tn>
 {
     var dicExts = new Dictionary<(int, int, int), HashSet<ConcreteGroup<Ep2<Tn, Tg>>>>();
     foreach (var (n, g) in tuples)
     {
-        foreach (var extInfos in AllExtensions(n, g))
+        foreach (var extInfos in AllExtensions(n, g, skipOps, takeOps, filter))
         {
             if (dicExts.ContainsKey(extInfos.infos))
             {
@@ -182,8 +185,8 @@ void NameGroup<T>(Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>> subGroups
 void Order16()
 {
     GlobalStopWatch.Restart();
-    nbOps = 4;
-    var allExts16 = AllExtensions2(FG.AllAbelianGroupsOfOrder(8).Select(e => (e, FG.Abelian(2))).ToArray())
+    var allExts16 = AllExtensions2(skipOps: 0, takeOps: 4, filter: true,
+            FG.AllAbelianGroupsOfOrder(8).Select(e => (e, FG.Abelian(2))).ToArray())
         .OrderBy(e => e.ext.GroupType)
         .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
         .ThenBy(e => e.infos).ToArray();
@@ -196,19 +199,18 @@ void Order16()
 void Order24()
 {
     GlobalStopWatch.Restart();
-    nbOps = 3;
     var tuples8 = FG.AllAbelianGroupsOfOrder(4).Select(e => (e, FG.Abelian(2)));
-    var allExts8 = AllExtensions2(tuples8.ToArray()).ToArray();
+    var allExts8 = AllExtensions2(skipOps: 0, takeOps: 3, filter: true, tuples8.ToArray()).ToArray();
 
     var tuples12a = FG.AllAbelianGroupsOfOrder(4).Select(e => (e, FG.Abelian(3)));
     var tuples12b = FG.AllAbelianGroupsOfOrder(6).Select(e => (e, FG.Abelian(2)));
     var tuples12 = tuples12a.Concat(tuples12b).ToArray();
-    var allExts12 = AllExtensions2(tuples12).ToArray();
+    var allExts12 = AllExtensions2(skipOps: 0, takeOps: 3, filter: true, tuples12).ToArray();
 
     var tuples24a = allExts8.Select(e => (e.ext, FG.Abelian(3)));
     var tuples24b = allExts12.Select(e => (e.ext, FG.Abelian(2)));
     var tuples24 = tuples24a.Concat(tuples24b).ToArray();
-    var allExts24 = AllExtensions2(tuples24)
+    var allExts24 = AllExtensions2(skipOps: 0, takeOps: 3, filter: true, tuples24)
         .OrderBy(e => e.ext.GroupType)
         .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
         .ThenBy(e => e.infos).ToArray();
@@ -225,16 +227,15 @@ void Order24()
 void Order42()
 {
     GlobalStopWatch.Restart();
-    nbOps = 4;
     var tuples14 = FG.AllAbelianGroupsOfOrder(7).Select(e => (e, FG.Abelian(2)));
-    var allExts14 = AllExtensions2(tuples14.ToArray()).ToArray();
+    var allExts14 = AllExtensions2(skipOps: 0, takeOps: 4, filter: true, tuples14.ToArray()).ToArray();
     var tuples21 = FG.AllAbelianGroupsOfOrder(7).Select(e => (e, FG.Abelian(3)));
-    var allExts21 = AllExtensions2(tuples21.ToArray()).ToArray();
+    var allExts21 = AllExtensions2(skipOps: 0, takeOps: 4, filter: true, tuples21.ToArray()).ToArray();
 
     var tuples42a = allExts14.Select(e => (e.ext, FG.Abelian(3)));
     var tuples42b = allExts21.Select(e => (e.ext, FG.Abelian(2)));
     var tuples42 = tuples42a.Concat(tuples42b).ToArray();
-    var allExts42 = AllExtensions2(tuples42)
+    var allExts42 = AllExtensions2(skipOps: 0, takeOps: 4, filter: true, tuples42)
         .OrderBy(e => e.ext.GroupType)
         .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
         .ThenBy(e => e.infos).ToArray();
@@ -251,12 +252,11 @@ void Order42()
 void Order40()
 {
     GlobalStopWatch.Restart();
-    nbOps = 4;
-    var allExts10 = AllExtensions2((FG.Abelian(5), FG.Abelian(2))).ToArray();
+    var allExts10 = AllExtensions2(skipOps: 0, takeOps: 4, filter: true, (FG.Abelian(5), FG.Abelian(2))).ToArray();
     var tuples20 = FG.AllAbelianGroupsOfOrder(4).Select(e => (FG.Abelian(5), e)).ToArray();
-    var allExts20 = AllExtensions2(tuples20).ToArray();
+    var allExts20 = AllExtensions2(skipOps: 0, takeOps: 4, filter: true, tuples20).ToArray();
     var tuples40 = FG.AllAbelianGroupsOfOrder(4).Select(e => (FG.Abelian(2, 5), e)).ToArray();
-    var allExts40 = AllExtensions2(tuples40)
+    var allExts40 = AllExtensions2(skipOps: 0, takeOps: 4, filter: true, tuples40)
         .OrderBy(e => e.ext.GroupType)
         .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
         .ThenBy(e => e.infos).ToArray();
@@ -273,7 +273,7 @@ void Order40()
 void Order32()
 {
     GlobalStopWatch.Restart();
-    var exts = AllExtensions2(
+    var exts = AllExtensions2(skipOps: 0, takeOps: Int32.MaxValue, filter: true,
             (FG.Abelian(16), FG.Abelian(2)),
             (FG.Abelian(2, 8), FG.Abelian(2)),
             (FG.Abelian(4, 4), FG.Abelian(2)),
@@ -297,13 +297,13 @@ void Order32()
 void Order56()
 {
     GlobalStopWatch.Restart();
-    nbOps = 2;
-    var allExts28 = AllExtensions2((FG.Abelian(7), FG.Abelian(4)), (FG.Abelian(7), FG.Abelian(2, 2)))
+    var allExts28 = AllExtensions2(skipOps: 0, takeOps: 2, filter: true,
+            (FG.Abelian(7), FG.Abelian(4)), (FG.Abelian(7), FG.Abelian(2, 2)))
         .OrderBy(e => e.ext.GroupType)
         .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
         .ThenBy(e => e.infos).ToArray();
 
-    var allExts56 = AllExtensions2(
+    var allExts56 = AllExtensions2(skipOps: 0, takeOps: 2, filter: true,
             (FG.Abelian(2, 7), FG.Abelian(4)),
             (FG.Abelian(2, 7), FG.Abelian(2, 2)),
             (FG.Abelian(2, 2, 2), FG.Abelian(7)))
@@ -322,14 +322,14 @@ void Order56()
 void Order81()
 {
     GlobalStopWatch.Restart();
-    nbOps = 2;
-    var allExts27 = AllExtensions2((FG.Abelian(9), FG.Abelian(3)), (FG.Abelian(3, 3), FG.Abelian(3)))
+    var allExts27 = AllExtensions2(skipOps: 0, takeOps: 2, filter: true,
+            (FG.Abelian(9), FG.Abelian(3)), (FG.Abelian(3, 3), FG.Abelian(3)))
         .OrderBy(e => e.ext.GroupType)
         .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
         .ThenBy(e => e.infos).ToArray();
 
     (allExts27[2], allExts27[4]) = (allExts27[4], allExts27[2]);
-    var allExts81 = AllExtensions2(allExts27.Select(e => (e.ext, FG.Abelian(3))).ToArray())
+    var allExts81 = AllExtensions2(skipOps: 0, takeOps: 2, filter: true, allExts27.Select(e => (e.ext, FG.Abelian(3))).ToArray())
         .Take(15)
         .OrderBy(e => e.ext.GroupType)
         .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
@@ -349,6 +349,45 @@ void Order81()
     // Order32();
     // Order40();
     // Order42();
-    Order56();
+    // Order56();
     // Order81();
+}
+
+void Ext16()
+{
+    GlobalStopWatch.Restart();
+    var exts = AllExtensions2(skipOps: 2, takeOps: 1, filter: false, (FG.Abelian(4), FG.Abelian(2, 2)))
+        .OrderBy(e => e.ext.GroupType)
+        .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
+        .ThenBy(e => e.infos)
+        .ToArray();
+    CocyclesDFS.DisplayInfosGroups(exts.Select(e => (e.ext, e.infos)).ToArray(), naming: false);
+    GlobalStopWatch.Show($"Nb Ext16:{exts.Length}");
+
+    Console.Beep();
+}
+
+void Ext64()
+{
+    GlobalStopWatch.Restart();
+    var ab16 = FG.AllAbelianGroupsOfOrder(16).ToArray();
+    var ab32 = FG.AllAbelianGroupsOfOrder(32).ToArray();
+    var tuples = ab16.SelectMany(e => new[] { (e, FG.Abelian(4)), (e, FG.Abelian(2, 2)) })
+        .Concat(ab32.Select(e => (e, FG.Abelian(2)))).OrderBy(e =>
+            e.e.ElementsOrders.Values.Count(k => k == 2) + e.Item2.ElementsOrders.Values.Count(k => k == 2)).ToArray();
+    var exts = AllExtensions2(skipOps: 0, takeOps: 800, filter: false, tuples)
+        .Take(267)
+        .OrderBy(e => e.ext.GroupType)
+        .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
+        .ThenBy(e => e.infos)
+        .ToArray();
+    CocyclesDFS.DisplayInfosGroups(exts.Select(e => (e.ext, e.infos)).ToArray(), naming: false);
+    GlobalStopWatch.Show($"Nb Ext64:{exts.Length}");
+
+    Console.Beep();
+}
+
+{
+    Ext16(); // BUG
+    Ext64(); // BUG
 }
