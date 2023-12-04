@@ -84,18 +84,9 @@ public class ConcreteGroup<T> : IGroup<T> where T : struct, IElt<T>
     public IGroup<T> BaseGroup { get; }
     public ConcreteGroup<T>? SuperGroup { get; }
     public GroupType GroupType { get; protected set; }
-    public string Name { get; protected set; }
 
-    public string NameParenthesis
-    {
-        get
-        {
-            if (Name[0] == '(' && Name.Last() == ')')
-                return Name;
+    public string Name { get; set; }
 
-            return Name.Contains(' ') ? $"({Name})" : Name;
-        }
-    }
     public virtual string[] Details => Array.Empty<string>();
     public ReadOnlyDictionary<T, int> ElementsOrders { get; protected set; }
 
@@ -175,11 +166,6 @@ public class ConcreteGroup<T> : IGroup<T> where T : struct, IElt<T>
 
         var isos = Group.AllMorphisms(this, gu, Group.MorphismType.Isomorphism);
         return isos.Any(h => h.Count != 0);
-    }
-
-    public void SetName(string name)
-    {
-        Name = name;
     }
 
     public override int GetHashCode()

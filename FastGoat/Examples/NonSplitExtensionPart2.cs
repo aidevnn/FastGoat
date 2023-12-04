@@ -129,7 +129,7 @@ public static class NonSplitExtensionPart2
         foreach (var ext0 in NonSplitExtensions(c4, c2).ToHashSet(new IsomorphEquality<Ep2<ZnInt, ZnInt>>()))
         {
             var ext = (ExtensionGroup<ZnInt, ZnInt>)ext0;
-            ext.SetName($"({ext.Name})_{k++}");
+            ext.Name = $"({ext.Name})_{k++}";
             DisplayGroup.HeadElements(ext);
             if (ext.GroupType == GroupType.AbelianGroup)
             {
@@ -166,7 +166,7 @@ public static class NonSplitExtensionPart2
             var q8ext = Group.IsomorphicsSubgroupsAll(ext, q8);
             if (q8ext.Count != 0)
             {
-                ext.SetName($"({ext.Name})_{k++}");
+                ext.Name = $"({ext.Name})_{k++}";
                 Console.WriteLine("#############################################");
                 DisplayGroup.HeadElements(ext);
                 var iso = sm16.FirstOrDefault(e => e.IsIsomorphicTo(ext), ext);

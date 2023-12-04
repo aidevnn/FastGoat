@@ -6,6 +6,8 @@ namespace FastGoat.Structures;
 
 public static partial class Group
 {
+    public static string NameParenthesis<T>(this IGroup<T> g) where T : struct, IElt<T> => g.Name.WithParenthesis();
+
     public static T Times<T>(this IGroup<T> g, T e, int p) where T : struct, IElt<T>
     {
         var acc = g.Neutral();
@@ -248,7 +250,7 @@ public static partial class Group
 
     public static ConcreteGroup<T> DirectProduct<T>(ConcreteGroup<T> g1, ConcreteGroup<T> g2) where T : struct, IElt<T>
     {
-        return DirectProduct($"{g1.Name} x {g2.Name}", g1, g2);
+        return DirectProduct($"{g1.NameParenthesis()} x {g2.NameParenthesis()}", g1, g2);
     }
 
     public static ConcreteGroup<Coset<T>> Over<T>(this ConcreteGroup<T> g, ConcreteGroup<T> h)

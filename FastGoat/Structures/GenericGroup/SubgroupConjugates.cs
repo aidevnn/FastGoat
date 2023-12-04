@@ -19,7 +19,7 @@ public readonly struct SubgroupConjugates<T> : IElt<SubgroupConjugates<T>> where
         Index = parent.Count() / Order;
         Hash = (Parent.Hash, Order, Index).GetHashCode();
         if (Order == 1)
-            Representative.SetName("()");
+            Representative.Name = "()";
     }
 
     public SubgroupConjugates(ConcreteGroup<T> parent, List<ConcreteGroup<T>> conjugates)
@@ -39,6 +39,7 @@ public readonly struct SubgroupConjugates<T> : IElt<SubgroupConjugates<T>> where
     public int Size => Conjugates.Count;
     public (int, int, GroupType) OST => (Order, Size, GroupType);
     public bool IsNormal => Size == 1;
+    public bool IsProperNormal => IsNormal && Order != 1 && Index != 1;
     public bool Equals(SubgroupConjugates<T> other) => Hash == other.Hash && Conjugates.Any(e => e.SetEquals(other.Representative));
 
     public int CompareTo(SubgroupConjugates<T> other) => OST.CompareTo(other.OST);

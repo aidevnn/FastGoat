@@ -16,17 +16,8 @@ public class SemiDirectProduct<T1, T2> : ConcreteGroup<Ep2<T1, T2>>
     {
         G = g;
         N = n;
-        if (string.IsNullOrEmpty(name))
-        {
-            var nName = n.Name.Contains(' ') ? $"({n.Name})" : n.Name;
-            var gName = g.Name.Contains(' ') ? $"({g.Name})" : g.Name;
-            Name = $"{nName} x: {gName}";
-        }
-        else
-        {
-            Name = name;
-        }
-
+        Name = $"{n.NameParenthesis()} x: {g.NameParenthesis()}";
+        
         Theta = theta;
         List<Ep2<T1, T2>> generators = new List<Ep2<T1, T2>>();
         foreach (var e in G.GetGenerators())

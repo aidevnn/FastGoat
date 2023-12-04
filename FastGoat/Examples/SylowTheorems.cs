@@ -81,16 +81,16 @@ public static class SylowTheorems
         }
 
         var abElems = FG.Abelian(elems.Order().ToArray());
-        abElems.SetName($"({abElems.Name})elem");
+        abElems.Name = $"({abElems.Name})elem";
         var invFacts = AbelianInvariantsFactors.Reduce(g).Order().ToArray();
         var abInv = FG.Abelian(invFacts);
-        abInv.SetName($"({abInv.Name})inv");
+        abInv.Name = $"({abInv.Name})inv";
 
         DisplayGroup.AreIsomorphics(abElems, g);
         DisplayGroup.AreIsomorphics(abInv, g);
         var elems2 = invFacts.SelectMany(f => IntExt.PrimesDec(f).Select(kv => kv.Key.Pow(kv.Value))).Order().ToArray();
         var abElems2 = FG.Abelian(elems2.Order().ToArray());
-        abElems2.SetName($"({abElems2.Name})elem2");
+        abElems2.Name = $"({abElems2.Name})elem2";
         Console.WriteLine($"{abElems} set equal {abElems2} : {abElems2.SetEquals(abElems)}");
         Console.WriteLine();
         return abElems;

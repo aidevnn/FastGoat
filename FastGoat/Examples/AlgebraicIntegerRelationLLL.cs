@@ -198,7 +198,7 @@ public static class AlgebraicIntegerRelationLLL
             subGrGal = Group.DirectProduct("SubGr(Gal(P))", gr, subGrGal);
         }
 
-        subGrGal.SetName("Gal( Q(y)/Q )");
+        subGrGal.Name = "Gal( Q(y)/Q )";
         return subGrGal;
     }
 

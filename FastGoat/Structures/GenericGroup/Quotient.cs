@@ -10,9 +10,7 @@ public class Quotient<T> : IGroup<Coset<T>> where T : struct, IElt<T>
         G = grG;
         H = grH;
         Hash = (G.Hash, G.Hash, "Quo").GetHashCode();
-        var hName = H.Name.Contains(' ') ? $"({H.Name})" : H.Name;
-        var gName = G.Name.Contains(' ') ? $"({G.Name})" : G.Name;
-        Name = $"{gName}/{hName}";
+        Name = $"{G.NameParenthesis()}/{H.NameParenthesis()}";
 
         Map = Group.Cosets(G, H);
         Elements = Map.Values.ToHashSet();

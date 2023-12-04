@@ -197,7 +197,7 @@ public static class GaloisTheory
 
         var allSubs = Group.AllSubGroups(gal).Values.SelectMany(e => e).Reverse().ToList();
         foreach (var (e, i0) in allSubs.Select((e, i0) => (e, i0)))
-            e.SetName($"G{i0}");
+            e.Name = $"G{i0}";
 
         var sn = new Sn(roots.Count);
         var idxRoots = roots.Select((c0, k) => (k, c0)).ToDictionary(e => e.c0, e => e.k);
@@ -212,7 +212,7 @@ public static class GaloisTheory
 
         foreach (var subGr in allSubs)
         {
-            subGr.SetName($"G{i++}");
+            subGr.Name = $"G{i++}";
             var sfName = names.Dequeue();
 
             var rs = subGr.Select(e => perm2roots[e]).ToArray();

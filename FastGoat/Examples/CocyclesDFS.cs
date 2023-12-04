@@ -702,7 +702,7 @@ public static class CocyclesDFS
             Console.WriteLine(line);
             Console.WriteLine(fmt, name);
             Console.WriteLine(line);
-            g.SetName(name);
+            g.Name = name;
             DisplayGroup.HeadOrders(g);
             Console.WriteLine($"AllSubGr:{infos.Item1} AllConjsCl:{infos.Item2} AllNorms:{infos.Item3}");
             Console.WriteLine();
@@ -761,7 +761,7 @@ public static class CocyclesDFS
         var c2 = new Cn(2);
         var c2q8 = Product.Generate(new Cn(2), FG.Quaternion(8));
         var q16 = Product.Generate(Group.Generate("C1", c2, c2[0]), FG.Quaternion(16));
-        q16.SetName("Q16");
+        q16.Name = "Q16";
 
         var l0 = new List<(ConcreteGroup<Ep2<Ep2<ZnInt, Mat>, Ep<ZnInt>>>, (int, int, int))>();
         var l1 = new List<(ConcreteGroup<Ep2<Ep2<Ep<ZnInt>, ZnInt>, Ep<ZnInt>>>, (int, int, int))>();
@@ -914,7 +914,7 @@ public static class CocyclesDFS
             .ThenBy(e => e.Item2).ToArray();
 
         var ab9a = ab9.Select(e9 => Product.Generate(FG.Abelian(1), e9)).ToList();
-        ab9a.ForEach(e => e.SetName(((Gp2<Ep<ZnInt>, Ep<ZnInt>>)e.BaseGroup).G2.Name));
+        ab9a.ForEach(e => e.Name = ((Gp2<Ep<ZnInt>, Ep<ZnInt>>)e.BaseGroup).G2.Name);
         var tuple36 = ab9a.Select(e9 => (e9, FG.Abelian(4)))
             .Concat(allOrder12.Select(e => (e.Item1, c3)))
             .Concat(allOrder18.Select(e => (e.Item1, c2)))

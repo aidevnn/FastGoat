@@ -75,7 +75,7 @@ public static class GL23SubGroups
         foreach (var (o, g) in groups)
         {
             var i = 1;
-            g.ForEach(g0 => g0.SetName($"C{o}[{i++,2:00}]"));
+            g.ForEach(g0 => g0.Name = $"C{o}[{i++,2:00}]");
         }
 
         return groups.SelectMany(g => g.Value).ToList();

@@ -147,7 +147,7 @@ public readonly struct CrMap<Tn, Tg> : IEnumerable<KeyValuePair<Ep<Tg>, ZNElt<Tn
         var mapGr = new MapGroupBase<Ep<Tg>, Tn>(gens.First().Domain, N);
         var g = Group.Generate(mapGr, gens);
         if (!string.IsNullOrEmpty(name))
-            g.SetName(name);
+            g.Name = name;
 
         return g;
     }

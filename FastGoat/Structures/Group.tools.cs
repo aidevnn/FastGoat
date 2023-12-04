@@ -207,7 +207,7 @@ public static partial class Group
             var set = h.GetGenerators().Select(x => g.Op(s, g.Op(x, si))).ToHashSet();
             var sg = Generate(h.Name, g, set.ToArray());
             if (all.Add(sg))
-                sg.SetName($"{h.Name}[{i}]");
+                sg.Name = $"{h.Name}[{i}]";
         }
 
         return all.ToList();
@@ -286,17 +286,17 @@ public static partial class Group
             }
         }
 
-        var gName = g.Name.Contains('x') && g.Name[0] != '(' ? $"({g.Name})" : g.Name;
+        var gName = g.NameParenthesis();
         foreach (var (g0, i) in table.Keys.OrderBy(g0 => g0.Count()).Select((g0, i) => (g0, i)))
         {
-            g0.SetName($"{gName}-SubGr{i + 1}");
+            g0.Name = $"{gName}-SubGr{i + 1}";
             foreach (var (cg0, j) in table[g0].Select((cg0, j) => (cg0, j)))
-                cg0.SetName($"{g0}-Cj{j + 1}");
+                cg0.Name = $"{g0}-Cj{j + 1}";
         }
 
         var (k, v) = table.First(g0 => g0.Key.Count() == og);
-        k.SetName(g.Name);
-        v.First().SetName(g.Name);
+        k.Name = g.Name;
+        v.First().Name = g.Name;
         return table;
     }
 
@@ -357,12 +357,12 @@ public static partial class Group
             }
         }
 
-        var gName = g.Name.Contains('x') && g.Name[0] != '(' ? $"({g.Name})" : g.Name;
+        var gName = g.NameParenthesis();
         foreach (var (g0, i) in table.Keys.OrderBy(g0 => g0.Count()).Select((g0, i) => (g0, i)))
         {
-            g0.SetName($"{gName}-{p}SubGr{i + 1}");
+            g0.Name = $"{gName}-{p}SubGr{i + 1}";
             foreach (var (cg0, j) in table[g0].Select((cg0, j) => (cg0, j)))
-                cg0.SetName($"{g0}-Cj{j + 1}");
+                cg0.Name = $"{g0}-Cj{j + 1}";
         }
 
         return table;
