@@ -26,7 +26,7 @@ public readonly struct SubgroupConjugates<T> : IElt<SubgroupConjugates<T>> where
     {
         Parent = parent;
         Conjugates = conjugates.Count == 0 ? new() { Group.Generate("()", parent, parent.Neutral()) } : conjugates;
-        Representative = conjugates[0];
+        Representative = Conjugates[0];
         Order = Representative.Count();
         Index = parent.Count() / Order;
         Hash = (Parent.Hash, Order, Index).GetHashCode();
