@@ -14,7 +14,7 @@ public readonly struct Gp2<T1, T2> : IGroup<Ep2<T1, T2>> where T1 : struct, IElt
         G1 = g1;
         G2 = g2;
         Hash = (g1.Hash, g2.Hash).GetHashCode();
-        Name = $"{G1} x {G2}";
+        Name = $"{G1.NameParenthesis()} x {G2.NameParenthesis()}";
     }
 
     public bool Equals(IGroup<Ep2<T1, T2>>? other) => other?.Hash == Hash;
@@ -139,7 +139,7 @@ public readonly struct Gp3<T1, T2, T3> : IGroup<Ep3<T1, T2, T3>> where T1 : stru
         G2 = g2;
         G3 = g3;
         Hash = (g1.Hash, g2.Hash, g3.Hash).GetHashCode();
-        Name = $"{G1} x {G2} x {G3}";
+        Name = $"{G1.NameParenthesis()} x {G2.NameParenthesis()} x {G3.NameParenthesis()}";
     }
 
     public bool Equals(IGroup<Ep3<T1, T2, T3>>? other) => other?.Hash == Hash;
@@ -279,7 +279,7 @@ public readonly struct Gp4<T1, T2, T3, T4> : IGroup<Ep4<T1, T2, T3, T4>> where T
         G3 = g3;
         G4 = g4;
         Hash = (g1.Hash, g2.Hash, g3.Hash, g4.Hash).GetHashCode();
-        Name = $"{G1} x {G2} x {G3} x {G4}";
+        Name = $"{G1.NameParenthesis()} x {G2.NameParenthesis()} x {G3.NameParenthesis()} x {G4.NameParenthesis()}";
     }
 
     public bool Equals(IGroup<Ep4<T1, T2, T3, T4>>? other) => other?.Hash == Hash;
@@ -436,7 +436,8 @@ public readonly struct Gp5<T1, T2, T3, T4, T5> : IGroup<Ep5<T1, T2, T3, T4, T5>>
         G4 = g4;
         G5 = g5;
         Hash = (g1.Hash, g2.Hash, g3.Hash, g4.Hash, g5.Hash).GetHashCode();
-        Name = $"{G1} x {G2} x {G3} x {G4} x {G5}";
+        Name =
+            $"{G1.NameParenthesis()} x {G2.NameParenthesis()} x {G3.NameParenthesis()} x {G4.NameParenthesis()} x {G5.NameParenthesis()}";
     }
 
     public bool Equals(IGroup<Ep5<T1, T2, T3, T4, T5>>? other) => other?.Hash == Hash;
@@ -622,7 +623,8 @@ public readonly struct Gp6<T1, T2, T3, T4, T5, T6> : IGroup<Ep6<T1, T2, T3, T4, 
         G5 = g5;
         G6 = g6;
         Hash = (g1.Hash, g2.Hash, g3.Hash, g4.Hash, g5.Hash, g6.Hash).GetHashCode();
-        Name = $"{G1} x {G2} x {G3} x {G4} x {G5} x {G6}";
+        Name =
+            $"{G1.NameParenthesis()} x {G2.NameParenthesis()} x {G3.NameParenthesis()} x {G4.NameParenthesis()} x {G5.NameParenthesis()} x {G6.NameParenthesis()}";
     }
 
     public bool Equals(IGroup<Ep6<T1, T2, T3, T4, T5, T6>>? other) => other?.Hash == Hash;

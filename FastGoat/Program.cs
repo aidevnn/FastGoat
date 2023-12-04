@@ -56,7 +56,7 @@ string GroupActionName<T>(Homomorphism<T, Automorphism<T>> act) where T : struct
     var H = act.Domain;
 
     if (act.Image().Distinct().Count() == 1)
-        return $"{K.NameParenthesis} x {H.NameParenthesis}";
+        return $"{K.NameParenthesis()} x {H.NameParenthesis()}";
 
     var gensK = K.GetGenerators().ToArray();
     var gensH = H.GetGenerators().ToArray();
