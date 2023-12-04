@@ -153,4 +153,20 @@ public static class GroupNaming
         ShowNames(FG.DiCyclic(8));
         ShowNames(FG.SemiDihedral(5));
     }
+
+    public static void Example2()
+    {
+        var allExts24 = FG.AllExtensions((FG.Abelian(12), FG.Abelian(2)))
+            .OrderBy(e => e.ext.GroupType)
+            .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
+            .ThenBy(e => ((int, int, int))e.allSubs.Infos).ToList();
+        
+        allExts24.ForEach(e =>
+        {
+            var it = BuildName(e.allSubs);
+            e.ext.Name = it.First().NameParenthesis;
+        });
+
+        CocyclesDFS.DisplayInfosGroups(allExts24.Select(e => (e.ext, ((int, int, int))e.allSubs.Infos)).ToArray(), naming: false);
+    }
 }
