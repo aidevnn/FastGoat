@@ -64,10 +64,10 @@ public static class GroupNaming
             {
                 if (Lhs.CompareTo(Rhs) == -1)
                     (Lhs, Rhs) = (Rhs, Lhs);
-                
+
                 Name = $"{Lhs.NameParenthesis} x {Rhs.NameParenthesis}";
             }
-            else 
+            else
                 Name = $"{Lhs.NameParenthesis} x: {Rhs.NameParenthesis}";
         }
 
@@ -82,14 +82,13 @@ public static class GroupNaming
         Extension = 2
     }
 
-    static (ConcreteGroup<T> k, ConcreteGroup<T> h, DecompType)[] Possibilities<T>(ConcreteGroup<T> G) where T : struct, IElt<T>
+    static (AllSubgroups<T> k, AllSubgroups<T> h, DecompType)[] Possibilities<T>(AllSubgroups<T> subgroups) where T : struct, IElt<T>
     {
-        var tr = Group.Generate("()", G, G.Neutral());
+        var G = subgroups.Parent;
+        var tr = subgroups.Restriction(Group.Generate("C1", G, G.Neutral()));
         if (G.GroupType == GroupType.AbelianGroup)
-            return new[] { (G, tr, DecompType.DirectProduct) };
+            return new[] { (subgroups, tr, DecompType.DirectProduct) };
 
-        var subs = Group.AllSubGroups(G);
-        var subgroups = new AllSubgroups<T>(subs);
         var normals = subgroups.Where(sg => sg.IsProperNormal).ToArray();
         var dic = normals.ToDictionary(n => n, n => subgroups.Where(sg => sg.Order == n.Index).ToArray());
 
@@ -106,22 +105,31 @@ public static class GroupNaming
             .SelectMany(e => e.Item2.Select(s => (e.k, h: s, DecompType.SemiDirectProduct)))
             .ToArray();
 
-        var allProds = dirProd.Concat(semiDirProd).ToArray();
+        var allProds = dirProd.Concat(semiDirProd)
+            .Select(e => (subgroups.Restriction(e.k), subgroups.Restriction(e.h), e.Item3))
+            .ToArray();
         if (allProds.Length != 0)
             return allProds;
 
-        return new[] { (G, tr, DecompType.Extension) };
+        return new[] { (subgroups, tr, DecompType.Extension) };
     }
 
     static ITreeElt[] BuildName<T>(ConcreteGroup<T> G) where T : struct, IElt<T>
     {
+        var subgroups = new AllSubgroups<T>(G);
+        return BuildName(subgroups);
+    }
+    
+    static ITreeElt[] BuildName<T>(AllSubgroups<T> subgroups) where T : struct, IElt<T>
+    {
         var all = new List<ITreeElt>();
-        foreach (var (k, h, t) in Possibilities(G))
+        foreach (var (k, h, t) in Possibilities(subgroups))
         {
             if (h.Count() == 1)
-                all.Add(new Leaf<T>(k));
+                all.Add(new Leaf<T>(k.Parent));
             else
-                all.AddRange(BuildName(k).Grid2D(BuildName(h)).Select(e => new TreeOp<T>(t == DecompType.DirectProduct, e.t1, e.t2)));
+                all.AddRange(BuildName(k).Grid2D(BuildName(h))
+                    .Select(e => new TreeOp<T>(t == DecompType.DirectProduct, e.t1, e.t2)));
         }
 
         return all.Distinct().ToArray();
@@ -134,8 +142,9 @@ public static class GroupNaming
 
     public static void Example1()
     {
-        ShowNames(FG.Dihedral(8));
+        ShowNames(FG.Dihedral(4));
         ShowNames(FG.DihedralSdp(5));
+        ShowNames(FG.Dihedral(8));
         ShowNames(FG.Symmetric(4));
         ShowNames(Product.Generate(new Cn(5), Group.SemiDirectProd(new Cn(3), new Cn(4))));
         ShowNames(FG.Quaternion(8));
