@@ -355,9 +355,68 @@ public static partial class FG
 
     public static (KPoly<EPoly<ZnInt>> x, EPoly<ZnInt> a) FqX_Poly(int q) => FqX_Poly(q, ('x', 'a'));
 
-    public static GL GLnp(int n, int p)
+    public static BigInteger GLnpOrder(int n, int p) => BigInteger.Pow(p, n * (n - 1) / 2) * n.Range().Select(k => p.Pow(n - k) - 1)
+        .Aggregate(BigInteger.One, (acc, pk) => acc * pk);
+
+    public static ConcreteGroup<Mat> GLnp(int n, int p)
     {
-        return new GL(n, p);
+        var og = GLnpOrder(n, p);
+        if (og > 50000)
+            throw new();
+
+        var og0 = p.Pow(n) - 1;
+        var GLnp = new GL(n, p);
+
+        Mat Rand(int o)
+        {
+            for (int k = 0; k < 10000; ++k)
+            {
+                var t0 = (n * n).Range().Select(_ => IntExt.Rng.Next(p)).ToArray();
+                var mat = GLnp.Create(t0);
+                if (GLnp.Det(mat) == 0)
+                    continue;
+
+                var o0 = Group.Cycle(GLnp, mat).Count;
+                if (o0 == o)
+                    return mat;
+            }
+
+            throw new();
+        }
+
+        var gen0 = Rand(2);
+        var gen1 = Rand(og0);
+        return Group.Generate(GLnp, gen0, gen1);
+    }
+
+    public static ConcreteGroup<Mat> SL2p(int p)
+    {
+        if (!IntExt.Primes10000.Contains(p))
+            throw new($"p = {p} must be prime");
+
+        var og = GLnpOrder(2, p);
+        if (og > 50000)
+            throw new();
+
+        var gl = new GL(2, p);
+        var x = (p - 2).Range(2).First(i => IntExt.PowMod(i, p - 1, p) == 1);
+        var xp = IntExt.PowMod(x, p - 2, p);
+
+        // SL(2,q) generators from H.E. Rose, page 271, Problem 12.5
+        var a = gl[x, 0, 0, xp];
+        var b = gl[p - 1, 1, p - 1, 0];
+
+        return Group.Generate($"SL(2,{p})", gl, a, b);
+    }
+
+    public static ConcreteGroup<Coset<Mat>> L2p(int p)
+    {
+        if (!IntExt.Primes10000.Contains(p) || p <= 3 || p > 41)
+            throw new($"p = {p} must be prime > 3 and < 41");
+    
+        var sl2p = SL2p(p);
+        var z = Group.Zentrum(sl2p);
+        return sl2p.Over(z, $"L2({p})");
     }
 
     public static GLn<K> GLnK<K>(int n, K scalar) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
