@@ -1,4 +1,5 @@
 using System.Collections;
+using FastGoat.Commons;
 
 namespace FastGoat.Structures.GenericGroup;
 
@@ -33,6 +34,14 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>> wher
         var subs = AllSubgroupConjugates.Sum(sc => sc.Size);
         var norms = AllSubgroupConjugates.Count(sc => sc.IsNormal);
         Infos = new(subs, conjs, norms);
+    }
+
+    public bool IsSimple()
+    {
+        if (Parent.GroupType == GroupType.AbelianGroup && IntExt.Primes10000.Contains(Parent.Count()))
+            return true;
+
+        return AllSubgroupConjugates.Count(sc => sc.IsNormal) == 2;
     }
 
     public AllSubgroups<T> Restriction(ConcreteGroup<T> g) => new(AllSubgroupConjugates.Select(sc => sc.Restriction(g)).ToHashSet());
