@@ -266,6 +266,13 @@ public static partial class Group
         return allSdp;
     }
 
+    public static List<SemiDirectProduct<T1, T2>> AllSemiDirectProd<T1, T2>(ConcreteGroup<T1> n, ConcreteGroup<T2> g)
+        where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
+    {
+        var name = $"{n.NameParenthesis()} x: {g.NameParenthesis()}";
+        return AllSemiDirectProd(name, n, g);
+    }
+    
     public static SemiDirectProduct<T1, T2> SemiDirectProd<T1, T2>(ConcreteGroup<T1> n, ConcreteGroup<T2> g)
         where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
     {
