@@ -28,15 +28,3 @@ using FastGoat.UserGroup.Padic;
 //////////////////////////////////
 
 Console.WriteLine("Hello World");
-
-{
-    var d16 = FG.Dihedral(8);
-    var d16a = d16.ToTable().gt;
-    DisplayGroup.HeadElements(d16a);
-    var subgroups = new AllSubgroups<Perm>(d16);
-    var subgroupsa = new AllSubgroups<TableElt>(d16a);
-    var subgroupsb = subgroups.ToTable();
-    Console.WriteLine(subgroups.Infos);
-    Console.WriteLine(subgroupsa.Infos);
-    Console.WriteLine(subgroupsb.Infos);
-}

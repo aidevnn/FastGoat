@@ -12,14 +12,24 @@ namespace FastGoat.Examples;
 public static class GroupNaming
 {
     [Flags]
-    enum NodeType
+    public enum NodeType
     {
         Leaf = 0,
         DirectProduct = 1,
         SemiDirectProduct = 2
     }
 
-    abstract class ITreeElt<T> : IElt<ITreeElt<T>> where T : struct, IElt<T>
+    [Flags]
+    public enum DecompType
+    {
+        Abelian = 0,
+        DirectProduct = 1,
+        SemiDirectProduct = 2,
+        Extension = 3,
+        SimpleNonAbelian = 4
+    }
+
+    public abstract class ITreeElt<T> : IElt<ITreeElt<T>> where T : struct, IElt<T>
     {
         public ConcreteGroup<T>? ContentGroup { get; set; }
         public NodeType ContentType { get; set; }
@@ -40,9 +50,11 @@ public static class GroupNaming
         }
 
         public override int GetHashCode() => Hash;
+
+        public override string ToString() => Name;
     }
 
-    class Leaf<T> : ITreeElt<T> where T : struct, IElt<T>
+    public class Leaf<T> : ITreeElt<T> where T : struct, IElt<T>
     {
         public Leaf(AllSubgroups<T> subgroups, DecompType decompType)
         {
@@ -56,46 +68,66 @@ public static class GroupNaming
                 Name = SimpleNonAbelians(ContentGroup);
         }
 
-        public override string ToString() => Name;
+        public Leaf(ConcreteGroup<T> g)
+        {
+            ContentGroup = g;
+            if (g.GroupType == GroupType.NonAbelianGroup)
+                throw new GroupException(GroupExceptionType.GroupDef);
+
+            ContentType = NodeType.Leaf;
+            Name = Group.AbelianInvariants(ContentGroup).Select(e => e.o).Glue(" x ", "C{0}");
+        }
     }
 
-    class TreeOp<T> : ITreeElt<T> where T : struct, IElt<T>
+    public class DirectProductOp<T> : ITreeElt<T> where T : struct, IElt<T>
+    {
+        public ITreeElt<T>[] Elts { get; }
+
+        public DirectProductOp(ITreeElt<T> lhs, ITreeElt<T> rhs, ConcreteGroup<T> g)
+        {
+            ContentType = NodeType.DirectProduct;
+            ContentGroup = g;
+            if (lhs.ContentType == NodeType.DirectProduct && rhs.ContentType == NodeType.DirectProduct)
+                Elts = [..((DirectProductOp<T>)lhs).Elts, ..((DirectProductOp<T>)rhs).Elts];
+            else if (lhs.ContentType == NodeType.DirectProduct)
+                Elts = [..((DirectProductOp<T>)lhs).Elts, rhs];
+            else if (rhs.ContentType == NodeType.DirectProduct)
+                Elts = [..((DirectProductOp<T>)rhs).Elts, lhs];
+            else
+                Elts = [lhs, rhs];
+
+            var abGens = Elts.Where(e => e.ContentGroup!.GroupType == GroupType.AbelianGroup)
+                .SelectMany(e => e.ContentGroup!.GetGenerators()).Distinct().ToArray();
+            if (abGens.Length != 0)
+            {
+                var nab = Elts.Where(e => e.ContentGroup!.GroupType == GroupType.NonAbelianGroup).ToArray();
+                var ab = Group.Generate("Ab", g, abGens);
+                var leaf = new Leaf<T>(ab);
+                Elts = [leaf, ..nab];
+                Name = nab.Select(e => e.NameParenthesis).Prepend(leaf.Name).Glue(" x ");
+            }
+            else
+            {
+                Name = Elts.Select(e => e.NameParenthesis).Glue(" x ");
+            }
+        }
+    }
+
+    public class SemiDirectProductOp<T> : ITreeElt<T> where T : struct, IElt<T>
     {
         public ITreeElt<T> Lhs { get; }
         public ITreeElt<T> Rhs { get; }
 
-        public TreeOp(DecompType t, ITreeElt<T> lhs, ITreeElt<T> rhs, ConcreteGroup<T> g)
+        public SemiDirectProductOp(ITreeElt<T> lhs, ITreeElt<T> rhs, ConcreteGroup<T> g)
         {
             ContentGroup = g;
-            ContentType = t == DecompType.DirectProduct ? NodeType.DirectProduct : NodeType.SemiDirectProduct;
+            ContentType = NodeType.SemiDirectProduct;
             (Lhs, Rhs) = (lhs, rhs);
-            if (ContentType == NodeType.DirectProduct)
-            {
-                if (Lhs.CompareTo(Rhs) == 1)
-                    (Lhs, Rhs) = (Rhs, Lhs);
-
-                Name = $"{Lhs.NameParenthesis} x {Rhs.NameParenthesis}";
-            }
-            else
-            {
-                Name = $"{Lhs.NameParenthesis} x: {Rhs.NameParenthesis}";
-                var name2 = CyclicSdp(ContentGroup, Lhs.ContentGroup!, Rhs.ContentGroup!);
-                if (!string.IsNullOrEmpty(name2))
-                    Name = name2;
-            }
+            Name = $"{Lhs.NameParenthesis} x: {Rhs.NameParenthesis}";
+            var name2 = CyclicSdp(ContentGroup, Lhs.ContentGroup!, Rhs.ContentGroup!);
+            if (!string.IsNullOrEmpty(name2))
+                Name = name2;
         }
-
-        public override string ToString() => Name;
-    }
-
-    [Flags]
-    enum DecompType
-    {
-        Abelian = 0,
-        DirectProduct = 1,
-        SemiDirectProduct = 2,
-        Extension = 3,
-        SimpleNonAbelian = 4
     }
 
     static (AllSubgroups<T> k, AllSubgroups<T> h, DecompType)[] Possibilities<T>(AllSubgroups<T> subgroups) where T : struct, IElt<T>
@@ -223,11 +255,11 @@ public static class GroupNaming
     {
         var og = G.Count();
         if (og == 60)
-            return "Alt5";
+            return "A5";
         if (og == 168)
             return "SL(3,2)";
         if (og == 360)
-            return "Alt6";
+            return "A6";
         if (og == 504)
             return "SL(2,8)";
         if (og == 660)
@@ -244,7 +276,15 @@ public static class GroupNaming
         var gensH = H.GetGenerators().ToArray();
 
         if (gensK.Length != 1 || gensH.Length != 1)
+        {
+            if (K.Count() == 4 && H.Count() == 3 && gensK.Length == 2)
+                return "A4";
+
+            // if (K.Count() == 4 && H.Count() == 6 && gensK.Length == 2 && gensH.Length == 2)
+            //     return "S4";
+
             return "";
+        }
 
         var act = GroupAction(G, K, H);
         var name = GroupActionName(act);
@@ -257,7 +297,7 @@ public static class GroupNaming
         return BuildName(subgroups);
     }
 
-    static ITreeElt<T>[] BuildName<T>(AllSubgroups<T> subgroups) where T : struct, IElt<T>
+    public static ITreeElt<T>[] BuildName<T>(AllSubgroups<T> subgroups) where T : struct, IElt<T>
     {
         var all = new List<ITreeElt<T>>();
         var G = subgroups.Parent;
@@ -265,8 +305,12 @@ public static class GroupNaming
         {
             if (h.Count() == 1)
                 all.Add(new Leaf<T>(k, t));
+            else if (t == DecompType.SemiDirectProduct)
+                all.AddRange(BuildName(k).Grid2D(BuildName(h)).Select(e => new SemiDirectProductOp<T>(e.t1, e.t2, G)).Distinct()
+                    .Order().Take(1));
             else
-                all.AddRange(BuildName(k).Grid2D(BuildName(h)).Select(e => new TreeOp<T>(t, e.t1, e.t2, G)));
+                all.AddRange(BuildName(k).Grid2D(BuildName(h)).Select(e => new DirectProductOp<T>(e.t1, e.t2, G)).Distinct().Order()
+                    .Take(1));
         }
 
         return all.Distinct().Order().ToArray();
@@ -279,9 +323,11 @@ public static class GroupNaming
 
     public static void Example1()
     {
+        ShowNames(FG.Symmetric(3));
         ShowNames(FG.Dihedral(4));
         ShowNames(FG.DihedralSdp(5));
         ShowNames(FG.Dihedral(8));
+        ShowNames(FG.Alternate(4));
         ShowNames(FG.Symmetric(4));
         ShowNames(Product.Generate(new Cn(5), Group.SemiDirectProd(new Cn(3), new Cn(4))));
         ShowNames(FG.Quaternion(8));
