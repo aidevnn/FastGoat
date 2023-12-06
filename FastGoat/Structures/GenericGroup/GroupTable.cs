@@ -72,7 +72,7 @@ public readonly struct GroupTableBase : IGroup<TableElt>
     public TableElt Op(TableElt e1, TableElt e2) => OpTable[(e1, e2)];
 
     public override int GetHashCode() => Hash;
-    public override string ToString() => $"{Name}(table)";
+    public override string ToString() => $"{Name.WithParenthesis()}(table)";
 
     public static (Dictionary<T, TableElt> idxTable, GroupTableBase gb) Create<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
     {
