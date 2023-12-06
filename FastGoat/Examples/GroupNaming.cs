@@ -26,7 +26,7 @@ public static class GroupNaming
         public string Name { get; set; } = "C1";
         public int NbDoubleDots => Regex.Count(Name, "x ");
         public int NbStars => Regex.Count(Name, "x:");
-        public (int, int, string) Infos => (NbDoubleDots + 100 * NbStars, Name.Length, Name);
+        public (GroupType, int, int, string) Infos => (ContentGroup!.GroupType, NbDoubleDots + 100 * NbStars, Name.Length, Name);
         public int Hash => (ContentType, Name).GetHashCode();
         public string NameParenthesis => Name.WithParenthesis();
         public bool Equals(ITreeElt<T>? other) => other?.Name == Name;
@@ -35,7 +35,7 @@ public static class GroupNaming
         {
             if (other is null)
                 return 1;
-            
+
             return Infos.CompareTo(other.Infos);
         }
 
@@ -44,16 +44,16 @@ public static class GroupNaming
 
     class Leaf<T> : ITreeElt<T> where T : struct, IElt<T>
     {
-        public Leaf(ConcreteGroup<T> g, DecompType decompType)
+        public Leaf(AllSubgroups<T> subgroups, DecompType decompType)
         {
-            ContentGroup = g;
+            ContentGroup = subgroups.Parent;
             ContentType = NodeType.Leaf;
             if (decompType == DecompType.Abelian)
                 Name = Group.AbelianInvariants(ContentGroup).Select(e => e.o).Glue(" x ", "C{0}");
             else if (decompType == DecompType.Extension)
-                Name = CommonExtensions(ContentGroup);
+                Name = CommonExtensions(subgroups);
             else if (decompType == DecompType.SimpleNonAbelian)
-                Name = ContentGroup.Name;
+                Name = SimpleNonAbelians(ContentGroup);
         }
 
         public override string ToString() => Name;
@@ -64,14 +64,14 @@ public static class GroupNaming
         public ITreeElt<T> Lhs { get; }
         public ITreeElt<T> Rhs { get; }
 
-        public TreeOp(bool isDirectProd, ITreeElt<T> lhs, ITreeElt<T> rhs, ConcreteGroup<T> g)
+        public TreeOp(DecompType t, ITreeElt<T> lhs, ITreeElt<T> rhs, ConcreteGroup<T> g)
         {
             ContentGroup = g;
-            var treeContent = isDirectProd ? NodeType.DirectProduct : NodeType.SemiDirectProduct;
-            (ContentType, Lhs, Rhs) = (treeContent, lhs, rhs);
+            ContentType = t == DecompType.DirectProduct ? NodeType.DirectProduct : NodeType.SemiDirectProduct;
+            (Lhs, Rhs) = (lhs, rhs);
             if (ContentType == NodeType.DirectProduct)
             {
-                if (Lhs.CompareTo(Rhs) == -1)
+                if (Lhs.CompareTo(Rhs) == 1)
                     (Lhs, Rhs) = (Rhs, Lhs);
 
                 Name = $"{Lhs.NameParenthesis} x {Rhs.NameParenthesis}";
@@ -187,8 +187,9 @@ public static class GroupNaming
         return IntExt.Gcd(m, n * (r - 1)) == 1 ? $"F({m}x:{n}){r}" : $"M({m}x:{n}){r}";
     }
 
-    static string CommonExtensions<T>(ConcreteGroup<T> G) where T : struct, IElt<T>
+    static string CommonExtensions<T>(AllSubgroups<T> subgroups) where T : struct, IElt<T>
     {
+        var G = subgroups.Parent;
         var orders = G.ElementsOrdersList().GroupBy(a => a)
             .ToDictionary(a => a.Key, a => a.Count())
             .AscendingByKey()
@@ -199,9 +200,42 @@ public static class GroupNaming
             return "Q16";
         if (G.Count() == 32 && orders == "[1]:1, [2]:1, [4]:18, [8]:4, [16]:8")
             return "Q32";
-        // TODO other Ext order 32, 81
+
+        var normals = subgroups.Where(sg => sg.IsProperNormal).ToArray();
+        var dic = normals.ToDictionary(n => n, n => subgroups.Where(sg => sg.Order == n.Index).ToArray());
+        var candidates = dic.Select(e =>
+                (e.Key, e.Value.OrderBy(sc => sc.Representative.GroupType).ThenByDescending(sc => sc.IsMonogenic).ToArray()))
+            .OrderByDescending(e => e.Key.GroupType == GroupType.AbelianGroup && e.Item2[0].GroupType == GroupType.AbelianGroup)
+            .ThenByDescending(e => e.Key.Order).ThenBy(e => e.Key.GroupType).ToArray();
+
+        if (candidates.Length != 0)
+        {
+            var c = candidates.First(e => e.Item2[0].Representative.GroupType == GroupType.AbelianGroup);
+            var k = BuildName(subgroups.Restriction(c.Key.Representative))[0].Name;
+            var h = BuildName(subgroups.Restriction(c.Item2[0].Representative))[0].Name;
+            return $"{k.WithParenthesis()} . {h.WithParenthesis()}";
+        }
 
         return $"G[{G.Count()}]";
+    }
+
+    static string SimpleNonAbelians<T>(ConcreteGroup<T> G) where T : struct, IElt<T>
+    {
+        var og = G.Count();
+        if (og == 60)
+            return "Alt5";
+        if (og == 168)
+            return "SL(3,2)";
+        if (og == 360)
+            return "Alt6";
+        if (og == 504)
+            return "SL(2,8)";
+        if (og == 660)
+            return "L2(11)";
+        if (og == 1092)
+            return "L2(13)";
+
+        return G.Name;
     }
 
     static string CyclicSdp<T>(ConcreteGroup<T> G, ConcreteGroup<T> K, ConcreteGroup<T> H) where T : struct, IElt<T>
@@ -230,10 +264,9 @@ public static class GroupNaming
         foreach (var (k, h, t) in Possibilities(subgroups))
         {
             if (h.Count() == 1)
-                all.Add(new Leaf<T>(k.Parent, t));
+                all.Add(new Leaf<T>(k, t));
             else
-                all.AddRange(BuildName(k).Grid2D(BuildName(h))
-                    .Select(e => new TreeOp<T>(t == DecompType.DirectProduct, e.t1, e.t2, G)));
+                all.AddRange(BuildName(k).Grid2D(BuildName(h)).Select(e => new TreeOp<T>(t, e.t1, e.t2, G)));
         }
 
         return all.Distinct().Order().ToArray();
@@ -268,7 +301,7 @@ public static class GroupNaming
         foreach (var extInfos in allExts24)
         {
             var it = BuildName(extInfos.allSubs);
-            extInfos.ext.Name = it.First().NameParenthesis;
+            extInfos.ext.Name = it.First().Name;
             CocyclesDFS.DisplayInfosGroups([(extInfos.ext, ((int, int, int))extInfos.allSubs.Infos)], naming: false);
             it.Println("Group Names");
         }
@@ -278,6 +311,7 @@ public static class GroupNaming
     {
         ShowNames(FG.Abelian(5));
         ShowNames(FG.Alternate(5));
+        ShowNames(FG.Symmetric(5));
         ShowNames(FG.Abelian(7, 3, 2));
         ShowNames(FG.Abelian(5, 2));
         ShowNames(FG.GLnp(3, 2));
@@ -291,12 +325,12 @@ public static class GroupNaming
 
     public static void Example4()
     {
-        var allExts20 = FG.AllExtensions(nbOps: 4, FG.AllAbelianGroupsOfOrder(4).Select(e => (FG.Abelian(5), e)).ToArray())
+        var allExts20 = FG.AllExtensions(FG.AllAbelianGroupsOfOrder(4).Select(e => (FG.Abelian(5), e)).ToArray())
             .OrderBy(e => e.ext.GroupType)
             .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
             .ThenBy(e => ((int, int, int))e.allSubs.Infos).ToList();
-        
-        var allExts40 = FG.AllExtensions(nbOps: 4, FG.AllAbelianGroupsOfOrder(4).Select(e => (FG.Abelian(2, 5), e)).ToArray())
+
+        var allExts40 = FG.AllExtensions(FG.AllAbelianGroupsOfOrder(4).Select(e => (FG.Abelian(2, 5), e)).ToArray())
             .OrderBy(e => e.ext.GroupType)
             .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
             .ThenBy(e => ((int, int, int))e.allSubs.Infos).ToList();
@@ -304,17 +338,68 @@ public static class GroupNaming
         foreach (var extInfos in allExts20)
         {
             var it = BuildName(extInfos.allSubs);
-            extInfos.ext.Name = it.First().NameParenthesis;
+            extInfos.ext.Name = it.First().Name;
             CocyclesDFS.DisplayInfosGroups([(extInfos.ext, ((int, int, int))extInfos.allSubs.Infos)], naming: false);
             it.Println("Group Names");
         }
 
         Console.WriteLine();
-        
+
         foreach (var extInfos in allExts40)
         {
             var it = BuildName(extInfos.allSubs);
-            extInfos.ext.Name = it.First().NameParenthesis;
+            extInfos.ext.Name = it.First().Name;
+            CocyclesDFS.DisplayInfosGroups([(extInfos.ext, ((int, int, int))extInfos.allSubs.Infos)], naming: false);
+            it.Println("Group Names");
+        }
+    }
+
+    public static void Example5()
+    {
+        var allExts = FG.AllExtensions((FG.Abelian(4, 4), FG.Abelian(2)))
+            .OrderBy(e => e.ext.GroupType)
+            .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
+            .ThenBy(e => ((int, int, int))e.allSubs.Infos).ToList();
+
+        foreach (var extInfos in allExts)
+        {
+            var it = BuildName(extInfos.allSubs);
+            extInfos.ext.Name = it.First().Name;
+            CocyclesDFS.DisplayInfosGroups([(extInfos.ext, ((int, int, int))extInfos.allSubs.Infos)], naming: false);
+            it.Println("Group Names");
+        }
+    }
+
+    public static void Example6()
+    {
+        var allExts = FG.AllExtensions(
+                (FG.Abelian(2, 8), FG.Abelian(2)),
+                (FG.Abelian(4, 4), FG.Abelian(2)),
+                (FG.Abelian(2, 4), FG.Abelian(4)))
+            .OrderBy(e => e.ext.GroupType)
+            .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
+            .ThenBy(e => ((int, int, int))e.allSubs.Infos).ToList();
+
+        foreach (var extInfos in allExts)
+        {
+            var it = BuildName(extInfos.allSubs);
+            extInfos.ext.Name = it.First().Name;
+            CocyclesDFS.DisplayInfosGroups([(extInfos.ext, ((int, int, int))extInfos.allSubs.Infos)], naming: false);
+            it.Println("Group Names");
+        }
+    }
+
+    public static void Example7()
+    {
+        var allExts = FG.AllExtensions((FG.SL2p(3), FG.Abelian(2)))
+            .OrderBy(e => e.ext.GroupType)
+            .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
+            .ThenBy(e => ((int, int, int))e.allSubs.Infos).ToList();
+
+        foreach (var extInfos in allExts)
+        {
+            var it = BuildName(extInfos.allSubs);
+            extInfos.ext.Name = it.First().Name;
             CocyclesDFS.DisplayInfosGroups([(extInfos.ext, ((int, int, int))extInfos.allSubs.Infos)], naming: false);
             it.Println("Group Names");
         }
