@@ -12,8 +12,7 @@ public record ExtInfos<Tn, Tg>(CrMap<Tn, Tg> c, ConcreteGroup<Ep2<Tn, Tg>> ext, 
 
 public static partial class FG
 {
-    static IEnumerable<ExtInfos<Tn, Tg>> AllExtensionsInternal<Tn, Tg>(ConcreteGroup<Tn> N,
-        ConcreteGroup<Tg> G, int nbOps)
+    static IEnumerable<ExtInfos<Tn, Tg>> AllExtensionsInternal<Tn, Tg>(ConcreteGroup<Tn> N, ConcreteGroup<Tg> G, int nbOps)
         where Tg : struct, IElt<Tg>
         where Tn : struct, IElt<Tn>
     {

@@ -57,6 +57,11 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>> wher
 
     public string Name => $"SubGroups of {Parent}";
 
+    public AllSubgroups<TableElt> ToTable()
+    {
+        return new AllSubgroups<TableElt>(AllSubgroupConjugates.Select(sc => sc.ToTable()).ToHashSet());
+    }
+
     public IEnumerable<ConcreteGroup<T>> All => AllSubgroupConjugates.SelectMany(sc => sc.Conjugates);
     public IEnumerable<ConcreteGroup<T>> AllRepresentatives => AllSubgroupConjugates.Select(sc => sc.Representative);
     public override string ToString() => Name;

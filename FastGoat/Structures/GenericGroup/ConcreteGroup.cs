@@ -168,6 +168,8 @@ public class ConcreteGroup<T> : IGroup<T> where T : struct, IElt<T>
         return isos.Any(h => h.Count != 0);
     }
 
+    public (Dictionary<T, TableElt> idxTable, GroupTable gt) ToTable() => GroupTable.Create(this);
+
     public override int GetHashCode()
     {
         return Hash;

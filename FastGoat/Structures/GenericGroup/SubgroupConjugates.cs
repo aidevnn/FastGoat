@@ -36,6 +36,7 @@ public readonly struct SubgroupConjugates<T> : IElt<SubgroupConjugates<T>> where
     public bool Contains(ConcreteGroup<T> g) => Conjugates.Any(e => e.SetEquals(g));
 
     public GroupType GroupType => Representative.GroupType;
+    public bool IsMonogenic => Representative.GetGenerators().Count() == 1;
     public int Size => Conjugates.Count;
     public (int, int, GroupType) OST => (Order, Size, GroupType);
     public bool IsNormal => Size == 1;
@@ -45,6 +46,13 @@ public readonly struct SubgroupConjugates<T> : IElt<SubgroupConjugates<T>> where
     public int CompareTo(SubgroupConjugates<T> other) => OST.CompareTo(other.OST);
 
     public int Hash { get; }
+
+    public SubgroupConjugates<TableElt> ToTable()
+    {
+        var (tb, gt) = Parent.ToTable();
+        var sub = Group.Generate(Representative.Name, gt, Representative.GetGenerators().Select(e => tb[e]).ToArray());
+        return new(gt, sub);
+    }
 
     public override int GetHashCode() => Hash;
     public override string ToString() => Representative.Name;

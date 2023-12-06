@@ -399,14 +399,24 @@ public static partial class FG
             throw new();
 
         var gl = new GL(2, p);
-        var x = (p - 2).Range(2).First(i => IntExt.PowMod(i, p - 1, p) == 1);
-        var xp = IntExt.PowMod(x, p - 2, p);
+        if (p == 3)
+        {
+            var a = gl[1, 1, 0, 1];
+            var b = gl[0, 1, p - 1, 0];
 
-        // SL(2,q) generators from H.E. Rose, page 271, Problem 12.5
-        var a = gl[x, 0, 0, xp];
-        var b = gl[p - 1, 1, p - 1, 0];
+            return Group.Generate($"SL(2,{p})", gl, a, b);
+        }
+        else
+        {
+            var x = (p - 2).Range(2).First(i => IntExt.PowMod(i, p - 1, p) == 1);
+            var xp = IntExt.PowMod(x, p - 2, p);
 
-        return Group.Generate($"SL(2,{p})", gl, a, b);
+            // SL(2,p) generators from H.E. Rose, page 271, Problem 12.5
+            var a = gl[x, 0, 0, xp];
+            var b = gl[p - 1, 1, p - 1, 0];
+
+            return Group.Generate($"SL(2,{p})", gl, a, b);
+        }
     }
 
     public static ConcreteGroup<Coset<Mat>> L2p(int p)
