@@ -32,7 +32,25 @@ public readonly struct SubgroupConjugates<T> : IElt<SubgroupConjugates<T>> where
         Hash = (Parent.Hash, Order, Index).GetHashCode();
     }
 
-    public SubgroupConjugates<T> Restriction(ConcreteGroup<T> g) => new(g, Conjugates.Where(e => e.SubSetOf(g)).ToList());
+    public SubgroupConjugates<T>[] Restriction(ConcreteGroup<T> g)
+    {
+        var lt = Conjugates.ToHashSet(new GroupSetEquality<T>());
+        var all = new List<SubgroupConjugates<T>>();
+        while (lt.Count != 0)
+        {
+            var sg = lt.First();
+            if (!sg.SubSetOf(g))
+            {
+                lt.Remove(sg);
+                continue;
+            }
+            var subConjs = Group.SubGroupsConjugates(g, sg);
+            all.Add(new SubgroupConjugates<T>(g, subConjs));
+            lt.ExceptWith(subConjs);
+        }
+
+        return all.ToArray();
+    }
     public bool Contains(ConcreteGroup<T> g) => Conjugates.Any(e => e.SetEquals(g));
 
     public GroupType GroupType => Representative.GroupType;

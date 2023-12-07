@@ -416,6 +416,22 @@ public static class GroupNaming
         }
     }
 
+    public static void Example5_1()
+    {
+        var allExts = FG.AllExtensions((FG.ModularMaxSdp(4), FG.Abelian(2)))
+            .OrderBy(e => e.ext.GroupType)
+            .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
+            .ThenBy(e => ((int, int, int))e.allSubs.Infos).ToList();
+
+        foreach (var extInfos in allExts)
+        {
+            var it = BuildName(extInfos.allSubs);
+            extInfos.ext.Name = it.First().Name;
+            CocyclesDFS.DisplayInfosGroups([(extInfos.ext, ((int, int, int))extInfos.allSubs.Infos)], naming: false);
+            it.Println("Group Names");
+        }
+    }
+
     public static void Example6()
     {
         var allExts = FG.AllExtensions(

@@ -44,7 +44,8 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>> wher
         return AllSubgroupConjugates.Count(sc => sc.IsNormal) == 2;
     }
 
-    public AllSubgroups<T> Restriction(ConcreteGroup<T> g) => new(AllSubgroupConjugates.Select(sc => sc.Restriction(g)).ToHashSet());
+    public AllSubgroups<T> Restriction(ConcreteGroup<T> g) => 
+        new(AllSubgroupConjugates.SelectMany(sc => sc.Restriction(g)).ToHashSet());
 
     public IEnumerator<SubgroupConjugates<T>> GetEnumerator() => AllSubgroupConjugates.AsEnumerable().GetEnumerator();
 
