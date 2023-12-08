@@ -104,12 +104,10 @@ public static class GroupNaming
                 var ab = Group.Generate("Ab", g, abGens);
                 var leaf = new Leaf<T>(ab);
                 Elts = [leaf, ..nab];
-                Name = nab.Select(e => e.NameParenthesis).Prepend(leaf.Name).Glue(" x ");
             }
-            else
-            {
-                Name = Elts.Select(e => e.NameParenthesis).Glue(" x ");
-            }
+            
+            Elts = Elts.Order().ToArray();
+            Name = Elts.Select(e => e.NameParenthesis).Glue(" x ");
         }
     }
 
