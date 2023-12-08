@@ -61,7 +61,7 @@ IEnumerable<GroupTable> AllProducts(ConcreteGroup<TableElt> a, ConcreteGroup<Tab
             list.Add(gn);
         }
     }
-    
+
     return list.OrderBy(e => e.g.GroupType)
         .ThenByDescending(e => e.g.ElementsOrders.Values.Max())
         .ThenBy(e => ((int, int, int))e.subGroups.Infos)
@@ -75,7 +75,7 @@ void DisplayGroupNames((ConcreteGroup<TableElt> g, AllSubgroups<TableElt> subGro
     var lt = Enumerable.Repeat('#', maxLt + 4).Glue();
     var line = $"#################{lt}#################";
     var fmt = $"#################  {{0,{-maxLt}}}  #################";
-    
+
     foreach (var (g, subgroups, it) in elts)
     {
         Console.WriteLine(line);
@@ -86,7 +86,7 @@ void DisplayGroupNames((ConcreteGroup<TableElt> g, AllSubgroups<TableElt> subGro
         it.Println("Group Names");
         Console.WriteLine();
     }
-    
+
     Console.WriteLine($"Count:{elts.Length}");
     Console.WriteLine();
 }
@@ -116,7 +116,7 @@ void ProductOrd48()
     var ord16b = allOrd8.SelectMany(e => AllProducts(e.g, c2)).Append(FG.Quaternion(16).ToTable().gt);
     var allOrd16 = AllGroupNames([..ord16a, ..ord16b, new Cn(16).ToTable().gt]);
     DisplayGroupNames(allOrd16);
-    
+
     var ord24a = allOrd12.SelectMany(e => AllProducts(e.g, c2));
     var ord24b = allOrd8.SelectMany(e => AllProducts(e.g, c3));
     var allOrd24 = AllGroupNames([..ord24a, ..ord24b]);
@@ -148,7 +148,7 @@ void ProductOrd32()
     var ord16b = allOrd8.SelectMany(e => AllProducts(e.g, c2)).Append(FG.Quaternion(16).ToTable().gt);
     var allOrd16 = AllGroupNames([..ord16a, ..ord16b, new Cn(16).ToTable().gt]);
     DisplayGroupNames(allOrd16);
-    
+
     GlobalStopWatch.Restart();
     var ord32a = allOrd16.SelectMany(e => AllProducts(e.g, c2)).Append(FG.Quaternion(32).ToTable().gt);
     var ord32b = allOrd8.Grid2D(allOrd4).SelectMany(e => AllProducts(e.t1.g, e.t2));
@@ -160,5 +160,76 @@ void ProductOrd32()
 
 {
     // ProductOrd32(); // missing 3 extensions
-    ProductOrd48(); // missing 1 extension
+    // ProductOrd48(); // missing 1 extension
 }
+
+{
+    var d8_sdp_s3 = Group.AllSemiDirectProd(FG.Dihedral(4), FG.Symmetric(3)).Select(e => e.ToTable().gt);
+    DisplayGroupNames(AllGroupNames([..d8_sdp_s3]));
+}
+/*
+   ##############################################
+   #################  D8 x: S3  #################
+   ##############################################
+   |D8 x: S3| = 48
+   Type        NonAbelianGroup
+   BaseGroup   (D8 x: Symm3)(table)
+   
+   Elements Orders : [1]:1, [2]:17, [3]:2, [4]:2, [6]:10, [8]:12, [12]:4
+   
+   SubGroupsInfos { AllSubGr = 56, AllConjsCl = 22, AllNorms = 11 }
+   Group Names
+       D8 x: S3
+       C3 x: D16
+       D24 x: C2
+       (C3 x D8) x: C2
+       F(3x:8)2 x: C2
+   
+   ##############################################
+   #################  D8 x: S3  #################
+   ##############################################
+   |D8 x: S3| = 48
+   Type        NonAbelianGroup
+   BaseGroup   (D8 x: Symm3)(table)
+   
+   Elements Orders : [1]:1, [2]:11, [3]:2, [4]:20, [6]:10, [12]:4
+   
+   SubGroupsInfos { AllSubGr = 72, AllConjsCl = 40, AllNorms = 23 }
+   Group Names
+       D8 x: S3
+       (C3 x D8) x: C2
+       (C4 x S3) x: C2
+       M(6x:4)5 x: C2
+       (C3 x: D8) x: C2
+       (C3 x: Q8) x: C2
+       C3 x: (D8 x: C2)
+   
+   ##############################################
+   #################  D8 x S3   #################
+   ##############################################
+   |D8 x S3| = 48
+   Type        NonAbelianGroup
+   BaseGroup   (D8 x: Symm3)(table)
+   
+   Elements Orders : [1]:1, [2]:23, [3]:2, [4]:8, [6]:10, [12]:4
+   
+   SubGroupsInfos { AllSubGr = 120, AllConjsCl = 54, AllNorms = 25 }
+   Group Names
+       D8 x S3
+       D8 x: S3
+       S3 x: D8
+       C4 x: D12
+       D24 x: C2
+       (C3 x D8) x: C2
+       (C4 x S3) x: C2
+       C3 x: (C2 x D8)
+       (C2 x C2) x: D12
+       (C2 x D12) x: C2
+       C12 x: (C2 x C2)
+       D12 x: (C2 x C2)
+       (C6 x C2) x: (C2 x C2)
+       (C3 x: D8) x: C2
+       F(3x:4)2 x: (C2 x C2)
+   
+   Count:3
+*/
