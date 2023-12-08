@@ -162,3 +162,163 @@ void ProductOrd32()
     // ProductOrd32(); // missing 3 extensions
     // ProductOrd48(); // missing 1 extension
 }
+
+{
+
+    var exts = FG.AllExtensions((Product.Generate(FG.Abelian(2, 2), FG.Symmetric(3)), FG.Abelian(2)))
+        .OrderBy(e => e.ext.GroupType)
+        .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
+        .ThenBy(e => ((int, int, int))e.allSubs.Infos).ToList();
+    
+    foreach (var extInfos in exts)
+    {
+        var it = GroupNaming.BuildName(extInfos.allSubs);
+        extInfos.ext.Name = it.First().Name;
+        CocyclesDFS.DisplayInfosGroups([(extInfos.ext, ((int, int, int))extInfos.allSubs.Infos)], naming: false);
+        it.Println("Group Names");
+    }
+
+    // ~ 10minutes
+}
+/* https://people.maths.bris.ac.uk/~matyd/GroupNames/1/e15/C2byC2%5E2xS3.html#s2
+   6 Extensions : S3 x C2^3, C2 x D24, S3 x D8, C2 x (C3 x: D8), D12 x: C4, S3 x C2 x C4 
+
+   Total Exts:6
+   ###############################################
+   #################  D12 x: C4  #################
+   ###############################################
+   |D12 x: C4| = 48
+   Type        NonAbelianGroup
+   BaseGroup   ((C2 x C2) x Symm3) . C2
+   
+   Elements Orders : [1]:1, [2]:15, [3]:2, [4]:16, [6]:6, [12]:8
+   
+   AllSubGr:76 AllConjsCl:34 AllNorms:17
+   
+   Group Names
+       D12 x: C4
+       (C4 x C2) x: S3
+       (C12 x C2) x: C2
+       M(6x:4)5 x: C2
+       C3 x: ((C2 x C2) x: C4)
+   ##############################################
+   #################  C4 x D12  #################
+   ##############################################
+   |C4 x D12| = 48
+   Type        NonAbelianGroup
+   BaseGroup   ((C2 x C2) x Symm3) . C2
+   
+   Elements Orders : [1]:1, [2]:15, [3]:2, [4]:16, [6]:6, [12]:8
+   
+   AllSubGr:92 AllConjsCl:54 AllNorms:35
+   
+   Group Names
+       C4 x D12
+       (C4 x C2) x S3
+       D12 x: C4
+       (C4 x S3) x: C2
+       C6 x: (C4 x C2)
+       S3 x: (C4 x C2)
+       (C12 x C2) x: C2
+       C12 x: (C2 x C2)
+       C3 x: (C4 x C2 x C2)
+       M(6x:4)5 x: C2
+       F(3x:4)2 x: (C2 x C2)
+   #############################################
+   #################  D8 x S3  #################
+   #############################################
+   |D8 x S3| = 48
+   Type        NonAbelianGroup
+   BaseGroup   ((C2 x C2) x Symm3) . C2
+   
+   Elements Orders : [1]:1, [2]:23, [3]:2, [4]:8, [6]:10, [12]:4
+   
+   AllSubGr:120 AllConjsCl:54 AllNorms:25
+   
+   Group Names
+       D8 x S3
+       D8 x: S3
+       S3 x: D8
+       C4 x: D12
+       D24 x: C2
+       (C3 x D8) x: C2
+       (C4 x S3) x: C2
+       C3 x: (C2 x D8)
+       (C2 x C2) x: D12
+       (C2 x D12) x: C2
+       C12 x: (C2 x C2)
+       D12 x: (C2 x C2)
+       (C6 x C2) x: (C2 x C2)
+       (C3 x: D8) x: C2
+       F(3x:4)2 x: (C2 x C2)
+   ##############################################
+   #################  C2 x D24  #################
+   ##############################################
+   |C2 x D24| = 48
+   Type        NonAbelianGroup
+   BaseGroup   ((C2 x C2) x Symm3) . C2
+   
+   Elements Orders : [1]:1, [2]:27, [3]:2, [4]:4, [6]:6, [12]:8
+   
+   AllSubGr:124 AllConjsCl:54 AllNorms:27
+   
+   Group Names
+       C2 x D24
+       C6 x: D8
+       C4 x: D12
+       D24 x: C2
+       (C4 x C2) x: S3
+       C3 x: (C2 x D8)
+       (C12 x C2) x: C2
+       (C2 x D12) x: C2
+       C12 x: (C2 x C2)
+       D12 x: (C2 x C2)
+   ##############################################
+   #################  C6 x: D8  #################
+   ##############################################
+   |C6 x: D8| = 48
+   Type        NonAbelianGroup
+   BaseGroup   ((C2 x C2) x Symm3) . C2
+   
+   Elements Orders : [1]:1, [2]:19, [3]:2, [4]:12, [6]:14
+   
+   AllSubGr:108 AllConjsCl:54 AllNorms:27
+   
+   Group Names
+       C6 x: D8
+       C2 x (C3 x: D8)
+       C3 x: (C2 x D8)
+       (C2 x C2) x: D12
+       (C2 x D12) x: C2
+       D12 x: (C2 x C2)
+       (C2 x C2 x C2) x: S3
+       (C6 x C2 x C2) x: C2
+       (C6 x C2) x: (C2 x C2)
+       M(6x:4)5 x: C2
+       (C3 x: D8) x: C2
+       F(3x:4)2 x: (C2 x C2)
+   #####################################################
+   #################  (C2 x C2) x D12  #################
+   #####################################################
+   |(C2 x C2) x D12| = 48
+   Type        NonAbelianGroup
+   BaseGroup   ((C2 x C2) x Symm3) . C2
+   
+   Elements Orders : [1]:1, [2]:31, [3]:2, [6]:14
+   
+   AllSubGr:236 AllConjsCl:134 AllNorms:83
+   
+   Group Names
+       (C2 x C2) x D12
+       (C2 x C2 x C2) x S3
+       (C2 x D12) x: C2
+       D12 x: (C2 x C2)
+       (C6 x C2 x C2) x: C2
+       C6 x: (C2 x C2 x C2)
+       S3 x: (C2 x C2 x C2)
+       (C6 x C2) x: (C2 x C2)
+       C3 x: (C2 x C2 x C2 x C2)
+   
+   Process finished with exit code 0.
+   
+*/
