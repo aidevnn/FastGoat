@@ -28,3 +28,22 @@ using FastGoat.UserGroup.Padic;
 //////////////////////////////////
 
 Console.WriteLine("Hello World");
+
+{
+    var exts = FG.AllExtensions((FG.Abelian(4), FG.Abelian(2, 2)))
+        .OrderBy(e => e.ext.GroupType)
+        .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
+        .ThenBy(e => ((int, int, int))e.allSubs.Infos).ToList();
+
+    foreach (var extInfos in exts)
+    {
+        var it = GroupNaming.BuildName(extInfos.allSubs);
+        extInfos.ext.Name = it.First().Name;
+        CocyclesDFS.DisplayInfosGroups([(extInfos.ext, ((int, int, int))extInfos.allSubs.Infos)], naming: false);
+        it.Println("Group Names");
+    }
+
+    // Found 9 extensions expected 8 extensions according to
+    // https://people.maths.bris.ac.uk/~matyd/GroupNames/1/e3/C2%5E2byC4.html#d6
+    // C8 x C2 is extra ???
+}

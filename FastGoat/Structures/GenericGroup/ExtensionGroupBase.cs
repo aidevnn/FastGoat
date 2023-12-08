@@ -71,18 +71,18 @@ public struct ExtensionGroupBase<Tn, Tg> : IGroup<Ep2<Tn, Tg>> where Tg : struct
         var (n, g) = (e.E1, e.E2);
         var ni = N.Invert(n);
         var gi = G.Invert(g);
-        var nop = N.Op(Map[new(gi, g)], ni);
-        var m = L[g][nop];
+        var nop = N.Op(N.Invert(Map[new(g, gi)]), ni);
+        var m = L[gi][nop];
         return new(m, gi);
     }
 
     public Ep2<Tn, Tg> Op(Ep2<Tn, Tg> e1, Ep2<Tn, Tg> e2)
     {
         var (n1, n2, g1, g2) = (e1.E1, e2.E1, e1.E2, e2.E2);
-        var nop = N.Op(L[G.Invert(g2)][n1], n2);
-        var fi = N.Invert(Map[new(g1, g2)]);
+        var nop = N.Op(n1, L[g1][n2]);
+        var f = Map[new(g1, g2)];
         var g1g2 = G.Op(g1, g2);
-        return new(N.Op(fi, nop), g1g2);
+        return new(N.Op(nop, f), g1g2);
     }
 
     public override int GetHashCode() => Hash;
