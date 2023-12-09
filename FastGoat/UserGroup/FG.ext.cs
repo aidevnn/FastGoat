@@ -55,12 +55,12 @@ public static partial class FG
         }
     }
 
-    public static IEnumerable<ExtInfos<Tn, Tg>> AllExtensions<Tn, Tg>(int nbOps, params (ConcreteGroup<Tn>, ConcreteGroup<Tg>)[] tuples)
+    public static IEnumerable<ExtInfos<Tn, Tg>> AllExtensions<Tn, Tg>(params (int nbOps, ConcreteGroup<Tn>, ConcreteGroup<Tg>)[] tuples)
         where Tg : struct, IElt<Tg>
         where Tn : struct, IElt<Tn>
     {
         var dicExts = new Dictionary<SubGroupsInfos, HashSet<ConcreteGroup<Ep2<Tn, Tg>>>>();
-        foreach (var (n, g) in tuples)
+        foreach (var (nbOps, n, g) in tuples)
         {
             foreach (var extInfos in AllExtensionsInternal(n, g, nbOps))
             {
@@ -85,7 +85,15 @@ public static partial class FG
         where Tg : struct, IElt<Tg>
         where Tn : struct, IElt<Tn>
     {
-        foreach (var extInfos in AllExtensions(nbOps: 10000, tuples))
+        foreach (var extInfos in AllExtensions(tuples.Select(e => (10000, e.Item1, e.Item2)).ToArray()))
+            yield return extInfos;
+    }
+
+    public static IEnumerable<ExtInfos<Tn, Tg>> AllExtensions<Tn, Tg>(int nbOps, params (ConcreteGroup<Tn>, ConcreteGroup<Tg>)[] tuples)
+        where Tg : struct, IElt<Tg>
+        where Tn : struct, IElt<Tn>
+    {
+        foreach (var extInfos in AllExtensions(tuples.Select(e => (nbOps, e.Item1, e.Item2)).ToArray()))
             yield return extInfos;
     }
 }

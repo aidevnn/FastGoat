@@ -77,6 +77,13 @@ public static class GroupNaming
             ContentType = NodeType.Leaf;
             Name = Group.AbelianInvariants(ContentGroup).Select(e => e.o).Glue(" x ", "C{0}");
         }
+
+        public Leaf(ConcreteGroup<T> g, string name)
+        {
+            ContentGroup = g;
+            ContentType = NodeType.Leaf;
+            Name = name;
+        }
     }
 
     public class DirectProductOp<T> : ITreeElt<T> where T : struct, IElt<T>
@@ -105,7 +112,7 @@ public static class GroupNaming
                 var leaf = new Leaf<T>(ab);
                 Elts = [leaf, ..nab];
             }
-            
+
             Elts = Elts.Order().ToArray();
             Name = Elts.Select(e => e.NameParenthesis).Glue(" x ");
         }
@@ -230,23 +237,16 @@ public static class GroupNaming
             return "Q16";
         if (G.Count() == 32 && orders == "[1]:1, [2]:1, [4]:18, [8]:4, [16]:8")
             return "Q32";
+        if (G.Count() == 120 && orders == "[1]:1, [2]:1, [3]:20, [4]:30, [5]:24, [6]:20, [10]:24")
+            return "SL(2,5)";
 
         var normals = subgroups.Where(sg => sg.IsProperNormal).ToArray();
-        var dic = normals.ToDictionary(n => n, n => subgroups.Where(sg => sg.Order == n.Index).ToArray());
-        var candidates = dic.Select(e =>
-                (e.Key, e.Value.OrderBy(sc => sc.Representative.GroupType).ThenByDescending(sc => sc.IsMonogenic).ToArray()))
-            .OrderByDescending(e => e.Key.GroupType == GroupType.AbelianGroup && e.Item2[0].GroupType == GroupType.AbelianGroup)
-            .ThenByDescending(e => e.Key.Order).ThenBy(e => e.Key.GroupType).ToArray();
-
-        if (candidates.Length != 0)
-        {
-            var c = candidates.First(e => e.Item2[0].Representative.GroupType == GroupType.AbelianGroup);
-            var k = BuildName(subgroups.Restriction(c.Key.Representative))[0].Name;
-            var h = BuildName(subgroups.Restriction(c.Item2[0].Representative))[0].Name;
-            return $"{k.WithParenthesis()} . {h.WithParenthesis()}";
-        }
-
-        return $"G[{G.Count()}]";
+        var quotients = normals.Select(sc => (sc, q: G.Over(sc.Representative)))
+            .OrderBy(e => e.sc.GroupType).ThenByDescending(e => e.sc.Order).ToArray();
+        var (n0, g0) = quotients[0];
+        var k = BuildName(subgroups.Restriction(n0.Representative))[0].Name;
+        var h = BuildName(g0.ToTable().gt)[0].Name;
+        return $"{k.WithParenthesis()} . {h.WithParenthesis()}";
     }
 
     static string SimpleNonAbelians<T>(ConcreteGroup<T> G) where T : struct, IElt<T>
@@ -268,21 +268,72 @@ public static class GroupNaming
         return G.Name;
     }
 
+    static Leaf<T>[] A4S4DicSdp<T>(ConcreteGroup<T> G) where T : struct, IElt<T>
+    {
+        var og = G.Count();
+        var orders = G.ElementsOrdersList().GroupBy(a => a)
+            .ToDictionary(a => a.Key, a => a.Count())
+            .AscendingByKey()
+            .GlueMap(fmt: "[{0}]:{1}");
+
+        if (og == 12 && orders == "[1]:1, [2]:3, [3]:8")
+            return [new Leaf<T>(G, "A4")];
+        if (og == 24 && orders == "[1]:1, [2]:9, [3]:8, [4]:6")
+            return [new Leaf<T>(G, "S4")];
+        if (og == 24 && orders == "[1]:1, [2]:1, [3]:8, [4]:6, [6]:8")
+            return [new Leaf<T>(G, "SL(2,3)")];
+        
+        if (og == 12 && orders == "[1]:1, [2]:1, [3]:2, [4]:6, [6]:2")
+            return [new Leaf<T>(G, "Dic3")];
+        if (og == 16 && orders == "[1]:1, [2]:1, [4]:10, [8]:4")
+            return [new Leaf<T>(G, "Dic4")];
+        if (og == 20 && orders == "[1]:1, [2]:1, [4]:10, [5]:4, [10]:4")
+            return [new Leaf<T>(G, "Dic5")];
+        if (og == 24 && orders == "[1]:1, [2]:1, [3]:2, [4]:14, [6]:2, [12]:4")
+            return [new Leaf<T>(G, "Dic6")];
+        if (og == 28 && orders == "[1]:1, [2]:1, [4]:14, [7]:6, [14]:6")
+            return [new Leaf<T>(G, "Dic7")];
+        if (og == 36 && orders == "[1]:1, [2]:1, [3]:2, [4]:18, [6]:2, [9]:6, [18]:6")
+            return [new Leaf<T>(G, "Dic9")];
+        if (og == 40 && orders == "[1]:1, [2]:1, [4]:22, [5]:4, [10]:4, [20]:8")
+            return [new Leaf<T>(G, "Dic10")];
+        if (og == 44 && orders == "[1]:1, [2]:1, [4]:22, [11]:10, [22]:10")
+            return [new Leaf<T>(G, "Dic11")];
+        if (og == 48 && orders == "[1]:1, [2]:1, [3]:2, [4]:26, [6]:2, [8]:4, [12]:4, [24]:8")
+            return [new Leaf<T>(G, "Dic12")];
+        if (og == 52 && orders == "[1]:1, [2]:1, [4]:26, [13]:12, [26]:12")
+            return [new Leaf<T>(G, "Dic13")];
+        if (og == 56 && orders == "[1]:1, [2]:1, [4]:30, [7]:6, [14]:6, [28]:12")
+            return [new Leaf<T>(G, "Dic14")];
+        if (og == 60 && orders == "[1]:1, [2]:1, [3]:2, [4]:30, [5]:4, [6]:2, [10]:4, [15]:8, [30]:8")
+            return [new Leaf<T>(G, "Dic15")];
+        if (og == 68 && orders == "[1]:1, [2]:1, [4]:34, [17]:16, [34]:16")
+            return [new Leaf<T>(G, "Dic17")];
+        if (og == 72 && orders == "[1]:1, [2]:1, [3]:2, [4]:38, [6]:2, [9]:6, [12]:4, [18]:6, [36]:12")
+            return [new Leaf<T>(G, "Dic18")];
+        if (og == 76 && orders == "[1]:1, [2]:1, [4]:38, [19]:18, [38]:18")
+            return [new Leaf<T>(G, "Dic19")];
+        if (og == 80 && orders == "[1]:1, [2]:1, [4]:42, [5]:4, [8]:4, [10]:4, [20]:8, [40]:16")
+            return [new Leaf<T>(G, "Dic20")];
+        if (og == 84 && orders == "[1]:1, [2]:1, [3]:2, [4]:42, [6]:2, [7]:6, [14]:6, [21]:12, [42]:12")
+            return [new Leaf<T>(G, "Dic21")];
+        if (og == 88 && orders == "[1]:1, [2]:1, [4]:46, [11]:10, [22]:10, [44]:20")
+            return [new Leaf<T>(G, "Dic22")];
+        if (og == 92 && orders == "[1]:1, [2]:1, [4]:46, [23]:22, [46]:22")
+            return [new Leaf<T>(G, "Dic23")];
+        if (og == 96 && orders == "[1]:1, [2]:1, [3]:2, [4]:50, [6]:2, [8]:4, [12]:4, [16]:8, [24]:8, [48]:16")
+            return [new Leaf<T>(G, "Dic24")];
+
+        return Array.Empty<Leaf<T>>();
+    }
+
     static string CyclicSdp<T>(ConcreteGroup<T> G, ConcreteGroup<T> K, ConcreteGroup<T> H) where T : struct, IElt<T>
     {
         var gensK = K.GetGenerators().ToArray();
         var gensH = H.GetGenerators().ToArray();
 
         if (gensK.Length != 1 || gensH.Length != 1)
-        {
-            if (K.Count() == 4 && H.Count() == 3 && gensK.Length == 2)
-                return "A4";
-
-            // if (K.Count() == 4 && H.Count() == 6 && gensK.Length == 2 && gensH.Length == 2)
-            //     return "S4";
-
             return "";
-        }
 
         var act = GroupAction(G, K, H);
         var name = GroupActionName(act);
@@ -311,7 +362,7 @@ public static class GroupNaming
                     .Take(1));
         }
 
-        return all.Distinct().Order().ToArray();
+        return all.Concat(A4S4DicSdp(G)).Distinct().Order().ToArray();
     }
 
     static void ShowNames<T>(ConcreteGroup<T> G) where T : struct, IElt<T>
@@ -337,12 +388,12 @@ public static class GroupNaming
 
     public static void Example2()
     {
-        var allExts24 = FG.AllExtensions((FG.Abelian(12), FG.Abelian(2)))
+        var exts24 = FG.AllExtensions((FG.Abelian(12), FG.Abelian(2)))
             .OrderBy(e => e.ext.GroupType)
             .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
             .ThenBy(e => ((int, int, int))e.allSubs.Infos).ToList();
 
-        foreach (var extInfos in allExts24)
+        foreach (var extInfos in exts24)
         {
             var it = BuildName(extInfos.allSubs);
             extInfos.ext.Name = it.First().Name;
@@ -359,6 +410,7 @@ public static class GroupNaming
         ShowNames(FG.Abelian(7, 3, 2));
         ShowNames(FG.Abelian(5, 2));
         ShowNames(FG.GLnp(3, 2));
+        ShowNames(FG.SL2p(3));
         ShowNames(FG.SL2p(5));
 
         // Top Down simple non abelian group construction, name dont changes
@@ -432,10 +484,17 @@ public static class GroupNaming
 
     public static void Example6()
     {
+        GlobalStopWatch.Restart();
+        var nbOpsMax = 10000;
         var allExts = FG.AllExtensions(
-                (FG.Abelian(2, 8), FG.Abelian(2)),
-                (FG.Abelian(4, 4), FG.Abelian(2)),
-                (FG.Abelian(2, 4), FG.Abelian(4)))
+                (nbOpsMax, FG.Abelian(16), FG.Abelian(2)),
+                (nbOpsMax, FG.Abelian(2, 8), FG.Abelian(2)),
+                (nbOpsMax, FG.Abelian(4, 4), FG.Abelian(2)),
+                (nbOpsMax, FG.Abelian(2, 2, 4), FG.Abelian(2)),
+                (nbOpsMax, FG.Abelian(2, 4), FG.Abelian(4)),
+                (16, FG.Abelian(2, 4), FG.Abelian(2, 2)),
+                (1, FG.Abelian(2, 2, 2), FG.Abelian(2, 2)))
+            .Take(51)
             .OrderBy(e => e.ext.GroupType)
             .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
             .ThenBy(e => ((int, int, int))e.allSubs.Infos).ToList();
@@ -447,10 +506,68 @@ public static class GroupNaming
             CocyclesDFS.DisplayInfosGroups([(extInfos.ext, ((int, int, int))extInfos.allSubs.Infos)], naming: false);
             it.Println("Group Names");
         }
+
+        GlobalStopWatch.Show($"Ord32: {allExts.Count}"); // Time:199294 ms ~ 3min
+        Console.Beep();
+        Console.Write("Checking that all extensions are valid groups...");
+        if (allExts.Any(e => !Group.IsGroup(e.ext)))
+            throw new GroupException(GroupExceptionType.GroupDef);
+        Console.WriteLine(" Done.");
+    }
+
+    public static void Example6_1()
+    {
+        GlobalStopWatch.Restart();
+        var allExts = FG.AllExtensions(FG.AllAbelianGroupsOfOrder(27).Select(e => (e, FG.Abelian(3))).ToArray())
+            .Take(15)
+            .OrderBy(e => e.ext.GroupType)
+            .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
+            .ThenBy(e => ((int, int, int))e.allSubs.Infos).ToList();
+
+        foreach (var extInfos in allExts)
+        {
+            var it = BuildName(extInfos.allSubs);
+            extInfos.ext.Name = it.First().Name;
+            CocyclesDFS.DisplayInfosGroups([(extInfos.ext, ((int, int, int))extInfos.allSubs.Infos)], naming: false);
+            it.Println("Group Names");
+        }
+
+        GlobalStopWatch.Show($"Ord81: {allExts.Count}"); // Time:130697 ms ~ 2min
+        Console.Beep();
+        Console.Write("Checking that all extensions are valid groups...");
+        if (allExts.Any(e => !Group.IsGroup(e.ext)))
+            throw new GroupException(GroupExceptionType.GroupDef);
+        Console.WriteLine(" Done.");
+    }
+
+    public static void Example6_2()
+    {
+        GlobalStopWatch.Restart();
+        var allExts = FG.AllExtensions((FG.Abelian(2), FG.Abelian(4, 4)))
+            .Take(15)
+            .OrderBy(e => e.ext.GroupType)
+            .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
+            .ThenBy(e => ((int, int, int))e.allSubs.Infos).ToList();
+
+        foreach (var extInfos in allExts)
+        {
+            var it = BuildName(extInfos.allSubs);
+            extInfos.ext.Name = it.First().Name;
+            CocyclesDFS.DisplayInfosGroups([(extInfos.ext, ((int, int, int))extInfos.allSubs.Infos)], naming: false);
+            it.Println("Group Names");
+        }
+
+        GlobalStopWatch.Show($"C2 . (C4 x C4): {allExts.Count}"); // Time:595836 ms ~ 10min
+        Console.Beep();
+        Console.Write("Checking that all extensions are valid groups...");
+        if (allExts.Any(e => !Group.IsGroup(e.ext)))
+            throw new GroupException(GroupExceptionType.GroupDef);
+        Console.WriteLine(" Done.");
     }
 
     public static void Example7()
     {
+        GlobalStopWatch.Restart();
         var allExts = FG.AllExtensions((FG.SL2p(3), FG.Abelian(2)))
             .OrderBy(e => e.ext.GroupType)
             .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
@@ -463,5 +580,12 @@ public static class GroupNaming
             CocyclesDFS.DisplayInfosGroups([(extInfos.ext, ((int, int, int))extInfos.allSubs.Infos)], naming: false);
             it.Println("Group Names");
         }
+
+        GlobalStopWatch.Show($"SL(2,3) . C2: {allExts.Count}"); // Time:5497 ms
+        Console.Beep();
+        Console.Write("Checking that all extensions are valid groups...");
+        if (allExts.Any(e => !Group.IsGroup(e.ext)))
+            throw new GroupException(GroupExceptionType.GroupDef);
+        Console.WriteLine(" Done.");
     }
 }
