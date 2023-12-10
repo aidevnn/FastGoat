@@ -7,24 +7,22 @@ namespace FastGoat.Structures.GenericGroup;
 
 public readonly struct TableElt : IElt<TableElt>
 {
-    public int E { get; }
-    public int GroupTableHash { get; }
-    public string Str { get; }
+    public dynamic E { get; }
 
-    public TableElt(int groupTableHash, string str, int e)
+    public TableElt(dynamic e)
     {
-        (GroupTableHash, Str, E) = (groupTableHash, str, e);
-        Hash = (GroupTableHash, E).GetHashCode();
+        E = e;
+        Hash = E.GetHashCode();
     }
 
-    public bool Equals(TableElt other) => GroupTableHash == other.GroupTableHash && E.Equals(other.E);
+    public bool Equals(TableElt other) => Hash == other.Hash;
 
     public int CompareTo(TableElt other) => E.CompareTo(other.E);
 
     public int Hash { get; }
 
     public override int GetHashCode() => Hash;
-    public override string ToString() => Str;
+    public override string ToString() => $"{E}";
 }
 
 public readonly struct GroupTableBase : IGroup<TableElt>
@@ -33,14 +31,20 @@ public readonly struct GroupTableBase : IGroup<TableElt>
     public Dictionary<TableElt, TableElt> InvTable { get; }
     public int Order { get; }
     public TableElt NeutralElt { get; }
+    private dynamic BaseGroup { get; }
+    private Dictionary<int, TableElt> IdxTable { get; }
 
-    public GroupTableBase(string name, int hash, TableElt neutral, Dictionary<(TableElt, TableElt), TableElt> opTable,
-        Dictionary<TableElt, TableElt> invTable, TableElt[] gens)
+    public GroupTableBase(dynamic group, Dictionary<int, TableElt> idxTable, TableElt[] gens)
     {
-        (Name, Hash) = (name, hash);
-        (NeutralElt, OpTable, InvTable) = (neutral, opTable, invTable);
-        Elements = invTable.Keys.ToHashSet();
+        (Name, Hash) = (group.Name, (group.Hash, "table").GetHashCode());
+        BaseGroup = group;
+        IdxTable = idxTable;
         PseudoGeneratos = gens;
+        var og = IdxTable.Count;
+        OpTable = new(og * og);
+        InvTable = new(og);
+        Elements = IdxTable.Values.ToHashSet();
+        NeutralElt = IdxTable[group.Neutral().GetHashCode()];
         Order = Elements.Count;
     }
 
@@ -67,22 +71,43 @@ public readonly struct GroupTableBase : IGroup<TableElt>
 
     public TableElt Neutral() => NeutralElt;
 
-    public TableElt Invert(TableElt e) => InvTable[e];
+    public TableElt Invert(TableElt e)
+    {
+        if (!InvTable.ContainsKey(e))
+        {
+            var e0 = BaseGroup.Invert(e.E).GetHashCode();
+            var ei = InvTable[e] = IdxTable[e0];
+            return ei;
+        }
+        
+        return InvTable[e];
+    }
 
-    public TableElt Op(TableElt e1, TableElt e2) => OpTable[(e1, e2)];
+    public TableElt Op(TableElt e1, TableElt e2)
+    {
+        var e1e2 = (e1, e2);
+        if (!OpTable.ContainsKey(e1e2))
+        {
+            var e12Hash = BaseGroup.Op(e1.E, e2.E).GetHashCode();
+            var e12 = OpTable[e1e2] = IdxTable[e12Hash];
+            return e12;
+        }
+
+        return OpTable[e1e2];
+    }
 
     public override int GetHashCode() => Hash;
     public override string ToString() => $"{Name.WithParenthesis()}(table)";
 
-    public static (Dictionary<T, TableElt> idxTable, GroupTableBase gb) Create<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
+    public static GroupTableBase Create<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
     {
-        var elts = g.OrderBy(e => g.ElementsOrders[e]).ToArray();
-        var idxTable = elts.Select((e, i) => (e, i)).ToDictionary(e => e.e, e => new TableElt(g.Hash, $"{e.e}", e.i));
-        var invTable = elts.Select(e => (e, g.Invert(e))).ToDictionary(e => idxTable[e.e], e => idxTable[e.Item2]);
-        var opTable = elts.Grid2D(elts).Select(e => (e, g.Op(e.t1, e.t2)))
-            .ToDictionary(e => (idxTable[e.e.t1], idxTable[e.e.t2]), e => idxTable[e.Item2]);
-        var gens = g.GetGenerators().Select(e => idxTable[e]).ToArray();
-        return (idxTable, new(g.Name, g.Hash, idxTable[g.Neutral()], opTable, invTable, gens));
+        var hashes = g.Select(e => e.Hash).ToHashSet();
+        if (hashes.Count != g.Count())
+            throw new("Hash collisions");
+
+        var idxTable = g.Order().ToDictionary(e => e.Hash, e => new TableElt(e));
+        var gens = g.GetGenerators().Select(e => new TableElt(e)).ToArray();
+        return new GroupTableBase(g, idxTable, gens);
     }
 }
 
@@ -92,9 +117,8 @@ public class GroupTable : ConcreteGroup<TableElt>
     {
     }
 
-    public static (Dictionary<T, TableElt> idxTable, GroupTable gt) Create<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
+    public static GroupTable Create<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
     {
-        var (tb, gb) = GroupTableBase.Create(g);
-        return (tb, new(gb));
+        return new(GroupTableBase.Create(g));
     }
 }

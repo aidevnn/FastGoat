@@ -122,9 +122,9 @@ public static partial class Group
     public static Dictionary<T, Coset<T>> Cosets<T>(ConcreteGroup<T> grG, ConcreteGroup<T> grH, Comparer<T> comparer,
         CosetType cosetType = CosetType.Both) where T : struct, IElt<T>
     {
-        var cosets = new Dictionary<T, Coset<T>>();
         var setH = grH.ToHashSet();
         var setG = grG.ToHashSet();
+        var cosets = new Dictionary<T, Coset<T>>(setG.Count / setH.Count);
         if (!setH.IsSubsetOf(setG) || !grH.BaseGroup.Equals(grG.BaseGroup))
             throw new GroupException(GroupExceptionType.NotSubGroup);
 

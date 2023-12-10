@@ -28,3 +28,19 @@ using FastGoat.UserGroup.Padic;
 //////////////////////////////////
 
 Console.WriteLine("Hello World");
+
+{
+    var ab = FG.Abelian(8, 10, 25);
+    DisplayGroup.Head(ab);
+    DisplayGroup.Head(Group.AbelianDirectSum(ab).AbCanonic);
+
+    var abt = ab.ToTable();
+    DisplayGroup.Head(abt);
+    GlobalStopWatch.Bench(5, "Ab", () => Group.AbelianInvariants(ab));
+    GlobalStopWatch.Bench(5, "AbTable", () => Group.AbelianInvariants(abt));
+    GlobalStopWatch.Bench(5, "Ab", () => Group.AbelianInvariants(ab));
+    GlobalStopWatch.Bench(5, "AbTable", () => Group.AbelianInvariants(abt));
+    GlobalStopWatch.Bench(5, "Ab", () => Group.AbelianInvariants(ab));
+    GlobalStopWatch.Bench(5, "AbTable", () => Group.AbelianInvariants(abt));
+    DisplayGroup.AreIsomorphics(ab, abt);
+}

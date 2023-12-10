@@ -1,4 +1,3 @@
-using System.Drawing;
 
 namespace FastGoat.Structures.GenericGroup;
 
@@ -67,8 +66,8 @@ public readonly struct SubgroupConjugates<T> : IElt<SubgroupConjugates<T>> where
 
     public SubgroupConjugates<TableElt> ToTable()
     {
-        var (tb, gt) = Parent.ToTable();
-        var sub = Group.Generate(Representative.Name, gt, Representative.GetGenerators().Select(e => tb[e]).ToArray());
+        var gt = Parent.ToTable();
+        var sub = Group.Generate(Representative.Name, gt, Representative.GetGenerators().Select(e => new TableElt(e)).ToArray());
         return new(gt, sub);
     }
 

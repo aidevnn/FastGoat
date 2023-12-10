@@ -1,11 +1,9 @@
-using System.Text.RegularExpressions;
 using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.CartesianProduct;
 using FastGoat.Structures.GenericGroup;
 using FastGoat.UserGroup;
 using FastGoat.UserGroup.Integers;
-using Group = FastGoat.Structures.Group;
 
 namespace FastGoat.Examples;
 
@@ -34,8 +32,8 @@ public static class GroupNaming
         public ConcreteGroup<T>? ContentGroup { get; set; }
         public NodeType ContentType { get; set; }
         public string Name { get; set; } = "C1";
-        public int NbDoubleDots => Regex.Count(Name, "x ");
-        public int NbStars => Regex.Count(Name, "x:");
+        public int NbDoubleDots => System.Text.RegularExpressions.Regex.Count(Name, "x ");
+        public int NbStars => System.Text.RegularExpressions.Regex.Count(Name, "x:");
         public (GroupType, int, int, string) Infos => (ContentGroup!.GroupType, NbDoubleDots + 100 * NbStars, Name.Length, Name);
         public int Hash => (ContentType, Name).GetHashCode();
         public string NameParenthesis => Name.WithParenthesis();
@@ -245,7 +243,7 @@ public static class GroupNaming
             .OrderBy(e => e.sc.GroupType).ThenByDescending(e => e.sc.Order).ToArray();
         var (n0, g0) = quotients[0];
         var k = BuildName(subgroups.Restriction(n0.Representative))[0].Name;
-        var h = BuildName(g0.ToTable().gt)[0].Name;
+        var h = BuildName(g0.ToTable())[0].Name;
         return $"{k.WithParenthesis()} . {h.WithParenthesis()}";
     }
 
