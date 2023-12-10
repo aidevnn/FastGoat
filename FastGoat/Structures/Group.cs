@@ -6,6 +6,9 @@ namespace FastGoat.Structures;
 
 public static partial class Group
 {
+    public static string WithParenthesis(this string name) => (name.First() == '(' && name.Last() == ')') || !name.Contains(' ')
+        ? name
+        : $"({name})";
     public static string NameParenthesis<T>(this IGroup<T> g) where T : struct, IElt<T> => g.Name.WithParenthesis();
 
     public static T Times<T>(this IGroup<T> g, T e, int p) where T : struct, IElt<T>

@@ -34,7 +34,7 @@ public class WordGroupBase : IGroup<Word>
     {
         get
         {
-            var s0 = Group.ReducedWordForm2(s);
+            var s0 = StringExt.ReducedWordForm2(s);
             return this[s0.Cast<ValueType>().ToArray()];
         }
     }
@@ -46,7 +46,7 @@ public class WordGroupBase : IGroup<Word>
             if (!us.All(c => c is char c1 && Generators.Contains(char.ToLower(c1))))
                 throw new GroupException(GroupExceptionType.GroupDef);
 
-            var s0 = Group.ReducedWordForm2(us.Glue());
+            var s0 = StringExt.ReducedWordForm2(us.Glue());
             return new(this, s0);
         }
     }

@@ -238,7 +238,7 @@ public class OpsTable
         if (gi.Count > 1 || (gi.Count == 1 && gi[0].Length != 1))
             throw new GroupException(GroupExceptionType.GroupDef);
 
-        var head = gens.Select(Group.ExpandRelator).OrderBy(w => w.Length).ThenBy(w => w)
+        var head = gens.Select(StringExt.ExpandRelator).OrderBy(w => w.Length).ThenBy(w => w)
             .Select(w => w.Select(c => new Generator(c))).ToArray();
 
         return new Header(head);

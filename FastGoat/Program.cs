@@ -44,3 +44,7 @@ Console.WriteLine("Hello World");
     GlobalStopWatch.Bench(5, "AbTable", () => Group.AbelianInvariants(abt));
     DisplayGroup.AreIsomorphics(ab, abt);
 }
+
+{
+    DisplayGroup.HeadElements(FG.DihedralWg(4));
+}

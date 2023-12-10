@@ -39,6 +39,6 @@ public struct Word : IElt<Word>
 
     public override string ToString()
     {
-        return _word.Length == 0 ? "()" : Group.ReducedWordForm1(_word.Glue());
+        return _word.Length == 0 ? "()" : StringExt.ReducedWordForm1(_word.Glue());
     }
 }

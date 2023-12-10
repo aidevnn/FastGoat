@@ -1,9 +1,10 @@
 using System.Text.RegularExpressions;
 using FastGoat.Commons;
+using FastGoat.Structures;
 
-namespace FastGoat.Structures;
+namespace FastGoat.UserGroup.Words;
 
-public static partial class Group
+public static class StringExt
 {
     static Regex regX = new Regex(@"([a-zA-Z])((\-{1}\d{1,})|(\d{0,}))");
 
@@ -13,9 +14,7 @@ public static partial class Group
         var p0 = c == c0 ? p : -p;
         return (c0, p0);
     }
-    public static string WithParenthesis(this string name) => (name.First() == '(' && name.Last() == ')') || !name.Contains(' ')
-            ? name
-            : $"({name})";
+    
     static char Revert(char c) => char.IsLower(c) ? char.ToUpper(c) : char.ToLower(c);
     public static IEnumerable<char> Revert(this IEnumerable<char> letters) => letters.Reverse().Select(Revert);
 
