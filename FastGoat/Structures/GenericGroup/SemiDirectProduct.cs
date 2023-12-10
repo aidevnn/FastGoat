@@ -16,7 +16,7 @@ public class SemiDirectProduct<T1, T2> : ConcreteGroup<Ep2<T1, T2>>
     {
         G = g;
         N = n;
-        Name = $"{n.NameParenthesis()} x: {g.NameParenthesis()}";
+        Name = !string.IsNullOrEmpty(name) ? name : $"{n.NameParenthesis()} x: {g.NameParenthesis()}";
         
         Theta = theta;
         List<Ep2<T1, T2>> generators = new List<Ep2<T1, T2>>();

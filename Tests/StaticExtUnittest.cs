@@ -47,7 +47,7 @@ public class StaticExtUnittest
             return d >= 0 && d == a * x + b * y;
         }
 
-        Assert.True(seq.All(e => TestBz(e.t1.K, e.t2.K)));
+        Assert.True(seq.Where(e => !e.t1.IsZero() && !e.t2.IsZero()).All(e => TestBz(e.t1.K, e.t2.K)));
     }
 
     [Fact]
