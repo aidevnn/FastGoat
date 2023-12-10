@@ -3,6 +3,7 @@ using FastGoat.Structures;
 using FastGoat.Structures.CartesianProduct;
 using FastGoat.Structures.GenericGroup;
 using FastGoat.Structures.VecSpace;
+using FastGoat.UserGroup.GModuleN;
 using FastGoat.UserGroup.Integers;
 using FastGoat.UserGroup.Matrix;
 using FastGoat.UserGroup.Perms;
@@ -51,6 +52,12 @@ public static partial class FG
 
     public static KPoly<Rational>[] CyclotomicPolynomialsSequence() => CyclotomicPolynomials.Values.Order().ToArray();
 
+
+    public static AbelianDirectSum<T> AbelianDirectSum<T>(ConcreteGroup<T> gr) where T : struct, IElt<T>
+    {
+        return new(gr);
+    }
+    
     public static CnfBasis CnfBasis(int ord)
     {
         if (CnfBasisMap.TryGetValue(ord, out var infos))

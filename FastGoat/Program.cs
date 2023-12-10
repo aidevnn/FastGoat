@@ -32,7 +32,7 @@ Console.WriteLine("Hello World");
 {
     var ab = FG.Abelian(8, 10, 25);
     DisplayGroup.Head(ab);
-    DisplayGroup.Head(Group.AbelianDirectSum(ab).AbCanonic);
+    DisplayGroup.Head(FG.AbelianDirectSum(ab).AbCanonic);
 
     var abt = ab.ToTable();
     DisplayGroup.Head(abt);

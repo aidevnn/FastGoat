@@ -661,9 +661,4 @@ public static partial class Group
 
         return facts;
     }
-
-    public static AbelianDirectSum<T> AbelianDirectSum<T>(ConcreteGroup<T> gr) where T : struct, IElt<T>
-    {
-        return new(gr);
-    }
 }

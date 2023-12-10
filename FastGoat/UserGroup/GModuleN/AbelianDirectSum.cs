@@ -1,10 +1,10 @@
-using System.Collections.ObjectModel;
 using FastGoat.Commons;
+using FastGoat.Structures;
 using FastGoat.Structures.CartesianProduct;
-using FastGoat.UserGroup;
+using FastGoat.Structures.GenericGroup;
 using FastGoat.UserGroup.Integers;
 
-namespace FastGoat.Structures.GenericGroup;
+namespace FastGoat.UserGroup.GModuleN;
 
 public readonly struct AbelianDirectSum<T> where T : struct, IElt<T>
 {
