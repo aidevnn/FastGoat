@@ -1,6 +1,6 @@
 using FastGoat.Structures.GenericGroup;
 
-namespace FastGoat.UserGroup.Naming;
+namespace FastGoat.Structures.Naming;
 
 public class ExtensionOp : ANameElt
 {

@@ -2,9 +2,9 @@ using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.CartesianProduct;
 using FastGoat.Structures.GenericGroup;
+using FastGoat.Structures.Naming;
 using FastGoat.UserGroup;
 using FastGoat.UserGroup.Integers;
-using FastGoat.UserGroup.Naming;
 
 namespace FastGoat.Examples;
 

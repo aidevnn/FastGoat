@@ -1,8 +1,7 @@
 using FastGoat.Commons;
-using FastGoat.Structures;
 using FastGoat.Structures.GenericGroup;
 
-namespace FastGoat.UserGroup.Naming;
+namespace FastGoat.Structures.Naming;
 
 public static class NamesTree
 {

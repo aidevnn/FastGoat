@@ -1,8 +1,6 @@
-using FastGoat.Examples;
-using FastGoat.Structures;
 using FastGoat.Structures.GenericGroup;
 
-namespace FastGoat.UserGroup.Naming;
+namespace FastGoat.Structures.Naming;
 
 public abstract class ANameElt : IElt<ANameElt>
 {
@@ -31,7 +29,7 @@ public abstract class ANameElt : IElt<ANameElt>
     public int NbDp => System.Text.RegularExpressions.Regex.Count(Name, @"x ");
     public int NbSdp => System.Text.RegularExpressions.Regex.Count(Name, @"x\:");
     public int NbExt => System.Text.RegularExpressions.Regex.Count(Name, @"\. ");
-    public (GroupType, int, int, int, int) Infos => (ContentGroup!.GroupType, NbExt, NbSdp, NbDp, Name.Length);
+    public (GroupType, int, int, int, int, string) Infos => (ContentGroup!.GroupType, NbExt, NbSdp, NbDp, Name.Length, Name);
     public int Hash => (ContentType, Name).GetHashCode();
     public string NameParenthesis => Name.WithParenthesis();
     public bool Equals(ANameElt? other) => other?.Name == Name;
@@ -41,11 +39,7 @@ public abstract class ANameElt : IElt<ANameElt>
         if (other is null)
             return 1;
 
-        var comp = Infos.CompareTo(other.Infos);
-        if (comp != 0)
-            return comp;
-
-        return string.Compare(Name, other.Name, StringComparison.CurrentCulture);
+        return Infos.CompareTo(other.Infos);
     }
 
     public override int GetHashCode() => Hash;
