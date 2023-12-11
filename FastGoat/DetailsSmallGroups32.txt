@@ -1,0 +1,311 @@
+infos:=function(g)
+local s0,s1,s2,l0,l1,l2,l3,id;
+s0:=Size(AllSubgroups(g));
+s1:=Size(ConjugacyClassesSubgroups(g));
+s2:=Size(NormalSubgroups(g));
+l0:=List(g,Order);
+l1:=Set(l0);
+l2:=List(l1,i->StringFormatted("[{}]:{}",i,Number(l0,j->j=i)));
+l3:=JoinStringsWithSeparator(l2, ", ");
+id:=IdGroup(g);
+PrintFormatted("No : {}, Name : {}\n",id[2],StructureDescription(g));
+PrintFormatted("Elements Orders : {}\n", l3);
+PrintFormatted("AllSubGr:{} AllConjsCl:{} AllNorms:{}\n\n",s0,s1,s2);
+end;
+
+infosSmallGroups:=function(n)
+local sg;
+PrintFormatted("All SmallGroups of order {}\n", n);
+for sg in AllSmallGroups(n) do; infos(sg); od; 
+Print("\n");
+end;
+
+infosSmallGroups(8);infosSmallGroups(16);infosSmallGroups(32);
+
+
+All SmallGroups of order 8
+No : 1, Name : C8
+Elements Orders : [1]:1, [2]:1, [4]:2, [8]:4
+AllSubGr:4 AllConjsCl:4 AllNorms:4
+
+No : 2, Name : C4 x C2
+Elements Orders : [1]:1, [2]:3, [4]:4
+AllSubGr:8 AllConjsCl:8 AllNorms:8
+
+No : 3, Name : D8
+Elements Orders : [1]:1, [2]:5, [4]:2
+AllSubGr:10 AllConjsCl:8 AllNorms:6
+
+No : 4, Name : Q8
+Elements Orders : [1]:1, [2]:1, [4]:6
+AllSubGr:6 AllConjsCl:6 AllNorms:6
+
+No : 5, Name : C2 x C2 x C2
+Elements Orders : [1]:1, [2]:7
+AllSubGr:16 AllConjsCl:16 AllNorms:16
+
+
+All SmallGroups of order 16
+No : 1, Name : C16
+Elements Orders : [1]:1, [2]:1, [4]:2, [8]:4, [16]:8
+AllSubGr:5 AllConjsCl:5 AllNorms:5
+
+No : 2, Name : C4 x C4
+Elements Orders : [1]:1, [2]:3, [4]:12
+AllSubGr:15 AllConjsCl:15 AllNorms:15
+
+No : 3, Name : (C4 x C2) : C2
+Elements Orders : [1]:1, [2]:7, [4]:8
+AllSubGr:23 AllConjsCl:17 AllNorms:11
+
+No : 4, Name : C4 : C4
+Elements Orders : [1]:1, [2]:3, [4]:12
+AllSubGr:15 AllConjsCl:13 AllNorms:11
+
+No : 5, Name : C8 x C2
+Elements Orders : [1]:1, [2]:3, [4]:4, [8]:8
+AllSubGr:11 AllConjsCl:11 AllNorms:11
+
+No : 6, Name : C8 : C2
+Elements Orders : [1]:1, [2]:3, [4]:4, [8]:8
+AllSubGr:11 AllConjsCl:10 AllNorms:9
+
+No : 7, Name : D16
+Elements Orders : [1]:1, [2]:9, [4]:2, [8]:4
+AllSubGr:19 AllConjsCl:11 AllNorms:7
+
+No : 8, Name : QD16
+Elements Orders : [1]:1, [2]:5, [4]:6, [8]:4
+AllSubGr:15 AllConjsCl:10 AllNorms:7
+
+No : 9, Name : Q16
+Elements Orders : [1]:1, [2]:1, [4]:10, [8]:4
+AllSubGr:11 AllConjsCl:9 AllNorms:7
+
+No : 10, Name : C4 x C2 x C2
+Elements Orders : [1]:1, [2]:7, [4]:8
+AllSubGr:27 AllConjsCl:27 AllNorms:27
+
+No : 11, Name : C2 x D8
+Elements Orders : [1]:1, [2]:11, [4]:4
+AllSubGr:35 AllConjsCl:27 AllNorms:19
+
+No : 12, Name : C2 x Q8
+Elements Orders : [1]:1, [2]:3, [4]:12
+AllSubGr:19 AllConjsCl:19 AllNorms:19
+
+No : 13, Name : (C4 x C2) : C2
+Elements Orders : [1]:1, [2]:7, [4]:8
+AllSubGr:23 AllConjsCl:20 AllNorms:17
+
+No : 14, Name : C2 x C2 x C2 x C2
+Elements Orders : [1]:1, [2]:15
+AllSubGr:67 AllConjsCl:67 AllNorms:67
+
+
+All SmallGroups of order 32
+No : 1, Name : C32
+Elements Orders : [1]:1, [2]:1, [4]:2, [8]:4, [16]:8, [32]:16
+AllSubGr:6 AllConjsCl:6 AllNorms:6
+
+No : 2, Name : (C4 x C2) : C4
+Elements Orders : [1]:1, [2]:7, [4]:24
+AllSubGr:50 AllConjsCl:38 AllNorms:26
+
+No : 3, Name : C8 x C4
+Elements Orders : [1]:1, [2]:3, [4]:12, [8]:16
+AllSubGr:22 AllConjsCl:22 AllNorms:22
+
+No : 4, Name : C8 : C4
+Elements Orders : [1]:1, [2]:3, [4]:12, [8]:16
+AllSubGr:22 AllConjsCl:20 AllNorms:18
+
+No : 5, Name : (C8 x C2) : C2
+Elements Orders : [1]:1, [2]:7, [4]:8, [8]:16
+AllSubGr:34 AllConjsCl:25 AllNorms:16
+
+No : 6, Name : (C2 x C2 x C2) : C4
+Elements Orders : [1]:1, [2]:11, [4]:20
+AllSubGr:50 AllConjsCl:26 AllNorms:12
+
+No : 7, Name : (C8 : C2) : C2
+Elements Orders : [1]:1, [2]:11, [4]:4, [8]:16
+AllSubGr:42 AllConjsCl:23 AllNorms:12
+
+No : 8, Name : C2 . ((C4 x C2) : C2) = (C2 x C2) . (C4 x C2)
+Elements Orders : [1]:1, [2]:3, [4]:12, [8]:16
+AllSubGr:26 AllConjsCl:19 AllNorms:12
+
+No : 9, Name : (C8 x C2) : C2
+Elements Orders : [1]:1, [2]:11, [4]:12, [8]:8
+AllSubGr:46 AllConjsCl:25 AllNorms:14
+
+No : 10, Name : Q8 : C4
+Elements Orders : [1]:1, [2]:3, [4]:20, [8]:8
+AllSubGr:30 AllConjsCl:21 AllNorms:14
+
+No : 11, Name : (C4 x C4) : C2
+Elements Orders : [1]:1, [2]:7, [4]:16, [8]:8
+AllSubGr:34 AllConjsCl:22 AllNorms:12
+
+No : 12, Name : C4 : C8
+Elements Orders : [1]:1, [2]:3, [4]:12, [8]:16
+AllSubGr:22 AllConjsCl:19 AllNorms:16
+
+No : 13, Name : C8 : C4
+Elements Orders : [1]:1, [2]:3, [4]:20, [8]:8
+AllSubGr:26 AllConjsCl:18 AllNorms:14
+
+No : 14, Name : C8 : C4
+Elements Orders : [1]:1, [2]:3, [4]:20, [8]:8
+AllSubGr:26 AllConjsCl:18 AllNorms:14
+
+No : 15, Name : C4 . D8 = C4 . (C4 x C2)
+Elements Orders : [1]:1, [2]:3, [4]:4, [8]:24
+AllSubGr:18 AllConjsCl:15 AllNorms:12
+
+No : 16, Name : C16 x C2
+Elements Orders : [1]:1, [2]:3, [4]:4, [8]:8, [16]:16
+AllSubGr:14 AllConjsCl:14 AllNorms:14
+
+No : 17, Name : C16 : C2
+Elements Orders : [1]:1, [2]:3, [4]:4, [8]:8, [16]:16
+AllSubGr:14 AllConjsCl:13 AllNorms:12
+
+No : 18, Name : D32
+Elements Orders : [1]:1, [2]:17, [4]:2, [8]:4, [16]:8
+AllSubGr:36 AllConjsCl:14 AllNorms:8
+
+No : 19, Name : QD32
+Elements Orders : [1]:1, [2]:9, [4]:10, [8]:4, [16]:8
+AllSubGr:28 AllConjsCl:13 AllNorms:8
+
+No : 20, Name : Q32
+Elements Orders : [1]:1, [2]:1, [4]:18, [8]:4, [16]:8
+AllSubGr:20 AllConjsCl:12 AllNorms:8
+
+No : 21, Name : C4 x C4 x C2
+Elements Orders : [1]:1, [2]:7, [4]:24
+AllSubGr:54 AllConjsCl:54 AllNorms:54
+
+No : 22, Name : C2 x ((C4 x C2) : C2)
+Elements Orders : [1]:1, [2]:15, [4]:16
+AllSubGr:94 AllConjsCl:66 AllNorms:38
+
+No : 23, Name : C2 x (C4 : C4)
+Elements Orders : [1]:1, [2]:7, [4]:24
+AllSubGr:54 AllConjsCl:46 AllNorms:38
+
+No : 24, Name : (C4 x C4) : C2
+Elements Orders : [1]:1, [2]:7, [4]:24
+AllSubGr:46 AllConjsCl:38 AllNorms:30
+
+No : 25, Name : C4 x D8
+Elements Orders : [1]:1, [2]:11, [4]:20
+AllSubGr:62 AllConjsCl:47 AllNorms:32
+
+No : 26, Name : C4 x Q8
+Elements Orders : [1]:1, [2]:3, [4]:28
+AllSubGr:38 AllConjsCl:35 AllNorms:32
+
+No : 27, Name : (C2 x C2 x C2 x C2) : C2
+Elements Orders : [1]:1, [2]:19, [4]:12
+AllSubGr:106 AllConjsCl:65 AllNorms:26
+
+No : 28, Name : (C4 x C2 x C2) : C2
+Elements Orders : [1]:1, [2]:15, [4]:16
+AllSubGr:74 AllConjsCl:47 AllNorms:24
+
+No : 29, Name : (C2 x Q8) : C2
+Elements Orders : [1]:1, [2]:7, [4]:24
+AllSubGr:50 AllConjsCl:37 AllNorms:24
+
+No : 30, Name : (C4 x C2 x C2) : C2
+Elements Orders : [1]:1, [2]:11, [4]:20
+AllSubGr:58 AllConjsCl:39 AllNorms:22
+
+No : 31, Name : (C4 x C4) : C2
+Elements Orders : [1]:1, [2]:11, [4]:20
+AllSubGr:58 AllConjsCl:38 AllNorms:22
+
+No : 32, Name : (C2 x C2) . (C2 x C2 x C2)
+Elements Orders : [1]:1, [2]:3, [4]:28
+AllSubGr:34 AllConjsCl:28 AllNorms:22
+
+No : 33, Name : (C4 x C4) : C2
+Elements Orders : [1]:1, [2]:7, [4]:24
+AllSubGr:42 AllConjsCl:30 AllNorms:20
+
+No : 34, Name : (C4 x C4) : C2
+Elements Orders : [1]:1, [2]:19, [4]:12
+AllSubGr:90 AllConjsCl:54 AllNorms:26
+
+No : 35, Name : C4 : Q8
+Elements Orders : [1]:1, [2]:3, [4]:28
+AllSubGr:42 AllConjsCl:34 AllNorms:26
+
+No : 36, Name : C8 x C2 x C2
+Elements Orders : [1]:1, [2]:7, [4]:8, [8]:16
+AllSubGr:38 AllConjsCl:38 AllNorms:38
+
+No : 37, Name : C2 x (C8 : C2)
+Elements Orders : [1]:1, [2]:7, [4]:8, [8]:16
+AllSubGr:38 AllConjsCl:34 AllNorms:30
+
+No : 38, Name : (C8 x C2) : C2
+Elements Orders : [1]:1, [2]:7, [4]:8, [8]:16
+AllSubGr:34 AllConjsCl:31 AllNorms:28
+
+No : 39, Name : C2 x D16
+Elements Orders : [1]:1, [2]:19, [4]:4, [8]:8
+AllSubGr:70 AllConjsCl:38 AllNorms:22
+
+No : 40, Name : C2 x QD16
+Elements Orders : [1]:1, [2]:11, [4]:12, [8]:8
+AllSubGr:54 AllConjsCl:34 AllNorms:22
+
+No : 41, Name : C2 x Q16
+Elements Orders : [1]:1, [2]:3, [4]:20, [8]:8
+AllSubGr:38 AllConjsCl:30 AllNorms:22
+
+No : 42, Name : (C8 x C2) : C2
+Elements Orders : [1]:1, [2]:11, [4]:12, [8]:8
+AllSubGr:46 AllConjsCl:31 AllNorms:20
+
+No : 43, Name : C8 : (C2 x C2)
+Elements Orders : [1]:1, [2]:15, [4]:8, [8]:8
+AllSubGr:58 AllConjsCl:34 AllNorms:20
+
+No : 44, Name : (C2 x Q8) : C2
+Elements Orders : [1]:1, [2]:7, [4]:16, [8]:8
+AllSubGr:42 AllConjsCl:30 AllNorms:20
+
+No : 45, Name : C4 x C2 x C2 x C2
+Elements Orders : [1]:1, [2]:15, [4]:16
+AllSubGr:118 AllConjsCl:118 AllNorms:118
+
+No : 46, Name : C2 x C2 x D8
+Elements Orders : [1]:1, [2]:23, [4]:8
+AllSubGr:158 AllConjsCl:118 AllNorms:78
+
+No : 47, Name : C2 x C2 x Q8
+Elements Orders : [1]:1, [2]:7, [4]:24
+AllSubGr:78 AllConjsCl:78 AllNorms:78
+
+No : 48, Name : C2 x ((C4 x C2) : C2)
+Elements Orders : [1]:1, [2]:15, [4]:16
+AllSubGr:94 AllConjsCl:82 AllNorms:70
+
+No : 49, Name : (C2 x C2 x C2) : (C2 x C2)
+Elements Orders : [1]:1, [2]:19, [4]:12
+AllSubGr:110 AllConjsCl:83 AllNorms:68
+
+No : 50, Name : (C2 x Q8) : C2
+Elements Orders : [1]:1, [2]:11, [4]:20
+AllSubGr:78 AllConjsCl:73 AllNorms:68
+
+No : 51, Name : C2 x C2 x C2 x C2 x C2
+Elements Orders : [1]:1, [2]:31
+AllSubGr:374 AllConjsCl:374 AllNorms:374
+
+
