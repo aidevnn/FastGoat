@@ -13,6 +13,7 @@ using FastGoat.UserGroup.Characters;
 using FastGoat.UserGroup.GModuleN;
 using FastGoat.UserGroup.Integers;
 using FastGoat.UserGroup.Matrix;
+using FastGoat.UserGroup.Naming;
 using FastGoat.UserGroup.Perms;
 using FastGoat.UserGroup.Polynoms;
 using FastGoat.UserGroup.Words;
@@ -28,23 +29,3 @@ using FastGoat.UserGroup.Padic;
 //////////////////////////////////
 
 Console.WriteLine("Hello World");
-
-{
-    var ab = FG.Abelian(8, 10, 25);
-    DisplayGroup.Head(ab);
-    DisplayGroup.Head(FG.AbelianDirectSum(ab).AbCanonic);
-
-    var abt = ab.ToTable();
-    DisplayGroup.Head(abt);
-    GlobalStopWatch.Bench(5, "Ab", () => Group.AbelianInvariants(ab));
-    GlobalStopWatch.Bench(5, "AbTable", () => Group.AbelianInvariants(abt));
-    GlobalStopWatch.Bench(5, "Ab", () => Group.AbelianInvariants(ab));
-    GlobalStopWatch.Bench(5, "AbTable", () => Group.AbelianInvariants(abt));
-    GlobalStopWatch.Bench(5, "Ab", () => Group.AbelianInvariants(ab));
-    GlobalStopWatch.Bench(5, "AbTable", () => Group.AbelianInvariants(abt));
-    DisplayGroup.AreIsomorphics(ab, abt);
-}
-
-{
-    DisplayGroup.HeadElements(FG.DihedralWg(4));
-}
