@@ -127,6 +127,30 @@ public static class GroupNaming
         }
     }
 
+    public static void Example5_2()
+    {
+        GlobalStopWatch.Restart();
+        var allExts = FG.AllExtensions((FG.Abelian(4), FG.Dihedral(4)))
+            .OrderBy(e => e.ext.GroupType)
+            .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
+            .ThenBy(e => ((int, int, int))e.allSubs.Infos).ToList();
+
+        foreach (var extInfos in allExts)
+        {
+            var it = NamesTree.BuildName(extInfos.allSubs.ToTable());
+            extInfos.ext.Name = it.First().Name;
+            CocyclesDFS.DisplayInfosGroups([(extInfos.ext, ((int, int, int))extInfos.allSubs.Infos)], naming: false);
+            it.Println("Group Names");
+        }
+
+        GlobalStopWatch.Show($"C4 . D8: {allExts.Count}"); // Time:36647 ms
+        Console.Beep();
+        Console.Write("Checking that all extensions are valid groups...");
+        if (allExts.Any(e => !Group.IsGroup(e.ext)))
+            throw new GroupException(GroupExceptionType.GroupDef);
+        Console.WriteLine(" Done.");
+    }
+
     public static void Example6()
     {
         GlobalStopWatch.Restart();
