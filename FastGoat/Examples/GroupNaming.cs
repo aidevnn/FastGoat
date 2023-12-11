@@ -266,10 +266,10 @@ public static class GroupNaming
            C2 . S4
            Q8 . S3
            SL(2,3) . C2
-       ##############################################
-       #################  Q8 x: S3  #################
-       ##############################################
-       |Q8 x: S3| = 48
+       #############################################
+       #################  GL(2,3)  #################
+       #############################################
+       |GL(2,3)| = 48
        Type        NonAbelianGroup
        BaseGroup   SL(2,3) . C2
        
@@ -278,6 +278,7 @@ public static class GroupNaming
        AllSubGr:55 AllConjsCl:16 AllNorms:5
        
        Group Names
+           GL(2,3)
            Q8 x: S3
            SL(2,3) x: C2
            C2 . S4
@@ -298,7 +299,8 @@ public static class GroupNaming
            (C2 x Q8) x: C3
            (C2 x C2) . A4
            C2 . (C2 x A4)
-       # SL(2,3) . C2: 4 Time:5326 ms
+       # SL(2,3) . C2: 4 Time:5024 ms
        Checking that all extensions are valid groups... Done.
+       
      */
 }

@@ -19,16 +19,18 @@ public static class NamesTree
         if (og == 24 && orders == "[1]:1, [2]:9, [3]:8, [4]:6")
             return [new Leaf(G, "S4")];
         
-        if (G.Count() == 8 && orders == "[1]:1, [2]:1, [4]:6")
+        if (og == 8 && orders == "[1]:1, [2]:1, [4]:6")
             return [new Leaf(G, "Q8")];
-        if (G.Count() == 16 && orders == "[1]:1, [2]:1, [4]:10, [8]:4")
+        if (og == 16 && orders == "[1]:1, [2]:1, [4]:10, [8]:4")
             return [new Leaf(G, "Q16")];
-        if (G.Count() == 32 && orders == "[1]:1, [2]:1, [4]:18, [8]:4, [16]:8")
+        if (og == 32 && orders == "[1]:1, [2]:1, [4]:18, [8]:4, [16]:8")
             return [new Leaf(G, "Q32")];
         
         if (og == 24 && orders == "[1]:1, [2]:1, [3]:8, [4]:6, [6]:8")
             return [new Leaf(G, "SL(2,3)")];
-        if (G.Count() == 120 && orders == "[1]:1, [2]:1, [3]:20, [4]:30, [5]:24, [6]:20, [10]:24")
+        if (og == 48 && orders == "[1]:1, [2]:13, [3]:8, [4]:6, [6]:8, [8]:12")
+            return [new Leaf(G, "GL(2,3)")];
+        if (og == 120 && orders == "[1]:1, [2]:1, [3]:20, [4]:30, [5]:24, [6]:20, [10]:24")
             return [new Leaf(G, "SL(2,5)")];
         
         if (og == 12 && orders == "[1]:1, [2]:1, [3]:2, [4]:6, [6]:2")

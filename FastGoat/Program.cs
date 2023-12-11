@@ -29,3 +29,23 @@ using FastGoat.UserGroup.Padic;
 //////////////////////////////////
 
 Console.WriteLine("Hello World");
+
+{
+    var gl23 = FG.GLnp(2, 3);
+    DisplayGroup.HeadOrders(gl23);
+    var names = NamesTree.BuildName(gl23);
+    names.Println("Group names");
+}
+/*
+   |GL(2,3)| = 48
+   Type        NonAbelianGroup
+   BaseGroup   GL(2,3)
+   
+   Elements Orders : [1]:1, [2]:13, [3]:8, [4]:6, [6]:8, [8]:12
+   
+   Group names
+       GL(2,3)
+       Q8 x: S3
+       SL(2,3) x: C2
+       C2 . S4
+*/
