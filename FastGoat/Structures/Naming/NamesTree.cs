@@ -17,6 +17,10 @@ public static class NamesTree
             return [new Leaf(G, "A4")];
         if (og == 24 && orders == "[1]:1, [2]:9, [3]:8, [4]:6")
             return [new Leaf(G, "S4")];
+        if (og == 120 && orders == "[1]:1, [2]:25, [3]:20, [4]:30, [5]:24, [6]:20")
+            return [new Leaf(G, "S5")];
+        if (og == 720 && orders == "[1]:1, [2]:75, [3]:80, [4]:180, [5]:144, [6]:240")
+            return [new Leaf(G, "S6")];
         
         if (og == 8 && orders == "[1]:1, [2]:1, [4]:6")
             return [new Leaf(G, "Q8")];
@@ -31,6 +35,8 @@ public static class NamesTree
             return [new Leaf(G, "GL(2,3)")];
         if (og == 120 && orders == "[1]:1, [2]:1, [3]:20, [4]:30, [5]:24, [6]:20, [10]:24")
             return [new Leaf(G, "SL(2,5)")];
+        if (og == 480 && orders == "[1]:1, [2]:31, [3]:20, [4]:152, [5]:24, [6]:20, [8]:40, [10]:24, [12]:40, [20]:48, [24]:80")
+            return [new Leaf(G, "GL(2,5)")];
         
         if (og == 12 && orders == "[1]:1, [2]:1, [3]:2, [4]:6, [6]:2")
             return [new Leaf(G, "Dic3")];
@@ -121,6 +127,9 @@ public static class NamesTree
     {
         var all = new List<ANameElt>();
         var G = subgroups.Parent;
+        if (G.Count() > 3000)
+            throw new GroupException(GroupExceptionType.GroupDef);
+
         foreach (var (k, h, t) in AllOps(subgroups))
         {
             if (t == ANameElt.DecompType.Abelian || t == ANameElt.DecompType.SimpleNonAbelian)
