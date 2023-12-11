@@ -1,5 +1,6 @@
 using FastGoat.Commons;
 using FastGoat.Structures.GenericGroup;
+using FastGoat.Structures.Naming;
 
 namespace FastGoat.Structures;
 
@@ -233,4 +234,44 @@ public static class DisplayGroup
         Head(gr);
         new ConjugacyClasses<T>(gr).Display();
     }
+    
+    public static void HeadNames<T>(ConcreteGroup<T> g, bool setName = true) where T : struct, IElt<T>
+    {
+        var subGroups = new AllSubgroups<TableElt>(g.ToTable());
+        var names = NamesTree.BuildName(subGroups);
+        if (setName)
+            g.Name = names[0].Name;
+        
+        Head(g);
+        Console.WriteLine(subGroups.Infos);
+        names.Println("Group names");
+        Console.WriteLine();
+    }
+
+    public static void HeadElementsNames<T>(ConcreteGroup<T> g, bool setName = true) where T : struct, IElt<T>
+    {
+        var subGroups = new AllSubgroups<TableElt>(g.ToTable());
+        var names = NamesTree.BuildName(subGroups);
+        if (setName)
+            g.Name = names[0].Name;
+
+        HeadElements(g);
+        Console.WriteLine(subGroups.Infos);
+        names.Println("Group names");
+        Console.WriteLine();
+    }
+
+    public static void HeadOrdersNames<T>(ConcreteGroup<T> g, bool setName = true) where T : struct, IElt<T>
+    {
+        var subGroups = new AllSubgroups<TableElt>(g.ToTable());
+        var names = NamesTree.BuildName(subGroups);
+        if (setName)
+            g.Name = names[0].Name;
+
+        HeadOrders(g);
+        Console.WriteLine(subGroups.Infos);
+        names.Println("Group names");
+        Console.WriteLine();
+    }
+
 }
