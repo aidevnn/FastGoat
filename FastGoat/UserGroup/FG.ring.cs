@@ -367,26 +367,38 @@ public static partial class FG
         var og0 = p.Pow(n) - 1;
         var GLnp = new GL(n, p);
 
-        Mat Rand(int o)
+        Mat Rand(GL gl, int o)
         {
             for (int k = 0; k < 10000; ++k)
             {
                 var t0 = (n * n).Range().Select(_ => IntExt.Rng.Next(p)).ToArray();
-                var mat = GLnp.Create(t0);
+                var mat = gl.Create(t0);
                 if (GLnp.Det(mat) == 0)
                     continue;
 
-                var o0 = Group.Cycle(GLnp, mat).Count;
+                var o0 = Group.Cycle(gl, mat).Count;
                 if (o0 == o)
                     return mat;
             }
 
             throw new();
         }
+        
+        ConcreteGroup<Mat> CreateGL(GL gl)
+        {
+            for (int i = 0; i < 100; ++i)
+            {
+                var gen0 = Rand(gl, 2);
+                var gen1 = Rand(gl, og0);
+                var glnp = Group.Generate(gl, gen0, gen1);
+                if (glnp.Count() == og)
+                    return glnp;
+            }
 
-        var gen0 = Rand(2);
-        var gen1 = Rand(og0);
-        return Group.Generate(GLnp, gen0, gen1);
+            throw new();
+        }
+
+        return CreateGL(GLnp);
     }
 
     public static ConcreteGroup<Mat> SL2p(int p)
@@ -423,7 +435,7 @@ public static partial class FG
     {
         if (!IntExt.Primes10000.Contains(p) || p <= 3 || p > 41)
             throw new($"p = {p} must be prime > 3 and < 41");
-    
+
         var sl2p = SL2p(p);
         var z = Group.Zentrum(sl2p);
         return sl2p.Over(z, $"L2({p})");
