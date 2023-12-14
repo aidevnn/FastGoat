@@ -63,6 +63,14 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>> wher
         return new AllSubgroups<TableElt>(AllSubgroupConjugates.Select(sc => sc.ToTable()).ToHashSet());
     }
 
+    public bool IsIsomorphic<U>(AllSubgroups<U> other) where U : struct, IElt<U>
+    {
+        if (Infos != other.Infos)
+            return false;
+        
+        return Parent.IsIsomorphicTo(other.Parent);
+    }
+
     public IEnumerable<ConcreteGroup<T>> All => AllSubgroupConjugates.SelectMany(sc => sc.Conjugates);
     public IEnumerable<ConcreteGroup<T>> AllRepresentatives => AllSubgroupConjugates.Select(sc => sc.Representative);
     public override string ToString() => Name;

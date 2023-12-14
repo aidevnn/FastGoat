@@ -19,7 +19,7 @@ public static partial class FG
         var CN = Group.Zentrum(N);
         var autN = Group.AutomorphismGroup(N);
         var ops = Group.AllHomomorphisms(G, autN);
-        var dicExts = new Dictionary<SubGroupsInfos, HashSet<ConcreteGroup<Ep2<Tn, Tg>>>>();
+        var set = new HashSet<AllSubgroups<Ep2<Tn, Tg>>>(new IsomorphSubGroupsInfosEquality<Ep2<Tn, Tg>>());
         foreach (var (op, i) in ops.Select((l, i) => (l, i + 1)).Take(nbOps))
         {
             var L = op.ToMapElt(autN);
@@ -33,17 +33,8 @@ public static partial class FG
                 if (extBase.IsGroup)
                 {
                     var allSubs = new AllSubgroups<Ep2<Tn, Tg>>(ext);
-                    var infos = allSubs.Infos;
-                    if (dicExts.ContainsKey(infos))
-                    {
-                        if (dicExts[infos].Add(ext))
-                            yield return new(c, ext, allSubs);
-                    }
-                    else
-                    {
-                        dicExts[infos] = new(new IsomorphEquality<Ep2<Tn, Tg>>()) { ext };
+                    if (set.Add(allSubs))
                         yield return new(c, ext, allSubs);
-                    }
                 }
                 else
                 {
@@ -51,7 +42,7 @@ public static partial class FG
                 }
             }
 
-            Console.WriteLine($"Nb Exts:{dicExts.Values.Sum(v => v.Count)}");
+            Console.WriteLine($"Nb Exts:{set.Count}");
         }
     }
 
@@ -59,25 +50,17 @@ public static partial class FG
         where Tg : struct, IElt<Tg>
         where Tn : struct, IElt<Tn>
     {
-        var dicExts = new Dictionary<SubGroupsInfos, HashSet<ConcreteGroup<Ep2<Tn, Tg>>>>();
+        var set = new HashSet<AllSubgroups<Ep2<Tn, Tg>>>(new IsomorphSubGroupsInfosEquality<Ep2<Tn, Tg>>());
         foreach (var (nbOps, n, g) in tuples)
         {
             foreach (var extInfos in AllExtensionsInternal(n, g, nbOps))
             {
-                if (dicExts.ContainsKey(extInfos.allSubs.Infos))
-                {
-                    if (dicExts[extInfos.allSubs.Infos].Add(extInfos.ext))
-                        yield return extInfos;
-                }
-                else
-                {
-                    dicExts[extInfos.allSubs.Infos] = new(new IsomorphEquality<Ep2<Tn, Tg>>()) { extInfos.ext };
+                if (set.Add(extInfos.allSubs))
                     yield return extInfos;
-                }
             }
 
             Console.WriteLine();
-            Console.WriteLine($"Total Exts:{dicExts.Values.Sum(v => v.Count)}");
+            Console.WriteLine($"Total Exts:{set.Count}");
         }
     }
 
