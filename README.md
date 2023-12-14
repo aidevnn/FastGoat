@@ -447,3 +447,13 @@ Ed web v4.03, 2020.
 Cohomology of Finite Groups Springer.
 Second Edition 2004. 
 <i>Chapter 1. Group Extensions, Simple Algebras and Cohomology</i>
+
+[arXiv:math/0010134](https://arxiv.org/abs/math/0010134)
+<b>Florentin Smarandache, PhD Associate Professor Chair of Department of Math & Sciences</b>
+INTEGER ALGORITHMS TO SOLVE DIOPHANTINE LINEAR EQUATIONS AND SYSTEMS.
+University of New Mexico nov 2007.
+
+[RSW1999](https://www.aidansims.com/papers/RSW1999.pdf)
+<b>Iain Raeburn, Aidan Sims, and Dana P.Williams</b>
+TWISTED ACTIONS AND OBSTRUCTIONS IN GROUP COHOMOLOGY.
+Germany, March 8–12, 1999.
