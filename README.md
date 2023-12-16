@@ -35,11 +35,11 @@ BaseGroup   S7
 
 |G21/H| = 3
 Type        AbelianGroup
-BaseGroup   S7
-SuperGroup  |G21| = 21
-NormalGroup |H| = 7
+BaseGroup   G21/H
+Group           |G21| = 21
+NormalSubGroup  |H| = 7
 
-# Group21 Time:65 ms
+# Group21 Time:113 ms
 ```
 
 ## Another Example
@@ -70,7 +70,7 @@ BaseGroup   WG[a,b]/<a>
 Group           |WG[a,b]| = 21
 NormalSubGroup  |<a>| = 7
 
-# WG[a,b] Time:20 ms
+# WG[a,b] Time:42 ms
 ```
 
 ## Semidirect product using group action
@@ -92,22 +92,22 @@ will output
 ```dotnetcli
 |C7 x: C3| = 21
 Type        NonAbelianGroup
-BaseGroup    Z7 x Z3
+BaseGroup    C7 x C3
 NormalGroup  |C7| = 7
 ActionGroup  |C3| = 3
 
-Actions
+Action FaithFull
 g=0 y(g) = (0->0, 1->1, 2->2, 3->3, 4->4, 5->5, 6->6)
 g=1 y(g) = (0->0, 1->2, 2->4, 3->6, 4->1, 5->3, 6->5)
 g=2 y(g) = (0->0, 1->4, 2->1, 3->5, 4->2, 5->6, 6->3)
 
 |(C7 x: C3)/N| = 3
 Type        AbelianGroup
-BaseGroup   Z7 x Z3
-SuperGroup  |C7 x: C3| = 21
-NormalGroup |N| = 7
+BaseGroup   (C7 x: C3)/N
+Group           |C7 x: C3| = 21
+NormalSubGroup  |N| = 7
 
-# Group21 Time:0 ms
+# Group21 Time:1 ms
 ```
 
 ## Characters Table
@@ -119,15 +119,18 @@ FG.CharacterTable(g21).DisplayCells();
 ```
 will output
 ```dotnetcli
+|C7 x: C3| = 21
+Type        NonAbelianGroup
+BaseGroup   C7 x C3
 
 [Class      1   3a   3b              7a              7b]
 [ Size      1    7    7               3               3]
 [                                                      ]
 [  Ꭓ.1      1    1    1               1               1]
-[  Ꭓ.2      1  ξ3²   ξ3               1               1]
-[  Ꭓ.3      1   ξ3  ξ3²               1               1]
-[  Ꭓ.4      3    0    0  -1/2 + 1/2·I√7  -1/2 - 1/2·I√7]
-[  Ꭓ.5      3    0    0  -1/2 - 1/2·I√7  -1/2 + 1/2·I√7]
+[  Ꭓ.2      1   ξ3  ξ3²               1               1]
+[  Ꭓ.3      1  ξ3²   ξ3               1               1]
+[  Ꭓ.4      3    0    0  -1/2 - 1/2·I√7  -1/2 + 1/2·I√7]
+[  Ꭓ.5      3    0    0  -1/2 + 1/2·I√7  -1/2 - 1/2·I√7]
 All i,                 Sum[g](Xi(g)Xi(g^−1)) = |G|      : True
 All i <> j,            Sum[g](Xi(g)Xj(g^−1)) =  0       : True
 All g, h in Cl(g),     Sum[r](Xr(g)Xr(h^−1)) = |Cl(g)|  : True
@@ -143,22 +146,22 @@ Computing Galois Group of irreductible polynomial $P=X^7-8X^5-2X^4+16X^3+6X^2-6X
 Ring.DisplayPolynomial = MonomDisplay.StarCaret;
 var x = FG.QPoly('X');
 var P = x.Pow(7) - 8 * x.Pow(5) - 2 * x.Pow(4) + 16 * x.Pow(3) + 6 * x.Pow(2) - 6 * x - 2; // GroupNames website
-GaloisApplicationsPart2.GaloisGroupChebotarev(P, detail: true);
+GaloisApplicationsPart2.GaloisGroupChebotarev(P, details: true);
 ```
 will output
 ```dotnetcli
-f = X^7 + -8*X^5 + -2*X^4 + 16*X^3 + 6*X^2 + -6*X + -2
+f = X^7 - 8*X^5 - 2*X^4 + 16*X^3 + 6*X^2 - 6*X - 2
 Disc(f) = 1817487424 ~ 2^6 * 73^4
-#1   P = 3 shape [7]
-#2   P = 5 shape [1, 3, 3]
-#3   P = 7 shape [7]
-#4   P = 11 shape [1, 3, 3]
-#5   P = 13 shape [1, 3, 3]
-#6   P = 17 shape [7]
-#7   P = 19 shape [1, 3, 3]
-#8   P = 23 shape [1, 3, 3]
-#9   P = 29 shape [1, 3, 3]
-#10  P = 31 shape [1, 3, 3]
+#1   P = 3 shape (7)
+#2   P = 5 shape (1, 3, 3)
+#3   P = 7 shape (7)
+#4   P = 11 shape (1, 3, 3)
+#5   P = 13 shape (1, 3, 3)
+#6   P = 17 shape (7)
+#7   P = 19 shape (1, 3, 3)
+#8   P = 23 shape (1, 3, 3)
+#9   P = 29 shape (1, 3, 3)
+#10  P = 31 shape (1, 3, 3)
 actual types
     [(7), 3]
     [(1, 3, 3), 7]
@@ -173,7 +176,7 @@ Distances
     { Name = A7, order = 2520, dist = 380 }
     { Name = S7, order = 5040, dist = 538.6666666666666 }
 
-P = X^7 + -8*X^5 + -2*X^4 + 16*X^3 + 6*X^2 + -6*X + -2
+P = X^7 - 8*X^5 - 2*X^4 + 16*X^3 + 6*X^2 - 6*X - 2
 Gal(P) = F_21(7) = 7:3
 |F_21(7) = 7:3| = 21
 Type        NonAbelianGroup
@@ -186,10 +189,11 @@ SuperGroup  |Symm7| = 5040
 Galois Group of polynomial $P = X^5 + X^4 - 4X^3 - 3X^2 + 3X + 1$
 
 ```csharp
+Ring.DisplayPolynomial = MonomDisplay.StarCaret;
 var x = FG.QPoly('X');
 var P = x.Pow(5) + x.Pow(4) - 4 * x.Pow(3) - 3 * x.Pow(2) + 3 * x + 1;
 var roots = IntFactorisation.AlgebraicRoots(P, details: true);
-var gal = GaloisTheory.GaloisGroup(roots);
+var gal = GaloisTheory.GaloisGroup(roots, details: true);
 DisplayGroup.AreIsomorphics(gal, FG.Abelian(5));
 ```
 
@@ -197,20 +201,20 @@ will output
 ```dotnetcli
 [...]
 
-f = X^5 + X^4 - 4·X^3 + -3·X^2 + 3·X + 1 with f(y) = 0
-Square free norm : Norm(f(X - 2*y) = X^25 + 15·X^24 + -2·X^23 + -1041·X^22 + -3564·X^21 + 26004·X^20 + 149688·X^19 + -250635·X^18 + -2748361·X^17 + -400851·X^16 + 27227266·X^15 + 29064870·X^14 + -153451709·X^13 + -259317243·X^12 + 486238870·X^11 + 1110255069·X^10 + -796849064·X^9 + -2553544620·X^8 + 486186008·X^7 + 3107537895·X^6 + 202314046·X^5 + -1779189126·X^4 + -284180058·X^3 + 346745367·X^2 + 17461251·X + -16101909
-         = (X^5 + 3·X^4 + -14·X^3 + -59·X^2 + -43·X + 23) * (X^5 + 3·X^4 + -14·X^3 + -37·X^2 + 23·X + 67) * (X^5 + 3·X^4 + -14·X^3 + -15·X^2 + X + 1) * (X^5 + 3·X^4 + -14·X^3 + -15·X^2 + 67·X + -43) * (X^5 + 3·X^4 + -36·X^3 + -81·X^2 + 243·X + 243)
+f = X^5 + X^4 - 4*X^3 - 3*X^2 + 3*X + 1 with f(y) = 0
+Square free norm : Norm(f(X + 2*y)) = x^25 - 5*x^24 - 98*x^23 + 503*x^22 + 3916*x^21 - 20988*x^20 - 82808*x^19 + 476245*x^18 + 1001759*x^17 - 6482223*x^16 - 6888926*x^15 + 55077950*x^14 + 23535811*x^13 - 295014199*x^12 - 8852570*x^11 + 984611573*x^10 - 207998384*x^9 - 1981105500*x^8 + 676565912*x^7 + 2253157335*x^6 - 871099834*x^5 - 1278826318*x^4 + 467945878*x^3 + 268636799*x^2 - 89574789*x + 1746623
+         = (x^5 - x^4 - 26*x^3 + 47*x^2 + 47*x - 1) * (x^5 - x^4 - 26*x^3 + 25*x^2 + 91*x - 67) * (x^5 - x^4 - 26*x^3 + 25*x^2 + 157*x - 199) * (x^5 - x^4 - 26*x^3 - 19*x^2 + 113*x + 131) * (x^5 - x^4 - 4*x^3 + 3*x^2 + 3*x - 1)
 
-X^5 + X^4 + -4·X^3 + -3·X^2 + 3·X + 1 = (X + -y^2 + 2) * (X + y^4 + y^3 + -3·y^2 + -2·y + 1) * (X + -y^3 + 3·y) * (X + -y^4 + 4·y^2 + -2) * (X + -y)
+X^5 + X^4 - 4*X^3 - 3*X^2 + 3*X + 1 = (X + y^4 + y^3 - 3*y^2 - 2*y + 1) * (X - y^4 + 4*y^2 - 2) * (X - y^3 + 3*y) * (X - y^2 + 2) * (X - y)
 Are equals True
 
-Polynomial P = X^5 + X^4 + -4·X^3 + -3·X^2 + 3·X + 1
+Polynomial P = X^5 + X^4 - 4*X^3 - 3*X^2 + 3*X + 1
 Factorization in Q(α)[X] with P(α) = 0
-    X + -α
-    X + -α^2 + 2
-    X + -α^3 + 3·α
-    X + α^4 + α^3 + -3·α^2 + -2·α + 1
-    X + -α^4 + 4·α^2 + -2
+    X - α
+    X - α^2 + 2
+    X - α^3 + 3*α
+    X + α^4 + α^3 - 3*α^2 - 2*α + 1
+    X - α^4 + 4*α^2 - 2
 
 |Gal( Q(α)/Q )| = 5
 Type        AbelianGroup
@@ -224,6 +228,7 @@ Elements
 (5)[5] = [(1 5 4 2 3)]
 
 Gal( Q(α)/Q ) IsIsomorphicTo C5 : True
+
 ```
 
 Computing $\bf{Gal}(\mathbb{Q}(\sqrt{2}, \sqrt{3})/\mathbb{Q})=\mathbf{C_2}\times\mathbf{C_2}$
@@ -235,19 +240,19 @@ var (X, _) = FG.EPolyXc(x.Pow(2) - 2, 'a');
 var (minPoly, a0, b0) = IntFactorisation.PrimitiveElt(X.Pow(2) - 3);
 var roots = IntFactorisation.AlgebraicRoots(minPoly);
 Console.WriteLine("Q(√2, √3) = Q(α)");
-var gal = GaloisTheory.GaloisGroup(roots);
+var gal = GaloisTheory.GaloisGroup(roots, details: true);
 DisplayGroup.AreIsomorphics(gal, FG.Abelian(2, 2));
 ```
 
 will output
 ```dotnetcli
 Q(√2, √3) = Q(α)
-Polynomial P = X^4 + -10·X^2 + 1
+Polynomial P = X^4 - 10*X^2 + 1
 Factorization in Q(α)[X] with P(α) = 0
     X + α
-    X + -α
-    X + α^3 + -10·α
-    X + -α^3 + 10·α
+    X - α
+    X + α^3 - 10*α
+    X - α^3 + 10*α
 
 |Gal( Q(α)/Q )| = 4
 Type        AbelianGroup
@@ -272,23 +277,23 @@ var (X, i) = FG.EPolyXc(x.Pow(2) + 1, 'i');
 var (minPoly, _, _) = IntFactorisation.PrimitiveElt(X.Pow(4) - 2);
 var roots = IntFactorisation.AlgebraicRoots(minPoly);
 Console.WriteLine("With α^4-2 = 0, Q(α, i) = Q(β)");
-var gal = GaloisTheory.GaloisGroup(roots, 'β');
+var gal = GaloisTheory.GaloisGroup(roots, primEltChar: 'β', details: true);
 DisplayGroup.AreIsomorphics(gal, FG.Dihedral(4));
 ```
 
 will output
 ```dotnetcli
 With α^4-2 = 0, Q(α, i) = Q(β)
-Polynomial P = X^8 + 4·X^6 + 2·X^4 + 28·X^2 + 1
+Polynomial P = X^8 + 4*X^6 + 2*X^4 + 28*X^2 + 1
 Factorization in Q(β)[X] with P(β) = 0
     X + β
-    X + -β
-    X + 5/12·β^7 + 19/12·β^5 + 5/12·β^3 + 139/12·β
-    X + 5/24·β^7 + -1/24·β^6 + 19/24·β^5 + -5/24·β^4 + 5/24·β^3 + -13/24·β^2 + 127/24·β + -29/24
-    X + 5/24·β^7 + 1/24·β^6 + 19/24·β^5 + 5/24·β^4 + 5/24·β^3 + 13/24·β^2 + 127/24·β + 29/24
-    X + -5/24·β^7 + -1/24·β^6 + -19/24·β^5 + -5/24·β^4 + -5/24·β^3 + -13/24·β^2 + -127/24·β + -29/24
-    X + -5/24·β^7 + 1/24·β^6 + -19/24·β^5 + 5/24·β^4 + -5/24·β^3 + 13/24·β^2 + -127/24·β + 29/24
-    X + -5/12·β^7 + -19/12·β^5 + -5/12·β^3 + -139/12·β
+    X - β
+    X + 5/12*β^7 + 19/12*β^5 + 5/12*β^3 + 139/12*β
+    X + 5/24*β^7 - 1/24*β^6 + 19/24*β^5 - 5/24*β^4 + 5/24*β^3 - 13/24*β^2 + 127/24*β - 29/24
+    X + 5/24*β^7 + 1/24*β^6 + 19/24*β^5 + 5/24*β^4 + 5/24*β^3 + 13/24*β^2 + 127/24*β + 29/24
+    X - 5/24*β^7 - 1/24*β^6 - 19/24*β^5 - 5/24*β^4 - 5/24*β^3 - 13/24*β^2 - 127/24*β - 29/24
+    X - 5/24*β^7 + 1/24*β^6 - 19/24*β^5 + 5/24*β^4 - 5/24*β^3 + 13/24*β^2 - 127/24*β + 29/24
+    X - 5/12*β^7 - 19/12*β^5 - 5/12*β^3 - 139/12*β
 
 |Gal( Q(β)/Q )| = 8
 Type        NonAbelianGroup
@@ -296,13 +301,13 @@ BaseGroup   S8
 
 Elements
 (1)[1] = []
-(2)[2] = [(1 2)(3 8)(4 6)(5 7)]
-(3)[2] = [(1 3)(2 8)(4 7)(5 6)]
-(4)[2] = [(1 4)(2 7)(3 6)(5 8)]
-(5)[2] = [(1 5)(2 6)(3 7)(4 8)]
+(2)[2] = [(1 2)(3 8)(4 7)(5 6)]
+(3)[2] = [(1 3)(2 8)(4 6)(5 7)]
+(4)[2] = [(1 4)(2 6)(3 7)(5 8)]
+(5)[2] = [(1 5)(2 7)(3 6)(4 8)]
 (6)[2] = [(1 8)(2 3)(4 5)(6 7)]
-(7)[4] = [(1 6 8 7)(2 5 3 4)]
-(8)[4] = [(1 7 8 6)(2 4 3 5)]
+(7)[4] = [(1 6 8 7)(2 4 3 5)]
+(8)[4] = [(1 7 8 6)(2 5 3 4)]
 
 Gal( Q(β)/Q ) IsIsomorphicTo D8 : True
 ```
