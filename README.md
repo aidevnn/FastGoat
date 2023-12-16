@@ -16,8 +16,8 @@ Console.WriteLine("|S7|={0}, |{{b in S7 with b^3 = 1}}| = {1}",s7.Count(), allC3
 Console.WriteLine("First Solution |HK| = 21 : h = {0} and k = {1}", a, b);
 Console.WriteLine();
 
-var h = Group.Generate("H", a);
-var g21 = Group.Generate("G21", a, b);
+var h = Group.Generate("H", s7, a);
+var g21 = Group.Generate("G21", s7, a, b);
 DisplayGroup.Head(g21);
 DisplayGroup.Head(g21.Over(h));
 GlobalStopWatch.Show("Group21");
