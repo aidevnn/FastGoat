@@ -285,7 +285,7 @@ public static partial class IntFactorisation
         if (details)
         {
             Console.WriteLine($"f = {f} with f({a.F.x}) = 0");
-            Console.WriteLine($"Square free norm : Norm(f({x.x} - {s}*{a.F.x}) = {r}");
+            Console.WriteLine($"Square free norm : Norm(f({x - s * a})) = {r}");
             Console.WriteLine($"         = {hs.Glue(" * ", "({0})")}");
             Console.WriteLine();
             var prod = L.Aggregate(g.One, (acc, h) => acc * h);
