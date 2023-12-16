@@ -19,7 +19,7 @@ public readonly struct Gp<T> : IGroup<Ep<T>> where T : struct, IElt<T>
         }
 
         Hash = code.ToHashCode();
-        Name = gi.Glue(" x ");
+        Name = gi.Length == 0 ? "C1" : gi.Glue(" x ");
     }
 
     public bool Equals(IGroup<Ep<T>>? other) => other?.Hash == Hash;
