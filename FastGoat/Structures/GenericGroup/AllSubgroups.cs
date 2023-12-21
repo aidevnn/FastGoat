@@ -3,8 +3,16 @@ using FastGoat.Commons;
 
 namespace FastGoat.Structures.GenericGroup;
 
-public record SubGroupsInfos(int AllSubGr, int AllConjsCl, int AllNorms)
+public record SubGroupsInfos(int AllSubGr, int AllConjsCl, int AllNorms) : IComparable<SubGroupsInfos>
 {
+    public (int, int, int) ToTuples() => (AllSubGr, AllConjsCl, AllNorms);
+    public int CompareTo(SubGroupsInfos? other)
+    {
+        if (other is null)
+            return 1;
+
+        return ToTuples().CompareTo(other.ToTuples());
+    }
     public static explicit operator (int, int, int)(SubGroupsInfos infos) => (infos.AllSubGr, infos.AllConjsCl, infos.AllNorms);
 }
 
@@ -61,14 +69,6 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>> wher
     public AllSubgroups<TableElt> ToTable()
     {
         return new AllSubgroups<TableElt>(AllSubgroupConjugates.Select(sc => sc.ToTable()).ToHashSet());
-    }
-
-    public bool IsIsomorphic<U>(AllSubgroups<U> other) where U : struct, IElt<U>
-    {
-        if (Infos != other.Infos)
-            return false;
-        
-        return Parent.IsIsomorphicTo(other.Parent);
     }
 
     public IEnumerable<ConcreteGroup<T>> All => AllSubgroupConjugates.SelectMany(sc => sc.Conjugates);
