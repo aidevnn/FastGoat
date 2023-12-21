@@ -45,7 +45,7 @@ void NamingExtsExamples()
     FG.AllExtensions((FG.Abelian(4, 5), FG.Abelian(2, 2)), (FG.Abelian(4, 5), FG.Abelian(4))).NamingExts().DisplayExts();
 }
 
-// void Ord64()
+void Ord64()
 {
     var nbOpsMax = 10000;
     var s32 = new Sn(32);
@@ -82,4 +82,25 @@ void NamingExtsExamples()
     // Total Exts:192
     // # End Time:2770743 ms ~ 46 min
     // Terminal scrollback buffer size: 15000 lines
+}
+
+// void Ord80()
+{
+    GlobalStopWatch.Restart();
+    FG.AllExtensions(
+            (FG.Abelian(2, 5), FG.Abelian(8)),
+            (FG.Abelian(2, 2, 5), FG.Abelian(4)),
+            (FG.Abelian(4, 5), FG.Abelian(4)),
+            (FG.Abelian(4, 5), FG.Abelian(2, 2)),
+            (FG.Abelian(2, 2, 5), FG.Abelian(2, 2)),
+            (FG.Abelian(2, 2, 2, 2), FG.Abelian(5)))
+        .Take(52)
+        .Select(e => e.allSubs.ToTable())
+        .Naming()
+        .DisplayNames();
+
+    GlobalStopWatch.Show("End");
+    Console.Beep();
+    // Total Groups:52
+    // # End Time:858598 ms
 }
