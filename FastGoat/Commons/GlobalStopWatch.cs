@@ -49,7 +49,15 @@ public static class GlobalStopWatch
     public static void Show(string label = "")
     {
         var start = Lapse.Count == 0 ? 0 : Lapse.Pop();
-        Console.WriteLine($"# {label} Time:{sw.ElapsedMilliseconds - start} ms");
+        var time = TimeSpan.FromMilliseconds(sw.ElapsedMilliseconds - start);
+        if (time.Hours > 0)
+            Console.WriteLine($"# {label} Time:{time.Hours}h{time.Minutes}m");
+        else if (time.Minutes > 0)
+            Console.WriteLine($"# {label} Time:{time.Minutes}m{time.Seconds}s");
+        else if (time.Seconds > 0)
+            Console.WriteLine($"# {label} Time:{time.Seconds}.{time.Milliseconds:000}s");
+        else
+            Console.WriteLine($"# {label} Time:{sw.ElapsedMilliseconds - start}ms");
     }
 
     /// <summary>

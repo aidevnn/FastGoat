@@ -102,5 +102,5 @@ void Ord64()
     GlobalStopWatch.Show("End");
     Console.Beep();
     // Total Groups:52
-    // # End Time:858598 ms
+    // # End Time:14m25s
 }
