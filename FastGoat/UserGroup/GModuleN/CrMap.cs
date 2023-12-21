@@ -1,5 +1,6 @@
 using System.Collections;
 using FastGoat.Commons;
+using FastGoat.Examples;
 using FastGoat.Structures;
 using FastGoat.Structures.CartesianProduct;
 using FastGoat.Structures.GenericGroup;
@@ -8,7 +9,8 @@ using FastGoat.UserGroup.Integers;
 
 namespace FastGoat.UserGroup.GModuleN;
 
-public readonly struct CrMap<Tn, Tg> : IEnumerable<KeyValuePair<Ep<Tg>, ZNElt<Tn, Tg>>>, IEquatable<CrMap<Tn, Tg>>
+public readonly struct CrMap<Tn, Tg> : IEnumerable<KeyValuePair<Ep<Tg>, ZNElt<Tn, Tg>>>,
+    IEquatable<CrMap<Tn, Tg>>, IComparable<CrMap<Tn, Tg>>
     where Tg : struct, IElt<Tg>
     where Tn : struct, IElt<Tn>
 {
@@ -204,6 +206,11 @@ public readonly struct CrMap<Tn, Tg> : IEnumerable<KeyValuePair<Ep<Tg>, ZNElt<Tn
         }
 
         return true;
+    }
+
+    public int CompareTo(CrMap<Tn, Tg> other)
+    {
+        return Map.OrderKeys(G).Select(e => e.Value).SequenceCompareTo(other.OrderKeys(G).Select(e => e.Value));
     }
 
     public override int GetHashCode() => Map.Count;
