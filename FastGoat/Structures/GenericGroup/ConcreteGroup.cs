@@ -27,8 +27,8 @@ public class ConcreteGroup<T> : IGroup<T> where T : struct, IElt<T>
             {
                 var gens = g.GetGenerators().ToArray();
                 var (tmpElements, uniqueGenerators) = gens.Length == 0 || (gens.Length == 1 && gens.Contains(g.Neutral()))
-                    ? Group.UniqueGenerators(this, g.ToArray())
-                    : Group.UniqueGenerators(this, gens);
+                    ? Group.UniqueGenerators(this, g.Order().ToArray())
+                    : Group.UniqueGenerators(this, gens.Order().ToArray());
                 Elements = new HashSet<T>(tmpElements);
                 ElementsOrders = Group.ElementsOrders(g, Elements);
                 PseudoGenerators = new(uniqueGenerators);
@@ -61,7 +61,7 @@ public class ConcreteGroup<T> : IGroup<T> where T : struct, IElt<T>
         if (SuperGroup is not null && generators.Any(e => !SuperGroup.Contains(e)))
             throw new GroupException(GroupExceptionType.GroupDef);
 
-        var (tmpElements, uniqueGenerators) = Group.UniqueGenerators(this, generators);
+        var (tmpElements, uniqueGenerators) = Group.UniqueGenerators(this, generators.Order().ToArray());
         Elements = new HashSet<T>(tmpElements);
         ElementsOrders = Group.ElementsOrders(g, Elements);
         PseudoGenerators = new(uniqueGenerators);
@@ -169,6 +169,7 @@ public class ConcreteGroup<T> : IGroup<T> where T : struct, IElt<T>
     }
 
     public GroupTable ToTable() => GroupTable.Create(this);
+    public ConcreteGroup<TableElt> ToCGTable() => ToTable();
 
     public override int GetHashCode()
     {
