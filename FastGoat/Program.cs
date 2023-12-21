@@ -61,21 +61,25 @@ void NamingExtsExamples()
     var c2 = FG.Abelian(2);
     var sdps1 = Group.AllSemiDirectProd(FG.Abelian(8), FG.Abelian(4)).Select(e => e.ToCGTable()).Naming().ToArray();
     var sdps2 = Group.AllSemiDirectProd(FG.Abelian(4), FG.Abelian(8)).Select(e => e.ToCGTable()).Naming().ToArray();
-    var sdp3 =  Product.Generate(c2, FG.ModularMaxSdp(4)).ToCGTable() ;
-    var sdp4 =  Group.AllSemiDirectProd(FG.Abelian(2, 4), FG.Abelian(4)).Select(e => e.ToCGTable()).Naming().ToArray()[2];
+    var sdp3 = Product.Generate(c2, FG.ModularMaxSdp(4)).ToCGTable();
+    var sdp4 = Group.AllSemiDirectProd(FG.Abelian(2, 4), FG.Abelian(4)).Select(e => e.ToCGTable()).Naming().ToArray()[2];
 
     var e245 = (10, 30, sm3232, c2); // Group64 Id 172,245
-    var tuplesC2 = sdps1.Concat([..sdps2, sdp3, sdp4]).Select(e => (nbOpsMax, 0, e, c2)).ToArray(); // Group64 Id 11,13,14,22,79,81,82,160,172,180
-    var tuplesC4 = new[] { 
-        (nbOpsMax, 0, FG.Abelian(8, 2).ToCGTable(), FG.Abelian(4)), 
-        (nbOpsMax, 0, FG.Abelian(4, 4).ToCGTable(), FG.Abelian(4)) }; // Group64 Id 19,22,37,45
-    var tuplesC2C2 = new[] { (nbOpsMax, 0, FG.Abelian(2, 8).ToCGTable(), FG.Abelian(2, 2)) }; // Group64 Id 49,45,180,160,168,43,172 // Minor Bugs
-    
+    var tuplesC2 =
+        sdps1.Concat([..sdps2, sdp3, sdp4]).Select(e => (nbOpsMax, 0, e, c2)).ToArray(); // Group64 Id 11,13,14,22,79,81,82,160,172,180
+    var tuplesC4 = new[]
+    {
+        (nbOpsMax, 0, FG.Abelian(8, 2).ToCGTable(), FG.Abelian(4)),
+        (nbOpsMax, 0, FG.Abelian(4, 4).ToCGTable(), FG.Abelian(4))
+    }; // Group64 Id 19,22,37,45
+    var tuplesC2C2 = new[]
+        { (nbOpsMax, 0, FG.Abelian(2, 8).ToCGTable(), FG.Abelian(2, 2)) }; // Group64 Id 49,45,180,160,168,43,172 // Minor Bugs
+
     GlobalStopWatch.Restart();
     FG.AllExtensions([..tuplesC2, ..tuplesC4, ..tuplesC2C2, e245]).NamingExts().DisplayExts();
     GlobalStopWatch.Show("End");
     Console.Beep();
     // Total Exts:192
     // # End Time:2770743 ms ~ 46 min
-    // Need ~2048 KB for console size
+    // Terminal scrollback buffer size: 15000 lines
 }
