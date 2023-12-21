@@ -99,38 +99,34 @@ public static partial class Group
         where T2 : struct, IElt<T2>
     {
         var gGens = bg.GetGenerators().ToArray();
-        // gGens.Println();
         ConcreteGroup<T1> g1;
         if (bg is ConcreteGroup<T1> gi)
             g1 = gi;
         else
-            g1 = Group.Generate(bg, gGens);
+            g1 = Generate(bg, gGens);
 
         bool Filter(int e, int a) => mType == MorphismType.Homomorphism ? e % a == 0 : e == a;
-
         var g2ByOrders = g2.GroupBy(e => g2.ElementsOrders[e])
             .Select(e => (ord: e.Key, elt: e.ToArray()))
             .ToArray();
         var gGensOrders = gGens.Select(e => (g: e, ord: g1.ElementsOrders[e])).ToArray();
-        var gpMap = gGensOrders.Select(e =>
-                g2ByOrders.Where(a => Filter(e.ord, a.ord)).SelectMany(a => a.elt).Select(a => (e.g, a))
-                    .ToArray())
+        var gpMap = gGensOrders.Select(e => g2ByOrders.Where(a => Filter(e.ord, a.ord)).SelectMany(a => a.elt).Select(a => (e.g, a))
+                .ToArray())
             .ToArray();
 
         var ng = g1.Count();
-        // Console.WriteLine(gpMap.Aggregate(BigInteger.One, (acc, b) => acc * b.Length));
         foreach (var arr in gpMap.MultiLoop())
         {
             var map = arr.ToDictionary(t => t.g, t => t.a);
             if (mType == MorphismType.Homomorphism)
             {
-                var hom = Group.HomomorphismMap(g1, g2, map);
+                var hom = HomomorphismMap(g1, g2, map);
                 if (hom.Count == ng)
                     yield return new(g1, hom);
             }
             else
             {
-                var iso = Group.IsomorphismMap(g1, g2, map);
+                var iso = IsomorphismMap(g1, g2, map);
                 if (iso.Count == ng && iso.Values.Distinct().Count() == ng)
                     yield return new(g1, iso);
             }
@@ -194,13 +190,11 @@ public static partial class Group
         return AllMorphisms(bg, g2).ToList();
     }
 
-    public static List<Homomorphism<T2, Automorphism<T1>>> AllOpsByAutomorphisms<T1, T2>(IGroup<T2> bg,
-        ConcreteGroup<T1> bn)
+    public static List<Homomorphism<T2, Automorphism<T1>>> AllOpsByAutomorphisms<T1, T2>(IGroup<T2> bg, ConcreteGroup<T1> bn)
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
     {
-        var nGens = bn.GetGenerators().ToArray();
-        var autN = Group.AutomorphismGroup(bn);
+        var autN = AutomorphismGroup(bn);
         return AllHomomorphisms(bg, autN);
     }
 
