@@ -127,20 +127,22 @@ public static class DisplayGroup
                 .GlueMap(fmt: "[{0}]:{1}"));
     }
 
-    public static void HeadOrders<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
+    public static void HeadOrders<T>(ConcreteGroup<T> g, bool newline = true) where T : struct, IElt<T>
     {
         Head(g);
         Orders(g);
-        Console.WriteLine();
+        if (newline)
+            Console.WriteLine();
     }
 
-    public static void HeadSdpOrders<T1, T2>(SemiDirectProduct<T1, T2> g)
+    public static void HeadSdpOrders<T1, T2>(SemiDirectProduct<T1, T2> g, bool newline = true)
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
     {
         HeadSdp(g);
         Orders(g);
-        Console.WriteLine();
+        if (newline)
+            Console.WriteLine();
     }
 
     public static void HeadElements<T>(ConcreteGroup<T> g, SortBy sortBy = SortBy.Order) where T : struct, IElt<T>
@@ -234,18 +236,15 @@ public static class DisplayGroup
         Head(gr);
         new ConjugacyClasses<T>(gr).Display();
     }
-    
+
     public static void HeadNames<T>(ConcreteGroup<T> g, bool setName = true) where T : struct, IElt<T>
     {
         var subGroups = new AllSubgroups<TableElt>(g.ToTable());
         var names = NamesTree.BuildName(subGroups);
         if (setName)
             g.Name = names[0].Name;
-        
-        Head(g);
-        Console.WriteLine(subGroups.Infos);
-        names.Println("Group names");
-        Console.WriteLine();
+
+        HeadNames(g, subGroups.Infos, names);
     }
 
     public static void HeadElementsNames<T>(ConcreteGroup<T> g, bool setName = true) where T : struct, IElt<T>
@@ -255,10 +254,7 @@ public static class DisplayGroup
         if (setName)
             g.Name = names[0].Name;
 
-        HeadElements(g);
-        Console.WriteLine(subGroups.Infos);
-        names.Println("Group names");
-        Console.WriteLine();
+        HeadElementsNames(g, subGroups.Infos, names);
     }
 
     public static void HeadOrdersNames<T>(ConcreteGroup<T> g, bool setName = true) where T : struct, IElt<T>
@@ -268,10 +264,32 @@ public static class DisplayGroup
         if (setName)
             g.Name = names[0].Name;
 
-        HeadOrders(g);
-        Console.WriteLine(subGroups.Infos);
+        HeadOrdersNames(g, subGroups.Infos, names);
+    }
+
+    public static void HeadNames<T>(ConcreteGroup<T> g, SubGroupsInfos infos, ANameElt[] names) where T : struct, IElt<T>
+    {
+        Head(g);
+        Console.WriteLine(infos);
         names.Println("Group names");
         Console.WriteLine();
     }
 
+    public static void HeadElementsNames<T>(ConcreteGroup<T> g, SubGroupsInfos infos, ANameElt[] names)
+        where T : struct, IElt<T>
+    {
+        HeadElements(g);
+        Console.WriteLine(infos);
+        names.Println("Group names");
+        Console.WriteLine();
+    }
+
+    public static void HeadOrdersNames<T>(ConcreteGroup<T> g, SubGroupsInfos infos, ANameElt[] names)
+        where T : struct, IElt<T>
+    {
+        HeadOrders(g, newline: false);
+        Console.WriteLine(infos);
+        names.Println("Group names");
+        Console.WriteLine();
+    }
 }
