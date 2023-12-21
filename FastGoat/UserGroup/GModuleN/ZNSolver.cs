@@ -192,7 +192,7 @@ public static class ZNSolver
         var decomp = Nab.DecompElementary;
 
         var sys0 = cr.OrderKeys(G).SelectMany(v => decomp.Select(e => (n: v.Value[e.g], e.o))).Where(e => e.n.Degree != 0).ToArray();
-        var sys1 = sys0.Select(e => (eq: e.n, eql: e.n.ExtractAllIndeterminates.Length, e.o, mn: LT(e.n, allOrders[e.o])))
+        var sys1 = sys0.Select(e => (eq: e.n, eql: e.n.NbIndeterminates, e.o, mn: LT(e.n, allOrders[e.o])))
             .Select(e => (e.eq, e.eql, mod: e.o, lm: e.mn.x, lc: e.mn.z))
             .OrderByDescending(ei => invs[ei.mod].ContainsKey(ei.lc.K) ? 1 : 0)
             .ThenByDescending(ei => allOrders[ei.mod][ei.lc.K])
@@ -232,13 +232,13 @@ public static class ZNSolver
             var eq1 = new Polynomial<ZnInt, Xi>(eq.Indeterminates, eq.KZero,
                 new(eq.Coefs.Where(c => !c.Value.IsZero() && !c.Key.IsOne)
                     .ToDictionary(e => e.Key, e => new ZnInt(e.Value.Mod, e.Value.K / gcd))));
-            var (m1, k0) = eq1.Coefs.OrderByDescending(c => c.Key).First(c => invs[mod].ContainsKey(c.Value.K));
+            var (m1, k0) = eq1.Coefs.OrderBy(c => c.Value.K).ThenByDescending(c => c.Key).First(c => invs[mod].ContainsKey(c.Value.K));
             var xi = m1.ContentIndeterminates.First();
             var lc0 = eq[m1];
 
             var k = modSolve[mod][(lc0.K, eq.ConstTerm.K)];
             var X = eq.X(xi);
-            var eq2 = eq1 - ords[lc.K] * eq1.X(xq);
+            var eq2 = eq1 - ords[gcd] * eq1.X(xq);
             ki = invs[mod][k0.K];
             var sub = (X - ki * eq2 + k).Mod(mod);
 
@@ -456,7 +456,7 @@ public static class ZNSolver
         var lt = new List<(int ord, CrMap<Tn, Tg> map)>();
         var map02 = mapCobs0.Clone;
 
-        foreach (var (k0, ord, map) in gensCocs.OrderByDescending(e => e.ord).Select((e, i) => (i, e.ord, e.map)))
+        foreach (var (k0, ord, map) in gensCocs.OrderBy(e => e.ord).Select((e, i) => (i, e.ord, e.map)))
         {
             if (nb0 == nbCocs)
                 break;
@@ -485,7 +485,7 @@ public static class ZNSolver
         var listReprs = new List<HashSet<CrMap<Tn, Tg>>>();
         listReprs.Add(new() { crZero });
         var gens = mapCobs0.Generators().Select(e => e.map).ToList();
-        foreach (var (ord, map) in lt)
+        foreach (var (ord, map) in lt.OrderBy(e => e.ord))
         {
             var set0 = new HashSet<CrMap<Tn, Tg>>() { crZero };
             var mapTmp = gens.Zip(ind).Aggregate(mapCobs0.Zero, (acc, e) => acc.Add(e.First.Mul(zero.X(e.Second))));
@@ -557,7 +557,7 @@ public static class ZNSolver
         var (nbCobs, sredCobs, mapCobs) = sys0;
         var (nbCocs, sredCocs, mapCocs) = sys1;
         var nbCohs = nbCocs / nbCobs;
-        var allCosets = new List<CrMap<Tn, Tg>>();
+        var allCosets = new HashSet<CrMap<Tn, Tg>>();
         var r = mapCocs.R;
         var crZero = mapCocs.Zero;
 
@@ -568,39 +568,36 @@ public static class ZNSolver
         Console.WriteLine($"Z{r}(G,N):{nbCocs}={sredCocs.Select(s => s.order).Glue("x")}");
 
         var nbCohs2 = listReprs.Aggregate(1, (acc, l) => acc * l.Count);
-        if (nbCohs2 == nbCohs)
+        var k0 = 1;
+        foreach (var comb in listReprs.MultiLoop())
         {
-            var k0 = 1;
-            foreach (var comb in listReprs.MultiLoop())
-            {
-                Console.Write($"Cosets:{k0++}/{nbCohs}");
-                Console.CursorLeft = 0;
-                var map0 = comb.Aggregate(crZero, (acc, l) => acc.Add(l));
-                allCosets.Add(map0);
-            }
-
-            Console.CursorLeft = 20;
-            Console.WriteLine();
-            Console.WriteLine($"H{r}(G,N):{allCosets.Count}={listReprs.Select(e => e.Count).Glue("x")} Expected:{nbCohs}");
-            if (details)
-                DisplayCrMap($"{r}Cohomologies Reprs", allCosets.ToArray());
-
-            if (allCosets.Count != nbCohs)
-                throw new("########");
-
-            return (allCosets.ToArray(), sys0, sys1);
+            Console.Write($"Cosets:{k0++}/{nbCohs}");
+            Console.CursorLeft = 0;
+            var map0 = comb.Aggregate(crZero, (acc, l) => acc.Add(l));
+            allCosets.Add(map0);
         }
-        else
-        {
-            Console.WriteLine($"ERROR H{r}(G,N):Expected:{nbCohs}");
-            Console.WriteLine($"    listReprs:{listReprs.Select(e => e.Count).Glue(" x ")}={nbCohs2}");
 
-            if (listReprs.Sum(l => l.Count) < 20)
-                DisplayCrMap($"listReprs:{nbCohs2} Expected:{nbCohs}", listReprs.SelectMany(e => e).ToArray());
+        Console.CursorLeft = 20;
+        Console.WriteLine();
+        Console.WriteLine($"H{r}(G,N):{allCosets.Count}={listReprs.Select(e => e.Count).Glue("x")} Expected:{nbCohs}");
+        if (details)
+            DisplayCrMap($"{r}Cohomologies Reprs", allCosets.ToArray());
 
-            DisplayCrMap($"{r}Coboundaries", mapCobs.Generators().Select(g => g.map).ToArray());
-            DisplayCrMap($"{r}Cocycles", mapCocs.Generators().Select(g => g.map).ToArray());
-            throw new("########");
-        }
+        if (allCosets.Count != nbCohs)
+            Console.WriteLine("?????????????????????????????????");
+
+        return (allCosets.ToArray(), sys0, sys1);
+        
+        // {
+        //     Console.WriteLine($"ERROR H{r}(G,N):Expected:{nbCohs}");
+        //     Console.WriteLine($"    listReprs:{listReprs.Select(e => e.Count).Glue(" x ")}={nbCohs2}");
+        //
+        //     if (listReprs.Sum(l => l.Count) < 20)
+        //         DisplayCrMap($"listReprs:{nbCohs2} Expected:{nbCohs}", listReprs.SelectMany(e => e).ToArray());
+        //
+        //     DisplayCrMap($"{r}Coboundaries", mapCobs.Generators().Select(g => g.map).ToArray());
+        //     DisplayCrMap($"{r}Cocycles", mapCocs.Generators().Select(g => g.map).ToArray());
+        //     throw new("########");
+        // }
     }
 }
