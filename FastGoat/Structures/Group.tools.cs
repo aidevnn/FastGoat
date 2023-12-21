@@ -300,6 +300,11 @@ public static partial class Group
         return table;
     }
 
+    public static AllSubgroups<T> AllSubgroups<T>(this ConcreteGroup<T> g) where T : struct, IElt<T>
+    {
+        return new AllSubgroups<T>(g);
+    }
+
     public static Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>> PSubGroups<T>(ConcreteGroup<T> g, int p)
         where T : struct, IElt<T>
     {
