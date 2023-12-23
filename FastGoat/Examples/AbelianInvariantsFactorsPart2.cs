@@ -1,0 +1,287 @@
+using FastGoat.Commons;
+using FastGoat.Structures;
+using FastGoat.Structures.CartesianProduct;
+using FastGoat.Structures.GenericGroup;
+using FastGoat.UserGroup;
+
+namespace FastGoat.Examples;
+
+public static class AbelianInvariantsFactorsPart2
+{
+    static int AllAbCount(int k)
+    {
+        if (k == 1)
+            return 1;
+
+        var dec = IntExt.PrimesDec(k);
+        return dec.Select(e => IntExt.Partitions32[e.Value].Count).Aggregate(1, (acc, a) => acc * a);
+    }
+
+    static int[][] AllAbOfOrder(int n)
+    {
+        if (n == 1)
+            return new[] { new[] { 1 } };
+
+        var dec = IntExt.PrimesDec(n);
+        return dec.Select(e => IntExt.Partitions32[e.Value].Select(l => l.Select(i => e.Key.Pow(i)).ToArray()))
+            .MultiLoop()
+            .Select(e => e.SelectMany(c => c).Order().ToArray())
+            .ToArray();
+    }
+
+    static int[] ToFactors(int n)
+    {
+        if (n < 1)
+            throw new();
+
+        if (n == 1)
+            return new[] { 1 };
+
+        return IntExt.PrimesDec(n).Select(e => e.Key.Pow(e.Value)).Order().ToArray();
+    }
+
+    static int[] SeqToFactors(int[] seq)
+    {
+        return seq.SelectMany(e => ToFactors(e)).Order().ToArray();
+    }
+
+    static int[] FactorsToType(int[] seq)
+    {
+        if (seq.Length == 1 && seq[0] == 1)
+            return new[] { 1 };
+
+        var set = seq.ToList();
+        while (true)
+        {
+            var arr = set.Descending().ToArray();
+            var (e, l) = set.Descending().Select(e => (e, arr.FirstOrDefault(c => IntExt.Gcd(e, c) == 1, -1)))
+                .FirstOrDefault(e => e.Item2 != -1, (-1, -1));
+            if (e == -1)
+                break;
+
+            set.Remove(e);
+            set.Remove(l);
+            set.Add(e * l);
+        }
+
+        return set.Descending().ToArray();
+    }
+
+    static (int[] can, int[] facts) AbType(params int[] seq)
+    {
+        var facts = SeqToFactors(seq);
+        var can = FactorsToType(facts);
+        return (can, facts);
+    }
+
+    static (int o, int nb)[] CyclicElemsOrders(int n)
+    {
+        return n.Range()
+            .Select(k => k == 0 ? (0, 1) : (k, IntExt.Lcm(n, k) / k))
+            .GroupBy(e => e.Item2)
+            .Select(e => (e.Key, e.Count()))
+            .ToArray();
+    }
+
+    static (int o, int nb)[] AbGroupElemsOrders(int[] seq)
+    {
+        var ords = Array.Empty<(int o, int nb)>();
+        foreach (var n in seq)
+        {
+            var ordsN = CyclicElemsOrders(n);
+            if (ords.Length == 0)
+                ords = ordsN;
+            else
+                ords = ords.Grid2D(ordsN)
+                    .Select(e => (IntExt.Lcm(e.t1.o, e.t2.o), e.t1.nb * e.t2.nb))
+                    .GroupBy(e => e.Item1)
+                    .Select(e => (e.Key, e.Sum(a => a.Item2)))
+                    .ToArray();
+        }
+
+        return ords;
+    }
+
+    static (T, int)[] GensToFactors<T>(ConcreteGroup<T> g, T e) where T : struct, IElt<T>
+    {
+        var elemsOrds = g.ElementsOrders;
+        var g0 = Group.Cycle(g, e);
+        var facts = ToFactors(elemsOrds[e]);
+        return facts.Select(k => g0.First(a => elemsOrds[a.Key] == k)).Select(a => (a.Key, elemsOrds[a.Key])).ToArray();
+    }
+
+    static ((T, int)[] can, (T, int)[] facts) AbInvariants<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
+    {
+        if (g.GroupType == GroupType.NonAbelianGroup)
+            throw new GroupException(GroupExceptionType.OnlyAbelianGroups);
+
+        var ne = g.Neutral();
+        if (g.Count() == 1)
+            return (new[] { (ne, 1) }, new[] { (ne, 1) });
+
+        var set = g.GetGenerators().SelectMany(e => GensToFactors(g, e)).OrderBy(e => e.Item2).ToList();
+        var facts = set.OrderBy(e => e.Item2).ToArray();
+        while (true)
+        {
+            var arr = set.OrderByDescending(a => a.Item2).ToArray();
+            var (e0, e1) = set.OrderByDescending(a => a.Item2)
+                .Select(e => (e, arr.FirstOrDefault(c => IntExt.Gcd(e.Item2, c.Item2) == 1, (ne, -1))))
+                .FirstOrDefault(a => a.Item2.Item2 != -1, ((ne, -1), (ne, -1)));
+            if (e0.Item2 == -1)
+                break;
+
+            set.Remove(e0);
+            set.Remove(e1);
+            var e2 = g.Op(e0.Item1, e1.Item1);
+            var o2 = e0.Item2 * e1.Item2;
+            if (g.ElementsOrders[e2] != o2)
+                throw new($"{e0} & {e1} => {(e2, o2)} | {g.ElementsOrders[e2]}");
+
+            set.Add((e2, o2));
+        }
+
+        return (set.OrderByDescending(a => a.Item2).ToArray(), facts);
+    }
+
+    static string ArrToString(int[] seq) => seq.Glue(" x ", "C{0}");
+
+    static void ShowAbTypes(params int[] seq)
+    {
+        var (can, facts) = AbType(seq);
+        Console.WriteLine("{0}  ~  {1}  ~  {2}", ArrToString(seq), ArrToString(can), ArrToString(facts));
+        Console.WriteLine();
+    }
+
+    static void AbGroupOrders(params int[] seq)
+    {
+        var s = ArrToString(seq);
+
+        GlobalStopWatch.Restart();
+        var g = FG.Abelian(seq);
+        var ords1 = g.ElementsOrders.Values.GroupBy(e => e).Select(e => (o: e.Key, nb: e.Count())).Order().ToArray();
+        GlobalStopWatch.Show($"{s} Old");
+
+        GlobalStopWatch.Restart();
+        var facts = SeqToFactors(seq);
+        var ords2 = AbGroupElemsOrders(facts).Order().ToArray();
+        GlobalStopWatch.Show($"{s} New");
+
+        var check = ords1.SequenceEqual(ords2);
+        Console.WriteLine(check ? "PASS" : "FAIL");
+        if (!check)
+        {
+            ords1.Println("Expected");
+            ords2.Println("Actual");
+        }
+
+        Console.WriteLine();
+    }
+
+    static void ShowAllAb(int n)
+    {
+        var comp = Comparer<int[]>.Create((a, b) => a.SequenceCompareTo(b));
+        var tab0 = AllAbOfOrder(n).Select(e => (e, FactorsToType(e)))
+            .OrderBy(e => e.Item2.Length)
+            .ThenBy(e => e.Item2, comp)
+            .ToArray();
+        var tab = tab0.Select(e => new[] { ArrToString(e.e), ArrToString(e.Item2) }).ToArray();
+
+        var title = $"All Abelian Groups of Order:{n}";
+        var max0 = int.Max(title.Length, tab.Max(e => e[0].Length));
+        var max1 = tab.Max(e => e[1].Length);
+        var fmt = $"{{0,{max0}}}  ~  {{1,-{max1}}}";
+
+        Console.WriteLine($"{{0,{max0}}}     {{1,-{max1}}}", title, $"Count:{tab.Length} / {AllAbCount(n)}");
+        foreach (var s in tab)
+            Console.WriteLine(fmt, s[0], s[1]);
+
+        Console.WriteLine();
+    }
+
+    static void ShowAbInvariants<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
+    {
+        if (g.GroupType == GroupType.NonAbelianGroup)
+            throw new GroupException(GroupExceptionType.OnlyAbelianGroups);
+
+        DisplayGroup.Head(g);
+        var gens = g.GetGenerators().ToDictionary(e => e, e => g.ElementsOrders[e]);
+
+        Console.WriteLine("Gens: {0}", ArrToString(gens.Values.Order().ToArray()));
+        Console.WriteLine("Expected");
+        Console.WriteLine(ArrToString(SeqToFactors(gens.Values.ToArray())));
+        var abType = AbType(gens.Values.ToArray());
+        Console.WriteLine(ArrToString(abType.can));
+
+        Console.WriteLine("Actual");
+        GlobalStopWatch.Restart();
+        var abInvs = AbInvariants(g);
+        GlobalStopWatch.Show();
+        Console.WriteLine(ArrToString(abInvs.facts.Select(e => e.Item2).ToArray()));
+        Console.WriteLine(ArrToString(abInvs.can.Select(e => e.Item2).ToArray()));
+        if (!abType.can.Order().SequenceEqual(abInvs.can.Select(e => e.Item2).Order()))
+            throw new();
+
+        Console.WriteLine();
+    }
+
+    public static void Example1Integers()
+    {
+        ShowAbTypes(1);
+        ShowAbTypes(41);
+        ShowAbTypes(299);
+        ShowAbTypes(14, 21);
+        ShowAbTypes(20, 30);
+        ShowAbTypes(8, 18, 30);
+        ShowAbTypes(24, 18, 30);
+    }
+
+    public static void Example2Integers()
+    {
+        ShowAllAb(1);
+        ShowAllAb(13);
+        ShowAllAb(18);
+        ShowAllAb(20);
+        ShowAllAb(16);
+        ShowAllAb(24);
+        ShowAllAb(32);
+        ShowAllAb(36);
+        ShowAllAb(64);
+        ShowAllAb(299);
+        ShowAllAb(360);
+        ShowAllAb(1024);
+        ShowAllAb(4320);
+        ShowAllAb(4096);
+    }
+
+    public static void Example3Integers()
+    {
+        AbGroupOrders(97);
+        AbGroupOrders(143);
+        AbGroupOrders(196);
+        AbGroupOrders(196);
+        AbGroupOrders(256);
+        AbGroupOrders(14, 21);
+        AbGroupOrders(20, 30);
+        AbGroupOrders(12, 36);
+        AbGroupOrders(4, 12, 36);
+        AbGroupOrders(8, 16, 4, 16);
+        AbGroupOrders(8, 18, 30);
+        AbGroupOrders(2, 6, 360);
+        AbGroupOrders(6, 12, 360);
+    }
+
+    public static void FastAbelianInvariants()
+    {
+        ShowAbInvariants(FG.Abelian(1));
+        ShowAbInvariants(FG.Abelian(17));
+        ShowAbInvariants(FG.Abelian(7, 11));
+        ShowAbInvariants(FG.Abelian(14, 21));
+        ShowAbInvariants(FG.Abelian(20, 30));
+        ShowAbInvariants(Product.Generate(FG.Abelian(2, 9), FG.Abelian(6, 4)));
+        ShowAbInvariants(FG.Abelian(2, 9, 6, 4));
+        ShowAbInvariants(FG.Abelian(8, 18, 30));
+        ShowAbInvariants(Product.Generate(FG.Abelian(24), FG.Abelian(18, 30)));
+        ShowAbInvariants(FG.Abelian(48, 64));
+        ShowAbInvariants(Product.Generate(FG.Abelian(6, 8), FG.Abelian(8, 8)));
+    }
+}
