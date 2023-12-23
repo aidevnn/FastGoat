@@ -1,3 +1,4 @@
+using System.Numerics;
 using FastGoat.Commons;
 using FastGoat.Structures.GenericGroup;
 
@@ -9,10 +10,17 @@ public class Leaf : ANameElt
     {
         ContentGroup = subgroups.Parent;
         ContentType = NodeType.Leaf;
+        Depth = 1;
         if (decompType == DecompType.Abelian)
+        {
             Name = Group.AbelianInvariants(ContentGroup).Select(e => e.o).Glue(" x ", "C{0}");
+            Weight = 20;
+        }
         else if (decompType == DecompType.SimpleNonAbelian)
+        {
             Name = SimpleNonAbelians(ContentGroup);
+            Weight = 30;
+        }
     }
 
     public Leaf(ConcreteGroup<TableElt> g)
@@ -23,6 +31,8 @@ public class Leaf : ANameElt
 
         ContentType = NodeType.Leaf;
         Name = Group.AbelianInvariants(ContentGroup).Select(e => e.o).Glue(" x ", "C{0}");
+        Depth = 1;
+        Weight = 20;
     }
 
     public Leaf(ConcreteGroup<TableElt> g, string name)
@@ -30,6 +40,8 @@ public class Leaf : ANameElt
         ContentGroup = g;
         ContentType = NodeType.Leaf;
         Name = name;
+        Depth = 1;
+        Weight = 30;
     }
     
     static string SimpleNonAbelians(ConcreteGroup<TableElt> G)

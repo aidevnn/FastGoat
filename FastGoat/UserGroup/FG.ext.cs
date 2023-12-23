@@ -111,19 +111,20 @@ public static partial class FG
     public static IEnumerable<AllSubgroups<TableElt>> AppendIsomorphic(this IEnumerable<AllSubgroups<TableElt>> subgs1,
         params IEnumerable<AllSubgroups<TableElt>>[] subs2)
     {
+        foreach (var sub in subs2.Prepend(subgs1).SelectMany(e=>e).FilterIsomorphic())
+            yield return sub;
+    }
+    
+    public static IEnumerable<AllSubgroups<TableElt>> FilterIsomorphic(this IEnumerable<AllSubgroups<TableElt>> subsgr)
+    {
         var set = new HashSet<AllSubgroups<TableElt>>(new IsomorphSubGroupsInfosEquality<TableElt>());
-        foreach (var subs in subs2.Prepend(subgs1))
+        foreach (var sub in subsgr)
         {
-            foreach (var sub in subs)
-            {
-                if (set.Add(sub))
-                    yield return sub;
-            }
+            if (set.Add(sub))
+                yield return sub;
         }
     }
     
-    
-
     public static IEnumerable<(ExtInfos<Tn, Tg> exts, ANameElt[] names)> NamingExts<Tn, Tg>(this IEnumerable<ExtInfos<Tn, Tg>> allExts)
         where Tg : struct, IElt<Tg>
         where Tn : struct, IElt<Tn>

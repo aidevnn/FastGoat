@@ -135,14 +135,23 @@ public static class NamesTree
             if (t == ANameElt.DecompType.Abelian || t == ANameElt.DecompType.SimpleNonAbelian)
                 all.Add(new Leaf(k, t));
             else if (t == ANameElt.DecompType.SemiDirectProduct)
-                all.AddRange(BuildName(k).Grid2D(BuildName(h)).Select(e => new SemiDirectProductOp(e.t1, e.t2, G)).Distinct()
-                    .Order().Take(1));
+            {
+                var k0 = BuildName(k)[0];
+                var h0 = BuildName(h)[0];
+                all.Add(new SemiDirectProductOp(k0, h0, G));
+            }
             else if (t == ANameElt.DecompType.DirectProduct)
-                all.AddRange(BuildName(k).Grid2D(BuildName(h)).Select(e => new DirectProductOp(e.t1, e.t2, G)).Distinct().Order()
-                    .Take(1));
+            {
+                var k0 = BuildName(k)[0];
+                var h0 = BuildName(h)[0];
+                all.Add(new DirectProductOp(k0, h0, G));
+            }
             else
-                all.AddRange(BuildName(k).Grid2D(BuildName(h)).Select(e => new ExtensionOp(e.t1, e.t2, G)).Distinct().Order()
-                    .Take(1));
+            {
+                var k0 = BuildName(k)[0];
+                var h0 = BuildName(h)[0];
+                all.Add(new ExtensionOp(k0, h0, G));
+            }
         }
 
         return all.Concat(CommonNames(G)).Distinct().Order().ToArray();

@@ -1,3 +1,4 @@
+using System.Numerics;
 using FastGoat.Commons;
 using FastGoat.Structures.GenericGroup;
 
@@ -32,5 +33,7 @@ public class DirectProductOp : ANameElt
 
         Elts = Elts.Order().ToArray();
         Name = Elts.Select(e => e.NameParenthesis).Glue(" x ");
+        Depth = 1 + Elts.Max(e => e.Depth);
+        Weight = Elts.Aggregate(BigInteger.One, (a, b) => a * b.Weight);
     }
 }

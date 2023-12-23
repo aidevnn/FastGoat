@@ -15,8 +15,14 @@ public class SemiDirectProductOp : ANameElt
         (Lhs, Rhs) = (lhs, rhs);
         Name = $"{Lhs.NameParenthesis} x: {Rhs.NameParenthesis}";
         var name2 = CyclicSdp(ContentGroup, Lhs.ContentGroup!, Rhs.ContentGroup!);
+        Weight = Lhs.Weight * Rhs.Weight;
+        Depth = 1 + int.Max(Lhs.Depth, Rhs.Depth);
         if (!string.IsNullOrEmpty(name2))
+        {
             Name = name2;
+            Weight = 25;
+            Depth = 1;
+        }
     }
     
     static Homomorphism<T, Automorphism<T>> GroupAction<T>(ConcreteGroup<T> G, ConcreteGroup<T> K, ConcreteGroup<T> H)

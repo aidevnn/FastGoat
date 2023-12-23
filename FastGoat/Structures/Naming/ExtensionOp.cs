@@ -13,5 +13,7 @@ public class ExtensionOp : ANameElt
         ContentType = NodeType.Extension;
         (Lhs, Rhs) = (lhs, rhs);
         Name = $"{Lhs.NameParenthesis} . {Rhs.NameParenthesis}";
+        Depth = 1 + int.Max(Lhs.Depth, Rhs.Depth);
+        Weight = Lhs.Weight * Rhs.Weight;
     }
 }
