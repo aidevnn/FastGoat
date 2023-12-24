@@ -460,4 +460,22 @@ public static class AbelianInvariantsFactorsPart2
         ShowMagikDecomposition(g1);
     }
 
+    public static void UnIsomorphisms()
+    {
+        var seqUn = 120.Range(3).Select(i => (i, un: new Un(i))).ToArray();
+        foreach (var (i, un) in seqUn)
+            Console.WriteLine("U{0,-3} ~ {1}", i, MagikFactors(un).Glue(" x ", "C{0}"));
+
+        void NewMeth((int i, Un un)[] seq)
+        {
+            var arr = seq.Select(e => MagikFactors(e.un)).ToArray();
+        }
+        void OldMeth((int i, Un un)[] seq)
+        {
+            var arr = seq.Select(e => AbelianInvariantsFactors.Reduce(e.un)).ToArray();
+        }
+        
+        GlobalStopWatch.Bench(5, "NewDecomp", () => NewMeth(seqUn));
+        GlobalStopWatch.Bench(5, "OldDecomp", () => OldMeth(seqUn));
+    }
 }
