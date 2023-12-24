@@ -143,6 +143,79 @@ public static class AbelianInvariantsFactorsPart2
         return (set.OrderByDescending(a => a.Item2).ToArray(), facts);
     }
 
+    // Give the cardinal of elements with order p^i for Group (Z/(p^i)Z )^k of order p^(ik) 
+    static int PMagik(int p, int i, int k) => p.Pow((i - 1) * k) * (p.Pow(k) - 1); // TODO proof
+
+    static List<(T, int)> MagikDecomposition<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
+    {
+        GlobalStopWatch.Restart();
+        GlobalStopWatch.AddLap();
+        var ord = g.Count();
+        var dec = IntExt.PrimesDec(ord);
+        var lt = new List<(int, int, int)>();
+        var elemsOrds = g.ElementsOrders.Values.GroupBy(e => e).ToDictionary(e => e.Key, e => e.Count());
+        foreach (var (p, n) in dec)
+        {
+            var rg = n.Range(1).OrderDescending().ToArray();
+            foreach (var i in rg)
+            {
+                var q = p.Pow(i);
+                if (!elemsOrds.ContainsKey(q))
+                    continue;
+
+                foreach (var k in rg.Where(k => k <= n - i + 1))
+                {
+                    var mgk = PMagik(p, i, k);
+                    if (elemsOrds[q] % mgk == 0)
+                    {
+                        lt.Add((p, i, k));
+                        break;
+                    }
+                }
+            }
+        }
+
+        var dim = lt.Max(e => e.Item3);
+        var can0 = Enumerable.Repeat(1, dim).ToArray();
+        foreach (var (p, i, k) in lt)
+        {
+            var q = p.Pow(i);
+            for (int j = 0; j < k; j++)
+            {
+                if (can0[j] % q != 0)
+                    can0[j] *= q;
+            }
+        }
+
+        GlobalStopWatch.Show($"Decomp {g}");
+        GlobalStopWatch.AddLap();
+
+        var set = g.ToHashSet();
+        var tmpSet = new HashSet<T>() { g.Neutral() };
+        var gens = new List<(T, int)>();
+        foreach (var o in can0)
+        {
+            var e = set.First(e => g.ElementsOrders[e] == o);
+            tmpSet = Group.GenerateElements(g, tmpSet, new() { e });
+            set.ExceptWith(tmpSet);
+            gens.Add((e, o));
+        }
+
+        GlobalStopWatch.Show($"Canonic Generators {g}");
+
+        var can = AbelianInvariantsFactors.Reduce(g).OrderDescending().ToArray();
+        lt.Println($"{g}  ~  {can.Glue(" x ", "C{0}")}");
+        if (!can0.SequenceEqual(can))
+            throw new();
+
+        gens.Println();
+        var g1 = Group.Generate(can0.Glue(" x ", "C{0}"), g, gens.Select(e => e.Item1).ToArray());
+        Console.WriteLine($"{g.ShortName}    {g1.ShortName}");
+
+        Console.WriteLine();
+        return gens;
+    }
+
     static string ArrToString(int[] seq) => seq.Glue(" x ", "C{0}");
 
     static void ShowAbTypes(params int[] seq)
@@ -224,6 +297,28 @@ public static class AbelianInvariantsFactorsPart2
         Console.WriteLine();
     }
 
+    static void ShowPMagik(int p, int maxOrder = 10000)
+    {
+        var n = int.Log2(maxOrder) / int.Log2(p);
+        for (int i = 1; i <= n; i++)
+        {
+            var q = p.Pow(i);
+            var kmax = int.Log2(maxOrder) / int.Log2(q);
+            for (int k = 1; k <= kmax; k++)
+            {
+                var seq = Enumerable.Repeat(q, k).ToArray();
+                var e = AbGroupElemsOrders(seq).First(e => e.o == q);
+                var nb = p.Pow((i - 1) * k) * (p.Pow(k) - 1);
+                var name = seq.Glue(" x ", "C{0}");
+                Console.WriteLine($"G={name} ord(G)={q.Pow(k)}    Card({{e in G, ord(e)={q}}})={e.nb}={nb}");
+                if (e.nb != nb)
+                    throw new($"Expected:{e.nb} Actual:{nb}");
+            }
+
+            Console.WriteLine();
+        }
+    }
+
     public static void Example1Integers()
     {
         ShowAbTypes(1);
@@ -283,5 +378,48 @@ public static class AbelianInvariantsFactorsPart2
         ShowAbInvariants(Product.Generate(FG.Abelian(24), FG.Abelian(18, 30)));
         ShowAbInvariants(FG.Abelian(48, 64));
         ShowAbInvariants(Product.Generate(FG.Abelian(6, 8), FG.Abelian(8, 8)));
+
     }
+
+    public static void FastAbelianInvariantsErrors()
+    {
+        var g0 = FG.Abelian(2, 16);
+        var g1 = Group.Generate("G", g0, g0[0, 1], g0[1, 2]);
+        ShowAbInvariants(g1);
+    }
+    
+    public static void TestPMagik()
+    {
+        ShowPMagik(2, maxOrder: 1000);
+        ShowPMagik(3, maxOrder: 1000);
+        ShowPMagik(5, maxOrder: 1000);
+        ShowPMagik(7, maxOrder: 1000);
+    }
+
+    public static void ExamplePMagik()
+    {
+        MagikDecomposition(FG.Abelian(14, 21));
+        MagikDecomposition(FG.Abelian(20, 30));
+        MagikDecomposition(FG.Abelian(8, 18, 30));
+
+        foreach (var g in FG.AllAbelianGroupsOfOrder(324))
+            MagikDecomposition(g);
+        
+        foreach (var g in FG.AllAbelianGroupsOfOrder(576))
+            MagikDecomposition(g);
+
+        foreach (var g in FG.AllAbelianGroupsOfOrder(750))
+            MagikDecomposition(g);
+
+        foreach (var g in FG.AllAbelianGroupsOfOrder(810))
+            MagikDecomposition(g);
+
+        foreach (var g in FG.AllAbelianGroupsOfOrder(1458))
+            MagikDecomposition(g);
+
+        var g0 = FG.Abelian(2, 16);
+        var g1 = Group.Generate("G", g0, g0[0, 1], g0[1, 2]);
+        MagikDecomposition(g1);
+    }
+
 }
