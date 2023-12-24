@@ -76,6 +76,17 @@ public static partial class Group
 
         return new ReadOnlyDictionary<T, int>(elements);
     }
+    
+    public static IEnumerable<T> CycleExceptNeutral<T>(ConcreteGroup<T> g, T e) where T : struct, IElt<T>
+    {
+        var a = g.Neutral();
+        var o = g.ElementsOrders[e];
+        for (int i = 0; i < o - 1; i++)
+        {
+            a = g.Op(a, e);
+            yield return a;
+        }
+    }
 
     public static ReadOnlyDictionary<T, int> ElementsOrders<T>(IGroup<T> g, IEnumerable<T> elements)
         where T : struct, IElt<T>

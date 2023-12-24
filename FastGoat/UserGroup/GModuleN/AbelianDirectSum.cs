@@ -28,7 +28,8 @@ public readonly struct AbelianDirectSum<T> where T : struct, IElt<T>
             throw new GroupException(GroupExceptionType.OnlyAbelianGroups);
 
         Ab = G;
-        Decomp = Group.AbelianInvariants(Ab).OrderBy(e => e.o).ThenBy(e => e.g).ToList();
+        var (abType, abElems) = Group.AbelianDecompositions(Ab);
+        Decomp = abType.OrderBy(e => e.o).ThenBy(e => e.g).ToList();
         DecompMap = Decomp.ToDictionary(e => e.g, e => e.o);
         AbCanonic = FG.Abelian(Decomp.Select(e => e.o).ToArray());
         var l1 = Decomp.Count;
@@ -41,10 +42,7 @@ public readonly struct AbelianDirectSum<T> where T : struct, IElt<T>
         ToCanonic = new(isoMap1);
         FromCanonic = isoMap1.ToDictionary(e => e.Value, e => e.Key);
 
-        DecompElementary = Decomp.SelectMany(e => (e.o == 1 ? new Dictionary<int, int>() { [1] = 1 } : IntExt.PrimesDec(e.o))
-                .Select(kv => kv.Key.Pow(kv.Value))
-                .Select(pk => (G.Times(e.g, e.o / pk), pk)))
-            .OrderBy(e => e.pk).ToList();
+        DecompElementary = abElems.OrderBy(e => e.o).ThenBy(e => e.g).ToList();
         DecompElementaryMap = DecompElementary.ToDictionary(e => e.g, e => e.o);
         AbElementaries = FG.Abelian(DecompElementary.Select(e => e.o).ToArray());
         var l2 = DecompElementary.Count;

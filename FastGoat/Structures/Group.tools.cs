@@ -641,29 +641,92 @@ public static partial class Group
     {
         return DerivedChain(g).Last().Count() == 1;
     }
-
-    public static List<(T g, int o)> AbelianInvariants<T>(ConcreteGroup<T> gr) where T : struct, IElt<T>
+    
+    public static int[] AbelianGroupType<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
     {
-        if (gr.GroupType == GroupType.NonAbelianGroup)
+        if (g.GroupType == GroupType.NonAbelianGroup)
             throw new GroupException(GroupExceptionType.OnlyAbelianGroups);
 
-        if (gr.Count() == 1)
-            return new() { (gr.Neutral(), 1) };
-
-        var facts = new List<(T g, int o)>();
-        var g0 = gr;
-        var ng = new HashSet<T>() { gr.Neutral() };
-        var step = 1;
-        while (g0.Count() > 1)
+        if (g.Count() == 1)
+            return [1];
+        
+        var ord = g.Count();
+        var dec = IntExt.PrimesDec(ord);
+        var lt = new List<(int, int, int)>();
+        var elemsOrds = g.ElementsOrders.Values.GroupBy(e => e).ToDictionary(e => e.Key, e => e.Count());
+        foreach (var (p, n) in dec)
         {
-            var p = g0.ElementsOrders.OrderBy(e => e.Key).MaxBy(e => e.Value);
-            var h = Generate($"C{p.Value}", g0, p.Key);
-            var k = g0.Over(h, "K");
-            var injCan = AllMorphisms(k, g0, MorphismType.Isomorphism).First(iso => ng.SetEquals(iso.Image().Intersect(h)));
-            g0 = Generate($"G{step++}", g0, injCan.Image().ToArray());
-            facts.Add((p.Key, p.Value));
+            var rg = n.Range(1).OrderDescending().ToArray();
+            foreach (var i in rg)
+            {
+                var q = p.Pow(i);
+                if (!elemsOrds.ContainsKey(q))
+                    continue;
+
+                foreach (var k in rg.Where(k => k <= n - i + 1))
+                {
+                    var nb = p.Pow((i - 1) * k) * (p.Pow(k) - 1); // nb elements of order q=p^i in (Cq)^k
+                    if (elemsOrds[q] % nb == 0)
+                    {
+                        lt.Add((p, i, k));
+                        break;
+                    }
+                }
+            }
         }
 
-        return facts;
+        var dim = lt.Max(e => e.Item3);
+        var can = Enumerable.Repeat(1, dim).ToArray();
+        foreach (var (p, i, k) in lt)
+        {
+            var q = p.Pow(i);
+            for (int j = 0; j < k; j++)
+            {
+                if (can[j] % q != 0)
+                    can[j] *= q;
+            }
+        }
+        
+        return can;
+    }
+
+    public static (List<(T g, int o)> abType, List<(T g, int o)> abElems) AbelianDecompositions<T>(ConcreteGroup<T> g) 
+        where T : struct, IElt<T>
+    {
+        var can = AbelianInvariants(g);
+        List<(T g, int o)> facts = new();
+        foreach (var (e, oe) in can)
+        {
+            var dec = IntExt.PrimesDec(oe).Select(kv => kv.Key.Pow(kv.Value)).ToArray();
+            var cyc = Cycle(g, e).ToDictionary(kv => kv.Key, kv => g.ElementsOrders[kv.Key]);
+            facts.AddRange(dec.Select(q => (cyc.First(e0 => e0.Value == q).Key, q)));
+        }
+
+        facts.Sort((a, b) => -a.o.CompareTo(b.o));
+        return (can, facts);
+    }
+
+    public static List<(T g, int o)> AbelianInvariants<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
+    {
+        if (g.GroupType == GroupType.NonAbelianGroup)
+            throw new GroupException(GroupExceptionType.OnlyAbelianGroups);
+
+        if (g.Count() == 1)
+            return new() { (g.Neutral(), 1) };
+        
+        var elemsOrds = g.ElementsOrders;
+        var abType = AbelianGroupType(g);
+        var set = g.ToHashSet();
+        var tmpSet = new HashSet<T>() { g.Neutral() };
+        var gens = new List<(T, int)>();
+        foreach (var o in abType)
+        {
+            var e = set.First(e => elemsOrds[e] == o && !tmpSet.Overlaps(CycleExceptNeutral(g, e)));
+            tmpSet = GenerateElements(g, tmpSet, new() { e });
+            set.ExceptWith(tmpSet);
+            gens.Add((e, o));
+        }
+
+        return gens;
     }
 }
