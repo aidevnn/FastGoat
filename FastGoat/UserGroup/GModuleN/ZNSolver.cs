@@ -453,7 +453,7 @@ public static class ZNSolver
         var gensCocs = mapCocs.Generators();
 
         var nb0 = nbCobs;
-        var lt = new List<(int ord, CrMap<Tn, Tg> map)>();
+        var lt = new List<(int ord, int nb, CrMap<Tn, Tg> map)>();
         var map02 = mapCobs0.Clone;
 
         foreach (var (k0, ord, map) in gensCocs.OrderBy(e => e.ord).Select((e, i) => (i, e.ord, e.map)))
@@ -471,7 +471,7 @@ public static class ZNSolver
 
             if (nb0 < nb1)
             {
-                lt.Add((ord, map));
+                lt.Add((ord, nb1 / nb0, map));
                 map02 = mr.Clone;
                 nb0 = nb1;
             }
@@ -485,7 +485,7 @@ public static class ZNSolver
         var listReprs = new List<HashSet<CrMap<Tn, Tg>>>();
         listReprs.Add(new() { crZero });
         var gens = mapCobs0.Generators().Select(e => e.map).ToList();
-        foreach (var (ord, map) in lt.OrderBy(e => e.ord))
+        foreach (var (ord, nb, map) in lt)
         {
             var set0 = new HashSet<CrMap<Tn, Tg>>() { crZero };
             var mapTmp = gens.Zip(ind).Aggregate(mapCobs0.Zero, (acc, e) => acc.Add(e.First.Mul(zero.X(e.Second))));
@@ -494,6 +494,8 @@ public static class ZNSolver
                 var m1 = map.Mul(i);
                 var m2 = SysRepresentative(mapTmp.Add(m1)).ConsTerm();
                 set0.Add(m2);
+                if (set0.Count == nb)
+                    break;
             }
 
             listReprs.Add(set0);
@@ -567,7 +569,6 @@ public static class ZNSolver
         Console.WriteLine($"B{r}(G,N):{nbCobs}={sredCobs.Select(s => s.order).Glue("x")}");
         Console.WriteLine($"Z{r}(G,N):{nbCocs}={sredCocs.Select(s => s.order).Glue("x")}");
 
-        var nbCohs2 = listReprs.Aggregate(1, (acc, l) => acc * l.Count);
         var k0 = 1;
         foreach (var comb in listReprs.MultiLoop())
         {
@@ -587,7 +588,7 @@ public static class ZNSolver
             Console.WriteLine("?????????????????????????????????");
 
         return (allCosets.ToArray(), sys0, sys1);
-        
+
         // {
         //     Console.WriteLine($"ERROR H{r}(G,N):Expected:{nbCohs}");
         //     Console.WriteLine($"    listReprs:{listReprs.Select(e => e.Count).Glue(" x ")}={nbCohs2}");

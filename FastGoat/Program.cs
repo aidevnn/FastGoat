@@ -98,7 +98,6 @@ void Ord32()
 
     GlobalStopWatch.Show();
     Console.Beep();
-    // 
 }
 
 void Ord80()
@@ -133,11 +132,18 @@ void Ord81()
     Console.Beep();
 }
 
+void TestOrd64()
+{
+    // Fix cosets errors
+    FG.AllExtensions((FG.Abelian(2, 8), FG.Abelian(2, 2))).NamingExts().DisplayExts(); 
+}
+
 {
     // fancyLog();
     // Ord16();
     // Ord20_40();
     // Ord32();
     // Ord80();
-    Ord81();
+    // Ord81();
+    TestOrd64();
 }
