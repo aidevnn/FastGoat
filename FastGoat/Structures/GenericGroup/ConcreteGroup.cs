@@ -164,6 +164,13 @@ public class ConcreteGroup<T> : IGroup<T> where T : struct, IElt<T>
         if (!ElementsOrdersList().Ascending().SequenceEqual(gu.ElementsOrdersList().Ascending()))
             return false;
 
+        if (GroupType == GroupType.AbelianGroup && gu.GroupType == GroupType.AbelianGroup)
+        {
+            var gType = Group.AbelianGroupType(this);
+            var guType = Group.AbelianGroupType(gu);
+            return gType.SequenceEqual(guType);
+        }
+
         var isos = Group.AllMorphisms(this, gu, Group.MorphismType.Isomorphism);
         return isos.Any(h => h.Count != 0);
     }
