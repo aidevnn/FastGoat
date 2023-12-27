@@ -35,10 +35,16 @@ public abstract class ANameElt : IElt<ANameElt>
     public string NameParenthesis => Name.WithParenthesis();
     public bool Equals(ANameElt? other) => other?.Name == Name;
 
+    public bool IsExtension => ContentType == NodeType.Extension;
+
     public int CompareTo(ANameElt? other)
     {
         if (other is null)
             return 1;
+
+        var compCTC = IsExtension.CompareTo(other.IsExtension);
+        if (compCTC != 0)
+            return compCTC;
 
         var compD = Depth.CompareTo(other.Depth);
         if (compD != 0)
