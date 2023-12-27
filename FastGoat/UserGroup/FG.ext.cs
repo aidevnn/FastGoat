@@ -34,8 +34,13 @@ public static partial class FG
     {
         var CN = Group.Zentrum(N);
         var autN = Group.AutomorphismGroup(N);
-        var ops = Group.AllHomomorphisms(G, autN);
-        var set = new HashSet<AllSubgroups<Ep2<Tn, Tg>>>(new IsomorphSubGroupsInfosEquality<Ep2<Tn, Tg>>());
+        var autG = Group.AutomorphismGroup(G);
+        var allOps = Group.AllHomomorphisms(G, autN);
+        var ops = allOps.ToHashSet(new OpByAutEquality<Tn, Tg>(G, autG, autN));
+        
+        Console.WriteLine();
+        Console.WriteLine($"AutG:{autG.Count()} AutN:{autN.Count()}");
+        Console.WriteLine($"AllOps:{allOps.Count} Filtered:{ops.Count}");
 
         foreach (var (op, i) in ops.Select((l, i) => (l, i + 1)).Skip(nbSkip).Take(nbOps))
         {
@@ -46,20 +51,9 @@ public static partial class FG
             {
                 var c0 = c.ToMapElt;
                 var ext = Group.ExtensionGroup(N, L, c0, G);
-                var extBase = ((ExtensionGroupBase<Tn, Tg>)ext.BaseGroup);
-                if (extBase.IsGroup)
-                {
-                    var allSubs = new AllSubgroups<Ep2<Tn, Tg>>(ext);
-                    if (set.Add(allSubs))
-                        yield return new(c, ext, allSubs);
-                }
-                else
-                {
-                    Console.WriteLine("????????????????????? Extension isnt a group"); // TODO FIX
-                }
+                var allSubs = new AllSubgroups<Ep2<Tn, Tg>>(ext);
+                yield return new(c, ext, allSubs);
             }
-
-            Console.WriteLine($"Nb Exts:{set.Count}");
         }
     }
 
