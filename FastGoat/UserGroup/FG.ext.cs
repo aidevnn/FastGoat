@@ -1,4 +1,5 @@
 
+using System.Collections.Concurrent;
 using FastGoat.Commons;
 using FastGoat.Examples;
 using FastGoat.Structures;
@@ -71,17 +72,10 @@ public static partial class FG
         where Tg : struct, IElt<Tg>
         where Tn : struct, IElt<Tn>
     {
-        var set = new HashSet<AllSubgroups<Ep2<Tn, Tg>>>(new IsomorphSubGroupsInfosEquality<Ep2<Tn, Tg>>());
         foreach (var (nbOps, nbSkip, n, g) in tuples)
         {
             foreach (var extInfos in AllExtensionsInternal(n, g, nbOps, nbSkip))
-            {
-                if (set.Add(extInfos.allSubs))
-                    yield return extInfos;
-            }
-
-            Console.WriteLine();
-            Console.WriteLine($"Total Exts:{set.Count}");
+                yield return extInfos;
         }
     }
 
@@ -105,29 +99,23 @@ public static partial class FG
     public static IEnumerable<AllSubgroups<TableElt>> AppendIsomorphic(this IEnumerable<AllSubgroups<TableElt>> subgs1,
         params IEnumerable<AllSubgroups<TableElt>>[] subs2)
     {
-        foreach (var sub in subs2.Prepend(subgs1).SelectMany(e=>e).FilterIsomorphic())
+        foreach (var sub in subs2.Prepend(subgs1).SelectMany(e => e).FilterIsomorphic())
             yield return sub;
     }
     
     public static IEnumerable<AllSubgroups<TableElt>> FilterIsomorphic(this IEnumerable<AllSubgroups<TableElt>> subsgr)
     {
-        var set = new HashSet<AllSubgroups<TableElt>>(new IsomorphSubGroupsInfosEquality<TableElt>());
+        var nb = 1;
+        var set = new HashSet<AllSubgroups<TableElt>>(1000, new IsomorphSubGroupsInfosEquality<TableElt>());
+        Console.WriteLine("## Start New Filter");
         foreach (var sub in subsgr)
         {
             if (set.Add(sub))
+            {
+                var name = $"    Iso{sub.Parent.Count()} no:{nb++}";
+                Console.WriteLine(name);
                 yield return sub;
-        }
-    }
-    
-    public static IEnumerable<(ExtInfos<Tn, Tg> exts, ANameElt[] names)> NamingExts<Tn, Tg>(this IEnumerable<ExtInfos<Tn, Tg>> allExts)
-        where Tg : struct, IElt<Tg>
-        where Tn : struct, IElt<Tn>
-    {
-        foreach (var extInfos in allExts)
-        {
-            var it = NamesTree.BuildName(extInfos.allSubs.ToTable());
-            extInfos.ext.Name = it[0].Name;
-            yield return (extInfos, it);
+            }
         }
     }
 
@@ -151,32 +139,8 @@ public static partial class FG
         }
     }
 
-    public static void DisplayExts<Tn, Tg>(this IEnumerable<(ExtInfos<Tn, Tg> exts, ANameElt[] names)> extsNames, bool lazy = false)
-        where Tg : struct, IElt<Tg>
-        where Tn : struct, IElt<Tn>
-    {
-        var nb = 0;
-        if (lazy)
-        {
-            foreach (var (extInfos, names) in extsNames)
-            {
-                ++nb;
-                DisplayExtName(extInfos.ext, extInfos.allSubs.Infos, names);
-            }
-        }
-        else
-        {
-            var lt = extsNames.ToArray();
-            var maxLt = lt.Max(e => e.exts.ext.Name.Length);
-            nb = lt.Length;
-            foreach (var (extInfos, names) in lt.OrderBy(e => e.exts))
-                DisplayExtName(extInfos.ext, extInfos.allSubs.Infos, names, maxLt);
-        }
-
-        Console.WriteLine($"Total Exts:{nb}");
-    }
-
-    public static void DisplayNames(this IEnumerable<(AllSubgroups<TableElt>subsg, ANameElt[] names)> seq)
+    public static (AllSubgroups<TableElt> subsg, ANameElt[] names)[] 
+        DisplayNames(this IEnumerable<(AllSubgroups<TableElt>subsg, ANameElt[] names)> seq)
     {
         var lt = seq.OrderBy(e => e.subsg.Parent.GroupType)
             .ThenByDescending(e => e.subsg.Parent.ElementsOrders.Values.Max())
@@ -185,49 +149,57 @@ public static partial class FG
         var maxLt = lt.Max(e => e.subsg.Parent.Name.Length);
         var nb = lt.Length;
         foreach (var (subsg, names) in lt)
-            DisplayExtName(subsg.Parent, subsg.Infos, names, maxLt);
+            DisplayName(subsg.Parent, subsg.Infos, names, maxLt);
         
         Console.WriteLine($"Total Groups:{nb}");
+        return lt;
     }
 
-    public static void DisplayExtsNames<Tn, Tg>(this IEnumerable<ExtInfos<Tn, Tg>> allExts)
-        where Tg : struct, IElt<Tg>
-        where Tn : struct, IElt<Tn>
+    public static AllSubgroups<TableElt>[] DisplayBox(this IEnumerable<AllSubgroups<TableElt>> seq)
     {
-        foreach (var extInfos in allExts.Order())
+        var list = seq.OrderBy(e => e.Parent.GroupType)
+            .ThenByDescending(e => e.Parent.ElementsOrders.Values.Max())
+            .ThenBy(e => e.Infos)
+            .ToArray();
+        var maxLt = list.Max(e => e.Parent.Name.Length);
+        var nb = 0;
+        var nbSharp = 16;
+        foreach (var subsg in list)
         {
-            var names = NamesTree.BuildName(extInfos.allSubs.ToTable());
-            DisplayExtName(extInfos.ext, extInfos.allSubs.Infos, names);
+            var name = subsg.Parent.Name = $"Grp{subsg.Parent.Count()}[{++nb}]";
+            var diff = (maxLt - name.Length) / 2;
+            var space = Enumerable.Repeat(' ', diff).Glue();
+            var lt = Enumerable.Repeat('#', maxLt + 4).Glue();
+            var sharp = Enumerable.Repeat('#', nbSharp).Glue();
+            var line = $"{sharp}{lt}{sharp}";
+            var fmt = $"{sharp}{space}  {{0,{-maxLt + diff * 2}}}  {space}{sharp}";
+            Console.WriteLine(line);
+            Console.WriteLine(fmt, name);
+            Console.WriteLine(line);
+            DisplayGroup.HeadOrders(subsg.Parent);
+            Console.WriteLine(subsg.Infos);
+            Console.WriteLine();
         }
+        
+        Console.WriteLine($"Total Groups:{nb}");
+        return list;
     }
 
-    private static void DisplayExtName<T>(ConcreteGroup<T> ext, SubGroupsInfos infos, ANameElt[] names, int maxLt = -1)
+    private static void DisplayName<T>(ConcreteGroup<T> g, SubGroupsInfos infos, ANameElt[] names, int maxLt = -1)
         where T : struct, IElt<T>
     {
-        var name = ext.Name = names[0].Name;
-        maxLt = maxLt == -1 ? name.Length : maxLt;
+        var nbSharp = 16;
+        var name = g.Name = names[0].Name;
+        maxLt = int.Max(name.Length, maxLt);
+        var diff = (maxLt - name.Length) / 2;
+        var space = Enumerable.Repeat(' ', diff).Glue();
         var lt = Enumerable.Repeat('#', maxLt + 4).Glue();
-        var line = $"#################{lt}#################";
-        var fmt = $"#################  {{0,{-maxLt}}}  #################";
+        var sharp = Enumerable.Repeat('#', nbSharp).Glue();
+        var line = $"{sharp}{lt}{sharp}";
+        var fmt = $"{sharp}{space}  {{0,{-maxLt + diff * 2}}}  {space}{sharp}";
         Console.WriteLine(line);
-        Console.WriteLine(fmt, ext.Name);
+        Console.WriteLine(fmt, g.Name);
         Console.WriteLine(line);
-        DisplayGroup.HeadOrdersNames(ext, infos, names);
-    }
-
-    public static ConcreteGroup<TableElt>[] ToTableExts<Tn, Tg>(this IEnumerable<ExtInfos<Tn, Tg>> allExts,
-        bool naming = false, string prefix = "Ext")
-        where Tg : struct, IElt<Tg>
-        where Tn : struct, IElt<Tn>
-    {
-        var lt = new List<ConcreteGroup<TableElt>>();
-        foreach (var (ext, k) in allExts.Select((e, k) => (e, k + 1)))
-        {
-            lt.Add(ext.ext.ToTable());
-            if (naming)
-                ext.ext.Name = $"{prefix}{ext.ext.Count()}[{k}]";
-        }
-
-        return lt.ToArray();
+        DisplayGroup.HeadOrdersNames(g, infos, names);
     }
 }
