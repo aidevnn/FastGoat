@@ -36,6 +36,7 @@ public readonly struct CrMap<Tn, Tg> : IEnumerable<KeyValuePair<Ep<Tg>, ZNElt<Tn
     public AbelianDirectSum<Tn> Nab => Map.First().Value.Nab;
     public ConcreteGroup<Tn> N => Map.First().Value.N;
     public ConcreteGroup<Tg> G => Map.First().Value.G;
+    public MapElt<Tg, Automorphism<Tn>> L => Map.First().Value.L;
     public bool IsZero() => Map.Values.All(c => c.IsZero());
     public CrMap<Tn, Tg> Zero => new(Map.ToDictionary(e => e.Key, e => e.Value.ZNZero));
     public ZNElt<Tn, Tg> ZNZero => Map.First().Value.ZNZero;
