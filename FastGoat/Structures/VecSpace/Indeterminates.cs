@@ -46,7 +46,7 @@ public class Indeterminates<T> : IEnumerable<T>, IEquatable<Indeterminates<T>> w
     public int Length => Content.Length;
 
     public MonomOrder Order =>
-        (Graduate: Graded, Reverse) switch
+        (Graded, Reverse) switch
         {
             (false, false) => MonomOrder.Lex,
             (true, false) => MonomOrder.GrLex,
