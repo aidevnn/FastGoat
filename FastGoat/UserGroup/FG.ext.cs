@@ -105,7 +105,7 @@ public static partial class FG
     
     public static IEnumerable<AllSubgroups<TableElt>> FilterIsomorphic(this IEnumerable<AllSubgroups<TableElt>> subsgr)
     {
-        var nb = 1;
+        var (nb, r) = (1, 1);
         var set = new HashSet<AllSubgroups<TableElt>>(1000, new IsomorphSubGroupsInfosEquality<TableElt>());
         Console.WriteLine("## Start New Filter");
         foreach (var sub in subsgr)
@@ -116,6 +116,8 @@ public static partial class FG
                 Console.WriteLine(name);
                 yield return sub;
             }
+            else
+                Console.WriteLine($"    Rejected:{r++}");
         }
     }
 
@@ -185,7 +187,7 @@ public static partial class FG
         return list;
     }
 
-    private static void DisplayName<T>(ConcreteGroup<T> g, SubGroupsInfos infos, ANameElt[] names, int maxLt = -1)
+    public static void DisplayName<T>(ConcreteGroup<T> g, SubGroupsInfos infos, ANameElt[] names, int maxLt = -1)
         where T : struct, IElt<T>
     {
         var nbSharp = 16;
