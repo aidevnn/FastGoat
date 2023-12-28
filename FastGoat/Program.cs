@@ -213,6 +213,7 @@ void ProductOrd32()
     GlobalStopWatch.Show();
     Console.Beep();
 }
+
 {
     // fancyLog();
     // Ord16();
@@ -222,10 +223,14 @@ void ProductOrd32()
     // Ord81();
 }
 
-
 {
-    GlobalStopWatch.Restart();
-    
+    var fs = File.ReadAllLines("DetailsSmallGroups32.txt");
+    var title = "All SmallGroups of order 64";
+    var idx = fs.ToList().FindIndex(s => string.Equals(s, title));
+    var allInfos = fs.Skip(idx + 1).Chunk(4)
+        .GroupBy(e => e[2])
+        .ToDictionary(k => k.Key, k => k.Select(e => $"{e[0]}").ToArray());
+
     var all4 = FG.AllAbelianGroupsOfOrder(4);
     var ord8 = new [] { FG.Abelian(8).ToCGTable(), FG.Abelian(4, 2).ToCGTable(), FG.DihedralSdp(4).ToCGTable(), FG.Quaternion(8).ToCGTable() };
     var ord16 = FG.AllAbelianGroupsOfOrder(16).Where(e => Group.AbelianGroupType(e).Count(c => c == 2) < 4).ToArray();
@@ -271,13 +276,69 @@ void ProductOrd32()
     var list4 = FG.AllExtensions([..tuplesC2, ..tuplesC4, e245, ..tuplesC2C2]).Select(e => e.allSubs.ToTable());
 
     GlobalStopWatch.Restart();
-    list0.AppendIsomorphic(list1, list2, list3, list4)
-        .Take(267)
-        .DisplayBox();
+    var nbSharp = 16;
+    var maxLt = 12;
+    var nb = 0;
+    foreach (var subsg in list0.AppendIsomorphic(list1, list2, list3, list4).Take(260))
+    {
+        var name = subsg.Parent.Name = $"Grp{subsg.Parent.Count()}[{++nb}]";
+        var diff = (maxLt - name.Length) / 2;
+        var space = Enumerable.Repeat(' ', diff).Glue();
+        var lt = Enumerable.Repeat('#', maxLt + 4).Glue();
+        var sharp = Enumerable.Repeat('#', nbSharp).Glue();
+        var line = $"{sharp}{lt}{sharp}";
+        var fmt = $"{sharp}{space}  {{0,{-maxLt + diff * 2}}}  {space}{sharp}";
+        Console.WriteLine(line);
+        Console.WriteLine(fmt, name);
+        Console.WriteLine(line);
+        DisplayGroup.HeadOrders(subsg.Parent);
+        Console.WriteLine(subsg.Infos);
+        
+        var infos = subsg.Infos;
+        var str = $"AllSubGr = {infos.AllSubGr}, AllConjsCl = {infos.AllConjsCl}, AllNorms = {infos.AllNorms}";
+        var gapNames = allInfos[str];
+        if (gapNames.Length == 1)
+        {
+            Console.WriteLine($"GAP SmallGroup(64) {gapNames[0]}");
+            allInfos.Remove(str);
+        }
+        else
+        {
+            Console.WriteLine($"Possible GAP SmallGroup(64) {gapNames[0]}");
+            if (string.Equals(gapNames[1], "*"))
+                allInfos.Remove(str);
+            else
+                allInfos[str] = gapNames.Skip(1).Append("*").ToArray();
+        }
+        
+        Console.WriteLine();
+    }
 
+    Console.WriteLine($"Remaining {allInfos.Sum(e => e.Value.Length)} groups");
+    foreach (var (e, f) in allInfos.OrderBy(e => e.Value.Length).ThenBy(e => e.Key))
+        f.Println(e);
+
+    Console.WriteLine();
+    Console.WriteLine($"Total Groups:{nb}");
     GlobalStopWatch.Show();
     Console.Beep();
+    // Remaining 7 groups
+    // AllSubGr = 109, AllConjsCl = 49, AllNorms = 19
+    //     No : 4, Name : ((C8 x C2) : C2) : C2
+    // AllSubGr = 129, AllConjsCl = 47, AllNorms = 13
+    //     No : 32, Name : ((C8 : C2) : C2) : C2
+    // AllSubGr = 193, AllConjsCl = 121, AllNorms = 81
+    //     No : 224, Name : ((C2 x Q8) : C2) : C2
+    // AllSubGr = 225, AllConjsCl = 161, AllNorms = 97
+    //     No : 204, Name : C2 x ((C2 x Q8) : C2)
+    // AllSubGr = 37, AllConjsCl = 15, AllNorms = 9
+    //     No : 54, Name : Q64
+    // AllSubGr = 417, AllConjsCl = 397, AllNorms = 377
+    //     No : 265, Name : C2 x ((C2 x Q8) : C2)
+    // AllSubGr = 425, AllConjsCl = 425, AllNorms = 425
+    //     No : 262, Name : C2 x C2 x C2 x Q8
+    // 
     // Total Groups:260
-    // #  Time:1h7m
+    // #  Time:47m
     // 
 }
