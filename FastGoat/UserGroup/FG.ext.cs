@@ -105,7 +105,7 @@ public static partial class FG
     
     public static IEnumerable<AllSubgroups<TableElt>> FilterIsomorphic(this IEnumerable<AllSubgroups<TableElt>> subsgr)
     {
-        var (nb, r) = (1, 1);
+        var nb = 1;
         var set = new HashSet<AllSubgroups<TableElt>>(1000, new IsomorphSubGroupsInfosEquality<TableElt>());
         Console.WriteLine("## Start New Filter");
         foreach (var sub in subsgr)
@@ -116,8 +116,6 @@ public static partial class FG
                 Console.WriteLine(name);
                 yield return sub;
             }
-            else
-                Console.WriteLine($"    Rejected:{r++}");
         }
     }
 
@@ -157,7 +155,7 @@ public static partial class FG
         return lt;
     }
 
-    public static AllSubgroups<TableElt>[] DisplayBox(this IEnumerable<AllSubgroups<TableElt>> seq)
+    public static AllSubgroups<TableElt>[] DisplayBoxes(this IEnumerable<AllSubgroups<TableElt>> seq)
     {
         var list = seq.OrderBy(e => e.Parent.GroupType)
             .ThenByDescending(e => e.Parent.ElementsOrders.Values.Max())
@@ -165,26 +163,30 @@ public static partial class FG
             .ToArray();
         var maxLt = list.Max(e => e.Parent.Name.Length);
         var nb = 0;
-        var nbSharp = 16;
         foreach (var subsg in list)
-        {
-            var name = subsg.Parent.Name = $"Grp{subsg.Parent.Count()}[{++nb}]";
-            var diff = (maxLt - name.Length) / 2;
-            var space = Enumerable.Repeat(' ', diff).Glue();
-            var lt = Enumerable.Repeat('#', maxLt + 4).Glue();
-            var sharp = Enumerable.Repeat('#', nbSharp).Glue();
-            var line = $"{sharp}{lt}{sharp}";
-            var fmt = $"{sharp}{space}  {{0,{-maxLt + diff * 2}}}  {space}{sharp}";
-            Console.WriteLine(line);
-            Console.WriteLine(fmt, name);
-            Console.WriteLine(line);
-            DisplayGroup.HeadOrders(subsg.Parent);
-            Console.WriteLine(subsg.Infos);
-            Console.WriteLine();
-        }
+            DisplayBox(subsg, ++nb, maxLt);
         
         Console.WriteLine($"Total Groups:{nb}");
         return list;
+    }
+
+    public static void DisplayBox(AllSubgroups<TableElt> subsg, int nb, int maxLt = -1)
+    {
+        var nbSharp = 16;
+        var name = subsg.Parent.Name = $"Grp{subsg.Parent.Count()}[{nb}]";
+        var max = int.Max(maxLt, name.Length);
+        var diff = (max - name.Length) / 2;
+        var space = Enumerable.Repeat(' ', diff).Glue();
+        var lt = Enumerable.Repeat('#', max + 4).Glue();
+        var sharp = Enumerable.Repeat('#', nbSharp).Glue();
+        var line = $"{sharp}{lt}{sharp}";
+        var fmt = $"{sharp}{space}  {{0,{-max + diff * 2}}}  {space}{sharp}";
+        Console.WriteLine(line);
+        Console.WriteLine(fmt, name);
+        Console.WriteLine(line);
+        DisplayGroup.HeadOrders(subsg.Parent);
+        Console.WriteLine(subsg.Infos);
+        Console.WriteLine();
     }
 
     public static void DisplayName<T>(ConcreteGroup<T> g, SubGroupsInfos infos, ANameElt[] names, int maxLt = -1)
