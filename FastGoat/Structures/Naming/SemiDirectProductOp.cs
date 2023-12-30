@@ -21,7 +21,7 @@ public class SemiDirectProductOp : ANameElt
         {
             Name = name2;
             Weight = 25;
-            Depth = 1;
+            Depth = 0;
         }
     }
     

@@ -10,11 +10,12 @@ public class Leaf : ANameElt
     {
         ContentGroup = subgroups.Parent;
         ContentType = NodeType.Leaf;
-        Depth = 1;
+        Depth = 0;
         if (decompType == DecompType.Abelian)
         {
-            Name = Group.AbelianInvariants(ContentGroup).Select(e => e.o).Glue(" x ", "C{0}");
-            Weight = 20;
+            var abType = Group.AbelianGroupType(ContentGroup);
+            Name = abType.Glue(" x ", "C{0}");
+            Weight = 20 + 5 * abType.Length;
         }
         else if (decompType == DecompType.SimpleNonAbelian)
         {
@@ -30,9 +31,10 @@ public class Leaf : ANameElt
             throw new GroupException(GroupExceptionType.GroupDef);
 
         ContentType = NodeType.Leaf;
-        Name = Group.AbelianInvariants(ContentGroup).Select(e => e.o).Glue(" x ", "C{0}");
-        Depth = 1;
-        Weight = 20;
+        var abType = Group.AbelianGroupType(ContentGroup);
+        Name = abType.Glue(" x ", "C{0}");
+        Weight = 20 + 5 * abType.Length;
+        Depth = 0;
     }
 
     public Leaf(ConcreteGroup<TableElt> g, string name)
@@ -40,7 +42,7 @@ public class Leaf : ANameElt
         ContentGroup = g;
         ContentType = NodeType.Leaf;
         Name = name;
-        Depth = 1;
+        Depth = 0;
         Weight = 30;
     }
     

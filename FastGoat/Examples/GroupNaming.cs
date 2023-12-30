@@ -34,6 +34,7 @@ public static class GroupNaming
     public static void Example2()
     {
         var exts24 = FG.AllExtensions((FG.Abelian(12), FG.Abelian(2)))
+            .FilterIsomorphic()
             .OrderBy(e => e.ext.GroupType)
             .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
             .ThenBy(e => ((int, int, int))e.allSubs.Infos).ToList();
@@ -67,11 +68,13 @@ public static class GroupNaming
     public static void Example4()
     {
         var allExts20 = FG.AllExtensions(FG.AllAbelianGroupsOfOrder(4).Select(e => (FG.Abelian(5), e)).ToArray())
+            .FilterIsomorphic()
             .OrderBy(e => e.ext.GroupType)
             .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
             .ThenBy(e => ((int, int, int))e.allSubs.Infos).ToList();
 
         var allExts40 = FG.AllExtensions(FG.AllAbelianGroupsOfOrder(4).Select(e => (FG.Abelian(2, 5), e)).ToArray())
+            .FilterIsomorphic()
             .OrderBy(e => e.ext.GroupType)
             .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
             .ThenBy(e => ((int, int, int))e.allSubs.Infos).ToList();
@@ -98,6 +101,7 @@ public static class GroupNaming
     public static void Example5()
     {
         var allExts = FG.AllExtensions((FG.Abelian(4, 4), FG.Abelian(2)))
+            .FilterIsomorphic()
             .OrderBy(e => e.ext.GroupType)
             .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
             .ThenBy(e => ((int, int, int))e.allSubs.Infos).ToList();
@@ -114,6 +118,7 @@ public static class GroupNaming
     public static void Example5_1()
     {
         var allExts = FG.AllExtensions((FG.ModularMaxSdp(4), FG.Abelian(2)))
+            .FilterIsomorphic()
             .OrderBy(e => e.ext.GroupType)
             .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
             .ThenBy(e => ((int, int, int))e.allSubs.Infos).ToList();
@@ -131,6 +136,7 @@ public static class GroupNaming
     {
         GlobalStopWatch.Restart();
         var allExts = FG.AllExtensions((FG.Abelian(4), FG.Dihedral(4)))
+            .FilterIsomorphic()
             .OrderBy(e => e.ext.GroupType)
             .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
             .ThenBy(e => ((int, int, int))e.allSubs.Infos).ToList();
@@ -143,7 +149,7 @@ public static class GroupNaming
             it.Println("Group Names");
         }
 
-        GlobalStopWatch.Show($"C4 . D8: {allExts.Count}"); // Time:36647 ms
+        GlobalStopWatch.Show($"C4 . D8: {allExts.Count}"); // Time:26.134s
         Console.Beep();
         Console.Write("Checking that all extensions are valid groups...");
         if (allExts.Any(e => !Group.IsGroup(e.ext)))
@@ -163,6 +169,7 @@ public static class GroupNaming
                 (nbOpsMax, FG.Abelian(2, 4), FG.Abelian(4)),
                 (16, FG.Abelian(2, 4), FG.Abelian(2, 2)),
                 (1, FG.Abelian(2, 2, 2), FG.Abelian(2, 2)))
+            .FilterIsomorphic()
             .Take(51)
             .OrderBy(e => e.ext.GroupType)
             .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
@@ -176,7 +183,7 @@ public static class GroupNaming
             it.Println("Group Names");
         }
 
-        GlobalStopWatch.Show($"Ord32: {allExts.Count}"); // Time:199294 ms ~ 3min
+        GlobalStopWatch.Show($"Ord32: {allExts.Count}"); // Time:1m27s
         Console.Beep();
         Console.Write("Checking that all extensions are valid groups...");
         if (allExts.Any(e => !Group.IsGroup(e.ext)))
@@ -188,6 +195,7 @@ public static class GroupNaming
     {
         GlobalStopWatch.Restart();
         var allExts = FG.AllExtensions(FG.AllAbelianGroupsOfOrder(27).Select(e => (e, FG.Abelian(3))).ToArray())
+            .FilterIsomorphic()
             .Take(15)
             .OrderBy(e => e.ext.GroupType)
             .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
@@ -201,7 +209,7 @@ public static class GroupNaming
             it.Println("Group Names");
         }
 
-        GlobalStopWatch.Show($"Ord81: {allExts.Count}"); // Time:130697 ms ~ 2min
+        GlobalStopWatch.Show($"Ord81: {allExts.Count}"); // Time:2m6s
         Console.Beep();
         Console.Write("Checking that all extensions are valid groups...");
         if (allExts.Any(e => !Group.IsGroup(e.ext)))
@@ -213,6 +221,7 @@ public static class GroupNaming
     {
         GlobalStopWatch.Restart();
         var allExts = FG.AllExtensions((FG.Abelian(2), FG.Abelian(4, 4)))
+            .FilterIsomorphic()
             .Take(15)
             .OrderBy(e => e.ext.GroupType)
             .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
@@ -238,6 +247,7 @@ public static class GroupNaming
     {
         GlobalStopWatch.Restart();
         var allExts = FG.AllExtensions((FG.SL2p(3), FG.Abelian(2)))
+            .FilterIsomorphic()
             .OrderBy(e => e.ext.GroupType)
             .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
             .ThenBy(e => ((int, int, int))e.allSubs.Infos).ToList();
@@ -250,7 +260,7 @@ public static class GroupNaming
             it.Println("Group Names");
         }
 
-        GlobalStopWatch.Show($"SL(2,3) . C2: {allExts.Count}"); // Time:5497 ms
+        GlobalStopWatch.Show($"SL(2,3) . C2: {allExts.Count}"); // Time:2.882s
         Console.Beep();
         Console.Write("Checking that all extensions are valid groups...");
         if (allExts.Any(e => !Group.IsGroup(e.ext)))
@@ -323,8 +333,8 @@ public static class GroupNaming
            (C2 x Q8) x: C3
            (C2 x C2) . A4
            C2 . (C2 x A4)
-       # SL(2,3) . C2: 4 Time:5024 ms
+       # SL(2,3) . C2: 4 Time:2.882s
        Checking that all extensions are valid groups... Done.
-       
+        
      */
 }

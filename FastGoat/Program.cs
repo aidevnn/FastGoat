@@ -216,7 +216,7 @@ void MethFast()
 
     var set = allInfos.ToDictionary(e => e.Key, _ => 0);
     var allInfosNb = allInfos.ToDictionary(e => e.Key, e => e.Value.Length);
-
+    var subsGroupsAndNames = new List<(AllSubgroups<TableElt>, ANameElt[], string)>();
     foreach (var sub in new[] { list0, list1, list2, list4, list3 }.SelectMany(list => list))
     {
         if (allInfos.Count == 0)
@@ -229,20 +229,24 @@ void MethFast()
             set[str] = set[str] + 1;
 
         ++nb;
-        // var names = NamesTree.BuildName(sub);
-        // sub.Parent.Name = $"{names[0].Name}";
+        var names = NamesTree.BuildName(sub);
+        sub.Parent.Name = $"{names[0].Name}";
         // FG.DisplayName(sub.Parent, sub.Infos, names);
-        FG.DisplayBox(sub, nb);
+        // FG.DisplayBox(sub, nb);
 
         var gapNames = allInfos[str];
         if (gapNames.Length == 1)
         {
-            Console.WriteLine($"Grp64[{nb}], GAP SmallGroup(64) {gapNames[0]}");
+            var idGap = $"Grp64[{nb}], GAP SmallGroup(64) {gapNames[0]}";
+            Console.WriteLine(idGap);
             allInfos.Remove(str);
+            subsGroupsAndNames.Add((sub, names, idGap));
         }
         else
         {
-            Console.WriteLine($"Grp64[{nb}], Possible GAP SmallGroup(64) {gapNames[0]}");
+            var idGap = $"Grp64[{nb}], Possible GAP SmallGroup(64) {gapNames[0]}";
+            Console.WriteLine(idGap);
+            subsGroupsAndNames.Add((sub, names, idGap));
             if (string.Equals(gapNames[1], "*"))
                 allInfos.Remove(str);
             else
@@ -250,6 +254,13 @@ void MethFast()
         }
 
         Console.WriteLine();
+    }
+
+    var maxLt = subsGroupsAndNames.Max(e => e.Item1.Parent.Name.Length);
+    foreach (var (sub, names, idGap) in subsGroupsAndNames)
+    {
+        FG.DisplayName(sub.Parent, sub.Infos, names, maxLt);
+        Console.WriteLine(idGap);
     }
 
     Console.WriteLine($"Remaining {allInfos.Sum(e => e.Value.Length)} groups");
@@ -269,5 +280,19 @@ void MethFast()
 
 {
     // MethFast();
-    MethSlow();
+    // MethSlow();
+
+    GlobalStopWatch.Restart();
+    var ab32 = FG.AllAbelianGroupsOfOrder(32).Select(e => e.ToCGTable().AllSubgroups());
+    var ord32 = FG.AllExtensions(
+            (FG.Abelian(16), FG.Abelian(2)),
+            (FG.Abelian(4, 4), FG.Abelian(2)),
+            (FG.Abelian(2, 4), FG.Abelian(4)),
+            (FG.Abelian(2, 4), FG.Abelian(2, 2)))
+        .Select(e => e.allSubs.ToTable());
+
+    ab32.AppendIsomorphic(ord32).Take(51).Naming().DisplayNames();
+    
+    GlobalStopWatch.Show(); // Time:46.446s
+    Console.Beep();
 }

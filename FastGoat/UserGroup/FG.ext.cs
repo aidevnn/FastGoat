@@ -103,16 +103,35 @@ public static partial class FG
             yield return sub;
     }
     
-    public static IEnumerable<AllSubgroups<TableElt>> FilterIsomorphic(this IEnumerable<AllSubgroups<TableElt>> subsgr)
+    public static IEnumerable<AllSubgroups<T>> FilterIsomorphic<T>(this IEnumerable<AllSubgroups<T>> subsgr)
+        where T : struct, IElt<T>
     {
         var nb = 1;
-        var set = new HashSet<AllSubgroups<TableElt>>(1000, new IsomorphSubGroupsInfosEquality<TableElt>());
+        var set = new HashSet<AllSubgroups<T>>(1000, new IsomorphSubGroupsInfosEquality<T>());
         Console.WriteLine("## Start New Filter");
         foreach (var sub in subsgr)
         {
             if (set.Add(sub))
             {
                 var name = $"    Iso{sub.Parent.Count()} no:{nb++}";
+                Console.WriteLine(name);
+                yield return sub;
+            }
+        }
+    }
+
+    public static IEnumerable<ExtInfos<Tn, Tg>> FilterIsomorphic<Tn, Tg>(this IEnumerable<ExtInfos<Tn, Tg>> subsgr)
+        where Tn : struct, IElt<Tn>
+        where Tg : struct, IElt<Tg>
+    {
+        var nb = 1;
+        var set = new HashSet<AllSubgroups<Ep2<Tn, Tg>>>(1000, new IsomorphSubGroupsInfosEquality<Ep2<Tn, Tg>>());
+        Console.WriteLine("## Start New Filter");
+        foreach (var sub in subsgr)
+        {
+            if (set.Add(sub.allSubs))
+            {
+                var name = $"    Iso{sub.allSubs.Parent.Count()} no:{nb++}";
                 Console.WriteLine(name);
                 yield return sub;
             }
@@ -155,13 +174,15 @@ public static partial class FG
         return lt;
     }
 
-    public static AllSubgroups<TableElt>[] DisplayBoxes(this IEnumerable<AllSubgroups<TableElt>> seq)
+    public static AllSubgroups<T>[] DisplayBoxes<T>(this IEnumerable<AllSubgroups<T>> seq) where T : struct, IElt<T>
     {
         var list = seq.OrderBy(e => e.Parent.GroupType)
             .ThenByDescending(e => e.Parent.ElementsOrders.Values.Max())
             .ThenBy(e => e.Infos)
             .ToArray();
-        var maxLt = list.Max(e => e.Parent.Name.Length);
+        
+        var ord = list.Select(e => e.Parent.Count()).First();
+        var maxLt = ($"Grp{ord}[{list.Length}]").Length + 2;
         var nb = 0;
         foreach (var subsg in list)
             DisplayBox(subsg, ++nb, maxLt);
@@ -170,7 +191,7 @@ public static partial class FG
         return list;
     }
 
-    public static void DisplayBox(AllSubgroups<TableElt> subsg, int nb, int maxLt = -1)
+    public static void DisplayBox<T>(AllSubgroups<T> subsg, int nb, int maxLt = -1) where T : struct, IElt<T>
     {
         var nbSharp = 16;
         var name = subsg.Parent.Name = $"Grp{subsg.Parent.Count()}[{nb}]";
@@ -185,6 +206,7 @@ public static partial class FG
         Console.WriteLine(fmt, name);
         Console.WriteLine(line);
         DisplayGroup.HeadOrders(subsg.Parent);
+        Console.CursorTop--;
         Console.WriteLine(subsg.Infos);
         Console.WriteLine();
     }
