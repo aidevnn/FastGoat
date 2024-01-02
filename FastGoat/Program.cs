@@ -36,10 +36,13 @@ Console.WriteLine("Hello World");
     foreach (var g in BatchGroups())
         TestAllSubgroups(g);
     
+    TestAllSubgroups(FG.ElementaryAbelian(64));
+    // C2 x C2 x C2 x C2 x C2 x C2
+    // # actual:  SubGroupsInfos { AllSubGr = 2825, AllConjsCl = 2825, AllNorms = 2825 } Time:8.304s
+    // # expected:SubGroupsInfos { AllSubGr = 2825, AllConjsCl = 2825, AllNorms = 2825 } Time:2m42s
+    
     foreach (var g in BatchGroups())
         BenchAllSubgroups(g);
-    
-    TestAllSubgroups(FG.ElementaryAbelian(64));
 }
 
 IEnumerable<ConcreteGroup<TableElt>> BatchGroups()
