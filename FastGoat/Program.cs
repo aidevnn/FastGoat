@@ -32,17 +32,23 @@ Console.WriteLine("Hello World");
 
 {
     GlobalStopWatch.Restart();
-    
-    foreach (var g in BatchGroups())
-        TestAllSubgroups(g);
-    
-    TestAllSubgroups(FG.ElementaryAbelian(64));
+
+    // foreach (var g in BatchGroups())
+    //     TestAllSubgroups(g);
+
+    // TestAllSubgroups(FG.ElementaryAbelian(64));
     // C2 x C2 x C2 x C2 x C2 x C2
     // # actual:  SubGroupsInfos { AllSubGr = 2825, AllConjsCl = 2825, AllNorms = 2825 } Time:8.304s
     // # expected:SubGroupsInfos { AllSubGr = 2825, AllConjsCl = 2825, AllNorms = 2825 } Time:2m42s
+
+    // foreach (var g in BatchGroups())
+    //     BenchAllSubgroups(g);
     
     foreach (var g in BatchGroups())
-        BenchAllSubgroups(g);
+        TestAllPSubgroups(g);
+
+    foreach (var g in BatchGroups())
+        BenchAllPSubgroups(g);
 }
 
 IEnumerable<ConcreteGroup<TableElt>> BatchGroups()
@@ -77,6 +83,14 @@ void BenchAllSubgroups<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
     Console.WriteLine();
 }
 
+void BenchAllPSubgroups<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
+{
+    Console.WriteLine(g);
+    GlobalStopWatch.Bench(5, "New Meth", () => AllPSubGroupsNewMeth(g));
+    GlobalStopWatch.Bench(5, "Old Meth", () => Group.AllPSubGroups(g));
+    Console.WriteLine();
+}
+
 void TestAllSubgroups<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
 {
     Console.WriteLine(g);
@@ -90,9 +104,57 @@ void TestAllSubgroups<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
     var expected = g.AllSubgroups().Infos;
     GlobalStopWatch.Show($"expected:{expected}");
     Console.WriteLine();
-    
+
     if (actual != expected)
         throw new();
+}
+
+void TestAllPSubgroups<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
+{
+    Console.WriteLine(g);
+    GlobalStopWatch.AddLap();
+    var subs0 = AllPSubGroupsNewMeth(g);
+    var all = subs0.Sum(e => e.Value.Count);
+    var norms = subs0.Count(e => e.Value.Count == 1);
+    var actual = new SubGroupsInfos(all, subs0.Count, norms);
+    GlobalStopWatch.Show($"actual:  {actual}");
+    GlobalStopWatch.AddLap();
+    var subs1 = (new AllSubgroups<T>(Group.AllPSubGroups(g)));
+    var expected = subs1.Infos;
+    GlobalStopWatch.Show($"expected:{expected}");
+    var subs2 = (new AllSubgroups<T>(AllSubGroupsNewMeth(g).Where(e => PrimesDec(e.Key.Count()).Count == 1)
+        .ToDictionary(e => e.Key, e => e.Value)));
+    Console.WriteLine(subs2.Infos);
+
+    if (actual != expected)
+    {
+        Console.WriteLine($"### ERRORS ### {g} ###");
+        if (actual.AllConjsCl < expected.AllConjsCl)
+        {
+            Console.WriteLine("Missing subgroups");
+            foreach (var v in subs1.AllSubgroupConjugates.Where(e => subs0.Keys.All(g0 => !g0.IsIsomorphicTo(e.Representative))))
+            {
+                DisplayGroup.HeadOrders(v.Representative);
+                Console.WriteLine($"Nb Conjs:{v.Size}");
+            }
+        }
+
+        if (actual.AllConjsCl > expected.AllConjsCl)
+        {
+            Console.WriteLine("Missing subgroups");
+            foreach (var (k, v) in subs0.Where(e => subs1.AllRepresentatives.All(g0 => !g0.IsIsomorphicTo(e.Key))))
+            {
+                DisplayGroup.HeadOrders(k);
+                Console.WriteLine($"Nb Conjs:{v.Count}");
+            }
+        }
+    }
+
+    Console.WriteLine();
+    if (actual != subs2.Infos)
+    {
+        throw new();
+    }
 }
 
 Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>> AllSubGroupsNewMeth<T>(ConcreteGroup<T> g)
@@ -150,4 +212,82 @@ Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>> AllSubGroupsNewMeth<T>(Conc
     k.Name = g.Name;
     v.First().Name = g.Name;
     return table;
+}
+
+Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>> PSubGroupsNewMeth<T>(ConcreteGroup<T> g, int p)
+    where T : struct, IElt<T>
+{
+    if (!IntExt.Primes10000.Contains(p))
+        throw new();
+
+    var og = g.Count();
+    var dec = IntExt.PrimesDec(og);
+    if (!dec.ContainsKey(p))
+        throw new();
+
+    var allSubGrs = new HashSet<ConcreteGroup<T>>(og * og, new GroupSetEquality<T>());
+    var table = new Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>>(og * og, new GroupSetEquality<T>());
+
+    HashSet<int> pArr = [p];
+    foreach (var e in g)
+    {
+        var oe = g.ElementsOrders[e];
+        if (!pArr.SetEquals(IntExt.PrimesDecomposition(oe)))
+            continue;
+
+        var cyc = Group.Generate(g, e);
+        if (!allSubGrs.Contains(cyc))
+        {
+            var conjs = table[cyc] = Group.SubGroupsConjugates(g, cyc);
+            allSubGrs.UnionWith(conjs);
+        }
+    }
+
+    var sgsRem = table.Keys.ToHashSet(new GroupSetEquality<T>());
+    var cycRem = allSubGrs.ToHashSet(new GroupSetEquality<T>());
+    while (sgsRem.Count != 0)
+    {
+        var sgs = sgsRem.OrderBy(sg => sg.Count()).ToArray();
+        var cyc = cycRem.OrderBy(sg => sg.Count()).ToArray();
+        sgsRem.Clear();
+        cycRem.Clear();
+        foreach (var (sg0, sg1) in cyc.Grid2D(sgs))
+        {
+            if (sg0.SuperSetOf(sg1) || sg0.SubSetOf(sg1))
+                continue;
+
+            var gens = sg0.GetGenerators().Union(sg1.GetGenerators()).ToArray();
+            var elts = Group.GenerateElements(g, sg1.Concat(sg0).ToHashSet(), gens.ToList()).ToHashSet();
+            var oe = elts.Count;
+            if (!pArr.SetEquals(IntExt.PrimesDecomposition(oe)))
+                continue;
+
+            if (allSubGrs.All(g0 => !g0.SetEquals(elts)))
+            {
+                var sg2 = Group.Generate(g, gens);
+                var conjsSg2 = table[sg2] = Group.SubGroupsConjugates(g, sg2);
+                allSubGrs.UnionWith(conjsSg2);
+                sgsRem.Add(sg2);
+                cycRem.Add(sg0);
+            }
+        }
+    }
+
+    var gName = g.NameParenthesis();
+    foreach (var (g0, i) in table.Keys.OrderBy(g0 => g0.Count()).Select((g0, i) => (g0, i)))
+    {
+        g0.Name = $"{gName}-SubGr{i + 1}";
+        foreach (var (cg0, j) in table[g0].Select((cg0, j) => (cg0, j)))
+            cg0.Name = $"{g0}-Cj{j + 1}";
+    }
+
+    return table;
+}
+
+Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>> AllPSubGroupsNewMeth<T>(ConcreteGroup<T> g)
+    where T : struct, IElt<T>
+{
+    var dec = IntExt.PrimesDec(g.Count());
+    return dec.Keys.Order().Select(p => PSubGroupsNewMeth(g, p)).SelectMany(kv => kv)
+        .ToDictionary(e => e.Key, e => e.Value, new GroupSetEquality<T>());
 }
