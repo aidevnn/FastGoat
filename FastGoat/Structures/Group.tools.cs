@@ -216,7 +216,7 @@ public static partial class Group
     public static ConcreteGroup<T1> IsomorphicSubgroup<T1, T2>(ConcreteGroup<T1> g, ConcreteGroup<T2> sg, string name)
         where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
     {
-        var iso = Group.AllMorphisms(sg, g, MorphismType.Isomorphism).FirstOrDefault();
+        var iso = AllMorphisms(sg, g, MorphismType.Isomorphism).FirstOrDefault();
         if (iso.HomMap is null)
             throw new GroupException(GroupExceptionType.GroupDef);
 
@@ -232,8 +232,8 @@ public static partial class Group
     public static List<ConcreteGroup<T1>> IsomorphicsSubgroupsAll<T1, T2>(ConcreteGroup<T1> g, ConcreteGroup<T2> sg, string name)
         where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
     {
-        var isos = Group.AllIsomorphisms(sg, g).Select(h => h.Image().ToHashSet()).ToHashSet(new SetEquality<T1>());
-        return isos.Select((h, i) => Group.Generate($"{name}[{i + 1}]", g, h.ToArray())).ToList();
+        var isos = AllIsomorphisms(sg, g).Select(h => h.Image().ToHashSet()).ToHashSet(new SetEquality<T1>());
+        return isos.Select((h, i) => Generate($"{name}[{i + 1}]", g, h.ToArray())).ToList();
     }
 
     public static List<ConcreteGroup<T1>> IsomorphicsSubgroupsAll<T1, T2>(ConcreteGroup<T1> g, ConcreteGroup<T2> sg)
@@ -246,8 +246,9 @@ public static partial class Group
         where T : struct, IElt<T>
     {
         var og = g.Count();
-        var allSubGrs = new HashSet<ConcreteGroup<T>>(20 * og, new GroupSetEquality<T>());
-        var table = new Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>>(og);
+        var allSubGrs = new HashSet<ConcreteGroup<T>>(og * og, new GroupSetEquality<T>());
+        var table = new Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>>(og * og, new GroupSetEquality<T>());
+        var tableCyc = new Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>>(og * og, new GroupSetEquality<T>());
 
         foreach (var e0 in g)
         {
@@ -256,32 +257,33 @@ public static partial class Group
             {
                 var conjs = table[cyc] = SubGroupsConjugates(g, cyc);
                 allSubGrs.UnionWith(conjs);
+                foreach (var c in conjs)
+                    tableCyc[c] = conjs;
             }
         }
 
         var sgsRem = table.Keys.ToHashSet(new GroupSetEquality<T>());
-        var sgsPrevRem = allSubGrs.ToHashSet(new GroupSetEquality<T>());
+        var cycRem = allSubGrs.ToHashSet(new GroupSetEquality<T>());
         while (sgsRem.Count != 0)
         {
             var sgs = sgsRem.OrderBy(sg => sg.Count()).ToArray();
-            var sgsPrev = sgsPrevRem.OrderBy(sg => sg.Count()).ToArray();
+            var cyc = cycRem.OrderBy(sg => sg.Count()).ToArray();
             sgsRem.Clear();
-            sgsPrevRem.Clear();
-            foreach (var (sg0, sg1) in sgsPrev.Grid2D(sgs))
+            cycRem.Clear();
+            foreach (var (sg0, sg1) in cyc.Grid2D(sgs))
             {
                 if (sg0.SuperSetOf(sg1) || sg0.SubSetOf(sg1))
                     continue;
 
                 var gens = sg0.GetGenerators().Union(sg1.GetGenerators()).ToArray();
-                var elts = GenerateElements(g, gens).ToHashSet();
+                var elts = GenerateElements(g, sg1.Concat(sg0).ToHashSet(), gens.ToList()).ToHashSet();
                 if (allSubGrs.All(g0 => !g0.SetEquals(elts)))
                 {
                     var sg2 = Generate(g, gens);
                     var conjsSg2 = table[sg2] = SubGroupsConjugates(g, sg2);
                     allSubGrs.UnionWith(conjsSg2);
-                    // sgsRem.Add(sg2);
-                    sgsRem.UnionWith(conjsSg2);
-                    sgsPrevRem.Add(sg1);
+                    sgsRem.Add(sg2);
+                    cycRem.UnionWith(tableCyc[sg0]);
                 }
             }
         }
@@ -311,15 +313,16 @@ public static partial class Group
         if (!IntExt.Primes10000.Contains(p))
             throw new();
 
-        var dec = IntExt.PrimesDec(g.Count());
+        var og = g.Count();
+        var dec = IntExt.PrimesDec(og);
         if (!dec.ContainsKey(p))
             throw new();
 
-        var og = g.Count();
-        var table = new Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>>(og, new GroupSetEquality<T>());
-        var allSubgroups = new HashSet<ConcreteGroup<T>>(og * 20, new GroupSetEquality<T>());
+        var allSubGrs = new HashSet<ConcreteGroup<T>>(og * og, new GroupSetEquality<T>());
+        var table = new Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>>(og * og, new GroupSetEquality<T>());
+        var tableCyc = new Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>>(og * og, new GroupSetEquality<T>());
 
-        var pArr = new[] { p }.ToHashSet();
+        HashSet<int> pArr = [p];
         foreach (var e in g)
         {
             var oe = g.ElementsOrders[e];
@@ -327,37 +330,41 @@ public static partial class Group
                 continue;
 
             var cyc = Generate(g, e);
-            if (allSubgroups.Add(cyc))
+            if (!allSubGrs.Contains(cyc))
             {
                 var conjs = table[cyc] = SubGroupsConjugates(g, cyc);
-                allSubgroups.UnionWith(conjs);
+                allSubGrs.UnionWith(conjs);
+                foreach (var c in conjs)
+                    tableCyc[c] = conjs;
             }
         }
 
         var sgsRem = table.Keys.ToHashSet(new GroupSetEquality<T>());
-        var sgsPrevRem = allSubgroups.ToHashSet(new GroupSetEquality<T>());
+        var cycRem = allSubGrs.ToHashSet(new GroupSetEquality<T>());
         while (sgsRem.Count != 0)
         {
             var sgs = sgsRem.OrderBy(sg => sg.Count()).ToArray();
-            var sgsPrev = sgsPrevRem.OrderBy(sg => sg.Count()).ToArray();
+            var cyc = cycRem.OrderBy(sg => sg.Count()).ToArray();
             sgsRem.Clear();
-            sgsPrevRem.Clear();
-            foreach (var (sg0, sg1) in sgsPrev.Grid2D(sgs))
+            cycRem.Clear();
+            foreach (var (sg0, sg1) in cyc.Grid2D(sgs))
             {
+                if (sg0.SuperSetOf(sg1) || sg0.SubSetOf(sg1))
+                    continue;
+
                 var gens = sg0.GetGenerators().Union(sg1.GetGenerators()).ToArray();
-                var elts = GenerateElements(g, gens).ToHashSet();
+                var elts = GenerateElements(g, sg1.Concat(sg0).ToHashSet(), gens.ToList()).ToHashSet();
                 var oe = elts.Count;
                 if (!pArr.SetEquals(IntExt.PrimesDecomposition(oe)))
                     continue;
 
-                if (allSubgroups.All(g0 => !g0.SetEquals(elts)))
+                if (allSubGrs.All(g0 => !g0.SetEquals(elts)))
                 {
                     var sg2 = Generate(g, gens);
                     var conjsSg2 = table[sg2] = SubGroupsConjugates(g, sg2);
-                    allSubgroups.UnionWith(conjsSg2);
-                    // sgsRem.Add(sg2);
-                    sgsRem.UnionWith(conjsSg2);
-                    sgsPrevRem.Add(sg1);
+                    allSubGrs.UnionWith(conjsSg2);
+                    sgsRem.Add(sg2);
+                    cycRem.UnionWith(tableCyc[sg0]);
                 }
             }
         }
@@ -365,7 +372,7 @@ public static partial class Group
         var gName = g.NameParenthesis();
         foreach (var (g0, i) in table.Keys.OrderBy(g0 => g0.Count()).Select((g0, i) => (g0, i)))
         {
-            g0.Name = $"{gName}-{p}SubGr{i + 1}";
+            g0.Name = $"{gName}-SubGr{i + 1}";
             foreach (var (cg0, j) in table[g0].Select((cg0, j) => (cg0, j)))
                 cg0.Name = $"{g0}-Cj{j + 1}";
         }
@@ -551,7 +558,7 @@ public static partial class Group
     public static ConcreteGroup<T> Normalize<T>(ConcreteGroup<T> h, ConcreteGroup<T> s) where T : struct, IElt<T>
     {
         var n = h.Where(x => s.SetEquals(s.Select(s0 => h.Op(h.Invert(x), h.Op(s0, x))))).ToArray();
-        return Group.Generate($"N[{s}]({h})", h, n);
+        return Generate($"N[{s}]({h})", h, n);
     }
 
     public static bool AreConjugate<T>(ConcreteGroup<T> g, ConcreteGroup<T> sg1, ConcreteGroup<T> sg2) where T : struct, IElt<T>
@@ -618,7 +625,7 @@ public static partial class Group
 
     public static List<ConcreteGroup<T>> ZentrumsChain<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
     {
-        var z0 = Group.Generate("Z0", g, g.Neutral());
+        var z0 = Generate("Z0", g, g.Neutral());
         List<ConcreteGroup<T>> chain = new() { z0 };
         ZentrumsChain(g, chain);
         return chain;
@@ -626,7 +633,7 @@ public static partial class Group
 
     public static List<ConcreteGroup<T>> ZentrumsChainFast<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
     {
-        var z0 = Group.Generate("Z0", g, g.Neutral());
+        var z0 = Generate("Z0", g, g.Neutral());
         List<ConcreteGroup<T>> chain = new() { z0 };
         ZentrumsChainFast(g, chain);
         return chain;
@@ -641,7 +648,7 @@ public static partial class Group
     {
         return DerivedChain(g).Last().Count() == 1;
     }
-    
+
     public static int[] AbelianGroupType<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
     {
         if (g.GroupType == GroupType.NonAbelianGroup)
@@ -649,7 +656,7 @@ public static partial class Group
 
         if (g.Count() == 1)
             return [1];
-        
+
         var ord = g.Count();
         var dec = IntExt.PrimesDec(ord);
         var lt = new List<(int, int, int)>();
@@ -686,18 +693,18 @@ public static partial class Group
                     can[j] *= q;
             }
         }
-        
+
         return can;
     }
 
-    public static (List<(T g, int o)> abType, List<(T g, int o)> abElems) AbelianDecompositions<T>(ConcreteGroup<T> g) 
+    public static (List<(T g, int o)> abType, List<(T g, int o)> abElems) AbelianDecompositions<T>(ConcreteGroup<T> g)
         where T : struct, IElt<T>
     {
         var can = AbelianInvariants(g);
         List<(T g, int o)> facts = new();
         foreach (var (e, oe) in can)
         {
-            var dec = IntExt.PrimesDec(oe).Select(kv => kv.Key.Pow(kv.Value)).ToArray();
+            var dec = oe == 1 ? [1] : IntExt.PrimesDec(oe).Select(kv => kv.Key.Pow(kv.Value)).ToArray();
             var cyc = Cycle(g, e).ToDictionary(kv => kv.Key, kv => g.ElementsOrders[kv.Key]);
             facts.AddRange(dec.Select(q => (cyc.First(e0 => e0.Value == q).Key, q)));
         }
@@ -713,7 +720,7 @@ public static partial class Group
 
         if (g.Count() == 1)
             return new() { (g.Neutral(), 1) };
-        
+
         var elemsOrds = g.ElementsOrders;
         var abType = AbelianGroupType(g);
         var set = g.ToHashSet();
