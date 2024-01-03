@@ -13,7 +13,7 @@ public static class GLnK
         var m0 = gl[0, 1, -1, 0];
         var m1 = gl[0, 1, 1, 0];
 
-        var g0 = Group.Generate("R(π/2)", gl, m0, m1);
+        var g0 = Group.Generate("R(π/2)", gl, m0);
         DisplayGroup.HeadElements(g0);
         var g1 = Group.Generate("R(y=x)", gl, m1);
         DisplayGroup.HeadElements(g1);
