@@ -162,6 +162,7 @@ public static partial class FG
         DisplayNames(this IEnumerable<(AllSubgroups<TableElt>subsg, ANameElt[] names)> seq)
     {
         var lt = seq.OrderBy(e => e.subsg.Parent.GroupType)
+            .ThenBy(e => e.names[0])
             .ThenByDescending(e => e.subsg.Parent.ElementsOrders.Values.Max())
             .ThenBy(e => e.subsg.Infos)
             .ToArray();
@@ -188,6 +189,7 @@ public static partial class FG
             DisplayBox(subsg, ++nb, maxLt);
         
         Console.WriteLine($"Total Groups:{nb}");
+        Console.WriteLine();
         return list;
     }
 
