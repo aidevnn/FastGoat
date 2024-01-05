@@ -40,10 +40,4 @@
             <DependentUpon>Array2Tuple.tt</DependentUpon>
         </Compile>
     </ItemGroup>
-    <ItemGroup>
-      <None Remove="DetailsSmallGroups32.txt" />
-      <Content Include="DetailsSmallGroups32.txt">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </Content>
-    </ItemGroup>
 </Project>
