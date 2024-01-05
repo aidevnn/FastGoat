@@ -31,13 +31,13 @@ public readonly struct GroupTableBase : IGroup<TableElt>
     public Dictionary<TableElt, TableElt> InvTable { get; }
     public int Order { get; }
     public TableElt NeutralElt { get; }
-    private dynamic BaseGroup { get; }
+    private dynamic OriginGroup { get; }
     private Dictionary<int, TableElt> IdxTable { get; }
 
     public GroupTableBase(dynamic group, Dictionary<int, TableElt> idxTable, TableElt[] gens)
     {
         (Name, Hash) = (group.Name, (group.Hash, "table").GetHashCode());
-        BaseGroup = group;
+        OriginGroup = group;
         IdxTable = idxTable;
         PseudoGeneratos = gens;
         var og = IdxTable.Count;
@@ -75,7 +75,7 @@ public readonly struct GroupTableBase : IGroup<TableElt>
     {
         if (!InvTable.ContainsKey(e))
         {
-            var e0 = BaseGroup.Invert(e.E).GetHashCode();
+            var e0 = OriginGroup.Invert(e.E).GetHashCode();
             var ei = InvTable[e] = IdxTable[e0];
             return ei;
         }
@@ -88,12 +88,17 @@ public readonly struct GroupTableBase : IGroup<TableElt>
         var e1e2 = (e1, e2);
         if (!OpTable.ContainsKey(e1e2))
         {
-            var e12Hash = BaseGroup.Op(e1.E, e2.E).GetHashCode();
+            var e12Hash = OriginGroup.Op(e1.E, e2.E).GetHashCode();
             var e12 = OpTable[e1e2] = IdxTable[e12Hash];
             return e12;
         }
 
         return OpTable[e1e2];
+    }
+    
+    public void Clear()
+    {
+        OpTable.Clear();
     }
 
     public override int GetHashCode() => Hash;
@@ -113,12 +118,21 @@ public readonly struct GroupTableBase : IGroup<TableElt>
 
 public class GroupTable : ConcreteGroup<TableElt>
 {
+    private GroupTableBase TableBase { get; }
     private GroupTable(GroupTableBase tableBase) : base(tableBase, tableBase.GetGenerators().ToArray())
     {
+        TableBase = tableBase;
     }
 
     public static GroupTable Create<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
     {
         return new(GroupTableBase.Create(g));
+    }
+
+    ~GroupTable()
+    {
+        TableBase.Clear();
+        GC.SuppressFinalize(TableBase.OpTable);
+        GC.SuppressFinalize(this);
     }
 }
