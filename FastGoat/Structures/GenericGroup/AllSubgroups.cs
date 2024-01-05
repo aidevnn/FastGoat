@@ -13,7 +13,6 @@ public record SubGroupsInfos(int AllSubGr, int AllConjsCl, int AllNorms) : IComp
 
         return ToTuples().CompareTo(other.ToTuples());
     }
-    public static explicit operator (int, int, int)(SubGroupsInfos infos) => (infos.AllSubGr, infos.AllConjsCl, infos.AllNorms);
 }
 
 public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>> where T : struct, IElt<T>

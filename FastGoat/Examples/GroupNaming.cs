@@ -37,13 +37,13 @@ public static class GroupNaming
             .FilterIsomorphic()
             .OrderBy(e => e.ext.GroupType)
             .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
-            .ThenBy(e => ((int, int, int))e.allSubs.Infos).ToList();
+            .ThenBy(e => e.allSubs.Infos).ToList();
 
         foreach (var extInfos in exts24)
         {
             var it = NamesTree.BuildName(extInfos.allSubs.ToTable());
             extInfos.ext.Name = it.First().Name;
-            CocyclesDFS.DisplayInfosGroups([(extInfos.ext, ((int, int, int))extInfos.allSubs.Infos)], naming: false);
+            CocyclesDFS.DisplayInfosGroups([(extInfos.ext, extInfos.allSubs.Infos.ToTuples())], naming: false);
             it.Println("Group Names");
         }
     }
@@ -71,19 +71,19 @@ public static class GroupNaming
             .FilterIsomorphic()
             .OrderBy(e => e.ext.GroupType)
             .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
-            .ThenBy(e => ((int, int, int))e.allSubs.Infos).ToList();
+            .ThenBy(e => e.allSubs.Infos).ToList();
 
         var allExts40 = FG.AllExtensions(FG.AllAbelianGroupsOfOrder(4).Select(e => (FG.Abelian(2, 5), e)).ToArray())
             .FilterIsomorphic()
             .OrderBy(e => e.ext.GroupType)
             .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
-            .ThenBy(e => ((int, int, int))e.allSubs.Infos).ToList();
+            .ThenBy(e => e.allSubs.Infos).ToList();
 
         foreach (var extInfos in allExts20)
         {
             var it = NamesTree.BuildName(extInfos.allSubs.ToTable());
             extInfos.ext.Name = it.First().Name;
-            CocyclesDFS.DisplayInfosGroups([(extInfos.ext, ((int, int, int))extInfos.allSubs.Infos)], naming: false);
+            CocyclesDFS.DisplayInfosGroups([(extInfos.ext, extInfos.allSubs.Infos.ToTuples())], naming: false);
             it.Println("Group Names");
         }
 
@@ -93,7 +93,7 @@ public static class GroupNaming
         {
             var it = NamesTree.BuildName(extInfos.allSubs.ToTable());
             extInfos.ext.Name = it.First().Name;
-            CocyclesDFS.DisplayInfosGroups([(extInfos.ext, ((int, int, int))extInfos.allSubs.Infos)], naming: false);
+            CocyclesDFS.DisplayInfosGroups([(extInfos.ext, extInfos.allSubs.Infos.ToTuples())], naming: false);
             it.Println("Group Names");
         }
     }
@@ -104,13 +104,13 @@ public static class GroupNaming
             .FilterIsomorphic()
             .OrderBy(e => e.ext.GroupType)
             .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
-            .ThenBy(e => ((int, int, int))e.allSubs.Infos).ToList();
+            .ThenBy(e => e.allSubs.Infos).ToList();
 
         foreach (var extInfos in allExts)
         {
             var it = NamesTree.BuildName(extInfos.allSubs.ToTable());
             extInfos.ext.Name = it.First().Name;
-            CocyclesDFS.DisplayInfosGroups([(extInfos.ext, ((int, int, int))extInfos.allSubs.Infos)], naming: false);
+            CocyclesDFS.DisplayInfosGroups([(extInfos.ext, extInfos.allSubs.Infos.ToTuples())], naming: false);
             it.Println("Group Names");
         }
     }
@@ -121,13 +121,13 @@ public static class GroupNaming
             .FilterIsomorphic()
             .OrderBy(e => e.ext.GroupType)
             .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
-            .ThenBy(e => ((int, int, int))e.allSubs.Infos).ToList();
+            .ThenBy(e => e.allSubs.Infos).ToList();
 
         foreach (var extInfos in allExts)
         {
             var it = NamesTree.BuildName(extInfos.allSubs.ToTable());
             extInfos.ext.Name = it.First().Name;
-            CocyclesDFS.DisplayInfosGroups([(extInfos.ext, ((int, int, int))extInfos.allSubs.Infos)], naming: false);
+            CocyclesDFS.DisplayInfosGroups([(extInfos.ext, extInfos.allSubs.Infos.ToTuples())], naming: false);
             it.Println("Group Names");
         }
     }
@@ -139,13 +139,13 @@ public static class GroupNaming
             .FilterIsomorphic()
             .OrderBy(e => e.ext.GroupType)
             .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
-            .ThenBy(e => ((int, int, int))e.allSubs.Infos).ToList();
+            .ThenBy(e => e.allSubs.Infos).ToList();
 
         foreach (var extInfos in allExts)
         {
             var it = NamesTree.BuildName(extInfos.allSubs.ToTable());
             extInfos.ext.Name = it.First().Name;
-            CocyclesDFS.DisplayInfosGroups([(extInfos.ext, ((int, int, int))extInfos.allSubs.Infos)], naming: false);
+            CocyclesDFS.DisplayInfosGroups([(extInfos.ext, extInfos.allSubs.Infos.ToTuples())], naming: false);
             it.Println("Group Names");
         }
 
@@ -173,13 +173,13 @@ public static class GroupNaming
             .Take(51)
             .OrderBy(e => e.ext.GroupType)
             .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
-            .ThenBy(e => ((int, int, int))e.allSubs.Infos).ToList();
+            .ThenBy(e => e.allSubs.Infos).ToList();
 
         foreach (var extInfos in allExts)
         {
             var it = NamesTree.BuildName(extInfos.allSubs.ToTable());
             extInfos.ext.Name = it.First().Name;
-            CocyclesDFS.DisplayInfosGroups([(extInfos.ext, ((int, int, int))extInfos.allSubs.Infos)], naming: false);
+            CocyclesDFS.DisplayInfosGroups([(extInfos.ext, extInfos.allSubs.Infos.ToTuples())], naming: false);
             it.Println("Group Names");
         }
 
@@ -199,13 +199,13 @@ public static class GroupNaming
             .Take(15)
             .OrderBy(e => e.ext.GroupType)
             .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
-            .ThenBy(e => ((int, int, int))e.allSubs.Infos).ToList();
+            .ThenBy(e => e.allSubs.Infos).ToList();
 
         foreach (var extInfos in allExts)
         {
             var it = NamesTree.BuildName(extInfos.allSubs.ToTable());
             extInfos.ext.Name = it.First().Name;
-            CocyclesDFS.DisplayInfosGroups([(extInfos.ext, ((int, int, int))extInfos.allSubs.Infos)], naming: false);
+            CocyclesDFS.DisplayInfosGroups([(extInfos.ext, extInfos.allSubs.Infos.ToTuples())], naming: false);
             it.Println("Group Names");
         }
 
@@ -225,13 +225,13 @@ public static class GroupNaming
             .Take(15)
             .OrderBy(e => e.ext.GroupType)
             .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
-            .ThenBy(e => ((int, int, int))e.allSubs.Infos).ToList();
+            .ThenBy(e => e.allSubs.Infos).ToList();
 
         foreach (var extInfos in allExts)
         {
             var it = NamesTree.BuildName(extInfos.allSubs.ToTable());
             extInfos.ext.Name = it.First().Name;
-            CocyclesDFS.DisplayInfosGroups([(extInfos.ext, ((int, int, int))extInfos.allSubs.Infos)], naming: false);
+            CocyclesDFS.DisplayInfosGroups([(extInfos.ext, extInfos.allSubs.Infos.ToTuples())], naming: false);
             it.Println("Group Names");
         }
 
@@ -250,13 +250,13 @@ public static class GroupNaming
             .FilterIsomorphic()
             .OrderBy(e => e.ext.GroupType)
             .ThenByDescending(e => e.ext.ElementsOrders.Values.Max())
-            .ThenBy(e => ((int, int, int))e.allSubs.Infos).ToList();
+            .ThenBy(e => e.allSubs.Infos).ToList();
 
         foreach (var extInfos in allExts)
         {
             var it = NamesTree.BuildName(extInfos.allSubs.ToTable());
             extInfos.ext.Name = it.First().Name;
-            CocyclesDFS.DisplayInfosGroups([(extInfos.ext, ((int, int, int))extInfos.allSubs.Infos)], naming: false);
+            CocyclesDFS.DisplayInfosGroups([(extInfos.ext, extInfos.allSubs.Infos.ToTuples())], naming: false);
             it.Println("Group Names");
         }
 
