@@ -15,7 +15,7 @@ public class Leaf : ANameElt
         {
             var abType = Group.AbelianGroupType(ContentGroup);
             Name = abType.Glue(" x ", "C{0}");
-            Weight = 20 + 5 * abType.Length;
+            Weight = abType.Length * 5 + 15;
         }
         else if (decompType == DecompType.SimpleNonAbelian)
         {
@@ -33,7 +33,7 @@ public class Leaf : ANameElt
         ContentType = NodeType.Leaf;
         var abType = Group.AbelianGroupType(ContentGroup);
         Name = abType.Glue(" x ", "C{0}");
-        Weight = 20 + 5 * abType.Length;
+        Weight = abType.Length * 5 + 15;
         Depth = 0;
     }
 

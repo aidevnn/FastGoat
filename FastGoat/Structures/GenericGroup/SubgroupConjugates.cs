@@ -33,6 +33,9 @@ public readonly struct SubgroupConjugates<T> : IElt<SubgroupConjugates<T>> where
 
     public SubgroupConjugates<T>[] Restriction(ConcreteGroup<T> g)
     {
+        if (!g.SubSetOf(Parent))
+            throw new GroupException(GroupExceptionType.NotSubGroup);
+        
         var lt = Conjugates.ToHashSet(new GroupSetEquality<T>());
         var all = new List<SubgroupConjugates<T>>();
         while (lt.Count != 0)

@@ -22,6 +22,8 @@ public class SemiDirectProductOp : ANameElt
             Name = name2;
             Weight = 25;
             Depth = 0;
+            if (!name2.Contains('D'))
+                Weight += 10;
         }
     }
     
