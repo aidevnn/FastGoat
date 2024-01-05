@@ -201,11 +201,12 @@ public static partial class Group
             return new() { h };
 
         var all = new HashSet<ConcreteGroup<T>>(new GroupSetEquality<T>());
+        var G = g.SuperGroup ?? g;
         foreach (var (s, i) in g.OrderBy(s => g.ElementsOrders[s]).Select((s, i) => (s, i + 1)))
         {
             var si = g.Invert(s);
             var set = h.GetGenerators().Select(x => g.Op(s, g.Op(x, si))).ToHashSet();
-            var sg = Generate(h.Name, g, set.ToArray());
+            var sg = Generate(h.Name, G, set.ToArray());
             if (all.Add(sg))
                 sg.Name = $"{h.Name}[{i}]";
         }

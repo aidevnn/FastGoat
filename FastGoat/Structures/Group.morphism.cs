@@ -267,35 +267,6 @@ public static partial class Group
         return AllSemiDirectProd(name, n, g);
     }
     
-    public static IEnumerable<AllSubgroups<TableElt>> AllSDPFilter<T1, T2>(ConcreteGroup<T1> N, ConcreteGroup<T2> G)
-        where T1 : struct, IElt<T1>
-        where T2 : struct, IElt<T2>
-    {
-        Console.WriteLine($"############### AllSDP {N.NameParenthesis()} x: {G.NameParenthesis()}");
-        var autG = AutomorphismGroup(G);
-        var autN = AutomorphismGroup(N);
-        var allOps = AllHomomorphisms(G, autN);
-        var ops = allOps.Where(kp => kp.Image().Count() > 1).ToHashSet(new OpByAutEquality<T1, T2>(G, autG, autN));
-        Console.WriteLine($"AutG:{autG.Count()} AutN:{autN.Count()}");
-        Console.WriteLine($"AllOps:{allOps.Count} remaining:{ops.Count()}");
-        foreach (var theta in ops)
-            yield return SemiDirectProd(N, theta, G).ToCGTable().AllSubgroups();
-    }
-    
-    public static IEnumerable<AllSubgroups<TableElt>> AllSDPFilterLazy<T1, T2>(ConcreteGroup<T1> N, ConcreteGroup<T2> G)
-        where T1 : struct, IElt<T1>
-        where T2 : struct, IElt<T2>
-    {
-        Console.WriteLine($"############### AllSDP {N.NameParenthesis()} x: {G.NameParenthesis()}");
-        var autG = AutomorphismGroup(G);
-        var autN = AutomorphismGroup(N);
-        var allOps = AllHomomorphisms(G, autN);
-        var ops = allOps.Where(kp => kp.Image().Count() > 1).Distinct(new OpByAutEquality<T1, T2>(G, autG, autN));
-        Console.WriteLine($"AutG:{autG.Count()} AutN:{autN.Count()}");
-        foreach (var theta in ops)
-            yield return SemiDirectProd(N, theta, G).ToCGTable().AllSubgroups();
-    }
-
     public static SemiDirectProduct<T1, T2> SemiDirectProd<T1, T2>(ConcreteGroup<T1> n, ConcreteGroup<T2> g)
         where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
     {

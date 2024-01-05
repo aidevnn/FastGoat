@@ -96,6 +96,44 @@ public static partial class FG
             yield return extInfos;
     }
 
+    public static IEnumerable<AllSubgroups<TableElt>> AllSDPFilter<T1, T2>(ConcreteGroup<T1> N, ConcreteGroup<T2> G, bool trivial = false)
+        where T1 : struct, IElt<T1>
+        where T2 : struct, IElt<T2>
+    {
+        Console.WriteLine($"############### AllSDP {N.NameParenthesis()} x: {G.NameParenthesis()}");
+        var autG = Group.AutomorphismGroup(G);
+        var autN = Group.AutomorphismGroup(N);
+        var allOps = Group.AllHomomorphisms(G, autN);
+        var ops = allOps.Where(kp => trivial || kp.Image().Count() > 1).ToHashSet(new OpByAutEquality<T1, T2>(G, autG, autN));
+        Console.WriteLine($"AutG:{autG.Count()} AutN:{autN.Count()}");
+        var nb = ops.Count();
+        Console.WriteLine($"AllOps:{allOps.Count} remaining:{nb}");
+        var k = 1;
+        foreach (var theta in ops)
+        {
+            Console.WriteLine($"  ## {k++,3}/{nb} ##");
+            yield return Group.SemiDirectProd(N, theta, G).ToCGTable().AllSubgroups();
+        }
+    }
+    
+    public static IEnumerable<AllSubgroups<TableElt>> AllSDPFilterLazy<T1, T2>(ConcreteGroup<T1> N, ConcreteGroup<T2> G, bool trivial = false)
+        where T1 : struct, IElt<T1>
+        where T2 : struct, IElt<T2>
+    {
+        Console.WriteLine($"############### AllSDP {N.NameParenthesis()} x: {G.NameParenthesis()}");
+        var autG = Group.AutomorphismGroup(G);
+        var autN = Group.AutomorphismGroup(N);
+        var allOps = Group.AllHomomorphisms(G, autN);
+        var ops = allOps.Where(kp => trivial || kp.Image().Count() > 1).Distinct(new OpByAutEquality<T1, T2>(G, autG, autN));
+        Console.WriteLine($"AutG:{autG.Count()} AutN:{autN.Count()}");
+        var k = 1;
+        foreach (var theta in ops)
+        {
+            Console.WriteLine($"  ##   {k++,3}   ##");
+            yield return Group.SemiDirectProd(N, theta, G).ToCGTable().AllSubgroups();
+        }
+    }
+
     public static IEnumerable<AllSubgroups<TableElt>> AppendIsomorphic(this IEnumerable<AllSubgroups<TableElt>> subgs1,
         params IEnumerable<AllSubgroups<TableElt>>[] subs2)
     {
