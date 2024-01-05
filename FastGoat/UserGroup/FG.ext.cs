@@ -1,4 +1,3 @@
-
 using System.Collections.Concurrent;
 using FastGoat.Commons;
 using FastGoat.Examples;
@@ -6,6 +5,7 @@ using FastGoat.Structures;
 using FastGoat.Structures.CartesianProduct;
 using FastGoat.Structures.GenericGroup;
 using FastGoat.Structures.Naming;
+using FastGoat.UserGroup.DatabaseSmallGroups;
 using FastGoat.UserGroup.GModuleN;
 
 namespace FastGoat.UserGroup;
@@ -38,7 +38,7 @@ public static partial class FG
         var autG = Group.AutomorphismGroup(G);
         var allOps = Group.AllHomomorphisms(G, autN);
         var ops = allOps.ToHashSet(new OpByAutEquality<Tn, Tg>(G, autG, autN));
-        
+
         Console.WriteLine();
         Console.WriteLine($"AutG:{autG.Count()} AutN:{autN.Count()}");
         Console.WriteLine($"AllOps:{allOps.Count} Filtered:{ops.Count}");
@@ -140,18 +140,33 @@ public static partial class FG
         foreach (var sub in subs2.Prepend(subgs1).SelectMany(e => e).FilterIsomorphic())
             yield return sub;
     }
-    
+
     public static IEnumerable<AllSubgroups<T>> FilterIsomorphic<T>(this IEnumerable<AllSubgroups<T>> subsgr)
         where T : struct, IElt<T>
     {
         var nb = 1;
         var set = new HashSet<AllSubgroups<T>>(1000, new IsomorphSubGroupsInfosEquality<T>());
+        var nbSubs = new Dictionary<int, Dictionary<SubGroupsInfos, int>>(130);
         Console.WriteLine("## Start New Filter");
         foreach (var sub in subsgr)
         {
+            var o = sub.Parent.Count();
+            if (!nbSubs.ContainsKey(o))
+                nbSubs[o] = new Dictionary<SubGroupsInfos, int>(300);
+
+            if (!nbSubs[o].ContainsKey(sub.Infos))
+                nbSubs[o][sub.Infos] = 0;
+
+            if (nbSubs[o][sub.Infos] == NbSubGroups(o, sub.Infos))
+            {                    
+                continue;
+            }
+
             if (set.Add(sub))
             {
-                var name = $"    Iso{sub.Parent.Count()} no:{nb++}";
+                nbSubs[o][sub.Infos]++;
+                var ids = allIds[o].Where(e => e.Infos == sub.Infos).Select(e => e.No).Glue(",", "{0:000}");
+                var name = $"    Iso{sub.Parent.Count()} no:{nb++}/[{ids}]:{nbSubs[o][sub.Infos]}";
                 Console.WriteLine(name);
                 yield return sub;
             }
@@ -176,7 +191,7 @@ public static partial class FG
         }
     }
 
-    public static IEnumerable<ConcreteGroup<TableElt>> Naming(this IEnumerable<ConcreteGroup<TableElt>> groups)
+    public static IEnumerable<ConcreteGroup<T>> Naming<T>(this IEnumerable<ConcreteGroup<T>> groups) where T : struct, IElt<T>
     {
         foreach (var g in groups)
         {
@@ -186,18 +201,28 @@ public static partial class FG
         }
     }
 
-    public static IEnumerable<(AllSubgroups<TableElt> subsg, ANameElt[] names)> Naming(this IEnumerable<AllSubgroups<TableElt>> subsg)
+    public static IEnumerable<(AllSubgroups<T> subsg, ANameElt[] names)> Naming<T>(this IEnumerable<AllSubgroups<T>> subsg)
+        where T : struct, IElt<T>
     {
         foreach (var sub in subsg)
         {
-            var names = NamesTree.BuildName(sub);
-            sub.Parent.Name = names[0].Name;
-            yield return (sub, names);
+            if (sub is AllSubgroups<TableElt> subTb)
+            {
+                var names = NamesTree.BuildName(subTb);
+                sub.Parent.Name = names[0].Name;
+                yield return (sub, names);
+            }
+            else
+            {
+                var names = NamesTree.BuildName(sub.ToTable());
+                sub.Parent.Name = names[0].Name;
+                yield return (sub, names);
+            }
         }
     }
 
-    public static (AllSubgroups<TableElt> subsg, ANameElt[] names)[] 
-        DisplayNames(this IEnumerable<(AllSubgroups<TableElt>subsg, ANameElt[] names)> seq)
+    public static (AllSubgroups<T> subsg, ANameElt[] names)[]
+        DisplayNames<T>(this IEnumerable<(AllSubgroups<T>subsg, ANameElt[] names)> seq) where T : struct, IElt<T>
     {
         var lt = seq.OrderBy(e => e.subsg.Parent.GroupType)
             .ThenBy(e => e.names[0])
@@ -208,7 +233,7 @@ public static partial class FG
         var nb = lt.Length;
         foreach (var (subsg, names) in lt)
             DisplayName(subsg.Parent, subsg.Infos, names, maxLt);
-        
+
         Console.WriteLine($"Total Groups:{nb}");
         return lt;
     }
@@ -219,13 +244,13 @@ public static partial class FG
             .ThenByDescending(e => e.Parent.ElementsOrders.Values.Max())
             .ThenBy(e => e.Infos)
             .ToArray();
-        
+
         var ord = list.Select(e => e.Parent.Count()).First();
         var maxLt = ($"Grp{ord}[{list.Length}]").Length + 2;
         var nb = 0;
         foreach (var subsg in list)
             DisplayBox(subsg, ++nb, maxLt);
-        
+
         Console.WriteLine($"Total Groups:{nb}");
         Console.WriteLine();
         return list;
@@ -248,6 +273,12 @@ public static partial class FG
         DisplayGroup.HeadOrders(subsg.Parent);
         Console.CursorTop--;
         Console.WriteLine(subsg.Infos);
+        var o = subsg.Parent.Count();
+        var gapInfos = allIds[o].Where(e => e.Infos == subsg.Infos).ToArray();
+        var s = gapInfos.Length > 1 ? " (TODO)" : ""; // TODO
+        foreach (var e in gapInfos)
+            Console.WriteLine($"{$"Gap SmallGroup({e.Order},{e.No})",-24} Name:{e.Name}{s}");
+        
         Console.WriteLine();
     }
 
@@ -267,5 +298,21 @@ public static partial class FG
         Console.WriteLine(fmt, g.Name);
         Console.WriteLine(line);
         DisplayGroup.HeadOrdersNames(g, infos, names);
+        Console.CursorTop--;
+        var o = g.Count();
+        var gapInfos = allIds[o].Where(e => e.Infos == infos).ToArray();
+        var s = gapInfos.Length > 1 ? " (TODO)" : ""; // TODO
+        foreach (var e in gapInfos)
+            Console.WriteLine($"{$"Gap SmallGroup({e.Order},{e.No})",-24} Name:{e.Name}{s}");
     }
+
+    private static Dictionary<int, IdGroup[]> allIds { get; }
+    private static Dictionary<int, Dictionary<SubGroupsInfos, int>> nbSubGroupsDetails { get; }
+
+    public static int NbSubGroups(int ord, SubGroupsInfos infos)
+    {
+        return nbSubGroupsDetails[ord][infos];
+    }
+
+    public static IdGroup[] AllIds(int o) => allIds[o];
 }

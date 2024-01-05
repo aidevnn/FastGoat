@@ -3,6 +3,7 @@ using FastGoat.Structures;
 using FastGoat.Structures.CartesianProduct;
 using FastGoat.Structures.GenericGroup;
 using FastGoat.Structures.VecSpace;
+using FastGoat.UserGroup.DatabaseSmallGroups;
 using FastGoat.UserGroup.GModuleN;
 using FastGoat.UserGroup.Integers;
 using FastGoat.UserGroup.Matrix;
@@ -22,6 +23,11 @@ public static partial class FG
         var x = QPoly('X');
         CyclotomicPolynomials = new() { [1] = x - 1 };
         CnfBasisMap = new();
+        
+        allIds = GroupExt.DB.Select(txt => new IdGroup(txt)).GroupBy(e => e.Order).ToDictionary(e => e.Key, e => e.Order().ToArray());
+        nbSubGroupsDetails = allIds.ToDictionary(
+            e => e.Key,
+            e => e.Value.GroupBy(a => a.Infos).ToDictionary(a => a.Key, a => a.Count()));
     }
 
     public static KPoly<Rational> CyclotomicPolynomial(int k)
