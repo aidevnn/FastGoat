@@ -2,6 +2,7 @@ namespace FastGoat.Commons;
 
 public static class GroupExt
 {
+    // Discovered thanks to the OEIS-A000001
     public static int[] A000001 = new[]
     {
         0, 1, 1, 1, 2, 1, 2, 1, 5, 2, 2, 1, 5, 1, 2, 1, 14, 1, 5, 1, 5, 2, 2, 1, 15, 2, 2, 5, 4, 1, 4, 1, 51, 1, 2, 1, 14, 1, 2, 2, 14,

@@ -30,6 +30,7 @@ using FastGoat.UserGroup.Padic;
 
 Console.WriteLine("Hello World");
 
+void ord64()
 {
     GlobalStopWatch.Restart();
 
@@ -169,4 +170,10 @@ void ord32()
     // Total Groups:51
     // #  Time:55.011s
     // 
+}
+
+{
+    ord32();
+    // ord48();
+    // ord64();
 }
