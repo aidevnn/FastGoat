@@ -150,23 +150,21 @@ public static partial class FG
         Console.WriteLine("## Start New Filter");
         foreach (var sub in subsgr)
         {
-            var o = sub.Parent.Count();
-            if (!nbSubs.ContainsKey(o))
-                nbSubs[o] = new Dictionary<SubGroupsInfos, int>(300);
+            var og = sub.Parent.Count();
+            if (!nbSubs.ContainsKey(og))
+                nbSubs[og] = new Dictionary<SubGroupsInfos, int>(og * og);
 
-            if (!nbSubs[o].ContainsKey(sub.Infos))
-                nbSubs[o][sub.Infos] = 0;
+            if (!nbSubs[og].ContainsKey(sub.Infos))
+                nbSubs[og][sub.Infos] = 0;
 
-            if (nbSubs[o][sub.Infos] == NbSubGroups(o, sub.Infos))
-            {                    
+            if (nbSubs[og][sub.Infos] == NbSubGroups(og, sub.Infos))      
                 continue;
-            }
 
             if (set.Add(sub))
             {
-                nbSubs[o][sub.Infos]++;
-                var ids = allIds[o].Where(e => e.Infos == sub.Infos).Select(e => e.No).Glue(",", "{0:000}");
-                var name = $"    Iso{sub.Parent.Count()} no:{nb++}/[{ids}]:{nbSubs[o][sub.Infos]}";
+                nbSubs[og][sub.Infos]++;
+                var ids = allIds[og].Where(e => e.Infos == sub.Infos).Select(e => e.No).Glue(",", "{0:000}");
+                var name = $"    Iso{sub.Parent.Count()} no:{nb++}/[{ids}]:{nbSubs[og][sub.Infos]}";
                 Console.WriteLine(name);
                 yield return sub;
             }
@@ -304,6 +302,8 @@ public static partial class FG
         var s = gapInfos.Length > 1 ? " (TODO)" : ""; // TODO
         foreach (var e in gapInfos)
             Console.WriteLine($"{$"Gap SmallGroup({e.Order},{e.No})",-24} Name:{e.Name}{s}");
+        
+        Console.WriteLine();
     }
 
     private static Dictionary<int, IdGroup[]> allIds { get; }
