@@ -462,3 +462,8 @@ University of New Mexico nov 2007.
 <b>Iain Raeburn, Aidan Sims, and Dana P.Williams</b>
 TWISTED ACTIONS AND OBSTRUCTIONS IN GROUP COHOMOLOGY.
 Germany, March 8–12, 1999.
+
+[A000001](https://oeis.org/A000001)
+<b>OEIS.</b>
+The On-Line Encyclopedia of Integer Sequences.
+<i>A000001 Number of groups of order n.</i>
