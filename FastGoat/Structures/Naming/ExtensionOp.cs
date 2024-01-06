@@ -7,7 +7,7 @@ public class ExtensionOp : ANameElt
     public ANameElt Lhs { get; }
     public ANameElt Rhs { get; }
 
-    public ExtensionOp(ANameElt lhs, ANameElt rhs, ConcreteGroup<TableElt> g)
+    public ExtensionOp(ANameElt lhs, ANameElt rhs, ConcreteGroup<WElt> g)
     {
         ContentGroup = g;
         ContentType = NodeType.Extension;

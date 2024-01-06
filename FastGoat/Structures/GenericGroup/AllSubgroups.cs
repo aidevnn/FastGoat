@@ -65,9 +65,9 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>> wher
 
     public string Name => $"SubGroups of {Parent}";
 
-    public AllSubgroups<TableElt> ToTable()
+    public AllSubgroups<WElt> ToGroupWrapper()
     {
-        return new AllSubgroups<TableElt>(AllSubgroupConjugates.Select(sc => sc.ToTable()).ToHashSet());
+        return new AllSubgroups<WElt>(AllSubgroupConjugates.Select(sc => sc.ToGroupWrapper()).ToHashSet());
     }
 
     public IEnumerable<ConcreteGroup<T>> All => AllSubgroupConjugates.SelectMany(sc => sc.Conjugates);

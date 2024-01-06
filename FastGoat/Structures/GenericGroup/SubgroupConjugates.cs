@@ -67,10 +67,10 @@ public readonly struct SubgroupConjugates<T> : IElt<SubgroupConjugates<T>> where
 
     public int Hash { get; }
 
-    public SubgroupConjugates<TableElt> ToTable()
+    public SubgroupConjugates<WElt> ToGroupWrapper()
     {
-        var gt = Parent.ToTable();
-        var sub = Group.Generate(Representative.Name, gt, Representative.GetGenerators().Select(e => new TableElt(e)).ToArray());
+        var gt = Parent.ToGroupWrapper();
+        var sub = Group.Generate(Representative.Name, gt, Representative.GetGenerators().Select(e => new WElt(e)).ToArray());
         return new(gt, sub);
     }
 

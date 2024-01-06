@@ -8,7 +8,7 @@ public class SemiDirectProductOp : ANameElt
     public ANameElt Lhs { get; }
     public ANameElt Rhs { get; }
 
-    public SemiDirectProductOp(ANameElt lhs, ANameElt rhs, ConcreteGroup<TableElt> g)
+    public SemiDirectProductOp(ANameElt lhs, ANameElt rhs, ConcreteGroup<WElt> g)
     {
         ContentGroup = g;
         ContentType = NodeType.SemiDirectProduct;

@@ -96,7 +96,7 @@ public static partial class FG
             yield return extInfos;
     }
 
-    public static IEnumerable<AllSubgroups<TableElt>> AllSDPFilter<T1, T2>(ConcreteGroup<T1> N, ConcreteGroup<T2> G, bool trivial = false)
+    public static IEnumerable<AllSubgroups<WElt>> AllSDPFilter<T1, T2>(ConcreteGroup<T1> N, ConcreteGroup<T2> G, bool trivial = false)
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
     {
@@ -112,11 +112,11 @@ public static partial class FG
         foreach (var theta in ops)
         {
             Console.WriteLine($"  ## {k++,3}/{nb} ##");
-            yield return Group.SemiDirectProd(N, theta, G).ToCGTable().AllSubgroups();
+            yield return Group.SemiDirectProd(N, theta, G).ToCGW().AllSubgroups();
         }
     }
     
-    public static IEnumerable<AllSubgroups<TableElt>> AllSDPFilterLazy<T1, T2>(ConcreteGroup<T1> N, ConcreteGroup<T2> G, bool trivial = false)
+    public static IEnumerable<AllSubgroups<WElt>> AllSDPFilterLazy<T1, T2>(ConcreteGroup<T1> N, ConcreteGroup<T2> G, bool trivial = false)
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
     {
@@ -130,12 +130,12 @@ public static partial class FG
         foreach (var theta in ops)
         {
             Console.WriteLine($"  ##   {k++,3}   ##");
-            yield return Group.SemiDirectProd(N, theta, G).ToCGTable().AllSubgroups();
+            yield return Group.SemiDirectProd(N, theta, G).ToCGW().AllSubgroups();
         }
     }
 
-    public static IEnumerable<AllSubgroups<TableElt>> AppendIsomorphic(this IEnumerable<AllSubgroups<TableElt>> subgs1,
-        params IEnumerable<AllSubgroups<TableElt>>[] subs2)
+    public static IEnumerable<AllSubgroups<WElt>> AppendIsomorphic(this IEnumerable<AllSubgroups<WElt>> subgs1,
+        params IEnumerable<AllSubgroups<WElt>>[] subs2)
     {
         foreach (var sub in subs2.Prepend(subgs1).SelectMany(e => e).FilterIsomorphic())
             yield return sub;
@@ -204,7 +204,7 @@ public static partial class FG
     {
         foreach (var sub in subsg)
         {
-            if (sub is AllSubgroups<TableElt> subTb)
+            if (sub is AllSubgroups<WElt> subTb)
             {
                 var names = NamesTree.BuildName(subTb);
                 sub.Parent.Name = names[0].Name;
@@ -212,7 +212,7 @@ public static partial class FG
             }
             else
             {
-                var names = NamesTree.BuildName(sub.ToTable());
+                var names = NamesTree.BuildName(sub.ToGroupWrapper());
                 sub.Parent.Name = names[0].Name;
                 yield return (sub, names);
             }

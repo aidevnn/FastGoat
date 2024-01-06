@@ -239,7 +239,7 @@ public static class DisplayGroup
 
     public static void HeadNames<T>(ConcreteGroup<T> g, bool setName = true) where T : struct, IElt<T>
     {
-        var subGroups = new AllSubgroups<TableElt>(g.ToTable());
+        var subGroups = new AllSubgroups<WElt>(g.ToGroupWrapper());
         var names = NamesTree.BuildName(subGroups);
         if (setName)
             g.Name = names[0].Name;
@@ -249,7 +249,7 @@ public static class DisplayGroup
 
     public static void HeadElementsNames<T>(ConcreteGroup<T> g, bool setName = true) where T : struct, IElt<T>
     {
-        var subGroups = new AllSubgroups<TableElt>(g.ToTable());
+        var subGroups = new AllSubgroups<WElt>(g.ToGroupWrapper());
         var names = NamesTree.BuildName(subGroups);
         if (setName)
             g.Name = names[0].Name;
@@ -259,7 +259,7 @@ public static class DisplayGroup
 
     public static void HeadOrdersNames<T>(ConcreteGroup<T> g, bool setName = true) where T : struct, IElt<T>
     {
-        var subGroups = new AllSubgroups<TableElt>(g.ToTable());
+        var subGroups = new AllSubgroups<WElt>(g.ToGroupWrapper());
         var names = NamesTree.BuildName(subGroups);
         if (setName)
             g.Name = names[0].Name;

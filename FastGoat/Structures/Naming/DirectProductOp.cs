@@ -8,7 +8,7 @@ public class DirectProductOp : ANameElt
 {
     public ANameElt[] Elts { get; }
 
-    public DirectProductOp(ANameElt lhs, ANameElt rhs, ConcreteGroup<TableElt> g)
+    public DirectProductOp(ANameElt lhs, ANameElt rhs, ConcreteGroup<WElt> g)
     {
         ContentType = NodeType.DirectProduct;
         ContentGroup = g;

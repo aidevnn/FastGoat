@@ -27,7 +27,7 @@ public abstract class ANameElt : IElt<ANameElt>
     public BigInteger Weight { get; set; }
     public int Depth { get; set; }
 
-    public ConcreteGroup<TableElt>? ContentGroup { get; set; }
+    public ConcreteGroup<WElt>? ContentGroup { get; set; }
     public NodeType ContentType { get; set; }
     public string Name { get; set; } = "C1";
     public (int, string) LN => (Name.Length, Name);

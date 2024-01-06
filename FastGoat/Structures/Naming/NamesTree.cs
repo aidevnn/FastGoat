@@ -5,7 +5,7 @@ namespace FastGoat.Structures.Naming;
 
 public static class NamesTree
 {
-    static Leaf[] CommonNames(ConcreteGroup<TableElt> G)
+    static Leaf[] CommonNames(ConcreteGroup<WElt> G)
     {
         var og = G.Count();
         var orders = G.ElementsOrdersList().GroupBy(a => a)
@@ -84,7 +84,7 @@ public static class NamesTree
         return Array.Empty<Leaf>();
     }
 
-    static (AllSubgroups<TableElt> k, AllSubgroups<TableElt> h, ANameElt.DecompType)[] AllOps(AllSubgroups<TableElt> subgroups)
+    static (AllSubgroups<WElt> k, AllSubgroups<WElt> h, ANameElt.DecompType)[] AllOps(AllSubgroups<WElt> subgroups)
     {
         var G = subgroups.Parent;
         var tr = subgroups.Restriction(Group.Generate("C1", G, G.Neutral()));
@@ -117,15 +117,15 @@ public static class NamesTree
         var usedNormals = dirProd.SelectMany(e => new[] { e.k, e.h }).Concat(semiDirProd.Select(e => e.k))
             .Select(sg => subgroups.First(sc => sc.Representative.SetEquals(sg))).ToArray();
         var remNormals = normals.Except(usedNormals).ToArray();
-        var extOps = remNormals.Select(e => (e, G.Over(e.Representative).ToTable()))
-            .Select(e => (subgroups.Restriction(e.e.Representative), new AllSubgroups<TableElt>(e.Item2),
+        var extOps = remNormals.Select(e => (e, G.Over(e.Representative).ToGroupWrapper()))
+            .Select(e => (subgroups.Restriction(e.e.Representative), new AllSubgroups<WElt>(e.Item2),
                 ANameElt.DecompType.Extension))
             .ToArray();
 
         return [..allProds, ..extOps];
     }
 
-    public static ANameElt[] BuildName(AllSubgroups<TableElt> subgroups)
+    public static ANameElt[] BuildName(AllSubgroups<WElt> subgroups)
     {
         var all = new List<ANameElt>();
         var G = subgroups.Parent;
@@ -161,7 +161,7 @@ public static class NamesTree
 
     public static ANameElt[] BuildName<T>(ConcreteGroup<T> G) where T : struct, IElt<T>
     {
-        var subGroups = new AllSubgroups<TableElt>(G.ToTable());
+        var subGroups = new AllSubgroups<WElt>(G.ToGroupWrapper());
         return BuildName(subGroups);
     }
 }

@@ -41,7 +41,7 @@ public static class GroupNaming
 
         foreach (var extInfos in exts24)
         {
-            var it = NamesTree.BuildName(extInfos.allSubs.ToTable());
+            var it = NamesTree.BuildName(extInfos.allSubs.ToGroupWrapper());
             extInfos.ext.Name = it.First().Name;
             CocyclesDFS.DisplayInfosGroups([(extInfos.ext, extInfos.allSubs.Infos.ToTuples())], naming: false);
             it.Println("Group Names");
@@ -81,7 +81,7 @@ public static class GroupNaming
 
         foreach (var extInfos in allExts20)
         {
-            var it = NamesTree.BuildName(extInfos.allSubs.ToTable());
+            var it = NamesTree.BuildName(extInfos.allSubs.ToGroupWrapper());
             extInfos.ext.Name = it.First().Name;
             CocyclesDFS.DisplayInfosGroups([(extInfos.ext, extInfos.allSubs.Infos.ToTuples())], naming: false);
             it.Println("Group Names");
@@ -91,7 +91,7 @@ public static class GroupNaming
 
         foreach (var extInfos in allExts40)
         {
-            var it = NamesTree.BuildName(extInfos.allSubs.ToTable());
+            var it = NamesTree.BuildName(extInfos.allSubs.ToGroupWrapper());
             extInfos.ext.Name = it.First().Name;
             CocyclesDFS.DisplayInfosGroups([(extInfos.ext, extInfos.allSubs.Infos.ToTuples())], naming: false);
             it.Println("Group Names");
@@ -108,7 +108,7 @@ public static class GroupNaming
 
         foreach (var extInfos in allExts)
         {
-            var it = NamesTree.BuildName(extInfos.allSubs.ToTable());
+            var it = NamesTree.BuildName(extInfos.allSubs.ToGroupWrapper());
             extInfos.ext.Name = it.First().Name;
             CocyclesDFS.DisplayInfosGroups([(extInfos.ext, extInfos.allSubs.Infos.ToTuples())], naming: false);
             it.Println("Group Names");
@@ -125,7 +125,7 @@ public static class GroupNaming
 
         foreach (var extInfos in allExts)
         {
-            var it = NamesTree.BuildName(extInfos.allSubs.ToTable());
+            var it = NamesTree.BuildName(extInfos.allSubs.ToGroupWrapper());
             extInfos.ext.Name = it.First().Name;
             CocyclesDFS.DisplayInfosGroups([(extInfos.ext, extInfos.allSubs.Infos.ToTuples())], naming: false);
             it.Println("Group Names");
@@ -143,7 +143,7 @@ public static class GroupNaming
 
         foreach (var extInfos in allExts)
         {
-            var it = NamesTree.BuildName(extInfos.allSubs.ToTable());
+            var it = NamesTree.BuildName(extInfos.allSubs.ToGroupWrapper());
             extInfos.ext.Name = it.First().Name;
             CocyclesDFS.DisplayInfosGroups([(extInfos.ext, extInfos.allSubs.Infos.ToTuples())], naming: false);
             it.Println("Group Names");
@@ -177,7 +177,7 @@ public static class GroupNaming
 
         foreach (var extInfos in allExts)
         {
-            var it = NamesTree.BuildName(extInfos.allSubs.ToTable());
+            var it = NamesTree.BuildName(extInfos.allSubs.ToGroupWrapper());
             extInfos.ext.Name = it.First().Name;
             CocyclesDFS.DisplayInfosGroups([(extInfos.ext, extInfos.allSubs.Infos.ToTuples())], naming: false);
             it.Println("Group Names");
@@ -203,7 +203,7 @@ public static class GroupNaming
 
         foreach (var extInfos in allExts)
         {
-            var it = NamesTree.BuildName(extInfos.allSubs.ToTable());
+            var it = NamesTree.BuildName(extInfos.allSubs.ToGroupWrapper());
             extInfos.ext.Name = it.First().Name;
             CocyclesDFS.DisplayInfosGroups([(extInfos.ext, extInfos.allSubs.Infos.ToTuples())], naming: false);
             it.Println("Group Names");
@@ -229,7 +229,7 @@ public static class GroupNaming
 
         foreach (var extInfos in allExts)
         {
-            var it = NamesTree.BuildName(extInfos.allSubs.ToTable());
+            var it = NamesTree.BuildName(extInfos.allSubs.ToGroupWrapper());
             extInfos.ext.Name = it.First().Name;
             CocyclesDFS.DisplayInfosGroups([(extInfos.ext, extInfos.allSubs.Infos.ToTuples())], naming: false);
             it.Println("Group Names");
@@ -254,7 +254,7 @@ public static class GroupNaming
 
         foreach (var extInfos in allExts)
         {
-            var it = NamesTree.BuildName(extInfos.allSubs.ToTable());
+            var it = NamesTree.BuildName(extInfos.allSubs.ToGroupWrapper());
             extInfos.ext.Name = it.First().Name;
             CocyclesDFS.DisplayInfosGroups([(extInfos.ext, extInfos.allSubs.Infos.ToTuples())], naming: false);
             it.Println("Group Names");

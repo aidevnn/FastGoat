@@ -6,7 +6,7 @@ namespace FastGoat.Structures.Naming;
 
 public class Leaf : ANameElt
 {
-    public Leaf(AllSubgroups<TableElt> subgroups, DecompType decompType)
+    public Leaf(AllSubgroups<WElt> subgroups, DecompType decompType)
     {
         ContentGroup = subgroups.Parent;
         ContentType = NodeType.Leaf;
@@ -24,7 +24,7 @@ public class Leaf : ANameElt
         }
     }
 
-    public Leaf(ConcreteGroup<TableElt> g)
+    public Leaf(ConcreteGroup<WElt> g)
     {
         ContentGroup = g;
         if (g.GroupType == GroupType.NonAbelianGroup)
@@ -37,7 +37,7 @@ public class Leaf : ANameElt
         Depth = 0;
     }
 
-    public Leaf(ConcreteGroup<TableElt> g, string name)
+    public Leaf(ConcreteGroup<WElt> g, string name)
     {
         ContentGroup = g;
         ContentType = NodeType.Leaf;
@@ -46,7 +46,7 @@ public class Leaf : ANameElt
         Weight = 30;
     }
     
-    static string SimpleNonAbelians(ConcreteGroup<TableElt> G)
+    static string SimpleNonAbelians(ConcreteGroup<WElt> G)
     {
         var og = G.Count();
         if (og == 60)

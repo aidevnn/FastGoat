@@ -175,8 +175,8 @@ public class ConcreteGroup<T> : IGroup<T> where T : struct, IElt<T>
         return isos.Any(h => h.Count != 0);
     }
 
-    public GroupTable ToTable() => GroupTable.Create(this);
-    public ConcreteGroup<TableElt> ToCGTable() => ToTable();
+    public GroupWrapper ToGroupWrapper() => GroupWrapper.Create(this);
+    public ConcreteGroup<WElt> ToCGW() => ToGroupWrapper();
 
     public override int GetHashCode()
     {
