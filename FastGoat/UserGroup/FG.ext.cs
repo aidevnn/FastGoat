@@ -115,8 +115,9 @@ public static partial class FG
             yield return Group.SemiDirectProd(N, theta, G).ToCGW().AllSubgroups();
         }
     }
-    
-    public static IEnumerable<AllSubgroups<WElt>> AllSDPFilterLazy<T1, T2>(ConcreteGroup<T1> N, ConcreteGroup<T2> G, bool trivial = false)
+
+    public static IEnumerable<AllSubgroups<WElt>> AllSDPFilterLazy<T1, T2>(ConcreteGroup<T1> N, ConcreteGroup<T2> G,
+        bool trivial = false)
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
     {
@@ -157,7 +158,7 @@ public static partial class FG
             if (!nbSubs[og].ContainsKey(sub.Infos))
                 nbSubs[og][sub.Infos] = 0;
 
-            if (nbSubs[og][sub.Infos] == NbSubGroups(og, sub.Infos))      
+            if (nbSubs[og][sub.Infos] == NbSubGroups(og, sub.Infos))
                 continue;
 
             if (set.Add(sub))
@@ -189,17 +190,22 @@ public static partial class FG
         }
     }
 
-    public static IEnumerable<ConcreteGroup<T>> Naming<T>(this IEnumerable<ConcreteGroup<T>> groups) where T : struct, IElt<T>
+    public static IEnumerable<(AllSubgroups<T> subsg, ANameElt[] names)> Naming<T>(this IEnumerable<ConcreteGroup<T>> groups,
+        bool rename = true)
+        where T : struct, IElt<T>
     {
         foreach (var g in groups)
         {
-            var names = NamesTree.BuildName(g);
-            g.Name = names[0].Name;
-            yield return g;
+            var subs = g.AllSubgroups();
+            var names = NamesTree.BuildName(subs.ToGroupWrapper());
+            if (rename)
+                g.Name = names[0].Name;
+            yield return (subs, names);
         }
     }
 
-    public static IEnumerable<(AllSubgroups<T> subsg, ANameElt[] names)> Naming<T>(this IEnumerable<AllSubgroups<T>> subsg)
+    public static IEnumerable<(AllSubgroups<T> subsg, ANameElt[] names)> Naming<T>(this IEnumerable<AllSubgroups<T>> subsg,
+        bool rename = true)
         where T : struct, IElt<T>
     {
         foreach (var sub in subsg)
@@ -207,36 +213,38 @@ public static partial class FG
             if (sub is AllSubgroups<WElt> subTb)
             {
                 var names = NamesTree.BuildName(subTb);
-                sub.Parent.Name = names[0].Name;
+                if (rename)
+                    sub.Parent.Name = names[0].Name;
                 yield return (sub, names);
             }
             else
             {
                 var names = NamesTree.BuildName(sub.ToGroupWrapper());
-                sub.Parent.Name = names[0].Name;
+                if (rename)
+                    sub.Parent.Name = names[0].Name;
                 yield return (sub, names);
             }
         }
     }
 
     public static (AllSubgroups<T> subsg, ANameElt[] names)[]
-        DisplayNames<T>(this IEnumerable<(AllSubgroups<T>subsg, ANameElt[] names)> seq) where T : struct, IElt<T>
+        DisplayNames<T>(this IEnumerable<(AllSubgroups<T>subsg, ANameElt[] names)> seq, bool rename = false) where T : struct, IElt<T>
     {
         var lt = seq.OrderBy(e => e.subsg.Parent.GroupType)
             .ThenBy(e => e.names[0])
             .ThenByDescending(e => e.subsg.Parent.ElementsOrders.Values.Max())
             .ThenBy(e => e.subsg.Infos)
             .ToArray();
-        var maxLt = lt.Max(e => e.subsg.Parent.Name.Length);
+        var maxLt = rename ? lt.Max(e => e.names[0].Name.Length) : lt.Max(e => e.subsg.Parent.Name.Length);
         var nb = lt.Length;
         foreach (var (subsg, names) in lt)
-            DisplayName(subsg.Parent, subsg.Infos, names, maxLt);
+            DisplayName(subsg.Parent, subsg.Infos, names, rename, maxLt);
 
         Console.WriteLine($"Total Groups:{nb}");
         return lt;
     }
 
-    public static AllSubgroups<T>[] DisplayBoxes<T>(this IEnumerable<AllSubgroups<T>> seq) where T : struct, IElt<T>
+    public static AllSubgroups<T>[] DisplayBoxes<T>(this IEnumerable<AllSubgroups<T>> seq, bool rename = false) where T : struct, IElt<T>
     {
         var list = seq.OrderBy(e => e.Parent.GroupType)
             .ThenByDescending(e => e.Parent.ElementsOrders.Values.Max())
@@ -244,20 +252,23 @@ public static partial class FG
             .ToArray();
 
         var ord = list.Select(e => e.Parent.Count()).First();
-        var maxLt = ($"Grp{ord}[{list.Length}]").Length + 2;
+        var maxLt = rename ? ($"Grp{ord}[{list.Length}]").Length + 2 : list.Max(e => e.Parent.Name.Length + 2);
         var nb = 0;
         foreach (var subsg in list)
-            DisplayBox(subsg, ++nb, maxLt);
+            DisplayBox(subsg, ++nb, rename, maxLt);
 
         Console.WriteLine($"Total Groups:{nb}");
         Console.WriteLine();
         return list;
     }
 
-    public static void DisplayBox<T>(AllSubgroups<T> subsg, int nb, int maxLt = -1) where T : struct, IElt<T>
+    public static void DisplayBox<T>(AllSubgroups<T> subsg, int nb, bool rename = false, int maxLt = -1) where T : struct, IElt<T>
     {
         var nbSharp = 16;
-        var name = subsg.Parent.Name = $"Grp{subsg.Parent.Count()}[{nb}]";
+        if (rename)
+            subsg.Parent.Name = $"Grp{subsg.Parent.Count()}[{nb}]";
+        
+        var name = subsg.Parent.Name;
         var max = int.Max(maxLt, name.Length);
         var diff = (max - name.Length) / 2;
         var space = Enumerable.Repeat(' ', diff).Glue();
@@ -276,15 +287,18 @@ public static partial class FG
         var s = gapInfos.Length > 1 ? " (TODO)" : ""; // TODO
         foreach (var e in gapInfos)
             Console.WriteLine($"{$"Gap SmallGroup({e.Order},{e.No})",-24} Name:{e.Name}{s}");
-        
+
         Console.WriteLine();
     }
 
-    public static void DisplayName<T>(ConcreteGroup<T> g, SubGroupsInfos infos, ANameElt[] names, int maxLt = -1)
+    public static void DisplayName<T>(ConcreteGroup<T> g, SubGroupsInfos infos, ANameElt[] names, bool rename = false, int maxLt = -1)
         where T : struct, IElt<T>
     {
         var nbSharp = 16;
-        var name = g.Name = names[0].Name;
+        if (rename)
+            g.Name = names[0].Name;
+        
+        var name = g.Name;
         maxLt = int.Max(name.Length, maxLt);
         var diff = (maxLt - name.Length) / 2;
         var space = Enumerable.Repeat(' ', diff).Glue();
@@ -302,7 +316,7 @@ public static partial class FG
         var s = gapInfos.Length > 1 ? " (TODO)" : ""; // TODO
         foreach (var e in gapInfos)
             Console.WriteLine($"{$"Gap SmallGroup({e.Order},{e.No})",-24} Name:{e.Name}{s}");
-        
+
         Console.WriteLine();
     }
 
