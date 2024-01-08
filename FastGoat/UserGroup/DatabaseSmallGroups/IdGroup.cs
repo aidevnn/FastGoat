@@ -28,10 +28,12 @@ public readonly struct IdGroup : IEquatable<IdGroup>, IComparable<IdGroup>
         Infos = new SubGroupsInfos(int.Parse(allSubGrG.Value), int.Parse(allConjsClG.Value), int.Parse(allNormsG.Value));
     }
 
+    public string FullName => $"SmallGroup({Order},{No}) Name:{Name}";
+
     public void Show()
     {
         Console.WriteLine($"Txt:{Txt}");
-        Console.WriteLine($"SmallGroup({Order},{No}) Name:{Name}");
+        Console.WriteLine(FullName);
         Console.WriteLine(Infos);
         Console.WriteLine();
     }

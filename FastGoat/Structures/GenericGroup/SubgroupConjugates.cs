@@ -54,6 +54,7 @@ public readonly struct SubgroupConjugates<T> : IElt<SubgroupConjugates<T>> where
         return all.ToArray();
     }
     public bool Contains(ConcreteGroup<T> g) => Conjugates.Any(e => e.SetEquals(g));
+    public bool Contains(HashSet<T> g) => Conjugates.Any(e => e.SetEquals(g));
 
     public GroupType GroupType => Representative.GroupType;
     public bool IsMonogenic => Representative.GetGenerators().Count() == 1;

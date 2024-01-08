@@ -138,6 +138,10 @@ public static class TestTwoCohomology
         var ord5_25 = ord25.Prepend(FG.Abelian(5)).ToList();
         var allProducts = ord5_25.Select(e => (e, FG.Abelian(5))).ToList();
         allProducts.ForEach(e => SolveTwoCohom(e.Item1, e.Item2));
+        
+        SolveTwoCohom(FG.Abelian(7), FG.Abelian(7));
+        SolveTwoCohom(FG.Abelian(14), FG.Abelian(7));
+        SolveTwoCohom(FG.Abelian(21), FG.Abelian(7));
     }
 
     public static void TestExplicit()

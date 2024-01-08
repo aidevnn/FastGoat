@@ -57,7 +57,7 @@ public static partial class Group
         return GenerateElements(bg, new HashSet<T>() { bg.Neutral() }, generators);
     }
 
-    public static IEnumerable<T> GenerateElements<T>(IGroup<T> bg, params T[] elements) where T : struct, IElt<T>
+    public static HashSet<T> GenerateElements<T>(IGroup<T> bg, params T[] elements) where T : struct, IElt<T>
     {
         return GenerateElements(bg, elements.ToList());
     }
