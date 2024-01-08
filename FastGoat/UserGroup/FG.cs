@@ -209,7 +209,7 @@ public static partial class FG
         foreach (var m in ms)
         {
             var n = o / m;
-            var rs = m.Range().Where(r => IntExt.Gcd(m, n * (r - 1)) == 1 && IntExt.PowMod(r, n, m) == 1).ToArray();
+            var rs = FrobeniusGetR(m, n);
             foreach (var r in rs)
             {
                 var wg = new WordGroup($"Frob({m},{n},{r})", $"a{m}, b{n}, b-1ab = a{r}");
@@ -222,7 +222,7 @@ public static partial class FG
 
         return all;
     }
-
+    
     public static ConcreteGroup<Ep2<ZnInt, ZnInt>> MetaCyclicSdp(int m, int n, int r)
     {
         var cm = new Cn(m);
@@ -263,6 +263,28 @@ public static partial class FG
         return all;
     }
 
+    public static List<ConcreteGroup<Ep2<ZnInt, ZnInt>>> MetaCyclicSdp(int order)
+    {
+        var ms = IntExt.Dividors(order).Where(d => d > 1).ToArray();
+
+        List<ConcreteGroup<Ep2<ZnInt, ZnInt>>> all = new();
+        foreach (var m in ms)
+        {
+            var n = order / m;
+            var rs = IntExt.SolveAll_k_pow_m_equal_one_mod_n(m, n);
+            foreach (var r in rs)
+            {
+                var sdp = MetaCyclicSdp(m, n, r);
+                if (all.Any(g => g.IsIsomorphicTo(sdp)))
+                    continue;
+
+                all.Add(sdp);
+            }
+        }
+
+        return all;
+    }
+    
     public static WordGroup DiCyclic(int n) => new($"Dic{n}wg", $"a{n} = b2, b2 = abab");
 
     public static ConcreteGroup<Mat> Quaternion(int k)
