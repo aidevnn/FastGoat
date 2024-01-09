@@ -117,7 +117,7 @@ void ord64()
 // 
 // 
 // Total Groups:267
-// #  Time:19m40s
+// #  Time:9m41s
 // 
 
 void ord48()
@@ -144,7 +144,7 @@ void ord48()
     GlobalStopWatch.Show();
     Console.Beep();
     // Total Groups:52
-    // #  Time:1m16s
+    // #  Time:29.161s
     // 
 }
 
@@ -168,7 +168,7 @@ void ord32()
     GlobalStopWatch.Show();
     Console.Beep();
     // Total Groups:51
-    // #  Time:55.011s
+    // #  Time:26.380s
     // 
 }
 
