@@ -244,7 +244,8 @@ public static partial class FG
         return lt;
     }
 
-    public static AllSubgroups<T>[] DisplayBoxes<T>(this IEnumerable<AllSubgroups<T>> seq, bool rename = false) where T : struct, IElt<T>
+    public static AllSubgroups<T>[] DisplayBoxes<T>(this IEnumerable<AllSubgroups<T>> seq, bool rename = false)
+        where T : struct, IElt<T>
     {
         var list = seq.OrderBy(e => e.Parent.GroupType)
             .ThenByDescending(e => e.Parent.ElementsOrders.Values.Max())
@@ -267,7 +268,7 @@ public static partial class FG
         var nbSharp = 16;
         if (rename)
             subsg.Parent.Name = $"Grp{subsg.Parent.Count()}[{nb}]";
-        
+
         var name = subsg.Parent.Name;
         var max = int.Max(maxLt, name.Length);
         var diff = (max - name.Length) / 2;
@@ -282,9 +283,8 @@ public static partial class FG
         DisplayGroup.HeadOrders(subsg.Parent);
         Console.CursorTop--;
         Console.WriteLine(subsg.Infos);
-        var o = subsg.Parent.Count();
-        var gapInfos = allIds[o].Where(e => e.Infos == subsg.Infos).ToArray();
-        var s = gapInfos.Length > 1 ? " (TODO)" : ""; // TODO
+        var gapInfos = FindIdGroup(subsg.Parent, subsg.Infos);
+        var s = gapInfos.Length > 1 ? " (TODO)" : "";
         foreach (var e in gapInfos)
             Console.WriteLine($"{$"Gap SmallGroup({e.Order},{e.No})",-24} Name:{e.Name}{s}");
 
@@ -297,7 +297,7 @@ public static partial class FG
         var nbSharp = 16;
         if (rename)
             g.Name = names[0].Name;
-        
+
         var name = g.Name;
         maxLt = int.Max(name.Length, maxLt);
         var diff = (maxLt - name.Length) / 2;
@@ -311,9 +311,8 @@ public static partial class FG
         Console.WriteLine(line);
         DisplayGroup.HeadOrdersNames(g, infos, names);
         Console.CursorTop--;
-        var o = g.Count();
-        var gapInfos = allIds[o].Where(e => e.Infos == infos).ToArray();
-        var s = gapInfos.Length > 1 ? " (TODO)" : ""; // TODO
+        var gapInfos = FindIdGroup(g, infos);
+        var s = gapInfos.Length > 1 ? " (TODO)" : "";
         foreach (var e in gapInfos)
             Console.WriteLine($"{$"Gap SmallGroup({e.Order},{e.No})",-24} Name:{e.Name}{s}");
 
@@ -329,4 +328,67 @@ public static partial class FG
     }
 
     public static IdGroup[] AllIds(int o) => allIds[o];
+
+    public static IdGroup[] FindIdGroup<T>(ConcreteGroup<T> g, SubGroupsInfos infos) where T : struct, IElt<T>
+    {
+        var ord = g.Count();
+        if (ord == 32)
+        {
+            if (infos.ToTuples() == (42, 30, 20))
+            {
+                var g3244 = Group.AllSemiDirectProd(SemiDihedralSdp(4), Abelian(2))
+                    .First(e => e.AllSubgroups().Infos.ToTuples() == (42, 30, 20));
+                if (g3244.IsIsomorphicTo(g))
+                    return [AllIds(ord).First(e => e.No == 44)];
+                else
+                    return [AllIds(ord).First(e => e.No == 33)];
+            }
+
+            if (infos.ToTuples() == (26, 18, 14))
+            {
+                var g3213 = MetaCyclicSdp(8, 4, 3);
+                if (g3213.IsIsomorphicTo(g))
+                    return [AllIds(ord).First(e => e.No == 13)];
+                else
+                    return [AllIds(ord).First(e => e.No == 14)];
+            }
+        }
+
+        if (ord == 42)
+        {
+            if (infos.ToTuples() == (20, 8, 6))
+            {
+                var g424 = Product.Generate(Abelian(3), DihedralSdp(7));
+                if (g424.IsIsomorphicTo(g))
+                    return [AllIds(ord).First(e => e.No == 4)];
+                else
+                    return [AllIds(ord).First(e => e.No == 2)];
+            }
+        }
+
+        if (ord == 72)
+        {
+            if (infos.ToTuples() == (24, 24, 24))
+            {
+                var g729Type = Group.AbelianGroupType(g);
+                if (g729Type.SequenceEqual([36, 2]))
+                    return [AllIds(ord).First(e => e.No == 9)];
+                else
+                    return [AllIds(ord).First(e => e.No == 14)];
+            }
+            
+            if (infos.ToTuples() == (48, 48, 48))
+            {
+                var g729Type = Group.AbelianGroupType(g);
+                if (g729Type.SequenceEqual([18, 2, 2]))
+                    return [AllIds(ord).First(e => e.No == 18)];
+                else
+                    return [AllIds(ord).First(e => e.No == 36)];
+            }
+        }
+
+        // TODO ord 64, 72, 96, 110, 114
+
+        return AllIds(ord).Where(e => e.Infos == infos).ToArray();
+    }
 }
