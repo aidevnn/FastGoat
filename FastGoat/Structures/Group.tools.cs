@@ -14,6 +14,16 @@ public static partial class Group
         return (T g, T x) => gr.Op(g, gr.Op(x, gr.Invert(g)));
     }
 
+    public static GroupAction<T, GroupSubset<T>> ByConjugateSet<T>(IGroup<T> gr) where T : struct, IElt<T>
+    {
+        return (T g, GroupSubset<T> s) =>
+        {
+            var gens = s.Generators.Select(x => gr.Op(g, gr.Op(x, gr.Invert(g)))).ToHashSet();
+            var elts = s.Select(x => gr.Op(g, gr.Op(x, gr.Invert(g)))).ToHashSet();
+            return new(gens, elts);
+        };
+    }
+
     public static GroupAction<T1, T2> ByAutomorphism<T1, T2>(Homomorphism<T1, Automorphism<T2>> aut)
         where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
     {
@@ -202,13 +212,12 @@ public static partial class Group
 
         var all = new HashSet<ConcreteGroup<T>>(new GroupSetEquality<T>());
         var G = g.SuperGroup ?? g;
-        foreach (var (s, i) in g.OrderBy(s => g.ElementsOrders[s]).Select((s, i) => (s, i + 1)))
+        var setH = h.ToSet();
+        var conjsH = Orbits(g, ByConjugateSet(g), setH);
+        foreach (var (cj, i) in conjsH.Select((cj, i) => (cj, i + 1)))
         {
-            var si = g.Invert(s);
-            var set = h.GetGenerators().Select(x => g.Op(s, g.Op(x, si))).ToHashSet();
-            var sg = Generate(h.Name, G, set.ToArray());
-            if (all.Add(sg))
-                sg.Name = $"{h.Name}[{i}]";
+            var sg = Generate($"{h.Name}[{i}]", G, cj.Generators.ToArray());
+            all.Add(sg);
         }
 
         return all.ToList();
@@ -247,24 +256,29 @@ public static partial class Group
         where T : struct, IElt<T>
     {
         var og = g.Count();
-        var allSubGrs = new HashSet<ConcreteGroup<T>>(og * og, new GroupSetEquality<T>());
+        var allSubGrs = new HashSet<GroupSubset<T>>(og * og);
         var table = new Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>>(og * og, new GroupSetEquality<T>());
-        var tableCyc = new Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>>(og * og, new GroupSetEquality<T>());
+        var tablePCycles = new Dictionary<GroupSubset<T>, List<GroupSubset<T>>>(og * og);
 
         foreach (var e0 in g)
         {
             var cyc = Generate(g, e0);
-            if (!allSubGrs.Contains(cyc))
+            var oc = cyc.Count();
+            var setCyc = cyc.ToSet();
+            if (!allSubGrs.Contains(setCyc))
             {
                 var conjs = table[cyc] = SubGroupsConjugates(g, cyc);
-                allSubGrs.UnionWith(conjs);
-                foreach (var c in conjs)
-                    tableCyc[c] = conjs;
+                allSubGrs.UnionWith(conjs.Select(cj => cj.ToSet()));
+                if (IntExt.PrimesDec(oc).Count == 1)
+                {
+                    foreach (var c in conjs)
+                        tablePCycles[c.ToSet()] = conjs.Select(cj => cj.ToSet()).ToList();
+                }
             }
         }
 
-        var sgsRem = table.Keys.ToHashSet(new GroupSetEquality<T>());
-        var cycRem = allSubGrs.ToHashSet(new GroupSetEquality<T>());
+        var sgsRem = table.Keys.Select(c => c.ToSet()).ToHashSet();
+        var cycRem = tablePCycles.Values.SelectMany(e => e).ToHashSet();
         while (sgsRem.Count != 0)
         {
             var sgs = sgsRem.OrderBy(sg => sg.Count()).ToArray();
@@ -276,15 +290,15 @@ public static partial class Group
                 if (sg0.SuperSetOf(sg1) || sg0.SubSetOf(sg1))
                     continue;
 
-                var gens = sg0.GetGenerators().Union(sg1.GetGenerators()).ToArray();
+                var gens = sg0.Generators.Union(sg1.Generators).ToArray();
                 var elts = GenerateElements(g, sg1.Concat(sg0).ToHashSet(), gens.ToList()).ToHashSet();
                 if (allSubGrs.All(g0 => !g0.SetEquals(elts)))
                 {
                     var sg2 = Generate(g, gens);
                     var conjsSg2 = table[sg2] = SubGroupsConjugates(g, sg2);
-                    allSubGrs.UnionWith(conjsSg2);
-                    sgsRem.Add(sg2);
-                    cycRem.UnionWith(tableCyc[sg0]);
+                    allSubGrs.UnionWith(conjsSg2.Select(c => c.ToSet()));
+                    sgsRem.Add(sg2.ToSet());
+                    cycRem.UnionWith(tablePCycles[sg0]);
                 }
             }
         }
@@ -302,7 +316,7 @@ public static partial class Group
         v.First().Name = g.Name;
         return table;
     }
-
+    
     public static AllSubgroups<T> AllSubgroups<T>(this ConcreteGroup<T> g) where T : struct, IElt<T>
     {
         return new AllSubgroups<T>(g);

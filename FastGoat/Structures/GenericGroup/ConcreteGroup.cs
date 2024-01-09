@@ -177,6 +177,7 @@ public class ConcreteGroup<T> : IGroup<T> where T : struct, IElt<T>
 
     public GroupWrapper ToGroupWrapper() => GroupWrapper.Create(this);
     public ConcreteGroup<WElt> ToCGW() => ToGroupWrapper();
+    public GroupSubset<T> ToSet() => new(GetGenerators().ToHashSet(), Elements);
 
     public override int GetHashCode()
     {
