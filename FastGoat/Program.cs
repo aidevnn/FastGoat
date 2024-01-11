@@ -34,25 +34,24 @@ void ord64()
 {
     GlobalStopWatch.Restart();
 
-    var c2 = FG.Abelian(2);
     var sm3232 = FG.AllExtensions((FG.Abelian(4, 4), FG.Abelian(2))).Select(e => e.allSubs).Naming()
         .First(e => e.names[0].IsExtension).subsg.Parent.ToCGW();
 
     var sdps = FG.AllSDPFilterLazy(FG.Abelian(4), FG.Abelian(8))
         .AppendIsomorphic(FG.AllSDPFilterLazy(FG.Abelian(8), FG.Abelian(4)))
         .Naming()
-        .Select(e => (e.subsg.Parent, c2))
+        .Select(e => (e.subsg.Parent, FG.Abelian(2)))
         .ToArray();
     var sdp1 = Group.AllSemiDirectProd(FG.Abelian(4, 2), FG.Abelian(4))
         .First(e => e.AllSubgroups().Infos.ToTuples() == (50, 38, 26))
         .ToCGW();
-    var sdp2 = Product.Generate(c2, FG.ModularMaxSdp(4)).ToCGW();
+    var sdp2 = Product.Generate(FG.Abelian(2), FG.ModularMaxSdp(4)).ToCGW();
     var listByC2 = sdps.Concat([
-        (sdp1, c2),
-        (sdp2, c2),
-        (sm3232, c2),
-        (FG.Abelian(8, 4).ToCGW(), c2),
-        (FG.Abelian(32).ToCGW(), c2)
+        (sdp1, FG.Abelian(2)),
+        (sdp2, FG.Abelian(2)),
+        (sm3232, FG.Abelian(2)),
+        (FG.Abelian(8, 4).ToCGW(), FG.Abelian(2)),
+        (FG.Abelian(32).ToCGW(), FG.Abelian(2))
     ]);
     var listByC4_C2C2 = new[]
     {
@@ -75,14 +74,11 @@ void ord64()
         .Concat(FG.AllSDPFilter(FG.Abelian(4, 2, 2), FG.Abelian(4)))
         .Concat(ord8.Grid2D(ord8).SelectMany(e => FG.AllSDPFilter(e.t1, e.t2, trivial: true)));
 
-    var listSdp64b = FG.AllExtensions(
-            (FG.Abelian(2, 4), FG.Abelian(4)),
-            (FG.Abelian(4, 4), FG.Abelian(2)))
-        .Select(e => e.allSubs)
-        .FilterIsomorphic()
-        .Naming()
-        .ToArray()
-        .SelectMany(e => FG.AllSDPFilter(e.subsg.Parent, c2, trivial: true));
+    var listSdp64b = FG.AllSDPFilter(FG.Abelian(4, 4), FG.Abelian(2))
+        .Concat(FG.AllSDPFilter(FG.ModularMaxSdp(4), FG.Abelian(2)))
+        .Append(Product.Generate(FG.Abelian(4), FG.Quaternion(8)).AllSubgroups().ToGroupWrapper())
+        .FilterIsomorphic().Naming().ToArray()
+        .SelectMany(e => FG.AllSDPFilter(e.subsg.Parent, FG.Abelian(2), trivial: true));
 
     var listAb64 = FG.AllAbelianGroupsOfOrder(64).Select(e => e.ToCGW().AllSubgroups());
     var listExts = FG.AllExtensions([..listByC2, ..listByC4_C2C2]).Select(e => e.allSubs.ToGroupWrapper());
@@ -93,7 +89,7 @@ void ord64()
         .Concat(listSdp64b)
         .FilterIsomorphic()
         .Take(GroupExt.A000001[64])
-        .ToArray(); // Memory stable
+        .ToArray();
 
     var listIds = FG.AllIds(64).ToList();
     foreach (var sub in allOrd64)
@@ -124,20 +120,22 @@ void ord48()
 {
     GlobalStopWatch.Restart();
     var ord24 = FG.AllExtensions(
-            (FG.Abelian(12).ToCGW(), FG.Abelian(2).ToCGW()),
-            (FG.Abelian(2, 6).ToCGW(), FG.Abelian(2).ToCGW()),
-            (FG.Alternate(4).ToCGW(), FG.Abelian(2).ToCGW()),
-            (FG.Quaternion(8).ToCGW(), FG.Abelian(3).ToCGW())
+            (FG.Abelian(12).ToCGW(), FG.Abelian(2)),
+            (FG.Abelian(2, 6).ToCGW(), FG.Abelian(2)),
+            (FG.Alternate(4).ToCGW(), FG.Abelian(2)),
+            (FG.Quaternion(8).ToCGW(), FG.Abelian(3))
         )
-        .Select(e => e.allSubs.ToGroupWrapper())
+        .Select(e => e.allSubs)
         .FilterIsomorphic()
         .Naming()
         .ToArray();
 
     var listByC2 = ord24.SelectMany(e => FG.AllExtensions((e.subsg.Parent, FG.Abelian(2)))).Select(e => e.allSubs.ToGroupWrapper());
-    var listByC3 = FG.AllAbelianGroupsOfOrder(16).SelectMany(e => FG.AllSDPFilterLazy(e, FG.Abelian(3)));
+    var listByC3 = FG.AllAbelianGroupsOfOrder(16).Where(e => Group.AbelianGroupType(e).Length < 4)
+        .SelectMany(e => FG.AllSDPFilter(e, FG.Abelian(3)))
+        .Concat(FG.AllSDPFilterLazy(FG.Abelian(2, 2), FG.Alternate(4)));
     listByC2.AppendIsomorphic(listByC3)
-        .Take(GroupExt.A000001[48])
+        .Take(GroupExt.A000001[48]) //.DisplayBoxes(rename: true);
         .Naming()
         .DisplayNames();
 
@@ -159,7 +157,7 @@ void ord32()
             (FG.Abelian(4, 2), FG.Abelian(2, 2)),
             (FG.Abelian(2, 2, 2), FG.Abelian(2, 2))
         )
-        .Select(e => e.allSubs.ToGroupWrapper())
+        .Select(e => e.allSubs)
         .FilterIsomorphic()
         .Take(GroupExt.A000001[32])
         .Naming()
@@ -173,7 +171,11 @@ void ord32()
 }
 
 {
-    ord32();
+    // ord32();
+    // ord32();
+    // ord32();
     // ord48();
-    // ord64();
+    // ord48();
+    // ord48();
+    ord64();
 }
