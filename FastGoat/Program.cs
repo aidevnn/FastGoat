@@ -98,23 +98,29 @@ void ord64()
         listIds.Remove(id);
     }
 
-    allOrd64.DisplayBoxes();
+    // allOrd64.DisplayBoxes(rename: true);
 
     var pos = FG.AllIds(64).Where(e => listIds.Any(f => e.Infos == f.Infos)).ToList();
     pos.Println($"Remaining {listIds.Count} groups, possibles {pos.Count}");
+    
+    GlobalStopWatch.Show($"Total Groups:{allOrd64.Length}");
+    Console.Beep();
 
-    Console.WriteLine();
-    Console.WriteLine($"Total Groups:{allOrd64.Length}");
-    GlobalStopWatch.Show();
+    foreach (var (subsg, names, i) in allOrd64.Naming().Select((e, i) => (e.subsg, e.names, i + 1)))
+    {
+        Console.WriteLine($"Group64[{i}]");
+        FG.DisplayName(subsg.Parent, subsg.Infos, names, rename: true);
+    }
+    
+    GlobalStopWatch.Show("End Naming");
     Console.Beep();
 }
 
 // Remaining 0 groups, possibles 0
 // 
-// 
-// Total Groups:267
-// #  Time:9m41s
-// 
+// #  Total Groups:267 Time:8m11s
+// ...
+// # End Naming Time:51m35s
 
 void ord48()
 {
