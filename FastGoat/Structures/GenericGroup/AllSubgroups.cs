@@ -34,7 +34,7 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>> wher
         AllSubgroupConjugates = allSubs.Values.Select(l => new SubgroupConjugates<T>(g, l)).Order().ToArray();
     }
 
-    private AllSubgroups(HashSet<SubgroupConjugates<T>> all)
+    private AllSubgroups(SubgroupConjugates<T>[] all)
     {
         AllSubgroupConjugates = all.Order().ToArray();
         var conjs = AllSubgroupConjugates.Length;
@@ -45,14 +45,17 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>> wher
 
     public bool IsSimple()
     {
-        if (Parent.GroupType == GroupType.AbelianGroup && IntExt.Primes10000.Contains(Parent.Count()))
-            return true;
-
-        return AllSubgroupConjugates.Count(sc => sc.IsNormal) == 2;
+        return Infos.AllNorms == 2;
     }
 
-    public AllSubgroups<T> Restriction(ConcreteGroup<T> g) => 
-        new(AllSubgroupConjugates.SelectMany(sc => sc.Restriction(g)).ToHashSet());
+    public AllSubgroups<T> Restriction(ConcreteGroup<T> g)
+    {
+        return new(AllSubgroupConjugates
+            .Where(sc => sc.Conjugates.Any(e => e.SubSetOf(g)))
+            .SelectMany(sc => sc.Restriction(g))
+            .Distinct()
+            .ToArray());
+    }
 
     public IEnumerator<SubgroupConjugates<T>> GetEnumerator() => AllSubgroupConjugates.AsEnumerable().GetEnumerator();
 
@@ -67,7 +70,7 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>> wher
 
     public AllSubgroups<WElt> ToGroupWrapper()
     {
-        return new AllSubgroups<WElt>(AllSubgroupConjugates.Select(sc => sc.ToGroupWrapper()).ToHashSet());
+        return new AllSubgroups<WElt>(AllSubgroupConjugates.Select(sc => sc.ToGroupWrapper()).ToArray());
     }
 
     public IEnumerable<ConcreteGroup<T>> All => AllSubgroupConjugates.SelectMany(sc => sc.Conjugates);

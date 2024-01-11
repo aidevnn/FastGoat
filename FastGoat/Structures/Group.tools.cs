@@ -18,8 +18,9 @@ public static partial class Group
     {
         return (T g, GroupSubset<T> s) =>
         {
-            var gens = s.Generators.Select(x => gr.Op(g, gr.Op(x, gr.Invert(g)))).ToHashSet();
-            var elts = s.Select(x => gr.Op(g, gr.Op(x, gr.Invert(g)))).ToHashSet();
+            var gi = gr.Invert(g);
+            var gens = s.Generators.Select(x => gr.Op(gi, gr.Op(x, g))).ToHashSet();
+            var elts = s.Select(x => gr.Op(gi, gr.Op(x, g))).ToHashSet();
             return new(gens, elts);
         };
     }
@@ -44,13 +45,12 @@ public static partial class Group
         return gr.Where(g => act(g, x).Equals(x)).ToHashSet();
     }
 
-    public static HashSet<T2> Orbits<T1, T2>(ConcreteGroup<T1> gr, GroupAction<T1, T2> act, T2 x)
+    public static HashSet<T2> Orbits<T1, T2>(HashSet<T1> gens, GroupAction<T1, T2> act, T2 x)
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
     {
         HashSet<T2> set = new() { x };
         Queue<T2> q = new Queue<T2>();
-        var gens = gr.GetGenerators().ToArray();
         q.Enqueue(x);
         while (q.Count != 0)
         {
@@ -73,9 +73,10 @@ public static partial class Group
     {
         var allSets = new HashSet<HashSet<T2>>(gr.Count(), new SetEquality<T2>());
         var allStabsOrbits = new Dictionary<T2, (HashSet<T1> Stabx, HashSet<T2> Orbx)>();
+        var gens = gr.GetGenerators().ToHashSet();
         foreach (var x in set)
         {
-            var orbx = Orbits(gr, act, x);
+            var orbx = Orbits(gens, act, x);
             if (allSets.Add(orbx))
             {
                 var stabx = Stabs(gr, act, x);
@@ -210,17 +211,17 @@ public static partial class Group
         if (g.GroupType == GroupType.AbelianGroup)
             return new() { h };
 
-        var all = new HashSet<ConcreteGroup<T>>(new GroupSetEquality<T>());
+        var all = new List<ConcreteGroup<T>>();
         var G = g.SuperGroup ?? g;
-        var setH = h.ToSet();
-        var conjsH = Orbits(g, ByConjugateSet(g), setH);
+        var gens = g.GetGenerators().ToHashSet();
+        var conjsH = Orbits(gens, ByConjugateSet(g), h.ToSet());
         foreach (var (cj, i) in conjsH.Select((cj, i) => (cj, i + 1)))
         {
-            var sg = Generate($"{h.Name}[{i}]", G, cj.Generators.ToArray());
+            var sg = Generate($"{h.Name}[{i}]", G, cj.ToArray());
             all.Add(sg);
         }
 
-        return all.ToList();
+        return all;
     }
 
     public static ConcreteGroup<T1> IsomorphicSubgroup<T1, T2>(ConcreteGroup<T1> g, ConcreteGroup<T2> sg, string name)
@@ -292,7 +293,8 @@ public static partial class Group
 
                 var gens = sg0.Generators.Union(sg1.Generators).ToArray();
                 var elts = GenerateElements(g, sg1.Concat(sg0).ToHashSet(), gens.ToList()).ToHashSet();
-                if (allSubGrs.All(g0 => !g0.SetEquals(elts)))
+                var set = new GroupSubset<T>(gens.ToHashSet(), elts);
+                if (!allSubGrs.Contains(set))
                 {
                     var sg2 = Generate(g, gens);
                     var conjsSg2 = table[sg2] = SubGroupsConjugates(g, sg2);

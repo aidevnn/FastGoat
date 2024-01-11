@@ -35,18 +35,17 @@ public readonly struct SubgroupConjugates<T> : IElt<SubgroupConjugates<T>> where
     {
         if (!g.SubSetOf(Parent))
             throw new GroupException(GroupExceptionType.NotSubGroup);
-        
-        var lt = Conjugates.ToHashSet(new GroupSetEquality<T>());
-        var all = new List<SubgroupConjugates<T>>();
+
+        var lt = Conjugates.Where(h => h.SubSetOf(g)).ToHashSet(new GroupSetEquality<T>());
+        var all = new List<SubgroupConjugates<T>>(Size);
+        var gens = g.GetGenerators().ToHashSet();
+        var act = Group.ByConjugateSet(g);
         while (lt.Count != 0)
         {
             var sg = lt.First();
-            if (!sg.SubSetOf(g))
-            {
-                lt.Remove(sg);
-                continue;
-            }
-            var subConjs = Group.SubGroupsConjugates(g, sg);
+            var sgSet = sg.ToSet();
+            var conjs = Group.Orbits(gens, act, sgSet);
+            var subConjs = lt.Where(c0 => conjs.Any(c1 => c0.SetEquals(c1))).ToList();
             all.Add(new SubgroupConjugates<T>(g, subConjs));
             lt.ExceptWith(subConjs);
         }
@@ -55,14 +54,17 @@ public readonly struct SubgroupConjugates<T> : IElt<SubgroupConjugates<T>> where
     }
     public bool Contains(ConcreteGroup<T> g) => Conjugates.Any(e => e.SetEquals(g));
     public bool Contains(HashSet<T> g) => Conjugates.Any(e => e.SetEquals(g));
-
+    public bool SubSetOf(ConcreteGroup<T> g) => Conjugates.All(e => g.SuperSetOf(e));
     public GroupType GroupType => Representative.GroupType;
     public bool IsMonogenic => Representative.GetGenerators().Count() == 1;
     public int Size => Conjugates.Count;
     public (int, int, GroupType) OST => (Order, Size, GroupType);
     public bool IsNormal => Size == 1;
-    public bool IsProperNormal => IsNormal && Order != 1 && Index != 1;
-    public bool Equals(SubgroupConjugates<T> other) => Hash == other.Hash && Conjugates.Any(e => e.SetEquals(other.Representative));
+    public bool IsProper => Order != 1 && Index != 1;
+    public bool IsProperNormal => IsNormal && IsProper;
+    public bool Equals(SubgroupConjugates<T> other) => Hash == other.Hash && 
+                                                       Parent.SetEquals(other.Parent) &&
+                                                       Conjugates.Any(e => e.SetEquals(other.Representative));
 
     public int CompareTo(SubgroupConjugates<T> other) => OST.CompareTo(other.OST);
 
