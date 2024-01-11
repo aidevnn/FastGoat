@@ -28,9 +28,17 @@ public class SemiDirectProduct<T1, T2> : ConcreteGroup<Ep2<T1, T2>>
         foreach (var e in N.GetGenerators())
             generators.Add(Product.Elt(e, G.Neutral()));
 
-        var og = N.Count() * G.Count();
-        InvertTable = new(og);
-        OpTable = new(og * og);
+        Ord = N.Count() * G.Count();
+        if (Ord < Group.StorageCapacity)
+        {
+            InvertTable = new(2 * Ord);
+            OpTable = new(2 * Ord * Ord);
+        }
+        else
+        {
+            InvertTable = new();
+            OpTable = new();
+        }
         
         var (tmpElements, uniqueGenerators) = Group.UniqueGenerators(this, generators.ToArray());
         PseudoGenerators = new(uniqueGenerators);
@@ -44,6 +52,7 @@ public class SemiDirectProduct<T1, T2> : ConcreteGroup<Ep2<T1, T2>>
         Gcan = Group.Generate(G.Name, this, g.Select(e => Product.Elt(N.Neutral(), e)).ToArray());
     }
 
+    private int Ord { get; }
     public bool IsFaithFull() => Theta.Kernel().Count() == 1;
 
     public Ep2<T1, T2> Act(T1 en, T2 eg)
@@ -56,24 +65,42 @@ public class SemiDirectProduct<T1, T2> : ConcreteGroup<Ep2<T1, T2>>
 
     public override Ep2<T1, T2> Invert(Ep2<T1, T2> e)
     {
-        if (InvertTable.TryGetValue(e, out var r))
-            return r;
+        if (Ord >= Group.StorageCapacity)
+        {
+            var gi = G.Invert(e.E2);
+            var xi = N.Invert(e.E1);
+            return Product.Elt(Theta[gi][xi], gi);
+        }
+        else
+        {
+            if (InvertTable.TryGetValue(e, out var r))
+                return r;
         
-        var gi = G.Invert(e.E2);
-        var xi = N.Invert(e.E1);
-        var ei = InvertTable[e] = Product.Elt(Theta[gi][xi], gi);
-        return ei;
+            var gi = G.Invert(e.E2);
+            var xi = N.Invert(e.E1);
+            var ei = InvertTable[e] = Product.Elt(Theta[gi][xi], gi);
+            return ei;
+        }
     }
 
     public override Ep2<T1, T2> Op(Ep2<T1, T2> e1, Ep2<T1, T2> e2)
     {
-        var e12 = (e1, e2);
-        if (OpTable.TryGetValue(e12, out var r))
-            return r;
+        if (Ord >= Group.StorageCapacity)
+        {
+            var n = N.Op(e1.E1, Theta[e1.E2][e2.E1]);
+            var g = G.Op(e1.E2, e2.E2);
+            return Product.Elt(n, g);
+        }
+        else
+        {
+            var e12 = (e1, e2);
+            if (OpTable.TryGetValue(e12, out var r))
+                return r;
         
-        var n = N.Op(e1.E1, Theta[e1.E2][e2.E1]);
-        var g = G.Op(e1.E2, e2.E2);
-        var e3 = OpTable[e12] = Product.Elt(n, g);
-        return e3;
+            var n = N.Op(e1.E1, Theta[e1.E2][e2.E1]);
+            var g = G.Op(e1.E2, e2.E2);
+            var e3 = OpTable[e12] = Product.Elt(n, g);
+            return e3;
+        }
     }
 }

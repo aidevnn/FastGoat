@@ -6,6 +6,7 @@ namespace FastGoat.Structures;
 
 public static partial class Group
 {
+    public const int StorageCapacity = 1000;
     public static string WithParenthesis(this string name) => (name.First() == '(' && name.Last() == ')') || !name.Contains(' ')
         ? name
         : $"({name})";
