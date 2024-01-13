@@ -125,8 +125,8 @@ public static partial class FG
         var autG = Group.AutomorphismGroup(G);
         var autN = Group.AutomorphismGroup(N);
         var allOps = Group.AllHomomorphisms(G, autN);
-        var ops = allOps.Where(kp => trivial || kp.Image().Count() > 1).Distinct(new OpByAutEquality<T1, T2>(G, autG, autN));
         Console.WriteLine($"AutG:{autG.Count()} AutN:{autN.Count()}");
+        var ops = allOps.Where(kp => trivial || kp.Image().Count() > 1).Distinct(new OpByAutEquality<T1, T2>(G, autG, autN));
         var k = 1;
         foreach (var theta in ops)
         {
@@ -142,13 +142,14 @@ public static partial class FG
             yield return sub;
     }
 
-    public static IEnumerable<AllSubgroups<T>> FilterIsomorphic<T>(this IEnumerable<AllSubgroups<T>> subsgr)
+    public static IEnumerable<AllSubgroups<T>> FilterIsomorphic<T>(this IEnumerable<AllSubgroups<T>> subsgr, bool verbose = true)
         where T : struct, IElt<T>
     {
         var nb = 1;
         var set = new HashSet<AllSubgroups<T>>(1000, new IsomorphSubGroupsInfosEquality<T>());
         var nbSubs = new Dictionary<int, Dictionary<SubGroupsInfos, int>>(130);
-        Console.WriteLine("## Start New Filter");
+        if (verbose)
+            Console.WriteLine("## Start New Filter");
         foreach (var sub in subsgr)
         {
             var og = sub.Parent.Count();
@@ -164,9 +165,13 @@ public static partial class FG
             if (set.Add(sub))
             {
                 nbSubs[og][sub.Infos]++;
-                var ids = allIds[og].Where(e => e.Infos == sub.Infos).Select(e => e.No).Glue(",", "{0:000}");
-                var name = $"    Iso{sub.Parent.Count()} no:{nb++}/[{ids}]:{nbSubs[og][sub.Infos]}";
-                Console.WriteLine(name);
+                if (verbose)
+                {
+                    var ids = allIds[og].Where(e => e.Infos == sub.Infos).Select(e => e.No).Glue(",", "{0:000}");
+                    var name = $"    Iso{sub.Parent.Count()} no:{nb++}/[{ids}]:{nbSubs[og][sub.Infos]}";
+                    Console.WriteLine(name);
+                }
+
                 yield return sub;
             }
         }
@@ -235,10 +240,15 @@ public static partial class FG
             .ThenByDescending(e => e.subsg.Parent.ElementsOrders.Values.Max())
             .ThenBy(e => e.subsg.Infos)
             .ToArray();
+        var dicOrd = lt.Select(e => e.subsg.Parent.Count()).Distinct().ToDictionary(k => k, _ => 0);
         var maxLt = rename ? lt.Max(e => e.names[0].Name.Length) : lt.Max(e => e.subsg.Parent.Name.Length);
         var nb = lt.Length;
         foreach (var (subsg, names) in lt)
+        {
+            var o = subsg.Parent.Count();
+            Console.WriteLine($"Group{o}[{++dicOrd[o]}]");
             DisplayName(subsg.Parent, subsg.Infos, names, rename, maxLt);
+        }
 
         Console.WriteLine($"Total Groups:{nb}");
         return lt;
@@ -376,7 +386,7 @@ public static partial class FG
                 else
                     return [AllIds(ord).First(e => e.No == 14)];
             }
-            
+
             if (infos.ToTuples() == (48, 48, 48))
             {
                 var g729Type = Group.AbelianGroupType(g);

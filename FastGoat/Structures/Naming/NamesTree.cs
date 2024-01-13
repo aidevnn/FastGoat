@@ -5,6 +5,39 @@ namespace FastGoat.Structures.Naming;
 
 public static class NamesTree
 {
+    class IsomorphTupleSubGroupsEquality<T1, T2> : EqualityComparer<(AllSubgroups<T1>, AllSubgroups<T2>, ANameElt.DecompType)>
+        where T1 : struct, IElt<T1>
+        where T2 : struct, IElt<T2>
+    {
+        public override bool Equals((AllSubgroups<T1>, AllSubgroups<T2>, ANameElt.DecompType) x,
+            (AllSubgroups<T1>, AllSubgroups<T2>, ANameElt.DecompType) y)
+        {
+            return x.Item3 == y.Item3 && x.Item1.Parent.IsIsomorphicTo(y.Item1.Parent) &&
+                   x.Item2.Parent.IsIsomorphicTo(y.Item2.Parent);
+        }
+
+        public override int GetHashCode((AllSubgroups<T1>, AllSubgroups<T2>, ANameElt.DecompType) obj)
+        {
+            return (obj.Item3, obj.Item1.Parent.Count(), obj.Item1.Infos.ToTuples(),
+                obj.Item2.Parent.Count(), obj.Item2.Infos.ToTuples()).GetHashCode();
+        }
+    }
+
+    static IEnumerable<(AllSubgroups<T1> lhs, AllSubgroups<T2> rhs, ANameElt.DecompType)>
+        FilterIsomorphic<T1, T2>(this IEnumerable<(AllSubgroups<T1> lhs, AllSubgroups<T2> rhs, ANameElt.DecompType)> subsgr)
+        where T1 : struct, IElt<T1>
+        where T2 : struct, IElt<T2>
+    {
+        var set = new HashSet<(AllSubgroups<T1> lhs, AllSubgroups<T2> rhs, ANameElt.DecompType)>(2000,
+            new IsomorphTupleSubGroupsEquality<T1, T2>());
+
+        foreach (var sub in subsgr)
+        {
+            if (set.Add(sub))
+                yield return sub;
+        }
+    }
+
     static Leaf[] CommonNames(ConcreteGroup<WElt> G)
     {
         var og = G.Count();
@@ -21,7 +54,7 @@ public static class NamesTree
             return [new Leaf(G, "S5")];
         if (og == 720 && orders == "[1]:1, [2]:75, [3]:80, [4]:180, [5]:144, [6]:240")
             return [new Leaf(G, "S6")];
-        
+
         if (og == 8 && orders == "[1]:1, [2]:1, [4]:6")
             return [new Leaf(G, "Q8")];
         if (og == 16 && orders == "[1]:1, [2]:1, [4]:10, [8]:4")
@@ -30,7 +63,7 @@ public static class NamesTree
             return [new Leaf(G, "Q32")];
         if (og == 64 && orders == "[1]:1, [2]:1, [4]:34, [8]:4, [16]:8, [32]:16")
             return [new Leaf(G, "Q64")];
-        
+
         if (og == 24 && orders == "[1]:1, [2]:1, [3]:8, [4]:6, [6]:8")
             return [new Leaf(G, "SL(2,3)")];
         if (og == 48 && orders == "[1]:1, [2]:13, [3]:8, [4]:6, [6]:8, [8]:12")
@@ -39,7 +72,7 @@ public static class NamesTree
             return [new Leaf(G, "SL(2,5)")];
         if (og == 480 && orders == "[1]:1, [2]:31, [3]:20, [4]:152, [5]:24, [6]:20, [8]:40, [10]:24, [12]:40, [20]:48, [24]:80")
             return [new Leaf(G, "GL(2,5)")];
-        
+
         if (og == 12 && orders == "[1]:1, [2]:1, [3]:2, [4]:6, [6]:2")
             return [new Leaf(G, "Dic3")];
         if (og == 16 && orders == "[1]:1, [2]:1, [4]:10, [8]:4")
@@ -122,7 +155,8 @@ public static class NamesTree
                 ANameElt.DecompType.Extension))
             .ToArray();
 
-        return [..allProds, ..extOps];
+        var allProdsFiltered = allProds.FilterIsomorphic().ToArray();
+        return [..allProdsFiltered, ..extOps];
     }
 
     public static ANameElt[] BuildName(AllSubgroups<WElt> subgroups)
@@ -132,7 +166,8 @@ public static class NamesTree
         if (G.Count() > 3000)
             throw new GroupException(GroupExceptionType.GroupDef);
 
-        foreach (var (k, h, t) in AllOps(subgroups))
+        var ops = AllOps(subgroups);
+        foreach (var (k, h, t) in ops)
         {
             if (t == ANameElt.DecompType.Abelian || t == ANameElt.DecompType.SimpleNonAbelian)
                 all.Add(new Leaf(k, t));

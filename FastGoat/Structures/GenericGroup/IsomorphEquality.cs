@@ -19,7 +19,7 @@ public class IsomorphSubGroupsInfosEquality<T> : EqualityComparer<AllSubgroups<T
         return x.Parent.IsIsomorphicTo(y.Parent);
     }
 
-    public override int GetHashCode(AllSubgroups<T> obj) => obj.Infos.GetHashCode();
+    public override int GetHashCode(AllSubgroups<T> obj) => (obj.Parent.Count(), obj.Parent.GroupType, obj.Infos).GetHashCode();
 }
 
 public class OpByAutEquality<T1, T2>(ConcreteGroup<T2> G, ConcreteGroup<Automorphism<T2>> AutG, ConcreteGroup<Automorphism<T1>> AutN)

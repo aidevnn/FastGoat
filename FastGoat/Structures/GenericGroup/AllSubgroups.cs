@@ -15,7 +15,7 @@ public record SubGroupsInfos(int AllSubGr, int AllConjsCl, int AllNorms) : IComp
     }
 }
 
-public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>> where T : struct, IElt<T>
+public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEquatable<AllSubgroups<T>> where T : struct, IElt<T>
 {
     public SubgroupConjugates<T>[] AllSubgroupConjugates { get; }
     public ConcreteGroup<T> Parent => AllSubgroupConjugates.First().Parent;
@@ -42,6 +42,9 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>> wher
         var norms = AllSubgroupConjugates.Count(sc => sc.IsNormal);
         Infos = new(subs, conjs, norms);
     }
+
+    public bool Equals(AllSubgroups<T> other) => Parent.SetEquals(other.Parent);
+    public override int GetHashCode() => Parent.Hash;
 
     public bool IsSimple()
     {
