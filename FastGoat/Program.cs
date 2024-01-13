@@ -170,6 +170,88 @@ void ord32()
     // 
 }
 
+void ord80()
+{
+    GlobalStopWatch.Restart();
+    FG.AllExtensions(
+            (FG.Abelian(2, 5), FG.Abelian(8)),
+            (FG.Abelian(2, 2, 5), FG.Abelian(4)),
+            (FG.Abelian(4, 5), FG.Abelian(4)),
+            (FG.Abelian(4, 5), FG.Abelian(2, 2)),
+            (FG.Abelian(2, 2, 5), FG.Abelian(2, 2)),
+            (FG.Abelian(2, 2, 2, 2), FG.Abelian(5)))
+        .Select(e => e.allSubs)
+        .FilterIsomorphic()
+        .Take(GroupExt.A000001[80])
+        .Naming()
+        .DisplayNames();
+
+    GlobalStopWatch.Show();
+    Console.Beep();
+
+    // Total Groups:52
+    // # Time:2m40s
+    // 
+}
+
+void ord81()
+{
+    GlobalStopWatch.Restart();
+    FG.AllExtensions(
+            FG.AllAbelianGroupsOfOrder(27)
+                .Select(g => (g, FG.Abelian(3)))
+                .ToArray())
+        .Select(e => e.allSubs)
+        .FilterIsomorphic()
+        .Take(GroupExt.A000001[81])
+        .Naming()
+        .DisplayNames();
+
+    GlobalStopWatch.Show();
+    Console.Beep();
+
+    // Total Groups:51
+    // #  Time:1m58s
+    // 
+}
+
+void AllGroupsOrderLess32()
+{
+    GlobalStopWatch.Restart();
+    var allAb = 32.Range(1).SelectMany(k => FG.AllAbelianGroupsOfOrder(k)).Select(e => e.ToCGW().AllSubgroups());
+    var allMtCycSdp = 32.Range(1).SelectMany(k => FG.MetaCyclicSdp(k)).Select(e => e.ToCGW().AllSubgroups());
+    var ext8 = FG.AllExtensions((FG.Abelian(2), FG.Abelian(2, 2))).Select(e => e.allSubs.ToGroupWrapper());
+    var ext12 = FG.AllExtensions((FG.Abelian(2, 2), FG.Abelian(3))).Select(e => e.allSubs.ToGroupWrapper());
+    var ext16 = FG.AllExtensions((FG.Abelian(8), FG.Abelian(2)), (FG.Abelian(4, 2), FG.Abelian(2)))
+        .Select(e => e.allSubs.ToGroupWrapper());
+    var ext18 = FG.AllExtensions((FG.Abelian(3, 3), FG.Abelian(2))).Select(e => e.allSubs.ToGroupWrapper());
+    var ext24 = FG.AllExtensions(
+            (FG.Abelian(12).ToCGW(), FG.Abelian(2)),
+            (FG.Abelian(2, 6).ToCGW(), FG.Abelian(2)),
+            (FG.Alternate(4).ToCGW(), FG.Abelian(2)),
+            (FG.Quaternion(8).ToCGW(), FG.Abelian(3)))
+        .Select(e => e.allSubs.ToGroupWrapper());
+    var ext27 = FG.AllExtensions((FG.Abelian(3, 3), FG.Abelian(3))).Select(e => e.allSubs.ToGroupWrapper());
+    var ext32 = FG.AllExtensions(
+            (FG.Abelian(16), FG.Abelian(2)),
+            (FG.Abelian(8, 2), FG.Abelian(2)),
+            (FG.Abelian(4, 4), FG.Abelian(2)),
+            (FG.Abelian(4, 2), FG.Abelian(4)),
+            (FG.Abelian(4, 2), FG.Abelian(2, 2)))
+        .Select(e => e.allSubs.ToGroupWrapper());
+
+    allAb.AppendIsomorphic(allMtCycSdp, ext8, ext12, ext16, ext18, ext27, ext24, ext32)
+        .Naming()
+        .DisplayNames();
+
+    GlobalStopWatch.Show();
+    Console.Beep();
+    
+    // Total Groups:144
+    // #  Time:25.414s
+    // 
+}
+
 {
     // ord32();
     // ord32();
@@ -177,5 +259,10 @@ void ord32()
     // ord48();
     // ord48();
     // ord48();
-    ord64();
+    // ord64();
+
+    // ord80();
+    // ord81();
+
+    AllGroupsOrderLess32();
 }

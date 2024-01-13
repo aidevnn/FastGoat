@@ -145,7 +145,7 @@ public static partial class FG
     public static IEnumerable<AllSubgroups<T>> FilterIsomorphic<T>(this IEnumerable<AllSubgroups<T>> subsgr, bool verbose = true)
         where T : struct, IElt<T>
     {
-        var nb = 1;
+        var dic = new Dictionary<int, int>();
         var set = new HashSet<AllSubgroups<T>>(1000, new IsomorphSubGroupsInfosEquality<T>());
         var nbSubs = new Dictionary<int, Dictionary<SubGroupsInfos, int>>(130);
         if (verbose)
@@ -153,6 +153,9 @@ public static partial class FG
         foreach (var sub in subsgr)
         {
             var og = sub.Parent.Count();
+            if (!dic.ContainsKey(og))
+                dic[og] = 0;
+
             if (!nbSubs.ContainsKey(og))
                 nbSubs[og] = new Dictionary<SubGroupsInfos, int>(og * og);
 
@@ -168,7 +171,7 @@ public static partial class FG
                 if (verbose)
                 {
                     var ids = allIds[og].Where(e => e.Infos == sub.Infos).Select(e => e.No).Glue(",", "{0:000}");
-                    var name = $"    Iso{sub.Parent.Count()} no:{nb++}/[{ids}]:{nbSubs[og][sub.Infos]}";
+                    var name = $"    Iso{sub.Parent.Count()} no:{++dic[og]}/{GroupExt.A000001[og]} [{ids}]:{nbSubs[og][sub.Infos]}";
                     Console.WriteLine(name);
                 }
 
@@ -235,7 +238,8 @@ public static partial class FG
     public static (AllSubgroups<T> subsg, ANameElt[] names)[]
         DisplayNames<T>(this IEnumerable<(AllSubgroups<T>subsg, ANameElt[] names)> seq, bool rename = false) where T : struct, IElt<T>
     {
-        var lt = seq.OrderBy(e => e.subsg.Parent.GroupType)
+        var lt = seq.OrderBy(e=>e.subsg.Parent.Count())
+            .ThenBy(e => e.subsg.Parent.GroupType)
             .ThenBy(e => e.names[0])
             .ThenByDescending(e => e.subsg.Parent.ElementsOrders.Values.Max())
             .ThenBy(e => e.subsg.Infos)
