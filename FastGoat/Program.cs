@@ -114,9 +114,7 @@ void ord64()
 
 // Remaining 0 groups, possibles 0
 // 
-// #  Total Groups:267 Time:8m11s
-// ...
-// # End Naming Time:51m35s
+// # End Naming Time:16m57s
 
 void ord48()
 {
@@ -144,7 +142,7 @@ void ord48()
     GlobalStopWatch.Show();
     Console.Beep();
     // Total Groups:52
-    // #  Time:29.161s
+    // #  Time:13.357s
     // 
 }
 
@@ -168,7 +166,7 @@ void ord32()
     GlobalStopWatch.Show();
     Console.Beep();
     // Total Groups:51
-    // #  Time:26.380s
+    // #  Time:19.091s
     // 
 }
 
