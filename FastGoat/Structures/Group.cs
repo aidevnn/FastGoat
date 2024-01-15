@@ -134,7 +134,7 @@ public static partial class Group
         return (tmpElements, uniqueGenerators);
     }
 
-    public static Dictionary<T, Coset<T>> Cosets<T>(ConcreteGroup<T> grG, ConcreteGroup<T> grH, Comparer<T> comparer,
+    public static Dictionary<T, Coset<T>> Cosets<T>(ConcreteGroup<T> grG, ConcreteGroup<T> grH,
         CosetType cosetType = CosetType.Both) where T : struct, IElt<T>
     {
         var setH = grH.ToHashSet();
@@ -143,35 +143,29 @@ public static partial class Group
         if (!setH.IsSubsetOf(setG) || !grH.BaseGroup.Equals(grG.BaseGroup))
             throw new GroupException(GroupExceptionType.NotSubGroup);
 
-        var ngH = new Coset<T>(grG, grH);
+        var ngH = new Coset<T>(grG, grH, cosetType);
         foreach (var h in setH)
             cosets[h] = ngH;
 
-        foreach (var x in grG.OrderBy(a => a, comparer))
+        foreach (var x in grG.Order())
         {
             if (cosets.ContainsKey(x))
                 continue;
 
             var xi = grG.Invert(x);
-            var xH = new Coset<T>(grG, grH, x);
-            foreach (var xh in xH)
+            var coset = new Coset<T>(grG, grH, x, cosetType);
+            foreach (var e in coset)
             {
-                cosets[xh] = xH;
+                cosets[e] = coset;
                 if (cosetType == CosetType.Both)
                 {
-                    if (!setH.Contains(grG.Op(xh, xi)))
+                    if (!setH.Contains(grG.Op(e, xi)))
                         throw new GroupException(GroupExceptionType.NotNormal);
                 }
             }
         }
 
         return cosets;
-    }
-
-    public static Dictionary<T, Coset<T>> Cosets<T>(ConcreteGroup<T> grG, ConcreteGroup<T> grH,
-        CosetType cosetType = CosetType.Both) where T : struct, IElt<T>
-    {
-        return Cosets(grG, grH, Comparer<T>.Default, cosetType);
     }
 
     public static T[,] CayleyTable<T>(IGroup<T> g, T[] elements) where T : struct, IElt<T>

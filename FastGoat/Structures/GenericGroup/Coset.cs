@@ -3,23 +3,27 @@ using FastGoat.Commons;
 
 namespace FastGoat.Structures.GenericGroup;
 
-public readonly struct Coset<T> : ILeftCoset<T, Coset<T>> where T : struct, IElt<T>
+public readonly struct Coset<T> : ICoset<T, Coset<T>> where T : struct, IElt<T>
 {
-    public Coset(ConcreteGroup<T> g, ConcreteGroup<T> h)
+    public Coset(ConcreteGroup<T> g, ConcreteGroup<T> h, CosetType cosetType = CosetType.Both)
     {
+        CosetType = cosetType;
         G = g;
         H = h;
         X = H.Neutral();
         Hash = (g.Hash, h.Hash, X.Hash).GetHashCode();
     }
 
-    public Coset(ConcreteGroup<T> g, ConcreteGroup<T> h, T x)
+    public Coset(ConcreteGroup<T> g, ConcreteGroup<T> h, T x, CosetType cosetType = CosetType.Both)
     {
+        CosetType = cosetType;
         G = g;
         H = h;
         X = x;
         Hash = (g.Hash, h.Hash, X.Hash).GetHashCode();
     }
+    
+    public CosetType CosetType { get; }
 
     public T X { get; }
     public ConcreteGroup<T> G { get; }
@@ -28,19 +32,24 @@ public readonly struct Coset<T> : ILeftCoset<T, Coset<T>> where T : struct, IElt
 
     public int CompareTo(Coset<T> other) => X.CompareTo(other.X);
 
-    private IEnumerable<T> xH
+    private IEnumerable<T> Elements
     {
         get
         {
             List<T> set = new();
             foreach (var h in H)
-                set.Add(G.Op(X, h));
+            {
+                if (CosetType != CosetType.Right)
+                    set.Add(G.Op(X, h));
+                else
+                    set.Add(G.Op(h, X));
+            }
 
             return set.Ascending();
         }
     }
 
-    public IEnumerator<T> GetEnumerator() => xH.GetEnumerator();
+    public IEnumerator<T> GetEnumerator() => Elements.GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator()
     {
@@ -53,6 +62,9 @@ public readonly struct Coset<T> : ILeftCoset<T, Coset<T>> where T : struct, IElt
     public override string ToString()
     {
         var hName = H.Name;
-        return $"{X}({hName})";
+        if (CosetType != CosetType.Right)
+            return $"{X}({hName})";
+        else
+            return $"({hName}){X}";
     }
 }
