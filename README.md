@@ -467,3 +467,9 @@ Germany, March 8–12, 1999.
 <b>OEIS.</b>
 The On-Line Encyclopedia of Integer Sequences.
 <i>A000001 Number of groups of order n.</i>
+
+[relators](https://core.ac.uk/download/pdf/82563329.pdf)
+<b>John J. CANNON.</b>
+Construction of defining relators for finite groups.
+Department of Pure Mathematics, University of Sydney.
+Discrete Mathematics 5 (1973).
