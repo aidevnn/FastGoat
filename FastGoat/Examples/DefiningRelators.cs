@@ -1,4 +1,3 @@
-using System.Runtime;
 using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.GenericGroup;
@@ -12,30 +11,6 @@ namespace FastGoat.Examples;
 // John J. CANNON
 public static class DefiningRelators
 {
-    readonly struct Edge : IElt<Edge>
-    {
-        public Edge(int s, int i, int j)
-        {
-            (S, I, J) = (s, i, j);
-            Hash = (S, I, J).GetHashCode();
-        }
-
-        public int S { get; }
-        public int I { get; }
-        public int J { get; }
-        public int Hash { get; }
-
-        public void Deconstruct(out int s0, out int i0, out int j0)
-        {
-            (s0, i0, j0) = (S, I, J);
-        }
-
-        public bool Equals(Edge other) => S == other.S && I == other.I && J == other.J;
-        public int CompareTo(Edge other) => (I, J, S).CompareTo((other.I, other.J, other.S));
-        public override int GetHashCode() => Hash;
-        public override string ToString() => $"{(S, I, J)}";
-    }
-
     readonly struct Table<T> where T : struct, IEquatable<T>
     {
         private T[,] table { get; }
@@ -53,13 +28,11 @@ public static class DefiningRelators
 
         public Table<T> Clone => new(this);
 
-        public IEnumerable<(int i, int j, T t)> GetContent()
+        public IEnumerable<(int I, int S, T T)> GetContent()
         {
             var table0 = table;
-            var d = default(T);
             return Enumerable.Range(1, W).Grid2D(Enumerable.Range(1, H))
-                .Select(e => (e.t1, e.t2, table0[e.t1 - 1, e.t2 - 1]))
-                .Where(e => !e.Item3.Equals(d));
+                .Select(e => (e.t1, e.t2, table0[e.t1 - 1, e.t2 - 1]));
         }
 
         public int W => table.GetLength(0);
@@ -147,34 +120,14 @@ public static class DefiningRelators
         return W;
     }
 
-    static char[][] FindRelators<T1>(ConcreteGroup<T1> g, bool details = false)
-        where T1 : struct, IElt<T1>
+    static (Dictionary<int, LinkedList<int>> words, HashSet<(int I, int S, int J)> allWedges) Words(int r, Table<int> W)
     {
-        var h = Group.Generate("()", g, g.Neutral());
-        var (E, F, repr, T) = EdgesTable(g, h);
-        var Ei = E.Concat(E.Select(e => g.Invert(e))).ToArray();
-        var (r, rows, cols) = (E.Length, T.W, T.H);
         var rgJ = r.Range(1);
         var inv = rgJ.SelectMany(k => new[] { (k, r + k), (r + k, k) }).ToDictionary(e => e.Item1, e => e.Item2);
-        var W = SpanningTree(T);
+        var words = new Dictionary<int, LinkedList<int>>() { [1] = new() };
 
-        var tmp = rgJ.Select(k => (char)('a' + k - 1)).ToArray();
-        var gens = tmp.Concat(tmp.Select((a, i) => g.ElementsOrders[Ei[i]] == 2 ? a : char.ToUpper(a))).Select((a, i) => (a, i + 1))
-            .ToDictionary(e => e.Item2, e => e.a);
-
-        var allTedges = new HashSet<Edge>();
-        for (int i0 = 1; i0 <= rows; i0++)
-        {
-            var i = i0;
-            allTedges.UnionWith(rgJ.SelectMany(si => new[]
-            {
-                new Edge(si, i, T[i, si]), 
-                new Edge(r + si, i, T[i, r + si])
-            }));
-        }
-
-        var allWedges = new HashSet<Edge>();
-        for (int p = 1; p <= rows; p++)
+        var allWedges = new HashSet<(int I, int S, int J)>();
+        for (int p = 1; p <= W.W; p++)
         {
             if (W[p, 3] == 0)
                 continue;
@@ -182,30 +135,109 @@ public static class DefiningRelators
             var q = W[p, 2];
             var sj = W[p, 3];
             var sji = inv[sj];
-            allWedges.UnionWith(new[] { new Edge(sj, q, p), new Edge(sji, p, q) });
+            allWedges.Add((q, sj, p));
+            allWedges.Add((p, sji, q));
         }
 
         var tmpWedges = allWedges.ToList();
-        var words = new Dictionary<int, LinkedList<int>>() { [1] = new() };
         while (tmpWedges.Count != 0)
         {
-            var (s, i, j) = tmpWedges.Where(e => words.ContainsKey(e.I)).MinBy(e => e.I);
+            var (i, s, j) = tmpWedges.Where(e => words.ContainsKey(e.I)).MinBy(e => e.I);
             var l0 = new LinkedList<int>(words[i]);
             if (l0.Count == 0 || l0.Last!.Value != inv[s])
                 l0.AddLast(s);
             else
                 l0.RemoveLast();
 
-            if (words.TryGetValue(j, out var l1))
-            {
-                if (!l1.SequenceEqual(l0))
-                    throw new($"({i})*{gens[s]} = ({j}); [{l0.Glue(" ")}] != [{l1.Glue(" ")}]");
-            }
-            else
-                words[j] = l0;
-
-            tmpWedges.Remove(new Edge(s, i, j));
+            words[j] = l0;
+            tmpWedges.Remove((i, s, j));
         }
+
+        return (words, allWedges);
+    }
+
+    static void StepColorAll(int r, List<LinkedList<int>> rels, Table<int> edges, Table<bool> coloured)
+    {
+        var inv = r.Range(1).SelectMany(i => new[] { (i, r + i), (r + i, i) }).ToDictionary(e => e.Item1, e => e.Item2);
+        var circuits = new List<List<(int I, int S, int J)>>();
+        while (true)
+        {
+            var stop = true;
+            foreach (var rel in rels)
+            {
+                circuits.Clear();
+                var start = true;
+                foreach (var s in rel)
+                {
+                    if (start)
+                    {
+                        start = false;
+                        circuits = edges.W.Range(1).Select(i => new List<(int I, int S, int J)>() { (i, s, edges[i, s]) }).ToList();
+                        continue;
+                    }
+
+                    var tmp = circuits.ToList();
+                    circuits.Clear();
+                    foreach (var circuit0 in tmp)
+                    {
+                        var j0 = circuit0.Last().J;
+                        var circuit1 = circuit0.Append((I: j0, S: s, J: edges[j0, s])).ToList();
+                        if (circuit1.Count(e => !coloured[e.I, e.S]) <= 1)
+                            circuits.Add(circuit1);
+                    }
+                }
+
+                foreach (var circuit in circuits)
+                {
+                    var edge = circuit.Where(e => !coloured[e.I, e.S]).ToArray();
+                    if (edge.Length == 1)
+                    {
+                        var e = edge[0];
+                        coloured[e.I, e.S] = coloured[e.J, inv[e.S]] = true;
+                        stop = false;
+                    }
+                }
+            }
+
+            if (stop)
+                break;
+        }
+    }
+
+    static void NextRelator(int r, List<LinkedList<int>> rels, Table<int> edges, Table<bool> coloured,
+        Dictionary<int, LinkedList<int>> words)
+    {
+        var comp = Comparer<IEnumerable<int>>.Create((a, b) => a.SequenceCompareTo(b));
+        var inv = r.Range(1).SelectMany(i => new[] { (i, r + i), (r + i, i) }).ToDictionary(e => e.Item1, e => e.Item2);
+        var rem = edges.GetContent().Where(e => !coloured[e.I, e.S] && e.S <= r)
+            .Select(e => (e, new LinkedList<int>(words[e.I].Append(e.S).Concat(words[e.T].Reverse().Select(i => inv[i])))))
+            .OrderBy(e => e.Item2.Count)
+            .ThenBy(e => e.Item2, comp)
+            .ToArray();
+
+        if (rem.Length == 0)
+            return;
+
+        var (e0, rel) = rem[0];
+        coloured[e0.I, e0.S] = coloured[e0.T, inv[e0.S]] = true;
+        rels.Insert(0, rel);
+        StepColorAll(r, rels, edges, coloured);
+    }
+
+    static char[][] FindRelators<T1>(ConcreteGroup<T1> g, bool details = false)
+        where T1 : struct, IElt<T1>
+    {
+        var h = Group.Generate("()", g, g.Neutral());
+        var (E, F, repr, T) = EdgesTable(g, h);
+        var Ei = E.Concat(E.Select(e => g.Invert(e))).ToArray();
+        var r = E.Length;
+        var rgJ = r.Range(1);
+        var tmp = rgJ.Select(k => (char)('a' + k - 1)).ToArray();
+        var gens = tmp.Concat(tmp.Select((a, i) => g.ElementsOrders[Ei[i]] == 2 ? a : char.ToUpper(a))).Select((a, i) => (a, i + 1))
+            .ToDictionary(e => e.Item2, e => e.a);
+
+        var W = SpanningTree(T);
+        var (words, allWedges) = Words(r, W);
 
         if (details)
         {
@@ -214,123 +246,53 @@ public static class DefiningRelators
                 .OrderBy(e => e.Key)
                 .Select(e => $"{e.Key}. {e.Value.Item1} -> {e.Value.c}")
                 .Println("Generators");
-            
-            foreach (var (s, i, j) in allWedges.Union(allTedges))
-            {
-                var (a, e1, e2) = (Ei[s - 1], F[i - 1], F[j - 1]);
-                if (!repr[g.Op(e1, a)].Equals(e2))
-                    throw new();
-            }
 
-            if (words.Count <= 32)
+            if (g.Count() < 33)
             {
-                var nb = words.Count;
+                Console.WriteLine("Words");
                 var table = words.OrderBy(e => e.Key)
                     .SelectMany(e => new[]
                         { $"(1)*({e.Value.Select(k => gens[k]).Glue("*")})", "=", $"({e.Key})", "=", $"{F[e.Key - 1]}" })
                     .ToArray();
-
-                Console.WriteLine("Words");
                 var fmt = Ring.MatrixDisplayForm;
                 Ring.MatrixDisplayForm = Ring.MatrixDisplay.TableLeft;
-                Ring.DisplayMatrix(Ring.Matrix(nb, table), "  ");
+                Ring.DisplayMatrix(Ring.Matrix(words.Count, table), "  ");
                 Ring.MatrixDisplayForm = fmt;
+                Console.WriteLine();
             }
-
-            foreach (var (k, op) in words)
-            {
-                var e1 = F[k - 1];
-                var e2 = op.Aggregate(g.Neutral(), (acc, i) => repr[g.Op(acc, Ei[i - 1])]);
-                if (!e1.Equals(e2))
-                    throw new($"[(1)*({op.Select(k0 => gens[k0]).Glue("*")}) = {e2}] != [({k}) = {e1}]");
-            }
-
-            if (words.Count != F.Count)
-                throw new($"ops:{words.Count} != F:{F.Count}");
         }
 
-        var coloured = allWedges.ToHashSet();
+        var coloured = new Table<bool>(T.W, T.H);
+        foreach (var e in allWedges)
+            coloured[e.I, e.S] = true;
+
+        var nbEdges = T.W * T.H;
+        if (details)
+            Console.WriteLine("Coloured:{0}/{1}", coloured.GetContent().Count(e => e.T), nbEdges);
         var rels = new List<LinkedList<int>>();
         while (true)
         {
-            var (rels0, newcols) = AddRelator(r, rels, allTedges, coloured, words);
-            if (rels0.Count == rels.Count) break;
-            rels = rels0;
-            coloured.UnionWith(newcols);
-        }
-
-        return rels.Reverse<LinkedList<int>>().Select(rel => rel.Select(i => gens[i]).ToArray()).ToArray();
-    }
-    
-    static (List<LinkedList<int>> rels, HashSet<Edge> col) AddRelator(int r, List<LinkedList<int>> rels, HashSet<Edge> edges, 
-        HashSet<Edge> coloured, Dictionary<int, LinkedList<int>> words)
-    {
-        var comp = Comparer<IEnumerable<int>>.Create((a, b) => a.SequenceCompareTo(b));
-        var inv = r.Range(1).SelectMany(i => new[] { (i, r + i), (r + i, i) }).ToDictionary(e => e.Item1, e => e.Item2);
-        var rem = edges.Except(coloured)
-            .Where(e => e.S <= r) 
-            .Select(e => (e, new LinkedList<int>(words[e.I].Append(e.S).Concat(words[e.J].Reverse().Select(i => inv[i])))))
-            .OrderBy(e => e.Item2.Count)
-            .ThenBy(e => e.Item2, comp)
-            .ToArray();
-
-        if (rem.Length == 0)
-            return (rels, coloured);
-
-        var (es0, rel) = rem[0];
-        var es1 = new Edge(inv[es0.S], es0.J, es0.I);
-        var circuits = new List<List<Edge>>();
-        var cols = coloured.ToHashSet();
-        cols.UnionWith(new[] { es0, es1 });
-        var rels0 = rels.Prepend(rel).ToList();
-        while (true)
-        {
-            var sz = cols.Count;
-            foreach (var rel0 in rels0)
-            {
-                circuits.Clear();
-                var start = false;
-                foreach (var s0 in rel0)
-                {
-                    if (!start)
-                    {
-                        circuits = edges.Where(e => e.S == s0).Select(e => new List<Edge>() { e }).ToList();
-                        start = true;
-                        continue;
-                    }
-
-                    var tmp = circuits.ToList();
-                    circuits.Clear();
-                    foreach (var circuit in tmp)
-                    {
-                        var j0 = circuit.Last().J;
-                        foreach (var e1 in edges.Where(e => e.S == s0 && e.I == j0))
-                        {
-                            var nc = circuit.Append(e1).ToList();
-                            circuits.Add(nc);
-                        }
-                    }
-                }
-
-                var final = circuits.Where(c => c.Count(e => !cols.Contains(e)) == 1).ToList();
-                cols.UnionWith(final.SelectMany(e => e.SelectMany(f => new[] { f, new Edge(inv[f.S], f.J, f.I) })));
-            }
-
-            if (cols.Count == sz)
+            NextRelator(r, rels, T, coloured, words);
+            var nbColoured = coloured.GetContent().Count(e => e.T);
+            if (details)
+                Console.WriteLine("Coloured:{0}/{1}", nbColoured, nbEdges);
+            if (nbColoured == nbEdges)
                 break;
         }
-
-        return (rels0, cols);
+        
+        return rels.Reverse<LinkedList<int>>().Select(rel => rel.Select(i => gens[i]).ToArray()).ToArray();
     }
 
     static void ShowRelators<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
     {
+        GlobalStopWatch.Restart();
         Console.WriteLine($"G:{g.ShortName}");
         var rels = FindRelators(g, details: true);
         rels.Select(rel => $"{rel.Glue("*")} = 1").Println("Relators");
+        GlobalStopWatch.Show();
         Console.WriteLine();
     }
-    
+
     public static void Example1Abelian()
     {
         ShowRelators(FG.Abelian(2, 2));
@@ -340,8 +302,8 @@ public static class DefiningRelators
         ShowRelators(FG.Abelian(3, 6));
         ShowRelators(FG.Abelian(2, 4, 8));
     }
-    
-    public static void Example2Dihedrals()
+
+    public static void Example2Dihedral()
     {
         ShowRelators(FG.Dihedral(3));
         ShowRelators(FG.Dihedral(4));
@@ -349,7 +311,7 @@ public static class DefiningRelators
         ShowRelators(FG.Dihedral(6));
         ShowRelators(FG.Dihedral(7));
     }
-    
+
     public static void Example3Dicyclic()
     {
         Ring.MatrixDisplayForm = Ring.MatrixDisplay.SquareBracket;
@@ -358,14 +320,14 @@ public static class DefiningRelators
         ShowRelators(FG.DiCyclic(4));
         ShowRelators(FG.DiCyclic(5));
         ShowRelators(FG.DiCyclic(6));
-        
+
         ShowRelators(FG.DiCyclicSdp(2));
         ShowRelators(FG.DiCyclicSdp(3));
         ShowRelators(FG.DiCyclicSdp(4));
         ShowRelators(FG.DiCyclicSdp(5));
         ShowRelators(FG.DiCyclicSdp(6)); // TODO fix it
     }
-    
+
     public static void Example4PermGroup()
     {
         ShowRelators(FG.Alternate(3));
@@ -376,5 +338,14 @@ public static class DefiningRelators
         ShowRelators(FG.Symmetric(5));
         ShowRelators(FG.Alternate(6));
         ShowRelators(FG.Symmetric(6));
+        ShowRelators(FG.Alternate(7)); // Time:1.836s
+        ShowRelators(FG.Symmetric(7)); // Time:1.769s
+    }
+
+    public static void Example5MetaCyclicSdp()
+    {
+        var nb = 33.Range(1).Except(IntExt.Primes10000).ToArray();
+        foreach (var g in nb.SelectMany(k => FG.MetaCyclicSdp(k)))
+            ShowRelators(g);
     }
 }

@@ -472,4 +472,5 @@ The On-Line Encyclopedia of Integer Sequences.
 <b>John J. CANNON.</b>
 Construction of defining relators for finite groups.
 Department of Pure Mathematics, University of Sydney.
-Discrete Mathematics 5 (1973).
+Discrete Mathematics 5 (1973), North-Holland Publishing Company.
+<i>Construction of defining relators for finite groups. p105-129</i>
