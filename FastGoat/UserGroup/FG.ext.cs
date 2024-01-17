@@ -28,6 +28,35 @@ public record ExtInfos<Tn, Tg>(CrMap<Tn, Tg> c, ConcreteGroup<Ep2<Tn, Tg>> ext, 
 
 public static partial class FG
 {
+    static EqualityComparer<Homomorphism<Tg, Automorphism<Tn>>>
+        EqOpByAut<Tn, Tg>(ConcreteGroup<Tg> G, ConcreteGroup<Automorphism<Tg>> autG, ConcreteGroup<Automorphism<Tn>> autN)
+        where Tn : struct, IElt<Tn>
+        where Tg : struct, IElt<Tg>
+    {
+        return EqualityComparer<Homomorphism<Tg, Automorphism<Tn>>>.Create(
+            (x, y) =>
+            {
+                var N = ((AutomorphismGroup<Tn>)autN.BaseGroup).G;
+                var GN = G.Grid2D(N).Select(e => (g: e.t1, n: e.t2)).ToArray();
+                return autG.Any(f => GN.All(e => x[e.g][e.n].Equals(y[f[e.g]][e.n])))
+                       || autN.Any(f =>
+                       {
+                           var fi = f.Invert();
+                           return GN.All(e => f[x[e.g][fi[e.n]]].Equals(y[e.g][e.n]));
+                       });
+            },
+            obj => obj.Count
+        );
+    }
+
+    static EqualityComparer<AllSubgroups<T>> EqSubGroups<T>() where T : struct, IElt<T>
+    {
+        return EqualityComparer<AllSubgroups<T>>.Create(
+            (x, y) => x.Parent.IsIsomorphicTo(y.Parent),
+            obj => (obj.Parent.Count(), obj.Parent.GroupType, obj.Infos).GetHashCode()
+        );
+    }
+    
     static IEnumerable<ExtInfos<Tn, Tg>> AllExtensionsInternal<Tn, Tg>(ConcreteGroup<Tn> N, ConcreteGroup<Tg> G,
         int nbOps, int nbSkip = 0)
         where Tg : struct, IElt<Tg>
@@ -37,7 +66,7 @@ public static partial class FG
         var autN = Group.AutomorphismGroup(N);
         var autG = Group.AutomorphismGroup(G);
         var allOps = Group.AllHomomorphisms(G, autN);
-        var ops = allOps.ToHashSet(new OpByAutEquality<Tn, Tg>(G, autG, autN));
+        var ops = allOps.ToHashSet(EqOpByAut(G, autG, autN));
 
         Console.WriteLine();
         Console.WriteLine($"AutG:{autG.Count()} AutN:{autN.Count()}");
@@ -104,7 +133,7 @@ public static partial class FG
         var autG = Group.AutomorphismGroup(G);
         var autN = Group.AutomorphismGroup(N);
         var allOps = Group.AllHomomorphisms(G, autN);
-        var ops = allOps.Where(kp => trivial || kp.Image().Count() > 1).ToHashSet(new OpByAutEquality<T1, T2>(G, autG, autN));
+        var ops = allOps.Where(kp => trivial || kp.Image().Count() > 1).ToHashSet(EqOpByAut(G, autG, autN));
         Console.WriteLine($"AutG:{autG.Count()} AutN:{autN.Count()}");
         var nb = ops.Count();
         Console.WriteLine($"AllOps:{allOps.Count} remaining:{nb}");
@@ -126,7 +155,7 @@ public static partial class FG
         var autN = Group.AutomorphismGroup(N);
         var allOps = Group.AllHomomorphisms(G, autN);
         Console.WriteLine($"AutG:{autG.Count()} AutN:{autN.Count()}");
-        var ops = allOps.Where(kp => trivial || kp.Image().Count() > 1).Distinct(new OpByAutEquality<T1, T2>(G, autG, autN));
+        var ops = allOps.Where(kp => trivial || kp.Image().Count() > 1).Distinct(EqOpByAut(G, autG, autN));
         var k = 1;
         foreach (var theta in ops)
         {
@@ -146,7 +175,7 @@ public static partial class FG
         where T : struct, IElt<T>
     {
         var dic = new Dictionary<int, int>();
-        var set = new HashSet<AllSubgroups<T>>(1000, new IsomorphSubGroupsInfosEquality<T>());
+        var set = new HashSet<AllSubgroups<T>>(3000, EqSubGroups<T>());
         var nbSubs = new Dictionary<int, Dictionary<SubGroupsInfos, int>>(130);
         if (verbose)
             Console.WriteLine("## Start New Filter");
@@ -185,7 +214,7 @@ public static partial class FG
         where Tg : struct, IElt<Tg>
     {
         var nb = 1;
-        var set = new HashSet<AllSubgroups<Ep2<Tn, Tg>>>(1000, new IsomorphSubGroupsInfosEquality<Ep2<Tn, Tg>>());
+        var set = new HashSet<AllSubgroups<Ep2<Tn, Tg>>>(3000, EqSubGroups<Ep2<Tn, Tg>>());
         Console.WriteLine("## Start New Filter");
         foreach (var sub in subsgr)
         {

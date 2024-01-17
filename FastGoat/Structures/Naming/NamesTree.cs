@@ -5,31 +5,21 @@ namespace FastGoat.Structures.Naming;
 
 public static class NamesTree
 {
-    class IsomorphTupleSubGroupsEquality<T1, T2> : EqualityComparer<(AllSubgroups<T1>, AllSubgroups<T2>, ANameElt.DecompType)>
-        where T1 : struct, IElt<T1>
-        where T2 : struct, IElt<T2>
-    {
-        public override bool Equals((AllSubgroups<T1>, AllSubgroups<T2>, ANameElt.DecompType) x,
-            (AllSubgroups<T1>, AllSubgroups<T2>, ANameElt.DecompType) y)
-        {
-            return x.Item3 == y.Item3 && x.Item1.Parent.IsIsomorphicTo(y.Item1.Parent) &&
-                   x.Item2.Parent.IsIsomorphicTo(y.Item2.Parent);
-        }
-
-        public override int GetHashCode((AllSubgroups<T1>, AllSubgroups<T2>, ANameElt.DecompType) obj)
-        {
-            return (obj.Item3, obj.Item1.Parent.Count(), obj.Item1.Infos.ToTuples(),
-                obj.Item2.Parent.Count(), obj.Item2.Infos.ToTuples()).GetHashCode();
-        }
-    }
-
     static IEnumerable<(AllSubgroups<T1> lhs, AllSubgroups<T2> rhs, ANameElt.DecompType)>
         FilterIsomorphic<T1, T2>(this IEnumerable<(AllSubgroups<T1> lhs, AllSubgroups<T2> rhs, ANameElt.DecompType)> subsgr)
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
     {
-        var set = new HashSet<(AllSubgroups<T1> lhs, AllSubgroups<T2> rhs, ANameElt.DecompType)>(2000,
-            new IsomorphTupleSubGroupsEquality<T1, T2>());
+        var eqTuples = EqualityComparer<(AllSubgroups<T1> lhs, AllSubgroups<T2> rhs, ANameElt.DecompType)>.Create(
+            (x, y) =>
+            {
+                return x.Item3 == y.Item3 && x.Item1.Parent.IsIsomorphicTo(y.Item1.Parent) &&
+                       x.Item2.Parent.IsIsomorphicTo(y.Item2.Parent);
+            },
+            obj => (obj.Item3, obj.Item1.Parent.Count(), obj.Item1.Infos.ToTuples(),
+                obj.Item2.Parent.Count(), obj.Item2.Infos.ToTuples()).GetHashCode()
+        );
+        var set = new HashSet<(AllSubgroups<T1> lhs, AllSubgroups<T2> rhs, ANameElt.DecompType)>(2000, eqTuples);
 
         foreach (var sub in subsgr)
         {
