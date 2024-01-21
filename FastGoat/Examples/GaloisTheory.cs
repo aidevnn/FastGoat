@@ -3,6 +3,7 @@ using System.Numerics;
 using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.GenericGroup;
+using FastGoat.Structures.Naming;
 using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup;
 using FastGoat.UserGroup.Integers;
@@ -195,26 +196,32 @@ public static class GaloisTheory
         var primEltChar = roots[0].F.x;
         var gal = GaloisGroup(roots, primEltChar, details);
 
-        var allSubs = Group.AllSubGroups(gal).Values.SelectMany(e => e).Reverse().ToList();
-        foreach (var (e, i0) in allSubs.Select((e, i0) => (e, i0)))
-            e.Name = $"G{i0}";
+        var allSubs = gal.AllSubgroups();
+        var allSubs2 = allSubs.All.Reverse().ToList();
+        foreach (var cl in allSubs.AllSubgroupConjugates)
+        {
+            var repr = cl.Representative;
+            var name = repr.Name = NamesTree.BuildName(allSubs.Restriction(repr).ToGroupWrapper())[0].NameParenthesis;
+            if (cl.IsNormal)
+                continue;
+
+            foreach (var (g0, k) in cl.Conjugates.Select((e, k) => (e, k + 1)))
+                g0.Name = $"{name}({k})";
+        }
 
         var sn = new Sn(roots.Count);
         var idxRoots = roots.Select((c0, k) => (k, c0)).ToDictionary(e => e.c0, e => e.k);
         var perm2roots = roots.Select(c0 => (c0, sn.CreateElement(roots.Select(c1 => idxRoots[c0.Substitute(c1)] + 1).ToArray())))
             .ToDictionary(e => e.Item2, e => e.c0);
 
-        var i = 1;
         var alphabet = "abcdefghjklmnopqrstuvwABCDEFGHJKLMNOPQRSTUVW".Replace($"{primEltChar}", "");
-        var names = new Queue<char>(alphabet.Take(allSubs.Count - 2).Prepend(primEltChar).Append(primEltChar));
-        if (allSubs.Count > alphabet.Length)
-            throw new($"Too many subGroups nb={allSubs.Count}");
+        var names = new Queue<char>(alphabet.Take(allSubs2.Count - 2).Prepend(primEltChar).Append(primEltChar));
+        if (allSubs2.Count > alphabet.Length)
+            throw new($"Too many subGroups nb={allSubs2.Count}");
 
-        foreach (var subGr in allSubs)
+        foreach (var subGr in allSubs2)
         {
-            subGr.Name = $"G{i++}";
             var sfName = names.Dequeue();
-
             var rs = subGr.Select(e => perm2roots[e]).ToArray();
             if (rs.Grid2D(rs).Any(e => !rs.Contains(e.t1.Substitute(e.t2))))
                 throw new();

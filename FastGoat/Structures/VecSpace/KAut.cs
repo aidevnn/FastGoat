@@ -13,14 +13,16 @@ public readonly struct KAut<K> : IElt<KAut<K>> where K : struct, IElt<K>, IRingE
 
         E = e;
         KAutGroup = kaut;
-        Hash = (e.Hash, KAutGroup.Hash).GetHashCode();
+        var hash = e.Poly.Coefs.Aggregate(0, (acc, a) => (acc, a.Hash).GetHashCode());
+        Hash = (hash, KAutGroup.Hash).GetHashCode();
     }
 
     public KAut(EPoly<K> e)
     {
         E = e;
         KAutGroup = new KAutGroup<K>(e.F);
-        Hash = (e.Hash, KAutGroup.Hash).GetHashCode();
+        var hash = e.Poly.Coefs.Aggregate(0, (acc, a) => (acc, a.Hash).GetHashCode());
+        Hash = (hash, KAutGroup.Hash).GetHashCode();
     }
 
     public bool Equals(KAut<K> other) => E.Equals(other.E);
