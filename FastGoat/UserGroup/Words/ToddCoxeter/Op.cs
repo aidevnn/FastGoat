@@ -13,11 +13,11 @@ public struct Op : IEquatable<Op>
         i = i0;
         g = g0;
         j = j0;
-        hash = HashCode.Combine(i, g, j);
+        hash = (i, g, j).GetHashCode();
     }
 
     public override int GetHashCode() => hash;
-    public bool Equals(Op other) => hash == other.hash;
+    public bool Equals(Op other) => i.Equals(other.i) && g.Equals(other.g) && j.Equals(other.j);
     public Op Invert() => new(j, g.Invert(), i);
 
     public static Op Create(EqClass i0, Generator g0, EqClass j0) =>

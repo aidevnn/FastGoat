@@ -21,13 +21,13 @@ public struct Generator : IEquatable<Generator>, IComparable<Generator>
     }
 
     public char GetLowerCase() => sgn == 1 ? Value : i;
-    public Generator Invert() => new(i);
+    public Generator Invert() => i == Id.i ? this : new(i);
     public bool Equals(Generator other) => Value == other.Value;
-
-    public override bool Equals([NotNullWhen(true)] object? obj)
-    {
-        return base.Equals(obj);
-    }
+    //
+    // public override bool Equals([NotNullWhen(true)] object? obj)
+    // {
+    //     return base.Equals(obj);
+    // }
 
     public int CompareTo(Generator other)
     {

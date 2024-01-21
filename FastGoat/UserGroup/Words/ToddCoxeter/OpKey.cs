@@ -10,7 +10,7 @@ public struct OpKey : IEquatable<OpKey>, IComparable<OpKey>
     {
         i = i0;
         g = g0;
-        hash = HashCode.Combine(i, g);
+        hash = (i, g).GetHashCode();
     }
 
     public bool Equals(OpKey other) => i == other.i && g == other.g;

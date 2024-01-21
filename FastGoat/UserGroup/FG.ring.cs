@@ -434,7 +434,7 @@ public static partial class FG
     public static ConcreteGroup<Coset<Mat>> L2p(int p)
     {
         if (!IntExt.Primes10000.Contains(p) || p <= 3 || p > 41)
-            throw new($"p = {p} must be prime > 3 and < 41");
+            throw new($"p = {p} must be prime > 3 and <= 41");
 
         var sl2p = SL2p(p);
         var z = Group.Zentrum(sl2p);

@@ -35,10 +35,9 @@ public static class ToddCoxeterAlgo
 
             if (details)
                 Console.WriteLine($"#### Step {k++} Op : {op} ####");
-
-            tOps = new(tOps);
+            
             tOps.ApplyOp(op);
-            tOps.BuildTable();
+            tOps.BuildTable(details);
 
             if (details)
                 tOps.Display();

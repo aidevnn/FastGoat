@@ -41,8 +41,6 @@ public class RelatorsTable
             table[s0] = new(s0, line);
             table.Remove(s1);
         }
-        else
-            throw new Exception("TO DO");
 
         foreach (var e in table)
             e.Value.Subtitute(s0, s1);

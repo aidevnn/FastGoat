@@ -2,6 +2,7 @@ using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.GenericGroup;
 using FastGoat.UserGroup;
+using FastGoat.UserGroup.Words;
 
 namespace FastGoat.Examples;
 
@@ -275,22 +276,56 @@ public static class DefiningRelators
             NextRelator(r, rels, T, coloured, words);
             var nbColoured = coloured.GetContent().Count(e => e.T);
             if (details)
+            {
                 Console.WriteLine("Coloured:{0}/{1}", nbColoured, nbEdges);
+                Console.WriteLine($"Relator:{rels[0].Select(i => gens[i]).Glue("*")}");
+                Console.WriteLine($"ToddCoxeterVerification:{ToddCoxeterVerification(rels, T)}");
+            }
             if (nbColoured == nbEdges)
                 break;
         }
-        
+
         return rels.Reverse<LinkedList<int>>().Select(rel => rel.Select(i => gens[i]).ToArray()).ToArray();
     }
 
-    static void ShowRelators<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
+    public static void ShowRelators<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
     {
         GlobalStopWatch.Restart();
         Console.WriteLine($"G:{g.ShortName}");
         var rels = FindRelators(g, details: true);
-        rels.Select(rel => $"{rel.Glue("*")} = 1").Println("Relators");
+        var strRels = rels.Select(rel => StringExt.ReducedWordForm1(rel.Glue())).OrderBy(s => s.Length).ThenAscending().ToArray();
+        var gens = rels.SelectMany(rel => rel).Select(c => char.ToLower(c)).Distinct().Order().ToArray();
+        Console.WriteLine($"G:{g.ShortName}");
+        Console.WriteLine($"G:<({gens.Glue(",")}) | {strRels.Glue(", ")}>");
         GlobalStopWatch.Show();
         Console.WriteLine();
+    }
+
+    static bool ToddCoxeterVerification(List<LinkedList<int>> rels, Table<int> edges)
+    {
+        var cls = edges.W.Range(1);
+        var allRels = rels.SelectMany(rel => rel).ToArray();
+        var r = edges.H / 2;
+        var coloured = new Table<bool>(edges.W, edges.H);
+        var inv = r.Range(1).SelectMany(i => new[] { (i, r + i), (r + i, i) }).ToDictionary(e => e.Item1, e => e.Item2);
+        var nb = 0;
+        foreach (var i0 in cls)
+        {
+            var i = i0;
+            foreach (var s in allRels)
+            {
+                var j = edges[i, s];
+                if (!coloured[i, s])
+                {
+                    ++nb;
+                    coloured[i, s] = true;
+                }
+                
+                i = j;
+            }
+        }
+
+        return nb == edges.W * edges.H;
     }
 
     public static void Example1Abelian()
