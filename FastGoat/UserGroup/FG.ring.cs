@@ -403,12 +403,8 @@ public static partial class FG
 
     public static ConcreteGroup<Mat> SL2p(int p)
     {
-        if (!IntExt.Primes10000.Contains(p))
+        if (!IntExt.Primes10000.Contains(p) || p > 41)
             throw new($"p = {p} must be prime");
-
-        var og = GLnpOrder(2, p);
-        if (og > 50000)
-            throw new();
 
         var gl = new GL(2, p);
         if (p == 3)
@@ -423,7 +419,7 @@ public static partial class FG
             var x = (p - 2).Range(2).First(i => IntExt.PowMod(i, p - 1, p) == 1);
             var xp = IntExt.PowMod(x, p - 2, p);
 
-            // SL(2,p) generators from H.E. Rose, page 271, Problem 12.5
+            // SL(2,q) generators from H.E. Rose, page 271, Problem 12.5
             var a = gl[x, 0, 0, xp];
             var b = gl[p - 1, 1, p - 1, 0];
 

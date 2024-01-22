@@ -370,7 +370,7 @@ public static partial class FG
         return nbSubGroupsDetails[ord][infos];
     }
 
-    public static IdGroup[] AllIds(int o) => allIds[o];
+    public static IdGroup[] AllIds(int o) => allIds.ContainsKey(o) ? allIds[o] : [];
 
     public static IdGroup[] FindIdGroup<T>(ConcreteGroup<T> g, SubGroupsInfos infos) where T : struct, IElt<T>
     {
