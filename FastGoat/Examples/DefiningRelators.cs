@@ -2,6 +2,7 @@ using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.GenericGroup;
 using FastGoat.UserGroup;
+using FastGoat.UserGroup.Perms;
 using FastGoat.UserGroup.Words;
 
 namespace FastGoat.Examples;
@@ -279,7 +280,6 @@ public static class DefiningRelators
             {
                 Console.WriteLine("Coloured:{0}/{1}", nbColoured, nbEdges);
                 Console.WriteLine($"Relator:{rels[0].Select(i => gens[i]).Glue("*")}");
-                Console.WriteLine($"ToddCoxeterVerification:{ToddCoxeterVerification(rels, T)}");
             }
             if (nbColoured == nbEdges)
                 break;
@@ -310,7 +310,7 @@ public static class DefiningRelators
         ShowRelators(FG.Abelian(3, 6));
         ShowRelators(FG.Abelian(2, 4, 8));
     }
-
+    
     public static void Example2Dihedral()
     {
         ShowRelators(FG.Dihedral(3));
@@ -319,7 +319,7 @@ public static class DefiningRelators
         ShowRelators(FG.Dihedral(6));
         ShowRelators(FG.Dihedral(7));
     }
-
+    
     public static void Example3Dicyclic()
     {
         Ring.MatrixDisplayForm = Ring.MatrixDisplay.SquareBracket;
@@ -328,14 +328,14 @@ public static class DefiningRelators
         ShowRelators(FG.DiCyclic(4));
         ShowRelators(FG.DiCyclic(5));
         ShowRelators(FG.DiCyclic(6));
-
+        
         ShowRelators(FG.DiCyclicSdp(2));
         ShowRelators(FG.DiCyclicSdp(3));
         ShowRelators(FG.DiCyclicSdp(4));
         ShowRelators(FG.DiCyclicSdp(5));
         ShowRelators(FG.DiCyclicSdp(6)); // TODO fix it
     }
-
+    
     public static void Example4PermGroup()
     {
         ShowRelators(FG.Alternate(3));
@@ -349,11 +349,27 @@ public static class DefiningRelators
         ShowRelators(FG.Alternate(7)); // Time:1.836s
         ShowRelators(FG.Symmetric(7)); // Time:1.769s
     }
-
+    
     public static void Example5MetaCyclicSdp()
     {
         var nb = 33.Range(1).Except(IntExt.Primes10000).ToArray();
         foreach (var g in nb.SelectMany(k => FG.MetaCyclicSdp(k)))
             ShowRelators(g);
+    }
+
+    public static void Example6L2p()
+    {
+        Ring.MatrixDisplayForm = Ring.MatrixDisplay.SquareBracket;
+        foreach (var p in IntExt.Primes10000.Skip(2).Take(6))
+            ShowRelators(FG.L2p(p));
+    }
+    
+    public static void Example7U33()
+    {
+        var s28 = new Sn(28);
+        var a = s28[(1, 5, 7, 3, 12, 24, 11), (2, 23, 4, 27, 13, 14, 26), (6, 20, 18, 8, 25, 21, 28), (9, 10, 17, 15, 22, 16, 19)];
+        var b = s28[(3, 4), (5, 17, 7, 16, 8, 20, 6, 13), (9, 19, 11, 14, 12, 18, 10, 15), (21, 23, 26, 28, 24, 22, 27, 25)];
+        var u33 = Group.Generate("U3(3)", s28, a, b);
+        ShowRelators(u33);
     }
 }
