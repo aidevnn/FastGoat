@@ -300,34 +300,7 @@ public static class DefiningRelators
         GlobalStopWatch.Show();
         Console.WriteLine();
     }
-
-    static bool ToddCoxeterVerification(List<LinkedList<int>> rels, Table<int> edges)
-    {
-        var cls = edges.W.Range(1);
-        var allRels = rels.SelectMany(rel => rel).ToArray();
-        var r = edges.H / 2;
-        var coloured = new Table<bool>(edges.W, edges.H);
-        var inv = r.Range(1).SelectMany(i => new[] { (i, r + i), (r + i, i) }).ToDictionary(e => e.Item1, e => e.Item2);
-        var nb = 0;
-        foreach (var i0 in cls)
-        {
-            var i = i0;
-            foreach (var s in allRels)
-            {
-                var j = edges[i, s];
-                if (!coloured[i, s])
-                {
-                    ++nb;
-                    coloured[i, s] = true;
-                }
-                
-                i = j;
-            }
-        }
-
-        return nb == edges.W * edges.H;
-    }
-
+    
     public static void Example1Abelian()
     {
         ShowRelators(FG.Abelian(2, 2));
