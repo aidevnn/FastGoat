@@ -47,6 +47,7 @@ public static class ToddCoxeterAlgo
         {
             Console.WriteLine($"####     End    ####");
             GlobalStopWatch.Show("TC");
+            Console.WriteLine();
         }
 
         tOps.GenerateWords();
