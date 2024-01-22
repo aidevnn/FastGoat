@@ -33,7 +33,7 @@ public class RelatorsTable
             e.Value.Subtitute(s0, s1);
     }
 
-    public void SubtituteWithKey(EqClass s0, EqClass s1)
+    public void SubtituteAddRemove(EqClass s0, EqClass s1)
     {
         if (!table.ContainsKey(s0))
         {

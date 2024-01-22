@@ -1,5 +1,6 @@
 using FastGoat.Commons;
 using FastGoat.Structures;
+using FastGoat.UserGroup;
 using FastGoat.UserGroup.Integers;
 using FastGoat.UserGroup.Perms;
 using FastGoat.UserGroup.Words;
@@ -32,8 +33,7 @@ public static class ToddCoxeter
         ToddCoxeterAlgo.Run("a", "a3, b3, abab", details: true); // p106 step by step algorithm with subgroup H=<a>
         ToddCoxeterAlgo.Run("a", "a3, b3, aba2b", details: true); // p107 step by step algorithm with subgroup H=<a>
 
-        ToddCoxeterAlgo.Run("b", "a7, b3, a2=bab-1",
-            details: true); // C7 : C3 step by step algorithm with subgroup H=<b>
+        ToddCoxeterAlgo.Run("b", "a7, b3, a2=bab-1", details: true); // C7 : C3 step by step algorithm with subgroup H=<b>
         ToddCoxeterAlgo.Run("a7, b3, a2=bab-1", details: true); // C7 : C3 step by step algorithm with subgroup H=<Id>
 
         ToddCoxeterAlgo.Run("a2, b4, ab=ba", details: true); // Dihedral 8 step by step algorithm
@@ -137,5 +137,77 @@ public static class ToddCoxeter
         var q32 = Group.Generate("pgQ32", s32, a, b);
         DisplayGroup.HeadElements(q32);
         Console.WriteLine("({0}) IsIsomorphicTo ({1}) : {2}", wg, q32, wg.IsIsomorphicTo(q32));
+    }
+    
+    public static void Coincidences1()
+    {
+        // Algebre Tome 1, Daniel Guin – Thomas Hausberger
+        // p107 step by step algorithm
+        ToddCoxeterAlgo.Run("a", "a3, b3, aba2b", details: true);
+        ToddCoxeterAlgo.Run("a3, b3, aba2b", details: true);
+    }
+
+    public static void Coincidences2()
+    {
+        // Ken Brown paper toddcox.pdf
+        ToddCoxeterAlgo.Run("aba-1 = b2, bab-1 = a2", details: true);
+    }
+
+    public static void Group_576_8282()
+    {
+        // Ken Brown paper toddcox.pdf
+        ToddCoxeterAlgo.Run("a,b", "a3,b2,c2,abababab,acac,bcbcbc", details: true);
+        Console.ReadLine();
+    
+        GlobalStopWatch.Restart();
+        GlobalStopWatch.AddLap();
+        var g = FG.WordGroup("a3,b2,c2,abababab,acac,bcbcbc");
+        DisplayGroup.HeadOrders(g);
+        GlobalStopWatch.Show("WG");
+        GlobalStopWatch.AddLap();
+        DisplayGroup.HeadOrdersNames(g);
+        GlobalStopWatch.Show("Names");
+        GlobalStopWatch.Show("End");
+    }
+    /*
+       |SL(2,3) x: S4| = 576
+       Type        NonAbelianGroup
+       BaseGroup   WG[a,b,c]
+
+       Elements Orders : [1]:1, [2]:91, [3]:80, [4]:84, [6]:80, [8]:144, [12]:96
+       SubGroupsInfos { AllSubGr = 1731, AllConjsCl = 127, AllNorms = 13 }
+       Group names
+           SL(2,3) x: S4
+           (SL(2,3) x: A4) x: C2
+           (SL(2,3) x: (C2 x C2)) x: S3
+           (Q8 x: A4) x: S3
+           (D8 x: (C2 x C2)) x: ((C3 x C3) x: C2)
+           C2 . (A4 x: S4)
+           Q8 . (C3 x: S4)
+
+       #  Time:1m38s
+     */
+
+    public static void Symm6a()
+    {
+        ToddCoxeterAlgo.Run("a", "a2, b6, ababababab, ab2ab-2ab2ab-2, abab-1abab-1abab-1", details: true);
+    }
+
+    public static void Symm6b()
+    {
+        ToddCoxeterAlgo.Run("b", "a2, b6, ababababab, ab2ab-2ab2ab-2, abab-1abab-1abab-1", details: true);
+    }
+
+    public static void Symm6()
+    {
+        ToddCoxeterAlgo.Run("a2, b6, ababababab, ab2ab-2ab2ab-2, abab-1abab-1abab-1", details: true);
+    }
+
+    public static void Symm6Orders()
+    {
+        GlobalStopWatch.Restart();
+        var g = FG.WordGroup("a2, b6, ababababab, ab2ab-2ab2ab-2, abab-1abab-1abab-1");
+        DisplayGroup.HeadOrders(g);
+        GlobalStopWatch.Show();
     }
 }

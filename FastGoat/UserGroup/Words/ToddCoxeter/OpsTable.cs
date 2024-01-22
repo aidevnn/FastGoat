@@ -45,67 +45,72 @@ public class OpsTable
     {
         int sz = 0;
         HashSet<Op> newOps = new();
-        (EqClass, EqClass) err = new();
         do
         {
             newOps.Clear();
             sz = sgTable.CountUnknown + rTable.CountUnknown;
-            err = sgTable.ApplyOp(opsTable, newOps);
-            if (Substitute(err.Item1, err.Item2, details))
+            var errSg = sgTable.ApplyOp(opsTable, newOps);
+            if (NoCoincidence(errSg.Item1, errSg.Item2, details))
                 foreach (var op in newOps)
                     ApplyOp(op);
 
             newOps.Clear();
-            err = rTable.ApplyOp(opsTable, newOps);
-            if (Substitute(err.Item1, err.Item2, details))
+            var errRel = rTable.ApplyOp(opsTable, newOps);
+            if (NoCoincidence(errRel.Item1, errRel.Item2, details))
                 foreach (var op in newOps)
                     ApplyOp(op);
         } while (newOps.Count != 0 || sz != sgTable.CountUnknown + rTable.CountUnknown);
     }
-
-    bool Substitute(EqClass s0, EqClass s1, bool details = false)
+    
+    bool NoCoincidence(EqClass s0, EqClass s1, bool details = false)
     {
         if (s0 == EqClass.Unknown)
             return true;
-
-        var digits = opsTable.Values.Concat(opsTable.Keys.Select(e => e.i)).Distinct().Max(e => e.GetHashCode().ToString().Length);
+        
+        var digits = opsTable.Values.Concat(opsTable.Keys.Select(e => e.i)).Distinct().Max(e => $"{e}".Length);
         if (details)
         {
+            Console.WriteLine("# Coincidence detected");
             rTable.Display(digits);
             Console.WriteLine($"({s1}) ~-> ({s0})");
         }
-
+        
         sgTable.Subtitute(s0, s1);
         rTable.SubtituteRemove(s0, s1);
-        foreach (var op in opsTable.Where(e => e.Value.Equals(s1) || e.Key.i.Equals(s1)).ToArray())
-            opsTable.Remove(op.Key);
+        Substitute(s0, s1);
+        
+        if (details)
+            rTable.Display(digits);
 
         while (rTable.ContainsKey(s1.Next))
         {
-            (s0, s1) = EqClass.MinMax(s1, s0.Next);
-            if (s0.Equals(s1))
-                continue;
-            
+            (s0, s1) = (s1, s1.Next);
             if (details)
             {
-                rTable.Display(digits);
                 Console.WriteLine($"({s1}) ~-> ({s0})");
+                rTable.Display(digits);
             }
+            
             sgTable.Subtitute(s0, s1);
-            rTable.SubtituteWithKey(s0, s1);
-            foreach (var op in opsTable.Where(e => e.Value.Equals(s1) || e.Key.i.Equals(s1)).ToArray())
-            {
-                opsTable.Remove(op.Key);
-                if (op.Key.i.Equals(s1) && op.Value.Equals(s1))
-                    opsTable[new OpKey(s0, op.Key.g)] = s0;
-                else if (op.Key.i.Equals(s1) && !op.Value.Equals(s1))
-                    opsTable[new OpKey(s0, op.Key.g)] = op.Value;
-                else if (!op.Key.i.Equals(s1) && op.Value.Equals(s1))
-                    opsTable[new OpKey(op.Key.i, op.Key.g)] = s0;
-            }
+            rTable.SubtituteAddRemove(s0, s1);
+            Substitute(s0, s1);
         }
         
         return false;
+    }
+    
+    void Substitute(EqClass s0, EqClass s1)
+    {
+        foreach (var op in opsTable.Where(e => e.Value.Equals(s1) || e.Key.i.Equals(s1)).ToArray())
+        {
+            opsTable.Remove(op.Key);
+            if (op.Key.i.Equals(s1) && op.Value.Equals(s1))
+                opsTable[new OpKey(s0, op.Key.g)] = s0;
+            else if (op.Key.i.Equals(s1) && !op.Value.Equals(s1))
+                opsTable[new OpKey(s0, op.Key.g)] = op.Value;
+            else if (!op.Key.i.Equals(s1) && op.Value.Equals(s1))
+                opsTable[new OpKey(op.Key.i, op.Key.g)] = s0;
+        }
     }
 
     public void ApplyOp(Op op)
@@ -122,13 +127,13 @@ public class OpsTable
             if (opsTable.TryGetValue(opKey, out var s))
             {
                 var (s0, s1) = EqClass.MinMax(op.j, s);
-                Substitute(s0, s1);
+                NoCoincidence(s0, s1);
             }
 
             if (opsTable.TryGetValue(opiKey, out var si))
             {
                 var (s0, s1) = EqClass.MinMax(op.i, si);
-                Substitute(s0, s1);
+                NoCoincidence(s0, s1);
             }
         }
     }
