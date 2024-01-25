@@ -136,25 +136,95 @@ void PermGroup7()
     // PermGroup7();
 }
 
+void Tests()
 {
-    Graph.ClassesFromGroup(FG.Abelian(2));
-    Graph.RunTCtable("a2");
-    Graph.ClassesFromGroup(FG.Abelian(5));
-    Graph.RunTCtable("a5");
-    Graph.ClassesFromGroup(FG.Abelian(2, 2));
-    Graph.RunTCtable("a2,b2,ab=ba");
-    Graph.ClassesFromGroup(FG.Dihedral(4));
-    Graph.RunTCtable("a4,b2,abab");
+    Graph.DefiningRelatorsOfGroup(FG.Abelian(2));
+    Graph.DefiningRelatorsOfGroup(FG.Abelian(5));
+    Graph.DefiningRelatorsOfGroup(FG.Abelian(2, 2));
+    Graph.DefiningRelatorsOfGroup(FG.Dihedral(4));
     
     for (int k = 2; k <= 8; ++k)
     {
-        Graph.ClassesFromGroup(FG.DiCyclic(k));
-        Graph.ClassesFromGroup(FG.DiCyclicSdp(k));
+        Graph.DefiningRelatorsOfGroup(FG.DiCyclic(k));
+        Graph.DefiningRelatorsOfGroup(FG.DiCyclicSdp(k));
     }
-
+    
     for (int n = 4; n <= 7; n++)
     {
-        Graph.ClassesFromGroup(FG.Alternate(n));
-        Graph.ClassesFromGroup(FG.Symmetric(n));
+        Graph.DefiningRelatorsOfGroup(FG.Alternate(n));
+        Graph.DefiningRelatorsOfGroup(FG.Symmetric(n));
     }
+}
+
+void L2p()
+{
+    Graph.DefiningRelatorsOfGroup(FG.L2p(11));
+    /*
+       |L2(11)| = 660
+
+       #  Time:518ms
+       All Relators
+           a3
+           b2
+           ababababababababababab
+           baba-1baba-1baba-1baba-1baba-1
+           abababa-1ba-1ba-1babababa-1ba-1ba-1b
+     */
+    
+    Graph.RunTC("a3,b2,ababababababababababab,baba-1baba-1baba-1baba-1baba-1,abababa-1ba-1ba-1babababa-1ba-1ba-1b", details: false);
+    // Step:683 NbClasses:660
+    // #  Time:2.355s
+    
+    Graph.DefiningRelatorsOfGroup(FG.L2p(13));
+    /* |L2(13)| = 1092
+
+       #  Time:210ms
+       All Relators
+           a3
+           b2
+           ababababababababababababab
+           abababa-1baba-1babababa-1baba-1b
+           ababababa-1bababababa-1ba-1bababa-1ba-1b
+     */
+    
+    Graph.RunTC("a3,b2,ababababababababababababab,abababa-1baba-1babababa-1baba-1b,ababababa-1bababababa-1ba-1bababa-1ba-1b", details: false);
+    // Step:1099 NbClasses:1092
+    // #  Time:3.939s
+    
+    Graph.DefiningRelatorsOfGroup(FG.L2p(17));
+    /* |L2(17)| = 2448
+       
+       #  Time:547ms
+       All Relators
+           a3
+           b2
+           ababababa-1ba-1bababa-1baba-1bababa-1ba-1b
+           abababababa-1ba-1ba-1babababababa-1ba-1ba-1b
+     */
+    
+    Graph.RunTC("a3,b2,ababababa-1ba-1bababa-1baba-1bababa-1ba-1b,abababababa-1ba-1ba-1babababababa-1ba-1ba-1b", details: false);
+    // Step:2499 NbClasses:2448
+    // #  Time:14.651s
+}
+
+{
+    var s28 = new Sn(28);
+    var a2 = s28[(1, 5, 7, 3, 12, 24, 11), (2, 23, 4, 27, 13, 14, 26), (6, 20, 18, 8, 25, 21, 28), (9, 10, 17, 15, 22, 16, 19)];
+    var b2 = s28[(3, 4), (5, 17, 7, 16, 8, 20, 6, 13), (9, 19, 11, 14, 12, 18, 10, 15), (21, 23, 26, 28, 24, 22, 27, 25)];
+    var u3_3pg = Group.Generate("U3(3)pg", s28, a2, b2);
+    Graph.DefiningRelatorsOfGroup(u3_3pg);
+    /* |U3(3)pg| = 6048
+       
+       #  Time:2.945s
+       All Relators
+           a8
+           b7
+           ba-1ba-1ba-1
+           a4ba3b-1a-1b2
+           a2b-1ab2abab-1a-1b
+     */
+    
+    Graph.RunTC("a8,b7,ba-1ba-1ba-1,a4ba3b-1a-1b2,a2b-1ab2abab-1a-1b", details: false);
+    // Step:8541 NbClasses:6048
+    // #  Time:1m46s
 }

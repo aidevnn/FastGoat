@@ -219,7 +219,7 @@ public partial class Graph
         return graph;
     }
 
-    public static void ClassesFromGroup<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
+    public static void DefiningRelatorsOfGroup<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
     {
         var h = Group.Generate("()", g, g.Neutral());
         var graph = ClassesFromGroupSubgroup(g, h);
