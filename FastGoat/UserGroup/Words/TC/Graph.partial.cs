@@ -1,0 +1,126 @@
+using FastGoat.Commons;
+using FastGoat.Structures;
+using FastGoat.Structures.GenericGroup;
+
+namespace FastGoat.UserGroup.Words.TC;
+
+public partial class Graph
+{
+    private Graph(Gen[] gens)
+    {
+        Gens = gens;
+        NbGens = gens.Length;
+        End = false;
+        Relators = new();
+        Subgroup = new Gen[0];
+        var Null = new Class(0, this);
+        Classes = new() { Null };
+    }
+
+    private void SpanningTree()
+    {
+        var clI = Classes[1];
+        var clL = Classes[1];
+        var n = Classes.Count - 1;
+        var k = 1;
+        var gi = new Gen();
+        var gens = Gens.Where(c => char.IsLower(c.V)).ToArray();
+        var W = Classes.Select(c0 => (c0, c1: Class.Null, c2: Class.Null, g: gi)).ToArray();
+        W[1].c2 = clI;
+        while (true)
+        {
+            foreach (var gJ in gens)
+            {
+                var clT = clI![gJ];
+                if (W[clT.V].c1 is not null || clT.V == clL.V)
+                    continue;
+
+                ++k;
+                W[clT.V].c2 = clI;
+                W[clT.V].g = gJ;
+                W[clL.V].c1 = clT;
+                clL = clT;
+                if (k == n)
+                    break;
+            }
+
+            if (k == n)
+                break;
+
+            clI = W[clI!.V].c1;
+        }
+
+        foreach (var (c0, _, c2, g) in W.Skip(1))
+        {
+            if (!g.Equals(gi))
+            {
+                c0.STClass = c2!;
+                c0.STGen = g;
+            }
+        }
+    }
+
+    private void Words()
+    {
+        foreach (var @class in Classes.Skip(1))
+        {
+            var tmp = @class;
+            while (tmp.V != 1)
+            {
+                var g = tmp.STGen;
+                tmp = tmp.STClass!;
+                @class.Word.Insert(0, g);
+            }
+
+            Console.WriteLine($"({@class}) = ({@class.Word.Glue(" * ")})");
+        }
+    }
+
+    private static Graph ClassesFromGroupSubgroup<T>(ConcreteGroup<T> g, ConcreteGroup<T> h) where T : struct, IElt<T>
+    {
+        var E = g.GetGenerators().OrderByDescending(e => g.ElementsOrders[e]).ToArray();
+        var r = E.Length;
+        var cosets = Group.Cosets(g, h, CosetType.Right);
+        var repr = cosets.ToDictionary(a => a.Key, a => a.Value.X);
+
+        var gens = r.Range().Select(i => (char)('a' + i)).Select(i => new Gen(i)).Prepend(new Gen()).ToArray();
+        var graph = new Graph(gens.Skip(1).SelectMany(c => new[] { c, c.Invert() }).ToArray());
+
+        var F = new List<T>() { g.Neutral() };
+        graph.Classes.Add(new(1, graph));
+        var m = 1;
+        for (int i = 1; i <= m; ++i)
+        {
+            for (int j = 1; j <= r; ++j)
+            {
+                var x = repr[g.Op(F[i - 1], E[j - 1])];
+                var l = F.FindIndex(e => e.Equals(x)) + 1;
+                if (l != 0)
+                    graph.Classes[i][gens[j]] = graph.Classes[l];
+                else
+                {
+                    F.Add(x);
+                    var cl = new Class(++m, graph);
+                    graph.Classes.Add(cl);
+                    graph.Classes[i][gens[j]] = cl;
+                }
+            }
+        }
+
+        graph.SpanningTree();
+        return graph;
+    }
+
+    public static void ClassesFromGroup<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
+    {
+        var h = Group.Generate("()", g, g.Neutral());
+        var graph = ClassesFromGroupSubgroup(g, h);
+        var digits = $"{graph.Classes.Count}".Length;
+        var fmt = $"{{0,{digits + 1}}}";
+        Console.WriteLine(g.ShortName);
+        graph.DisplayTable(fmt);
+        Console.WriteLine();
+        graph.Words();
+        Console.WriteLine();
+    }
+}

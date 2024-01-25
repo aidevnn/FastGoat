@@ -135,3 +135,14 @@ void PermGroup7()
     // PermGroup6();
     // PermGroup7();
 }
+
+{
+    Graph.ClassesFromGroup(FG.Abelian(2));
+    Graph.RunTCtable("a2");
+    Graph.ClassesFromGroup(FG.Abelian(5));
+    Graph.RunTCtable("a5");
+    Graph.ClassesFromGroup(FG.Abelian(2, 2));
+    Graph.RunTCtable("a2,b2,ab=ba");
+    Graph.ClassesFromGroup(FG.Dihedral(4));
+    Graph.RunTCtable("a4,b2,abab");
+}
