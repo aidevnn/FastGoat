@@ -52,10 +52,10 @@ public static class DefiningRelators
         }
     }
 
-    static (T1[] E, List<T1> F, Dictionary<T1, T1> repr, Table<int> T) EdgesTable<T1>(ConcreteGroup<T1> g, ConcreteGroup<T1> h)
+    static (T1[] E, List<T1> F, Table<int> T) EdgesTable<T1>(ConcreteGroup<T1> g, ConcreteGroup<T1> h)
         where T1 : struct, IElt<T1>
     {
-        var E = g.GetGenerators().OrderBy(e => g.ElementsOrders[e]).ToArray();
+        var E = g.GetGenerators().OrderByDescending(e => g.ElementsOrders[e]).ToArray();
         var r = E.Length;
         var hi = g.Count() / h.Count();
         var cosets = Group.Cosets(g, h, CosetType.Right);
@@ -85,7 +85,7 @@ public static class DefiningRelators
             }
         }
 
-        return (E, F, repr, T);
+        return (E, F, T);
     }
 
     static Table<int> SpanningTree(Table<int> T)
@@ -230,7 +230,7 @@ public static class DefiningRelators
         where T1 : struct, IElt<T1>
     {
         var h = Group.Generate("()", g, g.Neutral());
-        var (E, F, repr, T) = EdgesTable(g, h);
+        var (E, F, T) = EdgesTable(g, h);
         var Ei = E.Concat(E.Select(e => g.Invert(e))).ToArray();
         var r = E.Length;
         var rgJ = r.Range(1);
@@ -360,7 +360,7 @@ public static class DefiningRelators
     public static void Example6L2p()
     {
         Ring.MatrixDisplayForm = Ring.MatrixDisplay.SquareBracket;
-        foreach (var p in IntExt.Primes10000.Skip(2).Take(6))
+        foreach (var p in IntExt.Primes10000.Where(p => p > 3).Take(8))
             ShowRelators(FG.L2p(p));
     }
     

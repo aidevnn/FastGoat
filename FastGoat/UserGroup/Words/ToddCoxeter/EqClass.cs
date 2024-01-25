@@ -17,11 +17,11 @@ public struct EqClass : IEquatable<EqClass>, IComparable<EqClass>
     public int Hash => Value;
     public EqClass Next => new(Value + 1);
     public bool Equals(EqClass other) => Value == other.Value;
-    //
-    // public override bool Equals([NotNullWhen(true)] object? obj)
-    // {
-    //     return base.Equals(obj);
-    // }
+    
+    public override bool Equals([NotNullWhen(true)] object? obj)
+    {
+        return base.Equals(obj);
+    }
 
     public int CompareTo(EqClass other) => Value.CompareTo(other.Value);
     public override int GetHashCode() => Value;
