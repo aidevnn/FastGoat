@@ -3,21 +3,20 @@ using FastGoat.Structures;
 
 namespace FastGoat.UserGroup.Words.TC;
 
-public class Graph
+public partial class Graph
 {
     public Gen[] Subgroup { get; set; }
-    public Relator[] Relators { get; set; }
+    public List<Relator> Relators { get; set; }
     public Gen[] Gens { get; }
     public int NbGens { get; }
     private int Step { get; set; }
     private bool End { get; set; }
-    public List<Class> Classes { get; }
-
-    public Graph(string sg, string rels)
+    private List<Class> Classes { get; }
+    private Graph(string sg, string rels)
     {
         Subgroup = CreateHeader(sg.Split(',', StringSplitOptions.TrimEntries)).SelectMany(c => c).ToArray();
         Relators = CreateHeader(rels.Split(',', StringSplitOptions.TrimEntries))
-            .Select((gen, k) => new Relator(k, gen)).ToArray();
+            .Select((gen, k) => new Relator(k, gen)).ToList();
         Gens = Relators.SelectMany(r => r.Gens)
             .Concat(Subgroup)
             .Select(c => char.ToLower(c.V))
@@ -79,7 +78,7 @@ public class Graph
     private void Display(string action)
     {
         Console.WriteLine($"### Step:{Step} {action}");
-        var digits = $"{Classes.Count}".Length;
+        var digits = $"{Classes.Count - 1}".Length;
         var fmt = $"{{0,{digits + 1}}}";
         Console.WriteLine(Header(fmt));
         foreach (var cl in Classes.Skip(1))
@@ -92,7 +91,16 @@ public class Graph
             Console.WriteLine(string.Format(fmt, cl.V) + Gens.Select(g => cl.HasEdge(g) ? string.Format(fmt, cl[g]) : space).Glue());
     }
 
-    public void Build(bool details = true, bool time = true)
+    private void DisplayTable(string fmt)
+    {
+        var space = string.Format(fmt, ' ');
+        Console.WriteLine(space + Gens.Glue("", fmt));
+        foreach (var cl in Classes.Skip(1))
+            Console.WriteLine(string.Format(fmt, cl.V) + Gens.Select(g => cl.HasEdge(g) ? string.Format(fmt, cl[g]) : space).Glue());
+        
+    }
+
+    private void Build(bool details = true, bool time = true)
     {
         if (time)
             GlobalStopWatch.AddLap();
@@ -147,7 +155,7 @@ public class Graph
         }
     }
 
-    static Gen[][] CreateHeader(params string[] gens)
+    private static Gen[][] CreateHeader(params string[] gens)
     {
         // The character 'i' is reserved for neutral subgroup
         var gi = gens.ToList().FindAll(g => g.Contains(Gen.Id));
@@ -158,13 +166,22 @@ public class Graph
             .Select(w => w.Select(c => new Gen(c)).ToArray()).ToArray();
     }
 
-    public string Header(string fmt)
+    private string Header(string fmt)
     {
         var s = string.Format(fmt, ' ');
         var s1 = s.Substring(s.Length / 2);
         return s1 + Relators.Select(rel => rel.Format(fmt)).Glue();
     }
 
-    public static Graph Create(string sg, string rel) => new(sg, rel);
-    public static Graph Create(string rel) => new("i", rel);
+    public static void RunTC(string sg, string rel, bool details = true, bool time = true) => new Graph(sg, rel).Build(details, time);
+    public static void RunTC(string rel, bool details = true, bool time = true) => RunTC("i", rel, details, time);
+
+    public static void RunTCtable(string rels)
+    {
+        var graph = new Graph("i", rels);
+        graph.Build(false, false);
+        var digits = $"{graph.Classes.Count - 1}".Length;
+        var fmt = $"{{0,{digits + 1}}}";
+        graph.DisplayTable(fmt);
+    }
 }

@@ -2,7 +2,7 @@ using FastGoat.Commons;
 
 namespace FastGoat.UserGroup.Words.TC;
 
-public class Class
+public partial class Class
 {
     public int V { get; set; }
     public Graph G { get; }
