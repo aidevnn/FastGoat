@@ -17,6 +17,9 @@ public partial class Graph
         Classes = new() { Null };
     }
 
+    private bool STDone { get; set; }
+    private bool RelatorsComplete { get; set; } = true;
+
     private void SpanningTree()
     {
         var clI = Classes[1];
@@ -24,7 +27,7 @@ public partial class Graph
         var n = Classes.Count - 1;
         var k = 1;
         var gi = new Gen();
-        var gens = Gens.Where(c => char.IsLower(c.V)).ToArray();
+        var gens = Gens.OrderByDescending(c => char.IsLower(c.V)).ToArray();
         var W = Classes.Select(c0 => (c0, c1: Class.Null, c2: Class.Null, g: gi)).ToArray();
         W[1].c2 = clI;
         while (true)
@@ -56,6 +59,7 @@ public partial class Graph
             {
                 c0.STClass = c2!;
                 c0.STGen = g;
+                c2!.Color(g);
             }
         }
     }
@@ -72,8 +76,101 @@ public partial class Graph
                 @class.Word.Insert(0, g);
             }
 
-            Console.WriteLine($"({@class}) = ({@class.Word.Glue(" * ")})");
+            if (Classes.Count < 33)
+                Console.WriteLine($"({@class}) = ({@class.Word.Glue(" * ")})");
         }
+    }
+
+    private void NextRelator()
+    {
+        var gensPos = Gens.OrderByDescending(g => char.IsLower(g.V))
+            .ThenBy(g => g)
+            .Select((g, i) => (g, i))
+            .ToDictionary(e => e.g, e => e.i);
+        var comp = Comparer<IEnumerable<Gen>>.Create((a, b) => a.Select(e => gensPos[e]).SequenceCompareTo(b.Select(e => gensPos[e])));
+        var rem = Classes.SelectMany(e => e.GetEdges().Select(f => (i: e, s: f.Key, j: f.Value)))
+            .Where(e => !e.i.Coloured[e.s] && char.IsLower(e.s.V))
+            .Select(e => (e, e.i.Word.Append(e.s).Concat(e.j.WordInv).ToArray()))
+            .OrderBy(e => e.Item2.Length)
+            .ThenBy(e => e.Item2, comp)
+            .ToArray();
+
+        if (rem.Length == 0)
+            return;
+
+        var (e0, rel) = rem[0];
+        e0.i.Color(e0.s);
+        var relator = new Relator(Relators.Count, rel);
+        Relators.Add(relator);
+        foreach (var @class in Classes.Skip(1))
+        {
+            var circuit = new Circuit(@class, relator);
+            var (_, err) = circuit.UpdateCircuit();
+            if (err is not null)
+                throw new();
+
+            @class.Circuits.Add(circuit);
+        }
+
+        StepColorAll();
+    }
+
+    private void StepColorAll()
+    {
+        var eq = EqualityComparer<(Class, Gen)>.Create(
+            (a, b) => (a.Item1.V, b.Item2.V).Equals((b.Item1.V, b.Item2.V)),
+            obj => (obj.Item1.V, obj.Item2.V).GetHashCode());
+        while (true)
+        {
+            var stop = true;
+            var circuits = Classes.SelectMany(c => c.Circuits).ToArray();
+            var edges = circuits.Select(c => c.NotColoured)
+                .Where(c => c.Count == 1)
+                .SelectMany(c => c)
+                .Distinct(eq)
+                .ToArray();
+
+            foreach (var (@class, gen) in edges)
+            {
+                stop = false;
+                @class.Color(gen);
+            }
+
+            if (stop)
+                break;
+        }
+    }
+
+    private Dictionary<Gen,Gen> GensConv { get; set; }
+    private void DefineRelators()
+    {
+        if (!STDone)
+        {
+            GlobalStopWatch.Restart();
+            Relators.Clear();
+            RelatorsComplete = false;
+
+            SpanningTree();
+            Words();
+            while (true)
+            {
+                var sz = Relators.Count;
+                NextRelator();
+                if (Relators.Count == sz)
+                    break;
+            }
+
+            STDone = true;
+            GlobalStopWatch.Show();
+        }
+
+        var gensConv = GensConv;
+        Relators.Select(c => c.Gens.Select(g => gensConv[g]))
+            .Select(c => c.Glue())
+            .Select(StringExt.ReducedWordForm1)
+            .OrderBy(s => s.Length)
+            .ThenBy(s => s)
+            .Println("All Relators");
     }
 
     private static Graph ClassesFromGroupSubgroup<T>(ConcreteGroup<T> g, ConcreteGroup<T> h) where T : struct, IElt<T>
@@ -86,9 +183,20 @@ public partial class Graph
         var gens = r.Range().Select(i => (char)('a' + i)).Select(i => new Gen(i)).Prepend(new Gen()).ToArray();
         var graph = new Graph(gens.Skip(1).SelectMany(c => new[] { c, c.Invert() }).ToArray());
 
+        graph.GensConv = gens.Skip(1).Select((e, i) => (e, i))
+            .SelectMany(e => new[]
+            {
+                (e.e, e.e),
+                g.ElementsOrders[E[e.i]] == 2
+                    ? (e.e.Invert(), e.e)
+                    : (e.e.Invert(), e.e.Invert())
+            })
+            .ToDictionary(e => e.Item1, e => e.Item2);
+
         var F = new List<T>() { g.Neutral() };
         graph.Classes.Add(new(1, graph));
         var m = 1;
+        graph.Classes[m].Coloured = graph.Gens.ToDictionary(e => e, _ => false);
         for (int i = 1; i <= m; ++i)
         {
             for (int j = 1; j <= r; ++j)
@@ -101,13 +209,13 @@ public partial class Graph
                 {
                     F.Add(x);
                     var cl = new Class(++m, graph);
+                    cl.Coloured = graph.Gens.ToDictionary(e => e, _ => false);
                     graph.Classes.Add(cl);
                     graph.Classes[i][gens[j]] = cl;
                 }
             }
         }
 
-        graph.SpanningTree();
         return graph;
     }
 
@@ -118,9 +226,10 @@ public partial class Graph
         var digits = $"{graph.Classes.Count}".Length;
         var fmt = $"{{0,{digits + 1}}}";
         Console.WriteLine(g.ShortName);
-        graph.DisplayTable(fmt);
+        if (g.Count() < 33)
+            graph.DisplayTable(fmt);
         Console.WriteLine();
-        graph.Words();
+        graph.DefineRelators();
         Console.WriteLine();
     }
 }

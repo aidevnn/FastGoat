@@ -3,7 +3,7 @@ using Microsoft.VisualBasic;
 
 namespace FastGoat.UserGroup.Words.TC;
 
-public readonly struct Circuit
+public readonly partial struct Circuit
 {
     public Class Class { get; }
     public Relator Relator { get; }

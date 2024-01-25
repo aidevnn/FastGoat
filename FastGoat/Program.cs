@@ -145,4 +145,16 @@ void PermGroup7()
     Graph.RunTCtable("a2,b2,ab=ba");
     Graph.ClassesFromGroup(FG.Dihedral(4));
     Graph.RunTCtable("a4,b2,abab");
+    
+    for (int k = 2; k <= 8; ++k)
+    {
+        Graph.ClassesFromGroup(FG.DiCyclic(k));
+        Graph.ClassesFromGroup(FG.DiCyclicSdp(k));
+    }
+
+    for (int n = 4; n <= 7; n++)
+    {
+        Graph.ClassesFromGroup(FG.Alternate(n));
+        Graph.ClassesFromGroup(FG.Symmetric(n));
+    }
 }

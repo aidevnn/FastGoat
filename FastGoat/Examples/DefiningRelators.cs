@@ -126,7 +126,7 @@ public static class DefiningRelators
     {
         var rgJ = r.Range(1);
         var inv = rgJ.SelectMany(k => new[] { (k, r + k), (r + k, k) }).ToDictionary(e => e.Item1, e => e.Item2);
-        var words = new Dictionary<int, LinkedList<int>>() { [1] = new() };
+        var words = W.W.Range(1).ToDictionary(e => e, _ => new LinkedList<int>());
 
         var allWedges = new HashSet<(int I, int S, int J)>();
         for (int p = 1; p <= W.W; p++)
@@ -141,20 +141,17 @@ public static class DefiningRelators
             allWedges.Add((p, sji, q));
         }
 
-        var tmpWedges = allWedges.ToList();
-        while (tmpWedges.Count != 0)
+        foreach (var word in words)
         {
-            var (i, s, j) = tmpWedges.Where(e => words.ContainsKey(e.I)).MinBy(e => e.I);
-            var l0 = new LinkedList<int>(words[i]);
-            if (l0.Count == 0 || l0.Last!.Value != inv[s])
-                l0.AddLast(s);
-            else
-                l0.RemoveLast();
-
-            words[j] = l0;
-            tmpWedges.Remove((i, s, j));
+            var tmp = word.Key;
+            while (tmp != 1)
+            {
+                var g = W[tmp, 3];
+                word.Value.AddFirst(g);
+                tmp = W[tmp, 2];
+            }
         }
-
+        
         return (words, allWedges);
     }
 
