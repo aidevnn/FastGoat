@@ -1,7 +1,7 @@
 using FastGoat.Commons;
 using FastGoat.Structures;
 
-namespace FastGoat.UserGroup.Words.TC;
+namespace FastGoat.UserGroup.Words.Tools;
 
 public partial class Graph
 {
@@ -75,28 +75,97 @@ public partial class Graph
         return op;
     }
 
-    private void Display(string action)
+    public int[] Separators
     {
-        Console.WriteLine($"### Step:{Step} {action}");
-        var digits = $"{Classes.Count - 1}".Length;
-        var fmt = $"{{0,{digits + 1}}}";
-        Console.WriteLine(Header(fmt));
-        foreach (var cl in Classes.Skip(1))
-            Console.WriteLine(cl.Format(fmt));
+        get
+        {
+            List<int> seps = new() { 0 };
+            var arrGens = Relators.ToArray();
+            foreach (var g in arrGens)
+                seps.Add(seps.Last() + g.Length);
 
-        Console.WriteLine();
-        var space = string.Format(fmt, ' ');
-        Console.WriteLine(space + Gens.Glue("", fmt));
-        foreach (var cl in Classes.Skip(1))
-            Console.WriteLine(string.Format(fmt, cl.V) + Gens.Select(g => cl.HasEdge(g) ? string.Format(fmt, cl[g]) : space).Glue());
+            return seps.ToArray();
+        }
     }
 
-    private void DisplayTable(string fmt)
+    void DisplayFancy(string action)
     {
-        var space = string.Format(fmt, ' ');
-        Console.WriteLine(space + Gens.Glue("", fmt));
-        foreach (var cl in Classes.Skip(1))
-            Console.WriteLine(string.Format(fmt, cl.V) + Gens.Select(g => cl.HasEdge(g) ? string.Format(fmt, cl[g]) : space).Glue());
+        Console.WriteLine($"### Step:{Step} {action}");
+        DisplayTableRelators();
+        DisplayTableOps();
+    }
+
+    void DisplayTableRelators()
+    {
+        var digits = $"{Classes.Count - 1}".Length;
+        var fmt = $"{{0,{digits + 1}}}";
+        Console.WriteLine("# Relators table");
+        Console.WriteLine($" {Relators.Select(r => r.Format(fmt)).Glue()}");
+        DisplayLineDown(digits);
+        foreach (var kv in Classes.Skip(1))
+        {
+            if (kv.V > 1 && kv.V % 40 == 1)
+            {
+                DisplayLineUp(digits);
+                Console.WriteLine($" {Relators.Select(r => r.Format(fmt)).Glue()}");
+                DisplayLineDown(digits);
+            }
+            Console.WriteLine(kv.Display(digits));
+        }
+
+        DisplayLineUp(digits);
+        Console.WriteLine();
+    }
+    
+    void DisplayLineUp(int digits)
+    {
+        var s1 = Enumerable.Repeat('─', (digits + 1) * (Relators.Sum(r => r.Length) + 1)).Append(' ').Glue().ToArray();
+        foreach (var k in Separators)
+            s1[(digits + 1) * k] = s1[(digits + 1) * (k + 1)] = '┴';
+
+        s1[0] = '└';
+        s1[^1] = '┘';
+        Console.WriteLine(s1.Glue());
+    }
+    
+    void DisplayLineDown(int digits)
+    {
+        var s1 = Enumerable.Repeat('─', (digits + 1) * (Relators.Sum(r => r.Length) + 1)).Append(' ').Glue().ToArray();
+        foreach (var k in Separators)
+            s1[(digits + 1) * k] = s1[(digits + 1) * (k + 1)] = '┬';
+
+        s1[0] = '┌';
+        s1[^1] = '┐';
+        Console.WriteLine(s1.Glue());
+    }
+    
+    public void DisplayTableOps()
+    {
+        Console.WriteLine("# Classes table");
+        var gens = Gens.OrderByDescending(c => char.IsLower(c.V)).ThenBy(c => c).ToArray();
+        var digits = $"{Classes.Count - 1}".Length;
+        var fmt = $"{{0,{digits + 1}}}";
+        var head = string.Format(fmt, "") + "│" + gens.Glue("│", fmt) + "│";
+        var lineTop = Enumerable.Range(0, head.Length - (digits + 2)).Select(i =>
+            i % (digits + 2) == digits + 1 ? (i == head.Length - digits - 3 ? '┐' : '┬') : '─').Glue();
+        var lineMid = Enumerable.Range(0, head.Length)
+            .Select(i => i % (digits + 2) == digits + 1 ? (i == head.Length - 1 ? '┤' : '┼') : '─').Glue();
+        var lineEnd = Enumerable.Range(0, head.Length)
+            .Select(i => i % (digits + 2) == digits + 1 ? (i == head.Length - 1 ? '┘' : '┴') : '─').Glue();
+
+        var rows = new List<string>();
+        foreach (var i in Classes.Skip(1))
+        {
+            var r = gens.Select(g => i.HasEdge(g) ? $"{i[g]}" : "").Prepend($"{i}").Glue("│", fmt);
+            rows.Add(r.Glue());
+        }
+
+        Console.WriteLine(" " + string.Format(fmt, "") + "┌" + lineTop);
+        Console.WriteLine(" " + head);
+        Console.WriteLine("┌" + lineMid);
+        rows.ForEach(r => Console.WriteLine("│" + r + "│"));
+        Console.WriteLine("└" + lineEnd);
+        Console.WriteLine();
         
     }
 
@@ -106,7 +175,7 @@ public partial class Graph
             GlobalStopWatch.AddLap();
         
         if (details)
-            Display("Start");
+            DisplayFancy("Start");
 
         while (!End)
         {
@@ -119,7 +188,7 @@ public partial class Graph
                 var op = Coincidence(cl1, cl2!);
                 ++Step;
                 if (details)
-                    Display(op);
+                    DisplayFancy(op);
             }
             else
             {
@@ -134,7 +203,7 @@ public partial class Graph
                     var op = $"Add Op:({cl3}) * {g} = ({cl4})";
                     ++Step;
                     if (details)
-                        Display(op);
+                        DisplayFancy(op);
                 }
                 else
                     End = true;
@@ -143,7 +212,7 @@ public partial class Graph
 
         if (details)
         {
-            Display("End");
+            DisplayFancy("End");
             Console.WriteLine();
         }
 
@@ -166,22 +235,6 @@ public partial class Graph
             .Select(w => w.Select(c => new Gen(c)).ToArray()).ToArray();
     }
 
-    private string Header(string fmt)
-    {
-        var s = string.Format(fmt, ' ');
-        var s1 = s.Substring(s.Length / 2);
-        return s1 + Relators.Select(rel => rel.Format(fmt)).Glue();
-    }
-
-    public static void RunTC(string sg, string rel, bool details = true, bool time = true) => new Graph(sg, rel).Build(details, time);
-    public static void RunTC(string rel, bool details = true, bool time = true) => RunTC("i", rel, details, time);
-
-    public static void RunTCtable(string rels)
-    {
-        var graph = new Graph("i", rels);
-        graph.Build(false, false);
-        var digits = $"{graph.Classes.Count - 1}".Length;
-        var fmt = $"{{0,{digits + 1}}}";
-        graph.DisplayTable(fmt);
-    }
+    public static void RunToddCoxeterAlgo(string sg, string rel, bool details = true, bool time = true) => new Graph(sg, rel).Build(details, time);
+    public static void RunToddCoxeterAlgo(string rel, bool details = true, bool time = true) => RunToddCoxeterAlgo("i", rel, details, time);
 }

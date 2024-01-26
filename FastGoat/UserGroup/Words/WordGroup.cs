@@ -1,6 +1,6 @@
 using FastGoat.Structures;
 using FastGoat.Structures.GenericGroup;
-using FastGoat.UserGroup.Words.ToddCoxeter;
+using FastGoat.UserGroup.Words.Tools;
 
 namespace FastGoat.UserGroup.Words;
 
@@ -9,9 +9,8 @@ public class WordGroup : ConcreteGroup<Word>
     public WordGroup(string name, WordGroupBase wg) : base(name, wg, true)
     {
         WGbase = wg;
-        OpsTable = ToddCoxeterAlgo.Run(WGbase.Relators);
-        OpsTable.BuildTable();
-        Elements = OpsTable.Words().Select(s => new Word(wg, s)).ToHashSet();
+        Graph = Graph.Run(WGbase.Relators);
+        Elements = Graph.Words().Select(s => new Word(wg, s)).ToHashSet();
         ElementsOrders = Group.ElementsOrders(this, Elements);
         PseudoGenerators = new(wg.GetGenerators().ToList());
         GroupType = (Group.IsCommutative(this, PseudoGenerators)
@@ -33,8 +32,8 @@ public class WordGroup : ConcreteGroup<Word>
 
     public WordGroupBase WGbase { get; }
     public string Definition => WGbase.Definition;
-    private OpsTable OpsTable { get; }
-    public IEnumerable<char> Rewrite(IEnumerable<char> s) => OpsTable.Rewrite(s);
+    private Graph Graph { get; }
+    public IEnumerable<char> Rewrite(IEnumerable<char> s) => Graph.Rewrite(s);
 
     public Word this[string s]
     {

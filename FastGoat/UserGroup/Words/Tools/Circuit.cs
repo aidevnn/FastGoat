@@ -1,7 +1,6 @@
 using FastGoat.Commons;
-using Microsoft.VisualBasic;
 
-namespace FastGoat.UserGroup.Words.TC;
+namespace FastGoat.UserGroup.Words.Tools;
 
 public readonly partial struct Circuit
 {
@@ -15,11 +14,6 @@ public readonly partial struct Circuit
         Relator = relator;
         Content = new Class?[relator.Length + 1];
         Content[0] = Content[relator.Length] = cl;
-    }
-
-    public string Format(string fmt)
-    {
-        return Content.SkipLast(1).Select(c => c is null ? "" : $"{c!.V}").Glue("", fmt);
     }
 
     public int NbUnknowns => Content.Count(c => c is null);

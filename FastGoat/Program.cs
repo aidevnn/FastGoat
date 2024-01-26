@@ -17,11 +17,10 @@ using FastGoat.UserGroup.Matrix;
 using FastGoat.UserGroup.Perms;
 using FastGoat.UserGroup.Polynoms;
 using FastGoat.UserGroup.Words;
-using FastGoat.UserGroup.Words.ToddCoxeter;
 using static FastGoat.Commons.IntExt;
 using static FastGoat.Commons.EnumerableExt;
 using FastGoat.UserGroup.Padic;
-using FastGoat.UserGroup.Words.TC;
+using FastGoat.UserGroup.Words.Tools;
 
 //////////////////////////////////
 //                              //
@@ -33,7 +32,7 @@ Console.WriteLine("Hello World");
 
 void Cn(int n, bool details = false)
 {
-    Graph.RunTC($"a{n}", details);
+    Graph.RunToddCoxeterAlgo($"a{n}", details);
 }
 
 void Abelian(int[] seq, bool details = false)
@@ -45,19 +44,19 @@ void Abelian(int[] seq, bool details = false)
         .Glue(", ");
 
     Console.WriteLine("{0}:{1}", seq.Glue(" x ", "C{0}"), relators);
-    Graph.RunTC(relators, details);
+    Graph.RunToddCoxeterAlgo(relators, details);
 }
 
 void Dihedral(int n, bool details = false)
 {
     Console.WriteLine($"D{2 * n}");
-    Graph.RunTC($"a{n},b2,abab", details);
+    Graph.RunToddCoxeterAlgo($"a{n},b2,abab", details);
 }
 
 void DiCyclic(int n, bool details = false)
 {
     Console.WriteLine($"Dic{4 * n}");
-    Graph.RunTC($"a{n} = b2, b2 = abab", details);
+    Graph.RunToddCoxeterAlgo($"a{n} = b2, b2 = abab", details);
 }
 
 void MetaCyclicSdp(int order, bool details = false)
@@ -70,44 +69,44 @@ void MetaCyclicSdp(int order, bool details = false)
         foreach (var r in rs)
         {
             Console.WriteLine($"MtCyc({m},{n},{r})");
-            Graph.RunTC($"a{m}, b{n}, b-1ab = a{r}", details);
+            Graph.RunToddCoxeterAlgo($"a{m}, b{n}, b-1ab = a{r}", details);
         }
     }
 }
 
 void Coincidences(bool details = false)
 {
-    Graph.RunTC("aba-1 = b2, bab-1 = a2", details);
-    Graph.RunTC("a3,b3,aba2b", details);
-    Graph.RunTC("a", "a3,b3,aba2b", details);
+    Graph.RunToddCoxeterAlgo("aba-1 = b2, bab-1 = a2", details);
+    Graph.RunToddCoxeterAlgo("a3,b3,aba2b", details);
+    Graph.RunToddCoxeterAlgo("a", "a3,b3,aba2b", details);
 }
 
 void PermGroup45(bool details = false)
 {
-    Graph.RunTC("a3,b3,abab", details); // Alt4
-    Graph.RunTC("a4,b3,abab", details); // Symm4
-    Graph.RunTC("a3,b3,c3,abab,bcbc,acac", details); // Alt5
-    Graph.RunTC("a5, b2, abababab, a2ba-2ba2ba-2b", details); // Symm5
+    Graph.RunToddCoxeterAlgo("a3,b3,abab", details); // Alt4
+    Graph.RunToddCoxeterAlgo("a4,b3,abab", details); // Symm4
+    Graph.RunToddCoxeterAlgo("a3,b3,c3,abab,bcbc,acac", details); // Alt5
+    Graph.RunToddCoxeterAlgo("a5, b2, abababab, a2ba-2ba2ba-2b", details); // Symm5
 }
 
 void PermGroup6()
 {
-    Graph.RunTC("a3,b3,c3,d3,abab,acac,adad,bcbc,bdbd,cdcd", details: false); // Alt6
+    Graph.RunToddCoxeterAlgo("a3,b3,c3,d3,abab,acac,adad,bcbc,bdbd,cdcd", details: false); // Alt6
     // Step:361 NbClasses:360
     // Time:371ms 
 
-    Graph.RunTC("a6, b2, ababababab, a2ba-2ba2ba-2b, baba-1baba-1baba-1", details:false); // Symm6
+    Graph.RunToddCoxeterAlgo("a6, b2, ababababab, a2ba-2ba2ba-2b, baba-1baba-1baba-1", details:false); // Symm6
     // Step:721 NbClasses:720
     // Time:979ms
 }
 
 void PermGroup7()
 {
-    Graph.RunTC("a3, b3, c3, d3, e3, abab, acac, adad, aeae, bcbc, bdbd, bebe, cdcd, cece, dede", details:false); // Alt7 dede
+    Graph.RunToddCoxeterAlgo("a3, b3, c3, d3, e3, abab, acac, adad, aeae, bcbc, bdbd, bebe, cdcd, cece, dede", details:false); // Alt7 dede
     // Step:2521 NbClasses:2520
     // Time:20.648s
 
-    Graph.RunTC("a7, b2, abababababab, baba-1baba-1baba-1, a2ba-2ba2ba-2b", details: false); // Symm7
+    Graph.RunToddCoxeterAlgo("a7, b2, abababababab, baba-1baba-1baba-1, a2ba-2ba2ba-2b", details: false); // Symm7
     // Step:5787 NbClasses:5040
     // Time:44.875s
 }
@@ -171,7 +170,7 @@ void L2p()
            abababa-1ba-1ba-1babababa-1ba-1ba-1b
      */
     
-    Graph.RunTC("a3,b2,ababababababababababab,baba-1baba-1baba-1baba-1baba-1,abababa-1ba-1ba-1babababa-1ba-1ba-1b", details: false);
+    Graph.RunToddCoxeterAlgo("a3,b2,ababababababababababab,baba-1baba-1baba-1baba-1baba-1,abababa-1ba-1ba-1babababa-1ba-1ba-1b", details: false);
     // Step:683 NbClasses:660
     // #  Time:2.355s
     
@@ -187,7 +186,7 @@ void L2p()
            ababababa-1bababababa-1ba-1bababa-1ba-1b
      */
     
-    Graph.RunTC("a3,b2,ababababababababababababab,abababa-1baba-1babababa-1baba-1b,ababababa-1bababababa-1ba-1bababa-1ba-1b", details: false);
+    Graph.RunToddCoxeterAlgo("a3,b2,ababababababababababababab,abababa-1baba-1babababa-1baba-1b,ababababa-1bababababa-1ba-1bababa-1ba-1b", details: false);
     // Step:1099 NbClasses:1092
     // #  Time:3.939s
     
@@ -202,11 +201,12 @@ void L2p()
            abababababa-1ba-1ba-1babababababa-1ba-1ba-1b
      */
     
-    Graph.RunTC("a3,b2,ababababa-1ba-1bababa-1baba-1bababa-1ba-1b,abababababa-1ba-1ba-1babababababa-1ba-1ba-1b", details: false);
+    Graph.RunToddCoxeterAlgo("a3,b2,ababababa-1ba-1bababa-1baba-1bababa-1ba-1b,abababababa-1ba-1ba-1babababababa-1ba-1ba-1b", details: false);
     // Step:2499 NbClasses:2448
     // #  Time:14.651s
 }
 
+void u33()
 {
     var s28 = new Sn(28);
     var a2 = s28[(1, 5, 7, 3, 12, 24, 11), (2, 23, 4, 27, 13, 14, 26), (6, 20, 18, 8, 25, 21, 28), (9, 10, 17, 15, 22, 16, 19)];
@@ -224,7 +224,17 @@ void L2p()
            a2b-1ab2abab-1a-1b
      */
     
-    Graph.RunTC("a8,b7,ba-1ba-1ba-1,a4ba3b-1a-1b2,a2b-1ab2abab-1a-1b", details: false);
+    Graph.RunToddCoxeterAlgo("a8,b7,ba-1ba-1ba-1,a4ba3b-1a-1b2,a2b-1ab2abab-1a-1b", details: false);
     // Step:8541 NbClasses:6048
     // #  Time:1m46s
+}
+
+{
+    // Graph.DefiningRelatorsOfGroup(FG.GLnp(2, 3)); // random
+    // Graph.RunTC("a8,b2,a2ba-1ba-1ba", details: false);
+    // L2p();
+    // DisplayGroup.HeadElements(FG.AbelianWg(2, 3));
+    // DisplayGroup.HeadElements(FG.DihedralWg(5));
+
+    Graph.RunToddCoxeterAlgo("a3,b2,c2,abababab,acac,bcbcbc", details: false);
 }

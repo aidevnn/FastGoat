@@ -4,7 +4,7 @@ using FastGoat.UserGroup;
 using FastGoat.UserGroup.Integers;
 using FastGoat.UserGroup.Perms;
 using FastGoat.UserGroup.Words;
-using FastGoat.UserGroup.Words.ToddCoxeter;
+using FastGoat.UserGroup.Words.Tools;
 
 namespace FastGoat.Examples;
 
@@ -12,39 +12,38 @@ public static class ToddCoxeter
 {
     public static void CyclicGroup()
     {
-        ToddCoxeterAlgo.Run("a5", details: true);
+        Graph.RunToddCoxeterAlgo("a5", details: true);
     }
 
     public static void KleinGroup()
     {
-        ToddCoxeterAlgo.Run("a2, b2, ab = ba", details: true);
+        Graph.RunToddCoxeterAlgo("a2, b2, ab = ba", details: true);
     }
 
     public static void Symm3Group()
     {
-        ToddCoxeterAlgo.Run("a2, b3, abab", details: true);
+        Graph.RunToddCoxeterAlgo("a2, b3, abab", details: true);
     }
 
     public static void MoreExamples()
     {
         // Algebre Tome 1, Daniel Guin – Thomas Hausberger
 
-        ToddCoxeterAlgo.Run("a", "a4, b3, abab", details: true); // p101 step by step algorithm with subgroup H=<a>
-        ToddCoxeterAlgo.Run("a", "a3, b3, abab", details: true); // p106 step by step algorithm with subgroup H=<a>
-        ToddCoxeterAlgo.Run("a", "a3, b3, aba2b", details: true); // p107 step by step algorithm with subgroup H=<a>
+        Graph.RunToddCoxeterAlgo("a", "a4, b3, abab", details: true); // p101 step by step algorithm with subgroup H=<a>
+        Graph.RunToddCoxeterAlgo("a", "a3, b3, abab", details: true); // p106 step by step algorithm with subgroup H=<a>
+        Graph.RunToddCoxeterAlgo("a", "a3, b3, aba2b", details: true); // p107 step by step algorithm with subgroup H=<a>
 
-        ToddCoxeterAlgo.Run("b", "a7, b3, a2=bab-1", details: true); // C7 : C3 step by step algorithm with subgroup H=<b>
-        ToddCoxeterAlgo.Run("a7, b3, a2=bab-1", details: true); // C7 : C3 step by step algorithm with subgroup H=<Id>
+        Graph.RunToddCoxeterAlgo("b", "a7, b3, a2=bab-1", details: true); // C7 : C3 step by step algorithm with subgroup H=<b>
+        Graph.RunToddCoxeterAlgo("a7, b3, a2=bab-1", details: true); // C7 : C3 step by step algorithm with subgroup H=<Id>
 
-        ToddCoxeterAlgo.Run("a2, b4, ab=ba", details: true); // Dihedral 8 step by step algorithm
-        ToddCoxeterAlgo.Run("a4, a2=b2, b-1aba").DisplayOps(); // Quartenion Table
+        Graph.RunToddCoxeterAlgo("a2, b4, ab=ba", details: true); // Dihedral 8 step by step algorithm
+        Graph.Run("a4, a2=b2, b-1aba").DisplayTableOps(); // Quartenion Table
     }
 
     public static void SmallGroup32_32()
     {
-        ToddCoxeterAlgo.Run("a4, b4, c2=b2, ab=ba, cac-1=ab2, cbc-1=a2b").DisplayOps(); // (C4 x C4) . C2 Table
-        ToddCoxeterAlgo.Run("a, b", "a4, b4, c2=b2, ab=ba, cac-1=ab2, cbc-1=a2b")
-            .DisplayOps(); // C2 Table with subgroup H = C4 x C4=<a,b>
+        Graph.Run("a4, b4, c2=b2, ab=ba, cac-1=ab2, cbc-1=a2b").DisplayTableOps(); // (C4 x C4) . C2 Table
+        Graph.Run("a, b", "a4, b4, c2=b2, ab=ba, cac-1=ab2, cbc-1=a2b").DisplayTableOps(); // C2 Table with subgroup H = C4 x C4=<a,b>
     }
 
     public static void Quaternion()
@@ -143,21 +142,20 @@ public static class ToddCoxeter
     {
         // Algebre Tome 1, Daniel Guin – Thomas Hausberger
         // p107 step by step algorithm
-        ToddCoxeterAlgo.Run("a", "a3, b3, aba2b", details: true);
-        ToddCoxeterAlgo.Run("a3, b3, aba2b", details: true);
+        Graph.RunToddCoxeterAlgo("a", "a3, b3, aba2b", details: true);
+        Graph.RunToddCoxeterAlgo("a3, b3, aba2b", details: true);
     }
 
     public static void Coincidences2()
     {
         // Ken Brown paper toddcox.pdf
-        ToddCoxeterAlgo.Run("aba-1 = b2, bab-1 = a2", details: true);
+        Graph.RunToddCoxeterAlgo("aba-1 = b2, bab-1 = a2", details: true);
     }
 
     public static void Group_576_8282()
     {
         // Ken Brown paper toddcox.pdf
-        ToddCoxeterAlgo.Run("a,b", "a3,b2,c2,abababab,acac,bcbcbc", details: true);
-        Console.ReadLine();
+        Graph.RunToddCoxeterAlgo("a,b", "a3,b2,c2,abababab,acac,bcbcbc", details: true);
     
         GlobalStopWatch.Restart();
         GlobalStopWatch.AddLap();
@@ -185,22 +183,22 @@ public static class ToddCoxeter
            C2 . (A4 x: S4)
            Q8 . (C3 x: S4)
 
-       #  Time:1m38s
+       #  End Time:39.947s
      */
 
     public static void Symm6a()
     {
-        ToddCoxeterAlgo.Run("a", "a2, b6, ababababab, ab2ab-2ab2ab-2, abab-1abab-1abab-1", details: true);
+        Graph.RunToddCoxeterAlgo("a", "a2, b6, ababababab, ab2ab-2ab2ab-2, abab-1abab-1abab-1", details: false);
     }
 
     public static void Symm6b()
     {
-        ToddCoxeterAlgo.Run("b", "a2, b6, ababababab, ab2ab-2ab2ab-2, abab-1abab-1abab-1", details: true);
+        Graph.RunToddCoxeterAlgo("b", "a2, b6, ababababab, ab2ab-2ab2ab-2, abab-1abab-1abab-1", details: false);
     }
 
     public static void Symm6()
     {
-        ToddCoxeterAlgo.Run("a2, b6, ababababab, ab2ab-2ab2ab-2, abab-1abab-1abab-1", details: true);
+        Graph.RunToddCoxeterAlgo("a2, b6, ababababab, ab2ab-2ab2ab-2, abab-1abab-1abab-1", details: false);
     }
 
     public static void Symm6Orders()

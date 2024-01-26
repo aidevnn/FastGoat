@@ -2,7 +2,7 @@ using System.Linq;
 using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.UserGroup.Words;
-using FastGoat.UserGroup.Words.ToddCoxeter;
+using FastGoat.UserGroup.Words.Tools;
 using Xunit;
 
 namespace Tests;
@@ -12,8 +12,7 @@ public class ToddCoxeterUnitTest
     [Fact]
     public void Test1Cyclic()
     {
-        var ta5 = ToddCoxeterAlgo.Run("a5");
-        ta5.BuildTable();
+        var ta5 = Graph.Run("a5");
         var gens = ta5.Generators().ToArray();
         var words = ta5.Words().Select(e => e.Glue()).ToArray();
         Assert.Single(gens);
@@ -25,20 +24,18 @@ public class ToddCoxeterUnitTest
     [Fact]
     public void Test2Klein()
     {
-        var klein = ToddCoxeterAlgo.Run("a2, b2, ab = ba");
-        klein.BuildTable();
+        var klein = Graph.Run("a2, b2, ab = ba");
         var gens = klein.Generators().ToArray();
         var words = klein.Words().Select(e => e.Glue()).ToArray();
         Assert.Contains(new[] { 'a', 'b' }, gens.Contains);
-        Assert.Contains(new[] { "", "a", "a", "ba" }, words.Contains);
-        Assert.Equal("ba", klein.Rewrite("ababAbbaAb"));
+        Assert.Contains(new[] { "", "a", "b", "ab" }, words.Contains);
+        Assert.Equal("ab", klein.Rewrite("ababAbbaAb").Glue());
     }
 
     [Fact]
     public void Test3H21()
     {
-        var h21 = ToddCoxeterAlgo.Run("a7, b3, a2=bab-1");
-        h21.BuildTable();
+        var h21 = Graph.Run("a7, b3, a2=bab-1");
         var gens = h21.Generators().ToArray();
         var words = h21.Words().Select(e => e.Glue()).ToArray();
         Assert.Contains(new[] { 'a', 'b' }, gens.Contains);
@@ -48,8 +45,7 @@ public class ToddCoxeterUnitTest
     [Fact]
     public void Test4Abelian()
     {
-        var ab = ToddCoxeterAlgo.Run("a4, b3, c2, ab=ba, ac=ca, bc=cb");
-        ab.BuildTable();
+        var ab = Graph.Run("a4, b3, c2, ab=ba, ac=ca, bc=cb");
         var gens = ab.Generators().ToArray();
         var words = ab.Words().Select(e => e.Glue()).ToArray();
         Assert.Contains(new[] { 'a', 'b', 'c' }, gens.Contains);
@@ -59,8 +55,7 @@ public class ToddCoxeterUnitTest
     [Fact]
     public void Test5F20()
     {
-        var f20 = ToddCoxeterAlgo.Run("a5, b4, abababab, a2ba-1b-1");
-        f20.BuildTable();
+        var f20 = Graph.Run("a5, b4, abababab, a2ba-1b-1");
         var gens = f20.Generators().ToArray();
         var words = f20.Words().Select(e => e.Glue()).ToArray();
         Assert.Contains(new[] { 'a', 'b' }, gens.Contains);
@@ -74,6 +69,6 @@ public class ToddCoxeterUnitTest
         var w = wg["bababa"];
         Assert.Equal(24, wg.Count());
         Assert.Equal(GroupType.NonAbelianGroup, wg.GroupType);
-        Assert.Equal("Ba", w.Get());
+        Assert.Equal("AB", w.Get());
     }
 }

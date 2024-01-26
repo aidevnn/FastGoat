@@ -1,8 +1,7 @@
-using System.Collections;
 using FastGoat.Commons;
 using FastGoat.Structures;
 
-namespace FastGoat.UserGroup.Words.TC;
+namespace FastGoat.UserGroup.Words.Tools;
 
 public struct Relator : IElt<Relator>
 {

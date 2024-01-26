@@ -1,4 +1,4 @@
-namespace FastGoat.UserGroup.Words.TC;
+namespace FastGoat.UserGroup.Words.Tools;
 
 public partial class Class
 {

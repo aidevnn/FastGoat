@@ -1,6 +1,6 @@
 using FastGoat.Commons;
 
-namespace FastGoat.UserGroup.Words.TC;
+namespace FastGoat.UserGroup.Words.Tools;
 
 public partial class Class
 {
@@ -73,10 +73,17 @@ public partial class Class
             .Select(c => c.FindCandidate())
             .FirstOrDefault(e => e.Item1 is not null, (null, new()));
     }
-    
-    public string Format(string fmt)
+
+    public string Display(int digits)
     {
-        return Circuits.Select(c => c.Format(fmt)).Append(string.Format(fmt, V)).Glue();
+        var fmt = $"{{0,{digits + 1}}}";
+        var s0 = Circuits.SelectMany(c => c.Content.SkipLast(1)).Append(this).Glue("", fmt);
+        var s1 = (s0 + " ").ToArray();
+        foreach (var k in G.Separators)
+            s1[(digits + 1) * k] = s1[(digits + 1) * (k + 1)] = '│';
+
+        var s2 = s1.Glue();
+        return s2;
     }
 
     public override string ToString() => $"{V}";

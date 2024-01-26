@@ -2,7 +2,7 @@ using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.GenericGroup;
 
-namespace FastGoat.UserGroup.Words.TC;
+namespace FastGoat.UserGroup.Words.Tools;
 
 public partial class Graph
 {
@@ -64,7 +64,7 @@ public partial class Graph
         }
     }
 
-    private void Words()
+    private void GenerateWords(bool details = false)
     {
         foreach (var @class in Classes.Skip(1))
         {
@@ -76,7 +76,7 @@ public partial class Graph
                 @class.Word.Insert(0, g);
             }
 
-            if (Classes.Count < 33)
+            if (details && Classes.Count < 33)
                 Console.WriteLine($"({@class}) = ({@class.Word.Glue(" * ")})");
         }
     }
@@ -141,7 +141,8 @@ public partial class Graph
         }
     }
 
-    private Dictionary<Gen,Gen> GensConv { get; set; }
+    private Dictionary<Gen, Gen> GensConv { get; set; } = new();
+
     private void DefineRelators()
     {
         if (!STDone)
@@ -151,7 +152,7 @@ public partial class Graph
             RelatorsComplete = false;
 
             SpanningTree();
-            Words();
+            GenerateWords();
             while (true)
             {
                 var sz = Relators.Count;
@@ -172,6 +173,27 @@ public partial class Graph
             .ThenBy(s => s)
             .Println("All Relators");
     }
+
+    public IEnumerable<char> Rewrite(IEnumerable<char> w)
+    {
+        var one = Classes[1];
+        var cl = w.Aggregate(one, (acc, c) => acc[new(c)]);
+        return cl.Word.Select(g => g.V);
+    }
+
+    public IEnumerable<char> Generators() => Gens.Select(c => c.V).Where(c => char.IsLower(c));
+    public IEnumerable<IEnumerable<char>> Words() => Classes.Skip(1).Select(c => c.Word.Select(e => e.V)); 
+
+    public static Graph Run(string sg, string rel)
+    {
+        var g=new Graph(sg, rel);
+        g.Build(false, false);
+        g.SpanningTree();
+        g.GenerateWords();
+        return g;
+    }
+    
+    public static Graph Run(string rel) => Run("i", rel);
 
     private static Graph ClassesFromGroupSubgroup<T>(ConcreteGroup<T> g, ConcreteGroup<T> h) where T : struct, IElt<T>
     {
@@ -223,11 +245,10 @@ public partial class Graph
     {
         var h = Group.Generate("()", g, g.Neutral());
         var graph = ClassesFromGroupSubgroup(g, h);
-        var digits = $"{graph.Classes.Count}".Length;
-        var fmt = $"{{0,{digits + 1}}}";
+        
         Console.WriteLine(g.ShortName);
         if (g.Count() < 33)
-            graph.DisplayTable(fmt);
+            graph.DisplayTableOps();
         Console.WriteLine();
         graph.DefineRelators();
         Console.WriteLine();

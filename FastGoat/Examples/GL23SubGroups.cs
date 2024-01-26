@@ -6,7 +6,6 @@ using FastGoat.UserGroup.Integers;
 using FastGoat.UserGroup.Matrix;
 using FastGoat.UserGroup.Perms;
 using FastGoat.UserGroup.Words;
-using FastGoat.UserGroup.Words.ToddCoxeter;
 
 namespace FastGoat.Examples;
 
