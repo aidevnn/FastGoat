@@ -44,6 +44,8 @@ public static class NamesTree
             return [new Leaf(G, "S5")];
         if (og == 720 && orders == "[1]:1, [2]:75, [3]:80, [4]:180, [5]:144, [6]:240")
             return [new Leaf(G, "S6")];
+        if (og == 5040 && orders == "[1]:1, [2]:231, [3]:350, [4]:840, [5]:504, [6]:1470, [7]:720, [10]:504, [12]:420")
+            return [new Leaf(G, "S7")];
 
         if (og == 8 && orders == "[1]:1, [2]:1, [4]:6")
             return [new Leaf(G, "Q8")];
@@ -153,7 +155,7 @@ public static class NamesTree
     {
         var all = new List<ANameElt>();
         var G = subgroups.Parent;
-        if (G.Count() > 3000)
+        if (G.Count() > 6000)
             throw new GroupException(GroupExceptionType.GroupDef);
 
         var ops = AllOps(subgroups);

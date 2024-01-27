@@ -61,6 +61,8 @@ public class Leaf : ANameElt
             return "L2(11)";
         if (og == 1092)
             return "L2(13)";
+        if (og == 2520)
+            return "A7";
 
         return G.Name;
     }
