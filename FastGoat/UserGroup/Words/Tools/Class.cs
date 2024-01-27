@@ -73,7 +73,7 @@ public partial class Class
             .Select(c => c.FindCandidate())
             .FirstOrDefault(e => e.Item1 is not null, (null, new()));
     }
-
+    
     public string Display(int digits)
     {
         var fmt = $"{{0,{digits + 1}}}";

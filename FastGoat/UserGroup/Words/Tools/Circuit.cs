@@ -7,7 +7,7 @@ public readonly partial struct Circuit
     public Class Class { get; }
     public Relator Relator { get; }
     public Class?[] Content { get; }
-
+    
     public Circuit(Class cl, Relator relator)
     {
         Class = cl;
@@ -15,10 +15,10 @@ public readonly partial struct Circuit
         Content = new Class?[relator.Length + 1];
         Content[0] = Content[relator.Length] = cl;
     }
-
+    
     public int NbUnknowns => Content.Count(c => c is null);
     public bool IsComplete => NbUnknowns == 0;
-
+    
     public (Class? cl1, Class? cl2) UpdateCircuit()
     {
         var leftCircuit = UpdateCircuit(true);
@@ -31,7 +31,7 @@ public readonly partial struct Circuit
         
         return (null, null);
     }
-
+    
     public void Substitute(Class cl, Class err)
     {
         for (int i = 0; i < Content.Length; i++)

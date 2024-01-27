@@ -75,6 +75,62 @@ public partial class Graph
         return op;
     }
 
+    private void Build(bool details = true, bool time = true)
+    {
+        if (time)
+            GlobalStopWatch.AddLap();
+        
+        if (details)
+            DisplayFancy("Start");
+
+        while (!End)
+        {
+            if (time && Step >= 50 && Step % 50 == 0)
+                Console.WriteLine($"Step:{Step} NbClasses:{Classes.Count - 1}");
+            
+            var (cl1, cl2) = UpdateGraph();
+            if (cl1 is not null)
+            {
+                var op = Coincidence(cl1, cl2!);
+                ++Step;
+                if (details)
+                    DisplayFancy(op);
+            }
+            else
+            {
+                var (cl3, g) = FindCandidate();
+                if (cl3 is not null)
+                {
+                    var v = Classes.Max(c => c.V) + 1;
+                    var cl4 = new Class(v, this);
+                    Classes.Add(cl4);
+                    cl3[g] = cl4;
+                    cl4[g.Invert()] = cl3;
+                    var op = $"Add Op:({cl3}) * {g} = ({cl4})";
+                    ++Step;
+                    if (details)
+                        DisplayFancy(op);
+                }
+                else
+                    End = true;
+            }
+        }
+
+        if (details)
+        {
+            DisplayFancy("End");
+            Console.WriteLine();
+        }
+
+        if (time)
+        {
+            Console.WriteLine($"Step:{Step} NbClasses:{Classes.Count - 1}");
+            GlobalStopWatch.Show();
+            Console.WriteLine();
+        }
+    }
+
+    #region Display Fancy
     public int[] Separators
     {
         get
@@ -87,7 +143,6 @@ public partial class Graph
             return seps.ToArray();
         }
     }
-
     void DisplayFancy(string action)
     {
         Console.WriteLine($"### Step:{Step} {action}");
@@ -166,63 +221,8 @@ public partial class Graph
         rows.ForEach(r => Console.WriteLine("│" + r + "│"));
         Console.WriteLine("└" + lineEnd);
         Console.WriteLine();
-        
     }
-
-    private void Build(bool details = true, bool time = true)
-    {
-        if (time)
-            GlobalStopWatch.AddLap();
-        
-        if (details)
-            DisplayFancy("Start");
-
-        while (!End)
-        {
-            if (time && Step >= 50 && Step % 50 == 0)
-                Console.WriteLine($"Step:{Step} NbClasses:{Classes.Count - 1}");
-            
-            var (cl1, cl2) = UpdateGraph();
-            if (cl1 is not null)
-            {
-                var op = Coincidence(cl1, cl2!);
-                ++Step;
-                if (details)
-                    DisplayFancy(op);
-            }
-            else
-            {
-                var (cl3, g) = FindCandidate();
-                if (cl3 is not null)
-                {
-                    var v = Classes.Max(c => c.V) + 1;
-                    var cl4 = new Class(v, this);
-                    Classes.Add(cl4);
-                    cl3[g] = cl4;
-                    cl4[g.Invert()] = cl3;
-                    var op = $"Add Op:({cl3}) * {g} = ({cl4})";
-                    ++Step;
-                    if (details)
-                        DisplayFancy(op);
-                }
-                else
-                    End = true;
-            }
-        }
-
-        if (details)
-        {
-            DisplayFancy("End");
-            Console.WriteLine();
-        }
-
-        if (time)
-        {
-            Console.WriteLine($"Step:{Step} NbClasses:{Classes.Count - 1}");
-            GlobalStopWatch.Show();
-            Console.WriteLine();
-        }
-    }
+    #endregion
 
     private static Gen[][] CreateHeader(params string[] gens)
     {

@@ -71,7 +71,7 @@ public static class ToddCoxeter
     public static void Frobenius20()
     {
         var gname = "F20";
-        var relators = "a5, b4, abababab, a2ba-1b-1";
+        var relators = "a5, b4, b-1ab=a2";
         var wg = new WordGroup(gname, relators);
         DisplayGroup.HeadElementsTable(wg);
 
@@ -110,9 +110,7 @@ public static class ToddCoxeter
         var sp = Group.SemiDirectProd(new Cn(3), q8);
         DisplayGroup.HeadElements(sp);
         Console.WriteLine("({0}) IsIsomorphicTo ({1}) : {2}", wg, sp, wg.IsIsomorphicTo(sp));
-
-        // G:=Group(    (1,2,3,4,5,6,7,8,9,10,11,12)(13,14,15,16,17,18,19,20,21,22,23,24),
-        //              (1,17,7,23)(2,16,8,22)(3,15,9,21)(4,14,10,20)(5,13,11,19)(6,24,12,18) );
+        
         var s24 = new Sn(24);
         var a = s24[(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12), (13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24)];
         var b = s24[(1, 17, 7, 23), (2, 16, 8, 22), (3, 15, 9, 21), (4, 14, 10, 20), (5, 13, 11, 19), (6, 24, 12, 18)];
@@ -137,7 +135,7 @@ public static class ToddCoxeter
         DisplayGroup.HeadElements(q32);
         Console.WriteLine("({0}) IsIsomorphicTo ({1}) : {2}", wg, q32, wg.IsIsomorphicTo(q32));
     }
-    
+
     public static void Coincidences1()
     {
         // Algebre Tome 1, Daniel Guin – Thomas Hausberger
@@ -156,7 +154,7 @@ public static class ToddCoxeter
     {
         // Ken Brown paper toddcox.pdf
         Graph.RunToddCoxeterAlgo("a,b", "a3,b2,c2,abababab,acac,bcbcbc", details: true);
-    
+
         GlobalStopWatch.Restart();
         GlobalStopWatch.AddLap();
         var g = FG.WordGroup("a3,b2,c2,abababab,acac,bcbcbc");
@@ -207,5 +205,97 @@ public static class ToddCoxeter
         var g = FG.WordGroup("a2, b6, ababababab, ab2ab-2ab2ab-2, abab-1abab-1abab-1");
         DisplayGroup.HeadOrders(g);
         GlobalStopWatch.Show();
+    }
+
+    public static void PermGroup7()
+    {
+        Graph.DefiningRelatorsOfGroup(FG.Alternate(7));
+        Graph.RunToddCoxeterAlgo("a3, b3, c3, d3, e3, abab, acac, adad, aeae, bcbc, bdbd, bebe, cdcd, cece, dede",
+            details: false); // Alt7 dede
+        // Step:2521 NbClasses:2520
+        // Time:20.648s
+
+        Graph.DefiningRelatorsOfGroup(FG.Symmetric(7));
+        Graph.RunToddCoxeterAlgo("a7, b2, abababababab, baba-1baba-1baba-1, a2ba-2ba2ba-2b", details: false); // Symm7
+        // Step:5787 NbClasses:5040
+        // Time:44.875s
+    }
+    
+    public static void L2p()
+    {
+        Graph.DefiningRelatorsOfGroup(FG.L2p(11));
+        /*
+           |L2(11)| = 660
+        
+           #  Time:518ms
+           All Relators
+               a3
+               b2
+               ababababababababababab
+               baba-1baba-1baba-1baba-1baba-1
+               abababa-1ba-1ba-1babababa-1ba-1ba-1b
+         */
+        
+        Graph.RunToddCoxeterAlgo("a3,b2,ababababababababababab,baba-1baba-1baba-1baba-1baba-1,abababa-1ba-1ba-1babababa-1ba-1ba-1b",
+            details: false);
+        // Step:683 NbClasses:660
+        // #  Time:2.355s
+        
+        Graph.DefiningRelatorsOfGroup(FG.L2p(13));
+        /* |L2(13)| = 1092
+        
+           #  Time:210ms
+           All Relators
+               a3
+               b2
+               ababababababababababababab
+               abababa-1baba-1babababa-1baba-1b
+               ababababa-1bababababa-1ba-1bababa-1ba-1b
+         */
+        
+        Graph.RunToddCoxeterAlgo(
+            "a3,b2,ababababababababababababab,abababa-1baba-1babababa-1baba-1b,ababababa-1bababababa-1ba-1bababa-1ba-1b",
+            details: false);
+        // Step:1099 NbClasses:1092
+        // #  Time:3.939s
+        
+        Graph.DefiningRelatorsOfGroup(FG.L2p(17));
+        /* |L2(17)| = 2448
+        
+           #  Time:547ms
+           All Relators
+               a3
+               b2
+               ababababa-1ba-1bababa-1baba-1bababa-1ba-1b
+               abababababa-1ba-1ba-1babababababa-1ba-1ba-1b
+         */
+        
+        Graph.RunToddCoxeterAlgo("a3,b2,ababababa-1ba-1bababa-1baba-1bababa-1ba-1b,abababababa-1ba-1ba-1babababababa-1ba-1ba-1b",
+            details: false);
+        // Step:2499 NbClasses:2448
+        // #  Time:14.651s
+    }
+    
+    public static void u33()
+    {
+        var s28 = new Sn(28);
+        var a2 = s28[(1, 5, 7, 3, 12, 24, 11), (2, 23, 4, 27, 13, 14, 26), (6, 20, 18, 8, 25, 21, 28), (9, 10, 17, 15, 22, 16, 19)];
+        var b2 = s28[(3, 4), (5, 17, 7, 16, 8, 20, 6, 13), (9, 19, 11, 14, 12, 18, 10, 15), (21, 23, 26, 28, 24, 22, 27, 25)];
+        var u3_3pg = Group.Generate("U3(3)pg", s28, a2, b2);
+        Graph.DefiningRelatorsOfGroup(u3_3pg);
+        /* |U3(3)pg| = 6048
+        
+           #  Time:2.945s
+           All Relators
+               a8
+               b7
+               ba-1ba-1ba-1
+               a4ba3b-1a-1b2
+               a2b-1ab2abab-1a-1b
+         */
+        
+        Graph.RunToddCoxeterAlgo("a8,b7,ba-1ba-1ba-1,a4ba3b-1a-1b2,a2b-1ab2abab-1a-1b", details: false);
+        // Step:8541 NbClasses:6048
+        // #  Time:1m46s
     }
 }
