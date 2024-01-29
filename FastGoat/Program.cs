@@ -30,22 +30,36 @@ using FastGoat.UserGroup.Words.Tools;
 
 Console.WriteLine("Hello World");
 
+GroupAction<Perm, Ep<ZnInt>> Image(Cn Xn) => (g, x) => new(x.Ei.Select(e => Xn[g.Table[e.K]]).ToArray());
+
+int FixedPoints(Cn Xn, Ep<ZnInt>[] Xnk, Perm g)
+{
+    return Xnk.Count(x => Image(Xn)(g, x).Equals(x));
+}
+
+int Burnside(ConcreteGroup<Perm> G, Cn Xn, Ep<ZnInt>[] Xnk)
+{
+    return G.Sum(g => FixedPoints(Xn, Xnk, g)) / G.Count();
+}
+
 void KTransitivitySn(int n, int k)
+{
+    KTransitivity(FG.Symmetric(n).AllSubgroups(), n, k);
+}
+
+void KTransitivity(AllSubgroups<Perm> allSubgSn, int n, int k)
 {
     GlobalStopWatch.Restart();
     Perm.Style = DisplayPerm.CyclesComma;
-    var sn = new Symm(n);
-    Console.WriteLine($"Transitives groups of order {n}");
+    Console.WriteLine($"{k}-Transitives groups of order {n}");
     var Xn = new Cn(n);
-    var Xnk = FG.Abelian(Enumerable.Repeat(n,k).ToArray()).ToArray();
-    var setXnk = Xnk.Where(xnk => xnk.Ei.Distinct().Count() == k).ToArray();
-    Ep<ZnInt> Image(Perm g, Ep<ZnInt> x) => new(x.Ei.Select(e => Xn[g.Table[e.K]]).ToArray());
-    var allSubgSn = sn.AllSubgroups();
+    var Xnk = FG.Abelian(Enumerable.Repeat(n, k).ToArray())
+        .Where(xnk => xnk.Ei.Distinct().Count() == k).ToArray();
     var nb = 0;
     foreach (var g1 in allSubgSn.AllRepresentatives)
     {
-        var allOrbits = Group.AllOrbits(g1, setXnk, Image);
-        if (allOrbits.Count == 1)
+        var nbOrbx = Burnside(g1, Xn, Xnk);
+        if (nbOrbx == 1)
         {
             ++nb;
             var subg = allSubgSn.Restriction(g1).ToGroupWrapper();
@@ -54,13 +68,14 @@ void KTransitivitySn(int n, int k)
             Console.WriteLine($"Generators:{{ {g1.GetGenerators().Glue(", ")} }}");
         }
     }
-    
+
     GlobalStopWatch.Show($"Total:{nb} transitives groups of order {n}");
     Console.WriteLine();
 }
 
 void TransitivitySn(int n) => KTransitivitySn(n, 1);
 
+void transitivityOrder7()
 {
     TransitivitySn(2);
     TransitivitySn(3);
@@ -71,18 +86,34 @@ void TransitivitySn(int n) => KTransitivitySn(n, 1);
     Console.Beep();
 }
 
+{
+    // for (int n = 2; n <= 6; n++)
+    // {
+    //     var sn = new Symm(n);
+    //     var allSubgSn = sn.AllSubgroups();
+    //     for (int k = 1; k <= n; k++)
+    //     {
+    //         KTransitivity(allSubgSn, n, k);
+    //     }
+    //
+    //     Console.WriteLine();
+    // }
+
+    Console.Beep();
+}
+
 /* Transitives groups of order 2
    |C2| = 2
    Generators:{ [(1, 2)] }
    # Total:1 transitives groups of order 2 Time:992ms
-   
+
    Transitives groups of order 3
    |C3| = 3
    Generators:{ [(1, 2, 3)] }
    |S3| = 6
    Generators:{ [(2, 3)], [(1, 2)] }
    # Total:2 transitives groups of order 3 Time:116ms
-   
+
    Transitives groups of order 4
    |C2 x C2| = 4
    Generators:{ [(1, 2), (3, 4)], [(1, 3), (2, 4)] }
@@ -95,7 +126,7 @@ void TransitivitySn(int n) => KTransitivitySn(n, 1);
    |S4| = 24
    Generators:{ [(3, 4)], [(2, 3)], [(1, 2)] }
    # Total:5 transitives groups of order 4 Time:158ms
-   
+
    Transitives groups of order 5
    |C5| = 5
    Generators:{ [(1, 2, 3, 4, 5)] }
@@ -108,7 +139,7 @@ void TransitivitySn(int n) => KTransitivitySn(n, 1);
    |S5| = 120
    Generators:{ [(4, 5)], [(3, 4)], [(2, 3)], [(1, 2)] }
    # Total:5 transitives groups of order 5 Time:523ms
-   
+
    Transitives groups of order 6
    |S3| = 6
    Generators:{ [(1, 2, 3), (4, 6, 5)], [(1, 4), (2, 5), (3, 6)] }
@@ -143,7 +174,7 @@ void TransitivitySn(int n) => KTransitivitySn(n, 1);
    |S6| = 720
    Generators:{ [(5, 6)], [(4, 5)], [(3, 4)], [(2, 3)], [(1, 2)] }
    # Total:16 transitives groups of order 6 Time:5.185s
-   
+
    Transitives groups of order 7
    |C7| = 7
    Generators:{ [(1, 2, 3, 4, 5, 6, 7)] }
