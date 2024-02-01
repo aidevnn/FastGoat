@@ -1,6 +1,8 @@
+using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.UserGroup.Matrix;
 using FastGoat.UserGroup.Perms;
+using FastGoat.UserGroup.Words.Tools;
 
 namespace FastGoat.Examples;
 
@@ -8,24 +10,78 @@ public static class MathieuGroup
 {
     public static void M11()
     {
+        GlobalStopWatch.Restart();
         var s11 = new Sn(11);
         var a = s11[(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)];
         var b = s11[(3, 7, 11, 8), (4, 10, 5, 6)];
         var m11 = Group.Generate("M11", s11, a, b);
         DisplayGroup.Head(m11);
+        Graph.DefiningRelatorsOfGroup(m11);
     }
+    
+    /* |M11| = 7920
+       All Relators
+           b4
+           a11
+           ab2ab2ab-2
+           a2ba-2b2ab-1a2b-1
+           a2ba2b2a-1ba-1b-1a-1b-1
+           aba-1ba-1b-1aba-1ba-1b-1
+       #  Time:5.116s
+     */
 
     public static void M12()
     {
+        GlobalStopWatch.Restart();
         var s12 = new Sn(12);
         var a = s12[(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)];
         var b = s12[(3, 7, 11, 8), (4, 10, 5, 6)];
         var c = s12[(1, 12), (2, 11), (3, 6), (4, 8), (5, 9), (7, 10)];
         var m12 = Group.Generate("M12", s12, a, b, c);
         DisplayGroup.Head(m12);
+        Graph.DefiningRelatorsOfGroup(m12);
     }
-
+    
+    /* |M12| = 95040
+       All Relators
+           b4
+           c2
+           a11
+           acacac
+           bcbcbcbc
+           ab2ab2ab-2
+           b2cb2cbcb-1c
+           abcb-1ca2cbcb-1
+           cab-1cab-1cab-1
+           a3cb-1cba-1b-1cbc
+           ab-1a-1caba-1bcb-1
+       #  Time:3m30s
+     */
+    
     public static void M21()
+    {
+        GlobalStopWatch.Restart();
+        var s21 = new Sn(21);
+        var a = s21[(1, 4, 5, 9, 3), (2, 8, 10, 7, 6), (12, 15, 16, 20, 14), (13, 19, 21, 18, 17)];
+        var b = s21[(1, 21, 5, 12, 20), (2, 16, 3, 4, 17), (6, 18, 7, 19, 15), (8, 13, 9, 14, 11)];
+        var m21 = Group.Generate("M21", s21, a, b);
+        DisplayGroup.Head(m21);
+        Graph.DefiningRelatorsOfGroup(m21);
+    }
+    
+    /* |M21| = 20160
+       All Relators
+           a5
+           b5
+           baba-1baba-1baba-1
+           abab-1a-1b2a-1ba-1b
+           a2b-1a2b-1a2b-1a2b-1
+           ababa-1b-1ababa-1b-1
+           ba-1ba-1ba-1ba-1ba-1ba-1ba-1
+       #  Time:15.741s
+     */
+
+    public static void M21Iso()
     {
         var s21 = new Sn(21);
         // (1,4,5,9,3)(2,8,10,7,6)(12,15,16,20,14)(13,19,21,18,17), (1,21,5,12,20)(2,16,3,4,17)(6,18,7,19,15)(8,13,9,14,11)
