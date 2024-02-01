@@ -33,11 +33,11 @@ public static partial class FG
         where Tn : struct, IElt<Tn>
         where Tg : struct, IElt<Tg>
     {
+        var N = ((AutomorphismGroup<Tn>)autN.BaseGroup).G;
+        var GN = G.Grid2D(N).Select(e => (g: e.t1, n: e.t2)).ToArray();
         return EqualityComparer<Homomorphism<Tg, Automorphism<Tn>>>.Create(
             (x, y) =>
             {
-                var N = ((AutomorphismGroup<Tn>)autN.BaseGroup).G;
-                var GN = G.Grid2D(N).Select(e => (g: e.t1, n: e.t2)).ToArray();
                 return autG.Any(f => GN.All(e => x[e.g][e.n].Equals(y[f[e.g]][e.n])))
                        || autN.Any(f =>
                        {
@@ -125,42 +125,57 @@ public static partial class FG
             yield return extInfos;
     }
 
-    public static IEnumerable<AllSubgroups<WElt>> AllSDPFilter<T1, T2>(ConcreteGroup<T1> N, ConcreteGroup<T2> G, bool trivial = false)
+    public static IEnumerable<SemiDirectProduct<T1, T2>> AllSDPFilter<T1, T2>(ConcreteGroup<T1> N, ConcreteGroup<T2> G, 
+        bool trivial = false, bool details = true)
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
     {
-        Console.WriteLine($"############### AllSDP {N.NameParenthesis()} x: {G.NameParenthesis()}");
+        if (details)
+            Console.WriteLine($"############### AllSDP {N.NameParenthesis()} x: {G.NameParenthesis()}");
+        
         var autG = Group.AutomorphismGroup(G);
         var autN = Group.AutomorphismGroup(N);
         var allOps = Group.AllHomomorphisms(G, autN);
         var ops = allOps.Where(kp => trivial || kp.Image().Count() > 1).ToHashSet(EqOpByAut(G, autG, autN));
-        Console.WriteLine($"AutG:{autG.Count()} AutN:{autN.Count()}");
+        
         var nb = ops.Count();
-        Console.WriteLine($"AllOps:{allOps.Count} remaining:{nb}");
+        if (details)
+        {
+            Console.WriteLine($"AutG:{autG.Count()} AutN:{autN.Count()}");
+            Console.WriteLine($"AllOps:{allOps.Count} remaining:{nb}");
+        }
         var k = 1;
         foreach (var theta in ops)
         {
-            Console.WriteLine($"  ## {k++,3}/{nb} ##");
-            yield return Group.SemiDirectProd(N, theta, G).ToCGW().AllSubgroups();
+            if (details)
+                Console.WriteLine($"  ## {k++,3}/{nb} ##");
+            
+            yield return Group.SemiDirectProd(N, theta, G);
         }
     }
 
-    public static IEnumerable<AllSubgroups<WElt>> AllSDPFilterLazy<T1, T2>(ConcreteGroup<T1> N, ConcreteGroup<T2> G,
-        bool trivial = false)
+    public static IEnumerable<SemiDirectProduct<T1, T2>> AllSDPFilterLazy<T1, T2>(ConcreteGroup<T1> N, ConcreteGroup<T2> G,
+        bool trivial = false, bool details = true)
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
     {
-        Console.WriteLine($"############### AllSDP {N.NameParenthesis()} x: {G.NameParenthesis()}");
+        if (details)
+            Console.WriteLine($"############### AllSDP {N.NameParenthesis()} x: {G.NameParenthesis()}");
+        
         var autG = Group.AutomorphismGroup(G);
         var autN = Group.AutomorphismGroup(N);
         var allOps = Group.AllHomomorphisms(G, autN);
-        Console.WriteLine($"AutG:{autG.Count()} AutN:{autN.Count()}");
+        if (details)
+            Console.WriteLine($"AutG:{autG.Count()} AutN:{autN.Count()}");
+        
         var ops = allOps.Where(kp => trivial || kp.Image().Count() > 1).Distinct(EqOpByAut(G, autG, autN));
         var k = 1;
         foreach (var theta in ops)
         {
-            Console.WriteLine($"  ##   {k++,3}   ##");
-            yield return Group.SemiDirectProd(N, theta, G).ToCGW().AllSubgroups();
+            if (details)
+                Console.WriteLine($"  ##   {k++,3}   ##");
+            
+            yield return Group.SemiDirectProd(N, theta, G);
         }
     }
 

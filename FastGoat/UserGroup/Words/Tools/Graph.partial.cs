@@ -89,9 +89,10 @@ public partial class Graph
             .ToDictionary(e => e.g, e => e.i);
         var comp = Comparer<IEnumerable<Gen>>.Create((a, b) => a.Select(e => gensPos[e]).SequenceCompareTo(b.Select(e => gensPos[e])));
         var rem = Classes.SelectMany(e => e.GetEdges().Select(f => (i: e, s: f.Key, j: f.Value)))
-            .Where(e => !e.i.Coloured[e.s] && char.IsLower(e.s.V))
+            .Where(e => !e.i.Coloured[e.s])
             .Select(e => (e, e.i.Word.Append(e.s).Concat(e.j.WordInv).ToArray()))
             .OrderBy(e => e.Item2.Length)
+            .ThenByDescending(e => char.IsLower(e.e.s.V))
             .ThenBy(e => e.Item2, comp)
             .ToArray();
 
@@ -143,16 +144,16 @@ public partial class Graph
 
     private Dictionary<Gen, Gen> GensConv { get; set; } = new();
 
-    private void DefineRelators()
+    private void DefineRelators(bool details = true)
     {
         if (!STDone)
         {
-            GlobalStopWatch.Restart();
             Relators.Clear();
             RelatorsComplete = false;
 
             SpanningTree();
             GenerateWords();
+            
             while (true)
             {
                 var sz = Relators.Count;
@@ -162,16 +163,16 @@ public partial class Graph
             }
 
             STDone = true;
-            GlobalStopWatch.Show();
         }
 
         var gensConv = GensConv;
-        Relators.Select(c => c.Gens.Select(g => gensConv[g]))
-            .Select(c => c.Glue())
-            .Select(StringExt.ReducedWordForm1)
-            .OrderBy(s => s.Length)
-            .ThenBy(s => s)
-            .Println("All Relators");
+        if (details)
+            Relators.Select(c => c.Gens.Select(g => gensConv[g]))
+                .Select(c => c.Glue())
+                .Select(StringExt.ReducedWordForm1)
+                .OrderBy(s => s.Length)
+                .ThenBy(s => s)
+                .Println("All Relators");
     }
 
     public IEnumerable<char> Rewrite(IEnumerable<char> w)
@@ -182,17 +183,17 @@ public partial class Graph
     }
 
     public IEnumerable<char> Generators() => Gens.Select(c => c.V).Where(c => char.IsLower(c));
-    public IEnumerable<IEnumerable<char>> Words() => Classes.Skip(1).Select(c => c.Word.Select(e => e.V)); 
+    public IEnumerable<IEnumerable<char>> Words() => Classes.Skip(1).Select(c => c.Word.Select(e => e.V));
 
     public static Graph Run(string sg, string rel)
     {
-        var g=new Graph(sg, rel);
+        var g = new Graph(sg, rel);
         g.Build(false, false);
         g.SpanningTree();
         g.GenerateWords();
         return g;
     }
-    
+
     public static Graph Run(string rel) => Run("i", rel);
 
     private static Graph ClassesFromGroupSubgroup<T>(ConcreteGroup<T> g, ConcreteGroup<T> h) where T : struct, IElt<T>
@@ -241,16 +242,34 @@ public partial class Graph
         return graph;
     }
 
-    public static void DefiningRelatorsOfGroup<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
+    public static string DefiningRelatorsOfGroup<T>(ConcreteGroup<T> g, bool details = true) where T : struct, IElt<T>
     {
         var h = Group.Generate("()", g, g.Neutral());
-        var graph = ClassesFromGroupSubgroup(g, h);
+
+        if (details)
+            GlobalStopWatch.AddLap();
         
-        Console.WriteLine(g.ShortName);
-        if (g.Count() < 33)
+        var graph = ClassesFromGroupSubgroup(g, h);
+
+        if (details)
+            Console.WriteLine(g.ShortName);
+
+        if (details && g.Count() < 33)
+        {
             graph.DisplayTableOps();
-        Console.WriteLine();
-        graph.DefineRelators();
-        Console.WriteLine();
+            Console.WriteLine();
+        }
+
+        graph.DefineRelators(details);
+        
+        if (details)
+            GlobalStopWatch.Show();
+        
+        return graph.Relators.Select(c => c.Gens.Select(g0 => graph.GensConv[g0]))
+            .Select(c => c.Glue())
+            .Select(StringExt.ReducedWordForm1)
+            .OrderBy(s => s.Length)
+            .ThenBy(s => s)
+            .Glue(",");
     }
 }

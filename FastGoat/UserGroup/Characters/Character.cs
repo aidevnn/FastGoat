@@ -194,8 +194,7 @@ public readonly struct Character<T> : IElt<Character<T>>, IRingElt<Character<T>>
 
     public (Character<T> quo, Character<T> rem) Div(Character<T> e)
     {
-        var map = Map.ToDictionary(k => k.Key, k => (Cnf?)(k.Value!.Value / e[k.Key]!.Value));
-        return (new(Classes, map), Zero);
+        throw new NotImplementedException();
     }
 
     public Character<T> Mul(int k) => new(Classes, Map.ToDictionary(e => e.Key, e => (Cnf?)(e.Value!.Value * k)));
@@ -223,7 +222,7 @@ public readonly struct Character<T> : IElt<Character<T>>, IRingElt<Character<T>>
 
     public static Character<T> operator *(Character<T> a, int b) => a.Mul(b);
 
-    public static Character<T> operator /(Character<T> a, Character<T> b) => a.Div(b).quo;
+    public static Character<T> operator /(Character<T> a, Character<T> b) => throw new NotImplementedException();
 
     public static Character<T> operator /(Character<T> a, int b) =>
         new(a.Classes, a.Map.ToDictionary(e => e.Key, e => (Cnf?)(e.Value!.Value / b)));
