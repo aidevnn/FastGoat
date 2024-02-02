@@ -355,77 +355,137 @@ public static partial class FG
 
     public static (KPoly<EPoly<ZnInt>> x, EPoly<ZnInt> a) FqX_Poly(int q) => FqX_Poly(q, ('x', 'a'));
 
-    public static BigInteger GLnpOrder(int n, int p) => BigInteger.Pow(p, n * (n - 1) / 2) * n.Range().Select(k => p.Pow(n - k) - 1)
+    public static BigInteger GLnqOrder(int n, int q) => BigInteger.Pow(q, n * (n - 1) / 2) * n.Range().Select(k => BigInteger.Pow(q, n - k) - 1)
         .Aggregate(BigInteger.One, (acc, pk) => acc * pk);
 
-    public static ConcreteGroup<Mat> GLnp(int n, int p)
+    public static BigInteger SLnqOrder(int n, int q) => GLnqOrder(n, q) / (q - 1);
+
+    public static (MatFq a, MatFq b) GLnqGenerators(int n, int q)
     {
-        var og = GLnpOrder(n, p);
-        if (og > 50000)
-            throw new();
-
-        var og0 = p.Pow(n) - 1;
-        var GLnp = new GL(n, p);
-
-        Mat Rand(GL gl, int o)
+        var gl = new GLnq(n, q);
+        var E = gl.Fq.X;
+        if (n == 2)
         {
-            for (int k = 0; k < 10000; ++k)
+            if (q == 2)
             {
-                var t0 = (n * n).Range().Select(_ => IntExt.Rng.Next(p)).ToArray();
-                var mat = gl.Create(t0);
-                if (GLnp.Det(mat) == 0)
-                    continue;
-
-                var o0 = Group.Cycle(gl, mat).Count;
-                if (o0 == o)
-                    return mat;
+                var a = gl[1, 1, 0, 1];
+                var b = gl[0, 1, 1, 0];
+                return (a, b);
             }
-
-            throw new();
-        }
-        
-        ConcreteGroup<Mat> CreateGL(GL gl)
-        {
-            for (int i = 0; i < 100; ++i)
+            else
             {
-                var gen0 = Rand(gl, 2);
-                var gen1 = Rand(gl, og0);
-                var glnp = Group.Generate(gl, gen0, gen1);
-                if (glnp.Count() == og)
-                    return glnp;
+                var a = gl[E, 0, 0, 1];
+                var b = gl[-1, 1, -1, 0];
+                return (a, b);
             }
-
-            throw new();
-        }
-
-        return CreateGL(GLnp);
-    }
-
-    public static ConcreteGroup<Mat> SL2p(int p)
-    {
-        if (!IntExt.Primes10000.Contains(p) || p > 41)
-            throw new($"p = {p} must be prime");
-
-        var gl = new GL(2, p);
-        if (p == 3)
-        {
-            var a = gl[1, 1, 0, 1];
-            var b = gl[0, 1, p - 1, 0];
-
-            return Group.Generate($"SL(2,{p})", gl, a, b);
         }
         else
         {
-            var x = (p - 2).Range(2).First(i => IntExt.PowMod(i, p - 1, p) == 1);
-            var xp = IntExt.PowMod(x, p - 2, p);
+            var arrA = (n * n).Range().Select(_ => E.Zero).ToArray();
+            var arrB = (n * n).Range().Select(_ => E.Zero).ToArray();
+            arrA[0] = E;
+            for (int i = 0; i < n + 1; ++i)
+            {
+                if (i % n != 0)
+                    arrA[(n + 1) * i] = E.One;
 
-            // SL(2,q) generators from H.E. Rose, page 271, Problem 12.5
-            var a = gl[x, 0, 0, xp];
-            var b = gl[p - 1, 1, p - 1, 0];
+                var k = i == 0
+                    ? 0
+                    : i != n
+                        ? (n + 1) * i - 1
+                        : n - 1;
 
-            return Group.Generate($"SL(2,{p})", gl, a, b);
+                arrB[k] = i != n ? -E.One : E.One;
+            }
+
+            if (q == 2)
+            {
+                arrA[1] = E.One;
+                arrB[0] = E.Zero;
+            }
+
+            var a = gl.Create(arrA);
+            var b = gl.Create(arrB);
+            return (a, b);
         }
     }
+
+    public static (MatFq a, MatFq b) SLnqGenerators(int n, int q)
+    {
+        var gl = new GLnq(n, q);
+        var E = gl.Fq.X;
+        var arrA = (n * n).Range().Select(_ => E.Zero).ToArray();
+        var arrB = (n * n).Range().Select(_ => E.Zero).ToArray();
+        arrA[0] = E;
+        arrA[n + 1] = E.Inv();
+        for (int i = 0; i < n + 1; ++i)
+        {
+            if (i > 1 && i < n)
+                arrA[(n + 1) * i] = E.One;
+
+            var k = i == 0
+                ? 0
+                : i != n
+                    ? (n + 1) * i - 1
+                    : n - 1;
+
+            arrB[k] = i != n ? -E.One : E.One;
+        }
+
+        if (q == 2 || q == 3)
+        {
+            arrA[0] = arrA[1] = arrA[n + 1] = E.One;
+            arrB[0] = E.Zero;
+        }
+
+        var a = gl.Create(arrA);
+        var b = gl.Create(arrB);
+        return (a, b);
+    }
+
+    public static (Mat a, Mat b) GLnpGenerators(int n, int p)
+    {
+        var (a0, b0) = GLnqGenerators(n, p);
+        var gl = new GL(n, p);
+        var arrA = a0.Table.Select(e => e[0].K).ToArray();
+        var arrB = b0.Table.Select(e => e[0].K).ToArray();
+        return (gl.Create(arrA), gl.Create(arrB));
+    }
+    
+    public static (Mat a, Mat b) SLnpGenerators(int n, int p)
+    {
+        var (a0, b0) = SLnqGenerators(n, p);
+        var gl = new GL(n, p);
+        var arrA = a0.Table.Select(e => e[0].K).ToArray();
+        var arrB = b0.Table.Select(e => e[0].K).ToArray();
+        return (gl.Create(arrA), gl.Create(arrB));
+    }
+
+    public const int MatrixGroupMaxOrder = 200000;
+
+    public static ConcreteGroup<Mat> GLnp(int n, int p)
+    {
+        var og = GLnqOrder(n, p);
+        if (og > MatrixGroupMaxOrder)
+            throw new();
+
+        var (a, b) = GLnpGenerators(n, p);
+        var gl = a.GL;
+        return Group.Generate(gl, a, b);
+    }
+    public static ConcreteGroup<Mat> SLnp(int n, int p)
+    {
+        var og = SLnqOrder(n, p);
+        if (og > MatrixGroupMaxOrder)
+            throw new();
+
+        var (a, b) = SLnpGenerators(n, p);
+        var gl = a.GL;
+        return Group.Generate($"SL({n},{p})", gl, a, b);
+    }
+
+    public static ConcreteGroup<Mat> GL2p(int p) => GLnp(2, p);
+    public static ConcreteGroup<Mat> SL2p(int p) => SLnp(2, p);
 
     public static ConcreteGroup<Coset<Mat>> L2p(int p)
     {
@@ -435,6 +495,28 @@ public static partial class FG
         var sl2p = SL2p(p);
         var z = Group.Zentrum(sl2p);
         return sl2p.Over(z, $"L2({p})");
+    }
+
+    public static ConcreteGroup<MatFq> GLnq(int n, int q)
+    {
+        var og = GLnqOrder(n, q);
+        if (og > MatrixGroupMaxOrder)
+            throw new();
+
+        var (a, b) = GLnqGenerators(n, q);
+        var gl = a.GLnq;
+        return Group.Generate(gl, a, b);
+    }
+
+    public static ConcreteGroup<MatFq> SLnq(int n, int q)
+    {
+        var og = SLnqOrder(n, q);
+        if (og > MatrixGroupMaxOrder)
+            throw new();
+
+        var (a, b) = SLnqGenerators(n, q);
+        var gl = a.GLnq;
+        return Group.Generate($"SL({n},{q})", gl, a, b);
     }
 
     public static GLn<K> GLnK<K>(int n, K scalar) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>

@@ -84,6 +84,8 @@ public class GLnq : IGroup<MatFq>
     public override int GetHashCode() => Hash;
     public override string ToString() => Name;
 
+    public MatFq Create(EPoly<ZnInt>[] arr) => new(this, arr);
+    
     public MatFq Neutral() => new(this, _hashNeutral, _neutralMat);
 
     public MatFq Invert(MatFq e)

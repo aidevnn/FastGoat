@@ -474,3 +474,11 @@ Construction of defining relators for finite groups.
 Department of Pure Mathematics, University of Sydney.
 Discrete Mathematics 5 (1973), North-Holland Publishing Company.
 <i>Construction of defining relators for finite groups. p105-129</i>
+
+[generatorsGLnq](http://arxiv.org/abs/2201.09155v1)
+<b>D.E.Taylor.</b>
+Pairs of Generators for Matrix Groups.
+Department of Pure Mathematics
+The University of Sydney
+Australia 2006.
+arXiv:2201.09155v1

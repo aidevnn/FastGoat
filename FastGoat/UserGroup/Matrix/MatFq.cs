@@ -17,6 +17,14 @@ public struct MatFq : IElt<MatFq>
         Hash = hash;
     }
 
+    public MatFq(GLnq gl, EPoly<ZnInt>[] table)
+    {
+        GLnq = gl;
+        var hash = table.Aggregate(0, (acc, a0) => a0.GetHashCode() + gl.Fq.Q * acc);
+        Table = table.ToArray();
+        Hash = hash;
+    }
+
     public bool Equals(MatFq other) => Table.SequenceEqual(other.Table);
 
     public int CompareTo(MatFq other) => Table.SequenceCompareTo(other.Table);

@@ -24,7 +24,7 @@ public struct Fq : IGroup<EPoly<ZnInt>>
         Hash = (Q, "fq").GetHashCode();
         Name = $"F{Q}";
         FullName = Q == P ? Name : $"{Name} = F{P}({x}) = F{P}[{x}]/({F})";
-        X = new(F);
+        X = new(F, F.X.Div(F).rem);
     }
 
     public IEnumerator<EPoly<ZnInt>> GetEnumerator() => GetElements().GetEnumerator();
@@ -44,7 +44,7 @@ public struct Fq : IGroup<EPoly<ZnInt>>
         get
         {
             if (us[0] is char x && F.x.Equals(x))
-                return X;
+                return new(F, F.X.Div(F).rem);
             if (us[0] is ValueTuple<char, int> e && F.x.Equals(e.Item1))
                 return X.Pow(e.Item2);
             if (us[0] is int k)
