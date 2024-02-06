@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Numerics;
+using System.Text.RegularExpressions;
 using FastGoat.Commons;
 using FastGoat.Examples;
 using FastGoat.Structures;
@@ -21,6 +22,7 @@ using static FastGoat.Commons.IntExt;
 using static FastGoat.Commons.EnumerableExt;
 using FastGoat.UserGroup.Padic;
 using FastGoat.UserGroup.Words.Tools;
+using GroupRegX = System.Text.RegularExpressions.Group;
 
 //////////////////////////////////
 //                              //
@@ -30,109 +32,76 @@ using FastGoat.UserGroup.Words.Tools;
 
 Console.WriteLine("Hello World");
 
-// Pairs of Generators for Matrix Groups. I
-// arXiv:2201.09155v1 [math.GR] 23 Jan 2022
-// http://arxiv.org/abs/2201.09155v1
-// D. E. Taylor
-// Department of Pure Mathematics
-// The University of Sydney
-// Australia 2006
-
-void test1()
+void FactorWord(string word)
 {
-    var primes50 = Primes10000.Where(p => p < 50).ToArray();
-    for (int n = 2; n <= 5; n++)
+    var reg = new Regex(@"(?'rel'(?:\w|[a-zA-Z]\-\d+)+?)(\k'rel')+");
+    var word2 = StringExt.ReducedWordForm1(word);
+    Console.WriteLine($"Word:{word} => {word2}");
+    var word3 = $"{word2}";
+    foreach (Match match in reg.Matches(word2))
     {
-        foreach (var p in primes50.Where(p => FG.GLnqOrder(n, p) < FG.MatrixGroupMaxOrder))
-        {
-            var glOrd = FG.GLnqOrder(n, p);
-            var gl = FG.GLnp(n, p);
-            var (a, b) = gl.GetGenerators().Deconstruct();
-            Console.WriteLine(gl.ShortName);
-            Console.WriteLine(a);
-            Console.WriteLine();
-            Console.WriteLine(b);
-            Console.WriteLine();
-            Console.WriteLine();
-            if (gl.Count() != glOrd)
-                throw new();
-        }
-
-        Console.WriteLine("####################################################################");
-
-        foreach (var p in Primes10000.Where(p => FG.SLnqOrder(n, p) < FG.MatrixGroupMaxOrder))
-        {
-            var slOrd = FG.SLnqOrder(n, p);
-            var sl = FG.SLnp(n, p);
-            var (a, b) = sl.GetGenerators().Deconstruct();
-            Console.WriteLine(sl.ShortName);
-            Console.WriteLine(a);
-            Console.WriteLine();
-            Console.WriteLine(b);
-            Console.WriteLine();
-            if (sl.Count() != slOrd)
-                throw new();
-        }
+        Console.WriteLine($"New group:{match}");
+        var str = match.Groups["rel"]!.Value;
+        var pat = match.Groups[1]!.Value;
+        var exp = str.Length / pat.Length;
         
-        Console.WriteLine("####################################################################");
+        foreach (GroupRegX g in match.Groups)
+            Console.WriteLine($"group:{g} x {match.Length / g.Value.Length}");
+
+        Console.WriteLine();
     }
 }
 
-void GLnq(int n, int q)
+string ExpandWord(string word)
 {
-    GlobalStopWatch.AddLap();
-    var glOrd = FG.GLnqOrder(n, q);
-    var gl = FG.GLnq(n, q);
-    var (a, b) = gl.GetGenerators().Deconstruct();
-    Console.WriteLine(gl.ShortName);
-    Console.WriteLine(a);
-    Console.WriteLine();
-    Console.WriteLine(b);
-    Console.WriteLine();
-    if (gl.Count() != glOrd)
-        throw new();
+    var regX = new Regex(@"(?:\()([a-zA-Z0-9\-]*)(?:\))((\-{1}\d{1,})|(\d{0,}))");
+    var curr = "";
+    var succ = $"{word}";
+    do
+    {
+        curr = $"{succ}";
+        foreach (Match m in regX.Matches(curr))
+        {
+            var str = m.Groups[0]!.Value;
+            var pat = m.Groups[1]!.Value;
+            var exp = int.Parse(m.Groups[2]!.Value);
+            if (exp > 0)
+            {
+                var ext = Enumerable.Repeat(pat, exp).Glue();
+                succ = curr.Replace(str, ext);
+                break;
+            }
+            else
+            {
+                var patInv = StringExt.Revert(pat).Glue();
+                var ext = Enumerable.Repeat(patInv, -exp).Glue();
+                succ = curr.Replace(str, ext);
+                break;
+            }
+        }
+    } while (!string.Equals(succ, curr));
 
-    GlobalStopWatch.Show();
-    Console.WriteLine();
+    return StringExt.ReducedWordForm2(succ);
 }
 
-void SLnq(int n, int q)
 {
-    GlobalStopWatch.AddLap();
-    var slOrd = FG.SLnqOrder(n, q);
-    var sl = FG.SLnq(n, q);
-    var (a, b) = sl.GetGenerators().Deconstruct();
-    Console.WriteLine(sl.ShortName);
-    Console.WriteLine(a);
-    Console.WriteLine();
-    Console.WriteLine(b);
-    Console.WriteLine();
-    if (sl.Count() != slOrd)
-        throw new();
-
-    GlobalStopWatch.Show();
-    Console.WriteLine();
-}
-
-void test2()
-{
-    GlobalStopWatch.Restart();
-    foreach (var q in new[] { 4, 8, 9, 16 })
-        GLnq(2, q);
+    var str1 = "ababababababab";
+    var str2 = "abab-1abab-1abab-1abab-1";
+    var str3 = "abababab-1ab-1ab-1abababab-1ab-1ab-1";
+    var str4 = "a2b2a2b2a2b2a2b2acdacdacdabababab";
+    var str5 = "dabcabcd";
+    var str6 = "aaabca2bc";
+    foreach (var str in new[] { str1, str2, str3, str4, str5, str6 })
+    {
+        FactorWord(str);
+    }
     
-    GLnq(3, 4);
-        
-    Console.WriteLine("####################################################################");
-
-    foreach (var q in new[] { 4, 8, 9, 16, 25, 27, 32 })
-        SLnq(2, q);
-    
-    SLnq(3, 4);
-        
-    Console.WriteLine("####################################################################");
-}
-
-{
-    test1();
-    // test2(); // slow TODO
+    // var str5 = "(ab)-2(cde)3(ab)-2";
+    // var str6 = "ab2c(efg)-2efg";
+    // var str7 = "ab(a(ac)2b)-3";
+    //
+    // foreach (var str in new[] { str5, str6, str7 })
+    // {
+    //     Console.WriteLine($"{str} => {ExpandWord(str)}");
+    // }
 }
