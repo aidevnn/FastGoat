@@ -55,7 +55,7 @@ public static class MathieuGroup
            cab-1cab-1cab-1
            a3cb-1cba-1b-1cbc
            ab-1a-1caba-1bcb-1
-       #  Time:3m30s
+       #  Time:2m25s
      */
     
     public static void M21()
@@ -78,7 +78,7 @@ public static class MathieuGroup
            a2b-1a2b-1a2b-1a2b-1
            ababa-1b-1ababa-1b-1
            ba-1ba-1ba-1ba-1ba-1ba-1ba-1
-       #  Time:15.741s
+       #  Time:13.611s
      */
 
     public static void M21Iso()
@@ -123,4 +123,45 @@ public static class MathieuGroup
         //
         // M21 IsIsomorphicTo L3(4) : True
     }
+    
+    public static void M22()
+    {
+        var s22 = new Sn(22);
+        
+        // var a1 = s22[(4, 15),(6, 18),(7, 8),(9, 13),(10, 16),(11, 21),(12, 19),(20, 22)];
+        // var a2 = s22[(4, 10),(6, 11),(7, 12),(8, 19),(9, 22),(13, 20),(15, 16),(18, 21)];
+        // var a3 = s22[(4, 20),(6, 8),(7, 18),(9, 16),(10, 13),(11, 19),(12, 21),(15, 22)];
+        // var a4 = s22[(4, 8),(6, 20),(7, 15),(9, 21),(10, 19),(11, 13),(12, 16),(18, 22)];
+        // var b = s22[(3, 4),(5, 22),(6, 18),(7, 12),(8, 21),(11, 19),(13, 14),(16, 17)];
+        // var c = s22[(2, 3),(6, 18),(9, 21),(10, 12),(11, 13),(14, 17),(16, 19),(20, 22)];
+        // var d = s22[(1, 2),(6, 15),(7, 10),(8, 11),(9, 19),(14, 17),(16, 22),(20, 21)];
+        
+        var x = s22[(1, 4, 5, 9, 3), (2, 8, 10, 7, 6), (12, 15, 16, 20, 14), (13, 19, 21, 18, 17)];
+        var y = s22[(1, 21), (2, 10, 8, 6), (3, 13, 4, 17), (5, 19, 9, 18), (11, 22), (12, 14, 16, 20)];
+        var z = s22[(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11), (12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22)];
+
+        GlobalStopWatch.Restart();
+        var m22 = Group.Generate("M22", s22, x, y, z);
+        DisplayGroup.Head(m22);
+        GlobalStopWatch.Show("M22"); // # M22 Time:2.884s
+        Graph.DefiningRelatorsOfGroup(m22);
+    }
+    /* |M22| = 443520
+        ...
+        ...
+       All Relators
+           b5
+           c4
+           b2cbc-1
+           a3ba-1b-1
+           a4b-1a-1b
+           acacacacacac
+           a2ca2ca2ca2ca2c
+           ac2a-1c2ac-2a-1c-2
+           acac-1acac-1acac-1
+           c2a2c-1bcac-1b-1c-1
+           abc2acacb-1a-1bc-1ac-1
+           acb-1cac-1bc-1ac-1bc-1
+       #  Time:24m4s
+     */
 }
