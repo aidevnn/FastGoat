@@ -6,7 +6,7 @@ namespace FastGoat.UserGroup.Words.Tools;
 
 public partial class Graph
 {
-    private Graph(Gen[] gens)
+    private Graph(Gen[] gens, int capacity = 10000)
     {
         Gens = gens;
         NbGens = gens.Length;
@@ -14,7 +14,7 @@ public partial class Graph
         Relators = new();
         Subgroup = new Gen[0];
         var Null = new Class(0, this);
-        Classes = new() { Null };
+        Classes = new(capacity) { Null };
     }
 
     private bool STDone { get; set; }
@@ -76,6 +76,7 @@ public partial class Graph
                 @class.Word.Insert(0, g);
             }
 
+            @class.WordInv.AddRange(@class.Word.Select(g => g.Invert()).Reverse());
             if (details && Classes.Count < 33)
                 Console.WriteLine($"({@class}) = ({@class.Word.Glue(" * ")})");
         }
@@ -100,6 +101,7 @@ public partial class Graph
             return;
 
         var (e0, rel) = rem[0];
+
         e0.i.Color(e0.s);
         var relator = new Relator(Relators.Count, rel);
         Relators.Add(relator);
@@ -153,13 +155,19 @@ public partial class Graph
 
             SpanningTree();
             GenerateWords();
-            
+
             while (true)
             {
                 var sz = Relators.Count;
                 NextRelator();
                 if (Relators.Count == sz)
                     break;
+
+                if (details)
+                {
+                    var rel = Relators.Last();
+                    Console.WriteLine($"Rel[{Relators.Count}]:{StringExt.ReducedWordForm1(rel.Gens.Glue())} Length:{rel.Length}");
+                }
             }
 
             STDone = true;
@@ -204,7 +212,7 @@ public partial class Graph
         var repr = cosets.ToDictionary(a => a.Key, a => a.Value.X);
 
         var gens = r.Range().Select(i => (char)('a' + i)).Select(i => new Gen(i)).Prepend(new Gen()).ToArray();
-        var graph = new Graph(gens.Skip(1).SelectMany(c => new[] { c, c.Invert() }).ToArray());
+        var graph = new Graph(gens.Skip(1).SelectMany(c => new[] { c, c.Invert() }).ToArray(), g.Count() * 2);
 
         graph.GensConv = gens.Skip(1).Select((e, i) => (e, i))
             .SelectMany(e => new[]
@@ -220,18 +228,20 @@ public partial class Graph
         graph.Classes.Add(new(1, graph));
         var m = 1;
         graph.Classes[m].Coloured = graph.Gens.ToDictionary(e => e, _ => false);
+        var idx = new Dictionary<T, int>(g.Count());
+        idx[g.Neutral()] = 1;
         for (int i = 1; i <= m; ++i)
         {
             for (int j = 1; j <= r; ++j)
             {
                 var x = repr[g.Op(F[i - 1], E[j - 1])];
-                var l = F.FindIndex(e => e.Equals(x)) + 1;
-                if (l != 0)
+                if (idx.TryGetValue(x, out var l))
                     graph.Classes[i][gens[j]] = graph.Classes[l];
                 else
                 {
                     F.Add(x);
                     var cl = new Class(++m, graph);
+                    idx[x] = m;
                     cl.Coloured = graph.Gens.ToDictionary(e => e, _ => false);
                     graph.Classes.Add(cl);
                     graph.Classes[i][gens[j]] = cl;
@@ -239,6 +249,8 @@ public partial class Graph
             }
         }
 
+        idx.Clear();
+        F.Clear();
         return graph;
     }
 
@@ -248,7 +260,7 @@ public partial class Graph
 
         if (details)
             GlobalStopWatch.AddLap();
-        
+
         var graph = ClassesFromGroupSubgroup(g, h);
 
         if (details)
@@ -261,10 +273,10 @@ public partial class Graph
         }
 
         graph.DefineRelators(details);
-        
+
         if (details)
             GlobalStopWatch.Show();
-        
+
         return graph.Relators.Select(c => c.Gens.Select(g0 => graph.GensConv[g0]))
             .Select(c => c.Glue())
             .Select(StringExt.ReducedWordForm1)
