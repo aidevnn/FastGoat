@@ -72,12 +72,16 @@ public class CharacterTable<T> where T : struct, IElt<T>
 
     public void InductionFromSubGroups()
     {
+        InductionFromSubGroups(Gr.AllSubgroups());
+    }
+
+    public void InductionFromSubGroups(AllSubgroups<T> subgroups)
+    {
         if (AllCharacters.All(chi => chi.HasAllValues))
             return;
 
         var og = Gr.Count();
-        var all = Group.AllSubGroups(Gr);
-        var allSubs = all.Keys.Where(g => g.Count() != 1 && g.Count() != og).ToArray();
+        var allSubs = subgroups.AllRepresentatives.Where(g => g.Count() != 1 && g.Count() != og).ToArray();
         foreach (var sg in allSubs.OrderBy(sg => sg.Count()))
         {
             InductionFromSubGroup(sg);
@@ -85,7 +89,7 @@ public class CharacterTable<T> where T : struct, IElt<T>
                 return;
         }
 
-        var allSubs2 = all.Values.SelectMany(e => e).Where(g => g.Count() != 1 && g.Count() != og).ToArray();
+        var allSubs2 = subgroups.All.Where(g => g.Count() != 1 && g.Count() != og).ToArray();
         foreach (var sg in allSubs2.OrderBy(sg => sg.Count()))
         {
             InductionFromSubGroup(sg);
@@ -195,8 +199,7 @@ public class CharacterTable<T> where T : struct, IElt<T>
     {
         if (!Gr.SubSetOf(ctSuperGr.Gr))
             return;
-
-        var ne = Gr.Neutral();
+        
         AllCharacters = AllCharacters.Order().ToArray();
         if (AllCharacters.All(chi => chi.HasAllValues))
             return;
@@ -376,7 +379,7 @@ public class CharacterTable<T> where T : struct, IElt<T>
         return cellStrs;
     }
 
-    public void DisplayCells()
+    public void DisplayCells(bool tableOnly = false)
     {
         AllCharacters = AllCharacters.Order().ToArray();
         var form = Ring.MatrixDisplayForm;
@@ -402,9 +405,14 @@ public class CharacterTable<T> where T : struct, IElt<T>
             }
         }
 
-        DisplayGroup.Head(Gr);
+        if (!tableOnly)
+            DisplayGroup.Head(Gr);
+        
         Ring.DisplayMatrix(Cells, " ");
-        CheckProperties();
+        
+        if (!tableOnly)
+            CheckProperties();
+        
         Console.WriteLine();
 
         Ring.MatrixDisplayForm = form;
