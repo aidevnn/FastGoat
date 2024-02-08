@@ -93,6 +93,7 @@ public partial class Graph
             .Where(e => !e.i.Coloured[e.s])
             .Select(e => (e, e.i.Word.Append(e.s).Concat(e.j.WordInv).ToArray()))
             .OrderBy(e => e.Item2.Length)
+            .ThenBy(e => e.Item2.Select(c => char.ToLower(c.V)).Distinct().Count())
             .ThenByDescending(e => char.IsLower(e.e.s.V))
             .ThenBy(e => e.Item2, comp)
             .ToArray();
