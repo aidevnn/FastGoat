@@ -119,7 +119,7 @@ public static class NamesTree
         if (G.GroupType == GroupType.NonAbelianGroup && subgroups.IsSimple())
             return new[] { (subgroups, tr, ANameElt.DecompType.SimpleNonAbelian) };
 
-        var normals = subgroups.Where(sg => sg.IsProperNormal).ToArray();
+        var normals = subgroups.Where(sg => sg.IsProperNormal && !sg.IsTrivial).ToArray();
         var dic = normals.ToDictionary(n => n, n => subgroups.Where(sg => sg.Order == n.Index).ToArray());
 
         var dirProd = dic.Select(e => (e.Key,

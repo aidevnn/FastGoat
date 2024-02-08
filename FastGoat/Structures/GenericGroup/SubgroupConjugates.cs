@@ -13,7 +13,7 @@ public readonly struct SubgroupConjugates<T> : IElt<SubgroupConjugates<T>> where
     {
         Parent = parent;
         Conjugates = Group.SubGroupsConjugates(parent, subGroup);
-        Representative = subGroup;
+        Representative = Conjugates[0];
         Order = Representative.Count();
         Index = parent.Count() / Order;
         Hash = (Parent.Hash, Order, Index).GetHashCode();
@@ -60,8 +60,11 @@ public readonly struct SubgroupConjugates<T> : IElt<SubgroupConjugates<T>> where
     public int Size => Conjugates.Count;
     public (int, int, GroupType) OST => (Order, Size, GroupType);
     public bool IsNormal => Size == 1;
-    public bool IsProper => Order != 1 && Index != 1;
+    public bool IsProper => Index != 1;
+    public bool IsTrivial => Order == 1;
     public bool IsProperNormal => IsNormal && IsProper;
+    public bool IsSubClassOf(SubgroupConjugates<T> other) => Conjugates.Any(cj => cj.SubSetOf(other.Representative));
+    public bool IsSuperClassOf(SubgroupConjugates<T> other) => Conjugates.Any(cj => cj.SuperSetOf(other.Representative));
     public bool Equals(SubgroupConjugates<T> other) => Hash == other.Hash && 
                                                        Parent.SetEquals(other.Parent) &&
                                                        Conjugates.Any(e => e.SetEquals(other.Representative));

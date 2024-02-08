@@ -69,11 +69,59 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
 
     public SubGroupsInfos Infos { get; }
 
+    public Dictionary<int, SubgroupConjugates<T>[]> AllSylows
+    {
+        get
+        {
+            var ord = Parent.Count();
+            var allConjs = AllSubgroupConjugates;
+            return IntExt.PrimesDec(ord).Select(e => e.Key.Pow(e.Value))
+                .ToDictionary(q => q, q => allConjs.Where(cj => cj.Order == q).ToArray());
+        }
+    }
+
     public string Name => $"SubGroups of {Parent}";
 
     public AllSubgroups<WElt> ToGroupWrapper()
     {
         return new AllSubgroups<WElt>(AllSubgroupConjugates.Select(sc => sc.ToGroupWrapper()).ToArray());
+    }
+
+    public SubgroupConjugates<T>[] MaximalSubgroups()
+    {
+        var allMax = new List<SubgroupConjugates<T>>();
+        foreach (var h in AllSubgroupConjugates.Where(cj => cj.IsProper))
+        {
+            allMax = allMax.Except(allMax.Where(h0 => h0.IsSubClassOf(h))).ToList();
+            if (allMax.All(h0 => !h.IsSubClassOf(h0)))
+                allMax.Add(h);
+        }
+
+        return allMax.Order().ToArray();
+    }
+
+    public ConcreteGroup<T> FrattiniSubGroup
+    {
+        get
+        {
+            var max = MaximalSubgroups().SelectMany(cj => cj.Conjugates)
+                .Aggregate(Parent.AsEnumerable(), (acc, sg) => acc.Intersect(sg));
+            return AllRepresentatives.First(sg => sg.SetEquals(max));
+        }
+    }
+
+    public ConcreteGroup<T> FittingSubGroup
+    {
+        get
+        {
+            if (Parent.Count() == 1)
+                return AllSubgroupConjugates.First(cj => cj.IsTrivial).Representative;
+
+            return AllSubgroupConjugates.Where(cj => cj.IsProperNormal)
+                .Descending()
+                .Select(cj => cj.Representative)
+                .First(sg => Group.IsNilpotent(sg));
+        }
     }
 
     public IEnumerable<ConcreteGroup<T>> All => AllSubgroupConjugates.SelectMany(sc => sc.Conjugates);
