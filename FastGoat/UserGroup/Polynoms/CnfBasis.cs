@@ -16,15 +16,18 @@ public struct CnfBasis
     public Dictionary<int, int[]> RelativeIndexes { get; }
     public ConcreteGroup<Ep<ZnInt>> Gr { get; }
 
+    public Dictionary<(int, bool), Cnf> IdxRoots { get; }
+
     public CnfBasis(int ord)
     {
         Order = ord;
         CyclotomicPolynomial = FG.CyclotomicPolynomial(ord);
         var deg = CyclotomicPolynomial.Degree;
         var x = FG.EPoly(CyclotomicPolynomial, 'ξ');
-
         Factors = IntExt.PrimesDec(Order).Select(kv => kv.Key.Pow(kv.Value)).Order().ToArray();
-
+        IdxRoots = ord.Range().Select(k => (Cnf.Nth(ord).Pow(k), k))
+            .SelectMany(e => new[] { (e.Item1, (e.k, true)), (-e.Item1, (e.k, false)) })
+            .ToDictionary(e => e.Item2, e => e.Item1);
         var gr = Gr = FG.Abelian(Factors);
         var allSubgroups = Group.AllSubGroups(Gr).Keys.Where(sg => sg.Count() != 1).ToHashSet(new IsomorphEquality<Ep<ZnInt>>());
 
@@ -97,6 +100,28 @@ public struct CnfBasis
 
                 var p0 = new KPoly<Rational>('x', Rational.KZero(), arr.TrimSeq().ToArray());
                 var c0 = new Cnf(ord, new(x.F, p0.Div(x.F).rem));
+                if (arr.Count(r => !r.IsZero()) > 1)
+                {
+                    var (re, im) = (c.Re, c.Im);
+                    var mod2 = re * re + im * im;
+
+                    if (mod2.Equals(Cnf.CnfOne) && !re.IsZero() && !im.IsZero())
+                    {
+                        var (k, a) = IdxRoots.First(e => (e.Value.E - c.E).IsZero()).Key;
+                        var gcd = IntExt.Gcd(k, Order);
+                        var (k0, n0) = (k / gcd, Order / gcd);
+                        var c1 = Cnf.Nth(n0).Pow(k0);
+                        var p1 = FG.QPoly().Pow(k0);
+                        if (!a)
+                        {
+                            c1 = -c1;
+                            p1 = -p1;
+                        }
+
+                        return (c1, p1);
+                    }
+                }
+
                 return (c0, p0);
             }
         }
