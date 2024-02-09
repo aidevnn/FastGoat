@@ -53,21 +53,27 @@ public class CharacterTable<T> where T : struct, IElt<T>
 
     public void DerivedSubGroupLift()
     {
-        var dg = Group.Derived(Gr);
-        if (dg.Count() < Gr.Count())
-        {
-            var quo = Gr.Over(dg);
-            var ctQuo = new CharacterTable<Coset<T>>(quo);
-            foreach (var chi in ctQuo.AllCharacters.Where(chi => chi.HasAllValues))
-            {
-                var lift = FG.Lift(chi, Classes);
-                var liftState = AddCharacter(lift);
-                if (liftState == AddCharacterState.TableFull)
-                    return;
-            }
+        var der = Group.Derived(Gr);
+        var od = der.Count();
+        if (od == Gr.Count())
+            return;
+        
+        NormalSubGroupLift(der);
+    }
 
-            InductionFromSubGroup(dg);
+    public void NormalSubGroupLift(ConcreteGroup<T> normal)
+    {
+        var quo = Gr.Over(normal);
+        var ctQuo = new CharacterTable<Coset<T>>(quo);
+        foreach (var chi in ctQuo.AllCharacters.Where(chi => chi.HasAllValues))
+        {
+            var lift = FG.Lift(chi, Classes);
+            var liftState = AddCharacter(lift);
+            if (liftState == AddCharacterState.TableFull)
+                return;
         }
+        
+        InductionFromSubGroup(normal);
     }
 
     public void InductionFromSubGroups()
@@ -79,18 +85,19 @@ public class CharacterTable<T> where T : struct, IElt<T>
     {
         if (AllCharacters.All(chi => chi.HasAllValues))
             return;
-
-        var og = Gr.Count();
-        var allSubs = subgroups.AllRepresentatives.Where(g => g.Count() != 1 && g.Count() != og).ToArray();
-        foreach (var sg in allSubs.OrderBy(sg => sg.Count()))
+        
+        foreach (var cj in subgroups.AllSubgroupConjugates.Where(cj => !cj.IsTrivial && cj.IsProper).Order())
         {
-            InductionFromSubGroup(sg);
+            InductionFromSubGroup(cj.Representative);
             if (AllCharacters.All(chi => chi.HasAllValues))
                 return;
         }
 
-        var allSubs2 = subgroups.All.Where(g => g.Count() != 1 && g.Count() != og).ToArray();
-        foreach (var sg in allSubs2.OrderBy(sg => sg.Count()))
+        if (AllCharacters.All(chi => chi.HasAllValues))
+            return;
+        
+        foreach (var sg in subgroups.AllSubgroupConjugates.Where(cj => !cj.IsTrivial && cj.IsProper).Order()
+                     .SelectMany(cj => cj.Conjugates.Skip(1)))
         {
             InductionFromSubGroup(sg);
             if (AllCharacters.All(chi => chi.HasAllValues))
@@ -172,8 +179,7 @@ public class CharacterTable<T> where T : struct, IElt<T>
     {
         if (!Gr.SubSetOf(superGr))
             return;
-
-        var ne = Gr.Neutral();
+        
         AllCharacters = AllCharacters.Order().ToArray();
         if (AllCharacters.All(chi => chi.HasAllValues))
             return;
@@ -199,7 +205,7 @@ public class CharacterTable<T> where T : struct, IElt<T>
     {
         if (!Gr.SubSetOf(ctSuperGr.Gr))
             return;
-        
+
         AllCharacters = AllCharacters.Order().ToArray();
         if (AllCharacters.All(chi => chi.HasAllValues))
             return;
@@ -407,12 +413,12 @@ public class CharacterTable<T> where T : struct, IElt<T>
 
         if (!tableOnly)
             DisplayGroup.Head(Gr);
-        
+
         Ring.DisplayMatrix(Cells, " ");
-        
+
         if (!tableOnly)
             CheckProperties();
-        
+
         Console.WriteLine();
 
         Ring.MatrixDisplayForm = form;
