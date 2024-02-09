@@ -3,10 +3,17 @@ Group1[1]
 ################            C1            ################
 ##########################################################
 |C1| = 1
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1
-SubGroupsInfos { AllSubGr = 1, AllConjsCl = 1, AllNorms = 1 }
 
+SubGroupsInfos { AllSubGr = 1, AllConjsCl = 1, AllNorms = 1 }
+Lower Central Serie
+C1
+Upper Central Serie
+C1
+Derived Serie
+C1
+Zentrum  Z(G) = C1
 Frattini Φ(G) = C1
 Fitting  F(G) = C1
 
@@ -31,10 +38,17 @@ Group2[1]
 ################            C2            ################
 ##########################################################
 |C2| = 2
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:1
-SubGroupsInfos { AllSubGr = 2, AllConjsCl = 2, AllNorms = 2 }
 
+SubGroupsInfos { AllSubGr = 2, AllConjsCl = 2, AllNorms = 2 }
+Lower Central Serie
+C2 ---> C1
+Upper Central Serie
+C1 ---> C2
+Derived Serie
+C2 ---> C1
+Zentrum  Z(G) = C2
 Frattini Φ(G) = C1
 Fitting  F(G) = C1
 
@@ -60,10 +74,17 @@ Group3[1]
 ################            C3            ################
 ##########################################################
 |C3| = 3
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [3]:2
-SubGroupsInfos { AllSubGr = 2, AllConjsCl = 2, AllNorms = 2 }
 
+SubGroupsInfos { AllSubGr = 2, AllConjsCl = 2, AllNorms = 2 }
+Lower Central Serie
+C3 ---> C1
+Upper Central Serie
+C1 ---> C3
+Derived Serie
+C3 ---> C1
+Zentrum  Z(G) = C3
 Frattini Φ(G) = C1
 Fitting  F(G) = C1
 
@@ -90,10 +111,17 @@ Group4[1]
 ################            C4            ################
 ##########################################################
 |C4| = 4
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:1, [4]:2
-SubGroupsInfos { AllSubGr = 3, AllConjsCl = 3, AllNorms = 3 }
 
+SubGroupsInfos { AllSubGr = 3, AllConjsCl = 3, AllNorms = 3 }
+Lower Central Serie
+C4 ---> C1
+Upper Central Serie
+C1 ---> C4
+Derived Serie
+C4 ---> C1
+Zentrum  Z(G) = C4
 Frattini Φ(G) = C2
 Fitting  F(G) = C2
 
@@ -121,10 +149,17 @@ Group4[2]
 ################         C2 x C2          ################
 ##########################################################
 |C2 x C2| = 4
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:3
-SubGroupsInfos { AllSubGr = 5, AllConjsCl = 5, AllNorms = 5 }
 
+SubGroupsInfos { AllSubGr = 5, AllConjsCl = 5, AllNorms = 5 }
+Lower Central Serie
+C2 x C2 ---> C1
+Upper Central Serie
+C1 ---> C2 x C2
+Derived Serie
+C2 x C2 ---> C1
+Zentrum  Z(G) = C2 x C2
 Frattini Φ(G) = C1
 Fitting  F(G) = C2
 
@@ -152,10 +187,17 @@ Group5[1]
 ################            C5            ################
 ##########################################################
 |C5| = 5
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [5]:4
-SubGroupsInfos { AllSubGr = 2, AllConjsCl = 2, AllNorms = 2 }
 
+SubGroupsInfos { AllSubGr = 2, AllConjsCl = 2, AllNorms = 2 }
+Lower Central Serie
+C5 ---> C1
+Upper Central Serie
+C1 ---> C5
+Derived Serie
+C5 ---> C1
+Zentrum  Z(G) = C5
 Frattini Φ(G) = C1
 Fitting  F(G) = C1
 
@@ -184,10 +226,17 @@ Group6[1]
 ################            C6            ################
 ##########################################################
 |C6| = 6
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:1, [3]:2, [6]:2
-SubGroupsInfos { AllSubGr = 4, AllConjsCl = 4, AllNorms = 4 }
 
+SubGroupsInfos { AllSubGr = 4, AllConjsCl = 4, AllNorms = 4 }
+Lower Central Serie
+C6 ---> C1
+Upper Central Serie
+C1 ---> C6
+Derived Serie
+C6 ---> C1
+Zentrum  Z(G) = C6
 Frattini Φ(G) = C1
 Fitting  F(G) = C3
 
@@ -217,10 +266,17 @@ Group6[2]
 ################            S3            ################
 ##########################################################
 |S3| = 6
-Type      NonAbelianGroup
+NonAbelianGroup, NotNilpotent, Solvable
 Elements Orders : [1]:1, [2]:3, [3]:2
-SubGroupsInfos { AllSubGr = 6, AllConjsCl = 4, AllNorms = 3 }
 
+SubGroupsInfos { AllSubGr = 6, AllConjsCl = 4, AllNorms = 3 }
+Lower Central Chain
+S3 ---> C3
+Upper Central Chain
+C1
+Derived Serie
+S3 ---> C3 ---> C1
+Zentrum  Z(G) = C1
 Frattini Φ(G) = C1
 Fitting  F(G) = C3
 
@@ -247,10 +303,17 @@ Group7[1]
 ################            C7            ################
 ##########################################################
 |C7| = 7
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [7]:6
-SubGroupsInfos { AllSubGr = 2, AllConjsCl = 2, AllNorms = 2 }
 
+SubGroupsInfos { AllSubGr = 2, AllConjsCl = 2, AllNorms = 2 }
+Lower Central Serie
+C7 ---> C1
+Upper Central Serie
+C1 ---> C7
+Derived Serie
+C7 ---> C1
+Zentrum  Z(G) = C7
 Frattini Φ(G) = C1
 Fitting  F(G) = C1
 
@@ -281,10 +344,17 @@ Group8[1]
 ################            C8            ################
 ##########################################################
 |C8| = 8
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:1, [4]:2, [8]:4
-SubGroupsInfos { AllSubGr = 4, AllConjsCl = 4, AllNorms = 4 }
 
+SubGroupsInfos { AllSubGr = 4, AllConjsCl = 4, AllNorms = 4 }
+Lower Central Serie
+C8 ---> C1
+Upper Central Serie
+C1 ---> C8
+Derived Serie
+C8 ---> C1
+Zentrum  Z(G) = C8
 Frattini Φ(G) = C4
 Fitting  F(G) = C4
 
@@ -316,10 +386,17 @@ Group8[2]
 ################         C4 x C2          ################
 ##########################################################
 |C4 x C2| = 8
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:3, [4]:4
-SubGroupsInfos { AllSubGr = 8, AllConjsCl = 8, AllNorms = 8 }
 
+SubGroupsInfos { AllSubGr = 8, AllConjsCl = 8, AllNorms = 8 }
+Lower Central Serie
+C4 x C2 ---> C1
+Upper Central Serie
+C1 ---> C4 x C2
+Derived Serie
+C4 x C2 ---> C1
+Zentrum  Z(G) = C4 x C2
 Frattini Φ(G) = C2
 Fitting  F(G) = C4
 
@@ -351,10 +428,17 @@ Group8[3]
 ################       C2 x C2 x C2       ################
 ##########################################################
 |C2 x C2 x C2| = 8
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:7
-SubGroupsInfos { AllSubGr = 16, AllConjsCl = 16, AllNorms = 16 }
 
+SubGroupsInfos { AllSubGr = 16, AllConjsCl = 16, AllNorms = 16 }
+Lower Central Serie
+C2 x C2 x C2 ---> C1
+Upper Central Serie
+C1 ---> C2 x C2 x C2
+Derived Serie
+C2 x C2 x C2 ---> C1
+Zentrum  Z(G) = C2 x C2 x C2
 Frattini Φ(G) = C1
 Fitting  F(G) = C2 x C2
 
@@ -386,10 +470,17 @@ Group8[4]
 ################            Q8            ################
 ##########################################################
 |Q8| = 8
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:1, [4]:6
-SubGroupsInfos { AllSubGr = 6, AllConjsCl = 6, AllNorms = 6 }
 
+SubGroupsInfos { AllSubGr = 6, AllConjsCl = 6, AllNorms = 6 }
+Lower Central Serie
+Q8 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C2 ---> Q8
+Derived Serie
+Q8 ---> C2 ---> C1
+Zentrum  Z(G) = C2
 Frattini Φ(G) = C2
 Fitting  F(G) = C4
 
@@ -420,10 +511,17 @@ Group8[5]
 ################            D8            ################
 ##########################################################
 |D8| = 8
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:5, [4]:2
-SubGroupsInfos { AllSubGr = 10, AllConjsCl = 8, AllNorms = 6 }
 
+SubGroupsInfos { AllSubGr = 10, AllConjsCl = 8, AllNorms = 6 }
+Lower Central Serie
+D8 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C2 ---> D8
+Derived Serie
+D8 ---> C2 ---> C1
+Zentrum  Z(G) = C2
 Frattini Φ(G) = C2
 Fitting  F(G) = C4
 
@@ -454,10 +552,17 @@ Group9[1]
 ################            C9            ################
 ##########################################################
 |C9| = 9
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [3]:2, [9]:6
-SubGroupsInfos { AllSubGr = 3, AllConjsCl = 3, AllNorms = 3 }
 
+SubGroupsInfos { AllSubGr = 3, AllConjsCl = 3, AllNorms = 3 }
+Lower Central Serie
+C9 ---> C1
+Upper Central Serie
+C1 ---> C9
+Derived Serie
+C9 ---> C1
+Zentrum  Z(G) = C9
 Frattini Φ(G) = C3
 Fitting  F(G) = C3
 
@@ -490,10 +595,17 @@ Group9[2]
 ################         C3 x C3          ################
 ##########################################################
 |C3 x C3| = 9
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [3]:8
-SubGroupsInfos { AllSubGr = 6, AllConjsCl = 6, AllNorms = 6 }
 
+SubGroupsInfos { AllSubGr = 6, AllConjsCl = 6, AllNorms = 6 }
+Lower Central Serie
+C3 x C3 ---> C1
+Upper Central Serie
+C1 ---> C3 x C3
+Derived Serie
+C3 x C3 ---> C1
+Zentrum  Z(G) = C3 x C3
 Frattini Φ(G) = C1
 Fitting  F(G) = C3
 
@@ -526,10 +638,17 @@ Group10[1]
 ################           C10            ################
 ##########################################################
 |C10| = 10
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:1, [5]:4, [10]:4
-SubGroupsInfos { AllSubGr = 4, AllConjsCl = 4, AllNorms = 4 }
 
+SubGroupsInfos { AllSubGr = 4, AllConjsCl = 4, AllNorms = 4 }
+Lower Central Serie
+C10 ---> C1
+Upper Central Serie
+C1 ---> C10
+Derived Serie
+C10 ---> C1
+Zentrum  Z(G) = C10
 Frattini Φ(G) = C1
 Fitting  F(G) = C5
 
@@ -563,10 +682,17 @@ Group10[2]
 ################           D10            ################
 ##########################################################
 |D10| = 10
-Type      NonAbelianGroup
+NonAbelianGroup, NotNilpotent, Solvable
 Elements Orders : [1]:1, [2]:5, [5]:4
-SubGroupsInfos { AllSubGr = 8, AllConjsCl = 4, AllNorms = 3 }
 
+SubGroupsInfos { AllSubGr = 8, AllConjsCl = 4, AllNorms = 3 }
+Lower Central Chain
+D10 ---> C5
+Upper Central Chain
+C1
+Derived Serie
+D10 ---> C5 ---> C1
+Zentrum  Z(G) = C1
 Frattini Φ(G) = C1
 Fitting  F(G) = C5
 
@@ -594,10 +720,17 @@ Group11[1]
 ################           C11            ################
 ##########################################################
 |C11| = 11
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [11]:10
-SubGroupsInfos { AllSubGr = 2, AllConjsCl = 2, AllNorms = 2 }
 
+SubGroupsInfos { AllSubGr = 2, AllConjsCl = 2, AllNorms = 2 }
+Lower Central Serie
+C11 ---> C1
+Upper Central Serie
+C1 ---> C11
+Derived Serie
+C11 ---> C1
+Zentrum  Z(G) = C11
 Frattini Φ(G) = C1
 Fitting  F(G) = C1
 
@@ -632,10 +765,17 @@ Group12[1]
 ################           C12            ################
 ##########################################################
 |C12| = 12
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:1, [3]:2, [4]:2, [6]:2, [12]:4
-SubGroupsInfos { AllSubGr = 6, AllConjsCl = 6, AllNorms = 6 }
 
+SubGroupsInfos { AllSubGr = 6, AllConjsCl = 6, AllNorms = 6 }
+Lower Central Serie
+C12 ---> C1
+Upper Central Serie
+C1 ---> C12
+Derived Serie
+C12 ---> C1
+Zentrum  Z(G) = C12
 Frattini Φ(G) = C2
 Fitting  F(G) = C6
 
@@ -671,10 +811,17 @@ Group12[2]
 ################         C6 x C2          ################
 ##########################################################
 |C6 x C2| = 12
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:3, [3]:2, [6]:6
-SubGroupsInfos { AllSubGr = 10, AllConjsCl = 10, AllNorms = 10 }
 
+SubGroupsInfos { AllSubGr = 10, AllConjsCl = 10, AllNorms = 10 }
+Lower Central Serie
+C6 x C2 ---> C1
+Upper Central Serie
+C1 ---> C6 x C2
+Derived Serie
+C6 x C2 ---> C1
+Zentrum  Z(G) = C6 x C2
 Frattini Φ(G) = C1
 Fitting  F(G) = C6
 
@@ -710,10 +857,17 @@ Group12[3]
 ################            A4            ################
 ##########################################################
 |A4| = 12
-Type      NonAbelianGroup
+NonAbelianGroup, NotNilpotent, Solvable
 Elements Orders : [1]:1, [2]:3, [3]:8
-SubGroupsInfos { AllSubGr = 10, AllConjsCl = 5, AllNorms = 3 }
 
+SubGroupsInfos { AllSubGr = 10, AllConjsCl = 5, AllNorms = 3 }
+Lower Central Chain
+A4 ---> C2 x C2
+Upper Central Chain
+C1
+Derived Serie
+A4 ---> C2 x C2 ---> C1
+Zentrum  Z(G) = C1
 Frattini Φ(G) = C1
 Fitting  F(G) = C2 x C2
 
@@ -742,10 +896,17 @@ Group12[4]
 ################           Dic3           ################
 ##########################################################
 |Dic3| = 12
-Type      NonAbelianGroup
+NonAbelianGroup, NotNilpotent, Solvable
 Elements Orders : [1]:1, [2]:1, [3]:2, [4]:6, [6]:2
-SubGroupsInfos { AllSubGr = 8, AllConjsCl = 6, AllNorms = 5 }
 
+SubGroupsInfos { AllSubGr = 8, AllConjsCl = 6, AllNorms = 5 }
+Lower Central Chain
+Dic3 ---> C3
+Upper Central Chain
+C1 ---> C2
+Derived Serie
+Dic3 ---> C3 ---> C1
+Zentrum  Z(G) = C2
 Frattini Φ(G) = C2
 Fitting  F(G) = C6
 
@@ -778,10 +939,17 @@ Group12[5]
 ################           D12            ################
 ##########################################################
 |D12| = 12
-Type      NonAbelianGroup
+NonAbelianGroup, NotNilpotent, Solvable
 Elements Orders : [1]:1, [2]:7, [3]:2, [6]:2
-SubGroupsInfos { AllSubGr = 16, AllConjsCl = 10, AllNorms = 7 }
 
+SubGroupsInfos { AllSubGr = 16, AllConjsCl = 10, AllNorms = 7 }
+Lower Central Chain
+D12 ---> C3
+Upper Central Chain
+C1 ---> C2
+Derived Serie
+D12 ---> C3 ---> C1
+Zentrum  Z(G) = C2
 Frattini Φ(G) = C1
 Fitting  F(G) = C6
 
@@ -814,10 +982,17 @@ Group13[1]
 ################           C13            ################
 ##########################################################
 |C13| = 13
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [13]:12
-SubGroupsInfos { AllSubGr = 2, AllConjsCl = 2, AllNorms = 2 }
 
+SubGroupsInfos { AllSubGr = 2, AllConjsCl = 2, AllNorms = 2 }
+Lower Central Serie
+C13 ---> C1
+Upper Central Serie
+C1 ---> C13
+Derived Serie
+C13 ---> C1
+Zentrum  Z(G) = C13
 Frattini Φ(G) = C1
 Fitting  F(G) = C1
 
@@ -854,10 +1029,17 @@ Group14[1]
 ################           C14            ################
 ##########################################################
 |C14| = 14
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:1, [7]:6, [14]:6
-SubGroupsInfos { AllSubGr = 4, AllConjsCl = 4, AllNorms = 4 }
 
+SubGroupsInfos { AllSubGr = 4, AllConjsCl = 4, AllNorms = 4 }
+Lower Central Serie
+C14 ---> C1
+Upper Central Serie
+C1 ---> C14
+Derived Serie
+C14 ---> C1
+Zentrum  Z(G) = C14
 Frattini Φ(G) = C1
 Fitting  F(G) = C7
 
@@ -895,10 +1077,17 @@ Group14[2]
 ################           D14            ################
 ##########################################################
 |D14| = 14
-Type      NonAbelianGroup
+NonAbelianGroup, NotNilpotent, Solvable
 Elements Orders : [1]:1, [2]:7, [7]:6
-SubGroupsInfos { AllSubGr = 10, AllConjsCl = 4, AllNorms = 3 }
 
+SubGroupsInfos { AllSubGr = 10, AllConjsCl = 4, AllNorms = 3 }
+Lower Central Chain
+D14 ---> C7
+Upper Central Chain
+C1
+Derived Serie
+D14 ---> C7 ---> C1
+Zentrum  Z(G) = C1
 Frattini Φ(G) = C1
 Fitting  F(G) = C7
 
@@ -927,10 +1116,17 @@ Group15[1]
 ################           C15            ################
 ##########################################################
 |C15| = 15
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [3]:2, [5]:4, [15]:8
-SubGroupsInfos { AllSubGr = 4, AllConjsCl = 4, AllNorms = 4 }
 
+SubGroupsInfos { AllSubGr = 4, AllConjsCl = 4, AllNorms = 4 }
+Lower Central Serie
+C15 ---> C1
+Upper Central Serie
+C1 ---> C15
+Derived Serie
+C15 ---> C1
+Zentrum  Z(G) = C15
 Frattini Φ(G) = C1
 Fitting  F(G) = C5
 
@@ -969,10 +1165,17 @@ Group16[1]
 ################           C16            ################
 ##########################################################
 |C16| = 16
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:1, [4]:2, [8]:4, [16]:8
-SubGroupsInfos { AllSubGr = 5, AllConjsCl = 5, AllNorms = 5 }
 
+SubGroupsInfos { AllSubGr = 5, AllConjsCl = 5, AllNorms = 5 }
+Lower Central Serie
+C16 ---> C1
+Upper Central Serie
+C1 ---> C16
+Derived Serie
+C16 ---> C1
+Zentrum  Z(G) = C16
 Frattini Φ(G) = C8
 Fitting  F(G) = C8
 
@@ -1012,10 +1215,17 @@ Group16[2]
 ################         C4 x C4          ################
 ##########################################################
 |C4 x C4| = 16
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:3, [4]:12
-SubGroupsInfos { AllSubGr = 15, AllConjsCl = 15, AllNorms = 15 }
 
+SubGroupsInfos { AllSubGr = 15, AllConjsCl = 15, AllNorms = 15 }
+Lower Central Serie
+C4 x C4 ---> C1
+Upper Central Serie
+C1 ---> C4 x C4
+Derived Serie
+C4 x C4 ---> C1
+Zentrum  Z(G) = C4 x C4
 Frattini Φ(G) = C2 x C2
 Fitting  F(G) = C4 x C2
 
@@ -1055,10 +1265,17 @@ Group16[3]
 ################         C8 x C2          ################
 ##########################################################
 |C8 x C2| = 16
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:3, [4]:4, [8]:8
-SubGroupsInfos { AllSubGr = 11, AllConjsCl = 11, AllNorms = 11 }
 
+SubGroupsInfos { AllSubGr = 11, AllConjsCl = 11, AllNorms = 11 }
+Lower Central Serie
+C8 x C2 ---> C1
+Upper Central Serie
+C1 ---> C8 x C2
+Derived Serie
+C8 x C2 ---> C1
+Zentrum  Z(G) = C8 x C2
 Frattini Φ(G) = C4
 Fitting  F(G) = C8
 
@@ -1098,10 +1315,17 @@ Group16[4]
 ################       C4 x C2 x C2       ################
 ##########################################################
 |C4 x C2 x C2| = 16
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:7, [4]:8
-SubGroupsInfos { AllSubGr = 27, AllConjsCl = 27, AllNorms = 27 }
 
+SubGroupsInfos { AllSubGr = 27, AllConjsCl = 27, AllNorms = 27 }
+Lower Central Serie
+C4 x C2 x C2 ---> C1
+Upper Central Serie
+C1 ---> C4 x C2 x C2
+Derived Serie
+C4 x C2 x C2 ---> C1
+Zentrum  Z(G) = C4 x C2 x C2
 Frattini Φ(G) = C2
 Fitting  F(G) = C4 x C2
 
@@ -1141,10 +1365,17 @@ Group16[5]
 ################    C2 x C2 x C2 x C2     ################
 ##########################################################
 |C2 x C2 x C2 x C2| = 16
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:15
-SubGroupsInfos { AllSubGr = 67, AllConjsCl = 67, AllNorms = 67 }
 
+SubGroupsInfos { AllSubGr = 67, AllConjsCl = 67, AllNorms = 67 }
+Lower Central Serie
+C2 x C2 x C2 x C2 ---> C1
+Upper Central Serie
+C1 ---> C2 x C2 x C2 x C2
+Derived Serie
+C2 x C2 x C2 x C2 ---> C1
+Zentrum  Z(G) = C2 x C2 x C2 x C2
 Frattini Φ(G) = C1
 Fitting  F(G) = C2 x C2 x C2
 
@@ -1184,10 +1415,17 @@ Group16[6]
 ################           Q16            ################
 ##########################################################
 |Q16| = 16
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:1, [4]:10, [8]:4
-SubGroupsInfos { AllSubGr = 11, AllConjsCl = 9, AllNorms = 7 }
 
+SubGroupsInfos { AllSubGr = 11, AllConjsCl = 9, AllNorms = 7 }
+Lower Central Serie
+Q16 ---> C4 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C2 ---> C4 ---> Q16
+Derived Serie
+Q16 ---> C4 ---> C1
+Zentrum  Z(G) = C2
 Frattini Φ(G) = C4
 Fitting  F(G) = Q8
 
@@ -1222,10 +1460,17 @@ Group16[7]
 ################           D16            ################
 ##########################################################
 |D16| = 16
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:9, [4]:2, [8]:4
-SubGroupsInfos { AllSubGr = 19, AllConjsCl = 11, AllNorms = 7 }
 
+SubGroupsInfos { AllSubGr = 19, AllConjsCl = 11, AllNorms = 7 }
+Lower Central Serie
+D16 ---> C4 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C2 ---> C4 ---> D16
+Derived Serie
+D16 ---> C4 ---> C1
+Zentrum  Z(G) = C2
 Frattini Φ(G) = C4
 Fitting  F(G) = D8
 
@@ -1259,10 +1504,17 @@ Group16[8]
 ################           QD16           ################
 ##########################################################
 |QD16| = 16
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:5, [4]:6, [8]:4
-SubGroupsInfos { AllSubGr = 15, AllConjsCl = 10, AllNorms = 7 }
 
+SubGroupsInfos { AllSubGr = 15, AllConjsCl = 10, AllNorms = 7 }
+Lower Central Serie
+QD16 ---> C4 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C2 ---> C4 ---> QD16
+Derived Serie
+QD16 ---> C4 ---> C1
+Zentrum  Z(G) = C2
 Frattini Φ(G) = C4
 Fitting  F(G) = D8
 
@@ -1297,10 +1549,17 @@ Group16[9]
 ################           MM16           ################
 ##########################################################
 |MM16| = 16
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:3, [4]:4, [8]:8
-SubGroupsInfos { AllSubGr = 11, AllConjsCl = 10, AllNorms = 9 }
 
+SubGroupsInfos { AllSubGr = 11, AllConjsCl = 10, AllNorms = 9 }
+Lower Central Serie
+MM16 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C4 ---> MM16
+Derived Serie
+MM16 ---> C2 ---> C1
+Zentrum  Z(G) = C4
 Frattini Φ(G) = C4
 Fitting  F(G) = C8
 
@@ -1339,10 +1598,17 @@ Group16[10]
 ################         M(4x:4)3         ################
 ##########################################################
 |M(4x:4)3| = 16
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:3, [4]:12
-SubGroupsInfos { AllSubGr = 15, AllConjsCl = 13, AllNorms = 11 }
 
+SubGroupsInfos { AllSubGr = 15, AllConjsCl = 13, AllNorms = 11 }
+Lower Central Serie
+M(4x:4)3 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C2 x C2 ---> M(4x:4)3
+Derived Serie
+M(4x:4)3 ---> C2 ---> C1
+Zentrum  Z(G) = C2 x C2
 Frattini Φ(G) = C2 x C2
 Fitting  F(G) = C4 x C2
 
@@ -1381,10 +1647,17 @@ Group16[11]
 ################         C2 x D8          ################
 ##########################################################
 |C2 x D8| = 16
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:11, [4]:4
-SubGroupsInfos { AllSubGr = 35, AllConjsCl = 27, AllNorms = 19 }
 
+SubGroupsInfos { AllSubGr = 35, AllConjsCl = 27, AllNorms = 19 }
+Lower Central Serie
+C2 x D8 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C2 x C2 ---> C2 x D8
+Derived Serie
+C2 x D8 ---> C2 ---> C1
+Zentrum  Z(G) = C2 x C2
 Frattini Φ(G) = C2
 Fitting  F(G) = D8
 
@@ -1425,10 +1698,17 @@ Group16[12]
 ################         C2 x Q8          ################
 ##########################################################
 |C2 x Q8| = 16
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:3, [4]:12
-SubGroupsInfos { AllSubGr = 19, AllConjsCl = 19, AllNorms = 19 }
 
+SubGroupsInfos { AllSubGr = 19, AllConjsCl = 19, AllNorms = 19 }
+Lower Central Serie
+C2 x Q8 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C2 x C2 ---> C2 x Q8
+Derived Serie
+C2 x Q8 ---> C2 ---> C1
+Zentrum  Z(G) = C2 x C2
 Frattini Φ(G) = C2
 Fitting  F(G) = Q8
 
@@ -1466,10 +1746,17 @@ Group16[13]
 ################         D8 x: C2         ################
 ##########################################################
 |D8 x: C2| = 16
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:7, [4]:8
-SubGroupsInfos { AllSubGr = 23, AllConjsCl = 20, AllNorms = 17 }
 
+SubGroupsInfos { AllSubGr = 23, AllConjsCl = 20, AllNorms = 17 }
+Lower Central Serie
+D8 x: C2 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C4 ---> D8 x: C2
+Derived Serie
+D8 x: C2 ---> C2 ---> C1
+Zentrum  Z(G) = C4
 Frattini Φ(G) = C2
 Fitting  F(G) = D8
 
@@ -1508,10 +1795,17 @@ Group16[14]
 ################     (C2 x C2) x: C4      ################
 ##########################################################
 |(C2 x C2) x: C4| = 16
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:7, [4]:8
-SubGroupsInfos { AllSubGr = 23, AllConjsCl = 17, AllNorms = 11 }
 
+SubGroupsInfos { AllSubGr = 23, AllConjsCl = 17, AllNorms = 11 }
+Lower Central Serie
+(C2 x C2) x: C4 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C2 x C2 ---> (C2 x C2) x: C4
+Derived Serie
+(C2 x C2) x: C4 ---> C2 ---> C1
+Zentrum  Z(G) = C2 x C2
 Frattini Φ(G) = C2 x C2
 Fitting  F(G) = C4 x C2
 
@@ -1550,10 +1844,17 @@ Group17[1]
 ################           C17            ################
 ##########################################################
 |C17| = 17
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [17]:16
-SubGroupsInfos { AllSubGr = 2, AllConjsCl = 2, AllNorms = 2 }
 
+SubGroupsInfos { AllSubGr = 2, AllConjsCl = 2, AllNorms = 2 }
+Lower Central Serie
+C17 ---> C1
+Upper Central Serie
+C1 ---> C17
+Derived Serie
+C17 ---> C1
+Zentrum  Z(G) = C17
 Frattini Φ(G) = C1
 Fitting  F(G) = C1
 
@@ -1594,10 +1895,17 @@ Group18[1]
 ################           C18            ################
 ##########################################################
 |C18| = 18
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:1, [3]:2, [6]:2, [9]:6, [18]:6
-SubGroupsInfos { AllSubGr = 6, AllConjsCl = 6, AllNorms = 6 }
 
+SubGroupsInfos { AllSubGr = 6, AllConjsCl = 6, AllNorms = 6 }
+Lower Central Serie
+C18 ---> C1
+Upper Central Serie
+C1 ---> C18
+Derived Serie
+C18 ---> C1
+Zentrum  Z(G) = C18
 Frattini Φ(G) = C3
 Fitting  F(G) = C9
 
@@ -1639,10 +1947,17 @@ Group18[2]
 ################         C6 x C3          ################
 ##########################################################
 |C6 x C3| = 18
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:1, [3]:8, [6]:8
-SubGroupsInfos { AllSubGr = 12, AllConjsCl = 12, AllNorms = 12 }
 
+SubGroupsInfos { AllSubGr = 12, AllConjsCl = 12, AllNorms = 12 }
+Lower Central Serie
+C6 x C3 ---> C1
+Upper Central Serie
+C1 ---> C6 x C3
+Derived Serie
+C6 x C3 ---> C1
+Zentrum  Z(G) = C6 x C3
 Frattini Φ(G) = C1
 Fitting  F(G) = C3 x C3
 
@@ -1684,10 +1999,17 @@ Group18[3]
 ################           D18            ################
 ##########################################################
 |D18| = 18
-Type      NonAbelianGroup
+NonAbelianGroup, NotNilpotent, Solvable
 Elements Orders : [1]:1, [2]:9, [3]:2, [9]:6
-SubGroupsInfos { AllSubGr = 16, AllConjsCl = 6, AllNorms = 4 }
 
+SubGroupsInfos { AllSubGr = 16, AllConjsCl = 6, AllNorms = 4 }
+Lower Central Chain
+D18 ---> C9
+Upper Central Chain
+C1
+Derived Serie
+D18 ---> C9 ---> C1
+Zentrum  Z(G) = C1
 Frattini Φ(G) = C3
 Fitting  F(G) = C9
 
@@ -1718,10 +2040,17 @@ Group18[4]
 ################         M(3x:6)2         ################
 ##########################################################
 |M(3x:6)2| = 18
-Type      NonAbelianGroup
+NonAbelianGroup, NotNilpotent, Solvable
 Elements Orders : [1]:1, [2]:3, [3]:8, [6]:6
-SubGroupsInfos { AllSubGr = 14, AllConjsCl = 9, AllNorms = 6 }
 
+SubGroupsInfos { AllSubGr = 14, AllConjsCl = 9, AllNorms = 6 }
+Lower Central Chain
+M(3x:6)2 ---> C3
+Upper Central Chain
+C1 ---> C3
+Derived Serie
+M(3x:6)2 ---> C3 ---> C1
+Zentrum  Z(G) = C3
 Frattini Φ(G) = C1
 Fitting  F(G) = C3 x C3
 
@@ -1757,10 +2086,17 @@ Group18[5]
 ################     (C3 x C3) x: C2      ################
 ##########################################################
 |(C3 x C3) x: C2| = 18
-Type      NonAbelianGroup
+NonAbelianGroup, NotNilpotent, Solvable
 Elements Orders : [1]:1, [2]:9, [3]:8
-SubGroupsInfos { AllSubGr = 28, AllConjsCl = 12, AllNorms = 7 }
 
+SubGroupsInfos { AllSubGr = 28, AllConjsCl = 12, AllNorms = 7 }
+Lower Central Chain
+(C3 x C3) x: C2 ---> C3 x C3
+Upper Central Chain
+C1
+Derived Serie
+(C3 x C3) x: C2 ---> C3 x C3 ---> C1
+Zentrum  Z(G) = C1
 Frattini Φ(G) = C1
 Fitting  F(G) = C3 x C3
 
@@ -1791,10 +2127,17 @@ Group19[1]
 ################           C19            ################
 ##########################################################
 |C19| = 19
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [19]:18
-SubGroupsInfos { AllSubGr = 2, AllConjsCl = 2, AllNorms = 2 }
 
+SubGroupsInfos { AllSubGr = 2, AllConjsCl = 2, AllNorms = 2 }
+Lower Central Serie
+C19 ---> C1
+Upper Central Serie
+C1 ---> C19
+Derived Serie
+C19 ---> C1
+Zentrum  Z(G) = C19
 Frattini Φ(G) = C1
 Fitting  F(G) = C1
 
@@ -1837,10 +2180,17 @@ Group20[1]
 ################           C20            ################
 ##########################################################
 |C20| = 20
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:1, [4]:2, [5]:4, [10]:4, [20]:8
-SubGroupsInfos { AllSubGr = 6, AllConjsCl = 6, AllNorms = 6 }
 
+SubGroupsInfos { AllSubGr = 6, AllConjsCl = 6, AllNorms = 6 }
+Lower Central Serie
+C20 ---> C1
+Upper Central Serie
+C1 ---> C20
+Derived Serie
+C20 ---> C1
+Zentrum  Z(G) = C20
 Frattini Φ(G) = C2
 Fitting  F(G) = C10
 
@@ -1884,10 +2234,17 @@ Group20[2]
 ################         C10 x C2         ################
 ##########################################################
 |C10 x C2| = 20
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:3, [5]:4, [10]:12
-SubGroupsInfos { AllSubGr = 10, AllConjsCl = 10, AllNorms = 10 }
 
+SubGroupsInfos { AllSubGr = 10, AllConjsCl = 10, AllNorms = 10 }
+Lower Central Serie
+C10 x C2 ---> C1
+Upper Central Serie
+C1 ---> C10 x C2
+Derived Serie
+C10 x C2 ---> C1
+Zentrum  Z(G) = C10 x C2
 Frattini Φ(G) = C1
 Fitting  F(G) = C10
 
@@ -1931,10 +2288,17 @@ Group20[3]
 ################           Dic5           ################
 ##########################################################
 |Dic5| = 20
-Type      NonAbelianGroup
+NonAbelianGroup, NotNilpotent, Solvable
 Elements Orders : [1]:1, [2]:1, [4]:10, [5]:4, [10]:4
-SubGroupsInfos { AllSubGr = 10, AllConjsCl = 6, AllNorms = 5 }
 
+SubGroupsInfos { AllSubGr = 10, AllConjsCl = 6, AllNorms = 5 }
+Lower Central Chain
+Dic5 ---> C5
+Upper Central Chain
+C1 ---> C2
+Derived Serie
+Dic5 ---> C5 ---> C1
+Zentrum  Z(G) = C2
 Frattini Φ(G) = C2
 Fitting  F(G) = C10
 
@@ -1969,10 +2333,17 @@ Group20[4]
 ################           D20            ################
 ##########################################################
 |D20| = 20
-Type      NonAbelianGroup
+NonAbelianGroup, NotNilpotent, Solvable
 Elements Orders : [1]:1, [2]:11, [5]:4, [10]:4
-SubGroupsInfos { AllSubGr = 22, AllConjsCl = 10, AllNorms = 7 }
 
+SubGroupsInfos { AllSubGr = 22, AllConjsCl = 10, AllNorms = 7 }
+Lower Central Chain
+D20 ---> C5
+Upper Central Chain
+C1 ---> C2
+Derived Serie
+D20 ---> C5 ---> C1
+Zentrum  Z(G) = C2
 Frattini Φ(G) = C1
 Fitting  F(G) = C10
 
@@ -2007,10 +2378,17 @@ Group20[5]
 ################         F(5x:4)2         ################
 ##########################################################
 |F(5x:4)2| = 20
-Type      NonAbelianGroup
+NonAbelianGroup, NotNilpotent, Solvable
 Elements Orders : [1]:1, [2]:5, [4]:10, [5]:4
-SubGroupsInfos { AllSubGr = 14, AllConjsCl = 6, AllNorms = 4 }
 
+SubGroupsInfos { AllSubGr = 14, AllConjsCl = 6, AllNorms = 4 }
+Lower Central Chain
+F(5x:4)2 ---> C5
+Upper Central Chain
+C1
+Derived Serie
+F(5x:4)2 ---> C5 ---> C1
+Zentrum  Z(G) = C1
 Frattini Φ(G) = C1
 Fitting  F(G) = C5
 
@@ -2040,10 +2418,17 @@ Group21[1]
 ################           C21            ################
 ##########################################################
 |C21| = 21
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [3]:2, [7]:6, [21]:12
-SubGroupsInfos { AllSubGr = 4, AllConjsCl = 4, AllNorms = 4 }
 
+SubGroupsInfos { AllSubGr = 4, AllConjsCl = 4, AllNorms = 4 }
+Lower Central Serie
+C21 ---> C1
+Upper Central Serie
+C1 ---> C21
+Derived Serie
+C21 ---> C1
+Zentrum  Z(G) = C21
 Frattini Φ(G) = C1
 Fitting  F(G) = C7
 
@@ -2088,10 +2473,17 @@ Group21[2]
 ################         F(7x:3)2         ################
 ##########################################################
 |F(7x:3)2| = 21
-Type      NonAbelianGroup
+NonAbelianGroup, NotNilpotent, Solvable
 Elements Orders : [1]:1, [3]:14, [7]:6
-SubGroupsInfos { AllSubGr = 10, AllConjsCl = 4, AllNorms = 3 }
 
+SubGroupsInfos { AllSubGr = 10, AllConjsCl = 4, AllNorms = 3 }
+Lower Central Chain
+F(7x:3)2 ---> C7
+Upper Central Chain
+C1
+Derived Serie
+F(7x:3)2 ---> C7 ---> C1
+Zentrum  Z(G) = C1
 Frattini Φ(G) = C1
 Fitting  F(G) = C7
 
@@ -2120,10 +2512,17 @@ Group22[1]
 ################           C22            ################
 ##########################################################
 |C22| = 22
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:1, [11]:10, [22]:10
-SubGroupsInfos { AllSubGr = 4, AllConjsCl = 4, AllNorms = 4 }
 
+SubGroupsInfos { AllSubGr = 4, AllConjsCl = 4, AllNorms = 4 }
+Lower Central Serie
+C22 ---> C1
+Upper Central Serie
+C1 ---> C22
+Derived Serie
+C22 ---> C1
+Zentrum  Z(G) = C22
 Frattini Φ(G) = C1
 Fitting  F(G) = C11
 
@@ -2169,10 +2568,17 @@ Group22[2]
 ################           D22            ################
 ##########################################################
 |D22| = 22
-Type      NonAbelianGroup
+NonAbelianGroup, NotNilpotent, Solvable
 Elements Orders : [1]:1, [2]:11, [11]:10
-SubGroupsInfos { AllSubGr = 14, AllConjsCl = 4, AllNorms = 3 }
 
+SubGroupsInfos { AllSubGr = 14, AllConjsCl = 4, AllNorms = 3 }
+Lower Central Chain
+D22 ---> C11
+Upper Central Chain
+C1
+Derived Serie
+D22 ---> C11 ---> C1
+Zentrum  Z(G) = C1
 Frattini Φ(G) = C1
 Fitting  F(G) = C11
 
@@ -2203,10 +2609,17 @@ Group23[1]
 ################           C23            ################
 ##########################################################
 |C23| = 23
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [23]:22
-SubGroupsInfos { AllSubGr = 2, AllConjsCl = 2, AllNorms = 2 }
 
+SubGroupsInfos { AllSubGr = 2, AllConjsCl = 2, AllNorms = 2 }
+Lower Central Serie
+C23 ---> C1
+Upper Central Serie
+C1 ---> C23
+Derived Serie
+C23 ---> C1
+Zentrum  Z(G) = C23
 Frattini Φ(G) = C1
 Fitting  F(G) = C1
 
@@ -2253,10 +2666,17 @@ Group24[1]
 ################           C24            ################
 ##########################################################
 |C24| = 24
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:1, [3]:2, [4]:2, [6]:2, [8]:4, [12]:4, [24]:8
-SubGroupsInfos { AllSubGr = 8, AllConjsCl = 8, AllNorms = 8 }
 
+SubGroupsInfos { AllSubGr = 8, AllConjsCl = 8, AllNorms = 8 }
+Lower Central Serie
+C24 ---> C1
+Upper Central Serie
+C1 ---> C24
+Derived Serie
+C24 ---> C1
+Zentrum  Z(G) = C24
 Frattini Φ(G) = C4
 Fitting  F(G) = C12
 
@@ -2304,10 +2724,17 @@ Group24[2]
 ################         C12 x C2         ################
 ##########################################################
 |C12 x C2| = 24
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:3, [3]:2, [4]:4, [6]:6, [12]:8
-SubGroupsInfos { AllSubGr = 16, AllConjsCl = 16, AllNorms = 16 }
 
+SubGroupsInfos { AllSubGr = 16, AllConjsCl = 16, AllNorms = 16 }
+Lower Central Serie
+C12 x C2 ---> C1
+Upper Central Serie
+C1 ---> C12 x C2
+Derived Serie
+C12 x C2 ---> C1
+Zentrum  Z(G) = C12 x C2
 Frattini Φ(G) = C2
 Fitting  F(G) = C12
 
@@ -2355,10 +2782,17 @@ Group24[3]
 ################       C6 x C2 x C2       ################
 ##########################################################
 |C6 x C2 x C2| = 24
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:7, [3]:2, [6]:14
-SubGroupsInfos { AllSubGr = 32, AllConjsCl = 32, AllNorms = 32 }
 
+SubGroupsInfos { AllSubGr = 32, AllConjsCl = 32, AllNorms = 32 }
+Lower Central Serie
+C6 x C2 x C2 ---> C1
+Upper Central Serie
+C1 ---> C6 x C2 x C2
+Derived Serie
+C6 x C2 x C2 ---> C1
+Zentrum  Z(G) = C6 x C2 x C2
 Frattini Φ(G) = C1
 Fitting  F(G) = C6 x C2
 
@@ -2406,10 +2840,17 @@ Group24[4]
 ################            S4            ################
 ##########################################################
 |S4| = 24
-Type      NonAbelianGroup
+NonAbelianGroup, NotNilpotent, Solvable
 Elements Orders : [1]:1, [2]:9, [3]:8, [4]:6
-SubGroupsInfos { AllSubGr = 30, AllConjsCl = 11, AllNorms = 4 }
 
+SubGroupsInfos { AllSubGr = 30, AllConjsCl = 11, AllNorms = 4 }
+Lower Central Chain
+S4 ---> A4
+Upper Central Chain
+C1
+Derived Serie
+S4 ---> A4 ---> C2 x C2 ---> C1
+Zentrum  Z(G) = C1
 Frattini Φ(G) = C1
 Fitting  F(G) = C2 x C2
 
@@ -2440,10 +2881,17 @@ Group24[5]
 ################           Dic6           ################
 ##########################################################
 |Dic6| = 24
-Type      NonAbelianGroup
+NonAbelianGroup, NotNilpotent, Solvable
 Elements Orders : [1]:1, [2]:1, [3]:2, [4]:14, [6]:2, [12]:4
-SubGroupsInfos { AllSubGr = 18, AllConjsCl = 12, AllNorms = 9 }
 
+SubGroupsInfos { AllSubGr = 18, AllConjsCl = 12, AllNorms = 9 }
+Lower Central Chain
+Dic6 ---> C6 ---> C3
+Upper Central Chain
+C1 ---> C2 ---> C4
+Derived Serie
+Dic6 ---> C6 ---> C1
+Zentrum  Z(G) = C2
 Frattini Φ(G) = C2
 Fitting  F(G) = C12
 
@@ -2482,10 +2930,17 @@ Group24[6]
 ################         SL(2,3)          ################
 ##########################################################
 |SL(2,3)| = 24
-Type      NonAbelianGroup
+NonAbelianGroup, NotNilpotent, Solvable
 Elements Orders : [1]:1, [2]:1, [3]:8, [4]:6, [6]:8
-SubGroupsInfos { AllSubGr = 15, AllConjsCl = 7, AllNorms = 4 }
 
+SubGroupsInfos { AllSubGr = 15, AllConjsCl = 7, AllNorms = 4 }
+Lower Central Chain
+SL(2,3) ---> Q8
+Upper Central Chain
+C1 ---> C2
+Derived Serie
+SL(2,3) ---> Q8 ---> C2 ---> C1
+Zentrum  Z(G) = C2
 Frattini Φ(G) = C2
 Fitting  F(G) = Q8
 
@@ -2518,10 +2973,17 @@ Group24[7]
 ################           D24            ################
 ##########################################################
 |D24| = 24
-Type      NonAbelianGroup
+NonAbelianGroup, NotNilpotent, Solvable
 Elements Orders : [1]:1, [2]:13, [3]:2, [4]:2, [6]:2, [12]:4
-SubGroupsInfos { AllSubGr = 34, AllConjsCl = 16, AllNorms = 9 }
 
+SubGroupsInfos { AllSubGr = 34, AllConjsCl = 16, AllNorms = 9 }
+Lower Central Chain
+D24 ---> C6 ---> C3
+Upper Central Chain
+C1 ---> C2 ---> C4
+Derived Serie
+D24 ---> C6 ---> C1
+Zentrum  Z(G) = C2
 Frattini Φ(G) = C2
 Fitting  F(G) = C12
 
@@ -2559,10 +3021,17 @@ Group24[8]
 ################         F(3x:8)2         ################
 ##########################################################
 |F(3x:8)2| = 24
-Type      NonAbelianGroup
+NonAbelianGroup, NotNilpotent, Solvable
 Elements Orders : [1]:1, [2]:1, [3]:2, [4]:2, [6]:2, [8]:12, [12]:4
-SubGroupsInfos { AllSubGr = 10, AllConjsCl = 8, AllNorms = 7 }
 
+SubGroupsInfos { AllSubGr = 10, AllConjsCl = 8, AllNorms = 7 }
+Lower Central Chain
+F(3x:8)2 ---> C3
+Upper Central Chain
+C1 ---> C4
+Derived Serie
+F(3x:8)2 ---> C3 ---> C1
+Zentrum  Z(G) = C4
 Frattini Φ(G) = C4
 Fitting  F(G) = C12
 
@@ -2602,10 +3071,17 @@ Group24[9]
 ################         M(4x:6)3         ################
 ##########################################################
 |M(4x:6)3| = 24
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:5, [3]:2, [4]:2, [6]:10, [12]:4
-SubGroupsInfos { AllSubGr = 20, AllConjsCl = 16, AllNorms = 12 }
 
+SubGroupsInfos { AllSubGr = 20, AllConjsCl = 16, AllNorms = 12 }
+Lower Central Serie
+M(4x:6)3 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C6 ---> M(4x:6)3
+Derived Serie
+M(4x:6)3 ---> C2 ---> C1
+Zentrum  Z(G) = C6
 Frattini Φ(G) = C2
 Fitting  F(G) = C12
 
@@ -2650,10 +3126,17 @@ Group24[10]
 ################         M(6x:4)5         ################
 ##########################################################
 |M(6x:4)5| = 24
-Type      NonAbelianGroup
+NonAbelianGroup, NotNilpotent, Solvable
 Elements Orders : [1]:1, [2]:3, [3]:2, [4]:12, [6]:6
-SubGroupsInfos { AllSubGr = 22, AllConjsCl = 16, AllNorms = 13 }
 
+SubGroupsInfos { AllSubGr = 22, AllConjsCl = 16, AllNorms = 13 }
+Lower Central Chain
+M(6x:4)5 ---> C3
+Upper Central Chain
+C1 ---> C2 x C2
+Derived Serie
+M(6x:4)5 ---> C3 ---> C1
+Zentrum  Z(G) = C2 x C2
 Frattini Φ(G) = C2
 Fitting  F(G) = C6 x C2
 
@@ -2695,10 +3178,17 @@ Group24[11]
 ################        M(12x:2)5         ################
 ##########################################################
 |M(12x:2)5| = 24
-Type      NonAbelianGroup
+NonAbelianGroup, NotNilpotent, Solvable
 Elements Orders : [1]:1, [2]:7, [3]:2, [4]:8, [6]:2, [12]:4
-SubGroupsInfos { AllSubGr = 26, AllConjsCl = 16, AllNorms = 11 }
 
+SubGroupsInfos { AllSubGr = 26, AllConjsCl = 16, AllNorms = 11 }
+Lower Central Chain
+M(12x:2)5 ---> C3
+Upper Central Chain
+C1 ---> C4
+Derived Serie
+M(12x:2)5 ---> C3 ---> C1
+Zentrum  Z(G) = C4
 Frattini Φ(G) = C2
 Fitting  F(G) = C12
 
@@ -2741,10 +3231,17 @@ Group24[12]
 ################         C2 x D12         ################
 ##########################################################
 |C2 x D12| = 24
-Type      NonAbelianGroup
+NonAbelianGroup, NotNilpotent, Solvable
 Elements Orders : [1]:1, [2]:15, [3]:2, [6]:6
-SubGroupsInfos { AllSubGr = 54, AllConjsCl = 32, AllNorms = 21 }
 
+SubGroupsInfos { AllSubGr = 54, AllConjsCl = 32, AllNorms = 21 }
+Lower Central Chain
+C2 x D12 ---> C3
+Upper Central Chain
+C1 ---> C2 x C2
+Derived Serie
+C2 x D12 ---> C3 ---> C1
+Zentrum  Z(G) = C2 x C2
 Frattini Φ(G) = C1
 Fitting  F(G) = C6 x C2
 
@@ -2786,10 +3283,17 @@ Group24[13]
 ################         C2 x A4          ################
 ##########################################################
 |C2 x A4| = 24
-Type      NonAbelianGroup
+NonAbelianGroup, NotNilpotent, Solvable
 Elements Orders : [1]:1, [2]:7, [3]:8, [6]:8
-SubGroupsInfos { AllSubGr = 26, AllConjsCl = 12, AllNorms = 6 }
 
+SubGroupsInfos { AllSubGr = 26, AllConjsCl = 12, AllNorms = 6 }
+Lower Central Chain
+C2 x A4 ---> C2 x C2
+Upper Central Chain
+C1 ---> C2
+Derived Serie
+C2 x A4 ---> C2 x C2 ---> C1
+Zentrum  Z(G) = C2
 Frattini Φ(G) = C1
 Fitting  F(G) = C2 x C2 x C2
 
@@ -2824,10 +3328,17 @@ Group24[14]
 ################         C3 x Q8          ################
 ##########################################################
 |C3 x Q8| = 24
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:1, [3]:2, [4]:6, [6]:2, [12]:12
-SubGroupsInfos { AllSubGr = 12, AllConjsCl = 12, AllNorms = 12 }
 
+SubGroupsInfos { AllSubGr = 12, AllConjsCl = 12, AllNorms = 12 }
+Lower Central Serie
+C3 x Q8 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C6 ---> C3 x Q8
+Derived Serie
+C3 x Q8 ---> C2 ---> C1
+Zentrum  Z(G) = C6
 Frattini Φ(G) = C2
 Fitting  F(G) = C12
 
@@ -2870,10 +3381,17 @@ Group24[15]
 ################         C3 x: D8         ################
 ##########################################################
 |C3 x: D8| = 24
-Type      NonAbelianGroup
+NonAbelianGroup, NotNilpotent, Solvable
 Elements Orders : [1]:1, [2]:9, [3]:2, [4]:6, [6]:6
-SubGroupsInfos { AllSubGr = 30, AllConjsCl = 16, AllNorms = 9 }
 
+SubGroupsInfos { AllSubGr = 30, AllConjsCl = 16, AllNorms = 9 }
+Lower Central Chain
+C3 x: D8 ---> C6 ---> C3
+Upper Central Chain
+C1 ---> C2 ---> C2 x C2
+Derived Serie
+C3 x: D8 ---> C6 ---> C1
+Zentrum  Z(G) = C2
 Frattini Φ(G) = C2
 Fitting  F(G) = C6 x C2
 
@@ -2912,10 +3430,17 @@ Group25[1]
 ################           C25            ################
 ##########################################################
 |C25| = 25
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [5]:4, [25]:20
-SubGroupsInfos { AllSubGr = 3, AllConjsCl = 3, AllNorms = 3 }
 
+SubGroupsInfos { AllSubGr = 3, AllConjsCl = 3, AllNorms = 3 }
+Lower Central Serie
+C25 ---> C1
+Upper Central Serie
+C1 ---> C25
+Derived Serie
+C25 ---> C1
+Zentrum  Z(G) = C25
 Frattini Φ(G) = C5
 Fitting  F(G) = C5
 
@@ -2964,10 +3489,17 @@ Group25[2]
 ################         C5 x C5          ################
 ##########################################################
 |C5 x C5| = 25
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [5]:24
-SubGroupsInfos { AllSubGr = 8, AllConjsCl = 8, AllNorms = 8 }
 
+SubGroupsInfos { AllSubGr = 8, AllConjsCl = 8, AllNorms = 8 }
+Lower Central Serie
+C5 x C5 ---> C1
+Upper Central Serie
+C1 ---> C5 x C5
+Derived Serie
+C5 x C5 ---> C1
+Zentrum  Z(G) = C5 x C5
 Frattini Φ(G) = C1
 Fitting  F(G) = C5
 
@@ -3016,10 +3548,17 @@ Group26[1]
 ################           C26            ################
 ##########################################################
 |C26| = 26
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:1, [13]:12, [26]:12
-SubGroupsInfos { AllSubGr = 4, AllConjsCl = 4, AllNorms = 4 }
 
+SubGroupsInfos { AllSubGr = 4, AllConjsCl = 4, AllNorms = 4 }
+Lower Central Serie
+C26 ---> C1
+Upper Central Serie
+C1 ---> C26
+Derived Serie
+C26 ---> C1
+Zentrum  Z(G) = C26
 Frattini Φ(G) = C1
 Fitting  F(G) = C13
 
@@ -3069,10 +3608,17 @@ Group26[2]
 ################           D26            ################
 ##########################################################
 |D26| = 26
-Type      NonAbelianGroup
+NonAbelianGroup, NotNilpotent, Solvable
 Elements Orders : [1]:1, [2]:13, [13]:12
-SubGroupsInfos { AllSubGr = 16, AllConjsCl = 4, AllNorms = 3 }
 
+SubGroupsInfos { AllSubGr = 16, AllConjsCl = 4, AllNorms = 3 }
+Lower Central Chain
+D26 ---> C13
+Upper Central Chain
+C1
+Derived Serie
+D26 ---> C13 ---> C1
+Zentrum  Z(G) = C1
 Frattini Φ(G) = C1
 Fitting  F(G) = C13
 
@@ -3104,10 +3650,17 @@ Group27[1]
 ################           C27            ################
 ##########################################################
 |C27| = 27
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [3]:2, [9]:6, [27]:18
-SubGroupsInfos { AllSubGr = 4, AllConjsCl = 4, AllNorms = 4 }
 
+SubGroupsInfos { AllSubGr = 4, AllConjsCl = 4, AllNorms = 4 }
+Lower Central Serie
+C27 ---> C1
+Upper Central Serie
+C1 ---> C27
+Derived Serie
+C27 ---> C1
+Zentrum  Z(G) = C27
 Frattini Φ(G) = C9
 Fitting  F(G) = C9
 
@@ -3158,10 +3711,17 @@ Group27[2]
 ################         C9 x C3          ################
 ##########################################################
 |C9 x C3| = 27
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [3]:8, [9]:18
-SubGroupsInfos { AllSubGr = 10, AllConjsCl = 10, AllNorms = 10 }
 
+SubGroupsInfos { AllSubGr = 10, AllConjsCl = 10, AllNorms = 10 }
+Lower Central Serie
+C9 x C3 ---> C1
+Upper Central Serie
+C1 ---> C9 x C3
+Derived Serie
+C9 x C3 ---> C1
+Zentrum  Z(G) = C9 x C3
 Frattini Φ(G) = C3
 Fitting  F(G) = C9
 
@@ -3212,10 +3772,17 @@ Group27[3]
 ################       C3 x C3 x C3       ################
 ##########################################################
 |C3 x C3 x C3| = 27
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [3]:26
-SubGroupsInfos { AllSubGr = 28, AllConjsCl = 28, AllNorms = 28 }
 
+SubGroupsInfos { AllSubGr = 28, AllConjsCl = 28, AllNorms = 28 }
+Lower Central Serie
+C3 x C3 x C3 ---> C1
+Upper Central Serie
+C1 ---> C3 x C3 x C3
+Derived Serie
+C3 x C3 x C3 ---> C1
+Zentrum  Z(G) = C3 x C3 x C3
 Frattini Φ(G) = C1
 Fitting  F(G) = C3 x C3
 
@@ -3266,10 +3833,17 @@ Group27[4]
 ################         M(9x:3)4         ################
 ##########################################################
 |M(9x:3)4| = 27
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [3]:8, [9]:18
-SubGroupsInfos { AllSubGr = 10, AllConjsCl = 8, AllNorms = 7 }
 
+SubGroupsInfos { AllSubGr = 10, AllConjsCl = 8, AllNorms = 7 }
+Lower Central Serie
+M(9x:3)4 ---> C3 ---> C1
+Upper Central Serie
+C1 ---> C3 ---> M(9x:3)4
+Derived Serie
+M(9x:3)4 ---> C3 ---> C1
+Zentrum  Z(G) = C3
 Frattini Φ(G) = C3
 Fitting  F(G) = C9
 
@@ -3306,10 +3880,17 @@ Group27[5]
 ################     (C3 x C3) x: C3      ################
 ##########################################################
 |(C3 x C3) x: C3| = 27
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [3]:26
-SubGroupsInfos { AllSubGr = 19, AllConjsCl = 11, AllNorms = 7 }
 
+SubGroupsInfos { AllSubGr = 19, AllConjsCl = 11, AllNorms = 7 }
+Lower Central Serie
+(C3 x C3) x: C3 ---> C3 ---> C1
+Upper Central Serie
+C1 ---> C3 ---> (C3 x C3) x: C3
+Derived Serie
+(C3 x C3) x: C3 ---> C3 ---> C1
+Zentrum  Z(G) = C3
 Frattini Φ(G) = C3
 Fitting  F(G) = C3 x C3
 
@@ -3345,10 +3926,17 @@ Group28[1]
 ################           C28            ################
 ##########################################################
 |C28| = 28
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:1, [4]:2, [7]:6, [14]:6, [28]:12
-SubGroupsInfos { AllSubGr = 6, AllConjsCl = 6, AllNorms = 6 }
 
+SubGroupsInfos { AllSubGr = 6, AllConjsCl = 6, AllNorms = 6 }
+Lower Central Serie
+C28 ---> C1
+Upper Central Serie
+C1 ---> C28
+Derived Serie
+C28 ---> C1
+Zentrum  Z(G) = C28
 Frattini Φ(G) = C2
 Fitting  F(G) = C14
 
@@ -3400,10 +3988,17 @@ Group28[2]
 ################         C14 x C2         ################
 ##########################################################
 |C14 x C2| = 28
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:3, [7]:6, [14]:18
-SubGroupsInfos { AllSubGr = 10, AllConjsCl = 10, AllNorms = 10 }
 
+SubGroupsInfos { AllSubGr = 10, AllConjsCl = 10, AllNorms = 10 }
+Lower Central Serie
+C14 x C2 ---> C1
+Upper Central Serie
+C1 ---> C14 x C2
+Derived Serie
+C14 x C2 ---> C1
+Zentrum  Z(G) = C14 x C2
 Frattini Φ(G) = C1
 Fitting  F(G) = C14
 
@@ -3455,10 +4050,17 @@ Group28[3]
 ################           Dic7           ################
 ##########################################################
 |Dic7| = 28
-Type      NonAbelianGroup
+NonAbelianGroup, NotNilpotent, Solvable
 Elements Orders : [1]:1, [2]:1, [4]:14, [7]:6, [14]:6
-SubGroupsInfos { AllSubGr = 12, AllConjsCl = 6, AllNorms = 5 }
 
+SubGroupsInfos { AllSubGr = 12, AllConjsCl = 6, AllNorms = 5 }
+Lower Central Chain
+Dic7 ---> C7
+Upper Central Chain
+C1 ---> C2
+Derived Serie
+Dic7 ---> C7 ---> C1
+Zentrum  Z(G) = C2
 Frattini Φ(G) = C2
 Fitting  F(G) = C14
 
@@ -3495,10 +4097,17 @@ Group28[4]
 ################           D28            ################
 ##########################################################
 |D28| = 28
-Type      NonAbelianGroup
+NonAbelianGroup, NotNilpotent, Solvable
 Elements Orders : [1]:1, [2]:15, [7]:6, [14]:6
-SubGroupsInfos { AllSubGr = 28, AllConjsCl = 10, AllNorms = 7 }
 
+SubGroupsInfos { AllSubGr = 28, AllConjsCl = 10, AllNorms = 7 }
+Lower Central Chain
+D28 ---> C7
+Upper Central Chain
+C1 ---> C2
+Derived Serie
+D28 ---> C7 ---> C1
+Zentrum  Z(G) = C2
 Frattini Φ(G) = C1
 Fitting  F(G) = C14
 
@@ -3535,10 +4144,17 @@ Group29[1]
 ################           C29            ################
 ##########################################################
 |C29| = 29
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [29]:28
-SubGroupsInfos { AllSubGr = 2, AllConjsCl = 2, AllNorms = 2 }
 
+SubGroupsInfos { AllSubGr = 2, AllConjsCl = 2, AllNorms = 2 }
+Lower Central Serie
+C29 ---> C1
+Upper Central Serie
+C1 ---> C29
+Derived Serie
+C29 ---> C1
+Zentrum  Z(G) = C29
 Frattini Φ(G) = C1
 Fitting  F(G) = C1
 
@@ -3591,10 +4207,17 @@ Group30[1]
 ################           C30            ################
 ##########################################################
 |C30| = 30
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:1, [3]:2, [5]:4, [6]:2, [10]:4, [15]:8, [30]:8
-SubGroupsInfos { AllSubGr = 8, AllConjsCl = 8, AllNorms = 8 }
 
+SubGroupsInfos { AllSubGr = 8, AllConjsCl = 8, AllNorms = 8 }
+Lower Central Serie
+C30 ---> C1
+Upper Central Serie
+C1 ---> C30
+Derived Serie
+C30 ---> C1
+Zentrum  Z(G) = C30
 Frattini Φ(G) = C1
 Fitting  F(G) = C15
 
@@ -3648,10 +4271,17 @@ Group30[2]
 ################           D30            ################
 ##########################################################
 |D30| = 30
-Type      NonAbelianGroup
+NonAbelianGroup, NotNilpotent, Solvable
 Elements Orders : [1]:1, [2]:15, [3]:2, [5]:4, [15]:8
-SubGroupsInfos { AllSubGr = 28, AllConjsCl = 8, AllNorms = 5 }
 
+SubGroupsInfos { AllSubGr = 28, AllConjsCl = 8, AllNorms = 5 }
+Lower Central Chain
+D30 ---> C15
+Upper Central Chain
+C1
+Derived Serie
+D30 ---> C15 ---> C1
+Zentrum  Z(G) = C1
 Frattini Φ(G) = C1
 Fitting  F(G) = C15
 
@@ -3686,10 +4316,17 @@ Group30[3]
 ################         F(5x:6)4         ################
 ##########################################################
 |F(5x:6)4| = 30
-Type      NonAbelianGroup
+NonAbelianGroup, NotNilpotent, Solvable
 Elements Orders : [1]:1, [2]:5, [3]:2, [5]:4, [6]:10, [15]:8
-SubGroupsInfos { AllSubGr = 16, AllConjsCl = 8, AllNorms = 6 }
 
+SubGroupsInfos { AllSubGr = 16, AllConjsCl = 8, AllNorms = 6 }
+Lower Central Chain
+F(5x:6)4 ---> C5
+Upper Central Chain
+C1 ---> C3
+Derived Serie
+F(5x:6)4 ---> C5 ---> C1
+Zentrum  Z(G) = C3
 Frattini Φ(G) = C1
 Fitting  F(G) = C15
 
@@ -3727,10 +4364,17 @@ Group30[4]
 ################        F(3x:10)2         ################
 ##########################################################
 |F(3x:10)2| = 30
-Type      NonAbelianGroup
+NonAbelianGroup, NotNilpotent, Solvable
 Elements Orders : [1]:1, [2]:3, [3]:2, [5]:4, [10]:12, [15]:8
-SubGroupsInfos { AllSubGr = 12, AllConjsCl = 8, AllNorms = 6 }
 
+SubGroupsInfos { AllSubGr = 12, AllConjsCl = 8, AllNorms = 6 }
+Lower Central Chain
+F(3x:10)2 ---> C3
+Upper Central Chain
+C1 ---> C5
+Derived Serie
+F(3x:10)2 ---> C3 ---> C1
+Zentrum  Z(G) = C5
 Frattini Φ(G) = C1
 Fitting  F(G) = C15
 
@@ -3771,10 +4415,17 @@ Group31[1]
 ################           C31            ################
 ##########################################################
 |C31| = 31
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [31]:30
-SubGroupsInfos { AllSubGr = 2, AllConjsCl = 2, AllNorms = 2 }
 
+SubGroupsInfos { AllSubGr = 2, AllConjsCl = 2, AllNorms = 2 }
+Lower Central Serie
+C31 ---> C1
+Upper Central Serie
+C1 ---> C31
+Derived Serie
+C31 ---> C1
+Zentrum  Z(G) = C31
 Frattini Φ(G) = C1
 Fitting  F(G) = C1
 
@@ -3829,10 +4480,17 @@ Group32[1]
 ################           C32            ################
 ##########################################################
 |C32| = 32
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:1, [4]:2, [8]:4, [16]:8, [32]:16
-SubGroupsInfos { AllSubGr = 6, AllConjsCl = 6, AllNorms = 6 }
 
+SubGroupsInfos { AllSubGr = 6, AllConjsCl = 6, AllNorms = 6 }
+Lower Central Serie
+C32 ---> C1
+Upper Central Serie
+C1 ---> C32
+Derived Serie
+C32 ---> C1
+Zentrum  Z(G) = C32
 Frattini Φ(G) = C16
 Fitting  F(G) = C16
 
@@ -3888,10 +4546,17 @@ Group32[2]
 ################         C8 x C4          ################
 ##########################################################
 |C8 x C4| = 32
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:3, [4]:12, [8]:16
-SubGroupsInfos { AllSubGr = 22, AllConjsCl = 22, AllNorms = 22 }
 
+SubGroupsInfos { AllSubGr = 22, AllConjsCl = 22, AllNorms = 22 }
+Lower Central Serie
+C8 x C4 ---> C1
+Upper Central Serie
+C1 ---> C8 x C4
+Derived Serie
+C8 x C4 ---> C1
+Zentrum  Z(G) = C8 x C4
 Frattini Φ(G) = C4 x C2
 Fitting  F(G) = C8 x C2
 
@@ -3947,10 +4612,17 @@ Group32[3]
 ################         C16 x C2         ################
 ##########################################################
 |C16 x C2| = 32
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:3, [4]:4, [8]:8, [16]:16
-SubGroupsInfos { AllSubGr = 14, AllConjsCl = 14, AllNorms = 14 }
 
+SubGroupsInfos { AllSubGr = 14, AllConjsCl = 14, AllNorms = 14 }
+Lower Central Serie
+C16 x C2 ---> C1
+Upper Central Serie
+C1 ---> C16 x C2
+Derived Serie
+C16 x C2 ---> C1
+Zentrum  Z(G) = C16 x C2
 Frattini Φ(G) = C8
 Fitting  F(G) = C16
 
@@ -4006,10 +4678,17 @@ Group32[4]
 ################       C4 x C4 x C2       ################
 ##########################################################
 |C4 x C4 x C2| = 32
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:7, [4]:24
-SubGroupsInfos { AllSubGr = 54, AllConjsCl = 54, AllNorms = 54 }
 
+SubGroupsInfos { AllSubGr = 54, AllConjsCl = 54, AllNorms = 54 }
+Lower Central Serie
+C4 x C4 x C2 ---> C1
+Upper Central Serie
+C1 ---> C4 x C4 x C2
+Derived Serie
+C4 x C4 x C2 ---> C1
+Zentrum  Z(G) = C4 x C4 x C2
 Frattini Φ(G) = C2 x C2
 Fitting  F(G) = C4 x C4
 
@@ -4065,10 +4744,17 @@ Group32[5]
 ################       C8 x C2 x C2       ################
 ##########################################################
 |C8 x C2 x C2| = 32
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:7, [4]:8, [8]:16
-SubGroupsInfos { AllSubGr = 38, AllConjsCl = 38, AllNorms = 38 }
 
+SubGroupsInfos { AllSubGr = 38, AllConjsCl = 38, AllNorms = 38 }
+Lower Central Serie
+C8 x C2 x C2 ---> C1
+Upper Central Serie
+C1 ---> C8 x C2 x C2
+Derived Serie
+C8 x C2 x C2 ---> C1
+Zentrum  Z(G) = C8 x C2 x C2
 Frattini Φ(G) = C4
 Fitting  F(G) = C8 x C2
 
@@ -4124,10 +4810,17 @@ Group32[6]
 ################    C4 x C2 x C2 x C2     ################
 ##########################################################
 |C4 x C2 x C2 x C2| = 32
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:15, [4]:16
-SubGroupsInfos { AllSubGr = 118, AllConjsCl = 118, AllNorms = 118 }
 
+SubGroupsInfos { AllSubGr = 118, AllConjsCl = 118, AllNorms = 118 }
+Lower Central Serie
+C4 x C2 x C2 x C2 ---> C1
+Upper Central Serie
+C1 ---> C4 x C2 x C2 x C2
+Derived Serie
+C4 x C2 x C2 x C2 ---> C1
+Zentrum  Z(G) = C4 x C2 x C2 x C2
 Frattini Φ(G) = C2
 Fitting  F(G) = C4 x C2 x C2
 
@@ -4183,10 +4876,17 @@ Group32[7]
 ################  C2 x C2 x C2 x C2 x C2  ################
 ##########################################################
 |C2 x C2 x C2 x C2 x C2| = 32
-Type      AbelianGroup
+AbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:31
-SubGroupsInfos { AllSubGr = 374, AllConjsCl = 374, AllNorms = 374 }
 
+SubGroupsInfos { AllSubGr = 374, AllConjsCl = 374, AllNorms = 374 }
+Lower Central Serie
+C2 x C2 x C2 x C2 x C2 ---> C1
+Upper Central Serie
+C1 ---> C2 x C2 x C2 x C2 x C2
+Derived Serie
+C2 x C2 x C2 x C2 x C2 ---> C1
+Zentrum  Z(G) = C2 x C2 x C2 x C2 x C2
 Frattini Φ(G) = C1
 Fitting  F(G) = C2 x C2 x C2 x C2
 
@@ -4242,10 +4942,17 @@ Group32[8]
 ################           Q32            ################
 ##########################################################
 |Q32| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:1, [4]:18, [8]:4, [16]:8
-SubGroupsInfos { AllSubGr = 20, AllConjsCl = 12, AllNorms = 8 }
 
+SubGroupsInfos { AllSubGr = 20, AllConjsCl = 12, AllNorms = 8 }
+Lower Central Serie
+Q32 ---> C8 ---> C4 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C2 ---> C4 ---> C8 ---> Q32
+Derived Serie
+Q32 ---> C8 ---> C1
+Zentrum  Z(G) = C2
 Frattini Φ(G) = C8
 Fitting  F(G) = Q16
 
@@ -4285,10 +4992,17 @@ Group32[9]
 ################           D32            ################
 ##########################################################
 |D32| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:17, [4]:2, [8]:4, [16]:8
-SubGroupsInfos { AllSubGr = 36, AllConjsCl = 14, AllNorms = 8 }
 
+SubGroupsInfos { AllSubGr = 36, AllConjsCl = 14, AllNorms = 8 }
+Lower Central Serie
+D32 ---> C8 ---> C4 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C2 ---> C4 ---> C8 ---> D32
+Derived Serie
+D32 ---> C8 ---> C1
+Zentrum  Z(G) = C2
 Frattini Φ(G) = C8
 Fitting  F(G) = D16
 
@@ -4327,10 +5041,17 @@ Group32[10]
 ################           QD32           ################
 ##########################################################
 |QD32| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:9, [4]:10, [8]:4, [16]:8
-SubGroupsInfos { AllSubGr = 28, AllConjsCl = 13, AllNorms = 8 }
 
+SubGroupsInfos { AllSubGr = 28, AllConjsCl = 13, AllNorms = 8 }
+Lower Central Serie
+QD32 ---> C8 ---> C4 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C2 ---> C4 ---> C8 ---> QD32
+Derived Serie
+QD32 ---> C8 ---> C1
+Zentrum  Z(G) = C2
 Frattini Φ(G) = C8
 Fitting  F(G) = D16
 
@@ -4370,10 +5091,17 @@ Group32[11]
 ################           MM32           ################
 ##########################################################
 |MM32| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:3, [4]:4, [8]:8, [16]:16
-SubGroupsInfos { AllSubGr = 14, AllConjsCl = 13, AllNorms = 12 }
 
+SubGroupsInfos { AllSubGr = 14, AllConjsCl = 13, AllNorms = 12 }
+Lower Central Serie
+MM32 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C8 ---> MM32
+Derived Serie
+MM32 ---> C2 ---> C1
+Zentrum  Z(G) = C8
 Frattini Φ(G) = C8
 Fitting  F(G) = C16
 
@@ -4425,10 +5153,17 @@ Group32[12]
 ################         M(4x:8)3         ################
 ##########################################################
 |M(4x:8)3| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:3, [4]:12, [8]:16
-SubGroupsInfos { AllSubGr = 22, AllConjsCl = 19, AllNorms = 16 }
 
+SubGroupsInfos { AllSubGr = 22, AllConjsCl = 19, AllNorms = 16 }
+Lower Central Serie
+M(4x:8)3 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C4 x C2 ---> M(4x:8)3
+Derived Serie
+M(4x:8)3 ---> C2 ---> C1
+Zentrum  Z(G) = C4 x C2
 Frattini Φ(G) = C4 x C2
 Fitting  F(G) = C8 x C2
 
@@ -4482,10 +5217,17 @@ Group32[13]
 ################         M(8x:4)3         ################
 ##########################################################
 |M(8x:4)3| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:3, [4]:20, [8]:8
-SubGroupsInfos { AllSubGr = 26, AllConjsCl = 18, AllNorms = 14 }
 
+SubGroupsInfos { AllSubGr = 26, AllConjsCl = 18, AllNorms = 14 }
+Lower Central Serie
+M(8x:4)3 ---> C4 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C2 x C2 ---> C4 x C2 ---> M(8x:4)3
+Derived Serie
+M(8x:4)3 ---> C4 ---> C1
+Zentrum  Z(G) = C2 x C2
 Frattini Φ(G) = C4 x C2
 Fitting  F(G) = M(4x:4)3
 
@@ -4531,10 +5273,17 @@ Group32[14]
 ################         M(8x:4)5         ################
 ##########################################################
 |M(8x:4)5| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:3, [4]:12, [8]:16
-SubGroupsInfos { AllSubGr = 22, AllConjsCl = 20, AllNorms = 18 }
 
+SubGroupsInfos { AllSubGr = 22, AllConjsCl = 20, AllNorms = 18 }
+Lower Central Serie
+M(8x:4)5 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C4 x C2 ---> M(8x:4)5
+Derived Serie
+M(8x:4)5 ---> C2 ---> C1
+Zentrum  Z(G) = C4 x C2
 Frattini Φ(G) = C4 x C2
 Fitting  F(G) = C8 x C2
 
@@ -4586,10 +5335,17 @@ Group32[15]
 ################         M(8x:4)7         ################
 ##########################################################
 |M(8x:4)7| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:3, [4]:20, [8]:8
-SubGroupsInfos { AllSubGr = 26, AllConjsCl = 18, AllNorms = 14 }
 
+SubGroupsInfos { AllSubGr = 26, AllConjsCl = 18, AllNorms = 14 }
+Lower Central Serie
+M(8x:4)7 ---> C4 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C2 x C2 ---> C4 x C2 ---> M(8x:4)7
+Derived Serie
+M(8x:4)7 ---> C4 ---> C1
+Zentrum  Z(G) = C2 x C2
 Frattini Φ(G) = C4 x C2
 Fitting  F(G) = M(4x:4)3
 
@@ -4636,10 +5392,17 @@ Group32[16]
 ################         C4 x D8          ################
 ##########################################################
 |C4 x D8| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:11, [4]:20
-SubGroupsInfos { AllSubGr = 62, AllConjsCl = 47, AllNorms = 32 }
 
+SubGroupsInfos { AllSubGr = 62, AllConjsCl = 47, AllNorms = 32 }
+Lower Central Serie
+C4 x D8 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C4 x C2 ---> C4 x D8
+Derived Serie
+C4 x D8 ---> C2 ---> C1
+Zentrum  Z(G) = C4 x C2
 Frattini Φ(G) = C2 x C2
 Fitting  F(G) = (C2 x C2) x: C4
 
@@ -4697,10 +5460,17 @@ Group32[17]
 ################         C2 x D16         ################
 ##########################################################
 |C2 x D16| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:19, [4]:4, [8]:8
-SubGroupsInfos { AllSubGr = 70, AllConjsCl = 38, AllNorms = 22 }
 
+SubGroupsInfos { AllSubGr = 70, AllConjsCl = 38, AllNorms = 22 }
+Lower Central Serie
+C2 x D16 ---> C4 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C2 x C2 ---> C4 x C2 ---> C2 x D16
+Derived Serie
+C2 x D16 ---> C4 ---> C1
+Zentrum  Z(G) = C2 x C2
 Frattini Φ(G) = C4
 Fitting  F(G) = D16
 
@@ -4748,10 +5518,17 @@ Group32[18]
 ################        C2 x QD16         ################
 ##########################################################
 |C2 x QD16| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:11, [4]:12, [8]:8
-SubGroupsInfos { AllSubGr = 54, AllConjsCl = 34, AllNorms = 22 }
 
+SubGroupsInfos { AllSubGr = 54, AllConjsCl = 34, AllNorms = 22 }
+Lower Central Serie
+C2 x QD16 ---> C4 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C2 x C2 ---> C4 x C2 ---> C2 x QD16
+Derived Serie
+C2 x QD16 ---> C4 ---> C1
+Zentrum  Z(G) = C2 x C2
 Frattini Φ(G) = C4
 Fitting  F(G) = QD16
 
@@ -4801,10 +5578,17 @@ Group32[19]
 ################      (C2 x C2) x D8      ################
 ##########################################################
 |(C2 x C2) x D8| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:23, [4]:8
-SubGroupsInfos { AllSubGr = 158, AllConjsCl = 118, AllNorms = 78 }
 
+SubGroupsInfos { AllSubGr = 158, AllConjsCl = 118, AllNorms = 78 }
+Lower Central Serie
+(C2 x C2) x D8 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C2 x C2 x C2 ---> (C2 x C2) x D8
+Derived Serie
+(C2 x C2) x D8 ---> C2 ---> C1
+Zentrum  Z(G) = C2 x C2 x C2
 Frattini Φ(G) = C2
 Fitting  F(G) = C2 x D8
 
@@ -4859,10 +5643,17 @@ Group32[20]
 ################         C4 x Q8          ################
 ##########################################################
 |C4 x Q8| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:3, [4]:28
-SubGroupsInfos { AllSubGr = 38, AllConjsCl = 35, AllNorms = 32 }
 
+SubGroupsInfos { AllSubGr = 38, AllConjsCl = 35, AllNorms = 32 }
+Lower Central Serie
+C4 x Q8 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C4 x C2 ---> C4 x Q8
+Derived Serie
+C4 x Q8 ---> C2 ---> C1
+Zentrum  Z(G) = C4 x C2
 Frattini Φ(G) = C2 x C2
 Fitting  F(G) = M(4x:4)3
 
@@ -4916,10 +5707,17 @@ Group32[21]
 ################         C2 x Q16         ################
 ##########################################################
 |C2 x Q16| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:3, [4]:20, [8]:8
-SubGroupsInfos { AllSubGr = 38, AllConjsCl = 30, AllNorms = 22 }
 
+SubGroupsInfos { AllSubGr = 38, AllConjsCl = 30, AllNorms = 22 }
+Lower Central Serie
+C2 x Q16 ---> C4 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C2 x C2 ---> C4 x C2 ---> C2 x Q16
+Derived Serie
+C2 x Q16 ---> C4 ---> C1
+Zentrum  Z(G) = C2 x C2
 Frattini Φ(G) = C4
 Fitting  F(G) = Q16
 
@@ -4966,10 +5764,17 @@ Group32[22]
 ################      (C2 x C2) x Q8      ################
 ##########################################################
 |(C2 x C2) x Q8| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:7, [4]:24
-SubGroupsInfos { AllSubGr = 78, AllConjsCl = 78, AllNorms = 78 }
 
+SubGroupsInfos { AllSubGr = 78, AllConjsCl = 78, AllNorms = 78 }
+Lower Central Serie
+(C2 x C2) x Q8 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C2 x C2 x C2 ---> (C2 x C2) x Q8
+Derived Serie
+(C2 x C2) x Q8 ---> C2 ---> C1
+Zentrum  Z(G) = C2 x C2 x C2
 Frattini Φ(G) = C2
 Fitting  F(G) = C2 x Q8
 
@@ -5019,10 +5824,17 @@ Group32[23]
 ################        C2 x MM16         ################
 ##########################################################
 |C2 x MM16| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:7, [4]:8, [8]:16
-SubGroupsInfos { AllSubGr = 38, AllConjsCl = 34, AllNorms = 30 }
 
+SubGroupsInfos { AllSubGr = 38, AllConjsCl = 34, AllNorms = 30 }
+Lower Central Serie
+C2 x MM16 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C4 x C2 ---> C2 x MM16
+Derived Serie
+C2 x MM16 ---> C2 ---> C1
+Zentrum  Z(G) = C4 x C2
 Frattini Φ(G) = C4
 Fitting  F(G) = MM16
 
@@ -5077,10 +5889,17 @@ Group32[24]
 ################      C2 x M(4x:4)3       ################
 ##########################################################
 |C2 x M(4x:4)3| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:7, [4]:24
-SubGroupsInfos { AllSubGr = 54, AllConjsCl = 46, AllNorms = 38 }
 
+SubGroupsInfos { AllSubGr = 54, AllConjsCl = 46, AllNorms = 38 }
+Lower Central Serie
+C2 x M(4x:4)3 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C2 x C2 x C2 ---> C2 x M(4x:4)3
+Derived Serie
+C2 x M(4x:4)3 ---> C2 ---> C1
+Zentrum  Z(G) = C2 x C2 x C2
 Frattini Φ(G) = C2 x C2
 Fitting  F(G) = M(4x:4)3
 
@@ -5136,10 +5955,17 @@ Group32[25]
 ################         C4 x: D8         ################
 ##########################################################
 |C4 x: D8| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:15, [4]:16
-SubGroupsInfos { AllSubGr = 74, AllConjsCl = 47, AllNorms = 24 }
 
+SubGroupsInfos { AllSubGr = 74, AllConjsCl = 47, AllNorms = 24 }
+Lower Central Serie
+C4 x: D8 ---> C2 x C2 ---> C1
+Upper Central Serie
+C1 ---> C2 x C2 ---> C4 x: D8
+Derived Serie
+C4 x: D8 ---> C2 x C2 ---> C1
+Zentrum  Z(G) = C2 x C2
 Frattini Φ(G) = C2 x C2
 Fitting  F(G) = (C2 x C2) x: C4
 
@@ -5187,10 +6013,17 @@ Group32[26]
 ################         C4 x: D8         ################
 ##########################################################
 |C4 x: D8| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:19, [4]:12
-SubGroupsInfos { AllSubGr = 90, AllConjsCl = 54, AllNorms = 26 }
 
+SubGroupsInfos { AllSubGr = 90, AllConjsCl = 54, AllNorms = 26 }
+Lower Central Serie
+C4 x: D8 ---> C2 x C2 ---> C1
+Upper Central Serie
+C1 ---> C2 x C2 ---> C4 x: D8
+Derived Serie
+C4 x: D8 ---> C2 x C2 ---> C1
+Zentrum  Z(G) = C2 x C2
 Frattini Φ(G) = C2 x C2
 Fitting  F(G) = C2 x D8
 
@@ -5234,10 +6067,17 @@ Group32[27]
 ################         D8 x: C4         ################
 ##########################################################
 |D8 x: C4| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:7, [4]:16, [8]:8
-SubGroupsInfos { AllSubGr = 34, AllConjsCl = 22, AllNorms = 12 }
 
+SubGroupsInfos { AllSubGr = 34, AllConjsCl = 22, AllNorms = 12 }
+Lower Central Serie
+D8 x: C4 ---> C4 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C4 ---> C4 x C2 ---> D8 x: C4
+Derived Serie
+D8 x: C4 ---> C4 ---> C1
+Zentrum  Z(G) = C4
 Frattini Φ(G) = C4 x C2
 Fitting  F(G) = MM16
 
@@ -5284,10 +6124,17 @@ Group32[28]
 ################         D8 x: C4         ################
 ##########################################################
 |D8 x: C4| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:11, [4]:12, [8]:8
-SubGroupsInfos { AllSubGr = 46, AllConjsCl = 25, AllNorms = 14 }
 
+SubGroupsInfos { AllSubGr = 46, AllConjsCl = 25, AllNorms = 14 }
+Lower Central Serie
+D8 x: C4 ---> C4 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C2 x C2 ---> C4 x C2 ---> D8 x: C4
+Derived Serie
+D8 x: C4 ---> C4 ---> C1
+Zentrum  Z(G) = C2 x C2
 Frattini Φ(G) = C4 x C2
 Fitting  F(G) = M(4x:4)3
 
@@ -5335,10 +6182,17 @@ Group32[29]
 ################        D16 x: C2         ################
 ##########################################################
 |D16 x: C2| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:11, [4]:12, [8]:8
-SubGroupsInfos { AllSubGr = 46, AllConjsCl = 31, AllNorms = 20 }
 
+SubGroupsInfos { AllSubGr = 46, AllConjsCl = 31, AllNorms = 20 }
+Lower Central Serie
+D16 x: C2 ---> C4 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C4 ---> C4 x C2 ---> D16 x: C2
+Derived Serie
+D16 x: C2 ---> C4 ---> C1
+Zentrum  Z(G) = C4
 Frattini Φ(G) = C4
 Fitting  F(G) = D16
 
@@ -5388,10 +6242,17 @@ Group32[30]
 ################        D16 x: C2         ################
 ##########################################################
 |D16 x: C2| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:15, [4]:8, [8]:8
-SubGroupsInfos { AllSubGr = 58, AllConjsCl = 34, AllNorms = 20 }
 
+SubGroupsInfos { AllSubGr = 58, AllConjsCl = 34, AllNorms = 20 }
+Lower Central Serie
+D16 x: C2 ---> C4 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C2 ---> C4 x C2 ---> D16 x: C2
+Derived Serie
+D16 x: C2 ---> C4 ---> C1
+Zentrum  Z(G) = C2
 Frattini Φ(G) = C4
 Fitting  F(G) = D16
 
@@ -5439,10 +6300,17 @@ Group32[31]
 ################        QD16 x: C2        ################
 ##########################################################
 |QD16 x: C2| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:7, [4]:16, [8]:8
-SubGroupsInfos { AllSubGr = 42, AllConjsCl = 30, AllNorms = 20 }
 
+SubGroupsInfos { AllSubGr = 42, AllConjsCl = 30, AllNorms = 20 }
+Lower Central Serie
+QD16 x: C2 ---> C4 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C2 ---> C4 x C2 ---> QD16 x: C2
+Derived Serie
+QD16 x: C2 ---> C4 ---> C1
+Zentrum  Z(G) = C2
 Frattini Φ(G) = C4
 Fitting  F(G) = QD16
 
@@ -5489,10 +6357,17 @@ Group32[32]
 ################     (C2 x C2) x: C8      ################
 ##########################################################
 |(C2 x C2) x: C8| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:7, [4]:8, [8]:16
-SubGroupsInfos { AllSubGr = 34, AllConjsCl = 25, AllNorms = 16 }
 
+SubGroupsInfos { AllSubGr = 34, AllConjsCl = 25, AllNorms = 16 }
+Lower Central Serie
+(C2 x C2) x: C8 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C4 x C2 ---> (C2 x C2) x: C8
+Derived Serie
+(C2 x C2) x: C8 ---> C2 ---> C1
+Zentrum  Z(G) = C4 x C2
 Frattini Φ(G) = C4 x C2
 Fitting  F(G) = C8 x C2
 
@@ -5546,10 +6421,17 @@ Group32[33]
 ################     (C4 x C2) x: C4      ################
 ##########################################################
 |(C4 x C2) x: C4| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:7, [4]:24
-SubGroupsInfos { AllSubGr = 46, AllConjsCl = 38, AllNorms = 30 }
 
+SubGroupsInfos { AllSubGr = 46, AllConjsCl = 38, AllNorms = 30 }
+Lower Central Serie
+(C4 x C2) x: C4 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C4 x C2 ---> (C4 x C2) x: C4
+Derived Serie
+(C4 x C2) x: C4 ---> C2 ---> C1
+Zentrum  Z(G) = C4 x C2
 Frattini Φ(G) = C2 x C2
 Fitting  F(G) = (C2 x C2) x: C4
 
@@ -5604,10 +6486,17 @@ Group32[34]
 ################     (C4 x C2) x: C4      ################
 ##########################################################
 |(C4 x C2) x: C4| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:11, [4]:20
-SubGroupsInfos { AllSubGr = 50, AllConjsCl = 26, AllNorms = 12 }
 
+SubGroupsInfos { AllSubGr = 50, AllConjsCl = 26, AllNorms = 12 }
+Lower Central Serie
+(C4 x C2) x: C4 ---> C2 x C2 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C2 ---> C2 x C2 x C2 ---> (C4 x C2) x: C4
+Derived Serie
+(C4 x C2) x: C4 ---> C2 x C2 ---> C1
+Zentrum  Z(G) = C2
 Frattini Φ(G) = C2 x C2 x C2
 Fitting  F(G) = (C2 x C2) x: C4
 
@@ -5649,10 +6538,17 @@ Group32[35]
 ################     (C4 x C2) x: C4      ################
 ##########################################################
 |(C4 x C2) x: C4| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:7, [4]:24
-SubGroupsInfos { AllSubGr = 50, AllConjsCl = 38, AllNorms = 26 }
 
+SubGroupsInfos { AllSubGr = 50, AllConjsCl = 38, AllNorms = 26 }
+Lower Central Serie
+(C4 x C2) x: C4 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C2 x C2 x C2 ---> (C4 x C2) x: C4
+Derived Serie
+(C4 x C2) x: C4 ---> C2 ---> C1
+Zentrum  Z(G) = C2 x C2 x C2
 Frattini Φ(G) = C2 x C2 x C2
 Fitting  F(G) = C4 x C2 x C2
 
@@ -5704,10 +6600,17 @@ Group32[36]
 ################     (C4 x C4) x: C2      ################
 ##########################################################
 |(C4 x C4) x: C2| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:7, [4]:24
-SubGroupsInfos { AllSubGr = 42, AllConjsCl = 30, AllNorms = 20 }
 
+SubGroupsInfos { AllSubGr = 42, AllConjsCl = 30, AllNorms = 20 }
+Lower Central Serie
+(C4 x C4) x: C2 ---> C2 x C2 ---> C1
+Upper Central Serie
+C1 ---> C2 x C2 ---> (C4 x C4) x: C2
+Derived Serie
+(C4 x C4) x: C2 ---> C2 x C2 ---> C1
+Zentrum  Z(G) = C2 x C2
 Frattini Φ(G) = C2 x C2
 Fitting  F(G) = (C2 x C2) x: C4
 
@@ -5751,10 +6654,17 @@ Group32[37]
 ################     (C4 x C4) x: C2      ################
 ##########################################################
 |(C4 x C4) x: C2| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:11, [4]:20
-SubGroupsInfos { AllSubGr = 58, AllConjsCl = 38, AllNorms = 22 }
 
+SubGroupsInfos { AllSubGr = 58, AllConjsCl = 38, AllNorms = 22 }
+Lower Central Serie
+(C4 x C4) x: C2 ---> C2 x C2 ---> C1
+Upper Central Serie
+C1 ---> C2 x C2 ---> (C4 x C4) x: C2
+Derived Serie
+(C4 x C4) x: C2 ---> C2 x C2 ---> C1
+Zentrum  Z(G) = C2 x C2
 Frattini Φ(G) = C2 x C2
 Fitting  F(G) = (C2 x C2) x: C4
 
@@ -5801,10 +6711,17 @@ Group32[38]
 ################     (C8 x C2) x: C2      ################
 ##########################################################
 |(C8 x C2) x: C2| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:7, [4]:8, [8]:16
-SubGroupsInfos { AllSubGr = 34, AllConjsCl = 31, AllNorms = 28 }
 
+SubGroupsInfos { AllSubGr = 34, AllConjsCl = 31, AllNorms = 28 }
+Lower Central Serie
+(C8 x C2) x: C2 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C8 ---> (C8 x C2) x: C2
+Derived Serie
+(C8 x C2) x: C2 ---> C2 ---> C1
+Zentrum  Z(G) = C8
 Frattini Φ(G) = C4
 Fitting  F(G) = MM16
 
@@ -5858,10 +6775,17 @@ Group32[39]
 ################         C4 x: Q8         ################
 ##########################################################
 |C4 x: Q8| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:3, [4]:28
-SubGroupsInfos { AllSubGr = 42, AllConjsCl = 34, AllNorms = 26 }
 
+SubGroupsInfos { AllSubGr = 42, AllConjsCl = 34, AllNorms = 26 }
+Lower Central Serie
+C4 x: Q8 ---> C2 x C2 ---> C1
+Upper Central Serie
+C1 ---> C2 x C2 ---> C4 x: Q8
+Derived Serie
+C4 x: Q8 ---> C2 x C2 ---> C1
+Zentrum  Z(G) = C2 x C2
 Frattini Φ(G) = C2 x C2
 Fitting  F(G) = M(4x:4)3
 
@@ -5907,10 +6831,17 @@ Group32[40]
 ################         Q8 x: C4         ################
 ##########################################################
 |Q8 x: C4| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:3, [4]:20, [8]:8
-SubGroupsInfos { AllSubGr = 30, AllConjsCl = 21, AllNorms = 14 }
 
+SubGroupsInfos { AllSubGr = 30, AllConjsCl = 21, AllNorms = 14 }
+Lower Central Serie
+Q8 x: C4 ---> C4 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C2 x C2 ---> C4 x C2 ---> Q8 x: C4
+Derived Serie
+Q8 x: C4 ---> C4 ---> C1
+Zentrum  Z(G) = C2 x C2
 Frattini Φ(G) = C4 x C2
 Fitting  F(G) = M(4x:4)3
 
@@ -5958,10 +6889,17 @@ Group32[41]
 ################   (C2 x C2 x C2) x: C4   ################
 ##########################################################
 |(C2 x C2 x C2) x: C4| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:15, [4]:16
-SubGroupsInfos { AllSubGr = 94, AllConjsCl = 66, AllNorms = 38 }
 
+SubGroupsInfos { AllSubGr = 94, AllConjsCl = 66, AllNorms = 38 }
+Lower Central Serie
+(C2 x C2 x C2) x: C4 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C2 x C2 x C2 ---> (C2 x C2 x C2) x: C4
+Derived Serie
+(C2 x C2 x C2) x: C4 ---> C2 ---> C1
+Zentrum  Z(G) = C2 x C2 x C2
 Frattini Φ(G) = C2 x C2
 Fitting  F(G) = (C2 x C2) x: C4
 
@@ -6017,10 +6955,17 @@ Group32[42]
 ################   (C4 x C2 x C2) x: C2   ################
 ##########################################################
 |(C4 x C2 x C2) x: C2| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:11, [4]:20
-SubGroupsInfos { AllSubGr = 58, AllConjsCl = 39, AllNorms = 22 }
 
+SubGroupsInfos { AllSubGr = 58, AllConjsCl = 39, AllNorms = 22 }
+Lower Central Serie
+(C4 x C2 x C2) x: C2 ---> C2 x C2 ---> C1
+Upper Central Serie
+C1 ---> C2 x C2 ---> (C4 x C2 x C2) x: C2
+Derived Serie
+(C4 x C2 x C2) x: C2 ---> C2 x C2 ---> C1
+Zentrum  Z(G) = C2 x C2
 Frattini Φ(G) = C2 x C2
 Fitting  F(G) = (C2 x C2) x: C4
 
@@ -6067,10 +7012,17 @@ Group32[43]
 ################   (C4 x C2 x C2) x: C2   ################
 ##########################################################
 |(C4 x C2 x C2) x: C2| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:15, [4]:16
-SubGroupsInfos { AllSubGr = 94, AllConjsCl = 82, AllNorms = 70 }
 
+SubGroupsInfos { AllSubGr = 94, AllConjsCl = 82, AllNorms = 70 }
+Lower Central Serie
+(C4 x C2 x C2) x: C2 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C4 x C2 ---> (C4 x C2 x C2) x: C2
+Derived Serie
+(C4 x C2 x C2) x: C2 ---> C2 ---> C1
+Zentrum  Z(G) = C4 x C2
 Frattini Φ(G) = C2
 Fitting  F(G) = C2 x D8
 
@@ -6126,10 +7078,17 @@ Group32[44]
 ################     (C2 x C2) x: D8      ################
 ##########################################################
 |(C2 x C2) x: D8| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:19, [4]:12
-SubGroupsInfos { AllSubGr = 106, AllConjsCl = 65, AllNorms = 26 }
 
+SubGroupsInfos { AllSubGr = 106, AllConjsCl = 65, AllNorms = 26 }
+Lower Central Serie
+(C2 x C2) x: D8 ---> C2 x C2 ---> C1
+Upper Central Serie
+C1 ---> C2 x C2 ---> (C2 x C2) x: D8
+Derived Serie
+(C2 x C2) x: D8 ---> C2 x C2 ---> C1
+Zentrum  Z(G) = C2 x C2
 Frattini Φ(G) = C2 x C2
 Fitting  F(G) = (C2 x C2) x: C4
 
@@ -6175,10 +7134,17 @@ Group32[45]
 ################     D8 x: (C2 x C2)      ################
 ##########################################################
 |D8 x: (C2 x C2)| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:19, [4]:12
-SubGroupsInfos { AllSubGr = 110, AllConjsCl = 83, AllNorms = 68 }
 
+SubGroupsInfos { AllSubGr = 110, AllConjsCl = 83, AllNorms = 68 }
+Lower Central Serie
+D8 x: (C2 x C2) ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C2 ---> D8 x: (C2 x C2)
+Derived Serie
+D8 x: (C2 x C2) ---> C2 ---> C1
+Zentrum  Z(G) = C2
 Frattini Φ(G) = C2
 Fitting  F(G) = C2 x D8
 
@@ -6227,10 +7193,17 @@ Group32[46]
 ################        MM16 x: C2        ################
 ##########################################################
 |MM16 x: C2| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:11, [4]:4, [8]:16
-SubGroupsInfos { AllSubGr = 42, AllConjsCl = 23, AllNorms = 12 }
 
+SubGroupsInfos { AllSubGr = 42, AllConjsCl = 23, AllNorms = 12 }
+Lower Central Serie
+MM16 x: C2 ---> C2 x C2 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C2 ---> C4 x C2 ---> MM16 x: C2
+Derived Serie
+MM16 x: C2 ---> C2 x C2 ---> C1
+Zentrum  Z(G) = C2
 Frattini Φ(G) = C4 x C2
 Fitting  F(G) = MM16
 
@@ -6271,10 +7244,17 @@ Group32[47]
 ################      M(4x:4)3 x: C2      ################
 ##########################################################
 |M(4x:4)3 x: C2| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:7, [4]:24
-SubGroupsInfos { AllSubGr = 50, AllConjsCl = 37, AllNorms = 24 }
 
+SubGroupsInfos { AllSubGr = 50, AllConjsCl = 37, AllNorms = 24 }
+Lower Central Serie
+M(4x:4)3 x: C2 ---> C2 x C2 ---> C1
+Upper Central Serie
+C1 ---> C2 x C2 ---> M(4x:4)3 x: C2
+Derived Serie
+M(4x:4)3 x: C2 ---> C2 x C2 ---> C1
+Zentrum  Z(G) = C2 x C2
 Frattini Φ(G) = C2 x C2
 Fitting  F(G) = (C2 x C2) x: C4
 
@@ -6323,10 +7303,17 @@ Group32[48]
 ################     (C2 x Q8) x: C2      ################
 ##########################################################
 |(C2 x Q8) x: C2| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:11, [4]:20
-SubGroupsInfos { AllSubGr = 78, AllConjsCl = 73, AllNorms = 68 }
 
+SubGroupsInfos { AllSubGr = 78, AllConjsCl = 73, AllNorms = 68 }
+Lower Central Serie
+(C2 x Q8) x: C2 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C2 ---> (C2 x Q8) x: C2
+Derived Serie
+(C2 x Q8) x: C2 ---> C2 ---> C1
+Zentrum  Z(G) = C2
 Frattini Φ(G) = C2
 Fitting  F(G) = D8 x: C2
 
@@ -6374,10 +7361,17 @@ Group32[49]
 ################         C8 . C4          ################
 ##########################################################
 |C8 . C4| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:3, [4]:4, [8]:24
-SubGroupsInfos { AllSubGr = 18, AllConjsCl = 15, AllNorms = 12 }
 
+SubGroupsInfos { AllSubGr = 18, AllConjsCl = 15, AllNorms = 12 }
+Lower Central Serie
+C8 . C4 ---> C4 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C4 ---> C4 x C2 ---> C8 . C4
+Derived Serie
+C8 . C4 ---> C4 ---> C1
+Zentrum  Z(G) = C4
 Frattini Φ(G) = C4 x C2
 Fitting  F(G) = MM16
 
@@ -6422,10 +7416,17 @@ Group32[50]
 ################         C4 . D8          ################
 ##########################################################
 |C4 . D8| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:3, [4]:12, [8]:16
-SubGroupsInfos { AllSubGr = 26, AllConjsCl = 19, AllNorms = 12 }
 
+SubGroupsInfos { AllSubGr = 26, AllConjsCl = 19, AllNorms = 12 }
+Lower Central Serie
+C4 . D8 ---> C2 x C2 ---> C2 ---> C1
+Upper Central Serie
+C1 ---> C2 ---> C4 x C2 ---> C4 . D8
+Derived Serie
+C4 . D8 ---> C2 x C2 ---> C1
+Zentrum  Z(G) = C2
 Frattini Φ(G) = C4 x C2
 Fitting  F(G) = MM16
 
@@ -6466,10 +7467,17 @@ Group32[51]
 ################      (C4 x C4) . C2      ################
 ##########################################################
 |(C4 x C4) . C2| = 32
-Type      NonAbelianGroup
+NonAbelianGroup, Nilpotent, Solvable
 Elements Orders : [1]:1, [2]:3, [4]:28
-SubGroupsInfos { AllSubGr = 34, AllConjsCl = 28, AllNorms = 22 }
 
+SubGroupsInfos { AllSubGr = 34, AllConjsCl = 28, AllNorms = 22 }
+Lower Central Serie
+(C4 x C4) . C2 ---> C2 x C2 ---> C1
+Upper Central Serie
+C1 ---> C2 x C2 ---> (C4 x C4) . C2
+Derived Serie
+(C4 x C4) . C2 ---> C2 x C2 ---> C1
+Zentrum  Z(G) = C2 x C2
 Frattini Φ(G) = C2 x C2
 Fitting  F(G) = M(4x:4)3
 
@@ -6509,5 +7517,4 @@ Characters Table
 
 
 Total Groups:144
-#  Time:16m4s
-
+#  Time:15m50s
