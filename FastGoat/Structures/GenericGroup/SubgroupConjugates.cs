@@ -8,7 +8,7 @@ public readonly struct SubgroupConjugates<T> : IElt<SubgroupConjugates<T>> where
     public ConcreteGroup<T> Representative { get; }
     public int Index { get; }
     public int Order { get; }
-
+    
     public SubgroupConjugates(ConcreteGroup<T> parent, ConcreteGroup<T> subGroup)
     {
         Parent = parent;
@@ -18,9 +18,9 @@ public readonly struct SubgroupConjugates<T> : IElt<SubgroupConjugates<T>> where
         Index = parent.Count() / Order;
         Hash = (Parent.Hash, Order, Index).GetHashCode();
         if (Order == 1)
-            Representative.Name = "()";
+            Representative.Name = "C1";
     }
-
+    
     public SubgroupConjugates(ConcreteGroup<T> parent, List<ConcreteGroup<T>> conjugates)
     {
         Parent = parent;
@@ -30,12 +30,12 @@ public readonly struct SubgroupConjugates<T> : IElt<SubgroupConjugates<T>> where
         Index = parent.Count() / Order;
         Hash = (Parent.Hash, Order, Index).GetHashCode();
     }
-
+    
     public SubgroupConjugates<T>[] Restriction(ConcreteGroup<T> g)
     {
         if (!g.SubSetOf(Parent))
             throw new GroupException(GroupExceptionType.NotSubGroup);
-
+        
         var lt = Conjugates.Where(h => h.SubSetOf(g)).ToHashSet(new GroupSetEquality<T>());
         var all = new List<SubgroupConjugates<T>>(Size);
         var gens = g.GetGenerators().ToHashSet();
@@ -49,7 +49,7 @@ public readonly struct SubgroupConjugates<T> : IElt<SubgroupConjugates<T>> where
             all.Add(new SubgroupConjugates<T>(g, subConjs));
             lt.ExceptWith(subConjs);
         }
-
+        
         return all.ToArray();
     }
     public bool Contains(ConcreteGroup<T> g) => Conjugates.Any(e => e.SetEquals(g));
@@ -68,13 +68,16 @@ public readonly struct SubgroupConjugates<T> : IElt<SubgroupConjugates<T>> where
     public bool Equals(SubgroupConjugates<T> other) => Hash == other.Hash && 
                                                        Parent.SetEquals(other.Parent) &&
                                                        Conjugates.Any(e => e.SetEquals(other.Representative));
-
+    
     public int CompareTo(SubgroupConjugates<T> other) => OST.CompareTo(other.OST);
 
     public int Hash { get; }
 
     public SubgroupConjugates<WElt> ToGroupWrapper()
     {
+        if (this is SubgroupConjugates<WElt> cj)
+            return cj;
+        
         var gt = Parent.ToGroupWrapper();
         var sub = Group.Generate(Representative.Name, gt, Representative.GetGenerators().Select(e => new WElt(e)).ToArray());
         return new(gt, sub);

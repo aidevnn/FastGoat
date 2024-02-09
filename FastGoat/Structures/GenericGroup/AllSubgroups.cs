@@ -25,6 +25,7 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
         var allSubs = Group.AllSubGroups(g);
         Infos = new(allSubs.Values.Sum(s => s.Count), allSubs.Count, allSubs.Count(s => s.Value.Count == 1));
         AllSubgroupConjugates = allSubs.Values.Select(l => new SubgroupConjugates<T>(g, l)).Order().ToArray();
+        AllSubgroupConjugates.First().Conjugates[0].Name = "C1";
     }
 
     public AllSubgroups(Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>> allSubs)
@@ -84,6 +85,9 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
 
     public AllSubgroups<WElt> ToGroupWrapper()
     {
+        if (this is AllSubgroups<WElt> subgroups)
+            return subgroups;
+        
         return new AllSubgroups<WElt>(AllSubgroupConjugates.Select(sc => sc.ToGroupWrapper()).ToArray());
     }
 

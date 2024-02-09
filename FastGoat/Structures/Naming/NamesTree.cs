@@ -20,7 +20,7 @@ public static class NamesTree
                 obj.Item2.Parent.Count(), obj.Item2.Infos.ToTuples()).GetHashCode()
         );
         var set = new HashSet<(AllSubgroups<T1> lhs, AllSubgroups<T2> rhs, ANameElt.DecompType)>(2000, eqTuples);
-
+        
         foreach (var sub in subsgr)
         {
             if (set.Add(sub))
@@ -35,7 +35,7 @@ public static class NamesTree
             .ToDictionary(a => a.Key, a => a.Count())
             .AscendingByKey()
             .GlueMap(fmt: "[{0}]:{1}");
-
+        
         if (og == 12 && orders == "[1]:1, [2]:3, [3]:8")
             return [new Leaf(G, "A4")];
         if (og == 24 && orders == "[1]:1, [2]:9, [3]:8, [4]:6")
@@ -46,7 +46,7 @@ public static class NamesTree
             return [new Leaf(G, "S6")];
         if (og == 5040 && orders == "[1]:1, [2]:231, [3]:350, [4]:840, [5]:504, [6]:1470, [7]:720, [10]:504, [12]:420")
             return [new Leaf(G, "S7")];
-
+        
         if (og == 8 && orders == "[1]:1, [2]:1, [4]:6")
             return [new Leaf(G, "Q8")];
         if (og == 16 && orders == "[1]:1, [2]:1, [4]:10, [8]:4")
@@ -55,7 +55,7 @@ public static class NamesTree
             return [new Leaf(G, "Q32")];
         if (og == 64 && orders == "[1]:1, [2]:1, [4]:34, [8]:4, [16]:8, [32]:16")
             return [new Leaf(G, "Q64")];
-
+        
         if (og == 24 && orders == "[1]:1, [2]:1, [3]:8, [4]:6, [6]:8")
             return [new Leaf(G, "SL(2,3)")];
         if (og == 48 && orders == "[1]:1, [2]:13, [3]:8, [4]:6, [6]:8, [8]:12")
@@ -64,7 +64,7 @@ public static class NamesTree
             return [new Leaf(G, "SL(2,5)")];
         if (og == 480 && orders == "[1]:1, [2]:31, [3]:20, [4]:152, [5]:24, [6]:20, [8]:40, [10]:24, [12]:40, [20]:48, [24]:80")
             return [new Leaf(G, "GL(2,5)")];
-
+        
         if (og == 12 && orders == "[1]:1, [2]:1, [3]:2, [4]:6, [6]:2")
             return [new Leaf(G, "Dic3")];
         if (og == 16 && orders == "[1]:1, [2]:1, [4]:10, [8]:4")
@@ -105,40 +105,40 @@ public static class NamesTree
             return [new Leaf(G, "Dic23")];
         if (og == 96 && orders == "[1]:1, [2]:1, [3]:2, [4]:50, [6]:2, [8]:4, [12]:4, [16]:8, [24]:8, [48]:16")
             return [new Leaf(G, "Dic24")];
-
+        
         return Array.Empty<Leaf>();
     }
-
+    
     static (AllSubgroups<WElt> k, AllSubgroups<WElt> h, ANameElt.DecompType)[] AllOps(AllSubgroups<WElt> subgroups)
     {
         var G = subgroups.Parent;
         var tr = subgroups.Restriction(Group.Generate("C1", G, G.Neutral()));
         if (G.GroupType == GroupType.AbelianGroup)
             return new[] { (subgroups, tr, ANameElt.DecompType.Abelian) };
-
+        
         if (G.GroupType == GroupType.NonAbelianGroup && subgroups.IsSimple())
             return new[] { (subgroups, tr, ANameElt.DecompType.SimpleNonAbelian) };
-
+        
         var normals = subgroups.Where(sg => sg.IsProperNormal && !sg.IsTrivial).ToArray();
         var dic = normals.ToDictionary(n => n, n => subgroups.Where(sg => sg.Order == n.Index).ToArray());
-
+        
         var dirProd = dic.Select(e => (e.Key,
                 e.Value.Where(sg => sg.IsNormal && e.Key.Representative.Intersect(sg.Representative).Count() == 1).ToArray()))
             .Where(e => e.Item2.Length != 0)
             .Select(e => (k: e.Key.Representative, h: e.Item2[0].Representative, ANameElt.DecompType.DirectProduct))
             .ToArray();
-
+        
         var semiDirProd = dic.Select(e => (k: e.Key.Representative, e.Value.Where(sg => !sg.IsNormal).ToArray()))
             .Where(e => e.Item2.Length != 0)
             .Select(e => (e.k, e.Item2.Select(sc => sc.Conjugates.Where(s => s.Intersect(e.k).Count() == 1).ToArray()).ToArray()))
             .Select(e => (e.k, e.Item2.Where(l => l.Length != 0).Select(l => l[0]).ToArray()))
             .SelectMany(e => e.Item2.Select(s => (e.k, h: s, ANameElt.DecompType.SemiDirectProduct)))
             .ToArray();
-
+        
         var allProds = dirProd.Concat(semiDirProd)
             .Select(e => (subgroups.Restriction(e.k), subgroups.Restriction(e.h), e.Item3))
             .ToArray();
-
+        
         var usedNormals = dirProd.SelectMany(e => new[] { e.k, e.h }).Concat(semiDirProd.Select(e => e.k))
             .Select(sg => subgroups.First(sc => sc.Representative.SetEquals(sg))).ToArray();
         var remNormals = normals.Except(usedNormals).ToArray();
@@ -146,46 +146,80 @@ public static class NamesTree
             .Select(e => (subgroups.Restriction(e.e.Representative), new AllSubgroups<WElt>(e.Item2),
                 ANameElt.DecompType.Extension))
             .ToArray();
-
+        
         var allProdsFiltered = allProds.FilterIsomorphic().ToArray();
         return [..allProdsFiltered, ..extOps];
     }
-
+    
     public static ANameElt[] BuildName(AllSubgroups<WElt> subgroups)
     {
         var all = new List<ANameElt>();
         var G = subgroups.Parent;
         if (G.Count() > 6000)
             throw new GroupException(GroupExceptionType.GroupDef);
-
+        
         var ops = AllOps(subgroups);
         foreach (var (k, h, t) in ops)
         {
             if (t == ANameElt.DecompType.Abelian || t == ANameElt.DecompType.SimpleNonAbelian)
-                all.Add(new Leaf(k, t));
+            {
+                var leaf = new Leaf(k, t);
+                all.Add(leaf);
+                
+                var cjK = subgroups.First(cj => cj.Contains(k.Parent));
+                cjK.Conjugates.ForEach(sg => sg.Name = leaf.Name);
+                var cjH = subgroups.First(cj => cj.Contains(h.Parent));
+                cjH.Conjugates.ForEach(sg => sg.Name = "C1");
+                
+                if (t == ANameElt.DecompType.Abelian)
+                {
+                    foreach (var k0 in k.AllRepresentatives)
+                    {
+                        var abType = Group.AbelianGroupType(k0);
+                        k0.Name = abType.Glue(" x ", "C{0}");
+                    }
+                }
+                else
+                    Console.WriteLine("Non Abelian Simple Group, naming subgroups not implemented yet");
+            }
             else if (t == ANameElt.DecompType.SemiDirectProduct)
             {
                 var k0 = BuildName(k)[0];
                 var h0 = BuildName(h)[0];
                 all.Add(new SemiDirectProductOp(k0, h0, G));
+                
+                var cjK = subgroups.First(cj => cj.Contains(k.Parent));
+                cjK.Conjugates.ForEach(sg => sg.Name = k0.Name);
+                var cjH = subgroups.First(cj => cj.Contains(h.Parent));
+                cjH.Conjugates.ForEach(sg => sg.Name = h0.Name);
             }
             else if (t == ANameElt.DecompType.DirectProduct)
             {
                 var k0 = BuildName(k)[0];
                 var h0 = BuildName(h)[0];
                 all.Add(new DirectProductOp(k0, h0, G));
+                
+                var cjK = subgroups.First(cj => cj.Contains(k.Parent));
+                cjK.Conjugates.ForEach(sg => sg.Name = k0.Name);
+                var cjH = subgroups.First(cj => cj.Contains(h.Parent));
+                cjH.Conjugates.ForEach(sg => sg.Name = h0.Name);
             }
             else
             {
                 var k0 = BuildName(k)[0];
                 var h0 = BuildName(h)[0];
                 all.Add(new ExtensionOp(k0, h0, G));
+                
+                var cjK = subgroups.First(cj => cj.Contains(k.Parent));
+                cjK.Conjugates.ForEach(sg => sg.Name = k0.Name);
             }
         }
-
-        return all.Concat(CommonNames(G)).Distinct().Order().ToArray();
+        
+        var names = all.Concat(CommonNames(G)).Distinct().Order().ToArray();
+        subgroups.Last().Conjugates[0].Name = names[0].Name;
+        return names;
     }
-
+    
     public static ANameElt[] BuildName<T>(ConcreteGroup<T> G) where T : struct, IElt<T>
     {
         var subGroups = new AllSubgroups<WElt>(G.ToGroupWrapper());
