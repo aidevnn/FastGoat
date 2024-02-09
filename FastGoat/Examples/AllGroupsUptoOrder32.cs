@@ -29,17 +29,18 @@ public static class AllGroupsUptoOrder32
         Console.WriteLine(line);
 
         var comChain = Group.CommutatorsChain(g);
-        comChain.ForEach(sg => sg.Name = sg.Count() == g.Count() ? g.Name : NamesTree.BuildName(subgroups.Restriction(sg))[0].Name);
+        comChain.ForEach(sg =>
+            sg.Name = sg.Count() == g.Count() ? g.Name : subgroups.First(cj => cj.Contains(sg)).Representative.Name);
         var comChainComplete = comChain.Last().Count() == 1 && comChain.First().Count() == g.Count();
 
         var zentrumsChain = Group.ZentrumsChainFast(g);
         zentrumsChain.ForEach(
-            sg => sg.Name = sg.Count() == g.Count() ? g.Name : NamesTree.BuildName(subgroups.Restriction(sg))[0].Name);
+            sg => sg.Name = sg.Count() == g.Count() ? g.Name : subgroups.First(cj => cj.Contains(sg)).Representative.Name);
         var isNilpotent = zentrumsChain.First().Count() == 1 && zentrumsChain.Last().Count() == g.Count();
 
         var derivedChain = Group.DerivedChain(g);
         derivedChain.ForEach(sg =>
-            sg.Name = sg.Count() == g.Count() ? g.Name : NamesTree.BuildName(subgroups.Restriction(sg))[0].Name);
+            sg.Name = sg.Count() == g.Count() ? g.Name : subgroups.First(cj => cj.Contains(sg)).Representative.Name);
         var isSolvable = derivedChain.Last().Count() == 1 && derivedChain.First().Count() == g.Count();
 
         Console.WriteLine(g.ShortName);
@@ -57,14 +58,15 @@ public static class AllGroupsUptoOrder32
         Console.WriteLine(derivedChain.Glue(" ---> "));
 
         var zentrum = Group.Zentrum(g);
-        var zentrumName = zentrum.Count() == g.Count() ? g.Name : NamesTree.BuildName(subgroups.Restriction(zentrum))[0].Name;
+        var zentrumName = zentrum.Count() == g.Count() ? g.Name : subgroups.First(cj => cj.Contains(zentrum)).Representative.Name;
         Console.WriteLine($"Zentrum  Z(G) = {zentrumName}");
+        
         var frattini = subgroups.FrattiniSubGroup;
-        var fratName = NamesTree.BuildName(subgroups.Restriction(frattini))[0].Name;
+        var fratName = subgroups.First(cj => cj.Contains(frattini)).Representative.Name;
         Console.WriteLine($"Frattini Φ(G) = {fratName}");
 
         var fitting = subgroups.FittingSubGroup;
-        var fitName = NamesTree.BuildName(subgroups.Restriction(fitting))[0].Name;
+        var fitName = subgroups.First(cj => cj.Contains(fitting)).Representative.Name;
         Console.WriteLine($"Fitting  F(G) = {fitName}");
         Console.WriteLine();
 
