@@ -63,8 +63,11 @@ public readonly struct SubgroupConjugates<T> : IElt<SubgroupConjugates<T>> where
     public bool IsProper => Index != 1;
     public bool IsTrivial => Order == 1;
     public bool IsProperNormal => IsNormal && IsProper;
-    public bool IsSubClassOf(SubgroupConjugates<T> other) => Conjugates.Any(cj => cj.SubSetOf(other.Representative));
-    public bool IsSuperClassOf(SubgroupConjugates<T> other) => Conjugates.Any(cj => cj.SuperSetOf(other.Representative));
+
+    public bool IsSubClassOf(SubgroupConjugates<T> other) => Order < other.Order && 
+                                                             Conjugates.Any(cj => cj.SubSetOf(other.Representative));
+    public bool IsSuperClassOf(SubgroupConjugates<T> other) => Order > other.Order && 
+                                                               Conjugates.Any(cj => cj.SuperSetOf(other.Representative));
     public bool Equals(SubgroupConjugates<T> other) => Hash == other.Hash && 
                                                        Parent.SetEquals(other.Parent) &&
                                                        Conjugates.Any(e => e.SetEquals(other.Representative));

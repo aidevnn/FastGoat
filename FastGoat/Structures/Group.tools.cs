@@ -498,8 +498,7 @@ public static partial class Group
         return FrattiniSubGroup(AllSubGroups(g));
     }
 
-    public static ConcreteGroup<T> Commutator<T>(string name, ConcreteGroup<T> grG, ConcreteGroup<T> grH,
-        ConcreteGroup<T> grK)
+    public static ConcreteGroup<T> Commutator<T>(string name, ConcreteGroup<T> grG, ConcreteGroup<T> grH, ConcreteGroup<T> grK)
         where T : struct, IElt<T>
     {
         if (!grH.SubSetOf(grG) || !grK.SubSetOf(grG))
