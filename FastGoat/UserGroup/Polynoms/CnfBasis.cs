@@ -23,7 +23,7 @@ public struct CnfBasis
         Order = ord;
         CyclotomicPolynomial = FG.CyclotomicPolynomial(ord);
         var deg = CyclotomicPolynomial.Degree;
-        var x = FG.EPoly(CyclotomicPolynomial, 'ξ');
+        var x = FG.EPoly(CyclotomicPolynomial, Cnf.RootsOfUnit);
         Factors = IntExt.PrimesDec(Order).Select(kv => kv.Key.Pow(kv.Value)).Order().ToArray();
         IdxRoots = ord.Range().Select(k => (Cnf.Nth(ord).Pow(k), k))
             .SelectMany(e => new[] { (e.Item1, (e.k, true)), (-e.Item1, (e.k, false)) })

@@ -57,7 +57,7 @@ public class CharacterTable<T> where T : struct, IElt<T>
         var od = der.Count();
         if (od == Gr.Count())
             return;
-        
+
         NormalSubGroupLift(der);
     }
 
@@ -72,7 +72,7 @@ public class CharacterTable<T> where T : struct, IElt<T>
             if (liftState == AddCharacterState.TableFull)
                 return;
         }
-        
+
         InductionFromSubGroup(normal);
     }
 
@@ -85,7 +85,7 @@ public class CharacterTable<T> where T : struct, IElt<T>
     {
         if (AllCharacters.All(chi => chi.HasAllValues))
             return;
-        
+
         foreach (var cj in subgroups.AllSubgroupConjugates.Where(cj => !cj.IsTrivial && cj.IsProper).Order())
         {
             InductionFromSubGroup(cj.Representative);
@@ -95,7 +95,7 @@ public class CharacterTable<T> where T : struct, IElt<T>
 
         if (AllCharacters.All(chi => chi.HasAllValues))
             return;
-        
+
         foreach (var sg in subgroups.AllSubgroupConjugates.Where(cj => !cj.IsTrivial && cj.IsProper).Order()
                      .SelectMany(cj => cj.Conjugates.Skip(1)))
         {
@@ -179,7 +179,7 @@ public class CharacterTable<T> where T : struct, IElt<T>
     {
         if (!Gr.SubSetOf(superGr))
             return;
-        
+
         AllCharacters = AllCharacters.Order().ToArray();
         if (AllCharacters.All(chi => chi.HasAllValues))
             return;
@@ -261,28 +261,18 @@ public class CharacterTable<T> where T : struct, IElt<T>
         if (!Double.IsInteger(r2) || (int)r2 < 1)
             return (AddCharacterState.Rejected, chi2);
 
-        var nbDone = doneChis.Count;
-        var shortName = Gr.ShortName;
-        // Console.WriteLine(new { shortName, NbClasses, nbDone, chi2 });
-
         if (doneChis.All(chi => FG.InnerProduct(chi2, chi).IsZero()))
         {
-            // if (!chi1.Equals(chi2))
-            //     Console.WriteLine($"Orthogonal   Xi = {chi1} => {chi2}");
-
             var prod = FG.InnerProduct(chi2, chi2).Simplify();
             if (prod.Equals(Cnf.CnfOne))
             {
                 var dim = chi2[e]!.Value.Module;
                 var idx = todoChis.FindIndex(c => c.c[e].HasValue && c.c[e]!.Value.Module.Equals(dim));
-                var name = Gr.ShortName;
-                // Console.WriteLine("New Character {0}", new { idx, dim, name, chi2 });
                 var (_, i) = idx == -1 ? todoChis.First() : todoChis[idx];
                 AllCharacters[i] = chi2.Simplify();
                 return (todoChis.Count > 1 ? AddCharacterState.Done : AddCharacterState.TableFull, chi2);
             }
-
-            // Console.WriteLine($"{Gr.ShortName} Orthogonal Not Irreductible Xi = {chi1} => {chi2}");
+            
             return (AddCharacterState.NotIrr, chi2);
         }
 
@@ -327,7 +317,7 @@ public class CharacterTable<T> where T : struct, IElt<T>
         if (c.Im.IsZero())
         {
             var p0 = IntFactorisation.PrettyPrintCnf(c);
-            if (!$"{p0}".Contains('ξ'))
+            if (!$"{p0}".Contains(Cnf.RootsOfUnit))
             {
                 var p1 = -p0;
                 var p2 = p0;
@@ -338,7 +328,7 @@ public class CharacterTable<T> where T : struct, IElt<T>
         else
         {
             var p0 = IntFactorisation.PrettyPrintCnf(c);
-            if (!$"{p0}".Contains('ξ'))
+            if (!$"{p0}".Contains(Cnf.RootsOfUnit))
             {
                 var p1 = -p0;
                 var p2 = IntFactorisation.PrettyPrintCnf(c.Conj);
@@ -385,10 +375,12 @@ public class CharacterTable<T> where T : struct, IElt<T>
         return cellStrs;
     }
 
-    public void DisplayCells(bool tableOnly = false)
+    public void DisplayCells(bool tableOnly = false, char Chi = 'Ꭓ')
     {
         AllCharacters = AllCharacters.Order().ToArray();
         var form = Ring.MatrixDisplayForm;
+        var digits = $"{NbClasses}".Length;
+        var fmtChi = $"{Chi}.{{0,-{digits}}}";
         Ring.MatrixDisplayForm = Ring.MatrixDisplay.Table;
         var Cells = new string[NbClasses + 3, NbClasses + 2];
         var StrTable = PrepareTable();
@@ -404,7 +396,7 @@ public class CharacterTable<T> where T : struct, IElt<T>
                     Cells[i, j] = " ";
 
                 if (j == 0 && i > 2)
-                    Cells[i, j] = $"Ꭓ.{i - 2}";
+                    Cells[i, j] = string.Format(fmtChi, i - 2);
 
                 if (j > 1 && i > 2)
                     Cells[i, j] = StrTable[i - 3, j - 2];

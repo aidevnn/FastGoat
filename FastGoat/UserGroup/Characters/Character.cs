@@ -14,15 +14,15 @@ public readonly struct Character<T> : IElt<Character<T>>, IRingElt<Character<T>>
     public Character(ConcreteGroup<T> gr)
     {
         Classes = Group.ConjugacyClasses(gr);
-        Map = Classes.ToDictionary(e => e, _ => (Cnf?)Cnf.CnfOne);
-        Hash = Map.Aggregate(0, (hash, kp) => (hash, kp.Key.Hash, kp.Value.GetHashCode()).GetHashCode());
+        var map = Map = Classes.ToDictionary(e => e, _ => (Cnf?)Cnf.CnfOne);
+        Hash = Classes.Aggregate(0, (hash, g) => (hash, map[g]?.GetHashCode() ?? 0).GetHashCode());
     }
 
     public Character(ConjugacyClasses<T> classes, Dictionary<T, Cnf?> map)
     {
         Map = map;
         Classes = classes;
-        Hash = Map.Aggregate(0, (hash, kp) => (hash, kp.Key.Hash, kp.Value?.GetHashCode() ?? 0).GetHashCode());
+        Hash = Classes.Aggregate(0, (hash, g) => (hash, map[g]?.GetHashCode() ?? 0).GetHashCode());
     }
 
     public Dictionary<T, Cnf?> Map { get; }

@@ -350,7 +350,7 @@ public static partial class IntFactorisation
 
         var minPol = CheckQuadraticMinPolynomial(e);
         if (minPol.Degree != 2)
-            return cf.E.Poly.ToPolynomial(Ring.Polynomial(Rational.KZero(), MonomOrder.RevLex, $"ξ{cf.N}")[0]);
+            return cf.E.Poly.ToPolynomial(Ring.Polynomial(Rational.KZero(), MonomOrder.RevLex, $"{Cnf.RootsOfUnit}{cf.N}")[0]);
 
         var (disc, roots) = FactorsQuadratic(minPol, details: false);
         var (x0, x1) = (-roots[0][0] / roots[0][1], -roots[1][0] / roots[1][1]);

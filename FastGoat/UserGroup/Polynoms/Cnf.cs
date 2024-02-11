@@ -15,6 +15,8 @@ public struct Cnf : IElt<Cnf>, IRingElt<Cnf>, IFieldElt<Cnf>
         CnfOne = new Cnf(1).One;
     }
 
+    public static char RootsOfUnit { get; set; } = 'ξ';
+
     public static Cnf Nth(int k) => new(k);
 
     public static Cnf CnfZero { get; }
@@ -133,7 +135,7 @@ public struct Cnf : IElt<Cnf>, IRingElt<Cnf>, IFieldElt<Cnf>
     public override string ToString()
     {
         var (cf, p0) = FG.CnfBasis(N).Simplify(this);
-        var letter = cf.N == 4 ? "I" : $"ξ{cf.N}";
+        var letter = cf.N == 4 ? "I" : $"{RootsOfUnit}{cf.N}";
         var ind = Ring.Indeterminates(letter);
         ind.SetOrder(MonomOrder.RevLex);
 
