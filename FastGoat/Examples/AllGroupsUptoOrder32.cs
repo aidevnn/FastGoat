@@ -2,6 +2,7 @@ using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.GenericGroup;
 using FastGoat.Structures.Naming;
+using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup;
 using FastGoat.UserGroup.Words.Tools;
 
@@ -9,12 +10,11 @@ namespace FastGoat.Examples;
 
 public static class AllGroupsUptoOrder32
 {
-    static void GroupDetails(AllSubgroups<WElt> subgroups, ANameElt[] names, bool rename = false, int maxLt = -1)
+    static void GroupDetails(AllSubgroups<WElt> subgroups, ANameElt[] names, int maxLt = -1)
     {
         var nbSharp = 16;
         var (g, infos) = (subgroups.Parent, subgroups.Infos);
-        if (rename)
-            g.Name = names[0].Name;
+        g.Name = names[0].Name;
 
         var name = g.Name;
         maxLt = int.Max(name.Length, maxLt);
@@ -31,21 +31,23 @@ public static class AllGroupsUptoOrder32
         var comChain = Group.CommutatorsChain(g);
         comChain.ForEach(sg =>
             sg.Name = sg.Count() == g.Count() ? g.Name : subgroups.First(cj => cj.Contains(sg)).Representative.Name);
-        var comChainComplete = comChain.Last().Count() == 1 && comChain.First().Count() == g.Count();
+        var comChainComplete = comChain.Last().Count() == 1;
 
         var zentrumsChain = Group.ZentrumsChainFast(g);
         zentrumsChain.ForEach(
             sg => sg.Name = sg.Count() == g.Count() ? g.Name : subgroups.First(cj => cj.Contains(sg)).Representative.Name);
-        var isNilpotent = zentrumsChain.First().Count() == 1 && zentrumsChain.Last().Count() == g.Count();
+        var isNilpotent = zentrumsChain.Last().Count() == g.Count();
 
         var derivedChain = Group.DerivedChain(g);
         derivedChain.ForEach(sg =>
             sg.Name = sg.Count() == g.Count() ? g.Name : subgroups.First(cj => cj.Contains(sg)).Representative.Name);
-        var isSolvable = derivedChain.Last().Count() == 1 && derivedChain.First().Count() == g.Count();
+        var isSolvable = derivedChain.Last().Count() == 1;
 
         Console.WriteLine(g.ShortName);
-        Console.WriteLine(
-            $"{g.GroupType}, {(isNilpotent ? "Nilpotent" : "NotNilpotent")}, {(isSolvable ? "Solvable" : "NotSolvable")}");
+        var simplicity = subgroups.IsSimple() ? "Simple" : "NotSimple";
+        var nilpotency = isNilpotent ? "Nilpotent" : "NotNilpotent";
+        var solubility = isSolvable ? "Solvable" : "NotSolvable";
+        Console.WriteLine($"{simplicity}, {g.GroupType}, {nilpotency}, {solubility}");
         DisplayGroup.Orders(g);
         Console.WriteLine();
 
@@ -114,8 +116,16 @@ public static class AllGroupsUptoOrder32
         }
     }
 
-    static void DisplayGroupDetails(IEnumerable<(AllSubgroups<WElt>subsg, ANameElt[] names)> seq, bool rename = false)
+    static void DisplayGroupDetails(IEnumerable<(AllSubgroups<WElt>subsg, ANameElt[] names)> seq, bool html)
     {
+        if (html)
+        {
+            Console.WriteLine(@"<!DOCTYPE html>");
+            Console.WriteLine(@"<html>");
+            Console.WriteLine(@"<head><style>div { page-break-after: always; font-family: monospace; white-space: pre; }</style></head>");
+            Console.WriteLine(@"<body>");
+        }
+        
         var lt = seq.OrderBy(e => e.subsg.Parent.Count())
             .ThenBy(e => e.subsg.Parent.GroupType)
             .ThenBy(e => e.names[0])
@@ -123,19 +133,32 @@ public static class AllGroupsUptoOrder32
             .ThenBy(e => e.subsg.Infos)
             .ToArray();
         var dicOrd = lt.Select(e => e.subsg.Parent.Count()).Distinct().ToDictionary(k => k, _ => 0);
-        var maxLt = rename ? lt.Max(e => e.names[0].Name.Length) : lt.Max(e => e.subsg.Parent.Name.Length);
+        var maxLt = lt.Max(e => e.names[0].Name.Length);
         var nb = lt.Length;
         foreach (var (subsg, names) in lt)
         {
             var o = subsg.Parent.Count();
+            if (o == 17) break;
+            if (html)
+                Console.WriteLine(@"<div>");
+            
             Console.WriteLine($"Group{o}[{++dicOrd[o]}]");
-            GroupDetails(subsg, names, rename, maxLt);
+            GroupDetails(subsg, names, maxLt);
+
+            if (html)
+                Console.WriteLine(@"</div>");
         }
 
         Console.WriteLine($"Total Groups:{nb}");
+        
+        if (html)
+        {
+            Console.WriteLine(@"</body>");
+            Console.WriteLine(@"</html>");
+        }
     }
 
-    static void DetailsGroupsUptoOrder32()
+    static void DetailsGroupsUptoOrder32(bool html = false)
     {
         GlobalStopWatch.Restart();
         var allAb = 32.Range(1).SelectMany(k => FG.AllAbelianGroupsOfOrder(k)).Select(e => e.ToCGW().AllSubgroups());
@@ -164,7 +187,7 @@ public static class AllGroupsUptoOrder32
             .Naming()
             .ToArray();
 
-        DisplayGroupDetails(allOrderLess32);
+        DisplayGroupDetails(allOrderLess32, html);
 
         GlobalStopWatch.Show();
         Console.Beep();
@@ -172,6 +195,25 @@ public static class AllGroupsUptoOrder32
 
     public static void Run()
     {
-        DetailsGroupsUptoOrder32(); // #  Time:15m50s
+        Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+        DetailsGroupsUptoOrder32(html: true); // #  Time:15m50s
+    }
+
+    public static void A5()
+    {
+        Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+        var g = FG.Alternate(5).ToGroupWrapper();
+        var subs = g.AllSubgroups();
+        var names = NamesTree.BuildName(subs);
+        GroupDetails(subs, names);
+    }
+    
+    public static void Group_81_10()
+    {
+        Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+        var g = FG.WordGroup("a3b3, ababa-2b, ab2ab-1ab-1").ToGroupWrapper();
+        var subs = g.AllSubgroups();
+        var names = NamesTree.BuildName(subs);
+        GroupDetails(subs, names);
     }
 }
