@@ -1,13 +1,16 @@
 
-namespace FastGoat.Structures.GenericGroup;
+using FastGoat.Structures.GenericGroup;
 
-public readonly struct SubgroupConjugates<T> : IElt<SubgroupConjugates<T>> where T : struct, IElt<T>
+namespace FastGoat.Structures.Subgroups;
+
+public struct SubgroupConjugates<T> : IElt<SubgroupConjugates<T>> where T : struct, IElt<T>
 {
     public ConcreteGroup<T> Parent { get; }
     public List<ConcreteGroup<T>> Conjugates { get; }
     public ConcreteGroup<T> Representative { get; }
     public int Index { get; }
     public int Order { get; }
+    public string Subscript { get; set; } = "";
     
     public SubgroupConjugates(ConcreteGroup<T> parent, ConcreteGroup<T> subGroup)
     {
@@ -52,6 +55,7 @@ public readonly struct SubgroupConjugates<T> : IElt<SubgroupConjugates<T>> where
         
         return all.ToArray();
     }
+    
     public bool Contains(ConcreteGroup<T> g) => Conjugates.Any(e => e.SetEquals(g));
     public bool Contains(HashSet<T> g) => Conjugates.Any(e => e.SetEquals(g));
     public bool SubSetOf(ConcreteGroup<T> g) => Conjugates.All(e => g.SuperSetOf(e));
@@ -85,6 +89,8 @@ public readonly struct SubgroupConjugates<T> : IElt<SubgroupConjugates<T>> where
         var sub = Group.Generate(Representative.Name, gt, Representative.GetGenerators().Select(e => new WElt(e)).ToArray());
         return new(gt, sub);
     }
+
+    public string FullName => Subscript.Length == 0 ? Representative.Name : $"{Representative.NameParenthesis()}{Subscript}";
 
     public override int GetHashCode() => Hash;
     public override string ToString() => Representative.Name;

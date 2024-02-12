@@ -2,6 +2,7 @@ using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.GenericGroup;
 using FastGoat.Structures.Naming;
+using FastGoat.Structures.Subgroups;
 using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup;
 using FastGoat.UserGroup.Words.Tools;
@@ -138,7 +139,6 @@ public static class AllGroupsUptoOrder32
         foreach (var (subsg, names) in lt)
         {
             var o = subsg.Parent.Count();
-            if (o == 17) break;
             if (html)
                 Console.WriteLine(@"<div>");
             

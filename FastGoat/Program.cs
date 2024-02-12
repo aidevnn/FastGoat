@@ -32,23 +32,23 @@ using GroupRegX = System.Text.RegularExpressions.Group;
 Console.WriteLine("Hello World");
 
 {
-    FG.Abelian(8).ToCGW().AllSubgroups().DisplayLattice();
-    FG.Abelian(4, 2).ToCGW().AllSubgroups().DisplayLattice();
-    FG.Abelian(2, 2, 2).ToCGW().AllSubgroups().DisplayLattice();
-    FG.Dihedral(4).ToCGW().AllSubgroups().DisplayLattice();
-    FG.Quaternion(8).ToCGW().AllSubgroups().DisplayLattice();
-    FG.Abelian(12).ToCGW().AllSubgroups().DisplayLattice();
-    FG.Abelian(6, 2).ToCGW().AllSubgroups().DisplayLattice();
-    FG.Alternate(4).ToCGW().AllSubgroups().DisplayLattice();
-    FG.Dihedral(6).ToCGW().AllSubgroups().DisplayLattice();
-    FG.DiCyclic(3).ToCGW().AllSubgroups().DisplayLattice();
-    FG.Abelian(8, 2).ToCGW().AllSubgroups().DisplayLattice();
+    FG.Abelian(8).ToCGW().AllSubgroups().DisplayAllSeries();
+    FG.Abelian(4, 2).ToCGW().AllSubgroups().DisplayAllSeries();
+    FG.Abelian(2, 2, 2).ToCGW().AllSubgroups().DisplayAllSeries();
+    FG.Dihedral(4).ToCGW().AllSubgroups().DisplayAllSeries();
+    FG.Quaternion(8).ToCGW().AllSubgroups().DisplayAllSeries();
+    FG.Abelian(12).ToCGW().AllSubgroups().DisplayAllSeries();
+    FG.Abelian(6, 2).ToCGW().AllSubgroups().DisplayAllSeries();
+    FG.Alternate(4).ToCGW().AllSubgroups().DisplayAllSeries();
+    FG.Dihedral(6).ToCGW().AllSubgroups().DisplayAllSeries();
+    FG.DiCyclic(3).ToCGW().AllSubgroups().DisplayAllSeries();
+    FG.Abelian(8, 2).ToCGW().AllSubgroups().DisplayAllSeries();
     
-    FG.Quaternion(16).ToCGW().AllSubgroups().DisplayLattice();
-    FG.SL2p(3).ToCGW().AllSubgroups().DisplayLattice();
-    FG.GL2p(3).ToCGW().AllSubgroups().DisplayLattice();
-    FG.Alternate(5).ToCGW().AllSubgroups().DisplayLattice();
-    FG.Symmetric(5).ToCGW().AllSubgroups().DisplayLattice();
+    FG.Quaternion(16).ToCGW().AllSubgroups().DisplayAllSeries();
+    FG.SL2p(3).ToCGW().AllSubgroups().DisplayAllSeries();
+    FG.GL2p(3).ToCGW().AllSubgroups().DisplayAllSeries();
+    FG.Alternate(5).ToCGW().AllSubgroups().DisplayAllSeries();
+    FG.Symmetric(5).ToCGW().AllSubgroups().DisplayAllSeries();
 }
 
 /* 

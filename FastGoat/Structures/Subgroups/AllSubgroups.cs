@@ -1,9 +1,9 @@
 using System.Collections;
-using System.Text.RegularExpressions;
 using FastGoat.Commons;
+using FastGoat.Structures.GenericGroup;
 using FastGoat.Structures.Naming;
 
-namespace FastGoat.Structures.GenericGroup;
+namespace FastGoat.Structures.Subgroups;
 
 public record SubGroupsInfos(int AllSubGr, int AllConjsCl, int AllNorms) : IComparable<SubGroupsInfos>
 {
@@ -59,7 +59,7 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
     {
         if (g.Count() == Parent.Count())
             return this;
-        
+
         return new(AllSubgroupConjugates
             .Where(sc => sc.Conjugates.Any(e => e.SubSetOf(g)))
             .SelectMany(sc => sc.Restriction(g))
@@ -68,6 +68,7 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
     }
 
     public IEnumerator<SubgroupConjugates<T>> GetEnumerator() => AllSubgroupConjugates.AsEnumerable().GetEnumerator();
+
     IEnumerator IEnumerable.GetEnumerator()
     {
         return GetEnumerator();
@@ -123,7 +124,7 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
 
         return allMax.Order().ToArray();
     }
-    
+
     public void Naming()
     {
         var subscript = "₀₁₂₃₄₅₆₇₈₉";
@@ -143,19 +144,19 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
                 cj.Conjugates.ForEach(sg => sg.Name = name);
             }
 
-            foreach (var gr in AllSubgroupConjugates.GroupBy(cj => cj.Representative.Name).ToArray())
+            foreach (var gr in AllSubgroupConjugates.Select((cj, i) => (cj.Representative.Name, i)).GroupBy(cj => cj.Name).ToArray())
             {
                 if (gr.Count() == 1)
                     continue;
-                
-                var name = gr.Key;
-                foreach (var (cj, k) in gr.Select((cj, k) => (cj, k + 1)))
+
+                var arrCjs = gr.ToArray();
+                for (int k = 0; k < arrCjs.Length; ++k)
                 {
-                    var strK = $"{k}";
+                    var strK = $"{k + 1}";
                     for (int i = 0; i < 10; ++i)
                         strK = strK.Replace($"{i}", $"{subscript[i]}");
 
-                    cj.Conjugates.ForEach(sg => sg.Name = $"{name.WithParenthesis()}{strK}");
+                    AllSubgroupConjugates[arrCjs[k].i].Subscript = strK;
                 }
             }
         }
@@ -163,7 +164,7 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
             throw new("Naming avalaible only for GroupWrapper");
     }
 
-    public List<SubgroupConjugates<T>>[] Lattice
+    public List<SubgroupConjugates<T>>[] MaximalSubgroupSeries
     {
         get
         {
@@ -188,8 +189,8 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
                         all.Add(serie.Append(m).ToList());
                 }
             }
-            
-            return all.ToArray();
+
+            return all.OrderBy(s => s.Count).ToArray();
         }
     }
 
@@ -217,38 +218,59 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
 
         return compSerie;
     }
-    
-    public void DisplayLattice()
+
+    public Dictionary<SerieType, Serie<T>[]> AllSeries
     {
-        Naming();
-        var digits = All.Max(sg => $"{sg.Name}".Length) + 1;
-        var series = Lattice.Select(s=>new Serie<T>(s, SerieType.Serie, digits)).ToArray();
-        
+        get
+        {
+            Naming();
+            var digits = AllSubgroupConjugates.Max(sg => $"{sg.FullName}".Length) + 1;
+            var series = MaximalSubgroupSeries.Select(s => new Serie<T>(s, SerieType.Serie, digits)).ToArray();
+            var chiefSeries = new HashSet<Serie<T>>();
+            var compSeries = new HashSet<Serie<T>>();
+            foreach (var serie in series)
+            {
+                var chief = new Serie<T>(GetChiefSerie(serie.Content), SerieType.Chief, digits);
+                chief.AddTo(chiefSeries);
+                var comp = new Serie<T>(GetCompositionSerie(serie.Content), SerieType.Composition, digits);
+                comp.AddTo(compSeries);
+            }
+
+            compSeries.ExceptWith(chiefSeries);
+
+            var allSeries = new Dictionary<SerieType, Serie<T>[]>()
+            {
+                [SerieType.Serie] = series,
+                [SerieType.Chief] = chiefSeries.OrderBy(s => s.Count).ToArray(),
+                [SerieType.Composition] = compSeries.OrderBy(s => s.Count).ToArray()
+            };
+            return allSeries;
+        }
+    }
+
+
+    public void DisplayAllSeries()
+    {
+        var allSeries = AllSeries;
+
         Console.WriteLine(Parent.ShortName);
         Console.WriteLine(Infos);
-        
-        Console.WriteLine();
-        var chiefSeries = new HashSet<Serie<T>>();
-        var compSeries = new HashSet<Serie<T>>();
-        foreach (var serie in series)
-        {
-            var chief = new Serie<T>(GetChiefSerie(serie.Content), SerieType.Chief, digits);
-            chief.AddTo(chiefSeries);
-            var comp = new Serie<T>(GetCompositionSerie(serie.Content), SerieType.Composition, digits);
-            comp.AddTo(compSeries);
-        }
 
-        series.OrderBy(e => e.Count).Println("Lattice Subgroups");
-        Console.WriteLine($"Total:{series.Length}");
+        Console.WriteLine();
+        var conjSeries = allSeries[SerieType.Serie];
+        var chiefSeries = allSeries[SerieType.Chief];
+        var compSeries = allSeries[SerieType.Composition];
+
+        conjSeries.OrderBy(e => e.Count).Println("Lattice Subgroups");
+        Console.WriteLine($"Total:{conjSeries.Length}");
         Console.WriteLine();
 
-        if (Parent.GroupType != GroupType.AbelianGroup && chiefSeries.Count != 0)
+        if (Parent.GroupType != GroupType.AbelianGroup && chiefSeries.Length != 0)
             chiefSeries.OrderBy(s => s.Count).Println("Chief Series");
-        
-        compSeries.ExceptWith(chiefSeries);
-        if (compSeries.Count != 0)
+
+        if (compSeries.Length != 0)
             compSeries.OrderBy(s => s.Count).Println("Composition Series");
-        
+
         Console.WriteLine();
     }
 
@@ -279,52 +301,4 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
     public IEnumerable<ConcreteGroup<T>> All => AllSubgroupConjugates.SelectMany(sc => sc.Conjugates);
     public IEnumerable<ConcreteGroup<T>> AllRepresentatives => AllSubgroupConjugates.Select(sc => sc.Representative);
     public override string ToString() => Name;
-}
-
-public enum SerieType
-{
-    Serie, Chief, Composition
-}
-public struct Serie<T> : IEquatable<Serie<T>> where T : struct, IElt<T>
-{
-    public List<SubgroupConjugates<T>> Content { get; }
-    public int Placeholder { get; }
-    public List<string> ContentName { get; }
-    public SerieType SerieType { get; }
-    public int Count => Content.Count;
-
-    public Serie(List<SubgroupConjugates<T>> serie, SerieType serieType, int digits)
-    {
-        SerieType = serieType;
-        Content = serie;
-        Placeholder = digits;
-        ContentName = serie.Select(cj => Regex.Replace(cj.Representative.Name, "[₀₁₂₃₄₅₆₇₈₉]", "")).ToList();
-    }
-
-    public bool IsRefinementOf(Serie<T> serie) => ContentName.All(n => serie.ContentName.Contains(n));
-
-    public bool AddTo(HashSet<Serie<T>> series)
-    {
-        var serie = this;
-        if (series.Any(s => serie.IsRefinementOf(s)))
-            return false;
-
-        series.RemoveWhere(s => s.IsRefinementOf(serie));
-        return series.Add(serie);
-    }
-
-    public bool Equals(Serie<T> other) => ContentName.SequenceEqual(other.ContentName);
-
-    public override int GetHashCode() => ContentName.Count;
-    public override string ToString()
-    {
-        var digits = Placeholder;
-        var dash = Enumerable.Repeat('-', Placeholder).Glue();
-        var fmt = $"{{0,-{Placeholder}}}";
-
-        if (SerieType == SerieType.Serie)
-            return Content.Select(s => s.Order == 1 ? $"{s}" : $"{s} {dash}".Substring(0, digits)).Glue("--> ", fmt);
-        
-        return $"{ContentName.Reverse<string>().Glue(" ⊲  ", fmt)}";
-    }
 }

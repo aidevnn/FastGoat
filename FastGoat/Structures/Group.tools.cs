@@ -1,5 +1,6 @@
 using FastGoat.Commons;
 using FastGoat.Structures.GenericGroup;
+using FastGoat.Structures.Subgroups;
 
 namespace FastGoat.Structures;
 

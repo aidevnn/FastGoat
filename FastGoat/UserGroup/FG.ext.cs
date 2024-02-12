@@ -5,6 +5,7 @@ using FastGoat.Structures;
 using FastGoat.Structures.CartesianProduct;
 using FastGoat.Structures.GenericGroup;
 using FastGoat.Structures.Naming;
+using FastGoat.Structures.Subgroups;
 using FastGoat.UserGroup.DatabaseSmallGroups;
 using FastGoat.UserGroup.GModuleN;
 

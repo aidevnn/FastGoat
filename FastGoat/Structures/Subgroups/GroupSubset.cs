@@ -1,6 +1,7 @@
 using System.Collections;
+using FastGoat.Structures.GenericGroup;
 
-namespace FastGoat.Structures.GenericGroup;
+namespace FastGoat.Structures.Subgroups;
 
 public readonly struct GroupSubset<T>(HashSet<T> gens, HashSet<T> content)
     : IEnumerable<T>, IElt<GroupSubset<T>> where T : struct, IElt<T>

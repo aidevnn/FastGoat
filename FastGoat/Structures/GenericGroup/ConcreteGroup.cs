@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.ObjectModel;
 using FastGoat.Commons;
+using FastGoat.Structures.Subgroups;
 
 namespace FastGoat.Structures.GenericGroup;
 

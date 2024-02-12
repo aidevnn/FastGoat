@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using FastGoat.Structures.GenericGroup;
+using FastGoat.Structures.Subgroups;
 
 namespace FastGoat.UserGroup.DatabaseSmallGroups;
 
