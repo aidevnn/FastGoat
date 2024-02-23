@@ -152,7 +152,7 @@ public static class NamesTree
         return [..allProdsFiltered, ..extOps];
     }
     
-    public static ANameElt[] BuildName(AllSubgroups<WElt> subgroups)
+    public static ANameElt[] BuildName(AllSubgroups<WElt> subgroups, bool renaming = true)
     {
         var all = new List<ANameElt>();
         var G = subgroups.Parent;
@@ -171,17 +171,20 @@ public static class NamesTree
                 cjK.Conjugates.ForEach(sg => sg.Name = leaf.Name);
                 var cjH = subgroups.First(cj => cj.Contains(h.Parent));
                 cjH.Conjugates.ForEach(sg => sg.Name = "C1");
-                
-                if (t == ANameElt.DecompType.Abelian)
+
+                if (renaming)
                 {
-                    foreach (var k0 in k.AllRepresentatives)
+                    if (t == ANameElt.DecompType.Abelian)
                     {
-                        var abType = Group.AbelianGroupType(k0);
-                        k0.Name = abType.Glue(" x ", "C{0}");
+                        foreach (var k0 in k.AllRepresentatives)
+                        {
+                            var abType = Group.AbelianGroupType(k0);
+                            k0.Name = abType.Glue(" x ", "C{0}");
+                        }
                     }
+                    // else
+                    //     Console.WriteLine("Non Abelian Simple Group, naming subgroups not implemented yet");
                 }
-                else
-                    Console.WriteLine("Non Abelian Simple Group, naming subgroups not implemented yet");
             }
             else if (t == ANameElt.DecompType.SemiDirectProduct)
             {
@@ -189,10 +192,13 @@ public static class NamesTree
                 var h0 = BuildName(h)[0];
                 all.Add(new SemiDirectProductOp(k0, h0, G));
                 
-                var cjK = subgroups.First(cj => cj.Contains(k.Parent));
-                cjK.Conjugates.ForEach(sg => sg.Name = k0.Name);
-                var cjH = subgroups.First(cj => cj.Contains(h.Parent));
-                cjH.Conjugates.ForEach(sg => sg.Name = h0.Name);
+                if (renaming)
+                {
+                    var cjK = subgroups.First(cj => cj.Contains(k.Parent));
+                    cjK.Conjugates.ForEach(sg => sg.Name = k0.Name);
+                    var cjH = subgroups.First(cj => cj.Contains(h.Parent));
+                    cjH.Conjugates.ForEach(sg => sg.Name = h0.Name);
+                }
             }
             else if (t == ANameElt.DecompType.DirectProduct)
             {
@@ -200,10 +206,13 @@ public static class NamesTree
                 var h0 = BuildName(h)[0];
                 all.Add(new DirectProductOp(k0, h0, G));
                 
-                var cjK = subgroups.First(cj => cj.Contains(k.Parent));
-                cjK.Conjugates.ForEach(sg => sg.Name = k0.Name);
-                var cjH = subgroups.First(cj => cj.Contains(h.Parent));
-                cjH.Conjugates.ForEach(sg => sg.Name = h0.Name);
+                if (renaming)
+                {
+                    var cjK = subgroups.First(cj => cj.Contains(k.Parent));
+                    cjK.Conjugates.ForEach(sg => sg.Name = k0.Name);
+                    var cjH = subgroups.First(cj => cj.Contains(h.Parent));
+                    cjH.Conjugates.ForEach(sg => sg.Name = h0.Name);
+                }
             }
             else
             {
@@ -211,13 +220,18 @@ public static class NamesTree
                 var h0 = BuildName(h)[0];
                 all.Add(new ExtensionOp(k0, h0, G));
                 
-                var cjK = subgroups.First(cj => cj.Contains(k.Parent));
-                cjK.Conjugates.ForEach(sg => sg.Name = k0.Name);
+                if (renaming)
+                {
+                    var cjK = subgroups.First(cj => cj.Contains(k.Parent));
+                    cjK.Conjugates.ForEach(sg => sg.Name = k0.Name);
+                }
             }
         }
         
         var names = all.Concat(CommonNames(G)).Distinct().Order().ToArray();
-        subgroups.Last().Conjugates[0].Name = names[0].Name;
+
+        if (renaming)
+            subgroups.Last().Conjugates[0].Name = names[0].Name;
         return names;
     }
     

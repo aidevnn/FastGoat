@@ -1,4 +1,5 @@
 
+using FastGoat.Commons;
 using FastGoat.Structures.GenericGroup;
 
 namespace FastGoat.Structures.Subgroups;
@@ -10,6 +11,7 @@ public struct SubgroupConjugates<T> : IElt<SubgroupConjugates<T>> where T : stru
     public ConcreteGroup<T> Representative { get; }
     public int Index { get; }
     public int Order { get; }
+    public Dictionary<int, int> Factors { get; }
     public string Subscript { get; set; } = "";
     
     public SubgroupConjugates(ConcreteGroup<T> parent, ConcreteGroup<T> subGroup)
@@ -21,7 +23,12 @@ public struct SubgroupConjugates<T> : IElt<SubgroupConjugates<T>> where T : stru
         Index = parent.Count() / Order;
         Hash = (Parent.Hash, Order, Index).GetHashCode();
         if (Order == 1)
+        {
             Representative.Name = "C1";
+            Factors = new() { [1] = 1 };
+        }
+        else
+            Factors = IntExt.PrimesDec(Order);
     }
     
     public SubgroupConjugates(ConcreteGroup<T> parent, List<ConcreteGroup<T>> conjugates)
@@ -32,6 +39,13 @@ public struct SubgroupConjugates<T> : IElt<SubgroupConjugates<T>> where T : stru
         Order = Representative.Count();
         Index = parent.Count() / Order;
         Hash = (Parent.Hash, Order, Index).GetHashCode();
+        if (Order == 1)
+        {
+            Representative.Name = "C1";
+            Factors = new() { [1] = 1 };
+        }
+        else
+            Factors = IntExt.PrimesDec(Order);
     }
     
     public SubgroupConjugates<T>[] Restriction(ConcreteGroup<T> g)
@@ -56,6 +70,11 @@ public struct SubgroupConjugates<T> : IElt<SubgroupConjugates<T>> where T : stru
         return all.ToArray();
     }
     
+    public bool IsPGroup()
+    {
+        return Factors.Count == 1;
+    }
+
     public bool Contains(ConcreteGroup<T> g) => Conjugates.Any(e => e.SetEquals(g));
     public bool Contains(HashSet<T> g) => Conjugates.Any(e => e.SetEquals(g));
     public bool SubSetOf(ConcreteGroup<T> g) => Conjugates.All(e => g.SuperSetOf(e));

@@ -5,19 +5,6 @@ using FastGoat.Structures.Naming;
 
 namespace FastGoat.Structures.Subgroups;
 
-public record SubGroupsInfos(int AllSubGr, int AllConjsCl, int AllNorms) : IComparable<SubGroupsInfos>
-{
-    public (int, int, int) ToTuples() => (AllSubGr, AllConjsCl, AllNorms);
-
-    public int CompareTo(SubGroupsInfos? other)
-    {
-        if (other is null)
-            return 1;
-
-        return ToTuples().CompareTo(other.ToTuples());
-    }
-}
-
 public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEquatable<AllSubgroups<T>> where T : struct, IElt<T>
 {
     public SubgroupConjugates<T>[] AllSubgroupConjugates { get; }
@@ -55,6 +42,11 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
         return Infos.AllNorms == 2;
     }
 
+    public bool IsSylow()
+    {
+        return Factors.Count == 1;
+    }
+
     public AllSubgroups<T> Restriction(ConcreteGroup<T> g)
     {
         if (g.Count() == Parent.Count())
@@ -75,16 +67,20 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
     }
 
     public SubGroupsInfos Infos { get; }
-
-    public Dictionary<int, SubgroupConjugates<T>[]> AllSylows
+    public Dictionary<int, int> Factors => AllSubgroupConjugates.Last().Factors;
+    
+    public Dictionary<int, SubgroupConjugates<T>[]> AllSylows()
     {
-        get
-        {
-            var ord = Parent.Count();
-            var allConjs = AllSubgroupConjugates;
-            return IntExt.PrimesDec(ord).Select(e => e.Key.Pow(e.Value))
-                .ToDictionary(q => q, q => allConjs.Where(cj => cj.Order == q).ToArray());
-        }
+        var allConjs = AllSubgroupConjugates;
+        return Factors.Select(e => e.Key.Pow(e.Value))
+            .ToDictionary(q => q, q => allConjs.Where(cj => cj.Order == q).ToArray());
+    }
+
+    public List<(int p, int q, SubgroupConjugates<T>)> AllPGroups()
+    {
+        return AllSubgroupConjugates.Where(cj => cj.IsPGroup())
+            .Select(cj => (cj.Factors.First().Key, cj.Order, cj))
+            .ToList();
     }
 
     public string Name => $"SubGroups of {Parent}";
@@ -164,34 +160,31 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
             throw new("Naming avalaible only for GroupWrapper");
     }
 
-    public List<SubgroupConjugates<T>>[] MaximalSubgroupSeries
+    public List<SubgroupConjugates<T>>[] MaximalSubgroupSeries()
     {
-        get
+        var g = AllSubgroupConjugates.Last();
+        var all = MaximalSubgroups().Select(m => new List<SubgroupConjugates<T>>() { g, m }).ToList();
+        var sz = 0;
+        while (all.Sum(s => s.Count) != sz)
         {
-            var g = AllSubgroupConjugates.Last();
-            var all = MaximalSubgroups().Select(m => new List<SubgroupConjugates<T>>() { g, m }).ToList();
-            var sz = 0;
-            while (all.Sum(s => s.Count) != sz)
+            sz = all.Sum(s => s.Count);
+            var tmp = all.ToList();
+            all.Clear();
+            foreach (var serie in tmp)
             {
-                sz = all.Sum(s => s.Count);
-                var tmp = all.ToList();
-                all.Clear();
-                foreach (var serie in tmp)
+                var last = serie.Last();
+                if (last.Order == 1)
                 {
-                    var last = serie.Last();
-                    if (last.Order == 1)
-                    {
-                        all.Add(serie);
-                        continue;
-                    }
-
-                    foreach (var m in MaximalSubgroups(last))
-                        all.Add(serie.Append(m).ToList());
+                    all.Add(serie);
+                    continue;
                 }
-            }
 
-            return all.OrderBy(s => s.Count).ToArray();
+                foreach (var m in MaximalSubgroups(last))
+                    all.Add(serie.Append(m).ToList());
+            }
         }
+
+        return all.OrderBy(s => s.Count).ToArray();
     }
 
     private List<SubgroupConjugates<T>> GetChiefSerie(List<SubgroupConjugates<T>> serie) => serie.Where(cj => cj.IsNormal).ToList();
@@ -219,83 +212,74 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
         return compSerie;
     }
 
-    public Dictionary<SerieType, Serie<T>[]> AllSeries
+    public Dictionary<SerieType, Serie<T>[]> AllSeries()
     {
-        get
+        Naming();
+        var digits = AllSubgroupConjugates.Max(sg => $"{sg.FullName}".Length) + 1;
+        var series = MaximalSubgroupSeries().Select(s => new Serie<T>(s, SerieType.Serie, digits)).ToArray();
+        var chiefSeries = new HashSet<Serie<T>>();
+        var compSeries = new HashSet<Serie<T>>();
+        foreach (var serie in series)
         {
-            Naming();
-            var digits = AllSubgroupConjugates.Max(sg => $"{sg.FullName}".Length) + 1;
-            var series = MaximalSubgroupSeries.Select(s => new Serie<T>(s, SerieType.Serie, digits)).ToArray();
-            var chiefSeries = new HashSet<Serie<T>>();
-            var compSeries = new HashSet<Serie<T>>();
-            foreach (var serie in series)
-            {
-                var chief = new Serie<T>(GetChiefSerie(serie.Content), SerieType.Chief, digits);
-                chief.AddTo(chiefSeries);
-                var comp = new Serie<T>(GetCompositionSerie(serie.Content), SerieType.Composition, digits);
-                comp.AddTo(compSeries);
-            }
-
-            compSeries.ExceptWith(chiefSeries);
-
-            var allSeries = new Dictionary<SerieType, Serie<T>[]>()
-            {
-                [SerieType.Serie] = series,
-                [SerieType.Chief] = chiefSeries.OrderBy(s => s.Count).ToArray(),
-                [SerieType.Composition] = compSeries.OrderBy(s => s.Count).ToArray()
-            };
-            return allSeries;
+            var chief = new Serie<T>(GetChiefSerie(serie.Content), SerieType.Chief, digits);
+            chief.AddTo(chiefSeries);
+            var comp = new Serie<T>(GetCompositionSerie(serie.Content), SerieType.Composition, digits);
+            comp.AddTo(compSeries);
         }
-    }
 
+        compSeries.ExceptWith(chiefSeries);
+
+        var allSeries = new Dictionary<SerieType, Serie<T>[]>()
+        {
+            [SerieType.Serie] = series,
+            [SerieType.Chief] = chiefSeries.OrderBy(s => s.Count).ToArray(),
+            [SerieType.Composition] = compSeries.OrderBy(s => s.Count).ToArray()
+        };
+        return allSeries;
+    }
 
     public void DisplayAllSeries()
     {
-        var allSeries = AllSeries;
-
+        var allSeries = AllSeries();
+        
         Console.WriteLine(Parent.ShortName);
         Console.WriteLine(Infos);
-
+        
         Console.WriteLine();
         var conjSeries = allSeries[SerieType.Serie];
         var chiefSeries = allSeries[SerieType.Chief];
         var compSeries = allSeries[SerieType.Composition];
-
+        
         conjSeries.OrderBy(e => e.Count).Println("Lattice Subgroups");
         Console.WriteLine($"Total:{conjSeries.Length}");
         Console.WriteLine();
-
-        if (Parent.GroupType != GroupType.AbelianGroup && chiefSeries.Length != 0)
+        
+        if (chiefSeries.Length != 0)
             chiefSeries.OrderBy(s => s.Count).Println("Chief Series");
-
+        
         if (compSeries.Length != 0)
             compSeries.OrderBy(s => s.Count).Println("Composition Series");
-
+        
         Console.WriteLine();
     }
 
-    public ConcreteGroup<T> FrattiniSubGroup
+    public ConcreteGroup<T> FrattiniSubGroup()
     {
-        get
-        {
-            var max = MaximalSubgroups().SelectMany(cj => cj.Conjugates)
-                .Aggregate(Parent.AsEnumerable(), (acc, sg) => acc.Intersect(sg));
-            return AllRepresentatives.First(sg => sg.SetEquals(max));
-        }
+        var elts = Parent.ToHashSet();
+        foreach (var sg in MaximalSubgroups().SelectMany(cj => cj.Conjugates))
+            elts.IntersectWith(sg);
+        return AllRepresentatives.First(sg => sg.SetEquals(elts));
     }
 
-    public ConcreteGroup<T> FittingSubGroup
+    public ConcreteGroup<T> FittingSubGroup()
     {
-        get
-        {
-            if (Parent.Count() == 1)
-                return AllSubgroupConjugates.First(cj => cj.IsTrivial).Representative;
+        if (Parent.Count() == 1)
+            return AllSubgroupConjugates.First(cj => cj.IsTrivial).Representative;
 
-            return AllSubgroupConjugates.Where(cj => cj.IsProperNormal)
-                .Descending()
-                .Select(cj => cj.Representative)
-                .First(sg => Group.IsNilpotent(sg));
-        }
+        return AllSubgroupConjugates.Where(cj => cj.IsProperNormal)
+            .Descending()
+            .Select(cj => cj.Representative)
+            .First(sg => Group.IsNilpotent(sg));
     }
 
     public IEnumerable<ConcreteGroup<T>> All => AllSubgroupConjugates.SelectMany(sc => sc.Conjugates);

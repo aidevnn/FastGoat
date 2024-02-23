@@ -64,11 +64,11 @@ public static class AllGroupsUptoOrder32
         var zentrumName = zentrum.Count() == g.Count() ? g.Name : subgroups.First(cj => cj.Contains(zentrum)).Representative.Name;
         Console.WriteLine($"Zentrum  Z(G) = {zentrumName}");
         
-        var frattini = subgroups.FrattiniSubGroup;
+        var frattini = subgroups.FrattiniSubGroup();
         var fratName = subgroups.First(cj => cj.Contains(frattini)).Representative.Name;
         Console.WriteLine($"Frattini Φ(G) = {fratName}");
 
-        var fitting = subgroups.FittingSubGroup;
+        var fitting = subgroups.FittingSubGroup();
         var fitName = subgroups.First(cj => cj.Contains(fitting)).Representative.Name;
         Console.WriteLine($"Fitting  F(G) = {fitName}");
         Console.WriteLine();
