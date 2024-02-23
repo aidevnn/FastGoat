@@ -69,7 +69,7 @@ public struct CnfBasis
 
     public (Cnf, KPoly<Rational>) Simplify(Cnf c)
     {
-        if (c.N == 1 || c.N == 4)
+        if (c.N == 1)
         {
             var p = c.E.Poly.Div(c.E.F).rem;
             return (new(c.N, new(CyclotomicPolynomial, p)), p);
