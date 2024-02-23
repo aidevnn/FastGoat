@@ -572,6 +572,13 @@ public static partial class Group
         return chain;
     }
 
+    public static ConcreteGroup<T> Centralize<T>(ConcreteGroup<T> h, ConcreteGroup<T> s) where T : struct, IElt<T>
+    {
+        var opH = ByConjugate(h);
+        var n = h.Where(g => s.All(a => opH(g, a).Equals(a))).ToArray();
+        return Generate($"C[{s}]({h})", h, n);
+    }
+
     public static ConcreteGroup<T> Normalize<T>(ConcreteGroup<T> h, ConcreteGroup<T> s) where T : struct, IElt<T>
     {
         var n = h.Where(x => s.SetEquals(s.Select(s0 => h.Op(h.Invert(x), h.Op(s0, x))))).ToArray();
