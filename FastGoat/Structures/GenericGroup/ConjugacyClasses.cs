@@ -59,6 +59,7 @@ public readonly struct ConjugacyClasses<T> : IEnumerable<T> where T : struct, IE
     private Dictionary<T, HashSet<T>> ClassOrbx { get; }
     private Dictionary<T, HashSet<T>> ClassStabx { get; }
     private HashSet<T> AllReprs { get; }
+    public int Count => AllReprs.Count;
 
     public string GetClassName(T e) => ClassName.ContainsKey(e) ? ClassName[e] : ClassName[EltRepr[e]];
     public string GetClassName(int i) => ClassName.ContainsKey(Idx2Repr[i]) ? ClassName[Idx2Repr[i]] : ClassName[EltRepr[Idx2Repr[i]]];

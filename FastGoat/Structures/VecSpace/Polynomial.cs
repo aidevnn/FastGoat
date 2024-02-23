@@ -155,7 +155,7 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
         return poly;
     }
 
-    public Polynomial<K, T> Substitute(Dictionary<T, Polynomial<K, T>> dico)
+    public Polynomial<K, T> Substitute(List<(T, Polynomial<K, T>)> dico)
     {
         var poly = Zero;
         foreach (var (m, c) in Coefs)
