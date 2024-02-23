@@ -135,10 +135,6 @@ public static class IntExt
     public static Dictionary<int, int> PrimesDec(BigInteger n)
     {
         var dec = PrimesDecompositionBigInt(BigInteger.Abs(n));
-        var prod = dec.Aggregate(BigInteger.One, (acc, a) => acc * a);
-        // if (prod != BigInteger.Abs(n))
-        //     throw new Exception($"Primes10000 decomposition incomplete n/p={BigInteger.Abs(n) / prod} n={n}");
-
         var dico = dec.GroupBy(e => e).ToDictionary(e => e.Key, e => e.Count());
         if (n < 0)
             dico[-1] = 1;
@@ -727,7 +723,10 @@ public static class IntExt
     /// <returns>The least common multiple of the integers in the array.</returns>
     public static int Lcm(int[] arr)
     {
-        return arr.Length == 1 ? arr[0] : arr.Aggregate((a, b) => a * b) / Gcd(arr);
+        if (!arr.Any())
+            return 1;
+
+        return Lcm(arr.First(), Lcm(arr.Skip(1).ToArray()));
     }
 
     /// <summary>
