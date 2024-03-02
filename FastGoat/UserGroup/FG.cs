@@ -58,8 +58,7 @@ public static partial class FG
 
     public static KPoly<Rational>[] CyclotomicPolynomialsSequence() => CyclotomicPolynomials.Values.Order().ToArray();
 
-
-    public static AbelianDirectSum<T> AbelianDirectSum<T>(ConcreteGroup<T> gr) where T : struct, IElt<T>
+    public static AbelianDirectSum<T> AbelianDirectSum<T>(this ConcreteGroup<T> gr) where T : struct, IElt<T>
     {
         return new(gr);
     }

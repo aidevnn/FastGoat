@@ -43,6 +43,7 @@ public readonly struct CrMap<Tn, Tg> : IEnumerable<KeyValuePair<Ep<Tg>, ZNElt<Tn
     public Polynomial<ZnInt, Xi> ZZero => Map.First().Value.Zero;
     public CrMap<Tn, Tg> Clone => new(this);
     public CrMap<Tn, Tg> Recreate(Indeterminates<Xi> ind) => new(Map.ToDictionary(e => e.Key, e => e.Value.Recreate(ind)));
+    public Dictionary<Ep<Tg>, ZNElt<Tn, Tg>> getMap() => Map.ToDictionary(e => e.Key, e => e.Value.Clone);
 
     public CrMap<Tn, Tg> Substitute(Polynomial<ZnInt, Xi> P, Xi xi) =>
         new(Map.ToDictionary(e => e.Key, e => e.Value.Substitute(P, xi).Simplify()));

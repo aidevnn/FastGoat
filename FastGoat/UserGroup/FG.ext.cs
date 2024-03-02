@@ -29,7 +29,7 @@ public record ExtInfos<Tn, Tg>(CrMap<Tn, Tg> c, ConcreteGroup<Ep2<Tn, Tg>> ext, 
 
 public static partial class FG
 {
-    static EqualityComparer<Homomorphism<Tg, Automorphism<Tn>>>
+    public static EqualityComparer<Homomorphism<Tg, Automorphism<Tn>>>
         EqOpByAut<Tn, Tg>(ConcreteGroup<Tg> G, ConcreteGroup<Automorphism<Tg>> autG, ConcreteGroup<Automorphism<Tn>> autN)
         where Tn : struct, IElt<Tn>
         where Tg : struct, IElt<Tg>

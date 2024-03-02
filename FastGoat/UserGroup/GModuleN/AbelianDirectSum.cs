@@ -86,4 +86,16 @@ public readonly struct AbelianDirectSum<T> where T : struct, IElt<T>
         var decompElem = DecompElementary.ToArray();
         return ToElementaries[g].Ei.Select((ei, k) => (ei, k)).ToDictionary(a => decompElem[a.k].g, a => a.ei);
     }
+
+    public ConcreteGroup<T>[] CanonicSubgroups()
+    {
+        var ab = Ab;
+        return Decomp.Select(e => Group.Generate($"C{e.o}", ab, e.g)).ToArray();
+    }
+
+    public ConcreteGroup<T>[] ElementarySubgroups()
+    {
+        var ab = Ab;
+        return DecompElementary.Select(e => Group.Generate($"C{e.o}", ab, e.g)).ToArray();
+    }
 }
