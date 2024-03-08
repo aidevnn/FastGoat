@@ -157,7 +157,18 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
             }
         }
         else
-            throw new("Naming avalaible only for GroupWrapper");
+        {
+            var subgsw = ToGroupWrapper();
+            subgsw.Naming();
+            foreach (var cjw in subgsw)
+            {
+                var gens = cjw.Representative.GetGenerators().Select(e => (T)e.E).ToArray();
+                var k = AllSubgroupConjugates.Select((cj, k) => (cj, k))
+                    .First(e => e.cj.Order == cjw.Order && e.cj.Conjugates.Any(sg => sg.SuperSetOf(gens))).k;
+                AllSubgroupConjugates[k].Conjugates.ForEach(sg => sg.Name = cjw.Representative.Name);
+                AllSubgroupConjugates[k].Subscript = cjw.Subscript;
+            }
+        }
     }
 
     public List<SubgroupConjugates<T>>[] MaximalSubgroupSeries()
