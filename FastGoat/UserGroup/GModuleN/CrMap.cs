@@ -21,13 +21,15 @@ public readonly struct CrMap<Tn, Tg> : IEnumerable<KeyValuePair<Ep<Tg>, ZNElt<Tn
         Map = new();
     }
 
-    public CrMap(Dictionary<Ep<Tg>, ZNElt<Tn, Tg>> map)
+    public CrMap(ConcreteGroup<Tg> g, Dictionary<Ep<Tg>, ZNElt<Tn, Tg>> map)
     {
+        G = g;
         Map = map;
     }
 
     public CrMap(CrMap<Tn, Tg> cr)
     {
+        G = cr.G;
         Map = new(cr.ToDictionary(e => e.Key, e => e.Value));
     }
 
@@ -35,21 +37,30 @@ public readonly struct CrMap<Tn, Tg> : IEnumerable<KeyValuePair<Ep<Tg>, ZNElt<Tn
     public Gp<Tg> Gr => Product.Gp(G, R);
     public AbelianDirectSum<Tn> Nab => Map.First().Value.Nab;
     public ConcreteGroup<Tn> N => Map.First().Value.N;
-    public ConcreteGroup<Tg> G => Map.First().Value.G;
+    public ConcreteGroup<Tg> G { get; }
     public MapElt<Tg, Automorphism<Tn>> L => Map.First().Value.L;
     public bool IsZero() => Map.Values.All(c => c.IsZero());
-    public CrMap<Tn, Tg> Zero => new(Map.ToDictionary(e => e.Key, e => e.Value.ZNZero));
+    public CrMap<Tn, Tg> Zero => new(G, Map.ToDictionary(e => e.Key, e => e.Value.ZNZero));
     public ZNElt<Tn, Tg> ZNZero => Map.First().Value.ZNZero;
     public Polynomial<ZnInt, Xi> ZZero => Map.First().Value.Zero;
-    public CrMap<Tn, Tg> Clone => new(this);
-    public CrMap<Tn, Tg> Recreate(Indeterminates<Xi> ind) => new(Map.ToDictionary(e => e.Key, e => e.Value.Recreate(ind)));
-    public Dictionary<Ep<Tg>, ZNElt<Tn, Tg>> getMap() => Map.ToDictionary(e => e.Key, e => e.Value.Clone);
+    public CrMap<Tn, Tg> Clone() => new(this);
+
+    public CrMap<Tn, Tg> Clone(ConcreteGroup<Tg> g)
+    {
+        var gp = Product.GpGenerate(g, R);
+        var map0 = Map;
+        var zero = ZNZero;
+        var map = gp.ToDictionary(e => e, e => map0.ContainsKey(e) ? map0[e].Clone() : zero);
+        return new(g, map);
+    }
+    public CrMap<Tn, Tg> Recreate(Indeterminates<Xi> ind) => new(G, Map.ToDictionary(e => e.Key, e => e.Value.Recreate(ind)));
+    public Dictionary<Ep<Tg>, ZNElt<Tn, Tg>> getMap() => Map.ToDictionary(e => e.Key, e => e.Value.Clone());
 
     public CrMap<Tn, Tg> Substitute(Polynomial<ZnInt, Xi> P, Xi xi) =>
-        new(Map.ToDictionary(e => e.Key, e => e.Value.Substitute(P, xi).Simplify()));
+        new(G, Map.ToDictionary(e => e.Key, e => e.Value.Substitute(P, xi).Simplify()));
 
     public CrMap<Tn, Tg> Substitute((Polynomial<ZnInt, Xi> P, Xi xi)[] subs) =>
-        new(Map.ToDictionary(e => e.Key, e => e.Value.Substitute(subs).Simplify()));
+        new(G, Map.ToDictionary(e => e.Key, e => e.Value.Substitute(subs).Simplify()));
 
     public ZNElt<Tn, Tg> this[Ep<Tg> index] => Map[index];
 
@@ -63,14 +74,22 @@ public readonly struct CrMap<Tn, Tg> : IEnumerable<KeyValuePair<Ep<Tg>, ZNElt<Tn
         {
             var cr = this;
             var gs = Nab.DecompElementaryMap.Keys.ToArray();
-            return gs.Select(t => new CrMap<Tn, Tg>(cr.ToDictionary(e => e.Key, e => e.Value.Get(t)))).ToArray();
+            var g0 = G;
+            return gs.Select(t => new CrMap<Tn, Tg>(g0, cr.ToDictionary(e => e.Key, e => e.Value.Get(t)))).ToArray();
         }
     }
 
-    public CrMap<Tn, Tg> Add(CrMap<Tn, Tg> cr) => new(Map.ToDictionary(e => e.Key, e => (e.Value + cr[e.Key]).Simplify()));
-    public CrMap<Tn, Tg> Sub(CrMap<Tn, Tg> cr) => new(Map.ToDictionary(e => e.Key, e => (e.Value - cr[e.Key]).Simplify()));
-    public CrMap<Tn, Tg> Mul(Polynomial<ZnInt, Xi> c) => new(Map.ToDictionary(e => e.Key, e => (e.Value * c).Simplify()));
-    public CrMap<Tn, Tg> Mul(int c) => new(Map.ToDictionary(e => e.Key, e => (c * e.Value).Simplify()));
+    public CrMap<Tn, Tg> Add(CrMap<Tn, Tg> cr) => new(G, Map.ToDictionary(e => e.Key, e => (e.Value + cr[e.Key]).Simplify()));
+    public CrMap<Tn, Tg> Sub(CrMap<Tn, Tg> cr) => new(G, Map.ToDictionary(e => e.Key, e => (e.Value - cr[e.Key]).Simplify()));
+    public CrMap<Tn, Tg> Mul(Polynomial<ZnInt, Xi> c) => new(G, Map.ToDictionary(e => e.Key, e => (e.Value * c).Simplify()));
+
+    public CrMap<Tn, Tg> Mul(CrMap<Tn, Tg> cr)
+    {
+        var map = Map.Grid2D(cr.Map).ToDictionary(e => Product.Ep(e.t1.Key.Ei.Concat(e.t2.Key.Ei).ToArray()),
+            e => e.t1.Value.Mul(e.t2.Value).Simplify());
+        return new(G, map);
+    }
+    public CrMap<Tn, Tg> Mul(int c) => new(G, Map.ToDictionary(e => e.Key, e => (c * e.Value).Simplify()));
 
     public CrMap<Tn, Tg> ConsTerm()
     {
@@ -117,7 +136,7 @@ public readonly struct CrMap<Tn, Tg> : IEnumerable<KeyValuePair<Ep<Tg>, ZNElt<Tn
     {
         var gr = Gr;
         var map = Map.ToDictionary(e => gr.Act(g, e.Key), e => e.Value.Act(g).Simplify());
-        return new(map);
+        return new(G, map);
     }
 
     public MapElt<Ep<Tg>, Tn> ToMapElt
@@ -139,9 +158,10 @@ public readonly struct CrMap<Tn, Tg> : IEnumerable<KeyValuePair<Ep<Tg>, ZNElt<Tn
         {
             var map = Map;
             var gr = Gr;
+            var g0 = G;
             var maps = gr.ToDictionary(g => g, g => map[g].Decomp);
             var nb = maps.First().Value.Length;
-            return nb.Range().Select(k => new CrMap<Tn, Tg>(gr.ToDictionary(g => g, g => maps[g][k]))).ToArray();
+            return nb.Range().Select(k => new CrMap<Tn, Tg>(g0, gr.ToDictionary(g => g, g => maps[g][k]))).ToArray();
         }
     }
 
@@ -171,7 +191,7 @@ public readonly struct CrMap<Tn, Tg> : IEnumerable<KeyValuePair<Ep<Tg>, ZNElt<Tn
         var map1 = G.SelectMany(g => map0.ToDictionary(e => Gr1.Act(g, e.Key), e => e.Value.Act(g).Simplify()))
             .ToDictionary(e => e.Key, e => e.Value);
 
-        return new(map1);
+        return new(G, map1);
     }
 
     public CrMap<Tn, Tg> ToInhomogenous()
@@ -187,7 +207,7 @@ public readonly struct CrMap<Tn, Tg> : IEnumerable<KeyValuePair<Ep<Tg>, ZNElt<Tn
         var G0 = G;
         var map = Map;
         var map0 = Gr1.ToDictionary(e => e, e => map[Chg(e, G0)]);
-        return new(map0);
+        return new(G, map0);
     }
 
     public Xi[] ExtractAllIndeterminates => Map.Values.SelectMany(c => c.ExtractAllIndeterminates).Distinct().Order().ToArray();

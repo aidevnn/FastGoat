@@ -43,7 +43,7 @@ public static class ZNSolver
             throw new();
 
         var v = map.First().Value;
-        var G = v.L.Domain;
+        var G = map.G;
         var Gr_next = Product.GpGenerate($"G{r + 1}", Enumerable.Repeat(G, r + 1).Cast<IGroup<Tg>>().ToArray());
 
         var mapNext = new Dictionary<Ep<Tg>, ZNElt<Tn, Tg>>();
@@ -65,7 +65,7 @@ public static class ZNSolver
             mapNext[ep] = (first + other + last).Simplify();
         }
 
-        return new(mapNext);
+        return new(G, mapNext);
     }
 
     public static CrMap<Tn, Tg> TDr<Tn, Tg>(CrMap<Tn, Tg> map)
@@ -80,7 +80,7 @@ public static class ZNSolver
             throw new();
 
         var v = map.First().Value;
-        var G = v.L.Domain;
+        var G = map.G;
         var Gr_next = Product.GpGenerate($"G{r + 1}", Enumerable.Repeat(G, r + 1).Cast<IGroup<Tg>>().ToArray());
 
         var mapNext = new Dictionary<Ep<Tg>, ZNElt<Tn, Tg>>();
@@ -90,7 +90,7 @@ public static class ZNSolver
             mapNext[ep] = other.Simplify();
         }
 
-        return new(mapNext);
+        return new(G, mapNext);
     }
 
     public static CrMap<Tn, Tg> Cr<Tn, Tg>(ConcreteGroup<Tn> N, ConcreteGroup<Tg> G, MapElt<Tg, Automorphism<Tn>> L, int r)
@@ -115,7 +115,7 @@ public static class ZNSolver
         var map = Gr.OrderBy(ep => ep.Ei.Count(ei => !ei.Equals(G.Neutral()))).ThenBy(ep => ep)
             .Zip(z1.Concat(zi)).ToDictionary(e => e.First, e => e.Second);
 
-        return new(map);
+        return new(G, map);
     }
 
     public static CrMap<Tn, Tg> TCr<Tn, Tg>(ConcreteGroup<Tn> N, ConcreteGroup<Tg> G, MapElt<Tg, Automorphism<Tn>> L, int r)
@@ -139,7 +139,7 @@ public static class ZNSolver
             .Zip(zi.Prepend(z0)).ToDictionary(e => e.First, e => e.Second);
         var map = G.SelectMany(g => map0.ToDictionary(e => Grp.Act(g, e.Key), e => e.Value.Act(g).Simplify()))
             .ToDictionary(e => e.Key, e => e.Value);
-        return new(map);
+        return new(G, map);
     }
 
     public static (CrMap<Tn, Tg> cr, CrMap<Tn, Tg> cnext) LRCochain<Tn, Tg>(ConcreteGroup<Tn> N, ConcreteGroup<Tg> G, MapElt<Tg,
@@ -184,7 +184,7 @@ public static class ZNSolver
         var zero = cr.ZNZero;
         var pZero = zero.Zero;
         var Nab = zero.Nab;
-        var G = zero.G;
+        var G = cr.G;
         var allOrders = Nab.ElemOrders;
         var invs = Nab.ElemInvertible;
         var modSolve = Nab.ElemSolve;
@@ -251,7 +251,7 @@ public static class ZNSolver
         where Tg : struct, IElt<Tg>
         where Tn : struct, IElt<Tn>
     {
-        var map = cr.Clone;
+        var map = cr.Clone();
         var zero = map.ZZero;
         var xis = zero.Indeterminates.ToArray();
         var eqXis = map.ExtractAllIndeterminates;
@@ -281,7 +281,7 @@ public static class ZNSolver
         where Tn : struct, IElt<Tn>
     {
         var mapI = SysRewrite(c2);
-        var mapC2 = new CrMap<Tn, Tg>(mapI.ToDictionary(e => e.Key, e => e.Value));
+        var mapC2 = new CrMap<Tn, Tg>(c2.G, mapI.ToDictionary(e => e.Key, e => e.Value));
         var listReds = new List<SysReduction>();
         var qis = new Queue<Xi>(mapC2.ZZero.Indeterminates.Where(xi => xi.xi.Contains('q')));
         while (!mapC2.IsZero())
@@ -330,10 +330,10 @@ public static class ZNSolver
         where Tg : struct, IElt<Tg>
         where Tn : struct, IElt<Tn>
     {
-        var map0 = cr.Clone;
+        var map0 = cr.Clone();
         var listReds = new List<SysReduction>();
         var qis = new Queue<Xi>(map0.Values.First().Indeterminates.Where(xi => xi.xi.Contains('q')));
-        var ltMap = new List<CrMap<Tn, Tg>>() { cr.ConsTerm(), cr.Clone };
+        var ltMap = new List<CrMap<Tn, Tg>>() { cr.ConsTerm(), cr.Clone() };
         while (!map0.Equals(map0.ConsTerm()))
         {
             (var sred, map0) = SysSolveStep(map0, qis);
@@ -395,7 +395,7 @@ public static class ZNSolver
         where Tg : struct, IElt<Tg>
         where Tn : struct, IElt<Tn>
     {
-        var mapTmp = new CrMap<Tn, Tg>(crNext.ToDictionary(e => e.Key, e => e.Value));
+        var mapTmp = new CrMap<Tn, Tg>(crNext.G, crNext.ToDictionary(e => e.Key, e => e.Value));
         var listReds = new List<SysReduction>();
         var qis = new Queue<Xi>(mapTmp.Values.First().Indeterminates.Where(xi => xi.xi.Contains('q')));
 
@@ -454,7 +454,7 @@ public static class ZNSolver
 
         var nb0 = nbCobs;
         var lt = new List<(int ord, int nb, CrMap<Tn, Tg> map)>();
-        var map02 = mapCobs0.Clone;
+        var map02 = mapCobs0.Clone();
 
         foreach (var (k0, ord, map) in gensCocs.OrderBy(e => e.ord).Select((e, i) => (i, e.ord, e.map)))
         {
@@ -472,7 +472,7 @@ public static class ZNSolver
             if (nb0 < nb1)
             {
                 lt.Add((ord, nb1 / nb0, map));
-                map02 = mr.Clone;
+                map02 = mr.Clone();
                 nb0 = nb1;
             }
 

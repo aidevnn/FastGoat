@@ -33,33 +33,60 @@ using GroupRegX = System.Text.RegularExpressions.Group;
 
 Console.WriteLine("Hello World");
 
-void RCohomologyCyclicgroup(int p, int r)
+void TwoCohomologyCyclicgroup(int p)
 {
-    if (r < 1 || !Primes10000.Contains(p))
+    if (!Primes10000.Contains(p))
         throw new();
 
     var cp = new Cn(p);
     var autCp = Group.AutomorphismGroup(cp);
     var L = new MapElt<ZnInt, Automorphism<ZnInt>>(cp, autCp); // trivial
 
-    Console.WriteLine($"H{r}({cp}, {cp})");
-    var solsCobs = ZNSolver.ReduceCoboundaries(cp, cp, L, r - 1);
-    var solsCocs = ZNSolver.ReduceCocycles(cp, cp, L, r);
-    var (nbCobs, sredCobs, mapCobs) = solsCobs;
-    var (nbCocs, sredCocs, mapCocs) = solsCocs;
-    var nb2Cohs = nbCocs / nbCobs;
-    Console.WriteLine($"|B{r}|:{nbCobs} |Z{r}|:{nbCocs} |H{r}|:{nb2Cohs}");
+    var (cohs1, _, _) = ZNSolver.ReduceCohomologies(cp, cp, L, 1);
+    var (cohs2, sysCobs2, _) = ZNSolver.ReduceCohomologies(cp, cp, L, 2);
+    ZNSolver.DisplayCrMap("H2", cohs2);
 
-    if (nb2Cohs != p)
-        throw new();
+    var cobs2 = sysCobs2.allMaps;
+    var ind = cobs2.ZZero.Indeterminates;
+    var set1 = cohs1.Grid2D().Select(e => e.t1.Mul(e.t2).Recreate(ind)).ToHashSet();
+    ZNSolver.DisplayCrMap(set1.Prepend(cobs2).ToArray());
+    var set2 = new HashSet<CrMap<ZnInt, ZnInt>>();
+    foreach (var m1 in set1)
+    {
+        var m2 = ZNSolver.SysRepresentative(cobs2.Add(m1));
+        set2.Add(m2);
+    }
     
+    ZNSolver.DisplayCrMap(set2.ToArray());
+    Console.WriteLine();
+}
+
+void TestSylowsAndCohomology<Tn, Tg>(ConcreteGroup<Tg> G, ConcreteGroup<Tn> N)
+    where Tn : struct, IElt<Tn>
+    where Tg : struct, IElt<Tg>
+{
+    var autG = Group.AutomorphismGroup(G);
+    var autN = Group.AutomorphismGroup(N);
+    var ops = Group.AllHomomorphisms(G, autN).ToHashSet(FG.EqOpByAut(G, autG, autN));
+    var allSubgs = G.AllSubgroups();
+    allSubgs.Naming();
+    var pSylows = allSubgs.AllSylows().Values.SelectMany(cj => cj).Select(sg => sg.Representative).ToArray();
+    foreach (var L in ops)
+    {
+        var L0 = L.ToMapElt(autN);
+        pSylows.Select(sg => ZNSolver.ReduceCohomologies(N, sg, L0)).ToArray();
+        ZNSolver.ReduceCohomologies(N, G, L0);
+        Console.WriteLine();
+    }
+
     Console.WriteLine();
 }
 
 {
-    foreach (var p in new[] { 2, 3, 5, 7 })
-    {
-        for (int r = 1; p.Pow(r + 1) < 1000; ++r)
-            RCohomologyCyclicgroup(p, r); // H^r(Cp, Cp) = Cp
-    }
+    TwoCohomologyCyclicgroup(2);
+    TwoCohomologyCyclicgroup(3);
+    
+    // TestSylowsAndCohomology(FG.Symmetric(3), FG.Abelian(2));
+    // TestSylowsAndCohomology(Group.SemiDirectProd(new Cn(3), new Cn(4)), FG.Abelian(2));
+    // TestSylowsAndCohomology(FG.Alternate(4), FG.Abelian(2));
 }
