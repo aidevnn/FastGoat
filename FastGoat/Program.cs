@@ -33,60 +33,60 @@ using GroupRegX = System.Text.RegularExpressions.Group;
 
 Console.WriteLine("Hello World");
 
-void TwoCohomologyCyclicgroup(int p)
-{
-    if (!Primes10000.Contains(p))
-        throw new();
-
-    var cp = new Cn(p);
-    var autCp = Group.AutomorphismGroup(cp);
-    var L = new MapElt<ZnInt, Automorphism<ZnInt>>(cp, autCp); // trivial
-
-    var (cohs1, _, _) = ZNSolver.ReduceCohomologies(cp, cp, L, 1);
-    var (cohs2, sysCobs2, _) = ZNSolver.ReduceCohomologies(cp, cp, L, 2);
-    ZNSolver.DisplayCrMap("H2", cohs2);
-
-    var cobs2 = sysCobs2.allMaps;
-    var ind = cobs2.ZZero.Indeterminates;
-    var set1 = cohs1.Grid2D().Select(e => e.t1.Mul(e.t2).Recreate(ind)).ToHashSet();
-    ZNSolver.DisplayCrMap(set1.Prepend(cobs2).ToArray());
-    var set2 = new HashSet<CrMap<ZnInt, ZnInt>>();
-    foreach (var m1 in set1)
-    {
-        var m2 = ZNSolver.SysRepresentative(cobs2.Add(m1));
-        set2.Add(m2);
-    }
-    
-    ZNSolver.DisplayCrMap(set2.ToArray());
-    Console.WriteLine();
-}
-
-void TestSylowsAndCohomology<Tn, Tg>(ConcreteGroup<Tg> G, ConcreteGroup<Tn> N)
+void DiagAction<Tg, Tn>(ConcreteGroup<Tn> N, ConcreteGroup<Tg> G)
     where Tn : struct, IElt<Tn>
     where Tg : struct, IElt<Tg>
 {
+    var nab = N.AbelianDirectSum();
+    var subgs = nab.ElementarySubgroups();
+
     var autG = Group.AutomorphismGroup(G);
     var autN = Group.AutomorphismGroup(N);
     var ops = Group.AllHomomorphisms(G, autN).ToHashSet(FG.EqOpByAut(G, autG, autN));
-    var allSubgs = G.AllSubgroups();
-    allSubgs.Naming();
-    var pSylows = allSubgs.AllSylows().Values.SelectMany(cj => cj).Select(sg => sg.Representative).ToArray();
-    foreach (var L in ops)
+    var diagOps = ops.Where(op => G.All(g => subgs.All(sg => sg.SetEquals(sg.Select(e => op[g][e]))))).ToArray();
+    foreach (var (L, k) in diagOps.Select((op, k) => (op.ToMapElt(autN), k + 1)))
     {
-        var L0 = L.ToMapElt(autN);
-        pSylows.Select(sg => ZNSolver.ReduceCohomologies(N, sg, L0)).ToArray();
-        ZNSolver.ReduceCohomologies(N, G, L0);
+        var lbl = $"Lbl{k}/{diagOps.Length}/{ops.Count}";
+        var cohsProd = subgs.Select(sg => ZNSolver.ReduceCohomologies(sg, G, L, r: 2, lbl)).ToArray();
+        var cohs = ZNSolver.ReduceCohomologies(N, G, L, r: 2, lbl);
+        
+        var nbH2 = cohs.solsCohs.Length;
+        var prod = cohsProd.Select(s => s.solsCohs.Length).Aggregate((a0, a1) => a0 * a1);
+        if (nbH2 == prod)
+            Console.WriteLine("PASS");
+        else
+            throw new("FAIL");
+        
         Console.WriteLine();
     }
-
-    Console.WriteLine();
 }
 
 {
-    TwoCohomologyCyclicgroup(2);
-    TwoCohomologyCyclicgroup(3);
-    
-    // TestSylowsAndCohomology(FG.Symmetric(3), FG.Abelian(2));
-    // TestSylowsAndCohomology(Group.SemiDirectProd(new Cn(3), new Cn(4)), FG.Abelian(2));
-    // TestSylowsAndCohomology(FG.Alternate(4), FG.Abelian(2));
+    var (G, N) = (FG.Abelian(2), FG.Abelian(2, 4));
+    DiagAction(N, G);
+}
+
+{
+    var (G, N) = (FG.Abelian(2), FG.Abelian(4, 4));
+    DiagAction(N, G);
+}
+
+{
+    var (G, N) = (FG.Abelian(4), FG.Abelian(2, 2));
+    DiagAction(N, G);
+}
+
+{
+    var (G, N) = (FG.Abelian(4), FG.Abelian(2, 4));
+    DiagAction(N, G);
+}
+
+{
+    var (G, N) = (FG.Abelian(3), FG.Abelian(3, 3));
+    DiagAction(N, G);
+}
+
+{
+    var (G, N) = (FG.Abelian(3), FG.Abelian(3, 9));
+    DiagAction(N, G);
 }
