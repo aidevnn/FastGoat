@@ -47,13 +47,35 @@ void DiagAction<Tg, Tn>(ConcreteGroup<Tn> N, ConcreteGroup<Tg> G)
     foreach (var (L, k) in diagOps.Select((op, k) => (op.ToMapElt(autN), k + 1)))
     {
         var lbl = $"Lbl{k}/{diagOps.Length}/{ops.Count}";
-        var cohsProd = subgs.Select(sg => ZNSolver.ReduceCohomologies(sg, G, L, r: 2, lbl)).ToArray();
-        var cohs = ZNSolver.ReduceCohomologies(N, G, L, r: 2, lbl);
+        var decomp = subgs.Select(sg => ZNSolver.ReduceCohomologies(sg, G, L, r: 2, lbl)).ToArray();
+        var sol = ZNSolver.ReduceCohomologies(N, G, L, r: 2, lbl);
         
-        var nbH2 = cohs.solsCohs.Length;
-        var prod = cohsProd.Select(s => s.solsCohs.Length).Aggregate((a0, a1) => a0 * a1);
+        var nbH2 = sol.solsCohs.Length;
+        var prod = decomp.Select(s => s.solsCohs.Length).Aggregate((a0, a1) => a0 * a1);
         if (nbH2 == prod)
+        {
             Console.WriteLine("PASS");
+            var cobsExpected = sol.solsCobs.allMaps.ToGroupMapElt();
+            var cocsExpected = sol.solsCocs.allMaps.ToGroupMapElt();
+            var cohsExpected = sol.solsCohs.Select(c => c.ToMapElt).ToHashSet();
+
+            var gb = (MapGroupBase<Ep<Tg>, Tn>)cobsExpected.BaseGroup;
+
+            var cobsSeq = decomp.Select(e => e.solsCobs.allMaps.ToGroupMapElt()).ToArray();
+            var cobsActual = cobsSeq.MultiLoop().Select(l => gb.OpSeq(l)).ToHashSet();
+            if (!cobsExpected.SetEquals(cobsActual))
+                throw new("#Coboundaries");
+            
+            var cocsSeq = decomp.Select(e => e.solsCocs.allMaps.ToGroupMapElt()).ToArray();
+            var cocsActual = cocsSeq.MultiLoop().Select(l => gb.OpSeq(l)).ToHashSet();
+            if (!cocsExpected.SetEquals(cocsActual))
+                throw new("#Cocycles");
+
+            var cohsSeq = decomp.Select(e => e.solsCohs.Select(c => c.ToMapElt)).ToArray();
+            var cohsActual = cohsSeq.MultiLoop().Select(l => gb.OpSeq(l)).ToHashSet();
+            if (!cohsExpected.SetEquals(cohsActual))
+                throw new("#Cohomologies");
+        }
         else
             throw new("FAIL");
         
