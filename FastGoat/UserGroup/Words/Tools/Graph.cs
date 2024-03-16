@@ -75,25 +75,26 @@ public partial class Graph
         return op;
     }
 
-    private void Build(bool details = true, bool time = true)
+    private void Build()
     {
-        if (time)
+        if (Logger.Level != LogLevel.Off)
             GlobalStopWatch.AddLap();
         
-        if (details)
+        if (Logger.Level == LogLevel.Level2)
             DisplayFancy("Start");
 
         while (!End)
         {
-            if (time && Step >= 50 && Step % 50 == 0)
-                Console.WriteLine($"Step:{Step} NbClasses:{Classes.Count - 1}");
+            if (Logger.Level != LogLevel.Off)
+                if (Step >= 50 && Step % 50 == 0)
+                    Console.WriteLine($"Step:{Step} NbClasses:{Classes.Count - 1}");
             
             var (cl1, cl2) = UpdateGraph();
             if (cl1 is not null)
             {
                 var op = Coincidence(cl1, cl2!);
                 ++Step;
-                if (details)
+                if (Logger.Level == LogLevel.Level2)
                     DisplayFancy(op);
             }
             else
@@ -108,7 +109,7 @@ public partial class Graph
                     cl4[g.Invert()] = cl3;
                     var op = $"Add Op:({cl3}) * {g} = ({cl4})";
                     ++Step;
-                    if (details)
+                    if (Logger.Level == LogLevel.Level2)
                         DisplayFancy(op);
                 }
                 else
@@ -116,13 +117,13 @@ public partial class Graph
             }
         }
 
-        if (details)
+        if (Logger.Level == LogLevel.Level2)
         {
             DisplayFancy("End");
             Console.WriteLine();
         }
 
-        if (time)
+        if (Logger.Level != LogLevel.Off)
         {
             Console.WriteLine($"Step:{Step} NbClasses:{Classes.Count - 1}");
             GlobalStopWatch.Show();
@@ -235,6 +236,6 @@ public partial class Graph
             .Select(w => w.Select(c => new Gen(c)).ToArray()).ToArray();
     }
 
-    public static void RunToddCoxeterAlgo(string sg, string rel, bool details = true, bool time = true) => new Graph(sg, rel).Build(details, time);
-    public static void RunToddCoxeterAlgo(string rel, bool details = true, bool time = true) => RunToddCoxeterAlgo("i", rel, details, time);
+    public static void RunToddCoxeterAlgo(string sg, string rel) => new Graph(sg, rel).Build();
+    public static void RunToddCoxeterAlgo(string rel) => RunToddCoxeterAlgo("i", rel);
 }

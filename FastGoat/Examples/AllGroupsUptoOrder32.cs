@@ -73,7 +73,7 @@ public static class AllGroupsUptoOrder32
         Console.WriteLine($"Fitting  F(G) = {fitName}");
         Console.WriteLine();
 
-        var rels = Graph.DefiningRelatorsOfGroup(g, details: false);
+        var rels = Graph.DefiningRelatorsOfGroup(g);
         var gens = rels.Where(c => char.IsLetter(c)).Distinct().Select(c => char.ToLower(c)).Order().ToArray();
         var def = $"< {gens.Glue(",")} | {rels.Replace(" ", "").Replace(",", ", ").Replace("=", " = ")} >";
 

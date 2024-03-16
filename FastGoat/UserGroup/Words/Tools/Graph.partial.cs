@@ -64,7 +64,7 @@ public partial class Graph
         }
     }
 
-    private void GenerateWords(bool details = false)
+    private void GenerateWords()
     {
         foreach (var @class in Classes.Skip(1))
         {
@@ -77,8 +77,9 @@ public partial class Graph
             }
 
             @class.WordInv.AddRange(@class.Word.Select(g => g.Invert()).Reverse());
-            if (details && Classes.Count < 33)
-                Console.WriteLine($"({@class}) = ({@class.Word.Glue(" * ")})");
+            if (Logger.Level != LogLevel.Off)
+                if (Classes.Count < 33)
+                    Console.WriteLine($"({@class}) = ({@class.Word.Glue(" * ")})");
         }
     }
 
@@ -147,7 +148,7 @@ public partial class Graph
 
     private Dictionary<Gen, Gen> GensConv { get; set; } = new();
 
-    private void DefineRelators(bool details = true)
+    private void DefineRelators()
     {
         if (!STDone)
         {
@@ -164,7 +165,7 @@ public partial class Graph
                 if (Relators.Count == sz)
                     break;
 
-                if (details)
+                if (Logger.Level != LogLevel.Off)
                 {
                     var rel = Relators.Last();
                     Console.WriteLine($"Rel[{Relators.Count}]:{StringExt.ReducedWordForm1(rel.Gens.Glue())} Length:{rel.Length}");
@@ -175,7 +176,7 @@ public partial class Graph
         }
 
         var gensConv = GensConv;
-        if (details)
+        if (Logger.Level != LogLevel.Off)
             Relators.Select(c => c.Gens.Select(g => gensConv[g]))
                 .Select(c => c.Glue())
                 .Select(StringExt.ReducedWordForm1)
@@ -197,7 +198,7 @@ public partial class Graph
     public static Graph Run(string sg, string rel)
     {
         var g = new Graph(sg, rel);
-        g.Build(false, false);
+        g.Build();
         g.SpanningTree();
         g.GenerateWords();
         return g;
@@ -255,27 +256,28 @@ public partial class Graph
         return graph;
     }
 
-    public static string DefiningRelatorsOfGroup<T>(ConcreteGroup<T> g, bool details = true) where T : struct, IElt<T>
+    public static string DefiningRelatorsOfGroup<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
     {
         var h = Group.Generate("()", g, g.Neutral());
 
-        if (details)
+        if (Logger.Level != LogLevel.Off)
             GlobalStopWatch.AddLap();
 
         var graph = ClassesFromGroupSubgroup(g, h);
 
-        if (details)
+        if (Logger.Level != LogLevel.Off)
             Console.WriteLine(g.ShortName);
 
-        if (details && g.Count() < 33)
-        {
-            graph.DisplayTableOps();
-            Console.WriteLine();
-        }
+        if (Logger.Level != LogLevel.Off)
+            if (g.Count() < 33)
+            {
+                graph.DisplayTableOps();
+                Console.WriteLine();
+            }
 
-        graph.DefineRelators(details);
+        graph.DefineRelators();
 
-        if (details)
+        if (Logger.Level != LogLevel.Off)
             GlobalStopWatch.Show();
 
         return graph.Relators.Select(c => c.Gens.Select(g0 => graph.GensConv[g0]))

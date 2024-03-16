@@ -10,44 +10,50 @@ namespace FastGoat.Examples;
 
 public static class ToddCoxeter
 {
+    static ToddCoxeter()
+    {
+        Logger.Level = LogLevel.Level2;
+    }
     public static void CyclicGroup()
     {
-        Graph.RunToddCoxeterAlgo("a5", details: true);
+        Graph.RunToddCoxeterAlgo("a5");
     }
 
     public static void KleinGroup()
     {
-        Graph.RunToddCoxeterAlgo("a2, b2, ab = ba", details: true);
+        Graph.RunToddCoxeterAlgo("a2, b2, ab = ba");
     }
 
     public static void Symm3Group()
     {
-        Graph.RunToddCoxeterAlgo("a2, b3, abab", details: true);
+        Graph.RunToddCoxeterAlgo("a2, b3, abab");
     }
 
     public static void MoreExamples()
     {
         // Algebre Tome 1, Daniel Guin – Thomas Hausberger
 
-        Graph.RunToddCoxeterAlgo("a", "a4, b3, abab", details: true); // p101 step by step algorithm with subgroup H=<a>
-        Graph.RunToddCoxeterAlgo("a", "a3, b3, abab", details: true); // p106 step by step algorithm with subgroup H=<a>
-        Graph.RunToddCoxeterAlgo("a", "a3, b3, aba2b", details: true); // p107 step by step algorithm with subgroup H=<a>
+        Graph.RunToddCoxeterAlgo("a", "a4, b3, abab"); // p101 step by step algorithm with subgroup H=<a>
+        Graph.RunToddCoxeterAlgo("a", "a3, b3, abab"); // p106 step by step algorithm with subgroup H=<a>
+        Graph.RunToddCoxeterAlgo("a", "a3, b3, aba2b"); // p107 step by step algorithm with subgroup H=<a>
 
-        Graph.RunToddCoxeterAlgo("b", "a7, b3, a2=bab-1", details: true); // C7 : C3 step by step algorithm with subgroup H=<b>
-        Graph.RunToddCoxeterAlgo("a7, b3, a2=bab-1", details: true); // C7 : C3 step by step algorithm with subgroup H=<Id>
+        Graph.RunToddCoxeterAlgo("b", "a7, b3, a2=bab-1"); // C7 : C3 step by step algorithm with subgroup H=<b>
+        Graph.RunToddCoxeterAlgo("a7, b3, a2=bab-1"); // C7 : C3 step by step algorithm with subgroup H=<Id>
 
-        Graph.RunToddCoxeterAlgo("a2, b4, ab=ba", details: true); // Dihedral 8 step by step algorithm
+        Graph.RunToddCoxeterAlgo("a2, b4, ab=ba"); // Dihedral 8 step by step algorithm
         Graph.Run("a4, a2=b2, b-1aba").DisplayTableOps(); // Quartenion Table
     }
 
     public static void SmallGroup32_32()
     {
+        Logger.Level = LogLevel.Off;
         Graph.Run("a4, b4, c2=b2, ab=ba, cac-1=ab2, cbc-1=a2b").DisplayTableOps(); // (C4 x C4) . C2 Table
         Graph.Run("a, b", "a4, b4, c2=b2, ab=ba, cac-1=ab2, cbc-1=a2b").DisplayTableOps(); // C2 Table with subgroup H = C4 x C4=<a,b>
     }
 
     public static void Quaternion()
     {
+        Logger.Level = LogLevel.Off;
         var gname = "Q8";
         var relators = "a4, a2=b2, b-1aba";
         var wg = new WordGroup(gname, relators);
@@ -70,6 +76,7 @@ public static class ToddCoxeter
 
     public static void Frobenius20()
     {
+        Logger.Level = LogLevel.Off;
         var gname = "F20";
         var relators = "a5, b4, b-1ab=a2";
         var wg = new WordGroup(gname, relators);
@@ -89,6 +96,7 @@ public static class ToddCoxeter
 
     public static void DiCyclic3()
     {
+        Logger.Level = LogLevel.Off;
         var wg = new WordGroup("Dic3", "a6, b2=a3, bab-1=a-1");
         var g = Group.SemiDirectProd(new Cn(3), new Cn(4));
         DisplayGroup.HeadElements(wg);
@@ -98,6 +106,7 @@ public static class ToddCoxeter
 
     public static void DiCyclic12()
     {
+        Logger.Level = LogLevel.Off;
         var gname = "wgDic12";
         var relators = "a12, b2=a6, bab-1=a-1";
         var wg = new WordGroup(gname, relators);
@@ -121,6 +130,7 @@ public static class ToddCoxeter
 
     public static void Quaternion32()
     {
+        Logger.Level = LogLevel.Off;
         var gname = "wgQ32";
         var relators = "a16, b2=a8, bab-1=a-1";
         var wg = new WordGroup(gname, relators);
@@ -140,21 +150,22 @@ public static class ToddCoxeter
     {
         // Algebre Tome 1, Daniel Guin – Thomas Hausberger
         // p107 step by step algorithm
-        Graph.RunToddCoxeterAlgo("a", "a3, b3, aba2b", details: true);
-        Graph.RunToddCoxeterAlgo("a3, b3, aba2b", details: true);
+        Graph.RunToddCoxeterAlgo("a", "a3, b3, aba2b");
+        Graph.RunToddCoxeterAlgo("a3, b3, aba2b");
     }
 
     public static void Coincidences2()
     {
         // Ken Brown paper toddcox.pdf
-        Graph.RunToddCoxeterAlgo("aba-1 = b2, bab-1 = a2", details: true);
+        Graph.RunToddCoxeterAlgo("aba-1 = b2, bab-1 = a2");
     }
 
     public static void Group_576_8282()
     {
         // Ken Brown paper toddcox.pdf
-        Graph.RunToddCoxeterAlgo("a,b", "a3,b2,c2,abababab,acac,bcbcbc", details: true);
+        Graph.RunToddCoxeterAlgo("a,b", "a3,b2,c2,abababab,acac,bcbcbc");
 
+        Logger.Level = LogLevel.Off;
         GlobalStopWatch.Restart();
         GlobalStopWatch.AddLap();
         var g = FG.WordGroup("a3,b2,c2,abababab,acac,bcbcbc");
@@ -186,21 +197,25 @@ public static class ToddCoxeter
 
     public static void Symm6a()
     {
-        Graph.RunToddCoxeterAlgo("a", "a2, b6, ababababab, ab2ab-2ab2ab-2, abab-1abab-1abab-1", details: false);
+        Logger.Level = LogLevel.Level1;
+        Graph.RunToddCoxeterAlgo("a", "a2, b6, ababababab, ab2ab-2ab2ab-2, abab-1abab-1abab-1");
     }
 
     public static void Symm6b()
     {
-        Graph.RunToddCoxeterAlgo("b", "a2, b6, ababababab, ab2ab-2ab2ab-2, abab-1abab-1abab-1", details: false);
+        Logger.Level = LogLevel.Level1;
+        Graph.RunToddCoxeterAlgo("b", "a2, b6, ababababab, ab2ab-2ab2ab-2, abab-1abab-1abab-1");
     }
 
     public static void Symm6()
     {
-        Graph.RunToddCoxeterAlgo("a2, b6, ababababab, ab2ab-2ab2ab-2, abab-1abab-1abab-1", details: false);
+        Logger.Level = LogLevel.Level1;
+        Graph.RunToddCoxeterAlgo("a2, b6, ababababab, ab2ab-2ab2ab-2, abab-1abab-1abab-1");
     }
 
     public static void Symm6Orders()
     {
+        Logger.Level = LogLevel.Off;
         GlobalStopWatch.Restart();
         var g = FG.WordGroup("a2, b6, ababababab, ab2ab-2ab2ab-2, abab-1abab-1abab-1");
         DisplayGroup.HeadOrders(g);
@@ -209,20 +224,21 @@ public static class ToddCoxeter
 
     public static void PermGroup7()
     {
+        Logger.Level = LogLevel.Level1;
         Graph.DefiningRelatorsOfGroup(FG.Alternate(7));
-        Graph.RunToddCoxeterAlgo("a3, b3, c3, d3, e3, abab, acac, adad, aeae, bcbc, bdbd, bebe, cdcd, cece, dede",
-            details: false); // Alt7 dede
+        Graph.RunToddCoxeterAlgo("a3, b3, c3, d3, e3, abab, acac, adad, aeae, bcbc, bdbd, bebe, cdcd, cece, dede");
         // Step:2521 NbClasses:2520
         // Time:20.648s
 
         Graph.DefiningRelatorsOfGroup(FG.Symmetric(7));
-        Graph.RunToddCoxeterAlgo("a7, b2, abababababab, baba-1baba-1baba-1, a2ba-2ba2ba-2b", details: false); // Symm7
+        Graph.RunToddCoxeterAlgo("a7, b2, abababababab, baba-1baba-1baba-1, a2ba-2ba2ba-2b"); // Symm7
         // Step:5787 NbClasses:5040
         // Time:44.875s
     }
     
     public static void L2p()
     {
+        Logger.Level = LogLevel.Level1;
         Graph.DefiningRelatorsOfGroup(FG.L2p(11));
         /*
            |L2(11)| = 660
@@ -236,8 +252,7 @@ public static class ToddCoxeter
                abababa-1ba-1ba-1babababa-1ba-1ba-1b
          */
         
-        Graph.RunToddCoxeterAlgo("a3,b2,ababababababababababab,baba-1baba-1baba-1baba-1baba-1,abababa-1ba-1ba-1babababa-1ba-1ba-1b",
-            details: false);
+        Graph.RunToddCoxeterAlgo("a3,b2,ababababababababababab,baba-1baba-1baba-1baba-1baba-1,abababa-1ba-1ba-1babababa-1ba-1ba-1b");
         // Step:683 NbClasses:660
         // #  Time:2.355s
         
@@ -254,8 +269,7 @@ public static class ToddCoxeter
          */
         
         Graph.RunToddCoxeterAlgo(
-            "a3,b2,ababababababababababababab,abababa-1baba-1babababa-1baba-1b,ababababa-1bababababa-1ba-1bababa-1ba-1b",
-            details: false);
+            "a3,b2,ababababababababababababab,abababa-1baba-1babababa-1baba-1b,ababababa-1bababababa-1ba-1bababa-1ba-1b");
         // Step:1099 NbClasses:1092
         // #  Time:3.939s
         
@@ -270,14 +284,14 @@ public static class ToddCoxeter
                abababababa-1ba-1ba-1babababababa-1ba-1ba-1b
          */
         
-        Graph.RunToddCoxeterAlgo("a3,b2,ababababa-1ba-1bababa-1baba-1bababa-1ba-1b,abababababa-1ba-1ba-1babababababa-1ba-1ba-1b",
-            details: false);
+        Graph.RunToddCoxeterAlgo("a3,b2,ababababa-1ba-1bababa-1baba-1bababa-1ba-1b,abababababa-1ba-1ba-1babababababa-1ba-1ba-1b");
         // Step:2499 NbClasses:2448
         // #  Time:14.651s
     }
     
     public static void u33()
     {
+        Logger.Level = LogLevel.Level1;
         var s28 = new Sn(28);
         var a2 = s28[(1, 5, 7, 3, 12, 24, 11), (2, 23, 4, 27, 13, 14, 26), (6, 20, 18, 8, 25, 21, 28), (9, 10, 17, 15, 22, 16, 19)];
         var b2 = s28[(3, 4), (5, 17, 7, 16, 8, 20, 6, 13), (9, 19, 11, 14, 12, 18, 10, 15), (21, 23, 26, 28, 24, 22, 27, 25)];
@@ -294,7 +308,7 @@ public static class ToddCoxeter
                a2b-1ab2abab-1a-1b
          */
         
-        Graph.RunToddCoxeterAlgo("a8,b7,ba-1ba-1ba-1,a4ba3b-1a-1b2,a2b-1ab2abab-1a-1b", details: false);
+        Graph.RunToddCoxeterAlgo("a8,b7,ba-1ba-1ba-1,a4ba3b-1a-1b2,a2b-1ab2abab-1a-1b");
         // Step:8541 NbClasses:6048
         // #  Time:1m46s
     }
