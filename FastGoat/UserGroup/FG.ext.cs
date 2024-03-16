@@ -68,10 +68,13 @@ public static partial class FG
         var autG = Group.AutomorphismGroup(G);
         var allOps = Group.AllHomomorphisms(G, autN);
         var ops = allOps.ToHashSet(EqOpByAut(G, autG, autN));
-
-        Console.WriteLine();
-        Console.WriteLine($"AutG:{autG.Count()} AutN:{autN.Count()}");
-        Console.WriteLine($"AllOps:{allOps.Count} Filtered:{ops.Count}");
+        
+        if (Logger.Level != LogLevel.Off)
+        {
+            Console.WriteLine();
+            Console.WriteLine($"AutG:{autG.Count()} AutN:{autN.Count()}");
+            Console.WriteLine($"AllOps:{allOps.Count} Filtered:{ops.Count}");
+        }
 
         foreach (var (op, i) in ops.Select((l, i) => (l, i + 1)).Skip(nbSkip).Take(nbOps))
         {
@@ -127,11 +130,11 @@ public static partial class FG
     }
 
     public static IEnumerable<SemiDirectProduct<T1, T2>> AllSDPFilter<T1, T2>(ConcreteGroup<T1> N, ConcreteGroup<T2> G, 
-        bool trivial = false, bool details = true)
+        bool trivial = false)
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
     {
-        if (details)
+        if (Logger.Level != LogLevel.Off)
             Console.WriteLine($"############### AllSDP {N.NameParenthesis()} x: {G.NameParenthesis()}");
         
         var autG = Group.AutomorphismGroup(G);
@@ -140,7 +143,7 @@ public static partial class FG
         var ops = allOps.Where(kp => trivial || kp.Image().Count() > 1).ToHashSet(EqOpByAut(G, autG, autN));
         
         var nb = ops.Count();
-        if (details)
+        if (Logger.Level != LogLevel.Off)
         {
             Console.WriteLine($"AutG:{autG.Count()} AutN:{autN.Count()}");
             Console.WriteLine($"AllOps:{allOps.Count} remaining:{nb}");
@@ -148,7 +151,7 @@ public static partial class FG
         var k = 1;
         foreach (var theta in ops)
         {
-            if (details)
+            if (Logger.Level != LogLevel.Off)
                 Console.WriteLine($"  ## {k++,3}/{nb} ##");
             
             yield return Group.SemiDirectProd(N, theta, G);
@@ -156,24 +159,24 @@ public static partial class FG
     }
 
     public static IEnumerable<SemiDirectProduct<T1, T2>> AllSDPFilterLazy<T1, T2>(ConcreteGroup<T1> N, ConcreteGroup<T2> G,
-        bool trivial = false, bool details = true)
+        bool trivial = false)
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
     {
-        if (details)
+        if (Logger.Level != LogLevel.Off)
             Console.WriteLine($"############### AllSDP {N.NameParenthesis()} x: {G.NameParenthesis()}");
         
         var autG = Group.AutomorphismGroup(G);
         var autN = Group.AutomorphismGroup(N);
         var allOps = Group.AllHomomorphisms(G, autN);
-        if (details)
+        if (Logger.Level != LogLevel.Off)
             Console.WriteLine($"AutG:{autG.Count()} AutN:{autN.Count()}");
         
         var ops = allOps.Where(kp => trivial || kp.Image().Count() > 1).Distinct(EqOpByAut(G, autG, autN));
         var k = 1;
         foreach (var theta in ops)
         {
-            if (details)
+            if (Logger.Level != LogLevel.Off)
                 Console.WriteLine($"  ##   {k++,3}   ##");
             
             yield return Group.SemiDirectProd(N, theta, G);
@@ -187,13 +190,13 @@ public static partial class FG
             yield return sub;
     }
 
-    public static IEnumerable<AllSubgroups<T>> FilterIsomorphic<T>(this IEnumerable<AllSubgroups<T>> subsgr, bool verbose = true)
+    public static IEnumerable<AllSubgroups<T>> FilterIsomorphic<T>(this IEnumerable<AllSubgroups<T>> subsgr)
         where T : struct, IElt<T>
     {
         var dic = new Dictionary<int, int>();
         var set = new HashSet<AllSubgroups<T>>(3000, EqSubGroups<T>());
         var nbSubs = new Dictionary<int, Dictionary<SubGroupsInfos, int>>(130);
-        if (verbose)
+        if (Logger.Level != LogLevel.Off)
             Console.WriteLine("## Start New Filter");
         foreach (var sub in subsgr)
         {
@@ -213,7 +216,7 @@ public static partial class FG
             if (set.Add(sub))
             {
                 nbSubs[og][sub.Infos]++;
-                if (verbose)
+                if (Logger.Level != LogLevel.Off)
                 {
                     var ids = allIds[og].Where(e => e.Infos == sub.Infos).Select(e => e.No).Glue(",", "{0:000}");
                     var name = $"    Iso{sub.Parent.Count()} no:{++dic[og]}/{GroupExt.A000001[og]} [{ids}]:{nbSubs[og][sub.Infos]}";
