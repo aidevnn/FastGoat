@@ -13,7 +13,6 @@ public enum Rounding
 
 public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<BigReal>, IVsElt<Rational, BigReal>, IFloatElt<BigReal>
 {
-    public static bool Debug = false;
     public static DigitsForm Display = DigitsForm.Default;
 
     public enum DigitsForm
@@ -76,8 +75,6 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
         var ad = Int32.Abs(d);
         if (ad > O)
         {
-            if (Debug)
-                Console.WriteLine(new { cs = 3, e0 = this, d0 = Details, e1 = e, d1 = e.Details });
             if (d < 0)
                 return e;
             else
@@ -95,9 +92,6 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
                     var k1 = Clamp(k0, O);
                     var a = d + NbDigits - Length(k0);
                     var r = new BigReal(k1, V - a, O);
-                    if (Debug)
-                        Console.WriteLine(
-                            new { cs = 0, e0 = this, d0 = Details, e1 = e, d1 = e.Details, shift0, shift1, k0, k1, V, a, r });
                     return r;
                 }
                 else
@@ -108,19 +102,11 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
                     var k1 = Clamp(k0, O);
                     var a = d + e.NbDigits - Length(k0);
                     var r = new BigReal(k1, V - a, O);
-                    if (Debug)
-                        Console.WriteLine(
-                            new { cs = 1, e0 = this, d0 = Details, e1 = e, d1 = e.Details, shift0, shift1, k0, k1, V, a, r });
                     return r;
                 }
             }
             else
-            {
-                if (Debug)
-                    Console.WriteLine(new { cs = 2, e0 = this, d0 = Details, e1 = e, d1 = e.Details });
-
                 return e.Add(this);
-            }
         }
     }
 
@@ -335,9 +321,6 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
         var r0 = r * rs * 2;
         var comp = r0.CompareTo(den);
 
-        // var add = new BigReal(rs, d1, br.O);
-        // Console.WriteLine(new { r0, den, comp, rs, br, br0, add });
-
         if (comp != 0)
         {
             if (comp == -1)
@@ -418,7 +401,6 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
 
         if (k > 0)
         {
-            // var length = (int)Double.Round(BigInteger.Log10(k), 13) + 1;
             var length = Length(k);
             if (length <= O)
                 return k;
@@ -430,7 +412,6 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
 
         if (k < 0)
         {
-            // var length = (int)Double.Round(BigInteger.Log10(-k), 13) + 1;
             var length = Length(k);
             if (length <= O)
                 return k;
@@ -517,9 +498,6 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
         var denom = FromBigInteger(r.Denom, o);
         return num / denom;
     }
-
-    // public static implicit operator double(BigReal r) => r.ToDouble;
-    // public static implicit operator Rational(BigReal r) => r.ToRational;
 
     public static BigReal operator +(BigReal a, BigReal b) => a.Add(b);
 
