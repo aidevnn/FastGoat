@@ -241,6 +241,7 @@ public static class IntExt
     private static Dictionary<int, int[][]> AllPermutations { get; }
 
     /// <summary>
+    /// Steinhaus–Johnson–Trotter algorithm
     /// Generates all possible permutations of a set of numbers. 
     /// </summary>
     /// <param name="n">The number of elements in the set.</param>
