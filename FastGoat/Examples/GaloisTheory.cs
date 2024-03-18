@@ -186,7 +186,7 @@ public static class GaloisTheory
 
     public static IEnumerable<GaloisCorrespondence> SubFields(KPoly<Rational> P, bool details = false)
     {
-        var roots = IntFactorisation.AlgebraicRoots(P, details);
+        var roots = IntFactorisation.AlgebraicRoots(P);
         return SubFields(roots, details);
     }
 

@@ -220,9 +220,10 @@ public static class AlgebraicIntegerRelationLLL
 
     public static void Example3()
     {
+        Logger.Level = LogLevel.Level1;
         var x = FG.QPoly();
         var P = x.Pow(3) + 2;
-        var roots = IntFactorisation.SplittingField(P, details: true); // S3
+        var roots = IntFactorisation.SplittingField(P); // S3
         var minPoly = roots[0].F.SubstituteChar('X');
 
         var O1 = 20; // rounding digits
@@ -260,9 +261,10 @@ public static class AlgebraicIntegerRelationLLL
 
     public static void Example5()
     {
+        Logger.Level = LogLevel.Level1;
         var x = FG.QPoly();
         var P = x.Pow(5) - 5 * x + 12;
-        var roots = IntFactorisation.SplittingField(P, details: true); // D10
+        var roots = IntFactorisation.SplittingField(P); // D10
         var minPoly = roots[0].F.SubstituteChar('X');
 
         var O1 = 40; // rounding digits
@@ -281,9 +283,10 @@ public static class AlgebraicIntegerRelationLLL
 
     public static void Example6()
     {
+        Logger.Level = LogLevel.Level1;
         var x = FG.QPoly();
         var P = x.Pow(4) + 8 * x + 12;
-        var roots = IntFactorisation.SplittingField(P, details: true); // A4
+        var roots = IntFactorisation.SplittingField(P); // A4
         var minPoly = roots[0].F.SubstituteChar('X');
 
         var O1 = 110; // rounding digits
@@ -302,9 +305,10 @@ public static class AlgebraicIntegerRelationLLL
 
     public static void Example7()
     {
+        Logger.Level = LogLevel.Level1;
         var x = FG.QPoly();
         var P = x.Pow(5) + 2;
-        var roots = IntFactorisation.SplittingField(P, details: true); // C5x:C4
+        var roots = IntFactorisation.SplittingField(P); // C5x:C4
         var minPoly = roots[0].F.SubstituteChar('X');
 
         var O1 = 80; // rounding digits

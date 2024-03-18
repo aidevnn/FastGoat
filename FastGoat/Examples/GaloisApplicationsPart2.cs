@@ -351,7 +351,7 @@ public static class GaloisApplicationsPart2
         var (X3, y3) = FG.EPolyXc(sf3.minPoly, 'c');
         var yf = FG.NRoots(sf3.minPoly.ToCPoly())[0];
         var minPoly = IntFactorisation.GetBaseAndMinPolynomial(cos).Item2;
-        var roots2 = IntFactorisation.AlgebraicRoots(minPoly.Substitute(X3 / 2).Monic, true).Select(r => r / 2).ToList();
+        var roots2 = IntFactorisation.AlgebraicRoots(minPoly.Substitute(X3 / 2).Monic).Select(r => r / 2).ToList();
         Console.WriteLine(minPoly);
 
         Console.WriteLine(new { cos });
@@ -392,6 +392,7 @@ public static class GaloisApplicationsPart2
     // Scraping the tower of subfields extensions
     public static void Example2_Computing_Cos_2Pi_over_17()
     {
+        Logger.Level = LogLevel.Level1;
         Ring.DisplayPolynomial = MonomDisplay.Caret;
         var n = 17;
         var P = FG.CyclotomicPolynomial(n).SubstituteChar('a');
@@ -433,7 +434,7 @@ public static class GaloisApplicationsPart2
 
         // Stage 1
         var (X1, y1) = FG.EPolyXc(P1, 'a');
-        var (f1, newP1, subs1, newPc1) = IntFactorisation.AlgebraicFactors(sf2.minPoly.Substitute(X1), true)
+        var (f1, newP1, subs1, newPc1) = IntFactorisation.AlgebraicFactors(sf2.minPoly.Substitute(X1))
             .Select(f => (f, RewriteQuadraticPolynomial2(f, 'Y')))
             .Select(e => (e.f, e.Item2.newP, e.Item2.Y, e.Item2.newP.ToCPoly(sqrt17c)))
             .Where(e => e.Item4[0].RealPart < 0)
@@ -461,7 +462,7 @@ public static class GaloisApplicationsPart2
         Console.WriteLine((sqrt17_1, sqrt17_1.Pow(2)));
         Console.WriteLine((s2, s2.Pow(2), (17 - sqrt17_1) / 2));
 
-        var (f2, newP2, subs2, newPc2) = IntFactorisation.AlgebraicFactors(sf3.minPoly.Substitute(X2), true)
+        var (f2, newP2, subs2, newPc2) = IntFactorisation.AlgebraicFactors(sf3.minPoly.Substitute(X2))
             .Select(f => (f, RewriteQuadraticPolynomial2(f, 'Y')))
             .Select(e => (e.f, e.Item2.newP, e.Item2.Y, e.Item2.newP.ToCPoly(e1)))
             .Where(e => e.Item4[0].RealPart < 0)
@@ -494,7 +495,7 @@ public static class GaloisApplicationsPart2
 
         // Final Boss
         var minPoly = IntFactorisation.GetBaseAndMinPolynomial(cos).Item2;
-        var roots2 = IntFactorisation.AlgebraicRoots(minPoly.Substitute(X3 / 2).Monic, true).Select(r => r / 2).ToList();
+        var roots2 = IntFactorisation.AlgebraicRoots(minPoly.Substitute(X3 / 2).Monic).Select(r => r / 2).ToList();
         ;
         Console.WriteLine(minPoly);
         Console.WriteLine(sf3.minPoly);

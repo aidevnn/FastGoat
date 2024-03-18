@@ -53,13 +53,14 @@ public static class AlgebraicFactorization
 
     public static void AlgFactorization()
     {
+        Logger.Level = LogLevel.Level1;
         Ring.DisplayPolynomial = MonomDisplay.Caret;
 
         {
             var i = FG.EQPoly('i', 1, 0, 1);
             var x = FG.KPoly('x', i);
             var A = x.Pow(4) - x.Pow(2) - 2;
-            AlgebraicFactors(A, true);
+            AlgebraicFactors(A);
             // x^4 + -x^2 + -2 = (x + -i) * (x + i) * (x^2 + -2)
         }
 
@@ -67,7 +68,7 @@ public static class AlgebraicFactorization
             var a = FG.EQPoly('a', -1, -3, 0, 1);
             var x = FG.KPoly('x', a);
             var f = x.Pow(3) - 3 * x - 1;
-            AlgebraicFactors(f, true);
+            AlgebraicFactors(f);
             // x^3 + -3·x + -1 = (x + a^2 + -2) * (x + -a) * (x + -a^2 + a + 2)
         }
 
@@ -75,7 +76,7 @@ public static class AlgebraicFactorization
             var a = FG.EQPoly('a', 1, 1, 1, 1, 1);
             var x = FG.KPoly('x', a);
             var A = x.Pow(2) - 5;
-            AlgebraicFactors(A, true);
+            AlgebraicFactors(A);
             // x^2 + -5 = (x + 2·a^3 + 2·a^2 + 1) * (x + -2·a^3 + -2·a^2 + -1)
         }
 
@@ -83,7 +84,7 @@ public static class AlgebraicFactorization
             var a = FG.EQPoly('a', -5, 0, 1);
             var x = FG.KPoly('x', a);
             var A = x.Pow(4) + x.Pow(3) + x.Pow(2) + x + 1;
-            AlgebraicFactors(A, true);
+            AlgebraicFactors(A);
             // x^4 + x^3 + x^2 + x + 1 = (x^2 + (1/2·a + 1/2)·x + 1) * (x^2 + (-1/2·a + 1/2)·x + 1)
         }
 
@@ -91,7 +92,7 @@ public static class AlgebraicFactorization
             var a = FG.EQPoly('a', -2, 0, 0, 1);
             var x = FG.KPoly('x', a);
             var A = x.Pow(3) + 3 * x.Pow(2) + 3 * x - 1;
-            AlgebraicFactors(A, true);
+            AlgebraicFactors(A);
             // x^3 + 3·x^2 + 3·x + -1 = (x + -a + 1) * (x^2 + (a + 2)·x + a^2 + a + 1)
         }
 
@@ -99,7 +100,7 @@ public static class AlgebraicFactorization
             var i = FG.EQPoly('i', 1, 0, 1);
             var x = FG.KPoly('x', i);
             var A = x.Pow(4) + 25 * x.Pow(2) + 50 * x + 25;
-            AlgebraicFactors(A, true);
+            AlgebraicFactors(A);
             // x^4 + 25·x^2 + 50·x + 25 = (x^2 + -5·i·x + -5·i) * (x^2 + 5·i·x + 5·i)
         }
 
@@ -107,7 +108,7 @@ public static class AlgebraicFactorization
             var a = FG.EQPoly('a', 2, 2, 1);
             var x = FG.KPoly('x', a);
             var A = x.Pow(4) + 4;
-            AlgebraicFactors(A, true);
+            AlgebraicFactors(A);
             // x^4 + 4 = (x + -a) * (x + a) * (x + a + 2) * (x + -a + -2)
         }
 
@@ -115,7 +116,7 @@ public static class AlgebraicFactorization
             var a = FG.EQPoly('a', 3, 0, 1);
             var x = FG.KPoly('x', a);
             var A = x.Pow(6) - 1;
-            AlgebraicFactors(A, true);
+            AlgebraicFactors(A);
             // x^6 + -1 = (x + 1/2·a + 1/2) * (x + 1/2·a + -1/2) * (x + -1/2·a + 1/2) * (x + -1/2·a + -1/2) * (x + 1) * (x + -1)
         }
     }
@@ -161,36 +162,38 @@ public static class AlgebraicFactorization
 
     public static void SplittingFieldQuarticPolynomial()
     {
+        Logger.Level = LogLevel.Level1;
         var x = FG.QPoly();
 
-        SplittingField(x.Pow(2) - 3, true);
-        SplittingField(x.Pow(2) - 3 * x - 3, true);
-        SplittingField(x.Pow(2) + x + 1, true);
-        SplittingField(x.Pow(2) + 2 * x - 5, true);
+        SplittingField(x.Pow(2) - 3);
+        SplittingField(x.Pow(2) - 3 * x - 3);
+        SplittingField(x.Pow(2) + x + 1);
+        SplittingField(x.Pow(2) + 2 * x - 5);
 
-        SplittingField(x.Pow(3) - 2, true);
-        SplittingField(x.Pow(3) - 3, true);
-        SplittingField(x.Pow(3) - 3 * x - 1, true);
-        SplittingField(x.Pow(3) - 2 * x + 2, true);
-        SplittingField(x.Pow(3) + 2 * x.Pow(2) - x - 1, true);
-        SplittingField(x.Pow(3) + 4 * x.Pow(2) + 3 * x + 1, true);
-        SplittingField(x.Pow(3) - x + 1, true);
+        SplittingField(x.Pow(3) - 2);
+        SplittingField(x.Pow(3) - 3);
+        SplittingField(x.Pow(3) - 3 * x - 1);
+        SplittingField(x.Pow(3) - 2 * x + 2);
+        SplittingField(x.Pow(3) + 2 * x.Pow(2) - x - 1);
+        SplittingField(x.Pow(3) + 4 * x.Pow(2) + 3 * x + 1);
+        SplittingField(x.Pow(3) - x + 1);
 
-        SplittingField(x.Pow(4) + 4 * x.Pow(2) + 2, true);
-        SplittingField(x.Pow(4) - 4 * x.Pow(2) + 2, true);
-        SplittingField(x.Pow(4) + x.Pow(3) + x.Pow(2) + x + 1, true);
-        SplittingField(x.Pow(4) - 2, true);
-        SplittingField(x.Pow(4) + 2, true);
-        SplittingField(x.Pow(4) + 5, true);
-        SplittingField(x.Pow(4) + 3 * x.Pow(2) + 3, true);
+        SplittingField(x.Pow(4) + 4 * x.Pow(2) + 2);
+        SplittingField(x.Pow(4) - 4 * x.Pow(2) + 2);
+        SplittingField(x.Pow(4) + x.Pow(3) + x.Pow(2) + x + 1);
+        SplittingField(x.Pow(4) - 2);
+        SplittingField(x.Pow(4) + 2);
+        SplittingField(x.Pow(4) + 5);
+        SplittingField(x.Pow(4) + 3 * x.Pow(2) + 3);
 
-        SplittingField(x.Pow(4) + x + 1, true); // Time:16142 ms
-        SplittingField(x.Pow(4) + 3 * x.Pow(3) - x.Pow(2) + x + 1, true); // Time:24906 ms
+        SplittingField(x.Pow(4) + x + 1); // Time:16142 ms
+        SplittingField(x.Pow(4) + 3 * x.Pow(3) - x.Pow(2) + x + 1); // Time:24906 ms
     }
 
     // ∛(∛2 - 1) = ∛(1/9) - ∛(2/9) + ∛(4/9)
     public static void Ramanujan1()
     {
+        Logger.Level = LogLevel.Off;
         var x = FG.QPoly();
         var (X, a0) = FG.EPolyXc(x.Pow(3) - 2, 'b');
         var (R, a1, _) = PrimitiveElt(X.Pow(3) - a0 + 1);
@@ -198,13 +201,13 @@ public static class AlgebraicFactorization
         var a = a1.Substitute(b);
 
         // Y^3 - 1/9 = 0 <=> Y = X/3 and X^3 - 3 = 0
-        var c = AlgebraicRoots(X0.Pow(3) - 3, true).First() / 3;
+        var c = AlgebraicRoots(X0.Pow(3) - 3).First() / 3;
 
         // Y^3 - 2/9 = 0 <=> Y = X/3 and X^3 - 6 = 0
-        var d = AlgebraicRoots(X0.Pow(3) - 6, true).First() / 3;
+        var d = AlgebraicRoots(X0.Pow(3) - 6).First() / 3;
 
         // Y^3 - 4/9 = 0 <=> Y = X/3 and X^3 - 12 = 0
-        var e = AlgebraicRoots(X0.Pow(3) - 12, true).First() / 3;
+        var e = AlgebraicRoots(X0.Pow(3) - 12).First() / 3;
 
         Console.WriteLine($"With {b.F} = 0");
         Console.WriteLine($"a - 1 = {a - 1} and a^3 = {a.Pow(3)}");
@@ -229,6 +232,7 @@ public static class AlgebraicFactorization
     // √(∛5 - ∛4) = (∛2 + ∛20 - ∛25) / 3
     public static void Ramanujan2()
     {
+        Logger.Level = LogLevel.Off;
         var x = FG.QPoly();
         var (X, _) = FG.EPolyXc(x.Pow(3) - 5, 'b');
         var (R, a0, b0) = PrimitiveElt(X.Pow(3) - 4);
@@ -240,24 +244,24 @@ public static class AlgebraicFactorization
         CharacPoly(a1 - b1);
         var R1 = Norm(X0 - a1 + b1);
         var (X1, c) = FG.EPolyXc(R1, 'c');
-        var a2 = AlgebraicRoots(X1.Pow(3) - 5, true).First();
-        var b2 = AlgebraicRoots(X1.Pow(3) - 4, true).First();
+        var a2 = AlgebraicRoots(X1.Pow(3) - 5).First();
+        var b2 = AlgebraicRoots(X1.Pow(3) - 4).First();
 
         Console.WriteLine($"With {c.F} = 0");
         Console.WriteLine($"a = {a2} and a^3 = {a2.Pow(3)}");
         Console.WriteLine($"b = {b2} and b^3 = {b2.Pow(3)}");
 
         Console.WriteLine(Norm(X1.Pow(2) - c));
-        var d0 = AlgebraicRoots(X1.Pow(2) - c, true).Last();
+        var d0 = AlgebraicRoots(X1.Pow(2) - c).Last();
         CharacPoly(d0);
         var R2 = Norm(X1 - d0);
         var (X2, d) = FG.EPolyXc(R2, 'd');
         var a = a2.Poly.Substitute(d.Pow(2));
         var b = b2.Poly.Substitute(d.Pow(2));
 
-        var e = AlgebraicRoots(X2.Pow(3) - 2, true).First();
-        var f = AlgebraicRoots(X2.Pow(3) - 20, true).First();
-        var g = AlgebraicRoots(X2.Pow(3) - 25, true).First();
+        var e = AlgebraicRoots(X2.Pow(3) - 2).First();
+        var f = AlgebraicRoots(X2.Pow(3) - 20).First();
+        var g = AlgebraicRoots(X2.Pow(3) - 25).First();
 
         Console.WriteLine($"With {d.F} = 0");
         Console.WriteLine($"a = {a} and a^3 = {a.Pow(3)}");

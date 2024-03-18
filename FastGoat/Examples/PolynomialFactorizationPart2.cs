@@ -14,6 +14,7 @@ public static class PolynomialFactorizationPart2
 {
     public static void IrreductibleFactorizationZ()
     {
+        Logger.Level = LogLevel.Level2;
         Console.WriteLine();
         Console.WriteLine("Irreductible Factorization in Z[X]");
         Console.WriteLine();
@@ -21,22 +22,22 @@ public static class PolynomialFactorizationPart2
         var X = FG.QPoly('X');
 
         // AECF example 21.2, page 387
-        FirrZ(X.Pow(4) - 1, details: true);
-        FirrZ(X.Pow(15) - 1, details: true);
-        FirrZ(X.Pow(11) - 1, details: true);
-        FirrZ(X.Pow(8) - 40 * X.Pow(6) + 352 * X.Pow(4) - 960 * X.Pow(2) + 576, details: true);
-        FirrZ(X.Pow(12) - 50 * X.Pow(10) + 753 * X.Pow(8) - 4520 * X.Pow(6) + 10528 * X.Pow(4) - 6720 * X.Pow(2) + 576, details: true);
+        FirrZ(X.Pow(4) - 1);
+        FirrZ(X.Pow(15) - 1);
+        FirrZ(X.Pow(11) - 1);
+        FirrZ(X.Pow(8) - 40 * X.Pow(6) + 352 * X.Pow(4) - 960 * X.Pow(2) + 576);
+        FirrZ(X.Pow(12) - 50 * X.Pow(10) + 753 * X.Pow(8) - 4520 * X.Pow(6) + 10528 * X.Pow(4) - 6720 * X.Pow(2) + 576);
 
-        FirrZ((X + 3) * (X - 5) * (X + 11) * (X - 17), details: true);
-        FirrZ(X.Pow(6) + 2 * X.Pow(4) - 1, details: true);
-        FirrZ((X.Pow(3) + 3 * X.Pow(2) + -2) * (X.Pow(3) + -3 * X.Pow(2) + 2), details: true);
-        FirrZ((X.Pow(3) + 3 * X.Pow(2) + -2) * (X.Pow(3) + -5 * X.Pow(2) + 2 * X + -4), details: true);
+        FirrZ((X + 3) * (X - 5) * (X + 11) * (X - 17));
+        FirrZ(X.Pow(6) + 2 * X.Pow(4) - 1);
+        FirrZ((X.Pow(3) + 3 * X.Pow(2) + -2) * (X.Pow(3) + -3 * X.Pow(2) + 2));
+        FirrZ((X.Pow(3) + 3 * X.Pow(2) + -2) * (X.Pow(3) + -5 * X.Pow(2) + 2 * X + -4));
 
-        FirrZ(X.Pow(6) + 5 * X.Pow(5) + 3 * X.Pow(4) + -7 * X.Pow(3) + -3 * X.Pow(2) + 7 * X + -2, details: true);
+        FirrZ(X.Pow(6) + 5 * X.Pow(5) + 3 * X.Pow(4) + -7 * X.Pow(3) + -3 * X.Pow(2) + 7 * X + -2);
 
         FirrZ(X.Pow(12) + 5 * X.Pow(11) + -202 * X.Pow(10) + -155 * X.Pow(9) + 11626 * X.Pow(8) + -37275 * X.Pow(7)
               + -33479 * X.Pow(6) + 547100 * X.Pow(5) + -560012 * X.Pow(4) + -616520 * X.Pow(3) + 351876 * X.Pow(2)
-              + 146520 * X + -56160, details: true);
+              + 146520 * X + -56160);
 
         Console.WriteLine("Random Z[X] Polynomials");
         Console.WriteLine();
@@ -56,7 +57,7 @@ public static class PolynomialFactorizationPart2
                 continue;
 
             Console.WriteLine($"Random factors : [{polys.Glue(" ;  ")}]");
-            FirrZ(f, details: true);
+            FirrZ(f);
 
             /***
              *  Examples of outputs
@@ -83,6 +84,7 @@ public static class PolynomialFactorizationPart2
 
     public static void IrreductibleFactorizationLLL()
     {
+        Logger.Level = LogLevel.Level2;
         Console.WriteLine();
         Console.WriteLine("Irreductible Factorization in Z[X]");
         Console.WriteLine();

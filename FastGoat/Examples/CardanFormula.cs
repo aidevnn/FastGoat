@@ -30,6 +30,7 @@ public static class CardanFormula
 
     static void Cubic(KPoly<Rational> P)
     {
+        Logger.Level = LogLevel.Level1;
         if (P.Degree != 3 || !P.LT.Equals(Rational.KOne()))
             throw new("P must be monic and cubic");
 
@@ -42,7 +43,7 @@ public static class CardanFormula
         var D0 = numD0.Select(e => new Rational(e.Item1)).Aggregate(Rational.KOne(), (acc, e) => acc * e);
         var x = P.X;
 
-        var (y1, y2, y3) = SplittingField(P, true).Deconstruct();
+        var (y1, y2, y3) = SplittingField(P).Deconstruct();
         var X = FG.KPoly('X', y1);
         var (R, a0, b0) = PrimitiveElt(X.Pow(2) + X + 1);
         var (X1, x1) = FG.EPolyXc(R, 'y');
@@ -76,7 +77,7 @@ public static class CardanFormula
         var D = -4 * p.Pow(3) - 27 * q.Pow(2);
         var x = P.X;
 
-        var (u3, v3) = FactorsQuadratic(x.Pow(2) + 27 * q * x - 27 * p.Pow(3), false).roots.Select(e => -e[0]).Deconstruct();
+        var (u3, v3) = FactorsQuadratic(x.Pow(2) + 27 * q * x - 27 * p.Pow(3)).roots.Select(e => -e[0]).Deconstruct();
         var D0 = u3.X.Pow(2)[0];
 
         var r3 = AlgebraicRoots(x.Pow(2) + 3);
@@ -160,6 +161,7 @@ public static class CardanFormula
     {
         var X = FG.QPoly('X');
 
+        Logger.Level = LogLevel.Level2;
         Console.WriteLine("Random Z[X] Polynomials");
         Console.WriteLine();
         IntExt.RngSeed(1235);
@@ -184,7 +186,7 @@ public static class CardanFormula
             Console.WriteLine($"f0 = {f}");
             Console.WriteLine();
 
-            var facts = FactorsQ(f, details: true);
+            var facts = FactorsQ(f);
             var f1 = facts.Select(e => e.Item1.Pow(e.Item2)).Aggregate((a0, a1) => a0 * a1).SubstituteChar(f0.x);
             if (!f0.Equals(f1))
                 throw new($"f1 = {f1} f0 = {f0} => {f0.Equals(f1)}");

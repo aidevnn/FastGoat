@@ -120,7 +120,7 @@ public static partial class IntFactorisation
         return (tr, norm);
     }
 
-    public static KPoly<K> CharacPoly<K>(EPoly<K> b, bool details = true) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    public static KPoly<K> CharacPoly<K>(EPoly<K> b) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var P = MatrixEndo(b);
         Console.WriteLine($"With {b.F} = 0");
@@ -131,7 +131,7 @@ public static partial class IntFactorisation
         var f2 = f1.Num.Coefs.Select((c, i) => c[0] * X.Pow(i)).Aggregate(X.Zero, (acc, a) => acc + a);
         var sep = YunSFF(f2);
 
-        if (details)
+        if (Logger.Level != LogLevel.Off)
         {
             var sep2 = sep.Select(e => (e.i, e.g.Substitute(X.Pow(e.q))))
                 .Select(e => e.i == 1 ? $"({e.Item2})" : $"({e.Item2})^{e.i}").Glue(" * ");
@@ -215,7 +215,7 @@ public static partial class IntFactorisation
         var sep2 = sep.Select(e => (e.i, e.g.Substitute(norm.X.Pow(e.q))))
             .Select(e => e.i == 1 ? $"({e.Item2})" : $"({e.Item2})^{e.i}").Glue(" * ");
 
-        var pow = sep.Select(e => norm.X.Pow(e.q)).Glue(fmt: "({0})");
+        var pow = sep.Where(e => e.g.Degree > 0).Select(e => norm.X.Pow(e.q)).Glue(fmt: "({0})");
         Console.WriteLine($"Norm(P) = f = {sep2} = [{norm}]{pow}");
         //
         // var f2 = norm.Coefs.Select((e, i) => (A.KOne * e) * A.X.Pow(i)).Aggregate((a, b) => a + b);
@@ -254,7 +254,7 @@ public static partial class IntFactorisation
     }
 
     // Barry Trager, Algebraic Factoring
-    public static List<KPoly<EPoly<Rational>>> AlgebraicFactors(KPoly<EPoly<Rational>> f, bool details = false)
+    public static List<KPoly<EPoly<Rational>>> AlgebraicFactors(KPoly<EPoly<Rational>> f)
     {
         var (s, g, r) = SqfrNorm(f, integerOnly: f.Degree > 4);
         var L = new List<KPoly<EPoly<Rational>>>();
@@ -263,11 +263,11 @@ public static partial class IntFactorisation
         var g0 = g.Substitute(x);
 
         var (nf, c0) = ConstCoef(r, monic: true);
-        var hs = FirrZ2(nf, details).Select(f0 => f0.Substitute(f0.X / c0)).ToArray();
+        var hs = FirrZ2(nf).Select(f0 => f0.Substitute(f0.X / c0)).ToArray();
         if (hs.Length == 1)
         {
             L.Add(f.Substitute(x));
-            if (details)
+            if (Logger.Level != LogLevel.Off)
                 Console.WriteLine($"f = {L[0]} is irreductible");
         }
         else
@@ -282,7 +282,7 @@ public static partial class IntFactorisation
             }
         }
 
-        if (details)
+        if (Logger.Level != LogLevel.Off)
         {
             Console.WriteLine($"f = {f} with f({a.F.x}) = 0");
             Console.WriteLine($"Square free norm : Norm(f({x - s * a})) = {r}");
@@ -298,25 +298,24 @@ public static partial class IntFactorisation
         return L;
     }
 
-    public static List<KPoly<EPoly<Rational>>> AlgebraicFactors(KPoly<Rational> f, bool details = false)
+    public static List<KPoly<EPoly<Rational>>> AlgebraicFactors(KPoly<Rational> f)
     {
         var (X, _) = FG.EPolyXc(f.Monic, 'y');
-        return AlgebraicFactors(f.Substitute(X), details);
+        return AlgebraicFactors(f.Substitute(X));
     }
 
-    public static List<EPoly<Rational>> AlgebraicRoots(KPoly<EPoly<Rational>> f, bool details = false)
+    public static List<EPoly<Rational>> AlgebraicRoots(KPoly<EPoly<Rational>> f)
     {
-        return AlgebraicFactors(f, details).Where(p => p.Degree == 1).Select(p => -p[0] / p[1]).Order().ToList();
+        return AlgebraicFactors(f).Where(p => p.Degree == 1).Select(p => -p[0] / p[1]).Order().ToList();
     }
 
-    public static List<EPoly<Rational>> AlgebraicRoots(KPoly<Rational> f, bool details = false)
+    public static List<EPoly<Rational>> AlgebraicRoots(KPoly<Rational> f)
     {
         var (X, _) = FG.EPolyXc(f.Monic, 'y');
-        return AlgebraicRoots(f.Substitute(X), details);
+        return AlgebraicRoots(f.Substitute(X));
     }
 
-    public static (Rational disc, KPoly<EPoly<Rational>>[] roots) FactorsQuadratic(KPoly<Rational> P, bool details = true,
-        char a = 'a')
+    public static (Rational disc, KPoly<EPoly<Rational>>[] roots) FactorsQuadratic(KPoly<Rational> P, char a = 'a')
     {
         if (P.Degree != 2 || !P.LT.Equals(Rational.KOne()))
             throw new("P must be monic and quadratic");
@@ -333,7 +332,7 @@ public static partial class IntFactorisation
         var (X, y) = FG.EPolyXc(P.X.Pow(2) - D0, a, P.x);
         var P2 = P1.Substitute(X);
         var res = AlgebraicFactors(P2).Select(p => p.Substitute(p.X / (p.KOne * c)).Monic).ToArray();
-        if (details)
+        if (Logger.Level != LogLevel.Off)
         {
             res.Println($"    D = {D} and {y} = Sqrt({D0})");
             Console.WriteLine();
@@ -352,7 +351,7 @@ public static partial class IntFactorisation
         if (minPol.Degree != 2)
             return cf.E.Poly.ToPolynomial(Ring.Polynomial(Rational.KZero(), MonomOrder.RevLex, $"{Cnf.RootsOfUnit}{cf.N}")[0]);
 
-        var (disc, roots) = FactorsQuadratic(minPol, details: false);
+        var (disc, roots) = FactorsQuadratic(minPol);
         var (x0, x1) = (-roots[0][0] / roots[0][1], -roots[1][0] / roots[1][1]);
         var cplx0 = new Cplx(Complex.FromPolarCoordinates(cf.Module, cf.Phase));
         var sqrtD = new Cplx(Complex.Sqrt((double)disc));
@@ -443,7 +442,7 @@ public static partial class IntFactorisation
     }
 
     // Barry Trager, Algebraic Factoring
-    public static List<EPoly<Rational>> SplittingField(KPoly<Rational> P, bool details = false)
+    public static List<EPoly<Rational>> SplittingField(KPoly<Rational> P)
     {
         GlobalStopWatch.Restart();
         if (FirrZ2(P).Length > 1)
@@ -458,7 +457,7 @@ public static partial class IntFactorisation
         EPoly<Rational> new_y;
         var idx = 0;
 
-        if (details)
+        if (Logger.Level != LogLevel.Off)
             Console.WriteLine($"Polynomial P = {P0} in Q(a)[X]");
 
         while (true)
@@ -494,7 +493,7 @@ public static partial class IntFactorisation
             foreach (var pi in polys)
             {
                 var (s, g, R) = SqfrNorm(pi, integerOnly: true);
-                var L = FirrZ2(R.Monic, details);
+                var L = FirrZ2(R.Monic);
                 foreach (var qj in L.OrderBy(e => e.Degree).ThenBy(e => e.NormInf()))
                 {
                     var f = Ring.FastGCD(g, qj.Substitute(X));
@@ -529,7 +528,7 @@ public static partial class IntFactorisation
 
             if (newFactors.Count == 0)
             {
-                if (details)
+                if (Logger.Level != LogLevel.Off)
                 {
                     Console.WriteLine($"With {new_y.F} = 0");
                     roots.Println("Roots");

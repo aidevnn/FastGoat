@@ -176,7 +176,7 @@ public static partial class IntFactorisation
         return Double.Sqrt(n + 1) * Double.Pow(2, n) * norm;
     }
 
-    static IEnumerable<(int p, int s)> PSigma(KPoly<Rational> f, bool details = false)
+    static IEnumerable<(int p, int s)> PSigma(KPoly<Rational> f)
     {
         var disc = (Ring.Discriminant(f) * f.LT).Num;
 
@@ -186,7 +186,7 @@ public static partial class IntFactorisation
         // return Double.Sqrt(n + 1) * Double.Pow(2, n) * norm;
 
         var nu = Nu(f);
-        if (details)
+        if (Logger.Level == LogLevel.Level1)
             Console.WriteLine($"nu = {nu} => {Double.Log(2 * nu)} ~ {Double.Log(n + 1) / 2 + n + normb}");
 
         var all = IntExt.Primes10000.Where(p => !BigInteger.Remainder(disc, p).IsZero).Take(150)
@@ -262,7 +262,7 @@ public static partial class IntFactorisation
         return (f0, firr0, all.ToArray());
     }
 
-    public static KPoly<Rational>[] HenselLiftingNaive(KPoly<Rational> f, int p, int o, bool details = false)
+    public static KPoly<Rational>[] HenselLiftingNaive(KPoly<Rational> f, int p, int o)
     {
         if (f.Coefs.Any(c => !c.Denom.IsOne))
             throw new ArgumentException();
@@ -278,13 +278,13 @@ public static partial class IntFactorisation
         var nbCombs = 1;
         var itr = 0;
 
-        if (details)
+        if (Logger.Level != LogLevel.Off)
             Console.WriteLine($"######## Candidate Prime P = {p}; Sigma = {o}; P^o={BigInteger.Pow(p, o)}");
 
         while (allS.Length != sz)
         {
             sz = allS.Length;
-            if (details)
+            if (Logger.Level == LogLevel.Level2)
                 Console.WriteLine($"######## Nb Combinaisons : 2^{sz} = {BigInteger.Pow(2, sz)} ########");
 
             foreach (var combs in allS.AllCombinationsFromM(nbCombs))
@@ -299,8 +299,9 @@ public static partial class IntFactorisation
                     allS = allS.Except(combs).ToArray();
 
                     nbCombs = combs.Length;
-                    if (details)
+                    if (Logger.Level == LogLevel.Level2)
                         Console.WriteLine($"@@@@@@@@ itr:{itr} nbCombs:{nbCombs}");
+                    
                     break;
                 }
             }
@@ -327,13 +328,13 @@ public static partial class IntFactorisation
         var check = f.Monic.Equals(f1.Monic);
         if (!check)
         {
-            if (details)
+            if (Logger.Level != LogLevel.Off)
                 Console.WriteLine($"@@@@@@@@@@ {f.Monic} <> {f1.Monic} @@@@@@@@@@");
             throw new Exception();
         }
 
         var listIrr0 = listIrr.OrderBy(q => new KPoly<Rational>(q.x, q.KZero, q.Coefs.Select(Rational.Absolute).ToArray())).ToArray();
-        if (details)
+        if (Logger.Level != LogLevel.Off)
         {
             var nu = Nu(f);
             Console.WriteLine($"Prime P = {p}; Sigma = {o}; P^o={BigInteger.Pow(p, o)} 2*Nu={2 * nu,0:0.00}");
@@ -384,9 +385,11 @@ public static partial class IntFactorisation
     public static KPoly<Rational>[] VanHoeijFactorization(KPoly<Rational> f, int max = 2)
     {
         var discQ = Ring.Discriminant(f).Num;
-        Console.WriteLine($"f = {f}");
+        if (Logger.Level != LogLevel.Off)
+            Console.WriteLine($"f = {f}");
         var discDecomp = IntExt.PrimesDec(discQ);
-        Console.WriteLine($"Disc(f) = {discQ} ~ {discDecomp.AscendingByKey().GlueMap(" * ", "{0}^{1}")}");
+        if (Logger.Level != LogLevel.Off)
+            Console.WriteLine($"Disc(f) = {discQ} ~ {discDecomp.AscendingByKey().GlueMap(" * ", "{0}^{1}")}");
 
         foreach (var p in IntExt.Primes10000.Where(p => !BigInteger.Remainder(discQ, p).IsZero))
         {
@@ -396,7 +399,8 @@ public static partial class IntFactorisation
             }
             catch (Exception e)
             {
-                Console.WriteLine($"#### Prime {p} wont work ####");
+                if (Logger.Level != LogLevel.Off)
+                    Console.WriteLine($"#### Prime {p} wont work ####");
             }
         }
 
@@ -423,8 +427,9 @@ public static partial class IntFactorisation
         var boundSigma = 2 * Double.Pow(theta, n) * Double.Pow(norm2, n - 1);
         var sigma = (int)((Double.Log(2) + n * Double.Log(theta) + (n - 1) * Double.Log(norm2)) / Double.Log(p)) + 1;
         var nb = Int32.Min(Int32.Max(max, Int32.Abs(sigma / tau)), max);
-        Console.WriteLine(
-            $"Search Van-Hoeij Prime P = {p} Tau = {tau} nb = {nb} Theta = {theta} BoundSigma = {boundSigma} MaxSigma = {sigma}; Nu = {nu}");
+        if (Logger.Level != LogLevel.Off)
+            Console.WriteLine(
+                $"Search Van-Hoeij Prime P = {p} Tau = {tau} nb = {nb} Theta = {theta} BoundSigma = {boundSigma} MaxSigma = {sigma}; Nu = {nu}");
         for (int i = 2; i <= nb; i++)
         {
             var sigma2 = tau * i;
@@ -451,18 +456,22 @@ public static partial class IntFactorisation
                     firr0 = firr0.Prepend(P.LT * f0.KOne * f0.One).ToArray();
                 }
 
-                Console.WriteLine($"       Found Sigma = {sigma2} = {i}*Tau");
-                Console.WriteLine($"f = {f0} mod {p}");
-                Console.WriteLine("Fact(f) = {0} mod {1}", firr0.Glue("*", "({0})"), p);
-                bs.Println("LLL Combinaisons");
-                Console.WriteLine("Fact(f) = {0} in Z[X]", polys.Glue("*", "({0})"));
-                Console.WriteLine($"f = Prod[Fact(f)] : {P.Equals(polys.Aggregate(one1, (prod, e) => prod * e))}");
-                Console.WriteLine();
+                if (Logger.Level != LogLevel.Off)
+                {
+                    Console.WriteLine($"       Found Sigma = {sigma2} = {i}*Tau");
+                    Console.WriteLine($"f = {f0} mod {p}");
+                    Console.WriteLine("Fact(f) = {0} mod {1}", firr0.Glue("*", "({0})"), p);
+                    bs.Println("LLL Combinaisons");
+                    Console.WriteLine("Fact(f) = {0} in Z[X]", polys.Glue("*", "({0})"));
+                    Console.WriteLine($"f = Prod[Fact(f)] : {P.Equals(polys.Aggregate(one1, (prod, e) => prod * e))}");
+                    Console.WriteLine();
+                }
                 return (sigma2, tau, polys);
             }
             catch (Exception e)
             {
-                Console.WriteLine($"#### Prime {p} Sigma {sigma2} = {i}*Tau wont work ####");
+                if (Logger.Level != LogLevel.Off)
+                    Console.WriteLine($"#### Prime {p} Sigma {sigma2} = {i}*Tau wont work ####");
             }
         }
 
@@ -542,7 +551,7 @@ public static partial class IntFactorisation
     }
 
 
-    public static (KPoly<Rational> nf, Rational c) ConstCoef(KPoly<Rational> f, bool details = false, bool monic = false)
+    public static (KPoly<Rational> nf, Rational c) ConstCoef(KPoly<Rational> f, bool monic = false)
     {
         if (f.Degree <= 1)
             return (f, Rational.KOne());
@@ -551,8 +560,9 @@ public static partial class IntFactorisation
         var (nf2, c2) = CoefMul(nf1);
         var c = c2 / c1;
 
-        if (!c.Equals(c.One) && details)
-            Console.WriteLine($"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Simplify f={f.Monic} to nf={nf2.Monic} and c={c}");
+        if (Logger.Level != LogLevel.Off)
+            if (!c.Equals(c.One))
+                Console.WriteLine($"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Simplify f={f.Monic} to nf={nf2.Monic} and c={c}");
 
         if (monic)
             return (nf2.Monic, c);
@@ -584,7 +594,7 @@ public static partial class IntFactorisation
         return (f2, c2);
     }
 
-    public static bool EisensteinCriterion(KPoly<Rational> f, bool details = false)
+    public static bool EisensteinCriterion(KPoly<Rational> f)
     {
         var a0 = f[0];
         var an = f.Coefs.Last();
@@ -594,8 +604,9 @@ public static partial class IntFactorisation
             : ai.Select(a => IntExt.PrimesDecompositionBigInt(BigInteger.Abs(a.Num)).Distinct())
                 .Aggregate((a, b) => a.Intersect(b)).ToArray();
 
-        if (details && pi.Length > 0)
-            Console.WriteLine($"Common Primes {pi.Glue("; ")}");
+        if (Logger.Level != LogLevel.Off)
+            if (pi.Length > 0)
+                Console.WriteLine($"Common Primes {pi.Glue("; ")}");
 
         if (pi.Length == 0)
             return false;
@@ -605,7 +616,7 @@ public static partial class IntFactorisation
             {
                 if (an % p != 0 && a0 % (p * p) != 0)
                 {
-                    if (details)
+                    if (Logger.Level != LogLevel.Off)
                     {
                         Console.WriteLine($"Irreductibility for Eisenstein Criterion for p = {p}");
                         Console.WriteLine($"Fact(f) = {f}");
@@ -620,7 +631,7 @@ public static partial class IntFactorisation
         return false;
     }
 
-    public static KPoly<Rational>[] FirrZ2(KPoly<Rational> f, bool details = false)
+    public static KPoly<Rational>[] FirrZ2(KPoly<Rational> f)
     {
         // if (f.Coefs.Any(c => !c.Denom.IsOne))
         //     throw new($"f isnt in Z[X] : {f}");
@@ -631,20 +642,20 @@ public static partial class IntFactorisation
         var (f0, x0) = DeflateMin(f);
         if (x0.Degree == 1)
         {
-            return FirrZ(f0, details);
+            return FirrZ(f0);
         }
         else if (f0.Degree == 1)
         {
-            return FirrZ(f, details);
+            return FirrZ(f);
         }
         else
         {
-            var facts = FirrZ(f0, details);
+            var facts = FirrZ(f0);
             if (facts.Length == 1)
-                return FirrZ(f, details);
+                return FirrZ(f);
 
-            var facts2 = facts.SelectMany(f1 => FirrZ2(f1.Substitute(x0), details)).ToArray();
-            if (details)
+            var facts2 = facts.SelectMany(f1 => FirrZ2(f1.Substitute(x0))).ToArray();
+            if (Logger.Level != LogLevel.Off)
             {
                 Console.WriteLine($"f = {f}");
                 Console.WriteLine("Fact(f) = {0} in Z[X]", facts2.Glue("*", "({0})"));
@@ -655,16 +666,16 @@ public static partial class IntFactorisation
         }
     }
 
-    public static KPoly<Rational>[] FirrZ(KPoly<Rational> P, bool details = false)
+    public static KPoly<Rational>[] FirrZ(KPoly<Rational> P)
     {
         if (P.Degree <= 1)
             return new[] { P };
 
-        var (f0, c) = ConstCoef(P, details);
+        var (f0, c) = ConstCoef(P);
         var f = f0.PrimitiveZPoly();
         var discQ = Ring.Discriminant(f).Num;
         var discDecomp = IntExt.PrimesDec(discQ);
-        if (details)
+        if (Logger.Level != LogLevel.Off)
         {
             Console.WriteLine($"f = {f}");
             Console.WriteLine($"Disc(f) = {discQ} ~ {discDecomp.AscendingByKey().GlueMap(" * ", "{0}^{1}")}");
@@ -682,7 +693,7 @@ public static partial class IntFactorisation
         {
             try
             {
-                var polys = HenselLiftingNaive(f, p, o, details)
+                var polys = HenselLiftingNaive(f, p, o)
                     .Select(f2 => f2.Degree == 0 ? P.LT * P.One : f2.Substitute(f2.X / c).Monic)
                     .OrderBy(f2 => f2.Degree)
                     .ThenBy(f2 => f2)
@@ -691,7 +702,7 @@ public static partial class IntFactorisation
                 if (polys.All(f2 => f2.Degree != 0) && !P.LT.Equals(P.KOne))
                     polys = polys.Prepend(P.LT * P.One).ToArray();
 
-                if (details)
+                if (Logger.Level != LogLevel.Off)
                 {
                     Console.WriteLine($"P({P.x}) = {P}");
                     Console.WriteLine($"Fact(P({P.x})) = {{0}} in Q[X]", polys.Glue("*", "({0})"));
@@ -703,7 +714,7 @@ public static partial class IntFactorisation
             }
             catch (Exception)
             {
-                if (details)
+                if (Logger.Level != LogLevel.Off)
                     Console.WriteLine($"#### Prime {p} and Sigma {o} wont work ####");
             }
         }
@@ -711,7 +722,7 @@ public static partial class IntFactorisation
         return new[] { P };
     }
 
-    static IEnumerable<(KPoly<Rational>, int)> FactorsMul(KPoly<Rational> P, bool details = false)
+    static IEnumerable<(KPoly<Rational>, int)> FactorsMul(KPoly<Rational> P)
     {
         if (P.Degree <= 1)
         {
@@ -721,14 +732,14 @@ public static partial class IntFactorisation
 
         foreach (var (p0, _, i0) in YunSFF(P))
         {
-            foreach (var p2 in FirrZ2(p0, details))
+            foreach (var p2 in FirrZ2(p0))
             {
                 yield return (p2.SubstituteChar(P.x), i0);
             }
         }
     }
 
-    public static (KPoly<Rational>, int)[] FactorsQ(KPoly<Rational> P, bool details = false)
+    public static (KPoly<Rational>, int)[] FactorsQ(KPoly<Rational> P)
     {
         var list0 = FactorsMul(P).ToList();
         var res = list0.Where(e => !e.Item1.Equals(P.One))
@@ -736,7 +747,7 @@ public static partial class IntFactorisation
             .ThenBy(e => e.Item2)
             .ThenBy(e => e.Item1).ToArray();
 
-        if (details)
+        if (Logger.Level != LogLevel.Off)
         {
             string Fmt((KPoly<Rational>, int) e) => e.Item2 == 1 ? $"({e.Item1})" : $"({e.Item1})^{e.Item2} ";
             Console.WriteLine($"f0 = {P}");
@@ -747,7 +758,7 @@ public static partial class IntFactorisation
         return res;
     }
 
-    public static KPoly<EPoly<ZnInt>>[] FirrFq(KPoly<Rational> f, int q, bool details = false)
+    public static KPoly<EPoly<ZnInt>>[] FirrFq(KPoly<Rational> f, int q)
     {
         var dec = IntExt.PrimesDec(q);
         if (dec.Count != 1)
@@ -759,7 +770,7 @@ public static partial class IntFactorisation
         return BerlekampProbabilisticAECF(f0, fq.One.X).ToArray();
     }
 
-    public static KPoly<ZnBInt>[] FirrFp(KPoly<Rational> f, int p, bool details = false)
+    public static KPoly<ZnBInt>[] FirrFp(KPoly<Rational> f, int p)
     {
         if (!IntExt.Primes10000.Contains(p))
             throw new($"p = {p} isnt prime");

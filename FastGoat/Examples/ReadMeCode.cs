@@ -79,7 +79,7 @@ public static class ReadMeCode
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
         var x = FG.QPoly('X');
         var P = x.Pow(5) + x.Pow(4) - 4 * x.Pow(3) - 3 * x.Pow(2) + 3 * x + 1;
-        var roots = IntFactorisation.AlgebraicRoots(P, details: true);
+        var roots = IntFactorisation.AlgebraicRoots(P);
         var gal = GaloisTheory.GaloisGroup(roots, details: true);
         DisplayGroup.AreIsomorphics(gal, FG.Abelian(5));
     }
