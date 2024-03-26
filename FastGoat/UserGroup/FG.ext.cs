@@ -218,9 +218,17 @@ public static partial class FG
                 nbSubs[og][sub.Infos]++;
                 if (Logger.Level != LogLevel.Off)
                 {
-                    var ids = allIds[og].Where(e => e.Infos == sub.Infos).Select(e => e.No).Glue(",", "{0:000}");
-                    var name = $"    Iso{sub.Parent.Count()} no:{++dic[og]}/{GroupExt.A000001[og]} [{ids}]:{nbSubs[og][sub.Infos]}";
-                    Console.WriteLine(name);
+                    if (og <= GroupExt.A000001.Length)
+                    {
+                        var ids = allIds[og].Where(e => e.Infos == sub.Infos).Select(e => e.No).Glue(",", "{0:000}");
+                        var name = $"    Iso{sub.Parent.Count()} no:{++dic[og]}/{GroupExt.A000001[og]} [{ids}]:{nbSubs[og][sub.Infos]}";
+                        Console.WriteLine(name);
+                    }
+                    else
+                    {
+                        var name = $"    Iso{sub.Parent.Count()} no:{++dic[og]}";
+                        Console.WriteLine(name);
+                    }
                 }
 
                 yield return sub;
@@ -386,7 +394,7 @@ public static partial class FG
 
     public static int NbSubGroups(int ord, SubGroupsInfos infos)
     {
-        return nbSubGroupsDetails[ord][infos];
+        return nbSubGroupsDetails.ContainsKey(ord) ? nbSubGroupsDetails[ord][infos] : -1;
     }
 
     public static IdGroup[] AllIds(int o) => allIds.ContainsKey(o) ? allIds[o] : [];

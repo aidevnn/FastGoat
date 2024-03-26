@@ -34,9 +34,9 @@ using GroupRegX = System.Text.RegularExpressions.Group;
 Console.WriteLine("Hello World");
 
 {
-    Ring.MatrixDisplayForm = Ring.MatrixDisplay.SquareBracket;
-    var sl23 = FG.SL2p(3);
+    var sl23 = FG.SL2p(5);
 
+    Logger.Level = LogLevel.Level1;
     FG.AllExtensions((sl23, FG.Abelian(2)))
         .Select(e => e.allSubs.ToGroupWrapper())
         .FilterIsomorphic()
