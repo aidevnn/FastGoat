@@ -68,7 +68,7 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
 
     public SubGroupsInfos Infos { get; }
     public Dictionary<int, int> Factors => AllSubgroupConjugates.Last().Factors;
-    
+
     public Dictionary<int, SubgroupConjugates<T>[]> AllSylows()
     {
         var allConjs = AllSubgroupConjugates;
@@ -119,6 +119,33 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
         }
 
         return allMax.Order().ToArray();
+    }
+
+    public SubgroupConjugates<T>[] ProperNonTrivialNormalSubgroups()
+    {
+        return AllSubgroupConjugates.Where(cj => cj.IsProperNormal && !cj.IsTrivial).ToArray();
+    }
+
+    public List<(SubgroupConjugates<T>, SubgroupConjugates<T>, bool)> DecomposeProducts()
+    {
+        var normals = new Queue<SubgroupConjugates<T>>(ProperNonTrivialNormalSubgroups());
+        var og = Parent.Count();
+        var allProds = new List<(SubgroupConjugates<T>, SubgroupConjugates<T>, bool)>();
+        while (normals.Any())
+        {
+            var H = normals.Dequeue();
+            allProds.AddRange(AllSubgroupConjugates.Where(cj =>
+                    cj.IsProperNormal && !cj.IsTrivial && 
+                    cj.Order * H.Order == og && H.Order <= cj.Order &&
+                    cj.Representative.Intersect(H.Representative).Count() == 1)
+                .Select(K => (H, K, true)));
+            allProds.AddRange(AllSubgroupConjugates.Where(cj =>
+                    cj.IsProper && !cj.IsNormal && !cj.IsTrivial && cj.Order * H.Order == og &&
+                    cj.Representative.Intersect(H.Representative).Count() == 1)
+                .Select(K => (H, K, false)));
+        }
+
+        return allProds;
     }
 
     public void Naming()
@@ -252,25 +279,25 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
     public void DisplayAllSeries()
     {
         var allSeries = AllSeries();
-        
+
         Console.WriteLine(Parent.ShortName);
         Console.WriteLine(Infos);
-        
+
         Console.WriteLine();
         var conjSeries = allSeries[SerieType.Serie];
         var chiefSeries = allSeries[SerieType.Chief];
         var compSeries = allSeries[SerieType.Composition];
-        
+
         conjSeries.OrderBy(e => e.Count).Println("Lattice Subgroups");
         Console.WriteLine($"Total:{conjSeries.Length}");
         Console.WriteLine();
-        
+
         if (chiefSeries.Length != 0)
             chiefSeries.OrderBy(s => s.Count).Println("Chief Series");
-        
+
         if (compSeries.Length != 0)
             compSeries.OrderBy(s => s.Count).Println("Composition Series");
-        
+
         Console.WriteLine();
     }
 

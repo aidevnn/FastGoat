@@ -11,7 +11,7 @@ namespace FastGoat.Examples;
 
 public static class AllGroupsUptoOrder32
 {
-    static void GroupDetails(AllSubgroups<WElt> subgroups, ANameElt[] names, int maxLt = -1)
+    public static void GroupDetails(AllSubgroups<WElt> subgroups, ANameElt[] names, int maxLt = -1)
     {
         var nbSharp = 16;
         var (g, infos) = (subgroups.Parent, subgroups.Infos);
