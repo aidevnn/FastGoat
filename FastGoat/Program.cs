@@ -33,18 +33,6 @@ using GroupRegX = System.Text.RegularExpressions.Group;
 
 Console.WriteLine("Hello World");
 
-void SL25ExtensionsByC2()
-{
-    var sl25 = FG.SL2p(5);
-
-    Logger.Level = LogLevel.Level1;
-    FG.AllExtensions((sl25, FG.Abelian(2)))
-        .Select(e => e.allSubs.ToGroupWrapper())
-        .FilterIsomorphic()
-        .Naming()
-        .DisplayNames();
-}
-
 void Ord48()
 {
     Logger.Level = LogLevel.Level1;
@@ -75,7 +63,140 @@ void Ord48()
     // Total Groups:52
 }
 
+void Ord36()
+{
+    Logger.Level = LogLevel.Level1;
+    GlobalStopWatch.Restart();
+    
+    FG.AllExtensions(
+            (FG.Abelian(9), FG.Abelian(4)),
+            (FG.Abelian(9), FG.Abelian(2, 2)),
+            (FG.Abelian(3, 3), FG.Abelian(4)),
+            (FG.Abelian(3, 3), FG.Abelian(2, 2)),
+            (FG.Abelian(2, 6), FG.Abelian(3))
+        )
+        .Select(e => e.allSubs.ToGroupWrapper())
+        .FilterIsomorphic()
+        .Take(GroupExt.A000001[36])
+        .Naming()
+        .DisplayNames();
+
+    GlobalStopWatch.Show("End");
+    Console.Beep();
+}
+
+void Ord40()
+{
+    Logger.Level = LogLevel.Level1;
+    GlobalStopWatch.Restart();
+    
+    FG.AllExtensions(
+            (FG.Abelian(10), FG.Abelian(4)),
+            (FG.Abelian(10), FG.Abelian(2, 2))
+        )
+        .Select(e => e.allSubs.ToGroupWrapper())
+        .FilterIsomorphic()
+        .Take(GroupExt.A000001[40])
+        .Naming()
+        .DisplayNames();
+
+    GlobalStopWatch.Show("End");
+    Console.Beep();
+}
+
+void Ord54()
+{
+    Logger.Level = LogLevel.Level1;
+    GlobalStopWatch.Restart();
+    
+    var ord = 54;
+    var allAb = FG.AllAbelianGroupsOfOrder(ord).Select(g => g.AllSubgroups().ToGroupWrapper());
+    var allMetaCyc = FG.MetaCyclicSdp(ord).Select(g => g.AllSubgroups().ToGroupWrapper());
+    var allExt = FG.AllExtensions(
+            (FG.Abelian(3, 6), FG.AbelianPerm(3)),
+            (FG.Abelian(3, 3), FG.Symmetric(3))
+        )
+        .Select(e => e.allSubs.ToGroupWrapper());
+    
+    allAb.AppendIsomorphic(allMetaCyc, allExt)
+        .Take(GroupExt.A000001[ord])
+        .Naming()
+        .DisplayNames();
+
+    GlobalStopWatch.Show("End");
+    Console.Beep();
+}
+
+void Ord56()
+{
+    Logger.Level = LogLevel.Level1;
+    GlobalStopWatch.Restart();
+
+    var ord = 56;
+    var allAb = FG.AllAbelianGroupsOfOrder(ord).Select(g => g.AllSubgroups().ToGroupWrapper());
+    var allMetaCyc = FG.MetaCyclicSdp(ord).Select(g => g.AllSubgroups().ToGroupWrapper());
+    var sdp = FG.AllSDPFilter(FG.Abelian(2, 2, 2), FG.Abelian(7)).Select(g => g.AllSubgroups().ToGroupWrapper());
+    var allExt = FG.AllExtensions(
+            (FG.Abelian(28), FG.Abelian(2)),
+            (FG.Abelian(2, 14), FG.Abelian(2))
+        )
+        .Select(e => e.allSubs.ToGroupWrapper());
+    
+    allAb.AppendIsomorphic(allMetaCyc, sdp, allExt)
+        .Take(GroupExt.A000001[ord])
+        .Naming()
+        .DisplayNames();
+
+    GlobalStopWatch.Show("End");
+    Console.Beep();
+}
+
+void Ord60()
+{
+    Logger.Level = LogLevel.Level1;
+    GlobalStopWatch.Restart();
+
+    var ord = 60;
+    var allAb = FG.AllAbelianGroupsOfOrder(ord).Select(g => g.AllSubgroups().ToGroupWrapper());
+    var allMetaCyc = FG.MetaCyclicSdp(ord).Select(g => g.AllSubgroups().ToGroupWrapper());
+    var a5 = FG.Alternate(5).AllSubgroups().ToGroupWrapper();
+    var allExt = FG.AllExtensions(
+            (FG.Abelian(30), FG.Abelian(2)),
+            (FG.Abelian(15), FG.Abelian(2, 2)),
+            (FG.Abelian(2, 10), FG.Abelian(3))
+        )
+        .Select(e => e.allSubs.ToGroupWrapper());
+    
+    allAb.AppendIsomorphic(allMetaCyc, [a5], allExt)
+        .Take(GroupExt.A000001[ord])
+        .Naming()
+        .DisplayNames();
+
+    GlobalStopWatch.Show("End");
+    Console.Beep();
+}
+
+IEnumerable<(AllSubgroups<WElt> subsg, ANameElt[] names)> GetAllProds(int ord)
+{
+    var allAb = FG.AllAbelianGroupsOfOrder(ord).Select(g => g.AllSubgroups().ToGroupWrapper());
+    var allMetaCyc = FG.MetaCyclicSdp(ord).Select(g => g.AllSubgroups().ToGroupWrapper());
+    return allAb.AppendIsomorphic(allMetaCyc)
+        .Take(GroupExt.A000001[ord])
+        .Naming();
+}
+
 {
     // SL25ExtensionsByC2();
-    Ord48();
+    // Ord48();
+    // Ord80();
+
+    Logger.Level = LogLevel.Level1;
+    GlobalStopWatch.Restart();
+
+    31.Range(33).SelectMany(o => GetAllProds(o))
+        .DisplayNames()
+        .CheckMissings();
+
+    GlobalStopWatch.Show("End");
+    Console.Beep();
 }

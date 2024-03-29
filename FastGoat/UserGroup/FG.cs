@@ -117,6 +117,21 @@ public static partial class FG
         return Product.GpGenerate(seq.Select(i => new Cn(i)).Cast<IGroup<ZnInt>>().ToArray());
     }
 
+    public static ConcreteGroup<Perm> AbelianPerm(params int[] seq)
+    {
+        var n = seq.Sum();
+        var sn = new Sn(n);
+        var gens = new List<Perm>();
+        for (int i = 0; i < seq.Length; i++)
+        {
+            var n0 = seq.Take(i).Sum() + 1;
+            gens.Add(sn.Cycle(seq[i].Range(n0)));
+        }
+
+        var name = seq.Glue(" x ", "C{0}");
+        return Group.Generate(name, sn, gens.ToArray());
+    }
+
     public static ConcreteGroup<Ep<ZnInt>> ElementaryAbelian(int q)
     {
         var dec = IntExt.PrimesDec(q);

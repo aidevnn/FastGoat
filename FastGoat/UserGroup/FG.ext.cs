@@ -311,7 +311,8 @@ public static partial class FG
         foreach (var (subsg, names) in lt)
         {
             var o = subsg.Parent.Count();
-            Console.WriteLine($"Group{o}[{++dicOrd[o]}]");
+            var s = GroupExt.A000001.Length >= o ? $"/{GroupExt.A000001[o]}" : "";
+            Console.WriteLine($"Group{o}[{++dicOrd[o]}{s}]");
             DisplayName(subsg.Parent, subsg, names, rename, maxLt: maxLt);
         }
 
@@ -439,6 +440,26 @@ public static partial class FG
         
         names.Println("Group names");
         Console.WriteLine();
+    }
+
+    public static (AllSubgroups<T> subsg, ANameElt[] names)[]
+        CheckMissings<T>(this IEnumerable<(AllSubgroups<T>subsg, ANameElt[] names)> seq)
+        where T : struct, IElt<T>
+    {
+        var seq0 = seq.ToArray();
+        var rem = seq0.Select(s => (s.subsg.Parent.Count(), s.subsg.Parent, s.subsg))
+            .Where(e => e.Item1 < 129)
+            .GroupBy(e => e.Item1)
+            .Select(e => (e.Key, e.SelectMany(f => FindIdGroup(f.Parent, f.subsg.Infos)).ToArray()))
+            .ToDictionary(e => e.Key, e => AllIds(e.Key).Except(e.Item2).ToArray());
+
+        var rem2 = rem.Where(e => e.Value.Length != 0).ToArray();
+        foreach (var (ord, ids) in rem2)
+            ids.Println(e => e.FullName, $"Missing Order:{ord}");
+
+        Console.WriteLine($"Total Missings:{rem2.Sum(e => e.Value.Length)}");
+
+        return seq0;
     }
 
     private static Dictionary<int, IdGroup[]> allIds { get; }
