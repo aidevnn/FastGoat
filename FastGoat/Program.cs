@@ -33,15 +33,49 @@ using GroupRegX = System.Text.RegularExpressions.Group;
 
 Console.WriteLine("Hello World");
 
+void SL25ExtensionsByC2()
 {
-    var sl23 = FG.SL2p(5);
+    var sl25 = FG.SL2p(5);
 
     Logger.Level = LogLevel.Level1;
-    FG.AllExtensions((sl23, FG.Abelian(2)))
+    FG.AllExtensions((sl25, FG.Abelian(2)))
         .Select(e => e.allSubs.ToGroupWrapper())
         .FilterIsomorphic()
         .Naming()
-        .DisplayNames()
-        .Select(e => e.subsg.Parent)
+        .DisplayNames();
+}
+
+void Ord48()
+{
+    Logger.Level = LogLevel.Level1;
+    GlobalStopWatch.Restart();
+    var ord24 = FG.AllExtensions(
+            (FG.Abelian(12).ToCGW(), FG.Abelian(2)),
+            (FG.Abelian(2, 6).ToCGW(), FG.Abelian(2)),
+            (FG.Alternate(4).ToCGW(), FG.Abelian(2)),
+            (FG.Quaternion(8).ToCGW(), FG.Abelian(3))
+        )
+        .Select(e => e.allSubs.ToGroupWrapper())
+        .FilterIsomorphic()
+        .Take(GroupExt.A000001[24])
+        .Naming()
         .ToArray();
+
+    var listByC2 = ord24.SelectMany(e => FG.AllExtensions((e.subsg.Parent, FG.Abelian(2)))).Select(e => e.allSubs.ToGroupWrapper());
+    var listByC3 = FG.AllAbelianGroupsOfOrder(16)
+        .SelectMany(e => FG.AllSDPFilterLazy(e, FG.Abelian(3)))
+        .Select(e => e.AllSubgroups().ToGroupWrapper());
+    listByC2.AppendIsomorphic(listByC3)
+        .Take(GroupExt.A000001[48])
+        .Naming()
+        .DisplayNames();
+
+    GlobalStopWatch.Show();
+    Console.Beep();
+    // Total Groups:52
+}
+
+{
+    // SL25ExtensionsByC2();
+    Ord48();
 }

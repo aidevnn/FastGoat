@@ -19,76 +19,7 @@ public static class AllGroupsUptoOrder32
 
         var name = g.Name;
         maxLt = int.Max(name.Length, maxLt);
-        var diff = (maxLt - name.Length) / 2;
-        var space = Enumerable.Repeat(' ', diff).Glue();
-        var lt = Enumerable.Repeat('#', maxLt + 4).Glue();
-        var sharp = Enumerable.Repeat('#', nbSharp).Glue();
-        var line = $"{sharp}{lt}{sharp}";
-        var fmt = $"{sharp}{space}  {{0,{-maxLt + diff * 2}}}  {space}{sharp}";
-        Console.WriteLine(line);
-        Console.WriteLine(fmt, g.Name);
-        Console.WriteLine(line);
-
-        var comChain = Group.CommutatorsChain(g);
-        comChain.ForEach(sg =>
-            sg.Name = sg.Count() == g.Count() ? g.Name : subgroups.First(cj => cj.Contains(sg)).Representative.Name);
-        var comChainComplete = comChain.Last().Count() == 1;
-
-        var zentrumsChain = Group.ZentrumsChainFast(g);
-        zentrumsChain.ForEach(
-            sg => sg.Name = sg.Count() == g.Count() ? g.Name : subgroups.First(cj => cj.Contains(sg)).Representative.Name);
-        var isNilpotent = zentrumsChain.Last().Count() == g.Count();
-
-        var derivedChain = Group.DerivedChain(g);
-        derivedChain.ForEach(sg =>
-            sg.Name = sg.Count() == g.Count() ? g.Name : subgroups.First(cj => cj.Contains(sg)).Representative.Name);
-        var isSolvable = derivedChain.Last().Count() == 1;
-
-        Console.WriteLine(g.ShortName);
-        var simplicity = subgroups.IsSimple() ? "Simple" : "NotSimple";
-        var nilpotency = isNilpotent ? "Nilpotent" : "NotNilpotent";
-        var solubility = isSolvable ? "Solvable" : "NotSolvable";
-        Console.WriteLine($"{simplicity}, {g.GroupType}, {nilpotency}, {solubility}");
-        DisplayGroup.Orders(g);
-        Console.WriteLine();
-
-        Console.WriteLine(infos);
-        Console.WriteLine($"Lower Central {(comChainComplete ? "Serie" : "Chain")}");
-        Console.WriteLine(comChain.Glue(" ---> "));
-        Console.WriteLine($"Upper Central {(isNilpotent ? "Serie" : "Chain")}");
-        Console.WriteLine(zentrumsChain.Glue(" ---> "));
-        Console.WriteLine($"Derived {(isSolvable ? "Serie" : "Chain")}");
-        Console.WriteLine(derivedChain.Glue(" ---> "));
-
-        var zentrum = Group.Zentrum(g);
-        var zentrumName = zentrum.Count() == g.Count() ? g.Name : subgroups.First(cj => cj.Contains(zentrum)).Representative.Name;
-        Console.WriteLine($"Zentrum  Z(G) = {zentrumName}");
-        
-        var frattini = subgroups.FrattiniSubGroup();
-        var fratName = subgroups.First(cj => cj.Contains(frattini)).Representative.Name;
-        Console.WriteLine($"Frattini Φ(G) = {fratName}");
-
-        var fitting = subgroups.FittingSubGroup();
-        var fitName = subgroups.First(cj => cj.Contains(fitting)).Representative.Name;
-        Console.WriteLine($"Fitting  F(G) = {fitName}");
-        Console.WriteLine();
-
-        var rels = Graph.DefiningRelatorsOfGroup(g);
-        var gens = rels.Where(c => char.IsLetter(c)).Distinct().Select(c => char.ToLower(c)).Order().ToArray();
-        var def = $"< {gens.Glue(",")} | {rels.Replace(" ", "").Replace(",", ", ").Replace("=", " = ")} >";
-
-        Console.WriteLine("Word Group");
-        Console.WriteLine(def);
-        Console.WriteLine();
-
-        var gapInfos = FG.FindIdGroup(g, infos);
-        var s = gapInfos.Length > 1 ? " (TODO)" : "";
-        foreach (var e in gapInfos)
-            Console.WriteLine($"{$"Gap SmallGroup({e.Order},{e.No})",-24} Name:{e.Name}{s}");
-
-        Console.WriteLine();
-        names.Println("Group names");
-        Console.WriteLine();
+        FG.DisplayName(g, subgroups, names, showBasegroup:false, maxLt: maxLt);
 
         Console.WriteLine("Characters Table");
         Console.WriteLine();
@@ -196,7 +127,7 @@ public static class AllGroupsUptoOrder32
     public static void Run()
     {
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
-        DetailsGroupsUptoOrder32(html: true); // #  Time:15m50s
+        DetailsGroupsUptoOrder32(html: false); // #  Time:10m23s
     }
 
     public static void A5()
