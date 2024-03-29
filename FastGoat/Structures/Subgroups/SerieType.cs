@@ -2,5 +2,5 @@ namespace FastGoat.Structures.Subgroups;
 
 public enum SerieType
 {
-    Serie, Chief, Composition
+    Serie, Chief, Composition, Lower, Upper, Derived
 }

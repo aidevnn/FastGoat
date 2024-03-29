@@ -250,6 +250,30 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
         return compSerie;
     }
 
+    public Serie<T> GetDerivedSerie()
+    {
+        var digits = AllSubgroupConjugates.Max(sg => $"{sg.FullName}".Length) + 1;
+        var all = AllSubgroupConjugates;
+        var der = Group.DerivedChain(Parent).Select(sg => all.First(cj => cj.Contains(sg))).ToList();
+        return new(der, SerieType.Derived, digits);
+    }
+
+    public Serie<T> GetLowerSerie()
+    {
+        var digits = AllSubgroupConjugates.Max(sg => $"{sg.FullName}".Length) + 1;
+        var all = AllSubgroupConjugates;
+        var lower = Group.CommutatorsChain(Parent).Select(sg => all.First(cj => cj.Contains(sg))).ToList();
+        return new(lower, SerieType.Lower, digits);
+    }
+
+    public Serie<T> GetUpperSerie()
+    {
+        var digits = AllSubgroupConjugates.Max(sg => $"{sg.FullName}".Length) + 1;
+        var all = AllSubgroupConjugates;
+        var upper = Group.ZentrumsChainFast(Parent).Select(sg => all.First(cj => cj.Contains(sg))).Reverse().ToList();
+        return new(upper, SerieType.Upper, digits);
+    }
+
     public Dictionary<SerieType, Serie<T>[]> AllSeries()
     {
         Naming();
@@ -266,13 +290,16 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
         }
 
         compSeries.ExceptWith(chiefSeries);
-
         var allSeries = new Dictionary<SerieType, Serie<T>[]>()
         {
             [SerieType.Serie] = series,
             [SerieType.Chief] = chiefSeries.OrderBy(s => s.Count).ToArray(),
-            [SerieType.Composition] = compSeries.OrderBy(s => s.Count).ToArray()
+            [SerieType.Composition] = compSeries.OrderBy(s => s.Count).ToArray(),
+            [SerieType.Upper] = [GetUpperSerie()],
+            [SerieType.Lower] = [GetLowerSerie()],
+            [SerieType.Derived] = [GetDerivedSerie()]
         };
+        
         return allSeries;
     }
 
@@ -291,6 +318,10 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
         conjSeries.OrderBy(e => e.Count).Println("Lattice Subgroups");
         Console.WriteLine($"Total:{conjSeries.Length}");
         Console.WriteLine();
+        
+        allSeries[SerieType.Derived].Println("Derived Serie");
+        allSeries[SerieType.Lower].Println("Lower Serie");
+        allSeries[SerieType.Upper].Println("Upper Serie");
 
         if (chiefSeries.Length != 0)
             chiefSeries.OrderBy(s => s.Count).Println("Chief Series");
@@ -299,6 +330,12 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
             compSeries.OrderBy(s => s.Count).Println("Composition Series");
 
         Console.WriteLine();
+    }
+
+    public ConcreteGroup<T> ZentrumSubGroup()
+    {
+        var z = Group.Zentrum(Parent);
+        return AllRepresentatives.First(sg => sg.SetEquals(z));
     }
 
     public ConcreteGroup<T> FrattiniSubGroup()

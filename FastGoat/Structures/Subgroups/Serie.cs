@@ -6,14 +6,16 @@ public struct Serie<T> : IEquatable<Serie<T>> where T : struct, IElt<T>
 {
     public List<SubgroupConjugates<T>> Content { get; }
     public int Placeholder { get; }
+    public string SymbolNormal { get; }
     public SerieType SerieType { get; }
     public int Count => Content.Count;
 
-    public Serie(List<SubgroupConjugates<T>> serie, SerieType serieType, int digits)
+    public Serie(List<SubgroupConjugates<T>> serie, SerieType serieType, int digits, string symbolNormal = " ⊲  ")
     {
         SerieType = serieType;
         Content = serie;
         Placeholder = digits;
+        SymbolNormal = symbolNormal;
     }
 
     public IEnumerable<string> ContentName => Content.Select(s => s.Representative.Name);
@@ -39,10 +41,10 @@ public struct Serie<T> : IEquatable<Serie<T>> where T : struct, IElt<T>
         var digits = Placeholder;
         var dash = Enumerable.Repeat('-', digits).Glue();
         var fmt = $"{{0,-{digits}}}";
-        
+
         if (SerieType == SerieType.Serie)
             return Content.Select(s => s.Order == 1 ? "C1" : $"{s.FullName} {dash}".Substring(0, digits)).Glue("--> ", fmt).Trim();
 
-        return ContentName.Reverse().Glue(" ⊲  ", fmt).Trim();
+        return ContentName.Reverse().Glue(SymbolNormal, fmt).Trim();
     }
 }
