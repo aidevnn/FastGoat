@@ -8,6 +8,7 @@ using FastGoat.Structures.Naming;
 using FastGoat.Structures.Subgroups;
 using FastGoat.UserGroup.DatabaseSmallGroups;
 using FastGoat.UserGroup.GModuleN;
+using FastGoat.UserGroup.Words.Tools;
 
 namespace FastGoat.UserGroup;
 
@@ -57,7 +58,7 @@ public static partial class FG
             obj => (obj.Parent.Count(), obj.Parent.GroupType, obj.Infos).GetHashCode()
         );
     }
-    
+
     static IEnumerable<ExtInfos<Tn, Tg>> AllExtensionsInternal<Tn, Tg>(ConcreteGroup<Tn> N, ConcreteGroup<Tg> G,
         int nbOps, int nbSkip = 0)
         where Tg : struct, IElt<Tg>
@@ -68,7 +69,7 @@ public static partial class FG
         var autG = Group.AutomorphismGroup(G);
         var allOps = Group.AllHomomorphisms(G, autN);
         var ops = allOps.ToHashSet(EqOpByAut(G, autG, autN));
-        
+
         if (Logger.Level != LogLevel.Off)
         {
             Console.WriteLine();
@@ -129,31 +130,32 @@ public static partial class FG
             yield return extInfos;
     }
 
-    public static IEnumerable<SemiDirectProduct<T1, T2>> AllSDPFilter<T1, T2>(ConcreteGroup<T1> N, ConcreteGroup<T2> G, 
+    public static IEnumerable<SemiDirectProduct<T1, T2>> AllSDPFilter<T1, T2>(ConcreteGroup<T1> N, ConcreteGroup<T2> G,
         bool trivial = false)
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
     {
         if (Logger.Level != LogLevel.Off)
             Console.WriteLine($"############### AllSDP {N.NameParenthesis()} x: {G.NameParenthesis()}");
-        
+
         var autG = Group.AutomorphismGroup(G);
         var autN = Group.AutomorphismGroup(N);
         var allOps = Group.AllHomomorphisms(G, autN);
         var ops = allOps.Where(kp => trivial || kp.Image().Count() > 1).ToHashSet(EqOpByAut(G, autG, autN));
-        
+
         var nb = ops.Count();
         if (Logger.Level != LogLevel.Off)
         {
             Console.WriteLine($"AutG:{autG.Count()} AutN:{autN.Count()}");
             Console.WriteLine($"AllOps:{allOps.Count} remaining:{nb}");
         }
+
         var k = 1;
         foreach (var theta in ops)
         {
             if (Logger.Level != LogLevel.Off)
                 Console.WriteLine($"  ## {k++,3}/{nb} ##");
-            
+
             yield return Group.SemiDirectProd(N, theta, G);
         }
     }
@@ -165,20 +167,20 @@ public static partial class FG
     {
         if (Logger.Level != LogLevel.Off)
             Console.WriteLine($"############### AllSDP {N.NameParenthesis()} x: {G.NameParenthesis()}");
-        
+
         var autG = Group.AutomorphismGroup(G);
         var autN = Group.AutomorphismGroup(N);
         var allOps = Group.AllHomomorphisms(G, autN);
         if (Logger.Level != LogLevel.Off)
             Console.WriteLine($"AutG:{autG.Count()} AutN:{autN.Count()}");
-        
+
         var ops = allOps.Where(kp => trivial || kp.Image().Count() > 1).Distinct(EqOpByAut(G, autG, autN));
         var k = 1;
         foreach (var theta in ops)
         {
             if (Logger.Level != LogLevel.Off)
                 Console.WriteLine($"  ##   {k++,3}   ##");
-            
+
             yield return Group.SemiDirectProd(N, theta, G);
         }
     }
@@ -221,7 +223,8 @@ public static partial class FG
                     if (og <= GroupExt.A000001.Length)
                     {
                         var ids = allIds[og].Where(e => e.Infos == sub.Infos).Select(e => e.No).Glue(",", "{0:000}");
-                        var name = $"    Iso{sub.Parent.Count()} no:{++dic[og]}/{GroupExt.A000001[og]} [{ids}]:{nbSubs[og][sub.Infos]}";
+                        var name =
+                            $"    Iso{sub.Parent.Count()} no:{++dic[og]}/{GroupExt.A000001[og]} [{ids}]:{nbSubs[og][sub.Infos]}";
                         Console.WriteLine(name);
                     }
                     else
@@ -292,14 +295,16 @@ public static partial class FG
     }
 
     public static (AllSubgroups<T> subsg, ANameElt[] names)[]
-        DisplayNames<T>(this IEnumerable<(AllSubgroups<T>subsg, ANameElt[] names)> seq, bool rename = false) where T : struct, IElt<T>
+        DisplayNames<T>(this IEnumerable<(AllSubgroups<T>subsg, ANameElt[] names)> seq, bool rename = false)
+        where T : struct, IElt<T>
     {
-        var lt = seq.OrderBy(e=>e.subsg.Parent.Count())
+        var lt = seq.OrderBy(e => e.subsg.Parent.Count())
             .ThenBy(e => e.subsg.Parent.GroupType)
             .ThenBy(e => e.names[0])
             .ThenByDescending(e => e.subsg.Parent.ElementsOrders.Values.Max())
             .ThenBy(e => e.subsg.Infos)
             .ToArray();
+
         var dicOrd = lt.Select(e => e.subsg.Parent.Count()).Distinct().ToDictionary(k => k, _ => 0);
         var maxLt = rename ? lt.Max(e => e.names[0].Name.Length) : lt.Max(e => e.subsg.Parent.Name.Length);
         var nb = lt.Length;
@@ -307,7 +312,7 @@ public static partial class FG
         {
             var o = subsg.Parent.Count();
             Console.WriteLine($"Group{o}[{++dicOrd[o]}]");
-            DisplayName(subsg.Parent, subsg.Infos, names, rename, maxLt);
+            DisplayName(subsg.Parent, subsg, names, rename, maxLt: maxLt);
         }
 
         Console.WriteLine($"Total Groups:{nb}");
@@ -361,7 +366,8 @@ public static partial class FG
         Console.WriteLine();
     }
 
-    public static void DisplayName<T>(ConcreteGroup<T> g, SubGroupsInfos infos, ANameElt[] names, bool rename = false, int maxLt = -1)
+    public static void DisplayName<T>(ConcreteGroup<T> g, AllSubgroups<T> subsg, ANameElt[] names, bool rename = false,
+        bool showBasegroup = true, int maxLt = -1)
         where T : struct, IElt<T>
     {
         var nbSharp = 16;
@@ -379,13 +385,59 @@ public static partial class FG
         Console.WriteLine(line);
         Console.WriteLine(fmt, g.Name);
         Console.WriteLine(line);
-        DisplayGroup.HeadOrdersNames(g, infos, names);
-        Console.CursorTop--;
-        var gapInfos = FindIdGroup(g, infos);
+
+        subsg.Naming();
+        var derived = subsg.GetDerivedSerie();
+        var upper = subsg.GetUpperSerie();
+        var lower = subsg.GetLowerSerie();
+        var digits = derived.Content.Concat([..upper.Content, ..lower.Content]).Max(s => s.Representative.Name.Length);
+        derived = new(derived.Content, derived.SerieType, digits, " --> ");
+        upper = new(upper.Content, upper.SerieType, digits, " --> ");
+        lower = new(lower.Content, lower.SerieType, digits, " --> ");
+        var isSolvable = derived.Content.Last().Order == 1;
+        var isNilpotent = upper.Content[0].Order == g.Count();
+        var simplicity = subsg.IsSimple() ? "Simple" : "NotSimple";
+        var nilpotency = isNilpotent ? "Nilpotent" : "NotNilpotent";
+        var solubility = isSolvable ? "Solvable" : "NotSolvable";
+        
+        Console.WriteLine(g.ShortName);
+        Console.WriteLine($"{simplicity}, {g.GroupType}, {nilpotency}, {solubility}");
+        if (showBasegroup)
+            Console.WriteLine($"BaseGroup {g.BaseGroup}");
+        Console.WriteLine();
+        
+        DisplayGroup.Orders(g);
+        Console.WriteLine(subsg.Infos);
+        
+        Console.WriteLine("Lower Serie");
+        Console.WriteLine(lower);
+        Console.WriteLine("Upper Serie");
+        Console.WriteLine(upper);
+        Console.WriteLine("Derived Serie");
+        Console.WriteLine(derived);
+        Console.WriteLine($"Zentrum  Z(G) = {subsg.ZentrumSubGroup()}");
+        Console.WriteLine($"Frattini Φ(G) = {subsg.FrattiniSubGroup()}");
+        Console.WriteLine($"Fitting  F(G) = {subsg.FittingSubGroup()}");
+        Console.WriteLine();
+
+        var lvl = Logger.Level;
+        Logger.Level = LogLevel.Off;
+        var rels = Graph.DefiningRelatorsOfGroup(g);
+        Logger.Level = lvl;
+        var gens = rels.Where(c => char.IsLetter(c)).Distinct().Select(c => char.ToLower(c)).Order().ToArray();
+        var def = $"< {gens.Glue(",")} | {rels.Replace(" ", "").Replace(",", ", ").Replace("=", " = ")} >";
+        Console.WriteLine("Word Group");
+        Console.WriteLine(def);
+        Console.WriteLine();
+
+        var gapInfos = FindIdGroup(g, subsg.Infos);
         var s = gapInfos.Length > 1 ? " (TODO)" : "";
         foreach (var e in gapInfos)
             Console.WriteLine($"{$"Gap SmallGroup({e.Order},{e.No})",-24} Name:{e.Name}{s}");
 
+        Console.WriteLine();
+        
+        names.Println("Group names");
         Console.WriteLine();
     }
 
