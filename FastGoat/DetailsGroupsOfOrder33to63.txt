@@ -1,0 +1,5638 @@
+Group33[1/1]
+#############################################################
+################             C33             ################
+#############################################################
+|C33| = 33
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C11 x C3)(table)
+
+Elements Orders : [1]:1, [3]:2, [11]:10, [33]:20
+SubGroupsInfos { AllSubGr = 4, AllConjsCl = 4, AllNorms = 4 }
+Lower Serie
+C1  --> C33
+Upper Serie
+C1  --> C33
+Derived Serie
+C1  --> C33
+Zentrum  Z(G) = C33
+Frattini Φ(G) = C1
+Fitting  F(G) = C11
+
+Word Group
+< a | a33 >
+
+Gap SmallGroup(33,1)     Name:C33
+
+Group names
+    C33
+
+Group34[1/2]
+#############################################################
+################             C34             ################
+#############################################################
+|C34| = 34
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C17 x C2)(table)
+
+Elements Orders : [1]:1, [2]:1, [17]:16, [34]:16
+SubGroupsInfos { AllSubGr = 4, AllConjsCl = 4, AllNorms = 4 }
+Lower Serie
+C1  --> C34
+Upper Serie
+C1  --> C34
+Derived Serie
+C1  --> C34
+Zentrum  Z(G) = C34
+Frattini Φ(G) = C1
+Fitting  F(G) = C17
+
+Word Group
+< a | a34 >
+
+Gap SmallGroup(34,2)     Name:C34
+
+Group names
+    C34
+
+Group34[2/2]
+#############################################################
+################             D34             ################
+#############################################################
+|D34| = 34
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup Frob(17,2,16)(table)
+
+Elements Orders : [1]:1, [2]:17, [17]:16
+SubGroupsInfos { AllSubGr = 20, AllConjsCl = 4, AllNorms = 3 }
+Lower Serie
+C17 --> D34
+Upper Serie
+C1
+Derived Serie
+C1  --> C17 --> D34
+Zentrum  Z(G) = C1
+Frattini Φ(G) = C1
+Fitting  F(G) = C17
+
+Word Group
+< a,b | b2, a17, abab >
+
+Gap SmallGroup(34,1)     Name:D34
+
+Group names
+    D34
+
+Group35[1/1]
+#############################################################
+################             C35             ################
+#############################################################
+|C35| = 35
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C7 x C5)(table)
+
+Elements Orders : [1]:1, [5]:4, [7]:6, [35]:24
+SubGroupsInfos { AllSubGr = 4, AllConjsCl = 4, AllNorms = 4 }
+Lower Serie
+C1  --> C35
+Upper Serie
+C1  --> C35
+Derived Serie
+C1  --> C35
+Zentrum  Z(G) = C35
+Frattini Φ(G) = C1
+Fitting  F(G) = C7
+
+Word Group
+< a | a35 >
+
+Gap SmallGroup(35,1)     Name:C35
+
+Group names
+    C35
+
+Group36[1/14]
+#############################################################
+################             C36             ################
+#############################################################
+|C36| = 36
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C9 x C4)(table)
+
+Elements Orders : [1]:1, [2]:1, [3]:2, [4]:2, [6]:2, [9]:6, [12]:4, [18]:6, [36]:12
+SubGroupsInfos { AllSubGr = 9, AllConjsCl = 9, AllNorms = 9 }
+Lower Serie
+C1  --> C36
+Upper Serie
+C1  --> C36
+Derived Serie
+C1  --> C36
+Zentrum  Z(G) = C36
+Frattini Φ(G) = C6
+Fitting  F(G) = C18
+
+Word Group
+< a | a36 >
+
+Gap SmallGroup(36,2)     Name:C36
+
+Group names
+    C36
+
+Group36[2/14]
+#############################################################
+################           C6 x C6           ################
+#############################################################
+|C6 x C6| = 36
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C3 x C3 x C2 x C2)(table)
+
+Elements Orders : [1]:1, [2]:3, [3]:8, [6]:24
+SubGroupsInfos { AllSubGr = 30, AllConjsCl = 30, AllNorms = 30 }
+Lower Serie
+C1      --> C6 x C6
+Upper Serie
+C1      --> C6 x C6
+Derived Serie
+C1      --> C6 x C6
+Zentrum  Z(G) = C6 x C6
+Frattini Φ(G) = C1
+Fitting  F(G) = C6 x C3
+
+Word Group
+< a,b,c,d | a3, b3, c2, d2, cdcd, caca-1, cbcb-1, dada-1, dbdb-1, bab-1a-1 >
+
+Gap SmallGroup(36,14)    Name:C6 x C6
+
+Group names
+    C6 x C6
+
+Group36[3/14]
+#############################################################
+################          C12 x C3           ################
+#############################################################
+|C12 x C3| = 36
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C4 x C3 x C3)(table)
+
+Elements Orders : [1]:1, [2]:1, [3]:8, [4]:2, [6]:8, [12]:16
+SubGroupsInfos { AllSubGr = 18, AllConjsCl = 18, AllNorms = 18 }
+Lower Serie
+C1       --> C12 x C3
+Upper Serie
+C1       --> C12 x C3
+Derived Serie
+C1       --> C12 x C3
+Zentrum  Z(G) = C12 x C3
+Frattini Φ(G) = C2
+Fitting  F(G) = C6 x C3
+
+Word Group
+< a,b,c | a4, b3, c3, bab-1a-1, cac-1a-1, cbc-1b-1 >
+
+Gap SmallGroup(36,8)     Name:C12 x C3
+
+Group names
+    C12 x C3
+
+Group36[4/14]
+#############################################################
+################          C18 x C2           ################
+#############################################################
+|C18 x C2| = 36
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C9 x C2 x C2)(table)
+
+Elements Orders : [1]:1, [2]:3, [3]:2, [6]:6, [9]:6, [18]:18
+SubGroupsInfos { AllSubGr = 15, AllConjsCl = 15, AllNorms = 15 }
+Lower Serie
+C1       --> C18 x C2
+Upper Serie
+C1       --> C18 x C2
+Derived Serie
+C1       --> C18 x C2
+Zentrum  Z(G) = C18 x C2
+Frattini Φ(G) = C3
+Fitting  F(G) = C18
+
+Word Group
+< a,b,c | a9, b2, c2, bcbc, baba-1, caca-1 >
+
+Gap SmallGroup(36,5)     Name:C18 x C2
+
+Group names
+    C18 x C2
+
+Group36[5/14]
+#############################################################
+################            Dic9             ################
+#############################################################
+|Dic9| = 36
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup Frob(9,4,8)(table)
+
+Elements Orders : [1]:1, [2]:1, [3]:2, [4]:18, [6]:2, [9]:6, [18]:6
+SubGroupsInfos { AllSubGr = 19, AllConjsCl = 9, AllNorms = 7 }
+Lower Serie
+C9   --> Dic9
+Upper Serie
+C1   --> C2
+Derived Serie
+C1   --> C9   --> Dic9
+Zentrum  Z(G) = C2
+Frattini Φ(G) = C6
+Fitting  F(G) = C18
+
+Word Group
+< a,b | a9, b4, abab-1 >
+
+Gap SmallGroup(36,1)     Name:C9 : C4
+
+Group names
+    Dic9
+    F(9x:4)8
+    C18 . C2
+    C2 . D18
+    C3 . Dic3
+    C6 . S3
+
+Group36[6/14]
+#############################################################
+################             D36             ################
+#############################################################
+|D36| = 36
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup MtCyc(18,2,17)(table)
+
+Elements Orders : [1]:1, [2]:19, [3]:2, [6]:2, [9]:6, [18]:6
+SubGroupsInfos { AllSubGr = 45, AllConjsCl = 15, AllNorms = 9 }
+Lower Serie
+C9  --> D36
+Upper Serie
+C1  --> C2
+Derived Serie
+C1  --> C9  --> D36
+Zentrum  Z(G) = C2
+Frattini Φ(G) = C3
+Fitting  F(G) = C18
+
+Word Group
+< a,b | b2, a18, abab >
+
+Gap SmallGroup(36,4)     Name:D36
+
+Group names
+    D36
+    C2 x D18
+    D18 x: C2
+    C9 x: (C2 x C2)
+    C3 . D12
+    C6 . S3
+
+Group36[7/14]
+#############################################################
+################          M(6x:6)5           ################
+#############################################################
+|M(6x:6)5| = 36
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup MtCyc(6,6,5)(table)
+
+Elements Orders : [1]:1, [2]:7, [3]:8, [6]:20
+SubGroupsInfos { AllSubGr = 36, AllConjsCl = 22, AllNorms = 14 }
+Lower Serie
+C3       --> M(6x:6)5
+Upper Serie
+C1       --> C6
+Derived Serie
+C1       --> C3       --> M(6x:6)5
+Zentrum  Z(G) = C6
+Frattini Φ(G) = C1
+Fitting  F(G) = C6 x C3
+
+Word Group
+< a,b | a6, b6, baba-1 >
+
+Gap SmallGroup(36,12)    Name:C6 x S3
+
+Group names
+    M(6x:6)5
+    C3 x D12
+    C6 x S3
+    C2 x M(3x:6)2
+    D12 x: C3
+    (C6 x C3) x: C2
+    C3 x: (C6 x C2)
+    (C3 x C3) x: (C2 x C2)
+    S3 x: C6
+    M(3x:6)2 x: C2
+
+Group36[8/14]
+#############################################################
+################          M(3x:12)2          ################
+#############################################################
+|M(3x:12)2| = 36
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup MtCyc(3,12,2)(table)
+
+Elements Orders : [1]:1, [2]:1, [3]:8, [4]:6, [6]:8, [12]:12
+SubGroupsInfos { AllSubGr = 20, AllConjsCl = 14, AllNorms = 10 }
+Lower Serie
+C3        --> M(3x:12)2
+Upper Serie
+C1        --> C6
+Derived Serie
+C1        --> C3        --> M(3x:12)2
+Zentrum  Z(G) = C6
+Frattini Φ(G) = C2
+Fitting  F(G) = C6 x C3
+
+Word Group
+< a,b | b3, a12, baba-1 >
+
+Gap SmallGroup(36,6)     Name:C3 x (C3 : C4)
+
+Group names
+    M(3x:12)2
+    C3 x Dic3
+    (C3 x C3) x: C4
+    Dic3 x: C3
+    C6 . C6
+    (C6 x C3) . C2
+    C6 . S3
+    C2 . M(3x:6)2
+
+Group36[9/14]
+#############################################################
+################           C3 x A4           ################
+#############################################################
+|C3 x A4| = 36
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup ((C2 x C6) . C3)(table)
+
+Elements Orders : [1]:1, [2]:3, [3]:26, [6]:6
+SubGroupsInfos { AllSubGr = 30, AllConjsCl = 14, AllNorms = 8 }
+Lower Serie
+C2 x C2 --> C3 x A4
+Upper Serie
+C1      --> C3
+Derived Serie
+C1      --> C2 x C2 --> C3 x A4
+Zentrum  Z(G) = C3
+Frattini Φ(G) = C1
+Fitting  F(G) = C6 x C2
+
+Word Group
+< a,b | a6, b3, ababab, ba2b-1a-2 >
+
+Gap SmallGroup(36,11)    Name:C3 x A4
+
+Group names
+    C3 x A4
+    (C6 x C2) x: C3
+    A4 x: C3
+    (C2 x C2) x: (C3 x C3)
+
+Group36[10/14]
+#############################################################
+################           S3 x S3           ################
+#############################################################
+|S3 x S3| = 36
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup (C3 x C3) . (C2 x C2)(table)
+
+Elements Orders : [1]:1, [2]:15, [3]:8, [6]:12
+SubGroupsInfos { AllSubGr = 60, AllConjsCl = 22, AllNorms = 10 }
+Lower Serie
+C3 x C3 --> S3 x S3
+Upper Serie
+C1
+Derived Serie
+C1      --> C3 x C3 --> S3 x S3
+Zentrum  Z(G) = C1
+Frattini Φ(G) = C1
+Fitting  F(G) = C3 x C3
+
+Word Group
+< a,b,c,d | a3, b3, c2, d2, adad, bcbc, cdcd, caca-1, dbdb-1, bab-1a-1 >
+
+Gap SmallGroup(36,10)    Name:S3 x S3
+
+Group names
+    S3 x S3
+    C3 x: D12
+    (C3 x C3) x: (C2 x C2)
+    M(3x:6)2 x: C2
+    S3 x: S3
+    ((C3 x C3) x: C2) x: C2
+
+Group36[11/14]
+#############################################################
+################          C3 x: D12          ################
+#############################################################
+|C3 x: D12| = 36
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup (C3 x C3) . (C2 x C2)(table)
+
+Elements Orders : [1]:1, [2]:19, [3]:8, [6]:8
+SubGroupsInfos { AllSubGr = 78, AllConjsCl = 30, AllNorms = 15 }
+Lower Serie
+C3 x C3   --> C3 x: D12
+Upper Serie
+C1        --> C2
+Derived Serie
+C1        --> C3 x C3   --> C3 x: D12
+Zentrum  Z(G) = C2
+Frattini Φ(G) = C1
+Fitting  F(G) = C6 x C3
+
+Word Group
+< a,b,c,d | a3, b3, c2, d2, adad, bdbd, cdcd, caca-1, cbcb-1, bab-1a-1 >
+
+Gap SmallGroup(36,13)    Name:C2 x ((C3 x C3) : C2)
+
+Group names
+    C3 x: D12
+    (C6 x C3) x: C2
+    (C3 x C3) x: (C2 x C2)
+    C6 x: S3
+    C2 x ((C3 x C3) x: C2)
+    ((C3 x C3) x: C2) x: C2
+
+Group36[12/14]
+#############################################################
+################       (C2 x C2) x: C9       ################
+#############################################################
+|(C2 x C2) x: C9| = 36
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup ((C2 x C6) . C3)(table)
+
+Elements Orders : [1]:1, [2]:3, [3]:2, [6]:6, [9]:24
+SubGroupsInfos { AllSubGr = 15, AllConjsCl = 8, AllNorms = 5 }
+Lower Serie
+C2 x C2         --> (C2 x C2) x: C9
+Upper Serie
+C1              --> C3
+Derived Serie
+C1              --> C2 x C2         --> (C2 x C2) x: C9
+Zentrum  Z(G) = C3
+Frattini Φ(G) = C3
+Fitting  F(G) = C6 x C2
+
+Word Group
+< a,b | b6, a3b-2, ababab-1 >
+
+Gap SmallGroup(36,3)     Name:(C2 x C2) : C9
+
+Group names
+    (C2 x C2) x: C9
+    (C6 x C2) . C3
+    C3 . A4
+
+Group36[13/14]
+#############################################################
+################       (C3 x C3) x: C4       ################
+#############################################################
+|(C3 x C3) x: C4| = 36
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup ((C3 x C3) . C4)(table)
+
+Elements Orders : [1]:1, [2]:1, [3]:8, [4]:18, [6]:8
+SubGroupsInfos { AllSubGr = 34, AllConjsCl = 18, AllNorms = 13 }
+Lower Serie
+C3 x C3         --> (C3 x C3) x: C4
+Upper Serie
+C1              --> C2
+Derived Serie
+C1              --> C3 x C3         --> (C3 x C3) x: C4
+Zentrum  Z(G) = C2
+Frattini Φ(G) = C2
+Fitting  F(G) = C6 x C3
+
+Word Group
+< a,b,c | a4, b3, c3, baba-1, caca-1, cbc-1b-1 >
+
+Gap SmallGroup(36,7)     Name:(C3 x C3) : C4
+
+Group names
+    (C3 x C3) x: C4
+    C3 x: Dic3
+    (C6 x C3) . C2
+    C6 . S3
+    C2 . ((C3 x C3) x: C2)
+
+Group36[14/14]
+#############################################################
+################       (C3 x C3) x: C4       ################
+#############################################################
+|(C3 x C3) x: C4| = 36
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup ((C3 x C3) . C4)(table)
+
+Elements Orders : [1]:1, [2]:9, [3]:8, [4]:18
+SubGroupsInfos { AllSubGr = 38, AllConjsCl = 10, AllNorms = 4 }
+Lower Serie
+C3 x C3         --> (C3 x C3) x: C4
+Upper Serie
+C1
+Derived Serie
+C1              --> C3 x C3         --> (C3 x C3) x: C4
+Zentrum  Z(G) = C1
+Frattini Φ(G) = C1
+Fitting  F(G) = C3 x C3
+
+Word Group
+< a,b | a4, b3, a2ba2b, abababab >
+
+Gap SmallGroup(36,9)     Name:(C3 x C3) : C4
+
+Group names
+    (C3 x C3) x: C4
+    ((C3 x C3) x: C2) . C2
+
+Group37[1/1]
+#############################################################
+################             C37             ################
+#############################################################
+|C37| = 37
+Simple, AbelianGroup, Nilpotent, Solvable
+BaseGroup C37(table)
+
+Elements Orders : [1]:1, [37]:36
+SubGroupsInfos { AllSubGr = 2, AllConjsCl = 2, AllNorms = 2 }
+Lower Serie
+C1  --> C37
+Upper Serie
+C1  --> C37
+Derived Serie
+C1  --> C37
+Zentrum  Z(G) = C37
+Frattini Φ(G) = C1
+Fitting  F(G) = C1
+
+Word Group
+< a | a37 >
+
+Gap SmallGroup(37,1)     Name:C37
+
+Group names
+    C37
+
+Group38[1/2]
+#############################################################
+################             C38             ################
+#############################################################
+|C38| = 38
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C19 x C2)(table)
+
+Elements Orders : [1]:1, [2]:1, [19]:18, [38]:18
+SubGroupsInfos { AllSubGr = 4, AllConjsCl = 4, AllNorms = 4 }
+Lower Serie
+C1  --> C38
+Upper Serie
+C1  --> C38
+Derived Serie
+C1  --> C38
+Zentrum  Z(G) = C38
+Frattini Φ(G) = C1
+Fitting  F(G) = C19
+
+Word Group
+< a | a38 >
+
+Gap SmallGroup(38,2)     Name:C38
+
+Group names
+    C38
+
+Group38[2/2]
+#############################################################
+################             D38             ################
+#############################################################
+|D38| = 38
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup Frob(19,2,18)(table)
+
+Elements Orders : [1]:1, [2]:19, [19]:18
+SubGroupsInfos { AllSubGr = 22, AllConjsCl = 4, AllNorms = 3 }
+Lower Serie
+C19 --> D38
+Upper Serie
+C1
+Derived Serie
+C1  --> C19 --> D38
+Zentrum  Z(G) = C1
+Frattini Φ(G) = C1
+Fitting  F(G) = C19
+
+Word Group
+< a,b | b2, a19, abab >
+
+Gap SmallGroup(38,1)     Name:D38
+
+Group names
+    D38
+
+Group39[1/2]
+#############################################################
+################             C39             ################
+#############################################################
+|C39| = 39
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C13 x C3)(table)
+
+Elements Orders : [1]:1, [3]:2, [13]:12, [39]:24
+SubGroupsInfos { AllSubGr = 4, AllConjsCl = 4, AllNorms = 4 }
+Lower Serie
+C1  --> C39
+Upper Serie
+C1  --> C39
+Derived Serie
+C1  --> C39
+Zentrum  Z(G) = C39
+Frattini Φ(G) = C1
+Fitting  F(G) = C13
+
+Word Group
+< a | a39 >
+
+Gap SmallGroup(39,2)     Name:C39
+
+Group names
+    C39
+
+Group39[2/2]
+#############################################################
+################          F(13x:3)3          ################
+#############################################################
+|F(13x:3)3| = 39
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup Frob(13,3,3)(table)
+
+Elements Orders : [1]:1, [3]:26, [13]:12
+SubGroupsInfos { AllSubGr = 16, AllConjsCl = 4, AllNorms = 3 }
+Lower Serie
+C13       --> F(13x:3)3
+Upper Serie
+C1
+Derived Serie
+C1        --> C13       --> F(13x:3)3
+Zentrum  Z(G) = C1
+Frattini Φ(G) = C1
+Fitting  F(G) = C13
+
+Word Group
+< a,b | b3, ababab, a3ba-1b-1 >
+
+Gap SmallGroup(39,1)     Name:C13 : C3
+
+Group names
+    F(13x:3)3
+
+Group40[1/14]
+#############################################################
+################             C40             ################
+#############################################################
+|C40| = 40
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C8 x C5)(table)
+
+Elements Orders : [1]:1, [2]:1, [4]:2, [5]:4, [8]:4, [10]:4, [20]:8, [40]:16
+SubGroupsInfos { AllSubGr = 8, AllConjsCl = 8, AllNorms = 8 }
+Lower Serie
+C1  --> C40
+Upper Serie
+C1  --> C40
+Derived Serie
+C1  --> C40
+Zentrum  Z(G) = C40
+Frattini Φ(G) = C4
+Fitting  F(G) = C20
+
+Word Group
+< a | a40 >
+
+Gap SmallGroup(40,2)     Name:C40
+
+Group names
+    C40
+
+Group40[2/14]
+#############################################################
+################          C20 x C2           ################
+#############################################################
+|C20 x C2| = 40
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C5 x C4 x C2)(table)
+
+Elements Orders : [1]:1, [2]:3, [4]:4, [5]:4, [10]:12, [20]:16
+SubGroupsInfos { AllSubGr = 16, AllConjsCl = 16, AllNorms = 16 }
+Lower Serie
+C1       --> C20 x C2
+Upper Serie
+C1       --> C20 x C2
+Derived Serie
+C1       --> C20 x C2
+Zentrum  Z(G) = C20 x C2
+Frattini Φ(G) = C2
+Fitting  F(G) = C20
+
+Word Group
+< a,b,c | a5, b4, c2, caca-1, cbcb-1, bab-1a-1 >
+
+Gap SmallGroup(40,9)     Name:C20 x C2
+
+Group names
+    C20 x C2
+
+Group40[3/14]
+#############################################################
+################        C10 x C2 x C2        ################
+#############################################################
+|C10 x C2 x C2| = 40
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C5 x C2 x C2 x C2)(table)
+
+Elements Orders : [1]:1, [2]:7, [5]:4, [10]:28
+SubGroupsInfos { AllSubGr = 32, AllConjsCl = 32, AllNorms = 32 }
+Lower Serie
+C1            --> C10 x C2 x C2
+Upper Serie
+C1            --> C10 x C2 x C2
+Derived Serie
+C1            --> C10 x C2 x C2
+Zentrum  Z(G) = C10 x C2 x C2
+Frattini Φ(G) = C1
+Fitting  F(G) = C10 x C2
+
+Word Group
+< a,b,c,d | a5, b2, c2, d2, bcbc, bdbd, cdcd, baba-1, caca-1, dada-1 >
+
+Gap SmallGroup(40,14)    Name:C10 x C2 x C2
+
+Group names
+    C10 x C2 x C2
+
+Group40[4/14]
+#############################################################
+################            Dic10            ################
+#############################################################
+|Dic10| = 40
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup (C10 . (C2 x C2))(table)
+
+Elements Orders : [1]:1, [2]:1, [4]:22, [5]:4, [10]:4, [20]:8
+SubGroupsInfos { AllSubGr = 24, AllConjsCl = 12, AllNorms = 9 }
+Lower Serie
+C5    --> C10   --> Dic10
+Upper Serie
+C1    --> C2    --> C4
+Derived Serie
+C1    --> C10   --> Dic10
+Zentrum  Z(G) = C2
+Frattini Φ(G) = C2
+Fitting  F(G) = C20
+
+Word Group
+< a,b,c | b4, b2c2, a5b-2, acac-1, bcbc-1, bab-1a-1 >
+
+Gap SmallGroup(40,4)     Name:C5 : Q8
+
+Group names
+    Dic10
+    C5 x: Q8
+    C20 . C2
+    C2 . D20
+    C4 . D10
+    C10 . (C2 x C2)
+    Dic5 . C2
+
+Group40[5/14]
+#############################################################
+################             D40             ################
+#############################################################
+|D40| = 40
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup MtCyc(20,2,19)(table)
+
+Elements Orders : [1]:1, [2]:21, [4]:2, [5]:4, [10]:4, [20]:8
+SubGroupsInfos { AllSubGr = 48, AllConjsCl = 16, AllNorms = 9 }
+Lower Serie
+C5  --> C10 --> D40
+Upper Serie
+C1  --> C2  --> C4
+Derived Serie
+C1  --> C10 --> D40
+Zentrum  Z(G) = C2
+Frattini Φ(G) = C2
+Fitting  F(G) = C20
+
+Word Group
+< a,b | b2, a20, abab >
+
+Gap SmallGroup(40,6)     Name:D40
+
+Group names
+    D40
+    C5 x: D8
+    C4 x: D10
+    D20 x: C2
+    C2 . D20
+    C10 . (C2 x C2)
+
+Group40[6/14]
+#############################################################
+################          F(5x:8)2           ################
+#############################################################
+|F(5x:8)2| = 40
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup Frob(5,8,2)(table)
+
+Elements Orders : [1]:1, [2]:1, [4]:10, [5]:4, [8]:20, [10]:4
+SubGroupsInfos { AllSubGr = 16, AllConjsCl = 8, AllNorms = 6 }
+Lower Serie
+C5       --> F(5x:8)2
+Upper Serie
+C1       --> C2
+Derived Serie
+C1       --> C5       --> F(5x:8)2
+Zentrum  Z(G) = C2
+Frattini Φ(G) = C2
+Fitting  F(G) = C10
+
+Word Group
+< a,b | a8, b5, ab2a-1b >
+
+Gap SmallGroup(40,3)     Name:C5 : C8
+
+Group names
+    F(5x:8)2
+    C10 . C4
+    Dic5 . C2
+    C2 . F(5x:4)2
+
+Group40[7/14]
+#############################################################
+################          F(5x:8)4           ################
+#############################################################
+|F(5x:8)4| = 40
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup Frob(5,8,4)(table)
+
+Elements Orders : [1]:1, [2]:1, [4]:2, [5]:4, [8]:20, [10]:4, [20]:8
+SubGroupsInfos { AllSubGr = 12, AllConjsCl = 8, AllNorms = 7 }
+Lower Serie
+C5       --> F(5x:8)4
+Upper Serie
+C1       --> C4
+Derived Serie
+C1       --> C5       --> F(5x:8)4
+Zentrum  Z(G) = C4
+Frattini Φ(G) = C4
+Fitting  F(G) = C20
+
+Word Group
+< a,b | a8, b5, baba-1 >
+
+Gap SmallGroup(40,1)     Name:C5 : C8
+
+Group names
+    F(5x:8)4
+    C10 . C4
+    C20 . C2
+    C4 . D10
+    C2 . Dic5
+
+Group40[8/14]
+#############################################################
+################          M(10x:4)3          ################
+#############################################################
+|M(10x:4)3| = 40
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup MtCyc(10,4,3)(table)
+
+Elements Orders : [1]:1, [2]:11, [4]:20, [5]:4, [10]:4
+SubGroupsInfos { AllSubGr = 40, AllConjsCl = 16, AllNorms = 10 }
+Lower Serie
+C5        --> M(10x:4)3
+Upper Serie
+C1        --> C2
+Derived Serie
+C1        --> C5        --> M(10x:4)3
+Zentrum  Z(G) = C2
+Frattini Φ(G) = C1
+Fitting  F(G) = C10
+
+Word Group
+< a,b | b4, a2b-1aba, a3ba-1b-1 >
+
+Gap SmallGroup(40,12)    Name:C2 x (C5 : C4)
+
+Group names
+    M(10x:4)3
+    C2 x F(5x:4)3
+    D10 x: C4
+    C5 x: (C4 x C2)
+    F(5x:4)3 x: C2
+    D20 . C2
+    D10 . (C2 x C2)
+
+Group40[9/14]
+#############################################################
+################          M(10x:4)9          ################
+#############################################################
+|M(10x:4)9| = 40
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup MtCyc(10,4,9)(table)
+
+Elements Orders : [1]:1, [2]:3, [4]:20, [5]:4, [10]:12
+SubGroupsInfos { AllSubGr = 28, AllConjsCl = 16, AllNorms = 13 }
+Lower Serie
+C5        --> M(10x:4)9
+Upper Serie
+C1        --> C2 x C2
+Derived Serie
+C1        --> C5        --> M(10x:4)9
+Zentrum  Z(G) = C2 x C2
+Frattini Φ(G) = C2
+Fitting  F(G) = C10 x C2
+
+Word Group
+< a,b | b4, a10, abab-1 >
+
+Gap SmallGroup(40,7)     Name:C2 x (C5 : C4)
+
+Group names
+    M(10x:4)9
+    C2 x Dic5
+    C5 x: (C4 x C2)
+    C2 . D20
+    (C10 x C2) . C2
+    C10 . (C2 x C2)
+    (C2 x C2) . D10
+
+Group40[10/14]
+#############################################################
+################          M(20x:2)9          ################
+#############################################################
+|M(20x:2)9| = 40
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup MtCyc(20,2,9)(table)
+
+Elements Orders : [1]:1, [2]:11, [4]:12, [5]:4, [10]:4, [20]:8
+SubGroupsInfos { AllSubGr = 36, AllConjsCl = 16, AllNorms = 11 }
+Lower Serie
+C5        --> M(20x:2)9
+Upper Serie
+C1        --> C4
+Derived Serie
+C1        --> C5        --> M(20x:2)9
+Zentrum  Z(G) = C4
+Frattini Φ(G) = C2
+Fitting  F(G) = C20
+
+Word Group
+< a,b | b2, a2ba2b, a7ba-3b, abababab >
+
+Gap SmallGroup(40,5)     Name:C4 x D10
+
+Group names
+    M(20x:2)9
+    C4 x D10
+    D10 x: C4
+    C5 x: (C4 x C2)
+    Dic5 x: C2
+    C2 . D20
+    D20 . C2
+    C10 . (C2 x C2)
+
+Group40[11/14]
+#############################################################
+################          M(4x:10)3          ################
+#############################################################
+|M(4x:10)3| = 40
+NotSimple, NonAbelianGroup, Nilpotent, Solvable
+BaseGroup MtCyc(4,10,3)(table)
+
+Elements Orders : [1]:1, [2]:5, [4]:2, [5]:4, [10]:20, [20]:8
+SubGroupsInfos { AllSubGr = 20, AllConjsCl = 16, AllNorms = 12 }
+Lower Serie
+C1        --> C2        --> M(4x:10)3
+Upper Serie
+C1        --> C10       --> M(4x:10)3
+Derived Serie
+C1        --> C2        --> M(4x:10)3
+Zentrum  Z(G) = C10
+Frattini Φ(G) = C2
+Fitting  F(G) = C20
+
+Word Group
+< a,b | b4, a10, baba-1 >
+
+Gap SmallGroup(40,10)    Name:C5 x D8
+
+Group names
+    M(4x:10)3
+    M(20x:2)11
+    C5 x D8
+    (C10 x C2) x: C2
+    (C2 x C2) x: C10
+    C10 . (C2 x C2)
+    C2 . (C10 x C2)
+
+Group40[12/14]
+#############################################################
+################          C2 x D20           ################
+#############################################################
+|C2 x D20| = 40
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup (C10 . (C2 x C2))(table)
+
+Elements Orders : [1]:1, [2]:23, [5]:4, [10]:12
+SubGroupsInfos { AllSubGr = 76, AllConjsCl = 32, AllNorms = 21 }
+Lower Serie
+C5       --> C2 x D20
+Upper Serie
+C1       --> C2 x C2
+Derived Serie
+C1       --> C5       --> C2 x D20
+Zentrum  Z(G) = C2 x C2
+Frattini Φ(G) = C1
+Fitting  F(G) = C10 x C2
+
+Word Group
+< a,b,c | b2, c2, a10, acac, bcbc, baba-1 >
+
+Gap SmallGroup(40,13)    Name:C2 x C2 x D10
+
+Group names
+    C2 x D20
+    (C2 x C2) x D10
+    D20 x: C2
+    (C10 x C2) x: C2
+    C10 x: (C2 x C2)
+    C5 x: (C2 x C2 x C2)
+    D10 x: (C2 x C2)
+
+Group40[13/14]
+#############################################################
+################           C5 x Q8           ################
+#############################################################
+|C5 x Q8| = 40
+NotSimple, NonAbelianGroup, Nilpotent, Solvable
+BaseGroup (C10 . (C2 x C2))(table)
+
+Elements Orders : [1]:1, [2]:1, [4]:6, [5]:4, [10]:4, [20]:24
+SubGroupsInfos { AllSubGr = 12, AllConjsCl = 12, AllNorms = 12 }
+Lower Serie
+C1      --> C2      --> C5 x Q8
+Upper Serie
+C1      --> C10     --> C5 x Q8
+Derived Serie
+C1      --> C2      --> C5 x Q8
+Zentrum  Z(G) = C10
+Frattini Φ(G) = C2
+Fitting  F(G) = C20
+
+Word Group
+< a,b,c | b4, b2c2, a5b-2, bcbc-1, bab-1a-1, cac-1a-1 >
+
+Gap SmallGroup(40,11)    Name:C5 x Q8
+
+Group names
+    C5 x Q8
+    C20 . C2
+    C4 . C10
+    C10 . (C2 x C2)
+    C2 . (C10 x C2)
+
+Group40[14/14]
+#############################################################
+################          C5 x: D8           ################
+#############################################################
+|C5 x: D8| = 40
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup (C10 . (C2 x C2))(table)
+
+Elements Orders : [1]:1, [2]:13, [4]:10, [5]:4, [10]:12
+SubGroupsInfos { AllSubGr = 40, AllConjsCl = 16, AllNorms = 9 }
+Lower Serie
+C5       --> C10      --> C5 x: D8
+Upper Serie
+C1       --> C2       --> C2 x C2
+Derived Serie
+C1       --> C10      --> C5 x: D8
+Zentrum  Z(G) = C2
+Frattini Φ(G) = C2
+Fitting  F(G) = C10 x C2
+
+Word Group
+< a,b,c | b2, c2, acac, a5cbcb, baba-1, bcbcbcbc >
+
+Gap SmallGroup(40,8)     Name:(C10 x C2) : C2
+
+Group names
+    C5 x: D8
+    D20 x: C2
+    (C10 x C2) x: C2
+    Dic5 x: C2
+    (C2 x C2) x: D10
+    C2 . D20
+    C10 . (C2 x C2)
+
+Group41[1/1]
+#############################################################
+################             C41             ################
+#############################################################
+|C41| = 41
+Simple, AbelianGroup, Nilpotent, Solvable
+BaseGroup C41(table)
+
+Elements Orders : [1]:1, [41]:40
+SubGroupsInfos { AllSubGr = 2, AllConjsCl = 2, AllNorms = 2 }
+Lower Serie
+C1  --> C41
+Upper Serie
+C1  --> C41
+Derived Serie
+C1  --> C41
+Zentrum  Z(G) = C41
+Frattini Φ(G) = C1
+Fitting  F(G) = C1
+
+Word Group
+< a | a41 >
+
+Gap SmallGroup(41,1)     Name:C41
+
+Group names
+    C41
+
+Group42[1/6]
+#############################################################
+################             C42             ################
+#############################################################
+|C42| = 42
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C7 x C3 x C2)(table)
+
+Elements Orders : [1]:1, [2]:1, [3]:2, [6]:2, [7]:6, [14]:6, [21]:12, [42]:12
+SubGroupsInfos { AllSubGr = 8, AllConjsCl = 8, AllNorms = 8 }
+Lower Serie
+C1  --> C42
+Upper Serie
+C1  --> C42
+Derived Serie
+C1  --> C42
+Zentrum  Z(G) = C42
+Frattini Φ(G) = C1
+Fitting  F(G) = C21
+
+Word Group
+< a | a42 >
+
+Gap SmallGroup(42,6)     Name:C42
+
+Group names
+    C42
+
+Group42[2/6]
+#############################################################
+################             D42             ################
+#############################################################
+|D42| = 42
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup Frob(21,2,20)(table)
+
+Elements Orders : [1]:1, [2]:21, [3]:2, [7]:6, [21]:12
+SubGroupsInfos { AllSubGr = 36, AllConjsCl = 8, AllNorms = 5 }
+Lower Serie
+C21 --> D42
+Upper Serie
+C1
+Derived Serie
+C1  --> C21 --> D42
+Zentrum  Z(G) = C1
+Frattini Φ(G) = C1
+Fitting  F(G) = C21
+
+Word Group
+< a,b | b2, a21, abab >
+
+Gap SmallGroup(42,5)     Name:D42
+
+Group names
+    D42
+    C3 x: D14
+    C7 x: S3
+
+Group42[3/6]
+#############################################################
+################          F(7x:6)2           ################
+#############################################################
+|F(7x:6)2| = 42
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup Frob(7,6,2)(table)
+
+Elements Orders : [1]:1, [2]:1, [3]:14, [6]:14, [7]:6, [14]:6
+SubGroupsInfos { AllSubGr = 20, AllConjsCl = 8, AllNorms = 6 }
+Lower Serie
+C7       --> F(7x:6)2
+Upper Serie
+C1       --> C2
+Derived Serie
+C1       --> C7       --> F(7x:6)2
+Zentrum  Z(G) = C2
+Frattini Φ(G) = C1
+Fitting  F(G) = C14
+
+Word Group
+< a,b | b6, a2b-1aba, a2ba-1b-1 >
+
+Gap SmallGroup(42,2)     Name:C2 x (C7 : C3)
+
+Group names
+    F(7x:6)2
+    M(14x:3)11
+    C2 x F(7x:3)4
+
+Group42[4/6]
+#############################################################
+################          F(7x:6)3           ################
+#############################################################
+|F(7x:6)3| = 42
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup Frob(7,6,3)(table)
+
+Elements Orders : [1]:1, [2]:7, [3]:14, [6]:14, [7]:6
+SubGroupsInfos { AllSubGr = 26, AllConjsCl = 8, AllNorms = 5 }
+Lower Serie
+C7       --> F(7x:6)3
+Upper Serie
+C1
+Derived Serie
+C1       --> C7       --> F(7x:6)3
+Zentrum  Z(G) = C1
+Frattini Φ(G) = C1
+Fitting  F(G) = C7
+
+Word Group
+< a,b | b6, aba2b-1, a3ba-1b-1 >
+
+Gap SmallGroup(42,1)     Name:C7 : C6
+
+Group names
+    F(7x:6)3
+    D14 x: C3
+    F(7x:3)2 x: C2
+
+Group42[5/6]
+#############################################################
+################          F(7x:6)6           ################
+#############################################################
+|F(7x:6)6| = 42
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup Frob(7,6,6)(table)
+
+Elements Orders : [1]:1, [2]:7, [3]:2, [6]:14, [7]:6, [21]:12
+SubGroupsInfos { AllSubGr = 20, AllConjsCl = 8, AllNorms = 6 }
+Lower Serie
+C7       --> F(7x:6)6
+Upper Serie
+C1       --> C3
+Derived Serie
+C1       --> C7       --> F(7x:6)6
+Zentrum  Z(G) = C3
+Frattini Φ(G) = C1
+Fitting  F(G) = C21
+
+Word Group
+< a,b | a7, b6, abab-1 >
+
+Gap SmallGroup(42,4)     Name:C3 x D14
+
+Group names
+    F(7x:6)6
+    M(21x:2)13
+    C3 x D14
+
+Group42[6/6]
+#############################################################
+################          F(3x:14)2          ################
+#############################################################
+|F(3x:14)2| = 42
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup Frob(3,14,2)(table)
+
+Elements Orders : [1]:1, [2]:3, [3]:2, [7]:6, [14]:18, [21]:12
+SubGroupsInfos { AllSubGr = 12, AllConjsCl = 8, AllNorms = 6 }
+Lower Serie
+C3        --> F(3x:14)2
+Upper Serie
+C1        --> C7
+Derived Serie
+C1        --> C3        --> F(3x:14)2
+Zentrum  Z(G) = C7
+Frattini Φ(G) = C1
+Fitting  F(G) = C21
+
+Word Group
+< a,b | b3, a14, baba-1 >
+
+Gap SmallGroup(42,3)     Name:C7 x S3
+
+Group names
+    F(3x:14)2
+    M(21x:2)8
+    C7 x S3
+
+Group43[1/1]
+#############################################################
+################             C43             ################
+#############################################################
+|C43| = 43
+Simple, AbelianGroup, Nilpotent, Solvable
+BaseGroup C43(table)
+
+Elements Orders : [1]:1, [43]:42
+SubGroupsInfos { AllSubGr = 2, AllConjsCl = 2, AllNorms = 2 }
+Lower Serie
+C1  --> C43
+Upper Serie
+C1  --> C43
+Derived Serie
+C1  --> C43
+Zentrum  Z(G) = C43
+Frattini Φ(G) = C1
+Fitting  F(G) = C1
+
+Word Group
+< a | a43 >
+
+Gap SmallGroup(43,1)     Name:C43
+
+Group names
+    C43
+
+Group44[1/4]
+#############################################################
+################             C44             ################
+#############################################################
+|C44| = 44
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C11 x C4)(table)
+
+Elements Orders : [1]:1, [2]:1, [4]:2, [11]:10, [22]:10, [44]:20
+SubGroupsInfos { AllSubGr = 6, AllConjsCl = 6, AllNorms = 6 }
+Lower Serie
+C1  --> C44
+Upper Serie
+C1  --> C44
+Derived Serie
+C1  --> C44
+Zentrum  Z(G) = C44
+Frattini Φ(G) = C2
+Fitting  F(G) = C22
+
+Word Group
+< a | a44 >
+
+Gap SmallGroup(44,2)     Name:C44
+
+Group names
+    C44
+
+Group44[2/4]
+#############################################################
+################          C22 x C2           ################
+#############################################################
+|C22 x C2| = 44
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C11 x C2 x C2)(table)
+
+Elements Orders : [1]:1, [2]:3, [11]:10, [22]:30
+SubGroupsInfos { AllSubGr = 10, AllConjsCl = 10, AllNorms = 10 }
+Lower Serie
+C1       --> C22 x C2
+Upper Serie
+C1       --> C22 x C2
+Derived Serie
+C1       --> C22 x C2
+Zentrum  Z(G) = C22 x C2
+Frattini Φ(G) = C1
+Fitting  F(G) = C22
+
+Word Group
+< a,b,c | b2, c2, a11, bcbc, baba-1, caca-1 >
+
+Gap SmallGroup(44,4)     Name:C22 x C2
+
+Group names
+    C22 x C2
+
+Group44[3/4]
+#############################################################
+################            Dic11            ################
+#############################################################
+|Dic11| = 44
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup Frob(11,4,10)(table)
+
+Elements Orders : [1]:1, [2]:1, [4]:22, [11]:10, [22]:10
+SubGroupsInfos { AllSubGr = 16, AllConjsCl = 6, AllNorms = 5 }
+Lower Serie
+C11   --> Dic11
+Upper Serie
+C1    --> C2
+Derived Serie
+C1    --> C11   --> Dic11
+Zentrum  Z(G) = C2
+Frattini Φ(G) = C2
+Fitting  F(G) = C22
+
+Word Group
+< a,b | b4, a11, abab-1 >
+
+Gap SmallGroup(44,1)     Name:C11 : C4
+
+Group names
+    Dic11
+    F(11x:4)10
+    C22 . C2
+    C2 . D22
+
+Group44[4/4]
+#############################################################
+################             D44             ################
+#############################################################
+|D44| = 44
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup MtCyc(22,2,21)(table)
+
+Elements Orders : [1]:1, [2]:23, [11]:10, [22]:10
+SubGroupsInfos { AllSubGr = 40, AllConjsCl = 10, AllNorms = 7 }
+Lower Serie
+C11 --> D44
+Upper Serie
+C1  --> C2
+Derived Serie
+C1  --> C11 --> D44
+Zentrum  Z(G) = C2
+Frattini Φ(G) = C1
+Fitting  F(G) = C22
+
+Word Group
+< a,b | b2, a22, abab >
+
+Gap SmallGroup(44,3)     Name:D44
+
+Group names
+    D44
+    C2 x D22
+    D22 x: C2
+    C11 x: (C2 x C2)
+
+Group45[1/2]
+#############################################################
+################             C45             ################
+#############################################################
+|C45| = 45
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C9 x C5)(table)
+
+Elements Orders : [1]:1, [3]:2, [5]:4, [9]:6, [15]:8, [45]:24
+SubGroupsInfos { AllSubGr = 6, AllConjsCl = 6, AllNorms = 6 }
+Lower Serie
+C1  --> C45
+Upper Serie
+C1  --> C45
+Derived Serie
+C1  --> C45
+Zentrum  Z(G) = C45
+Frattini Φ(G) = C3
+Fitting  F(G) = C15
+
+Word Group
+< a | a45 >
+
+Gap SmallGroup(45,1)     Name:C45
+
+Group names
+    C45
+
+Group45[2/2]
+#############################################################
+################          C15 x C3           ################
+#############################################################
+|C15 x C3| = 45
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C5 x C3 x C3)(table)
+
+Elements Orders : [1]:1, [3]:8, [5]:4, [15]:32
+SubGroupsInfos { AllSubGr = 12, AllConjsCl = 12, AllNorms = 12 }
+Lower Serie
+C1       --> C15 x C3
+Upper Serie
+C1       --> C15 x C3
+Derived Serie
+C1       --> C15 x C3
+Zentrum  Z(G) = C15 x C3
+Frattini Φ(G) = C1
+Fitting  F(G) = C15
+
+Word Group
+< a,b,c | a5, b3, c3, bab-1a-1, cac-1a-1, cbc-1b-1 >
+
+Gap SmallGroup(45,2)     Name:C15 x C3
+
+Group names
+    C15 x C3
+
+Group46[1/2]
+#############################################################
+################             C46             ################
+#############################################################
+|C46| = 46
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C23 x C2)(table)
+
+Elements Orders : [1]:1, [2]:1, [23]:22, [46]:22
+SubGroupsInfos { AllSubGr = 4, AllConjsCl = 4, AllNorms = 4 }
+Lower Serie
+C1  --> C46
+Upper Serie
+C1  --> C46
+Derived Serie
+C1  --> C46
+Zentrum  Z(G) = C46
+Frattini Φ(G) = C1
+Fitting  F(G) = C23
+
+Word Group
+< a | a46 >
+
+Gap SmallGroup(46,2)     Name:C46
+
+Group names
+    C46
+
+Group46[2/2]
+#############################################################
+################             D46             ################
+#############################################################
+|D46| = 46
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup Frob(23,2,22)(table)
+
+Elements Orders : [1]:1, [2]:23, [23]:22
+SubGroupsInfos { AllSubGr = 26, AllConjsCl = 4, AllNorms = 3 }
+Lower Serie
+C23 --> D46
+Upper Serie
+C1
+Derived Serie
+C1  --> C23 --> D46
+Zentrum  Z(G) = C1
+Frattini Φ(G) = C1
+Fitting  F(G) = C23
+
+Word Group
+< a,b | b2, a23, abab >
+
+Gap SmallGroup(46,1)     Name:D46
+
+Group names
+    D46
+
+Group47[1/1]
+#############################################################
+################             C47             ################
+#############################################################
+|C47| = 47
+Simple, AbelianGroup, Nilpotent, Solvable
+BaseGroup C47(table)
+
+Elements Orders : [1]:1, [47]:46
+SubGroupsInfos { AllSubGr = 2, AllConjsCl = 2, AllNorms = 2 }
+Lower Serie
+C1  --> C47
+Upper Serie
+C1  --> C47
+Derived Serie
+C1  --> C47
+Zentrum  Z(G) = C47
+Frattini Φ(G) = C1
+Fitting  F(G) = C1
+
+Word Group
+< a | a47 >
+
+Gap SmallGroup(47,1)     Name:C47
+
+Group names
+    C47
+
+Group48[1/52]
+#############################################################
+################             C48             ################
+#############################################################
+|C48| = 48
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C16 x C3)(table)
+
+Elements Orders : [1]:1, [2]:1, [3]:2, [4]:2, [6]:2, [8]:4, [12]:4, [16]:8, [24]:8, [48]:16
+SubGroupsInfos { AllSubGr = 10, AllConjsCl = 10, AllNorms = 10 }
+Lower Serie
+C1  --> C48
+Upper Serie
+C1  --> C48
+Derived Serie
+C1  --> C48
+Zentrum  Z(G) = C48
+Frattini Φ(G) = C8
+Fitting  F(G) = C24
+
+Word Group
+< a | a48 >
+
+Gap SmallGroup(48,2)     Name:C48
+
+Group names
+    C48
+
+Group48[2/52]
+#############################################################
+################          C12 x C4           ################
+#############################################################
+|C12 x C4| = 48
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C4 x C4 x C3)(table)
+
+Elements Orders : [1]:1, [2]:3, [3]:2, [4]:12, [6]:6, [12]:24
+SubGroupsInfos { AllSubGr = 30, AllConjsCl = 30, AllNorms = 30 }
+Lower Serie
+C1       --> C12 x C4
+Upper Serie
+C1       --> C12 x C4
+Derived Serie
+C1       --> C12 x C4
+Zentrum  Z(G) = C12 x C4
+Frattini Φ(G) = C2 x C2
+Fitting  F(G) = C12 x C2
+
+Word Group
+< a,b,c | a4, b4, c3, bab-1a-1, cac-1a-1, cbc-1b-1 >
+
+Gap SmallGroup(48,20)    Name:C12 x C4
+
+Group names
+    C12 x C4
+
+Group48[3/52]
+#############################################################
+################          C24 x C2           ################
+#############################################################
+|C24 x C2| = 48
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C8 x C3 x C2)(table)
+
+Elements Orders : [1]:1, [2]:3, [3]:2, [4]:4, [6]:6, [8]:8, [12]:8, [24]:16
+SubGroupsInfos { AllSubGr = 22, AllConjsCl = 22, AllNorms = 22 }
+Lower Serie
+C1       --> C24 x C2
+Upper Serie
+C1       --> C24 x C2
+Derived Serie
+C1       --> C24 x C2
+Zentrum  Z(G) = C24 x C2
+Frattini Φ(G) = C4
+Fitting  F(G) = C24
+
+Word Group
+< a,b,c | a8, b3, c2, caca-1, cbcb-1, bab-1a-1 >
+
+Gap SmallGroup(48,23)    Name:C24 x C2
+
+Group names
+    C24 x C2
+
+Group48[4/52]
+#############################################################
+################        C12 x C2 x C2        ################
+#############################################################
+|C12 x C2 x C2| = 48
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C4 x C3 x C2 x C2)(table)
+
+Elements Orders : [1]:1, [2]:7, [3]:2, [4]:8, [6]:14, [12]:16
+SubGroupsInfos { AllSubGr = 54, AllConjsCl = 54, AllNorms = 54 }
+Lower Serie
+C1            --> C12 x C2 x C2
+Upper Serie
+C1            --> C12 x C2 x C2
+Derived Serie
+C1            --> C12 x C2 x C2
+Zentrum  Z(G) = C12 x C2 x C2
+Frattini Φ(G) = C2
+Fitting  F(G) = C12 x C2
+
+Word Group
+< a,b,c,d | a4, b3, c2, d2, cdcd, caca-1, cbcb-1, dada-1, dbdb-1, bab-1a-1 >
+
+Gap SmallGroup(48,44)    Name:C12 x C2 x C2
+
+Group names
+    C12 x C2 x C2
+
+Group48[5/52]
+#############################################################
+################      C6 x C2 x C2 x C2      ################
+#############################################################
+|C6 x C2 x C2 x C2| = 48
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C3 x C2 x C2 x C2 x C2)(table)
+
+Elements Orders : [1]:1, [2]:15, [3]:2, [6]:30
+SubGroupsInfos { AllSubGr = 134, AllConjsCl = 134, AllNorms = 134 }
+Lower Serie
+C1                --> C6 x C2 x C2 x C2
+Upper Serie
+C1                --> C6 x C2 x C2 x C2
+Derived Serie
+C1                --> C6 x C2 x C2 x C2
+Zentrum  Z(G) = C6 x C2 x C2 x C2
+Frattini Φ(G) = C1
+Fitting  F(G) = C6 x C2 x C2
+
+Word Group
+< a,b,c,d,e | a3, b2, c2, d2, e2, bcbc, bdbd, bebe, cdcd, cece, dede, baba-1, caca-1, dada-1, eaea-1 >
+
+Gap SmallGroup(48,52)    Name:C6 x C2 x C2 x C2
+
+Group names
+    C6 x C2 x C2 x C2
+
+Group48[6/52]
+#############################################################
+################            Dic12            ################
+#############################################################
+|Dic12| = 48
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup (C24 . C2)(table)
+
+Elements Orders : [1]:1, [2]:1, [3]:2, [4]:26, [6]:2, [8]:4, [12]:4, [24]:8
+SubGroupsInfos { AllSubGr = 36, AllConjsCl = 18, AllNorms = 11 }
+Lower Serie
+C3    --> C6    --> C12   --> Dic12
+Upper Serie
+C1    --> C2    --> C4    --> C8
+Derived Serie
+C1    --> C12   --> Dic12
+Zentrum  Z(G) = C2
+Frattini Φ(G) = C4
+Fitting  F(G) = C24
+
+Word Group
+< a,b | b4, abab-1, a8b-1a-4b-1 >
+
+Gap SmallGroup(48,8)     Name:C3 : Q16
+
+Group names
+    Dic12
+    C3 x: Q16
+    C24 . C2
+    C6 . D8
+    C2 . D24
+    C4 . D12
+    C12 . (C2 x C2)
+    Dic6 . C2
+    C8 . S3
+
+Group48[7/52]
+#############################################################
+################           GL(2,3)           ################
+#############################################################
+|GL(2,3)| = 48
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup (SL(2,3) . C2)(table)
+
+Elements Orders : [1]:1, [2]:13, [3]:8, [4]:6, [6]:8, [8]:12
+SubGroupsInfos { AllSubGr = 55, AllConjsCl = 16, AllNorms = 5 }
+Lower Serie
+SL(2,3) --> GL(2,3)
+Upper Serie
+C1      --> C2
+Derived Serie
+C1      --> C2      --> Q8      --> SL(2,3) --> GL(2,3)
+Zentrum  Z(G) = C2
+Frattini Φ(G) = C2
+Fitting  F(G) = Q8
+
+Word Group
+< a,b,c | a4, b3, c2, acac, bcbc, ababab, a2ba2b-1 >
+
+Gap SmallGroup(48,29)    Name:GL(2,3)
+
+Group names
+    GL(2,3)
+    SL(2,3) x: C2
+    Q8 x: S3
+    C2 . S4
+
+Group48[8/52]
+#############################################################
+################             D48             ################
+#############################################################
+|D48| = 48
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup MtCyc(24,2,23)(table)
+
+Elements Orders : [1]:1, [2]:25, [3]:2, [4]:2, [6]:2, [8]:4, [12]:4, [24]:8
+SubGroupsInfos { AllSubGr = 68, AllConjsCl = 22, AllNorms = 11 }
+Lower Serie
+C3  --> C6  --> C12 --> D48
+Upper Serie
+C1  --> C2  --> C4  --> C8
+Derived Serie
+C1  --> C12 --> D48
+Zentrum  Z(G) = C2
+Frattini Φ(G) = C4
+Fitting  F(G) = C24
+
+Word Group
+< a,b | b2, a24, abab >
+
+Gap SmallGroup(48,7)     Name:D48
+
+Group names
+    D48
+    C3 x: D16
+    D24 x: C2
+    C8 x: S3
+    C6 . D8
+    C2 . D24
+    C4 . D12
+    C12 . (C2 x C2)
+
+Group48[9/52]
+#############################################################
+################          M(6x:8)5           ################
+#############################################################
+|M(6x:8)5| = 48
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup MtCyc(6,8,5)(table)
+
+Elements Orders : [1]:1, [2]:3, [3]:2, [4]:4, [6]:6, [8]:24, [12]:8
+SubGroupsInfos { AllSubGr = 28, AllConjsCl = 22, AllNorms = 19 }
+Lower Serie
+C3       --> M(6x:8)5
+Upper Serie
+C1       --> C4 x C2
+Derived Serie
+C1       --> C3       --> M(6x:8)5
+Zentrum  Z(G) = C4 x C2
+Frattini Φ(G) = C4
+Fitting  F(G) = C12 x C2
+
+Word Group
+< a,b | a8, b6, baba-1 >
+
+Gap SmallGroup(48,9)     Name:C2 x (C3 : C8)
+
+Group names
+    M(6x:8)5
+    C2 x F(3x:8)2
+    C3 x: (C8 x C2)
+    C12 . C4
+    C4 . D12
+    (C6 x C2) . C4
+    C6 . (C4 x C2)
+    (C12 x C2) . C2
+    C12 . (C2 x C2)
+    C4 . Dic3
+    C2 . M(6x:4)5
+    (C2 x C2) . Dic3
+    (C4 x C2) . S3
+
+Group48[10/52]
+#############################################################
+################          M(8x:6)3           ################
+#############################################################
+|M(8x:6)3| = 48
+NotSimple, NonAbelianGroup, Nilpotent, Solvable
+BaseGroup MtCyc(8,6,3)(table)
+
+Elements Orders : [1]:1, [2]:5, [3]:2, [4]:6, [6]:10, [8]:4, [12]:12, [24]:8
+SubGroupsInfos { AllSubGr = 30, AllConjsCl = 20, AllNorms = 14 }
+Lower Serie
+C1       --> C2       --> C4       --> M(8x:6)3
+Upper Serie
+C1       --> C6       --> C12      --> M(8x:6)3
+Derived Serie
+C1       --> C4       --> M(8x:6)3
+Zentrum  Z(G) = C6
+Frattini Φ(G) = C4
+Fitting  F(G) = M(4x:6)3
+
+Word Group
+< a,b | b6, a2ba2b-1, a3ba-1b-1 >
+
+Gap SmallGroup(48,26)    Name:C3 x QD16
+
+Group names
+    M(8x:6)3
+    M(24x:2)19
+    C3 x QD16
+    Q8 x: C6
+    (C3 x Q8) x: C2
+    C6 . D8
+    D8 . C6
+    C4 . (C6 x C2)
+    C12 . (C2 x C2)
+    C2 . M(4x:6)3
+    M(4x:6)3 . C2
+
+Group48[11/52]
+#############################################################
+################          M(8x:6)5           ################
+#############################################################
+|M(8x:6)5| = 48
+NotSimple, NonAbelianGroup, Nilpotent, Solvable
+BaseGroup MtCyc(8,6,5)(table)
+
+Elements Orders : [1]:1, [2]:3, [3]:2, [4]:4, [6]:6, [8]:8, [12]:8, [24]:16
+SubGroupsInfos { AllSubGr = 22, AllConjsCl = 20, AllNorms = 18 }
+Lower Serie
+C1       --> C2       --> M(8x:6)5
+Upper Serie
+C1       --> C12      --> M(8x:6)5
+Derived Serie
+C1       --> C2       --> M(8x:6)5
+Zentrum  Z(G) = C12
+Frattini Φ(G) = C4
+Fitting  F(G) = C24
+
+Word Group
+< a,b | b6, a3bab-1, a2b-1aba >
+
+Gap SmallGroup(48,24)    Name:C3 x (C8 : C2)
+
+Group names
+    M(8x:6)5
+    M(24x:2)13
+    C3 x MM16
+    C12 . C4
+    C4 . C12
+    (C4 x C2) . C6
+    (C6 x C2) . C4
+    C4 . (C6 x C2)
+    C6 . (C4 x C2)
+    (C12 x C2) . C2
+    (C2 x C2) . C12
+    C12 . (C2 x C2)
+    C2 . (C12 x C2)
+
+Group48[12/52]
+#############################################################
+################          M(8x:6)7           ################
+#############################################################
+|M(8x:6)7| = 48
+NotSimple, NonAbelianGroup, Nilpotent, Solvable
+BaseGroup MtCyc(8,6,7)(table)
+
+Elements Orders : [1]:1, [2]:9, [3]:2, [4]:2, [6]:18, [8]:4, [12]:4, [24]:8
+SubGroupsInfos { AllSubGr = 38, AllConjsCl = 22, AllNorms = 14 }
+Lower Serie
+C1       --> C2       --> C4       --> M(8x:6)7
+Upper Serie
+C1       --> C6       --> C12      --> M(8x:6)7
+Derived Serie
+C1       --> C4       --> M(8x:6)7
+Zentrum  Z(G) = C6
+Frattini Φ(G) = C4
+Fitting  F(G) = M(4x:6)3
+
+Word Group
+< a,b | a8, b6, abab-1 >
+
+Gap SmallGroup(48,25)    Name:C3 x D16
+
+Group names
+    M(8x:6)7
+    M(24x:2)7
+    C3 x D16
+    D8 x: C6
+    M(4x:6)3 x: C2
+    C6 . D8
+    C4 . (C6 x C2)
+    C12 . (C2 x C2)
+    C2 . M(4x:6)3
+
+Group48[13/52]
+#############################################################
+################          F(3x:16)2          ################
+#############################################################
+|F(3x:16)2| = 48
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup Frob(3,16,2)(table)
+
+Elements Orders : [1]:1, [2]:1, [3]:2, [4]:2, [6]:2, [8]:4, [12]:4, [16]:24, [24]:8
+SubGroupsInfos { AllSubGr = 12, AllConjsCl = 10, AllNorms = 9 }
+Lower Serie
+C3        --> F(3x:16)2
+Upper Serie
+C1        --> C8
+Derived Serie
+C1        --> C3        --> F(3x:16)2
+Zentrum  Z(G) = C8
+Frattini Φ(G) = C8
+Fitting  F(G) = C24
+
+Word Group
+< a,b | b3, a16, baba-1 >
+
+Gap SmallGroup(48,1)     Name:C3 : C16
+
+Group names
+    F(3x:16)2
+    C6 . C8
+    C12 . C4
+    C24 . C2
+    C4 . Dic3
+    C8 . S3
+    C2 . F(3x:8)2
+
+Group48[14/52]
+#############################################################
+################          M(12x:4)5          ################
+#############################################################
+|M(12x:4)5| = 48
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup MtCyc(12,4,5)(table)
+
+Elements Orders : [1]:1, [2]:3, [3]:2, [4]:28, [6]:6, [12]:8
+SubGroupsInfos { AllSubGr = 44, AllConjsCl = 30, AllNorms = 23 }
+Lower Serie
+C3        --> M(12x:4)5
+Upper Serie
+C1        --> C4 x C2
+Derived Serie
+C1        --> C3        --> M(12x:4)5
+Zentrum  Z(G) = C4 x C2
+Frattini Φ(G) = C2 x C2
+Fitting  F(G) = C12 x C2
+
+Word Group
+< a,b | b4, a2ba2b-1, bab2a-1b, a5ba-1b-1 >
+
+Gap SmallGroup(48,11)    Name:C4 x (C3 : C4)
+
+Group names
+    M(12x:4)5
+    C4 x Dic3
+    C3 x: (C4 x C4)
+    Dic3 x: C4
+    C6 . (C4 x C2)
+    (C12 x C2) . C2
+    (C2 x C2) . D12
+    (C6 x C2) . (C2 x C2)
+    C2 . M(6x:4)5
+    M(6x:4)5 . C2
+    C2 . M(12x:2)5
+    (C4 x C2) . S3
+
+Group48[15/52]
+#############################################################
+################          M(12x:4)7          ################
+#############################################################
+|M(12x:4)7| = 48
+NotSimple, NonAbelianGroup, Nilpotent, Solvable
+BaseGroup MtCyc(4,12,3)(table)
+
+Elements Orders : [1]:1, [2]:3, [3]:2, [4]:12, [6]:6, [12]:24
+SubGroupsInfos { AllSubGr = 30, AllConjsCl = 26, AllNorms = 22 }
+Lower Serie
+C1        --> C2        --> M(12x:4)7
+Upper Serie
+C1        --> C6 x C2   --> M(12x:4)7
+Derived Serie
+C1        --> C2        --> M(12x:4)7
+Zentrum  Z(G) = C6 x C2
+Frattini Φ(G) = C2 x C2
+Fitting  F(G) = C12 x C2
+
+Word Group
+< a,b | b4, a12, baba-1 >
+
+Gap SmallGroup(48,22)    Name:C3 x (C4 : C4)
+
+Group names
+    M(12x:4)7
+    M(4x:12)3
+    C3 x M(4x:4)3
+    C6 . D8
+    (C4 x C2) . C6
+    C6 . (C4 x C2)
+    (C12 x C2) . C2
+    C2 . (C12 x C2)
+    C6 . Q8
+    (C2 x C2) . (C6 x C2)
+    (C6 x C2) . (C2 x C2)
+    C2 . M(4x:6)3
+    C2 . (C3 x Q8)
+
+Group48[16/52]
+#############################################################
+################          M(24x:2)5          ################
+#############################################################
+|M(24x:2)5| = 48
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup MtCyc(24,2,5)(table)
+
+Elements Orders : [1]:1, [2]:7, [3]:2, [4]:8, [6]:2, [8]:16, [12]:4, [24]:8
+SubGroupsInfos { AllSubGr = 36, AllConjsCl = 20, AllNorms = 13 }
+Lower Serie
+C3        --> C6        --> M(24x:2)5
+Upper Serie
+C1        --> C4        --> C8
+Derived Serie
+C1        --> C6        --> M(24x:2)5
+Zentrum  Z(G) = C4
+Frattini Φ(G) = C4
+Fitting  F(G) = C24
+
+Word Group
+< a,b | b2, a5ba-1b >
+
+Gap SmallGroup(48,5)     Name:C24 : C2
+
+Group names
+    M(24x:2)5
+    C8 x: S3
+    C3 x: MM16
+    F(3x:8)2 x: C2
+    C4 . D12
+    D12 . C4
+    C6 . (C4 x C2)
+    C12 . (C2 x C2)
+    Dic3 . C4
+    C2 . M(12x:2)5
+    M(12x:2)5 . C2
+
+Group48[17/52]
+#############################################################
+################         M(12x:4)11          ################
+#############################################################
+|M(12x:4)11| = 48
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup MtCyc(12,4,11)(table)
+
+Elements Orders : [1]:1, [2]:3, [3]:2, [4]:28, [6]:6, [12]:8
+SubGroupsInfos { AllSubGr = 44, AllConjsCl = 26, AllNorms = 19 }
+Lower Serie
+C3         --> C6         --> M(12x:4)11
+Upper Serie
+C1         --> C2 x C2    --> C4 x C2
+Derived Serie
+C1         --> C6         --> M(12x:4)11
+Zentrum  Z(G) = C2 x C2
+Frattini Φ(G) = C2 x C2
+Fitting  F(G) = C12 x C2
+
+Word Group
+< a,b | b4, a12, abab-1 >
+
+Gap SmallGroup(48,13)    Name:C12 : C4
+
+Group names
+    M(12x:4)11
+    C4 x: Dic3
+    C3 x: M(4x:4)3
+    C6 . D8
+    C2 . D24
+    C6 . (C4 x C2)
+    (C12 x C2) . C2
+    C6 . Q8
+    C2 . Dic6
+    (C2 x C2) . D12
+    (C6 x C2) . (C2 x C2)
+    C2 . M(6x:4)5
+    M(6x:4)5 . C2
+    (C4 x C2) . S3
+
+Group48[18/52]
+#############################################################
+################         M(24x:2)11          ################
+#############################################################
+|M(24x:2)11| = 48
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup MtCyc(24,2,11)(table)
+
+Elements Orders : [1]:1, [2]:13, [3]:2, [4]:14, [6]:2, [8]:4, [12]:4, [24]:8
+SubGroupsInfos { AllSubGr = 52, AllConjsCl = 20, AllNorms = 11 }
+Lower Serie
+C3         --> C6         --> C12        --> M(24x:2)11
+Upper Serie
+C1         --> C2         --> C4         --> C8
+Derived Serie
+C1         --> C12        --> M(24x:2)11
+Zentrum  Z(G) = C2
+Frattini Φ(G) = C4
+Fitting  F(G) = C24
+
+Word Group
+< a,b | b2, a2ba2b, a9ba-3b, abababab >
+
+Gap SmallGroup(48,6)     Name:C24 : C2
+
+Group names
+    M(24x:2)11
+    C3 x: QD16
+    Dic6 x: C2
+    C8 x: S3
+    C6 . D8
+    C2 . D24
+    C4 . D12
+    D24 . C2
+    C12 . (C2 x C2)
+
+Group48[19/52]
+#############################################################
+################         M(24x:2)17          ################
+#############################################################
+|M(24x:2)17| = 48
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup MtCyc(24,2,17)(table)
+
+Elements Orders : [1]:1, [2]:7, [3]:2, [4]:8, [6]:2, [8]:16, [12]:4, [24]:8
+SubGroupsInfos { AllSubGr = 36, AllConjsCl = 22, AllNorms = 15 }
+Lower Serie
+C3         --> M(24x:2)17
+Upper Serie
+C1         --> C8
+Derived Serie
+C1         --> C3         --> M(24x:2)17
+Zentrum  Z(G) = C8
+Frattini Φ(G) = C4
+Fitting  F(G) = C24
+
+Word Group
+< a,b | b2, a7bab, ba3ba-3, bababa-1ba-1 >
+
+Gap SmallGroup(48,4)     Name:C8 x S3
+
+Group names
+    M(24x:2)17
+    C8 x S3
+    C3 x: (C8 x C2)
+    S3 x: C8
+    F(3x:8)2 x: C2
+    C4 . D12
+    D12 . C4
+    C6 . (C4 x C2)
+    C12 . (C2 x C2)
+    Dic3 . C4
+    C2 . M(12x:2)5
+    M(12x:2)5 . C2
+
+Group48[20/52]
+#############################################################
+################           C6 x D8           ################
+#############################################################
+|C6 x D8| = 48
+NotSimple, NonAbelianGroup, Nilpotent, Solvable
+BaseGroup ((C12 x C2) . C2)(table)
+
+Elements Orders : [1]:1, [2]:11, [3]:2, [4]:4, [6]:22, [12]:8
+SubGroupsInfos { AllSubGr = 70, AllConjsCl = 54, AllNorms = 38 }
+Lower Serie
+C1      --> C2      --> C6 x D8
+Upper Serie
+C1      --> C6 x C2 --> C6 x D8
+Derived Serie
+C1      --> C2      --> C6 x D8
+Zentrum  Z(G) = C6 x C2
+Frattini Φ(G) = C2
+Fitting  F(G) = M(4x:6)3
+
+Word Group
+< a,b,c | b2, c2, bcbc, a5bab, caca-1, ba2ba-2 >
+
+Gap SmallGroup(48,45)    Name:C6 x D8
+
+Group names
+    C6 x D8
+    C2 x M(4x:6)3
+    D8 x: C6
+    (C4 x C2) x: C6
+    C4 x: (C6 x C2)
+    (C12 x C2) x: C2
+    C12 x: (C2 x C2)
+    (C2 x C2 x C2) x: C6
+    (C6 x C2 x C2) x: C2
+    (C2 x C2) x: (C6 x C2)
+    (C6 x C2) x: (C2 x C2)
+    M(4x:6)3 x: C2
+    C2 . (C6 x C2 x C2)
+    C6 . (C2 x C2 x C2)
+    (C2 x C2) . (C6 x C2)
+    (C6 x C2) . (C2 x C2)
+
+Group48[21/52]
+#############################################################
+################          C2 x D24           ################
+#############################################################
+|C2 x D24| = 48
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup ((C12 x C2) . C2)(table)
+
+Elements Orders : [1]:1, [2]:27, [3]:2, [4]:4, [6]:6, [12]:8
+SubGroupsInfos { AllSubGr = 124, AllConjsCl = 54, AllNorms = 27 }
+Lower Serie
+C3       --> C6       --> C2 x D24
+Upper Serie
+C1       --> C2 x C2  --> C4 x C2
+Derived Serie
+C1       --> C6       --> C2 x D24
+Zentrum  Z(G) = C2 x C2
+Frattini Φ(G) = C2
+Fitting  F(G) = C12 x C2
+
+Word Group
+< a,b,c | b2, c2, a12, abab, bcbc, caca-1 >
+
+Gap SmallGroup(48,36)    Name:C2 x D24
+
+Group names
+    C2 x D24
+    C6 x: D8
+    C4 x: D12
+    D24 x: C2
+    (C12 x C2) x: C2
+    C12 x: (C2 x C2)
+    D12 x: (C2 x C2)
+    (C4 x C2) x: S3
+    C3 x: (C2 x D8)
+    (C2 x D12) x: C2
+    C6 . (C2 x C2 x C2)
+    (C2 x C2) . D12
+    (C6 x C2) . (C2 x C2)
+    C2 . (C2 x D12)
+
+Group48[22/52]
+#############################################################
+################          C4 x D12           ################
+#############################################################
+|C4 x D12| = 48
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup ((C12 x C2) . C2)(table)
+
+Elements Orders : [1]:1, [2]:15, [3]:2, [4]:16, [6]:6, [12]:8
+SubGroupsInfos { AllSubGr = 92, AllConjsCl = 54, AllNorms = 35 }
+Lower Serie
+C3       --> C4 x D12
+Upper Serie
+C1       --> C4 x C2
+Derived Serie
+C1       --> C3       --> C4 x D12
+Zentrum  Z(G) = C4 x C2
+Frattini Φ(G) = C2
+Fitting  F(G) = C12 x C2
+
+Word Group
+< a,b,c | b2, c2, bcbc, a2ba2b, caca-1, a5ba-1b >
+
+Gap SmallGroup(48,35)    Name:C2 x C4 x S3
+
+Group names
+    C4 x D12
+    (C4 x C2) x S3
+    C2 x M(12x:2)5
+    D12 x: C4
+    C6 x: (C4 x C2)
+    (C12 x C2) x: C2
+    C12 x: (C2 x C2)
+    C3 x: (C4 x C2 x C2)
+    M(6x:4)5 x: C2
+    M(12x:2)5 x: C2
+    Dic3 x: (C2 x C2)
+    S3 x: (C4 x C2)
+    C6 . (C2 x C2 x C2)
+    (C2 x C2) . D12
+    D12 . (C2 x C2)
+    (C6 x C2) . (C2 x C2)
+    (C2 x D12) . C2
+    C2 . (C2 x D12)
+
+Group48[23/52]
+#############################################################
+################       (C2 x C2) x D12       ################
+#############################################################
+|(C2 x C2) x D12| = 48
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup ((C6 x C2 x C2) . C2)(table)
+
+Elements Orders : [1]:1, [2]:31, [3]:2, [6]:14
+SubGroupsInfos { AllSubGr = 236, AllConjsCl = 134, AllNorms = 83 }
+Lower Serie
+C3              --> (C2 x C2) x D12
+Upper Serie
+C1              --> C2 x C2 x C2
+Derived Serie
+C1              --> C3              --> (C2 x C2) x D12
+Zentrum  Z(G) = C2 x C2 x C2
+Frattini Φ(G) = C1
+Fitting  F(G) = C6 x C2 x C2
+
+Word Group
+< a,b,c,d | a6, b2, c2, d2, abab, bcbc, bdbd, cdcd, caca-1, dada-1 >
+
+Gap SmallGroup(48,51)    Name:C2 x C2 x C2 x S3
+
+Group names
+    (C2 x C2) x D12
+    (C2 x C2 x C2) x S3
+    (C6 x C2 x C2) x: C2
+    C6 x: (C2 x C2 x C2)
+    D12 x: (C2 x C2)
+    (C6 x C2) x: (C2 x C2)
+    C3 x: (C2 x C2 x C2 x C2)
+    S3 x: (C2 x C2 x C2)
+    (C2 x D12) x: C2
+
+Group48[24/52]
+#############################################################
+################           C2 x S4           ################
+#############################################################
+|C2 x S4| = 48
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup ((C2 x A4) . C2)(table)
+
+Elements Orders : [1]:1, [2]:19, [3]:8, [4]:12, [6]:8
+SubGroupsInfos { AllSubGr = 98, AllConjsCl = 33, AllNorms = 9 }
+Lower Serie
+A4      --> C2 x S4
+Upper Serie
+C1      --> C2
+Derived Serie
+C1      --> C2 x C2 --> A4      --> C2 x S4
+Zentrum  Z(G) = C2
+Frattini Φ(G) = C1
+Fitting  F(G) = C2 x C2 x C2
+
+Word Group
+< a,b,c | a3, b2, c2, bcbc, caca-1, abababab >
+
+Gap SmallGroup(48,48)    Name:C2 x S4
+
+Group names
+    C2 x S4
+    S4 x: C2
+    (C2 x C2) x: D12
+    A4 x: (C2 x C2)
+    (C2 x C2 x C2) x: S3
+    (C2 x A4) x: C2
+
+Group48[25/52]
+#############################################################
+################           C4 x A4           ################
+#############################################################
+|C4 x A4| = 48
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup ((C2 x A4) . C2)(table)
+
+Elements Orders : [1]:1, [2]:7, [3]:8, [4]:8, [6]:8, [12]:16
+SubGroupsInfos { AllSubGr = 42, AllConjsCl = 19, AllNorms = 9 }
+Lower Serie
+C2 x C2 --> C4 x A4
+Upper Serie
+C1      --> C4
+Derived Serie
+C1      --> C2 x C2 --> C4 x A4
+Zentrum  Z(G) = C4
+Frattini Φ(G) = C2
+Fitting  F(G) = C4 x C2 x C2
+
+Word Group
+< a,b,c | a4, b3, c3, bcbc, bab-1a-1, cac-1a-1 >
+
+Gap SmallGroup(48,31)    Name:C4 x A4
+
+Group names
+    C4 x A4
+    (C2 x C2) x: C12
+    A4 x: C4
+    (C4 x C2 x C2) x: C3
+    (C2 x C2 x C2) . C6
+    (C2 x A4) . C2
+    C2 . (C2 x A4)
+
+Group48[26/52]
+#############################################################
+################           C6 x Q8           ################
+#############################################################
+|C6 x Q8| = 48
+NotSimple, NonAbelianGroup, Nilpotent, Solvable
+BaseGroup ((C12 x C2) . C2)(table)
+
+Elements Orders : [1]:1, [2]:3, [3]:2, [4]:12, [6]:6, [12]:24
+SubGroupsInfos { AllSubGr = 38, AllConjsCl = 38, AllNorms = 38 }
+Lower Serie
+C1      --> C2      --> C6 x Q8
+Upper Serie
+C1      --> C6 x C2 --> C6 x Q8
+Derived Serie
+C1      --> C2      --> C6 x Q8
+Zentrum  Z(G) = C6 x C2
+Frattini Φ(G) = C2
+Fitting  F(G) = C3 x Q8
+
+Word Group
+< a,b,c | b4, c2, a6b-2, baba-1, caca-1, cbcb-1 >
+
+Gap SmallGroup(48,46)    Name:C6 x Q8
+
+Group names
+    C6 x Q8
+    (C4 x C2) . C6
+    C4 . (C6 x C2)
+    (C12 x C2) . C2
+    C12 . (C2 x C2)
+    C2 . (C6 x C2 x C2)
+    C6 . (C2 x C2 x C2)
+    (C2 x C2) . (C6 x C2)
+    (C6 x C2) . (C2 x C2)
+
+Group48[27/52]
+#############################################################
+################          C3 x Q16           ################
+#############################################################
+|C3 x Q16| = 48
+NotSimple, NonAbelianGroup, Nilpotent, Solvable
+BaseGroup (C24 . C2)(table)
+
+Elements Orders : [1]:1, [2]:1, [3]:2, [4]:10, [6]:2, [8]:4, [12]:20, [24]:8
+SubGroupsInfos { AllSubGr = 22, AllConjsCl = 18, AllNorms = 14 }
+Lower Serie
+C1       --> C2       --> C4       --> C3 x Q16
+Upper Serie
+C1       --> C6       --> C12      --> C3 x Q16
+Derived Serie
+C1       --> C4       --> C3 x Q16
+Zentrum  Z(G) = C6
+Frattini Φ(G) = C4
+Fitting  F(G) = C3 x Q8
+
+Word Group
+< a,b | b4, ba2ba-2, bab2a-1b, a5b-1ab-1 >
+
+Gap SmallGroup(48,27)    Name:C3 x Q16
+
+Group names
+    C3 x Q16
+    C8 . C6
+    C24 . C2
+    C6 . D8
+    C4 . (C6 x C2)
+    C12 . (C2 x C2)
+    Q8 . C6
+    C2 . M(4x:6)3
+    (C3 x Q8) . C2
+
+Group48[28/52]
+#############################################################
+################          C2 x Dic6          ################
+#############################################################
+|C2 x Dic6| = 48
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup ((C12 x C2) . C2)(table)
+
+Elements Orders : [1]:1, [2]:3, [3]:2, [4]:28, [6]:6, [12]:8
+SubGroupsInfos { AllSubGr = 60, AllConjsCl = 38, AllNorms = 27 }
+Lower Serie
+C3        --> C6        --> C2 x Dic6
+Upper Serie
+C1        --> C2 x C2   --> C4 x C2
+Derived Serie
+C1        --> C6        --> C2 x Dic6
+Zentrum  Z(G) = C2 x C2
+Frattini Φ(G) = C2
+Fitting  F(G) = C12 x C2
+
+Word Group
+< a,b,c | b4, c2, abab-1, caca-1, cbcb-1, a5b-1a-1b-1 >
+
+Gap SmallGroup(48,34)    Name:C2 x (C3 : Q8)
+
+Group names
+    C2 x Dic6
+    C6 x: Q8
+    C3 x: (C2 x Q8)
+    C4 . D12
+    (C12 x C2) . C2
+    C12 . (C2 x C2)
+    C6 . (C2 x C2 x C2)
+    (C2 x C2) . D12
+    (C6 x C2) . (C2 x C2)
+    M(6x:4)5 . C2
+    Dic3 . (C2 x C2)
+    (C4 x C2) . S3
+    C2 . (C2 x D12)
+
+Group48[29/52]
+#############################################################
+################        C2 x SL(2,3)         ################
+#############################################################
+|C2 x SL(2,3)| = 48
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup (SL(2,3) . C2)(table)
+
+Elements Orders : [1]:1, [2]:3, [3]:8, [4]:12, [6]:24
+SubGroupsInfos { AllSubGr = 41, AllConjsCl = 18, AllNorms = 9 }
+Lower Serie
+Q8           --> C2 x SL(2,3)
+Upper Serie
+C1           --> C2 x C2
+Derived Serie
+C1           --> C2           --> Q8           --> C2 x SL(2,3)
+Zentrum  Z(G) = C2 x C2
+Frattini Φ(G) = C2
+Fitting  F(G) = C2 x Q8
+
+Word Group
+< a,b,c | a4, b3, c2, ababab, caca-1, cbcb-1, a2ba2b-1 >
+
+Gap SmallGroup(48,32)    Name:C2 x SL(2,3)
+
+Group names
+    C2 x SL(2,3)
+    Q8 x: C6
+    (C2 x Q8) x: C3
+    (C2 x C2) . A4
+    C2 . (C2 x A4)
+
+Group48[30/52]
+#############################################################
+################       (C2 x C2) x A4        ################
+#############################################################
+|(C2 x C2) x A4| = 48
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup ((C2 x A4) . C2)(table)
+
+Elements Orders : [1]:1, [2]:15, [3]:8, [6]:24
+SubGroupsInfos { AllSubGr = 92, AllConjsCl = 39, AllNorms = 15 }
+Lower Serie
+C2 x C2        --> (C2 x C2) x A4
+Upper Serie
+C1             --> C2 x C2
+Derived Serie
+C1             --> C2 x C2        --> (C2 x C2) x A4
+Zentrum  Z(G) = C2 x C2
+Frattini Φ(G) = C1
+Fitting  F(G) = C2 x C2 x C2 x C2
+
+Word Group
+< a,b,c,d | a3, b3, c2, d2, abab, cdcd, caca-1, cbcb-1, dada-1, dbdb-1 >
+
+Gap SmallGroup(48,49)    Name:C2 x C2 x A4
+
+Group names
+    (C2 x C2) x A4
+    (C2 x C2 x C2) x: C6
+    (C2 x C2) x: (C6 x C2)
+    (C2 x C2 x C2 x C2) x: C3
+    A4 x: (C2 x C2)
+    (C2 x A4) x: C2
+
+Group48[31/52]
+#############################################################
+################      (C2 x C2) x Dic3       ################
+#############################################################
+|(C2 x C2) x Dic3| = 48
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup ((C6 x C2 x C2) . C2)(table)
+
+Elements Orders : [1]:1, [2]:7, [3]:2, [4]:24, [6]:14
+SubGroupsInfos { AllSubGr = 76, AllConjsCl = 54, AllNorms = 43 }
+Lower Serie
+C3               --> (C2 x C2) x Dic3
+Upper Serie
+C1               --> C2 x C2 x C2
+Derived Serie
+C1               --> C3               --> (C2 x C2) x Dic3
+Zentrum  Z(G) = C2 x C2 x C2
+Frattini Φ(G) = C2
+Fitting  F(G) = C6 x C2 x C2
+
+Word Group
+< a,b,c | a6, b4, c2, abab-1, caca-1, cbcb-1 >
+
+Gap SmallGroup(48,42)    Name:C2 x C2 x (C3 : C4)
+
+Group names
+    (C2 x C2) x Dic3
+    C2 x M(6x:4)5
+    (C6 x C2) x: C4
+    C6 x: (C4 x C2)
+    C3 x: (C4 x C2 x C2)
+    (C6 x C2 x C2) . C2
+    C6 . (C2 x C2 x C2)
+    (C2 x C2) . D12
+    (C6 x C2) . (C2 x C2)
+    (C2 x C2 x C2) . S3
+    C2 . (C2 x D12)
+
+Group48[32/52]
+#############################################################
+################           D8 x S3           ################
+#############################################################
+|D8 x S3| = 48
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup ((M(12x:2)5) . C2)(table)
+
+Elements Orders : [1]:1, [2]:23, [3]:2, [4]:8, [6]:10, [12]:4
+SubGroupsInfos { AllSubGr = 120, AllConjsCl = 54, AllNorms = 25 }
+Lower Serie
+C3      --> C6      --> D8 x S3
+Upper Serie
+C1      --> C2      --> D8
+Derived Serie
+C1      --> C6      --> D8 x S3
+Zentrum  Z(G) = C2
+Frattini Φ(G) = C2
+Fitting  F(G) = M(4x:6)3
+
+Word Group
+< a,b,c | b2, c2, bcbc, a5bab, a2ca2c, abcacb, ba2ba-2 >
+
+Gap SmallGroup(48,38)    Name:D8 x S3
+
+Group names
+    D8 x S3
+    C4 x: D12
+    D24 x: C2
+    C12 x: (C2 x C2)
+    (C2 x C2) x: D12
+    D12 x: (C2 x C2)
+    (C6 x C2) x: (C2 x C2)
+    M(4x:6)3 x: C2
+    M(12x:2)5 x: C2
+    Dic3 x: (C2 x C2)
+    D8 x: S3
+    S3 x: D8
+    C3 x: (C2 x D8)
+    (C2 x D12) x: C2
+    (C3 x: D8) x: C2
+    C6 . (C2 x C2 x C2)
+    D12 . (C2 x C2)
+    C2 . (C2 x D12)
+
+Group48[33/52]
+#############################################################
+################           Q8 x S3           ################
+#############################################################
+|Q8 x S3| = 48
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup ((M(12x:2)5) . C2)(table)
+
+Elements Orders : [1]:1, [2]:7, [3]:2, [4]:24, [6]:2, [12]:12
+SubGroupsInfos { AllSubGr = 64, AllConjsCl = 38, AllNorms = 25 }
+Lower Serie
+C3      --> C6      --> Q8 x S3
+Upper Serie
+C1      --> C2      --> Q8
+Derived Serie
+C1      --> C6      --> Q8 x S3
+Zentrum  Z(G) = C2
+Frattini Φ(G) = C2
+Fitting  F(G) = C3 x Q8
+
+Word Group
+< a,b,c | b4, c2, a6b-2, a2ca2c, ab2cac, baba-1, cbcb-1 >
+
+Gap SmallGroup(48,40)    Name:Q8 x S3
+
+Group names
+    Q8 x S3
+    Dic6 x: C2
+    S3 x: Q8
+    (C3 x Q8) x: C2
+    C3 x: (C2 x Q8)
+    C4 . D12
+    C12 . (C2 x C2)
+    C6 . (C2 x C2 x C2)
+    D12 . (C2 x C2)
+    M(12x:2)5 . C2
+    Dic3 . (C2 x C2)
+    C2 . (C2 x D12)
+
+Group48[34/52]
+#############################################################
+################          C6 x: D8           ################
+#############################################################
+|C6 x: D8| = 48
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup ((C6 x C2 x C2) . C2)(table)
+
+Elements Orders : [1]:1, [2]:19, [3]:2, [4]:12, [6]:14
+SubGroupsInfos { AllSubGr = 108, AllConjsCl = 54, AllNorms = 27 }
+Lower Serie
+C3           --> C6           --> C6 x: D8
+Upper Serie
+C1           --> C2 x C2      --> C2 x C2 x C2
+Derived Serie
+C1           --> C6           --> C6 x: D8
+Zentrum  Z(G) = C2 x C2
+Frattini Φ(G) = C2
+Fitting  F(G) = C6 x C2 x C2
+
+Word Group
+< a,b,c,d | a6, b2, c2, d2, abab, bcbc, cdcd, bcdbd, caca-1, dada-1 >
+
+Gap SmallGroup(48,43)    Name:C2 x ((C6 x C2) : C2)
+
+Group names
+    C6 x: D8
+    (C6 x C2 x C2) x: C2
+    (C2 x C2) x: D12
+    D12 x: (C2 x C2)
+    (C6 x C2) x: (C2 x C2)
+    M(6x:4)5 x: C2
+    Dic3 x: (C2 x C2)
+    (C2 x C2 x C2) x: S3
+    C2 x (C3 x: D8)
+    C3 x: (C2 x D8)
+    (C2 x D12) x: C2
+    (C3 x: D8) x: C2
+    C6 . (C2 x C2 x C2)
+    (C2 x C2) . D12
+    (C6 x C2) . (C2 x C2)
+    C2 . (C2 x D12)
+
+Group48[35/52]
+#############################################################
+################          D8 x: C6           ################
+#############################################################
+|D8 x: C6| = 48
+NotSimple, NonAbelianGroup, Nilpotent, Solvable
+BaseGroup ((C12 x C2) . C2)(table)
+
+Elements Orders : [1]:1, [2]:7, [3]:2, [4]:8, [6]:14, [12]:16
+SubGroupsInfos { AllSubGr = 46, AllConjsCl = 40, AllNorms = 34 }
+Lower Serie
+C1       --> C2       --> D8 x: C6
+Upper Serie
+C1       --> C12      --> D8 x: C6
+Derived Serie
+C1       --> C2       --> D8 x: C6
+Zentrum  Z(G) = C12
+Frattini Φ(G) = C2
+Fitting  F(G) = M(4x:6)3
+
+Word Group
+< a,b,c | b2, c2, a6cbcb, baba-1, caca-1, bcbcbcbc >
+
+Gap SmallGroup(48,47)    Name:C3 x ((C4 x C2) : C2)
+
+Group names
+    D8 x: C6
+    (C4 x C2) x: C6
+    (C12 x C2) x: C2
+    Q8 x: C6
+    M(4x:6)3 x: C2
+    C3 x (D8 x: C2)
+    (C3 x Q8) x: C2
+    C4 . (C6 x C2)
+    C12 . (C2 x C2)
+    C2 . (C6 x C2 x C2)
+    C6 . (C2 x C2 x C2)
+    (C2 x C2) . (C6 x C2)
+    (C6 x C2) . (C2 x C2)
+
+Group48[36/52]
+#############################################################
+################          C3 x: D16          ################
+#############################################################
+|C3 x: D16| = 48
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup ((F(3x:8)2) . C2)(table)
+
+Elements Orders : [1]:1, [2]:17, [3]:2, [4]:2, [6]:10, [8]:12, [12]:4
+SubGroupsInfos { AllSubGr = 56, AllConjsCl = 22, AllNorms = 11 }
+Lower Serie
+C3        --> C6        --> C12       --> C3 x: D16
+Upper Serie
+C1        --> C2        --> C4        --> D8
+Derived Serie
+C1        --> C12       --> C3 x: D16
+Zentrum  Z(G) = C2
+Frattini Φ(G) = C4
+Fitting  F(G) = M(4x:6)3
+
+Word Group
+< a,b | a8, b2, a2ba2b, ababababa-1ba-1b >
+
+Gap SmallGroup(48,15)    Name:(C3 x D8) : C2
+
+Group names
+    C3 x: D16
+    D24 x: C2
+    F(3x:8)2 x: C2
+    M(4x:6)3 x: C2
+    D8 x: S3
+    C6 . D8
+    C4 . D12
+    C12 . (C2 x C2)
+    C2 . (C3 x: D8)
+
+Group48[37/52]
+#############################################################
+################          D12 x: C4          ################
+#############################################################
+|D12 x: C4| = 48
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup ((C12 x C2) . C2)(table)
+
+Elements Orders : [1]:1, [2]:15, [3]:2, [4]:16, [6]:6, [12]:8
+SubGroupsInfos { AllSubGr = 76, AllConjsCl = 34, AllNorms = 17 }
+Lower Serie
+C3        --> C6        --> D12 x: C4
+Upper Serie
+C1        --> C2 x C2   --> C4 x C2
+Derived Serie
+C1        --> C6        --> D12 x: C4
+Zentrum  Z(G) = C2 x C2
+Frattini Φ(G) = C2 x C2
+Fitting  F(G) = C12 x C2
+
+Word Group
+< a,b,c | b2, c2, bcbc, a2ba2b, caca-1, a5cba-1b, abababab >
+
+Gap SmallGroup(48,14)    Name:(C12 x C2) : C2
+
+Group names
+    D12 x: C4
+    (C12 x C2) x: C2
+    M(6x:4)5 x: C2
+    (C4 x C2) x: S3
+    C3 x: ((C2 x C2) x: C4)
+    C6 . D8
+    C2 . D24
+    C6 . (C4 x C2)
+    (C2 x C2) . D12
+    (C6 x C2) . (C2 x C2)
+    C2 . M(12x:2)5
+    (C2 x D12) . C2
+    C2 . (C3 x: D8)
+
+Group48[38/52]
+#############################################################
+################          D24 x: C2          ################
+#############################################################
+|D24 x: C2| = 48
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup ((C12 x C2) . C2)(table)
+
+Elements Orders : [1]:1, [2]:15, [3]:2, [4]:16, [6]:6, [12]:8
+SubGroupsInfos { AllSubGr = 76, AllConjsCl = 40, AllNorms = 23 }
+Lower Serie
+C3        --> C6        --> D24 x: C2
+Upper Serie
+C1        --> C4        --> C4 x C2
+Derived Serie
+C1        --> C6        --> D24 x: C2
+Zentrum  Z(G) = C4
+Frattini Φ(G) = C2
+Fitting  F(G) = C12 x C2
+
+Word Group
+< a,b,c | b2, c2, a2ba2b, abacbc, caca-1, a5ba-1b >
+
+Gap SmallGroup(48,37)    Name:(C12 x C2) : C2
+
+Group names
+    D24 x: C2
+    (C12 x C2) x: C2
+    Dic6 x: C2
+    M(12x:2)5 x: C2
+    (C4 x C2) x: S3
+    (C3 x: D8) x: C2
+    C3 x: (D8 x: C2)
+    C4 . D12
+    C12 . (C2 x C2)
+    C6 . (C2 x C2 x C2)
+    (C2 x C2) . D12
+    D12 . (C2 x C2)
+    (C6 x C2) . (C2 x C2)
+    Dic3 . (C2 x C2)
+    C2 . (C2 x D12)
+
+Group48[39/52]
+#############################################################
+################          D24 x: C2          ################
+#############################################################
+|D24 x: C2| = 48
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup ((M(12x:2)5) . C2)(table)
+
+Elements Orders : [1]:1, [2]:19, [3]:2, [4]:12, [6]:2, [12]:12
+SubGroupsInfos { AllSubGr = 80, AllConjsCl = 40, AllNorms = 23 }
+Lower Serie
+C3        --> C6        --> D24 x: C2
+Upper Serie
+C1        --> C2        --> Q8
+Derived Serie
+C1        --> C6        --> D24 x: C2
+Zentrum  Z(G) = C2
+Frattini Φ(G) = C2
+Fitting  F(G) = C3 x Q8
+
+Word Group
+< a,b,c | b2, c2, abab, a2ca2c, a2cbcb, a5ca-1c >
+
+Gap SmallGroup(48,41)    Name:(C4 x S3) : C2
+
+Group names
+    D24 x: C2
+    M(12x:2)5 x: C2
+    Q8 x: S3
+    (C3 x Q8) x: C2
+    C3 x: (D8 x: C2)
+    C4 . D12
+    C12 . (C2 x C2)
+    C6 . (C2 x C2 x C2)
+    D12 . (C2 x C2)
+    Dic3 . (C2 x C2)
+    C2 . (C2 x D12)
+
+Group48[40/52]
+#############################################################
+################         C3 x: QD16          ################
+#############################################################
+|C3 x: QD16| = 48
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup ((F(3x:8)2) . C2)(table)
+
+Elements Orders : [1]:1, [2]:5, [3]:2, [4]:14, [6]:10, [8]:12, [12]:4
+SubGroupsInfos { AllSubGr = 40, AllConjsCl = 20, AllNorms = 11 }
+Lower Serie
+C3         --> C6         --> C12        --> C3 x: QD16
+Upper Serie
+C1         --> C2         --> C4         --> D8
+Derived Serie
+C1         --> C12        --> C3 x: QD16
+Zentrum  Z(G) = C2
+Frattini Φ(G) = C4
+Fitting  F(G) = M(4x:6)3
+
+Word Group
+< a,b,c | c2, a3b-2, b2cb2c, a2ba-1b, ca2ca-2, bcb-1cb2 >
+
+Gap SmallGroup(48,16)    Name:(C3 : Q8) : C2
+
+Group names
+    C3 x: QD16
+    Dic6 x: C2
+    F(3x:8)2 x: C2
+    C6 . D8
+    C4 . D12
+    C12 . (C2 x C2)
+    M(4x:6)3 . C2
+    D8 . S3
+    C2 . (C3 x: D8)
+
+Group48[41/52]
+#############################################################
+################         C3 x: QD16          ################
+#############################################################
+|C3 x: QD16| = 48
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup ((F(3x:8)2) . C2)(table)
+
+Elements Orders : [1]:1, [2]:13, [3]:2, [4]:6, [6]:2, [8]:12, [12]:12
+SubGroupsInfos { AllSubGr = 48, AllConjsCl = 20, AllNorms = 11 }
+Lower Serie
+C3         --> C6         --> C12        --> C3 x: QD16
+Upper Serie
+C1         --> C2         --> C4         --> Q8
+Derived Serie
+C1         --> C12        --> C3 x: QD16
+Zentrum  Z(G) = C2
+Frattini Φ(G) = C4
+Fitting  F(G) = C3 x Q8
+
+Word Group
+< a,b,c | c4, bcbc, a3b-2, caca-1, a2ba-1b, bc-1bc-1 >
+
+Gap SmallGroup(48,17)    Name:(C3 x Q8) : C2
+
+Group names
+    C3 x: QD16
+    F(3x:8)2 x: C2
+    Q8 x: S3
+    (C3 x Q8) x: C2
+    C6 . D8
+    C4 . D12
+    D24 . C2
+    C12 . (C2 x C2)
+    C2 . (C3 x: D8)
+
+Group48[42/52]
+#############################################################
+################       (C4 x C2) x: C6       ################
+#############################################################
+|(C4 x C2) x: C6| = 48
+NotSimple, NonAbelianGroup, Nilpotent, Solvable
+BaseGroup ((C12 x C2) . C2)(table)
+
+Elements Orders : [1]:1, [2]:7, [3]:2, [4]:8, [6]:14, [12]:16
+SubGroupsInfos { AllSubGr = 46, AllConjsCl = 34, AllNorms = 22 }
+Lower Serie
+C1              --> C2              --> (C4 x C2) x: C6
+Upper Serie
+C1              --> C6 x C2         --> (C4 x C2) x: C6
+Derived Serie
+C1              --> C2              --> (C4 x C2) x: C6
+Zentrum  Z(G) = C6 x C2
+Frattini Φ(G) = C2 x C2
+Fitting  F(G) = C12 x C2
+
+Word Group
+< a,b,c | b2, c2, a12, bcbc, caca-1, abca-1b >
+
+Gap SmallGroup(48,21)    Name:C3 x ((C4 x C2) : C2)
+
+Group names
+    (C4 x C2) x: C6
+    (C6 x C2) x: C4
+    (C12 x C2) x: C2
+    (C2 x C2) x: C12
+    C3 x ((C2 x C2) x: C4)
+    C6 . D8
+    C6 . (C4 x C2)
+    C2 . (C12 x C2)
+    (C2 x C2 x C2) . C6
+    (C6 x C2 x C2) . C2
+    (C2 x C2) . (C6 x C2)
+    (C6 x C2) . (C2 x C2)
+    C2 . M(4x:6)3
+
+Group48[43/52]
+#############################################################
+################       (C4 x C4) x: C3       ################
+#############################################################
+|(C4 x C4) x: C3| = 48
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup ((C4 x C4) x: C3)(table)
+
+Elements Orders : [1]:1, [2]:3, [3]:32, [4]:12
+SubGroupsInfos { AllSubGr = 36, AllConjsCl = 10, AllNorms = 4 }
+Lower Serie
+C4 x C4         --> (C4 x C4) x: C3
+Upper Serie
+C1
+Derived Serie
+C1              --> C4 x C4         --> (C4 x C4) x: C3
+Zentrum  Z(G) = C1
+Frattini Φ(G) = C2 x C2
+Fitting  F(G) = C4 x C4
+
+Word Group
+< a,b | a4, b3, ababab, ba-1ba-1ba-1 >
+
+Gap SmallGroup(48,3)     Name:(C4 x C4) : C3
+
+Group names
+    (C4 x C4) x: C3
+    (C2 x C2) . A4
+
+Group48[44/52]
+#############################################################
+################       (C6 x C2) x: C4       ################
+#############################################################
+|(C6 x C2) x: C4| = 48
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup ((C6 x C2 x C2) . C2)(table)
+
+Elements Orders : [1]:1, [2]:7, [3]:2, [4]:24, [6]:14
+SubGroupsInfos { AllSubGr = 60, AllConjsCl = 34, AllNorms = 19 }
+Lower Serie
+C3              --> C6              --> (C6 x C2) x: C4
+Upper Serie
+C1              --> C2 x C2         --> C2 x C2 x C2
+Derived Serie
+C1              --> C6              --> (C6 x C2) x: C4
+Zentrum  Z(G) = C2 x C2
+Frattini Φ(G) = C2 x C2
+Fitting  F(G) = C6 x C2 x C2
+
+Word Group
+< a,b,c,d | b4, c2, d2, cdcd, a3b-2, abab-1, caca-1, cbcb-1, dada-1, bcdb-1d >
+
+Gap SmallGroup(48,19)    Name:(C6 x C2) : C4
+
+Group names
+    (C6 x C2) x: C4
+    M(6x:4)5 x: C2
+    (C2 x C2) x: Dic3
+    C3 x: ((C2 x C2) x: C4)
+    C6 . D8
+    C6 . (C4 x C2)
+    (C6 x C2 x C2) . C2
+    (C2 x C2) . D12
+    (C6 x C2) . (C2 x C2)
+    C2 . M(6x:4)5
+    (C2 x C2 x C2) . S3
+    C2 . (C3 x: D8)
+
+Group48[45/52]
+#############################################################
+################          A4 x: C4           ################
+#############################################################
+|A4 x: C4| = 48
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup ((C2 x A4) . C2)(table)
+
+Elements Orders : [1]:1, [2]:7, [3]:8, [4]:24, [6]:8
+SubGroupsInfos { AllSubGr = 52, AllConjsCl = 19, AllNorms = 7 }
+Lower Serie
+A4       --> A4 x: C4
+Upper Serie
+C1       --> C2
+Derived Serie
+C1       --> C2 x C2  --> A4       --> A4 x: C4
+Zentrum  Z(G) = C2
+Frattini Φ(G) = C2
+Fitting  F(G) = C2 x C2 x C2
+
+Word Group
+< a,b | a4, b3, a2ba2b-1, abababab >
+
+Gap SmallGroup(48,30)    Name:A4 : C4
+
+Group names
+    A4 x: C4
+    (C2 x C2) x: Dic3
+    C2 . S4
+    (C2 x C2 x C2) . S3
+    (C2 x A4) . C2
+
+Group48[46/52]
+#############################################################
+################          C3 x: Q16          ################
+#############################################################
+|C3 x: Q16| = 48
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup ((F(3x:8)2) . C2)(table)
+
+Elements Orders : [1]:1, [2]:1, [3]:2, [4]:18, [6]:2, [8]:12, [12]:12
+SubGroupsInfos { AllSubGr = 32, AllConjsCl = 18, AllNorms = 11 }
+Lower Serie
+C3        --> C6        --> C12       --> C3 x: Q16
+Upper Serie
+C1        --> C2        --> C4        --> Q8
+Derived Serie
+C1        --> C12       --> C3 x: Q16
+Zentrum  Z(G) = C2
+Frattini Φ(G) = C4
+Fitting  F(G) = C3 x Q8
+
+Word Group
+< a,b | b4, a4b-2, a2ba2b-1, abababab-1a-1b-1a-1b-1 >
+
+Gap SmallGroup(48,18)    Name:C3 : Q16
+
+Group names
+    C3 x: Q16
+    C6 . D8
+    C4 . D12
+    C12 . (C2 x C2)
+    Dic6 . C2
+    F(3x:8)2 . C2
+    Q8 . S3
+    (C3 x Q8) . C2
+    C2 . (C3 x: D8)
+
+Group48[47/52]
+#############################################################
+################         Dic3 x: C4          ################
+#############################################################
+|Dic3 x: C4| = 48
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup ((C12 x C2) . C2)(table)
+
+Elements Orders : [1]:1, [2]:3, [3]:2, [4]:28, [6]:6, [12]:8
+SubGroupsInfos { AllSubGr = 44, AllConjsCl = 26, AllNorms = 17 }
+Lower Serie
+C3         --> C6         --> Dic3 x: C4
+Upper Serie
+C1         --> C2 x C2    --> C4 x C2
+Derived Serie
+C1         --> C6         --> Dic3 x: C4
+Zentrum  Z(G) = C2 x C2
+Frattini Φ(G) = C2 x C2
+Fitting  F(G) = C12 x C2
+
+Word Group
+< a,b,c | b4, c2, a6b-2, ababc, caca-1, cbcb-1, ab-1acb-1 >
+
+Gap SmallGroup(48,12)    Name:(C3 : C4) : C4
+
+Group names
+    Dic3 x: C4
+    C3 x: M(4x:4)3
+    C6 . D8
+    C6 . (C4 x C2)
+    (C12 x C2) . C2
+    C6 . Q8
+    C2 . Dic6
+    (C2 x C2) . D12
+    (C6 x C2) . (C2 x C2)
+    M(6x:4)5 . C2
+    C2 . M(12x:2)5
+    (C4 x C2) . S3
+    C2 . (C3 x: D8)
+
+Group48[48/52]
+#############################################################
+################         Dic6 x: C2          ################
+#############################################################
+|Dic6 x: C2| = 48
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup ((M(12x:2)5) . C2)(table)
+
+Elements Orders : [1]:1, [2]:11, [3]:2, [4]:20, [6]:10, [12]:4
+SubGroupsInfos { AllSubGr = 72, AllConjsCl = 40, AllNorms = 23 }
+Lower Serie
+C3         --> C6         --> Dic6 x: C2
+Upper Serie
+C1         --> C2         --> D8
+Derived Serie
+C1         --> C6         --> Dic6 x: C2
+Zentrum  Z(G) = C2
+Frattini Φ(G) = C2
+Fitting  F(G) = M(4x:6)3
+
+Word Group
+< a,b,c | b4, c2, a2ca2c, ab2cac, abab-1, a2cbcb-1, a5b-1a-1b-1 >
+
+Gap SmallGroup(48,39)    Name:(C4 x S3) : C2
+
+Group names
+    Dic6 x: C2
+    M(4x:6)3 x: C2
+    M(6x:4)5 x: C2
+    M(12x:2)5 x: C2
+    D8 x: S3
+    (C3 x: D8) x: C2
+    C3 x: (D8 x: C2)
+    C4 . D12
+    C12 . (C2 x C2)
+    C6 . (C2 x C2 x C2)
+    (C2 x C2) . D12
+    D12 . (C2 x C2)
+    (C6 x C2) . (C2 x C2)
+    Dic3 . (C2 x C2)
+    C2 . (C2 x D12)
+
+Group48[49/52]
+#############################################################
+################        SL(2,3) x: C2        ################
+#############################################################
+|SL(2,3) x: C2| = 48
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup (SL(2,3) . C2)(table)
+
+Elements Orders : [1]:1, [2]:7, [3]:8, [4]:8, [6]:8, [12]:16
+SubGroupsInfos { AllSubGr = 37, AllConjsCl = 15, AllNorms = 7 }
+Lower Serie
+Q8            --> SL(2,3) x: C2
+Upper Serie
+C1            --> C4
+Derived Serie
+C1            --> C2            --> Q8            --> SL(2,3) x: C2
+Zentrum  Z(G) = C4
+Frattini Φ(G) = C2
+Fitting  F(G) = D8 x: C2
+
+Word Group
+< a,b,c | a4, c3, a2b2, abab, acacac, cbc-1b-1 >
+
+Gap SmallGroup(48,33)    Name:((C4 x C2) : C2) : C3
+
+Group names
+    SL(2,3) x: C2
+    (D8 x: C2) x: C3
+    C4 . A4
+    Q8 . C6
+    C2 . (C2 x A4)
+
+Group48[50/52]
+#############################################################
+################         C3 x: MM16          ################
+#############################################################
+|C3 x: MM16| = 48
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup ((C12 x C2) . C2)(table)
+
+Elements Orders : [1]:1, [2]:3, [3]:2, [4]:4, [6]:6, [8]:24, [12]:8
+SubGroupsInfos { AllSubGr = 28, AllConjsCl = 20, AllNorms = 15 }
+Lower Serie
+C3         --> C6         --> C3 x: MM16
+Upper Serie
+C1         --> C4         --> C4 x C2
+Derived Serie
+C1         --> C6         --> C3 x: MM16
+Zentrum  Z(G) = C4
+Frattini Φ(G) = C4
+Fitting  F(G) = C12 x C2
+
+Word Group
+< a,b,c | c2, a3b-2, b2cbcb, caca-1, a2ba-1b >
+
+Gap SmallGroup(48,10)    Name:(C3 : C8) : C2
+
+Group names
+    C3 x: MM16
+    F(3x:8)2 x: C2
+    C12 . C4
+    C4 . D12
+    (C6 x C2) . C4
+    C6 . (C4 x C2)
+    (C12 x C2) . C2
+    C12 . (C2 x C2)
+    C4 . Dic3
+    C2 . M(6x:4)5
+    (C2 x C2) . Dic3
+    (C4 x C2) . S3
+
+Group48[51/52]
+#############################################################
+################  (C2 x C2 x C2 x C2) x: C3  ################
+#############################################################
+|(C2 x C2 x C2 x C2) x: C3| = 48
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup ((C2 x C2 x C2 x C2) x: C3)(table)
+
+Elements Orders : [1]:1, [2]:15, [3]:32
+SubGroupsInfos { AllSubGr = 104, AllConjsCl = 34, AllNorms = 8 }
+Lower Serie
+C2 x C2 x C2 x C2         --> (C2 x C2 x C2 x C2) x: C3
+Upper Serie
+C1
+Derived Serie
+C1                        --> C2 x C2 x C2 x C2         --> (C2 x C2 x C2 x C2) x: C3
+Zentrum  Z(G) = C1
+Frattini Φ(G) = C1
+Fitting  F(G) = C2 x C2 x C2 x C2
+
+Word Group
+< a,b,c | a3, b2, c2, bcbc, ababab, acacac, aba-1caba-1c >
+
+Gap SmallGroup(48,50)    Name:(C2 x C2 x C2 x C2) : C3
+
+Group names
+    (C2 x C2 x C2 x C2) x: C3
+    (C2 x C2) x: A4
+
+Group48[52/52]
+#############################################################
+################           C2 . S4           ################
+#############################################################
+|C2 . S4| = 48
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup (SL(2,3) . C2)(table)
+
+Elements Orders : [1]:1, [2]:1, [3]:8, [4]:18, [6]:8, [8]:12
+SubGroupsInfos { AllSubGr = 35, AllConjsCl = 13, AllNorms = 5 }
+Lower Serie
+SL(2,3) --> C2 . S4
+Upper Serie
+C1      --> C2
+Derived Serie
+C1      --> C2      --> Q8      --> SL(2,3) --> C2 . S4
+Zentrum  Z(G) = C2
+Frattini Φ(G) = C2
+Fitting  F(G) = Q8
+
+Word Group
+< a,b,c | a4, c3, a2b2, abab-1, acacac, cbcb-1 >
+
+Gap SmallGroup(48,28)    Name:C2 . S4 = SL(2,3) . C2
+
+Group names
+    C2 . S4
+    SL(2,3) . C2
+    Q8 . S3
+
+Group49[1/2]
+#############################################################
+################             C49             ################
+#############################################################
+|C49| = 49
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup C49(table)
+
+Elements Orders : [1]:1, [7]:6, [49]:42
+SubGroupsInfos { AllSubGr = 3, AllConjsCl = 3, AllNorms = 3 }
+Lower Serie
+C1  --> C49
+Upper Serie
+C1  --> C49
+Derived Serie
+C1  --> C49
+Zentrum  Z(G) = C49
+Frattini Φ(G) = C7
+Fitting  F(G) = C7
+
+Word Group
+< a | a49 >
+
+Gap SmallGroup(49,1)     Name:C49
+
+Group names
+    C49
+
+Group49[2/2]
+#############################################################
+################           C7 x C7           ################
+#############################################################
+|C7 x C7| = 49
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C7 x C7)(table)
+
+Elements Orders : [1]:1, [7]:48
+SubGroupsInfos { AllSubGr = 10, AllConjsCl = 10, AllNorms = 10 }
+Lower Serie
+C1      --> C7 x C7
+Upper Serie
+C1      --> C7 x C7
+Derived Serie
+C1      --> C7 x C7
+Zentrum  Z(G) = C7 x C7
+Frattini Φ(G) = C1
+Fitting  F(G) = C7
+
+Word Group
+< a,b | a7, b7, bab-1a-1 >
+
+Gap SmallGroup(49,2)     Name:C7 x C7
+
+Group names
+    C7 x C7
+
+Group50[1/5]
+#############################################################
+################             C50             ################
+#############################################################
+|C50| = 50
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C25 x C2)(table)
+
+Elements Orders : [1]:1, [2]:1, [5]:4, [10]:4, [25]:20, [50]:20
+SubGroupsInfos { AllSubGr = 6, AllConjsCl = 6, AllNorms = 6 }
+Lower Serie
+C1  --> C50
+Upper Serie
+C1  --> C50
+Derived Serie
+C1  --> C50
+Zentrum  Z(G) = C50
+Frattini Φ(G) = C5
+Fitting  F(G) = C25
+
+Word Group
+< a | a50 >
+
+Gap SmallGroup(50,2)     Name:C50
+
+Group names
+    C50
+
+Group50[2/5]
+#############################################################
+################          C10 x C5           ################
+#############################################################
+|C10 x C5| = 50
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C5 x C5 x C2)(table)
+
+Elements Orders : [1]:1, [2]:1, [5]:24, [10]:24
+SubGroupsInfos { AllSubGr = 16, AllConjsCl = 16, AllNorms = 16 }
+Lower Serie
+C1       --> C10 x C5
+Upper Serie
+C1       --> C10 x C5
+Derived Serie
+C1       --> C10 x C5
+Zentrum  Z(G) = C10 x C5
+Frattini Φ(G) = C1
+Fitting  F(G) = C5 x C5
+
+Word Group
+< a,b,c | a5, b5, c2, caca-1, cbcb-1, bab-1a-1 >
+
+Gap SmallGroup(50,5)     Name:C10 x C5
+
+Group names
+    C10 x C5
+
+Group50[3/5]
+#############################################################
+################             D50             ################
+#############################################################
+|D50| = 50
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup Frob(25,2,24)(table)
+
+Elements Orders : [1]:1, [2]:25, [5]:4, [25]:20
+SubGroupsInfos { AllSubGr = 34, AllConjsCl = 6, AllNorms = 4 }
+Lower Serie
+C25 --> D50
+Upper Serie
+C1
+Derived Serie
+C1  --> C25 --> D50
+Zentrum  Z(G) = C1
+Frattini Φ(G) = C5
+Fitting  F(G) = C25
+
+Word Group
+< a,b | b2, a25, abab >
+
+Gap SmallGroup(50,1)     Name:D50
+
+Group names
+    D50
+    C5 . D10
+
+Group50[4/5]
+#############################################################
+################          M(5x:10)4          ################
+#############################################################
+|M(5x:10)4| = 50
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup MtCyc(5,10,4)(table)
+
+Elements Orders : [1]:1, [2]:5, [5]:24, [10]:20
+SubGroupsInfos { AllSubGr = 20, AllConjsCl = 10, AllNorms = 6 }
+Lower Serie
+C5        --> M(5x:10)4
+Upper Serie
+C1        --> C5
+Derived Serie
+C1        --> C5        --> M(5x:10)4
+Zentrum  Z(G) = C5
+Frattini Φ(G) = C1
+Fitting  F(G) = C5 x C5
+
+Word Group
+< a,b | b5, a10, baba-1 >
+
+Gap SmallGroup(50,3)     Name:C5 x D10
+
+Group names
+    M(5x:10)4
+    C5 x D10
+    D10 x: C5
+    (C5 x C5) x: C2
+
+Group50[5/5]
+#############################################################
+################          C5 x: D10          ################
+#############################################################
+|C5 x: D10| = 50
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup ((C5 x C5) x: C2)(table)
+
+Elements Orders : [1]:1, [2]:25, [5]:24
+SubGroupsInfos { AllSubGr = 64, AllConjsCl = 16, AllNorms = 9 }
+Lower Serie
+C5 x C5   --> C5 x: D10
+Upper Serie
+C1
+Derived Serie
+C1        --> C5 x C5   --> C5 x: D10
+Zentrum  Z(G) = C1
+Frattini Φ(G) = C1
+Fitting  F(G) = C5 x C5
+
+Word Group
+< a,b,c | a5, b5, c2, acac, bcbc, bab-1a-1 >
+
+Gap SmallGroup(50,4)     Name:(C5 x C5) : C2
+
+Group names
+    C5 x: D10
+    (C5 x C5) x: C2
+
+Group51[1/1]
+#############################################################
+################             C51             ################
+#############################################################
+|C51| = 51
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C17 x C3)(table)
+
+Elements Orders : [1]:1, [3]:2, [17]:16, [51]:32
+SubGroupsInfos { AllSubGr = 4, AllConjsCl = 4, AllNorms = 4 }
+Lower Serie
+C1  --> C51
+Upper Serie
+C1  --> C51
+Derived Serie
+C1  --> C51
+Zentrum  Z(G) = C51
+Frattini Φ(G) = C1
+Fitting  F(G) = C17
+
+Word Group
+< a | a51 >
+
+Gap SmallGroup(51,1)     Name:C51
+
+Group names
+    C51
+
+Group52[1/5]
+#############################################################
+################             C52             ################
+#############################################################
+|C52| = 52
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C13 x C4)(table)
+
+Elements Orders : [1]:1, [2]:1, [4]:2, [13]:12, [26]:12, [52]:24
+SubGroupsInfos { AllSubGr = 6, AllConjsCl = 6, AllNorms = 6 }
+Lower Serie
+C1  --> C52
+Upper Serie
+C1  --> C52
+Derived Serie
+C1  --> C52
+Zentrum  Z(G) = C52
+Frattini Φ(G) = C2
+Fitting  F(G) = C26
+
+Word Group
+< a | a52 >
+
+Gap SmallGroup(52,2)     Name:C52
+
+Group names
+    C52
+
+Group52[2/5]
+#############################################################
+################          C26 x C2           ################
+#############################################################
+|C26 x C2| = 52
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C13 x C2 x C2)(table)
+
+Elements Orders : [1]:1, [2]:3, [13]:12, [26]:36
+SubGroupsInfos { AllSubGr = 10, AllConjsCl = 10, AllNorms = 10 }
+Lower Serie
+C1       --> C26 x C2
+Upper Serie
+C1       --> C26 x C2
+Derived Serie
+C1       --> C26 x C2
+Zentrum  Z(G) = C26 x C2
+Frattini Φ(G) = C1
+Fitting  F(G) = C26
+
+Word Group
+< a,b,c | b2, c2, a13, bcbc, baba-1, caca-1 >
+
+Gap SmallGroup(52,5)     Name:C26 x C2
+
+Group names
+    C26 x C2
+
+Group52[3/5]
+#############################################################
+################            Dic13            ################
+#############################################################
+|Dic13| = 52
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup Frob(13,4,12)(table)
+
+Elements Orders : [1]:1, [2]:1, [4]:26, [13]:12, [26]:12
+SubGroupsInfos { AllSubGr = 18, AllConjsCl = 6, AllNorms = 5 }
+Lower Serie
+C13   --> Dic13
+Upper Serie
+C1    --> C2
+Derived Serie
+C1    --> C13   --> Dic13
+Zentrum  Z(G) = C2
+Frattini Φ(G) = C2
+Fitting  F(G) = C26
+
+Word Group
+< a,b | b4, a13, abab-1 >
+
+Gap SmallGroup(52,1)     Name:C13 : C4
+
+Group names
+    Dic13
+    F(13x:4)12
+    C26 . C2
+    C2 . D26
+
+Group52[4/5]
+#############################################################
+################             D52             ################
+#############################################################
+|D52| = 52
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup MtCyc(26,2,25)(table)
+
+Elements Orders : [1]:1, [2]:27, [13]:12, [26]:12
+SubGroupsInfos { AllSubGr = 46, AllConjsCl = 10, AllNorms = 7 }
+Lower Serie
+C13 --> D52
+Upper Serie
+C1  --> C2
+Derived Serie
+C1  --> C13 --> D52
+Zentrum  Z(G) = C2
+Frattini Φ(G) = C1
+Fitting  F(G) = C26
+
+Word Group
+< a,b | b2, a26, abab >
+
+Gap SmallGroup(52,4)     Name:D52
+
+Group names
+    D52
+    C2 x D26
+    D26 x: C2
+    C13 x: (C2 x C2)
+
+Group52[5/5]
+#############################################################
+################          F(13x:4)5          ################
+#############################################################
+|F(13x:4)5| = 52
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup Frob(13,4,5)(table)
+
+Elements Orders : [1]:1, [2]:13, [4]:26, [13]:12
+SubGroupsInfos { AllSubGr = 30, AllConjsCl = 6, AllNorms = 4 }
+Lower Serie
+C13       --> F(13x:4)5
+Upper Serie
+C1
+Derived Serie
+C1        --> C13       --> F(13x:4)5
+Zentrum  Z(G) = C1
+Frattini Φ(G) = C1
+Fitting  F(G) = C13
+
+Word Group
+< a,b | b4, ab2ab-2, a3ba2b-1 >
+
+Gap SmallGroup(52,3)     Name:C13 : C4
+
+Group names
+    F(13x:4)5
+    D26 . C2
+
+Group53[1/1]
+#############################################################
+################             C53             ################
+#############################################################
+|C53| = 53
+Simple, AbelianGroup, Nilpotent, Solvable
+BaseGroup C53(table)
+
+Elements Orders : [1]:1, [53]:52
+SubGroupsInfos { AllSubGr = 2, AllConjsCl = 2, AllNorms = 2 }
+Lower Serie
+C1  --> C53
+Upper Serie
+C1  --> C53
+Derived Serie
+C1  --> C53
+Zentrum  Z(G) = C53
+Frattini Φ(G) = C1
+Fitting  F(G) = C1
+
+Word Group
+< a | a53 >
+
+Gap SmallGroup(53,1)     Name:C53
+
+Group names
+    C53
+
+Group54[1/15]
+#############################################################
+################             C54             ################
+#############################################################
+|C54| = 54
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C27 x C2)(table)
+
+Elements Orders : [1]:1, [2]:1, [3]:2, [6]:2, [9]:6, [18]:6, [27]:18, [54]:18
+SubGroupsInfos { AllSubGr = 8, AllConjsCl = 8, AllNorms = 8 }
+Lower Serie
+C1  --> C54
+Upper Serie
+C1  --> C54
+Derived Serie
+C1  --> C54
+Zentrum  Z(G) = C54
+Frattini Φ(G) = C9
+Fitting  F(G) = C27
+
+Word Group
+< a | a54 >
+
+Gap SmallGroup(54,2)     Name:C54
+
+Group names
+    C54
+
+Group54[2/15]
+#############################################################
+################          C18 x C3           ################
+#############################################################
+|C18 x C3| = 54
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C9 x C3 x C2)(table)
+
+Elements Orders : [1]:1, [2]:1, [3]:8, [6]:8, [9]:18, [18]:18
+SubGroupsInfos { AllSubGr = 20, AllConjsCl = 20, AllNorms = 20 }
+Lower Serie
+C1       --> C18 x C3
+Upper Serie
+C1       --> C18 x C3
+Derived Serie
+C1       --> C18 x C3
+Zentrum  Z(G) = C18 x C3
+Frattini Φ(G) = C3
+Fitting  F(G) = C9 x C3
+
+Word Group
+< a,b,c | a9, b3, c2, caca-1, cbcb-1, bab-1a-1 >
+
+Gap SmallGroup(54,9)     Name:C18 x C3
+
+Group names
+    C18 x C3
+
+Group54[3/15]
+#############################################################
+################        C6 x C3 x C3         ################
+#############################################################
+|C6 x C3 x C3| = 54
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C3 x C3 x C3 x C2)(table)
+
+Elements Orders : [1]:1, [2]:1, [3]:26, [6]:26
+SubGroupsInfos { AllSubGr = 56, AllConjsCl = 56, AllNorms = 56 }
+Lower Serie
+C1           --> C6 x C3 x C3
+Upper Serie
+C1           --> C6 x C3 x C3
+Derived Serie
+C1           --> C6 x C3 x C3
+Zentrum  Z(G) = C6 x C3 x C3
+Frattini Φ(G) = C1
+Fitting  F(G) = C3 x C3 x C3
+
+Word Group
+< a,b,c,d | a3, b3, c3, d2, dada-1, dbdb-1, dcdc-1, bab-1a-1, cac-1a-1, cbc-1b-1 >
+
+Gap SmallGroup(54,15)    Name:C6 x C3 x C3
+
+Group names
+    C6 x C3 x C3
+
+Group54[4/15]
+#############################################################
+################             D54             ################
+#############################################################
+|D54| = 54
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup Frob(27,2,26)(table)
+
+Elements Orders : [1]:1, [2]:27, [3]:2, [9]:6, [27]:18
+SubGroupsInfos { AllSubGr = 44, AllConjsCl = 8, AllNorms = 5 }
+Lower Serie
+C27 --> D54
+Upper Serie
+C1
+Derived Serie
+C1  --> C27 --> D54
+Zentrum  Z(G) = C1
+Frattini Φ(G) = C9
+Fitting  F(G) = C27
+
+Word Group
+< a,b | b2, a27, abab >
+
+Gap SmallGroup(54,1)     Name:D54
+
+Group names
+    D54
+    C3 . D18
+    C9 . S3
+
+Group54[5/15]
+#############################################################
+################          M(9x:6)2           ################
+#############################################################
+|M(9x:6)2| = 54
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup MtCyc(9,6,2)(table)
+
+Elements Orders : [1]:1, [2]:9, [3]:8, [6]:18, [9]:18
+SubGroupsInfos { AllSubGr = 36, AllConjsCl = 13, AllNorms = 7 }
+Lower Serie
+C9       --> M(9x:6)2
+Upper Serie
+C1
+Derived Serie
+C1       --> C9       --> M(9x:6)2
+Zentrum  Z(G) = C1
+Frattini Φ(G) = C3
+Fitting  F(G) = M(9x:3)4
+
+Word Group
+< a,b | b6, a4b-1ab, a2ba-1b-1 >
+
+Gap SmallGroup(54,6)     Name:C9 : C6
+
+Group names
+    M(9x:6)2
+    D18 x: C3
+    M(9x:3)4 x: C2
+    C3 . M(3x:6)2
+    (C3 x C3) . S3
+
+Group54[6/15]
+#############################################################
+################          M(9x:6)4           ################
+#############################################################
+|M(9x:6)4| = 54
+NotSimple, NonAbelianGroup, Nilpotent, Solvable
+BaseGroup MtCyc(9,6,4)(table)
+
+Elements Orders : [1]:1, [2]:1, [3]:8, [6]:8, [9]:18, [18]:18
+SubGroupsInfos { AllSubGr = 20, AllConjsCl = 16, AllNorms = 14 }
+Lower Serie
+C1       --> C3       --> M(9x:6)4
+Upper Serie
+C1       --> C6       --> M(9x:6)4
+Derived Serie
+C1       --> C3       --> M(9x:6)4
+Zentrum  Z(G) = C6
+Frattini Φ(G) = C3
+Fitting  F(G) = M(9x:3)7
+
+Word Group
+< a,b | b6, aba2b-1, a4ba-1b-1 >
+
+Gap SmallGroup(54,11)    Name:C2 x (C9 : C3)
+
+Group names
+    M(9x:6)4
+    M(18x:3)7
+    C2 x M(9x:3)7
+    (C3 x C3) . C6
+    (C6 x C3) . C3
+    C3 . (C6 x C3)
+    C6 . (C3 x C3)
+
+Group54[7/15]
+#############################################################
+################          M(9x:6)8           ################
+#############################################################
+|M(9x:6)8| = 54
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup MtCyc(9,6,8)(table)
+
+Elements Orders : [1]:1, [2]:9, [3]:8, [6]:18, [9]:18
+SubGroupsInfos { AllSubGr = 36, AllConjsCl = 14, AllNorms = 8 }
+Lower Serie
+C9       --> M(9x:6)8
+Upper Serie
+C1       --> C3
+Derived Serie
+C1       --> C9       --> M(9x:6)8
+Zentrum  Z(G) = C3
+Frattini Φ(G) = C3
+Fitting  F(G) = C9 x C3
+
+Word Group
+< a,b | a9, b6, abab-1 >
+
+Gap SmallGroup(54,3)     Name:C3 x D18
+
+Group names
+    M(9x:6)8
+    C3 x D18
+    D18 x: C3
+    (C9 x C3) x: C2
+    C3 . M(3x:6)2
+    (C3 x C3) . S3
+
+Group54[8/15]
+#############################################################
+################          M(3x:18)2          ################
+#############################################################
+|M(3x:18)2| = 54
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup MtCyc(3,18,2)(table)
+
+Elements Orders : [1]:1, [2]:3, [3]:8, [6]:6, [9]:18, [18]:18
+SubGroupsInfos { AllSubGr = 22, AllConjsCl = 14, AllNorms = 9 }
+Lower Serie
+C3        --> M(3x:18)2
+Upper Serie
+C1        --> C9
+Derived Serie
+C1        --> C3        --> M(3x:18)2
+Zentrum  Z(G) = C9
+Frattini Φ(G) = C3
+Fitting  F(G) = C9 x C3
+
+Word Group
+< a,b | b3, a18, baba-1 >
+
+Gap SmallGroup(54,4)     Name:C9 x S3
+
+Group names
+    M(3x:18)2
+    C9 x S3
+    (C9 x C3) x: C2
+    S3 x: C9
+    (C3 x C3) . C6
+    C3 . M(3x:6)2
+    M(3x:6)2 . C3
+
+Group54[9/15]
+#############################################################
+################        C3 x M(3x:6)2        ################
+#############################################################
+|C3 x M(3x:6)2| = 54
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup ((C3 x C3) . Symm3)(table)
+
+Elements Orders : [1]:1, [2]:3, [3]:26, [6]:24
+SubGroupsInfos { AllSubGr = 52, AllConjsCl = 32, AllNorms = 18 }
+Lower Serie
+C3            --> C3 x M(3x:6)2
+Upper Serie
+C1            --> C3 x C3
+Derived Serie
+C1            --> C3            --> C3 x M(3x:6)2
+Zentrum  Z(G) = C3 x C3
+Frattini Φ(G) = C1
+Fitting  F(G) = C3 x C3 x C3
+
+Word Group
+< a,b,c,d | a3, b3, c3, d2, adad, dbdb-1, dcdc-1, bab-1a-1, cac-1a-1, cbc-1b-1 >
+
+Gap SmallGroup(54,12)    Name:C3 x C3 x S3
+
+Group names
+    C3 x M(3x:6)2
+    (C3 x C3) x S3
+    (C3 x C3) x: C6
+    C3 x: (C6 x C3)
+    (C3 x C3 x C3) x: C2
+    M(3x:6)2 x: C3
+    S3 x: (C3 x C3)
+
+Group54[10/15]
+#############################################################
+################          C3 x: D18          ################
+#############################################################
+|C3 x: D18| = 54
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup ((C3 x C3) . Symm3)(table)
+
+Elements Orders : [1]:1, [2]:27, [3]:8, [9]:18
+SubGroupsInfos { AllSubGr = 86, AllConjsCl = 20, AllNorms = 11 }
+Lower Serie
+C9 x C3   --> C3 x: D18
+Upper Serie
+C1
+Derived Serie
+C1        --> C9 x C3   --> C3 x: D18
+Zentrum  Z(G) = C1
+Frattini Φ(G) = C3
+Fitting  F(G) = C9 x C3
+
+Word Group
+< a,b,c | a9, b3, c2, acac, bcbc, bab-1a-1 >
+
+Gap SmallGroup(54,7)     Name:(C9 x C3) : C2
+
+Group names
+    C3 x: D18
+    (C9 x C3) x: C2
+    C9 x: S3
+    (C3 x C3) . S3
+    C3 . ((C3 x C3) x: C2)
+
+Group54[11/15]
+#############################################################
+################       (C3 x C3) x: C6       ################
+#############################################################
+|(C3 x C3) x: C6| = 54
+NotSimple, NonAbelianGroup, Nilpotent, Solvable
+BaseGroup ((C3 x C6) . C3)(table)
+
+Elements Orders : [1]:1, [2]:1, [3]:26, [6]:26
+SubGroupsInfos { AllSubGr = 38, AllConjsCl = 22, AllNorms = 14 }
+Lower Serie
+C1              --> C3              --> (C3 x C3) x: C6
+Upper Serie
+C1              --> C6              --> (C3 x C3) x: C6
+Derived Serie
+C1              --> C3              --> (C3 x C3) x: C6
+Zentrum  Z(G) = C6
+Frattini Φ(G) = C3
+Fitting  F(G) = (C3 x C3) x: C3
+
+Word Group
+< a,b,c | a6, b3, c3, bcbcbc, bab-1a-1, cac-1a-1, a2cbc-1b-1, cb-1cb-1cb-1 >
+
+Gap SmallGroup(54,10)    Name:C2 x ((C3 x C3) : C3)
+
+Group names
+    (C3 x C3) x: C6
+    (C6 x C3) x: C3
+    C2 x ((C3 x C3) x: C3)
+    C3 . (C6 x C3)
+    C6 . (C3 x C3)
+
+Group54[12/15]
+#############################################################
+################       (C3 x C3) x: C6       ################
+#############################################################
+|(C3 x C3) x: C6| = 54
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup ((C3 x C3) . Symm3)(table)
+
+Elements Orders : [1]:1, [2]:9, [3]:26, [6]:18
+SubGroupsInfos { AllSubGr = 54, AllConjsCl = 16, AllNorms = 7 }
+Lower Serie
+C3 x C3         --> (C3 x C3) x: C6
+Upper Serie
+C1
+Derived Serie
+C1              --> C3 x C3         --> (C3 x C3) x: C6
+Zentrum  Z(G) = C1
+Frattini Φ(G) = C3
+Fitting  F(G) = (C3 x C3) x: C3
+
+Word Group
+< a,b,c | a3, b3, c2, acac, ababab, cbcb-1 >
+
+Gap SmallGroup(54,5)     Name:(C3 x C3) : C6
+
+Group names
+    (C3 x C3) x: C6
+    (C3 x C3) x: S3
+    ((C3 x C3) x: C2) x: C3
+    ((C3 x C3) x: C3) x: C2
+    C3 . M(3x:6)2
+
+Group54[13/15]
+#############################################################
+################       (C3 x C3) x: C6       ################
+#############################################################
+|(C3 x C3) x: C6| = 54
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup ((C3 x C3) . Symm3)(table)
+
+Elements Orders : [1]:1, [2]:9, [3]:26, [6]:18
+SubGroupsInfos { AllSubGr = 72, AllConjsCl = 32, AllNorms = 14 }
+Lower Serie
+C3 x C3         --> (C3 x C3) x: C6
+Upper Serie
+C1              --> C3
+Derived Serie
+C1              --> C3 x C3         --> (C3 x C3) x: C6
+Zentrum  Z(G) = C3
+Frattini Φ(G) = C1
+Fitting  F(G) = C3 x C3 x C3
+
+Word Group
+< a,b,c,d | a3, b3, c3, d2, adad, cdcd, dbdb-1, bab-1a-1, cac-1a-1, cbc-1b-1 >
+
+Gap SmallGroup(54,13)    Name:C3 x ((C3 x C3) : C2)
+
+Group names
+    (C3 x C3) x: C6
+    (C3 x C3 x C3) x: C2
+    C3 x: M(3x:6)2
+    (C3 x C3) x: S3
+    C3 x ((C3 x C3) x: C2)
+    ((C3 x C3) x: C2) x: C3
+
+Group54[14/15]
+#############################################################
+################    (C3 x C3 x C3) x: C2     ################
+#############################################################
+|(C3 x C3 x C3) x: C2| = 54
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup ((C3 x C3) . Symm3)(table)
+
+Elements Orders : [1]:1, [2]:27, [3]:26
+SubGroupsInfos { AllSubGr = 212, AllConjsCl = 56, AllNorms = 29 }
+Lower Serie
+C3 x C3 x C3         --> (C3 x C3 x C3) x: C2
+Upper Serie
+C1
+Derived Serie
+C1                   --> C3 x C3 x C3         --> (C3 x C3 x C3) x: C2
+Zentrum  Z(G) = C1
+Frattini Φ(G) = C1
+Fitting  F(G) = C3 x C3 x C3
+
+Word Group
+< a,b,c,d | a3, b3, c3, d2, adad, bdbd, cdcd, bab-1a-1, cac-1a-1, cbc-1b-1 >
+
+Gap SmallGroup(54,14)    Name:(C3 x C3 x C3) : C2
+
+Group names
+    (C3 x C3 x C3) x: C2
+    (C3 x C3) x: S3
+    C3 x: ((C3 x C3) x: C2)
+
+Group54[15/15]
+#############################################################
+################       (C3 x C3) x: S3       ################
+#############################################################
+|(C3 x C3) x: S3| = 54
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup ((C3 x C3) . Symm3)(table)
+
+Elements Orders : [1]:1, [2]:9, [3]:26, [6]:18
+SubGroupsInfos { AllSubGr = 62, AllConjsCl = 22, AllNorms = 8 }
+Lower Serie
+(C3 x C3) x: C3 --> (C3 x C3) x: S3
+Upper Serie
+C1              --> C3
+Derived Serie
+C1              --> C3              --> (C3 x C3) x: C3 --> (C3 x C3) x: S3
+Zentrum  Z(G) = C3
+Frattini Φ(G) = C3
+Fitting  F(G) = (C3 x C3) x: C3
+
+Word Group
+< a,b,c,d | a3, b3, c3, d2, adad, cdcd, dbdb-1, bab-1a-1, cbc-1b-1, ab-1ca-1c-1 >
+
+Gap SmallGroup(54,8)     Name:((C3 x C3) : C3) : C2
+
+Group names
+    (C3 x C3) x: S3
+    ((C3 x C3) x: C3) x: C2
+    C3 . ((C3 x C3) x: C2)
+
+Group55[1/2]
+#############################################################
+################             C55             ################
+#############################################################
+|C55| = 55
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C11 x C5)(table)
+
+Elements Orders : [1]:1, [5]:4, [11]:10, [55]:40
+SubGroupsInfos { AllSubGr = 4, AllConjsCl = 4, AllNorms = 4 }
+Lower Serie
+C1  --> C55
+Upper Serie
+C1  --> C55
+Derived Serie
+C1  --> C55
+Zentrum  Z(G) = C55
+Frattini Φ(G) = C1
+Fitting  F(G) = C11
+
+Word Group
+< a | a55 >
+
+Gap SmallGroup(55,2)     Name:C55
+
+Group names
+    C55
+
+Group55[2/2]
+#############################################################
+################          F(11x:5)3          ################
+#############################################################
+|F(11x:5)3| = 55
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup Frob(11,5,3)(table)
+
+Elements Orders : [1]:1, [5]:44, [11]:10
+SubGroupsInfos { AllSubGr = 14, AllConjsCl = 4, AllNorms = 3 }
+Lower Serie
+C11       --> F(11x:5)3
+Upper Serie
+C1
+Derived Serie
+C1        --> C11       --> F(11x:5)3
+Zentrum  Z(G) = C1
+Frattini Φ(G) = C1
+Fitting  F(G) = C11
+
+Word Group
+< a,b | b5, a3ba-1b-1, a4b-1a-1b >
+
+Gap SmallGroup(55,1)     Name:C11 : C5
+
+Group names
+    F(11x:5)3
+
+Group56[1/13]
+#############################################################
+################             C56             ################
+#############################################################
+|C56| = 56
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C8 x C7)(table)
+
+Elements Orders : [1]:1, [2]:1, [4]:2, [7]:6, [8]:4, [14]:6, [28]:12, [56]:24
+SubGroupsInfos { AllSubGr = 8, AllConjsCl = 8, AllNorms = 8 }
+Lower Serie
+C1  --> C56
+Upper Serie
+C1  --> C56
+Derived Serie
+C1  --> C56
+Zentrum  Z(G) = C56
+Frattini Φ(G) = C4
+Fitting  F(G) = C28
+
+Word Group
+< a | a56 >
+
+Gap SmallGroup(56,2)     Name:C56
+
+Group names
+    C56
+
+Group56[2/13]
+#############################################################
+################          C28 x C2           ################
+#############################################################
+|C28 x C2| = 56
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C7 x C4 x C2)(table)
+
+Elements Orders : [1]:1, [2]:3, [4]:4, [7]:6, [14]:18, [28]:24
+SubGroupsInfos { AllSubGr = 16, AllConjsCl = 16, AllNorms = 16 }
+Lower Serie
+C1       --> C28 x C2
+Upper Serie
+C1       --> C28 x C2
+Derived Serie
+C1       --> C28 x C2
+Zentrum  Z(G) = C28 x C2
+Frattini Φ(G) = C2
+Fitting  F(G) = C28
+
+Word Group
+< a,b,c | a7, b4, c2, caca-1, cbcb-1, bab-1a-1 >
+
+Gap SmallGroup(56,8)     Name:C28 x C2
+
+Group names
+    C28 x C2
+
+Group56[3/13]
+#############################################################
+################        C14 x C2 x C2        ################
+#############################################################
+|C14 x C2 x C2| = 56
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C7 x C2 x C2 x C2)(table)
+
+Elements Orders : [1]:1, [2]:7, [7]:6, [14]:42
+SubGroupsInfos { AllSubGr = 32, AllConjsCl = 32, AllNorms = 32 }
+Lower Serie
+C1            --> C14 x C2 x C2
+Upper Serie
+C1            --> C14 x C2 x C2
+Derived Serie
+C1            --> C14 x C2 x C2
+Zentrum  Z(G) = C14 x C2 x C2
+Frattini Φ(G) = C1
+Fitting  F(G) = C14 x C2
+
+Word Group
+< a,b,c,d | a7, b2, c2, d2, bcbc, bdbd, cdcd, baba-1, caca-1, dada-1 >
+
+Gap SmallGroup(56,13)    Name:C14 x C2 x C2
+
+Group names
+    C14 x C2 x C2
+
+Group56[4/13]
+#############################################################
+################            Dic14            ################
+#############################################################
+|Dic14| = 56
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup (C28 . C2)(table)
+
+Elements Orders : [1]:1, [2]:1, [4]:30, [7]:6, [14]:6, [28]:12
+SubGroupsInfos { AllSubGr = 30, AllConjsCl = 12, AllNorms = 9 }
+Lower Serie
+C7    --> C14   --> Dic14
+Upper Serie
+C1    --> C2    --> C4
+Derived Serie
+C1    --> C14   --> Dic14
+Zentrum  Z(G) = C2
+Frattini Φ(G) = C2
+Fitting  F(G) = C28
+
+Word Group
+< a,b | b4, abab-1, a9b-1a-5b-1 >
+
+Gap SmallGroup(56,3)     Name:C7 : Q8
+
+Group names
+    Dic14
+    C7 x: Q8
+    C28 . C2
+    C2 . D28
+    C4 . D14
+    C14 . (C2 x C2)
+    Dic7 . C2
+
+Group56[5/13]
+#############################################################
+################             D56             ################
+#############################################################
+|D56| = 56
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup MtCyc(28,2,27)(table)
+
+Elements Orders : [1]:1, [2]:29, [4]:2, [7]:6, [14]:6, [28]:12
+SubGroupsInfos { AllSubGr = 62, AllConjsCl = 16, AllNorms = 9 }
+Lower Serie
+C7  --> C14 --> D56
+Upper Serie
+C1  --> C2  --> C4
+Derived Serie
+C1  --> C14 --> D56
+Zentrum  Z(G) = C2
+Frattini Φ(G) = C2
+Fitting  F(G) = C28
+
+Word Group
+< a,b | b2, a28, abab >
+
+Gap SmallGroup(56,5)     Name:D56
+
+Group names
+    D56
+    C7 x: D8
+    C4 x: D14
+    D28 x: C2
+    C2 . D28
+    C14 . (C2 x C2)
+
+Group56[6/13]
+#############################################################
+################          F(7x:8)6           ################
+#############################################################
+|F(7x:8)6| = 56
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup Frob(7,8,6)(table)
+
+Elements Orders : [1]:1, [2]:1, [4]:2, [7]:6, [8]:28, [14]:6, [28]:12
+SubGroupsInfos { AllSubGr = 14, AllConjsCl = 8, AllNorms = 7 }
+Lower Serie
+C7       --> F(7x:8)6
+Upper Serie
+C1       --> C4
+Derived Serie
+C1       --> C7       --> F(7x:8)6
+Zentrum  Z(G) = C4
+Frattini Φ(G) = C4
+Fitting  F(G) = C28
+
+Word Group
+< a,b | a8, b7, baba-1 >
+
+Gap SmallGroup(56,1)     Name:C7 : C8
+
+Group names
+    F(7x:8)6
+    C14 . C4
+    C28 . C2
+    C4 . D14
+    C2 . Dic7
+
+Group56[7/13]
+#############################################################
+################          M(4x:14)3          ################
+#############################################################
+|M(4x:14)3| = 56
+NotSimple, NonAbelianGroup, Nilpotent, Solvable
+BaseGroup MtCyc(4,14,3)(table)
+
+Elements Orders : [1]:1, [2]:5, [4]:2, [7]:6, [14]:30, [28]:12
+SubGroupsInfos { AllSubGr = 20, AllConjsCl = 16, AllNorms = 12 }
+Lower Serie
+C1        --> C2        --> M(4x:14)3
+Upper Serie
+C1        --> C14       --> M(4x:14)3
+Derived Serie
+C1        --> C2        --> M(4x:14)3
+Zentrum  Z(G) = C14
+Frattini Φ(G) = C2
+Fitting  F(G) = C28
+
+Word Group
+< a,b | b4, a14, baba-1 >
+
+Gap SmallGroup(56,9)     Name:C7 x D8
+
+Group names
+    M(4x:14)3
+    M(28x:2)15
+    C7 x D8
+    (C14 x C2) x: C2
+    (C2 x C2) x: C14
+    C14 . (C2 x C2)
+    C2 . (C14 x C2)
+
+Group56[8/13]
+#############################################################
+################         M(14x:4)13          ################
+#############################################################
+|M(14x:4)13| = 56
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup MtCyc(14,4,13)(table)
+
+Elements Orders : [1]:1, [2]:3, [4]:28, [7]:6, [14]:18
+SubGroupsInfos { AllSubGr = 34, AllConjsCl = 16, AllNorms = 13 }
+Lower Serie
+C7         --> M(14x:4)13
+Upper Serie
+C1         --> C2 x C2
+Derived Serie
+C1         --> C7         --> M(14x:4)13
+Zentrum  Z(G) = C2 x C2
+Frattini Φ(G) = C2
+Fitting  F(G) = C14 x C2
+
+Word Group
+< a,b | b4, a14, abab-1 >
+
+Gap SmallGroup(56,6)     Name:C2 x (C7 : C4)
+
+Group names
+    M(14x:4)13
+    C2 x Dic7
+    C7 x: (C4 x C2)
+    C2 . D28
+    (C14 x C2) . C2
+    C14 . (C2 x C2)
+    (C2 x C2) . D14
+
+Group56[9/13]
+#############################################################
+################         M(28x:2)13          ################
+#############################################################
+|M(28x:2)13| = 56
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup MtCyc(28,2,13)(table)
+
+Elements Orders : [1]:1, [2]:15, [4]:16, [7]:6, [14]:6, [28]:12
+SubGroupsInfos { AllSubGr = 46, AllConjsCl = 16, AllNorms = 11 }
+Lower Serie
+C7         --> M(28x:2)13
+Upper Serie
+C1         --> C4
+Derived Serie
+C1         --> C7         --> M(28x:2)13
+Zentrum  Z(G) = C4
+Frattini Φ(G) = C2
+Fitting  F(G) = C28
+
+Word Group
+< a,b | b2, a2ba2b, a9ba-5b, abababab >
+
+Gap SmallGroup(56,4)     Name:C4 x D14
+
+Group names
+    M(28x:2)13
+    C4 x D14
+    D14 x: C4
+    C7 x: (C4 x C2)
+    Dic7 x: C2
+    C2 . D28
+    D28 . C2
+    C14 . (C2 x C2)
+
+Group56[10/13]
+#############################################################
+################          C2 x D28           ################
+#############################################################
+|C2 x D28| = 56
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup ((C2 x C14) . C2)(table)
+
+Elements Orders : [1]:1, [2]:31, [7]:6, [14]:18
+SubGroupsInfos { AllSubGr = 98, AllConjsCl = 32, AllNorms = 21 }
+Lower Serie
+C7       --> C2 x D28
+Upper Serie
+C1       --> C2 x C2
+Derived Serie
+C1       --> C7       --> C2 x D28
+Zentrum  Z(G) = C2 x C2
+Frattini Φ(G) = C1
+Fitting  F(G) = C14 x C2
+
+Word Group
+< a,b,c | b2, c2, a14, abab, bcbc, caca-1 >
+
+Gap SmallGroup(56,12)    Name:C2 x C2 x D14
+
+Group names
+    C2 x D28
+    (C2 x C2) x D14
+    D28 x: C2
+    (C14 x C2) x: C2
+    C14 x: (C2 x C2)
+    C7 x: (C2 x C2 x C2)
+    D14 x: (C2 x C2)
+
+Group56[11/13]
+#############################################################
+################           C7 x Q8           ################
+#############################################################
+|C7 x Q8| = 56
+NotSimple, NonAbelianGroup, Nilpotent, Solvable
+BaseGroup (C28 . C2)(table)
+
+Elements Orders : [1]:1, [2]:1, [4]:6, [7]:6, [14]:6, [28]:36
+SubGroupsInfos { AllSubGr = 12, AllConjsCl = 12, AllNorms = 12 }
+Lower Serie
+C1      --> C2      --> C7 x Q8
+Upper Serie
+C1      --> C14     --> C7 x Q8
+Derived Serie
+C1      --> C2      --> C7 x Q8
+Zentrum  Z(G) = C14
+Frattini Φ(G) = C2
+Fitting  F(G) = C28
+
+Word Group
+< a,b | b4, a14b-2, baba-1 >
+
+Gap SmallGroup(56,10)    Name:C7 x Q8
+
+Group names
+    C7 x Q8
+    C28 . C2
+    C4 . C14
+    C14 . (C2 x C2)
+    C2 . (C14 x C2)
+
+Group56[12/13]
+#############################################################
+################          C7 x: D8           ################
+#############################################################
+|C7 x: D8| = 56
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup ((C2 x C14) . C2)(table)
+
+Elements Orders : [1]:1, [2]:17, [4]:14, [7]:6, [14]:18
+SubGroupsInfos { AllSubGr = 50, AllConjsCl = 16, AllNorms = 9 }
+Lower Serie
+C7       --> C14      --> C7 x: D8
+Upper Serie
+C1       --> C2       --> C2 x C2
+Derived Serie
+C1       --> C14      --> C7 x: D8
+Zentrum  Z(G) = C2
+Frattini Φ(G) = C2
+Fitting  F(G) = C14 x C2
+
+Word Group
+< a,b,c | b2, c2, abab, caca-1, bcbcbcbc, a6cbca-1b >
+
+Gap SmallGroup(56,7)     Name:(C14 x C2) : C2
+
+Group names
+    C7 x: D8
+    D28 x: C2
+    (C14 x C2) x: C2
+    Dic7 x: C2
+    (C2 x C2) x: D14
+    C2 . D28
+    C14 . (C2 x C2)
+
+Group56[13/13]
+#############################################################
+################    (C2 x C2 x C2) x: C7     ################
+#############################################################
+|(C2 x C2 x C2) x: C7| = 56
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup ((C2 x C2 x C2) x: C7)(table)
+
+Elements Orders : [1]:1, [2]:7, [7]:48
+SubGroupsInfos { AllSubGr = 25, AllConjsCl = 6, AllNorms = 3 }
+Lower Serie
+C2 x C2 x C2         --> (C2 x C2 x C2) x: C7
+Upper Serie
+C1
+Derived Serie
+C1                   --> C2 x C2 x C2         --> (C2 x C2 x C2) x: C7
+Zentrum  Z(G) = C1
+Frattini Φ(G) = C1
+Fitting  F(G) = C2 x C2 x C2
+
+Word Group
+< a,b | a7, b2, aba2ba-3b, aba-1baba-1b >
+
+Gap SmallGroup(56,11)    Name:(C2 x C2 x C2) : C7
+
+Group names
+    (C2 x C2 x C2) x: C7
+
+Group57[1/2]
+#############################################################
+################             C57             ################
+#############################################################
+|C57| = 57
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C19 x C3)(table)
+
+Elements Orders : [1]:1, [3]:2, [19]:18, [57]:36
+SubGroupsInfos { AllSubGr = 4, AllConjsCl = 4, AllNorms = 4 }
+Lower Serie
+C1  --> C57
+Upper Serie
+C1  --> C57
+Derived Serie
+C1  --> C57
+Zentrum  Z(G) = C57
+Frattini Φ(G) = C1
+Fitting  F(G) = C19
+
+Word Group
+< a | a57 >
+
+Gap SmallGroup(57,2)     Name:C57
+
+Group names
+    C57
+
+Group57[2/2]
+#############################################################
+################          F(19x:3)7          ################
+#############################################################
+|F(19x:3)7| = 57
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup Frob(19,3,7)(table)
+
+Elements Orders : [1]:1, [3]:38, [19]:18
+SubGroupsInfos { AllSubGr = 22, AllConjsCl = 4, AllNorms = 3 }
+Lower Serie
+C19       --> F(19x:3)7
+Upper Serie
+C1
+Derived Serie
+C1        --> C19       --> F(19x:3)7
+Zentrum  Z(G) = C1
+Frattini Φ(G) = C1
+Fitting  F(G) = C19
+
+Word Group
+< a,b | b3, ababab, ba3b-1a-2, ba-1ba-1ba-1 >
+
+Gap SmallGroup(57,1)     Name:C19 : C3
+
+Group names
+    F(19x:3)7
+
+Group58[1/2]
+#############################################################
+################             C58             ################
+#############################################################
+|C58| = 58
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C29 x C2)(table)
+
+Elements Orders : [1]:1, [2]:1, [29]:28, [58]:28
+SubGroupsInfos { AllSubGr = 4, AllConjsCl = 4, AllNorms = 4 }
+Lower Serie
+C1  --> C58
+Upper Serie
+C1  --> C58
+Derived Serie
+C1  --> C58
+Zentrum  Z(G) = C58
+Frattini Φ(G) = C1
+Fitting  F(G) = C29
+
+Word Group
+< a | a58 >
+
+Gap SmallGroup(58,2)     Name:C58
+
+Group names
+    C58
+
+Group58[2/2]
+#############################################################
+################             D58             ################
+#############################################################
+|D58| = 58
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup Frob(29,2,28)(table)
+
+Elements Orders : [1]:1, [2]:29, [29]:28
+SubGroupsInfos { AllSubGr = 32, AllConjsCl = 4, AllNorms = 3 }
+Lower Serie
+C29 --> D58
+Upper Serie
+C1
+Derived Serie
+C1  --> C29 --> D58
+Zentrum  Z(G) = C1
+Frattini Φ(G) = C1
+Fitting  F(G) = C29
+
+Word Group
+< a,b | b2, a29, abab >
+
+Gap SmallGroup(58,1)     Name:D58
+
+Group names
+    D58
+
+Group59[1/1]
+#############################################################
+################             C59             ################
+#############################################################
+|C59| = 59
+Simple, AbelianGroup, Nilpotent, Solvable
+BaseGroup C59(table)
+
+Elements Orders : [1]:1, [59]:58
+SubGroupsInfos { AllSubGr = 2, AllConjsCl = 2, AllNorms = 2 }
+Lower Serie
+C1  --> C59
+Upper Serie
+C1  --> C59
+Derived Serie
+C1  --> C59
+Zentrum  Z(G) = C59
+Frattini Φ(G) = C1
+Fitting  F(G) = C1
+
+Word Group
+< a | a59 >
+
+Gap SmallGroup(59,1)     Name:C59
+
+Group names
+    C59
+
+Group60[1/13]
+#############################################################
+################             C60             ################
+#############################################################
+|C60| = 60
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C5 x C4 x C3)(table)
+
+Elements Orders : [1]:1, [2]:1, [3]:2, [4]:2, [5]:4, [6]:2, [10]:4, [12]:4, [15]:8, [20]:8, [30]:8, [60]:16
+SubGroupsInfos { AllSubGr = 12, AllConjsCl = 12, AllNorms = 12 }
+Lower Serie
+C1  --> C60
+Upper Serie
+C1  --> C60
+Derived Serie
+C1  --> C60
+Zentrum  Z(G) = C60
+Frattini Φ(G) = C2
+Fitting  F(G) = C30
+
+Word Group
+< a | a60 >
+
+Gap SmallGroup(60,4)     Name:C60
+
+Group names
+    C60
+
+Group60[2/13]
+#############################################################
+################          C30 x C2           ################
+#############################################################
+|C30 x C2| = 60
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C5 x C3 x C2 x C2)(table)
+
+Elements Orders : [1]:1, [2]:3, [3]:2, [5]:4, [6]:6, [10]:12, [15]:8, [30]:24
+SubGroupsInfos { AllSubGr = 20, AllConjsCl = 20, AllNorms = 20 }
+Lower Serie
+C1       --> C30 x C2
+Upper Serie
+C1       --> C30 x C2
+Derived Serie
+C1       --> C30 x C2
+Zentrum  Z(G) = C30 x C2
+Frattini Φ(G) = C1
+Fitting  F(G) = C30
+
+Word Group
+< a,b,c,d | a5, b3, c2, d2, cdcd, caca-1, cbcb-1, dada-1, dbdb-1, bab-1a-1 >
+
+Gap SmallGroup(60,13)    Name:C30 x C2
+
+Group names
+    C30 x C2
+
+Group60[3/13]
+#############################################################
+################             A5              ################
+#############################################################
+|A5| = 60
+Simple, NonAbelianGroup, NotNilpotent, NotSolvable
+BaseGroup Alt5(table)
+
+Elements Orders : [1]:1, [2]:15, [3]:20, [5]:24
+SubGroupsInfos { AllSubGr = 59, AllConjsCl = 9, AllNorms = 2 }
+Lower Serie
+A5
+Upper Serie
+C1
+Derived Serie
+A5
+Zentrum  Z(G) = C1
+Frattini Φ(G) = C1
+Fitting  F(G) = C1
+
+Word Group
+< a,b,c | a3, b3, c3, abab, acac, bcbc >
+
+Gap SmallGroup(60,5)     Name:A5
+
+Group names
+    A5
+
+Group60[4/13]
+#############################################################
+################            Dic15            ################
+#############################################################
+|Dic15| = 60
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup Frob(15,4,14)(table)
+
+Elements Orders : [1]:1, [2]:1, [3]:2, [4]:30, [5]:4, [6]:2, [10]:4, [15]:8, [30]:8
+SubGroupsInfos { AllSubGr = 32, AllConjsCl = 12, AllNorms = 9 }
+Lower Serie
+C15   --> Dic15
+Upper Serie
+C1    --> C2
+Derived Serie
+C1    --> C15   --> Dic15
+Zentrum  Z(G) = C2
+Frattini Φ(G) = C2
+Fitting  F(G) = C30
+
+Word Group
+< a,b | b4, a15, abab-1 >
+
+Gap SmallGroup(60,3)     Name:C15 : C4
+
+Group names
+    Dic15
+    F(15x:4)14
+    C3 x: Dic5
+    C5 x: Dic3
+    C30 . C2
+    C2 . D30
+    C6 . D10
+    C10 . S3
+
+Group60[5/13]
+#############################################################
+################             D60             ################
+#############################################################
+|D60| = 60
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup MtCyc(30,2,29)(table)
+
+Elements Orders : [1]:1, [2]:31, [3]:2, [5]:4, [6]:2, [10]:4, [15]:8, [30]:8
+SubGroupsInfos { AllSubGr = 80, AllConjsCl = 20, AllNorms = 11 }
+Lower Serie
+C15 --> D60
+Upper Serie
+C1  --> C2
+Derived Serie
+C1  --> C15 --> D60
+Zentrum  Z(G) = C2
+Frattini Φ(G) = C1
+Fitting  F(G) = C30
+
+Word Group
+< a,b | b2, a30, abab >
+
+Gap SmallGroup(60,12)    Name:D60
+
+Group names
+    D60
+    C2 x D30
+    C3 x: D20
+    C5 x: D12
+    C6 x: D10
+    D30 x: C2
+    C15 x: (C2 x C2)
+    C10 x: S3
+
+Group60[6/13]
+#############################################################
+################          F(15x:4)2          ################
+#############################################################
+|F(15x:4)2| = 60
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup Frob(15,4,2)(table)
+
+Elements Orders : [1]:1, [2]:5, [3]:2, [4]:30, [5]:4, [6]:10, [15]:8
+SubGroupsInfos { AllSubGr = 40, AllConjsCl = 12, AllNorms = 7 }
+Lower Serie
+C15       --> F(15x:4)2
+Upper Serie
+C1
+Derived Serie
+C1        --> C15       --> F(15x:4)2
+Zentrum  Z(G) = C1
+Frattini Φ(G) = C1
+Fitting  F(G) = C15
+
+Word Group
+< a,b | b4, a2ba-1b-1 >
+
+Gap SmallGroup(60,7)     Name:C15 : C4
+
+Group names
+    F(15x:4)2
+    C5 x: Dic3
+    C3 x: F(5x:4)2
+    F(5x:6)4 . C2
+    D10 . S3
+
+Group60[7/13]
+#############################################################
+################          F(3x:20)2          ################
+#############################################################
+|F(3x:20)2| = 60
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup Frob(3,20,2)(table)
+
+Elements Orders : [1]:1, [2]:1, [3]:2, [4]:6, [5]:4, [6]:2, [10]:4, [15]:8, [20]:24, [30]:8
+SubGroupsInfos { AllSubGr = 16, AllConjsCl = 12, AllNorms = 10 }
+Lower Serie
+C3        --> F(3x:20)2
+Upper Serie
+C1        --> C10
+Derived Serie
+C1        --> C3        --> F(3x:20)2
+Zentrum  Z(G) = C10
+Frattini Φ(G) = C2
+Fitting  F(G) = C30
+
+Word Group
+< a,b | b3, a20, baba-1 >
+
+Gap SmallGroup(60,1)     Name:C5 x (C3 : C4)
+
+Group names
+    F(3x:20)2
+    M(15x:4)11
+    C5 x Dic3
+    C30 . C2
+    C6 . C10
+    C10 . S3
+    C2 . F(3x:10)2
+
+Group60[8/13]
+#############################################################
+################          F(5x:12)2          ################
+#############################################################
+|F(5x:12)2| = 60
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup Frob(5,12,2)(table)
+
+Elements Orders : [1]:1, [2]:5, [3]:2, [4]:10, [5]:4, [6]:10, [12]:20, [15]:8
+SubGroupsInfos { AllSubGr = 28, AllConjsCl = 12, AllNorms = 8 }
+Lower Serie
+C5        --> F(5x:12)2
+Upper Serie
+C1        --> C3
+Derived Serie
+C1        --> C5        --> F(5x:12)2
+Zentrum  Z(G) = C3
+Frattini Φ(G) = C1
+Fitting  F(G) = C15
+
+Word Group
+< a,b | b5, a12, ab2a-1b >
+
+Gap SmallGroup(60,6)     Name:C3 x (C5 : C4)
+
+Group names
+    F(5x:12)2
+    M(15x:4)13
+    C3 x F(5x:4)3
+    D10 . C6
+    F(5x:6)4 . C2
+
+Group60[9/13]
+#############################################################
+################          F(5x:12)4          ################
+#############################################################
+|F(5x:12)4| = 60
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup Frob(5,12,4)(table)
+
+Elements Orders : [1]:1, [2]:1, [3]:2, [4]:10, [5]:4, [6]:2, [10]:4, [12]:20, [15]:8, [30]:8
+SubGroupsInfos { AllSubGr = 20, AllConjsCl = 12, AllNorms = 10 }
+Lower Serie
+C5        --> F(5x:12)4
+Upper Serie
+C1        --> C6
+Derived Serie
+C1        --> C5        --> F(5x:12)4
+Zentrum  Z(G) = C6
+Frattini Φ(G) = C2
+Fitting  F(G) = C30
+
+Word Group
+< a,b | b5, a12, baba-1 >
+
+Gap SmallGroup(60,2)     Name:C3 x (C5 : C4)
+
+Group names
+    F(5x:12)4
+    M(15x:4)4
+    C3 x Dic5
+    C10 . C6
+    C30 . C2
+    C6 . D10
+    C2 . F(5x:6)4
+
+Group60[10/13]
+#############################################################
+################          M(10x:6)9          ################
+#############################################################
+|M(10x:6)9| = 60
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup MtCyc(10,6,9)(table)
+
+Elements Orders : [1]:1, [2]:11, [3]:2, [5]:4, [6]:22, [10]:4, [15]:8, [30]:8
+SubGroupsInfos { AllSubGr = 44, AllConjsCl = 20, AllNorms = 14 }
+Lower Serie
+C5        --> M(10x:6)9
+Upper Serie
+C1        --> C6
+Derived Serie
+C1        --> C5        --> M(10x:6)9
+Zentrum  Z(G) = C6
+Frattini Φ(G) = C1
+Fitting  F(G) = C30
+
+Word Group
+< a,b | b6, a10, abab-1 >
+
+Gap SmallGroup(60,10)    Name:C6 x D10
+
+Group names
+    M(10x:6)9
+    M(30x:2)19
+    C3 x D20
+    C6 x D10
+    C2 x F(5x:6)4
+    D10 x: C6
+    C5 x: (C6 x C2)
+    C15 x: (C2 x C2)
+    F(5x:6)4 x: C2
+
+Group60[11/13]
+#############################################################
+################          M(6x:10)5          ################
+#############################################################
+|M(6x:10)5| = 60
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup MtCyc(6,10,5)(table)
+
+Elements Orders : [1]:1, [2]:7, [3]:2, [5]:4, [6]:2, [10]:28, [15]:8, [30]:8
+SubGroupsInfos { AllSubGr = 32, AllConjsCl = 20, AllNorms = 14 }
+Lower Serie
+C3        --> M(6x:10)5
+Upper Serie
+C1        --> C10
+Derived Serie
+C1        --> C3        --> M(6x:10)5
+Zentrum  Z(G) = C10
+Frattini Φ(G) = C1
+Fitting  F(G) = C30
+
+Word Group
+< a,b | b6, a10, baba-1 >
+
+Gap SmallGroup(60,11)    Name:C10 x S3
+
+Group names
+    M(6x:10)5
+    M(30x:2)11
+    C5 x D12
+    C10 x S3
+    C2 x F(3x:10)2
+    C15 x: (C2 x C2)
+    C3 x: (C10 x C2)
+    S3 x: C10
+    F(3x:10)2 x: C2
+
+Group60[12/13]
+#############################################################
+################           C5 x A4           ################
+#############################################################
+|C5 x A4| = 60
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup ((C2 x C10) . C3)(table)
+
+Elements Orders : [1]:1, [2]:3, [3]:8, [5]:4, [10]:12, [15]:32
+SubGroupsInfos { AllSubGr = 20, AllConjsCl = 10, AllNorms = 6 }
+Lower Serie
+C2 x C2 --> C5 x A4
+Upper Serie
+C1      --> C5
+Derived Serie
+C1      --> C2 x C2 --> C5 x A4
+Zentrum  Z(G) = C5
+Frattini Φ(G) = C1
+Fitting  F(G) = C10 x C2
+
+Word Group
+< a,b | b3, a3babab, ba2b-1a-2, a3b-1ab-1ab-1 >
+
+Gap SmallGroup(60,9)     Name:C5 x A4
+
+Group names
+    C5 x A4
+    (C10 x C2) x: C3
+    (C2 x C2) x: C15
+
+Group60[13/13]
+#############################################################
+################          D10 x S3           ################
+#############################################################
+|D10 x S3| = 60
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup (C15 . (C2 x C2))(table)
+
+Elements Orders : [1]:1, [2]:23, [3]:2, [5]:4, [6]:10, [10]:12, [15]:8
+SubGroupsInfos { AllSubGr = 72, AllConjsCl = 20, AllNorms = 10 }
+Lower Serie
+C15      --> D10 x S3
+Upper Serie
+C1
+Derived Serie
+C1       --> C15      --> D10 x S3
+Zentrum  Z(G) = C1
+Frattini Φ(G) = C1
+Fitting  F(G) = C15
+
+Word Group
+< a,b,c | b2, c2, acac, bcbc, a4ba-1b >
+
+Gap SmallGroup(60,8)     Name:S3 x D10
+
+Group names
+    D10 x S3
+    C3 x: D20
+    C5 x: D12
+    D30 x: C2
+    C15 x: (C2 x C2)
+    F(5x:6)4 x: C2
+    F(3x:10)2 x: C2
+    D10 x: S3
+    S3 x: D10
+
+Group61[1/1]
+#############################################################
+################             C61             ################
+#############################################################
+|C61| = 61
+Simple, AbelianGroup, Nilpotent, Solvable
+BaseGroup C61(table)
+
+Elements Orders : [1]:1, [61]:60
+SubGroupsInfos { AllSubGr = 2, AllConjsCl = 2, AllNorms = 2 }
+Lower Serie
+C1  --> C61
+Upper Serie
+C1  --> C61
+Derived Serie
+C1  --> C61
+Zentrum  Z(G) = C61
+Frattini Φ(G) = C1
+Fitting  F(G) = C1
+
+Word Group
+< a | a61 >
+
+Gap SmallGroup(61,1)     Name:C61
+
+Group names
+    C61
+
+Group62[1/2]
+#############################################################
+################             C62             ################
+#############################################################
+|C62| = 62
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C31 x C2)(table)
+
+Elements Orders : [1]:1, [2]:1, [31]:30, [62]:30
+SubGroupsInfos { AllSubGr = 4, AllConjsCl = 4, AllNorms = 4 }
+Lower Serie
+C1  --> C62
+Upper Serie
+C1  --> C62
+Derived Serie
+C1  --> C62
+Zentrum  Z(G) = C62
+Frattini Φ(G) = C1
+Fitting  F(G) = C31
+
+Word Group
+< a | a62 >
+
+Gap SmallGroup(62,2)     Name:C62
+
+Group names
+    C62
+
+Group62[2/2]
+#############################################################
+################             D62             ################
+#############################################################
+|D62| = 62
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup Frob(31,2,30)(table)
+
+Elements Orders : [1]:1, [2]:31, [31]:30
+SubGroupsInfos { AllSubGr = 34, AllConjsCl = 4, AllNorms = 3 }
+Lower Serie
+C31 --> D62
+Upper Serie
+C1
+Derived Serie
+C1  --> C31 --> D62
+Zentrum  Z(G) = C1
+Frattini Φ(G) = C1
+Fitting  F(G) = C31
+
+Word Group
+< a,b | b2, a31, abab >
+
+Gap SmallGroup(62,1)     Name:D62
+
+Group names
+    D62
+
+Group63[1/4]
+#############################################################
+################             C63             ################
+#############################################################
+|C63| = 63
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C9 x C7)(table)
+
+Elements Orders : [1]:1, [3]:2, [7]:6, [9]:6, [21]:12, [63]:36
+SubGroupsInfos { AllSubGr = 6, AllConjsCl = 6, AllNorms = 6 }
+Lower Serie
+C1  --> C63
+Upper Serie
+C1  --> C63
+Derived Serie
+C1  --> C63
+Zentrum  Z(G) = C63
+Frattini Φ(G) = C3
+Fitting  F(G) = C21
+
+Word Group
+< a | a63 >
+
+Gap SmallGroup(63,2)     Name:C63
+
+Group names
+    C63
+
+Group63[2/4]
+#############################################################
+################          C21 x C3           ################
+#############################################################
+|C21 x C3| = 63
+NotSimple, AbelianGroup, Nilpotent, Solvable
+BaseGroup (C7 x C3 x C3)(table)
+
+Elements Orders : [1]:1, [3]:8, [7]:6, [21]:48
+SubGroupsInfos { AllSubGr = 12, AllConjsCl = 12, AllNorms = 12 }
+Lower Serie
+C1       --> C21 x C3
+Upper Serie
+C1       --> C21 x C3
+Derived Serie
+C1       --> C21 x C3
+Zentrum  Z(G) = C21 x C3
+Frattini Φ(G) = C1
+Fitting  F(G) = C21
+
+Word Group
+< a,b,c | a7, b3, c3, bab-1a-1, cac-1a-1, cbc-1b-1 >
+
+Gap SmallGroup(63,4)     Name:C21 x C3
+
+Group names
+    C21 x C3
+
+Group63[3/4]
+#############################################################
+################          F(7x:9)2           ################
+#############################################################
+|F(7x:9)2| = 63
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup Frob(7,9,2)(table)
+
+Elements Orders : [1]:1, [3]:2, [7]:6, [9]:42, [21]:12
+SubGroupsInfos { AllSubGr = 12, AllConjsCl = 6, AllNorms = 5 }
+Lower Serie
+C7       --> F(7x:9)2
+Upper Serie
+C1       --> C3
+Derived Serie
+C1       --> C7       --> F(7x:9)2
+Zentrum  Z(G) = C3
+Frattini Φ(G) = C3
+Fitting  F(G) = C21
+
+Word Group
+< a,b | a9, ab3a-1b, b2ab-1a-1 >
+
+Gap SmallGroup(63,1)     Name:C7 : C9
+
+Group names
+    F(7x:9)2
+    C21 . C3
+    C3 . F(7x:3)2
+
+Group63[4/4]
+#############################################################
+################          M(21x:3)4          ################
+#############################################################
+|M(21x:3)4| = 63
+NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+BaseGroup MtCyc(21,3,4)(table)
+
+Elements Orders : [1]:1, [3]:44, [7]:6, [21]:12
+SubGroupsInfos { AllSubGr = 36, AllConjsCl = 12, AllNorms = 8 }
+Lower Serie
+C7        --> M(21x:3)4
+Upper Serie
+C1        --> C3
+Derived Serie
+C1        --> C7        --> M(21x:3)4
+Zentrum  Z(G) = C3
+Frattini Φ(G) = C1
+Fitting  F(G) = C21
+
+Word Group
+< a,b | b3, ababab, a4ba-1b-1, ba-1ba-1ba-1 >
+
+Gap SmallGroup(63,3)     Name:C3 x (C7 : C3)
+
+Group names
+    M(21x:3)4
+    C3 x F(7x:3)4
+    C7 x: (C3 x C3)
+    F(7x:3)4 x: C3
+
+Total Groups:175
+
+# End Time:1m10s
