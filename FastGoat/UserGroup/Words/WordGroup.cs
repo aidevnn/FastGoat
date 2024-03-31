@@ -6,16 +6,32 @@ namespace FastGoat.UserGroup.Words;
 
 public class WordGroup : ConcreteGroup<Word>
 {
+    public Dictionary<Word, Word> InvertTable { get; }
+    public Dictionary<(Word, Word), Word> OpTable { get; }
+    private int Ord { get; }
     public WordGroup(string name, WordGroupBase wg) : base(name, wg, true)
     {
         WGbase = wg;
         Graph = Graph.Run(WGbase.Relators);
         Elements = Graph.Words().Select(s => new Word(wg, s)).ToHashSet();
+        Ord = Elements.Count;
+        if (Ord < Group.StorageCapacity)
+        {
+            InvertTable = new(2 * Ord);
+            OpTable = new(2 * Ord * Ord);
+        }
+        else
+        {
+            InvertTable = new();
+            OpTable = new();
+        }
+        
         ElementsOrders = Group.ElementsOrders(this, Elements);
         PseudoGenerators = new(wg.GetGenerators().ToList());
         GroupType = (Group.IsCommutative(this, PseudoGenerators)
             ? GroupType.AbelianGroup
             : GroupType.NonAbelianGroup);
+
     }
 
     public WordGroup(WordGroupBase wg) : this(wg.Name, wg)
@@ -55,7 +71,36 @@ public class WordGroup : ConcreteGroup<Word>
 
     public override Word Neutral() => new(WGbase);
 
-    public override Word Invert(Word e) => new(WGbase, Rewrite(e.Get().Revert()));
+    public override Word Invert(Word e)
+    {
+        if (Ord >= Group.StorageCapacity)
+            return new(WGbase, Rewrite(e.Get().Revert()));
+        else
+        {
+            if (InvertTable.TryGetValue(e, out var r))
+                return r;
 
-    public override Word Op(Word e1, Word e2) => new(WGbase, Rewrite(e1.Get().Add(e2.Get())));
+            var e0 = new Word(WGbase, Rewrite(e.Get()));
+            var ei = InvertTable[e0] = new(WGbase, Rewrite(e.Get().Revert()));
+            return ei;
+        }
+    }
+
+    public override Word Op(Word e1, Word e2)
+    {
+        if (Ord >= Group.StorageCapacity)
+            return new(WGbase, Rewrite(e1.Get().Add(e2.Get())));
+        else
+        {
+            var e12 = (e1, e2);
+            if (OpTable.TryGetValue(e12, out var r))
+                return r;
+
+            var e120 = (new Word(WGbase, Rewrite(e1.Get())), new Word(WGbase, Rewrite(e2.Get())));
+            var e3 = OpTable[e120] = new(WGbase, Rewrite(e1.Get().Add(e2.Get())));
+            return e3;
+        }
+        
+        return new(WGbase, Rewrite(e1.Get().Add(e2.Get())));
+    }
 }
