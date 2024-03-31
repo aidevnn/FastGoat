@@ -323,70 +323,32 @@ public static partial class FG
     public static AllSubgroups<T>[] DisplayBoxes<T>(this IEnumerable<AllSubgroups<T>> seq, bool rename = false)
         where T : struct, IElt<T>
     {
-        var list = seq.OrderBy(e => e.Parent.GroupType)
+        var list = seq.OrderBy(e => e.Parent.Count())
+            .ThenBy(e => e.Parent.GroupType)
             .ThenByDescending(e => e.Parent.ElementsOrders.Values.Max())
             .ThenBy(e => e.Infos)
             .ToArray();
 
         var ord = list.Select(e => e.Parent.Count()).First();
         var maxLt = rename ? ($"Grp{ord}[{list.Length}]").Length + 2 : list.Max(e => e.Parent.Name.Length + 2);
-        var nb = 0;
+        var dicOrd = list.Select(e => e.Parent.Count()).Distinct().ToDictionary(k => k, _ => 0);
+        var nb = list.Length;
+        var k = 0;
         foreach (var subsg in list)
-            DisplayBox(subsg, ++nb, rename, maxLt);
+        {
+            var o = subsg.Parent.Count();
+            var s = GroupExt.A000001.Length >= o ? $"/{GroupExt.A000001[o]}" : "";
+            Console.WriteLine($"Group{o}[{++dicOrd[o]}{s}]");
+            DisplayBox(subsg, ++k, rename, false, maxLt);
+        }
 
         Console.WriteLine($"Total Groups:{nb}");
-        Console.WriteLine();
         return list;
     }
 
-    public static void DisplayBox<T>(AllSubgroups<T> subsg, int nb, bool rename = false, int maxLt = -1) where T : struct, IElt<T>
+    public static void DisplayDetails<T>(AllSubgroups<T> subsg, bool showBasegroup) where T : struct, IElt<T>
     {
-        var nbSharp = 16;
-        if (rename)
-            subsg.Parent.Name = $"Grp{subsg.Parent.Count()}[{nb}]";
-
-        var name = subsg.Parent.Name;
-        var max = int.Max(maxLt, name.Length);
-        var diff = (max - name.Length) / 2;
-        var space = Enumerable.Repeat(' ', diff).Glue();
-        var lt = Enumerable.Repeat('#', max + 4).Glue();
-        var sharp = Enumerable.Repeat('#', nbSharp).Glue();
-        var line = $"{sharp}{lt}{sharp}";
-        var fmt = $"{sharp}{space}  {{0,{-max + diff * 2}}}  {space}{sharp}";
-        Console.WriteLine(line);
-        Console.WriteLine(fmt, name);
-        Console.WriteLine(line);
-        DisplayGroup.HeadOrders(subsg.Parent);
-        Console.CursorTop--;
-        Console.WriteLine(subsg.Infos);
-        var gapInfos = FindIdGroup(subsg.Parent, subsg.Infos);
-        var s = gapInfos.Length > 1 ? " (TODO)" : "";
-        foreach (var e in gapInfos)
-            Console.WriteLine($"{$"Gap SmallGroup({e.Order},{e.No})",-24} Name:{e.Name}{s}");
-
-        Console.WriteLine();
-    }
-
-    public static void DisplayName<T>(ConcreteGroup<T> g, AllSubgroups<T> subsg, ANameElt[] names, bool rename = false,
-        bool showBasegroup = true, int maxLt = -1)
-        where T : struct, IElt<T>
-    {
-        var nbSharp = 16;
-        if (rename)
-            g.Name = names[0].Name;
-
-        var name = g.Name;
-        maxLt = int.Max(name.Length, maxLt);
-        var diff = (maxLt - name.Length) / 2;
-        var space = Enumerable.Repeat(' ', diff).Glue();
-        var lt = Enumerable.Repeat('#', maxLt + 4).Glue();
-        var sharp = Enumerable.Repeat('#', nbSharp).Glue();
-        var line = $"{sharp}{lt}{sharp}";
-        var fmt = $"{sharp}{space}  {{0,{-maxLt + diff * 2}}}  {space}{sharp}";
-        Console.WriteLine(line);
-        Console.WriteLine(fmt, g.Name);
-        Console.WriteLine(line);
-        
+        var g = subsg.Parent;
         var derived = subsg.GetDerivedSerie();
         var upper = subsg.GetUpperSerie();
         var lower = subsg.GetLowerSerie();
@@ -436,7 +398,41 @@ public static partial class FG
             Console.WriteLine($"{$"Gap SmallGroup({e.Order},{e.No})",-24} Name:{e.Name}{s}");
 
         Console.WriteLine();
-        
+    }
+
+    public static void DisplayBox<T>(AllSubgroups<T> subsg, int nb, bool rename = false,
+        bool showBasegroup = true, int maxLt = -1) where T : struct, IElt<T>
+    {
+        var nbSharp = 16;
+        if (rename)
+            subsg.Parent.Name = $"Grp{subsg.Parent.Count()}[{nb}]";
+
+        var name = subsg.Parent.Name;
+        var max = int.Max(maxLt, name.Length);
+        var diff = (max - name.Length) / 2;
+        var space = Enumerable.Repeat(' ', diff).Glue();
+        var lt = Enumerable.Repeat('#', max + 4).Glue();
+        var sharp = Enumerable.Repeat('#', nbSharp).Glue();
+        var line = $"{sharp}{lt}{sharp}";
+        var fmt = $"{sharp}{space}  {{0,{-max + diff * 2}}}  {space}{sharp}";
+        Console.WriteLine(line);
+        Console.WriteLine(fmt, name);
+        Console.WriteLine(line);
+
+        DisplayDetails(subsg, showBasegroup);
+    }
+
+    public static void DisplayName<T>(ConcreteGroup<T> g, AllSubgroups<T> subsg, ANameElt[] names, bool rename = false,
+        bool showBasegroup = true, int maxLt = -1)
+        where T : struct, IElt<T>
+    {
+        if (rename)
+            subsg.Parent.Name = g.Name = names[0].Name;
+        else
+            subsg.Parent.Name = g.Name;
+
+        DisplayBox(subsg, 0, rename, showBasegroup, maxLt);
+        Console.CursorTop--;
         names.Println("Group names");
         Console.WriteLine();
     }
