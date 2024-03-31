@@ -1,4 +1,3 @@
-
 Group64[1/267]
 ###############################################################
 ################              C64              ################
@@ -23,7 +22,6 @@ Word Group
 < a | a64 >
 
 Gap SmallGroup(64,1)     Name:C64
-
 Group names
     C64
 
@@ -51,7 +49,6 @@ Word Group
 < a,b | a8, b8, bab-1a-1 >
 
 Gap SmallGroup(64,2)     Name:C8 x C8
-
 Group names
     C8 x C8
 
@@ -79,7 +76,6 @@ Word Group
 < a,b | b4, a16, bab-1a-1 >
 
 Gap SmallGroup(64,26)    Name:C16 x C4
-
 Group names
     C16 x C4
 
@@ -107,7 +103,6 @@ Word Group
 < a,b | b2, a32, baba-1 >
 
 Gap SmallGroup(64,50)    Name:C32 x C2
-
 Group names
     C32 x C2
 
@@ -135,7 +130,6 @@ Word Group
 < a,b,c | a4, b4, c4, bab-1a-1, cac-1a-1, cbc-1b-1 >
 
 Gap SmallGroup(64,55)    Name:C4 x C4 x C4
-
 Group names
     C4 x C4 x C4
 
@@ -163,7 +157,6 @@ Word Group
 < a,b,c | a8, b4, c2, caca-1, cbcb-1, bab-1a-1 >
 
 Gap SmallGroup(64,83)    Name:C8 x C4 x C2
-
 Group names
     C8 x C4 x C2
 
@@ -191,7 +184,6 @@ Word Group
 < a,b,c | b2, c2, a16, bcbc, baba-1, caca-1 >
 
 Gap SmallGroup(64,183)   Name:C16 x C2 x C2
-
 Group names
     C16 x C2 x C2
 
@@ -219,7 +211,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, cdcd, caca-1, cbcb-1, dada-1, dbdb-1, bab-1a-1 >
 
 Gap SmallGroup(64,192)   Name:C4 x C4 x C2 x C2
-
 Group names
     C4 x C4 x C2 x C2
 
@@ -247,7 +238,6 @@ Word Group
 < a,b,c,d | a8, b2, c2, d2, bcbc, bdbd, cdcd, baba-1, caca-1, dada-1 >
 
 Gap SmallGroup(64,246)   Name:C8 x C2 x C2 x C2
-
 Group names
     C8 x C2 x C2 x C2
 
@@ -275,7 +265,6 @@ Word Group
 < a,b,c,d,e | a4, b2, c2, d2, e2, bcbc, bdbd, bebe, cdcd, cece, dede, baba-1, caca-1, dada-1, eaea-1 >
 
 Gap SmallGroup(64,260)   Name:C4 x C2 x C2 x C2 x C2
-
 Group names
     C4 x C2 x C2 x C2 x C2
 
@@ -303,7 +292,6 @@ Word Group
 < a,b,c,d,e,f | a2, b2, c2, d2, e2, f2, abab, acac, adad, aeae, afaf, bcbc, bdbd, bebe, bfbf, cdcd, cece, cfcf, dede, dfdf, efef >
 
 Gap SmallGroup(64,267)   Name:C2 x C2 x C2 x C2 x C2 x C2
-
 Group names
     C2 x C2 x C2 x C2 x C2 x C2
 
@@ -331,7 +319,6 @@ Word Group
 < a,b | b4, abab-1, a10b-1a-6b-1 >
 
 Gap SmallGroup(64,54)    Name:Q64
-
 Group names
     Q64
     C32 . C2
@@ -365,7 +352,6 @@ Word Group
 < a,b | b2, a32, abab >
 
 Gap SmallGroup(64,52)    Name:D64
-
 Group names
     D64
     D32 x: C2
@@ -398,7 +384,6 @@ Word Group
 < a,b | b2, a2ba2b, a11ba-5b, abababab >
 
 Gap SmallGroup(64,53)    Name:QD64
-
 Group names
     QD64
     Q32 x: C2
@@ -432,7 +417,6 @@ Word Group
 < a,b | b2, a15bab, ba2ba-2, aba-1baba-1b >
 
 Gap SmallGroup(64,51)    Name:C32 : C2
-
 Group names
     MM64
     C8 . C8
@@ -472,7 +456,6 @@ Word Group
 
 Gap SmallGroup(64,15)    Name:C8 : C8 (TODO)
 Gap SmallGroup(64,16)    Name:C8 : C8 (TODO)
-
 Group names
     M(8x:8)3
     C4 . QD16
@@ -514,7 +497,6 @@ Word Group
 < a,b | a8, ab3a-1b, aba-1b3 >
 
 Gap SmallGroup(64,3)     Name:C8 : C8
-
 Group names
     M(8x:8)5
     (C8 x C2) . C4
@@ -552,7 +534,6 @@ Word Group
 
 Gap SmallGroup(64,15)    Name:C8 : C8 (TODO)
 Gap SmallGroup(64,16)    Name:C8 : C8 (TODO)
-
 Group names
     M(8x:8)7
     C4 . D16
@@ -595,7 +576,6 @@ Word Group
 < a,b | b4, a5b-1ab, a3ba-1b-1 >
 
 Gap SmallGroup(64,46)    Name:C16 : C4
-
 Group names
     M(16x:4)3
     C4 . QD16
@@ -634,7 +614,6 @@ Word Group
 < a,b | b4, a2b-1aba, a5ba-1b-1 >
 
 Gap SmallGroup(64,28)    Name:C16 : C4
-
 Group names
     M(16x:4)5
     (C4 x C4) . C4
@@ -674,7 +653,6 @@ Word Group
 
 Gap SmallGroup(64,47)    Name:C16 : C4 (TODO)
 Gap SmallGroup(64,48)    Name:C16 : C4 (TODO)
-
 Group names
     M(16x:4)7
     C2 . QD32
@@ -713,7 +691,6 @@ Word Group
 < a,b | b4, a7bab-1, bab2a-1b, ba2b-1a-2, aba-1bab-1a-1b-1 >
 
 Gap SmallGroup(64,27)    Name:C16 : C4
-
 Group names
     M(16x:4)9
     C8 . C8
@@ -755,7 +732,6 @@ Word Group
 < a,b | b4, a16, baba-1 >
 
 Gap SmallGroup(64,44)    Name:C4 : C16
-
 Group names
     M(4x:16)3
     C8 . D8
@@ -799,7 +775,6 @@ Word Group
 
 Gap SmallGroup(64,47)    Name:C16 : C4 (TODO)
 Gap SmallGroup(64,48)    Name:C16 : C4 (TODO)
-
 Group names
     M(16x:4)15
     C2 . D32
@@ -839,7 +814,6 @@ Word Group
 < a,b,c | a8, b4, c2, bcbc, caca-1, bab-1a-1 >
 
 Gap SmallGroup(64,115)   Name:C8 x D8
-
 Group names
     C8 x D8
     D8 x: C8
@@ -890,7 +864,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, acac, bdbd, cdcd, cbcb-1, dada-1, bab-1a-1 >
 
 Gap SmallGroup(64,226)   Name:D8 x D8
-
 Group names
     D8 x D8
     D8 x: D8
@@ -937,7 +910,6 @@ Word Group
 < a,b,c | b2, c2, a16, abab, bcbc, caca-1 >
 
 Gap SmallGroup(64,186)   Name:C2 x D32
-
 Group names
     C2 x D32
     D32 x: C2
@@ -978,7 +950,6 @@ Word Group
 < a,b,c | a4, b2, c2, baba-1, caca-1, bcbcbcbcbcbcbcbc >
 
 Gap SmallGroup(64,118)   Name:C4 x D16
-
 Group names
     C4 x D16
     D16 x: C4
@@ -1026,7 +997,6 @@ Word Group
 < a,b,c | b2, c2, bcbc, a2ba2b, caca-1, a7ba-1b, abababab >
 
 Gap SmallGroup(64,187)   Name:C2 x QD32
-
 Group names
     C2 x QD32
     QD32 x: C2
@@ -1069,7 +1039,6 @@ Word Group
 < a,b,c,d | a4, c4, d2, a2b2, adad, abdbd, abab-1, dcdc-1, cac-1a-1, cbc-1b-1 >
 
 Gap SmallGroup(64,119)   Name:C4 x QD16
-
 Group names
     C4 x QD16
     QD16 x: C4
@@ -1121,7 +1090,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, acac, cdcd, cbcb-1, dada-1, dbdb-1, bab-1a-1 >
 
 Gap SmallGroup(64,196)   Name:C2 x C4 x D8
-
 Group names
     (C4 x C2) x D8
     (C4 x C4 x C2) x: C2
@@ -1177,7 +1145,6 @@ Word Group
 < a,b,c,d | a8, b2, c2, d2, acac, bcbc, bdbd, cdcd, baba-1, dada-1 >
 
 Gap SmallGroup(64,250)   Name:C2 x C2 x D16
-
 Group names
     (C2 x C2) x D16
     (C8 x C2 x C2) x: C2
@@ -1221,7 +1188,6 @@ Word Group
 < a,b,c,d,e | a4, c2, d2, e2, a2b2, adad, cdcd, cece, dede, abdbd, abab-1, caca-1, cbcb-1, eaea-1, ebeb-1 >
 
 Gap SmallGroup(64,251)   Name:C2 x C2 x QD16
-
 Group names
     (C2 x C2) x QD16
     (C8 x C2 x C2) x: C2
@@ -1268,7 +1234,6 @@ Word Group
 < a,b,c | a8, b4, b2c2, bcbc-1, bab-1a-1, cac-1a-1 >
 
 Gap SmallGroup(64,126)   Name:C8 x Q8
-
 Group names
     C8 x Q8
     Q8 x: C8
@@ -1313,7 +1278,6 @@ Word Group
 < a,b,c,d | a4, c4, d2, a2b2, cdcd, abab-1, dada-1, dbdb-1, cac-1a-1, cbc-1b-1 >
 
 Gap SmallGroup(64,230)   Name:Q8 x D8
-
 Group names
     Q8 x D8
     D8 x: Q8
@@ -1362,7 +1326,6 @@ Word Group
 < a,b,c,d | a4, b4, a2d2, b2c2, adad-1, bcbc-1, bab-1a-1, cac-1a-1, dbd-1b-1, dcd-1c-1 >
 
 Gap SmallGroup(64,239)   Name:Q8 x Q8
-
 Group names
     Q8 x Q8
     Q8 x: Q8
@@ -1401,7 +1364,6 @@ Word Group
 < a,b,c | b4, c2, abab-1, caca-1, cbcb-1, a6b-1a-2b-1 >
 
 Gap SmallGroup(64,188)   Name:C2 x Q32
-
 Group names
     C2 x Q32
     C8 . D8
@@ -1441,7 +1403,6 @@ Word Group
 < a,b,c | a8, b4, c4, acac-1, a4b2c-2, bab-1a-1, cbc-1b-1 >
 
 Gap SmallGroup(64,120)   Name:C4 x Q16
-
 Group names
     C4 x Q16
     Q16 x: C4
@@ -1489,7 +1450,6 @@ Word Group
 < a,b,c,d | a4, c4, d2, a2b2, abab-1, dada-1, dbdb-1, dcdc-1, cac-1a-1, cbc-1b-1 >
 
 Gap SmallGroup(64,197)   Name:C2 x C4 x Q8
-
 Group names
     (C4 x C2) x Q8
     Q8 x: (C4 x C2)
@@ -1531,13 +1491,12 @@ Derived Serie
 C1              --> C4              --> (C2 x C2) x Q16
 Zentrum  Z(G) = C2 x C2 x C2
 Frattini Φ(G) = C4
-Fitting  F(G) = (C8 x C2) . (C2 x C2)-SubGr115-Cj1[1]
+Fitting  F(G) = C2 x Q16
 
 Word Group
 < a,b,c,d | b4, c2, d2, cdcd, a4b-2, abab-1, caca-1, cbcb-1, dada-1, dbdb-1 >
 
 Gap SmallGroup(64,252)   Name:C2 x C2 x Q16
-
 Group names
     (C2 x C2) x Q16
     (C8 x C2 x C2) . C2
@@ -1579,7 +1538,6 @@ Word Group
 < a,b,c,d,e | a4, b2, c2, d2, e2, abab, bcbc, bdbd, bebe, cdcd, cece, dede, caca-1, dada-1, eaea-1 >
 
 Gap SmallGroup(64,261)   Name:C2 x C2 x C2 x D8
-
 Group names
     (C2 x C2 x C2) x D8
     (C4 x C2 x C2 x C2) x: C2
@@ -1616,13 +1574,12 @@ Derived Serie
 C1                  --> C2                  --> Q8 x (C2 x C2 x C2)
 Zentrum  Z(G) = C2 x C2 x C2 x C2
 Frattini Φ(G) = C2
-Fitting  F(G) = ((C2 x C2 x C2) x Q8)-SubGr397-Cj1[1]
+Fitting  F(G) = (C2 x C2) x Q8
 
 Word Group
 < a,b,c,d,e | a4, c2, d2, e2, a2b2, cdcd, cece, dede, abab-1, caca-1, cbcb-1, dada-1, dbdb-1, eaea-1, ebeb-1 >
 
 Gap SmallGroup(64,262)   Name:C2 x C2 x C2 x Q8
-
 Group names
     Q8 x (C2 x C2 x C2)
     (C4 x C2 x C2 x C2) . C2
@@ -1658,7 +1615,6 @@ Word Group
 < a,b,c | c2, a3bab, a4b-2, caca-1, cbcb-1 >
 
 Gap SmallGroup(64,184)   Name:C2 x (C16 : C2)
-
 Group names
     C2 x MM32
     (C16 x C2) x: C2
@@ -1702,7 +1658,6 @@ Word Group
 < a,b,c | b4, b2c2, bcbc, a3cac-1, bab-1a-1 >
 
 Gap SmallGroup(64,85)    Name:C4 x (C8 : C2)
-
 Group names
     C4 x MM16
     (C8 x C4) x: C2
@@ -1750,7 +1705,6 @@ Word Group
 < a,b,c | a8, b4, c2, baba-1, caca-1, cbcb-1 >
 
 Gap SmallGroup(64,103)   Name:C2 x (C4 : C8)
-
 Group names
     C2 x M(4x:8)3
     (C4 x C2) x: C8
@@ -1803,7 +1757,6 @@ Word Group
 
 Gap SmallGroup(64,106)   Name:C2 x (C8 : C4) (TODO)
 Gap SmallGroup(64,107)   Name:C2 x (C8 : C4) (TODO)
-
 Group names
     C2 x M(8x:4)3
     (C8 x C2) x: C4
@@ -1851,7 +1804,6 @@ Word Group
 < a,b,c | b4, c2, caca-1, cbcb-1, a3bab-1, a2b-1aba >
 
 Gap SmallGroup(64,84)    Name:C2 x (C8 : C4)
-
 Group names
     C2 x M(8x:4)5
     (C8 x C2) x: C4
@@ -1899,7 +1851,6 @@ Word Group
 
 Gap SmallGroup(64,106)   Name:C2 x (C8 : C4) (TODO)
 Gap SmallGroup(64,107)   Name:C2 x (C8 : C4) (TODO)
-
 Group names
     C2 x M(8x:4)7
     (C8 x C2) x: C4
@@ -1949,7 +1900,6 @@ Word Group
 < a,b,c,d | a4, b4, c4, d2, a2c2d, dada-1, dbdb-1, dcdc-1, bab-1a-1, cac-1a-1, bcdb-1c-1 >
 
 Gap SmallGroup(64,59)    Name:C4 x (C4 : C4)
-
 Group names
     C4 x M(4x:4)3
     (C4 x C4) x: C4
@@ -1997,7 +1947,6 @@ Word Group
 < a,b,c,d | b2, c2, d2, bcbc, bdbd, cdcd, a3cac, a3dad, baba-1 >
 
 Gap SmallGroup(64,247)   Name:C2 x C2 x (C8 : C2)
-
 Group names
     (C2 x C2) x MM16
     (C8 x C2 x C2) x: C2
@@ -2035,13 +1984,12 @@ Derived Serie
 C1                   --> C2                   --> (C2 x C2) x M(4x:4)3
 Zentrum  Z(G) = C2 x C2 x C2 x C2
 Frattini Φ(G) = C2 x C2
-Fitting  F(G) = ((C4 x C2 x C2) . C4)-SubGr194-Cj1[1]
+Fitting  F(G) = C2 x M(4x:4)3
 
 Word Group
 < a,b,c,d | a4, b4, c2, d2, cdcd, baba-1, caca-1, cbcb-1, dada-1, dbdb-1 >
 
 Gap SmallGroup(64,194)   Name:C2 x C2 x (C4 : C4)
-
 Group names
     (C2 x C2) x M(4x:4)3
     (C4 x C2 x C2) x: C4
@@ -2087,7 +2035,6 @@ Word Group
 < a,b,c | b2, c2, a3bab, a3cac, bcbcbcbc >
 
 Gap SmallGroup(64,117)   Name:(C2 x (C8 : C2)) : C2
-
 Group names
     C8 x: D8
     (C8 x C4) x: C2
@@ -2136,7 +2083,6 @@ Word Group
 < a,b,c | b2, c2, a3cac, baba-1, bcbcbcbc >
 
 Gap SmallGroup(64,116)   Name:(C2 x (C8 : C2)) : C2
-
 Group names
     C8 x: D8
     (C8 x C2 x C2) x: C2
@@ -2186,7 +2132,6 @@ Word Group
 < a,b,c | b2, c2, a3cac, a3ba-1b, bcbcbcbc >
 
 Gap SmallGroup(64,149)   Name:((C8 x C2) : C2) : C2
-
 Group names
     C8 x: D8
     M(8x:4)7 x: C2
@@ -2235,7 +2180,6 @@ Word Group
 < a,b,c | b4, c2, bcbc, caca-1, a3ba-1b-1 >
 
 Gap SmallGroup(64,146)   Name:((C8 x C2) : C2) : C2
-
 Group names
     C8 x: D8
     (C8 x C2 x C2) x: C2
@@ -2285,7 +2229,6 @@ Word Group
 < a,b,c | b2, c2, a3cac, a2ba2b, abcabc, abababab >
 
 Gap SmallGroup(64,150)   Name:((C4 x C2 x C2) : C2) : C2
-
 Group names
     C8 x: D8
     M(8x:4)3 x: C2
@@ -2330,7 +2273,6 @@ Word Group
 < a,b,c | a8, b4, c2, bcbc, abab-1, caca-1 >
 
 Gap SmallGroup(64,147)   Name:((C4 x C2 x C2) : C2) : C2
-
 Group names
     C8 x: D8
     (C8 x C2 x C2) x: C2
@@ -2377,7 +2319,6 @@ Word Group
 < a,b,c | b4, c2, bcbc, a3ca-1c, bab-1a-1 >
 
 Gap SmallGroup(64,173)   Name:(C2 x QD16) : C2
-
 Group names
     C8 x: D8
     C4 x: QD16
@@ -2420,7 +2361,6 @@ Word Group
 < a,b,c | a4, b2, c2, acac, a2ba2b, abababab, abcbabcb, abacbcbcbc >
 
 Gap SmallGroup(64,177)   Name:((C4 x C4) : C2) : C2
-
 Group names
     C8 x: D8
     M(8x:4)5 x: C2
@@ -2463,7 +2403,6 @@ Word Group
 < a,b,c | a4, b2, c2, abab, acac, bcbcbcbcbcbcbcbc >
 
 Gap SmallGroup(64,174)   Name:((C4 x C4) : C2) : C2
-
 Group names
     C8 x: D8
     C4 x: D16
@@ -2504,7 +2443,6 @@ Word Group
 < a,b | a8, b2, ba2ba-2, abababababababab >
 
 Gap SmallGroup(64,6)     Name:(C8 x C4) : C2
-
 Group names
     D8 x: C8
     (C8 x C4) x: C2
@@ -2547,7 +2485,6 @@ Word Group
 < a,b,c | a4, b2, c2, abab, caca-1, bcbcbcbcbcbcbcbc >
 
 Gap SmallGroup(64,140)   Name:(C2 x D16) : C2
-
 Group names
     C4 x: D16
     D8 x: D8
@@ -2593,7 +2530,6 @@ Word Group
 < a,b | a4, b2, a2baba2ba-1b, ababababababa-1ba-1b >
 
 Gap SmallGroup(64,41)    Name:(C16 : C2) : C2
-
 Group names
     D16 x: C4
     Q16 x: C4
@@ -2633,7 +2569,6 @@ Word Group
 < a,b | a4, b2, a2ba2b, ababababababababababa-1ba-1ba-1ba-1ba-1ba-1b >
 
 Gap SmallGroup(64,38)    Name:(C16 x C2) : C2
-
 Group names
     D16 x: C4
     (C16 x C2) x: C2
@@ -2674,7 +2609,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, abcbc, caca-1, dada-1, bab-1a-1, bcdcb-1d, ab-1db-1d >
 
 Gap SmallGroup(64,125)   Name:((C8 x C2) : C2) : C2
-
 Group names
     D16 x: C4
     QD16 x: C4
@@ -2722,7 +2656,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, caca-1, dada-1, bab-1a-1, bcdcb-1d, ab-1cb-1c, ab-1db-1d >
 
 Gap SmallGroup(64,124)   Name:((C8 x C2) : C2) : C2
-
 Group names
     D16 x: C4
     QD16 x: C4
@@ -2770,7 +2703,6 @@ Word Group
 < a,b,c | a4, b2, c2, a2ba2b, caca-1, abababab, babcba-1bc, abcbcbca-1bc >
 
 Gap SmallGroup(64,123)   Name:(C4 x D8) : C2
-
 Group names
     D16 x: C4
     C8 x: (C4 x C2)
@@ -2816,7 +2748,6 @@ Word Group
 < a,b,c | b2, c2, a2ba2b, abacbc, caca-1, a7ba-1b, abababab >
 
 Gap SmallGroup(64,189)   Name:((C8 x C2) : C2) : C2
-
 Group names
     D32 x: C2
     QD32 x: C2
@@ -2859,7 +2790,6 @@ Word Group
 < a,b,c | b2, c2, abab, bcbc, a7cac, ca2ca-2, aca-1caca-1c >
 
 Gap SmallGroup(64,190)   Name:((C8 x C2) : C2) : C2
-
 Group names
     D32 x: C2
     QD32 x: C2
@@ -2903,7 +2833,6 @@ Word Group
 < a,b,c | b4, c2, baba-1, cbcb-1, a3ca-1c >
 
 Gap SmallGroup(64,142)   Name:(Q8 : C4) : C2
-
 Group names
     C4 x: QD16
     M(4x:8)3 x: C2
@@ -2950,7 +2879,6 @@ Word Group
 < a,b,c,d | a4, c4, d2, a2b2, adad, cdcd, abdbd, abab-1, cac-1a-1, cbc-1b-1 >
 
 Gap SmallGroup(64,141)   Name:(C2 x QD16) : C2
-
 Group names
     C4 x: QD16
     M(4x:8)3 x: C2
@@ -2997,7 +2925,6 @@ Word Group
 < a,b,c,d | a4, c4, d2, a2b2, adad, abdbd, abab-1, c2dc2d, a2cdc-1d, cac-1a-1, cbc-1b-1 >
 
 Gap SmallGroup(64,121)   Name:(C4 x Q8) : C2
-
 Group names
     QD16 x: C4
     C8 x: (C4 x C2)
@@ -3048,7 +2975,6 @@ Word Group
 < a,b,c | b4, c2, abab-1, cbcb-1, ca2ca-2, ab2ca-1c, a6b-1a-2b-1 >
 
 Gap SmallGroup(64,191)   Name:QD32 : C2
-
 Group names
     QD32 x: C2
     Q32 x: C2
@@ -3091,7 +3017,6 @@ Word Group
 < a,b,c,d | b4, c2, d2, cdcd, a4b-2, caca-1, cbcb-1, dbdb-1, acda-1d, abda-1b-1 >
 
 Gap SmallGroup(64,5)     Name:(C4 x C2) : C8
-
 Group names
     (C4 x C2) x: C8
     (C4 x C2 x C2) . C4
@@ -3131,7 +3056,6 @@ Word Group
 < a,b,c | a8, b4, b2c2, bcbc, caca-1, bab-1a-1 >
 
 Gap SmallGroup(64,112)   Name:(C8 x C4) : C2
-
 Group names
     (C4 x C2) x: C8
     (C8 x C4) x: C2
@@ -3179,7 +3103,6 @@ Word Group
 < a,b,c | a8, b4, c2, caca-1, cbcb-1, abca-1b-1 >
 
 Gap SmallGroup(64,17)    Name:(C8 x C2) : C4
-
 Group names
     (C4 x C2) x: C8
     (C8 x C2) x: C4
@@ -3228,7 +3151,6 @@ Word Group
 < a,b,c | b4, c2, b2cb2c, caca-1, abab-1c, a3bca-1b-1 >
 
 Gap SmallGroup(64,18)    Name:(C4 x C4) : C4
-
 Group names
     (C4 x C4) x: C4
     (C8 x C2) x: C4
@@ -3270,7 +3192,6 @@ Word Group
 < a,b,c | b4, c2, a3cac, abab-1c, abcab-1 >
 
 Gap SmallGroup(64,20)    Name:(C4 : C4) : C4
-
 Group names
     (C4 x C4) x: C4
     MM16 x: C4
@@ -3315,7 +3236,6 @@ Word Group
 < a,b | a4, b4, abababab, a2bab2ab-1 >
 
 Gap SmallGroup(64,35)    Name:(C2 x Q8) : C4
-
 Group names
     (C4 x C4) x: C4
     (C2 x Q8) x: C4
@@ -3351,7 +3271,6 @@ Word Group
 < a,b,c | a4, b4, c4, a2bcbc-1, a2ca2c-1, bab-1a-1, cac2a-1c, cbc2b-1c, ab2ca-1c-1 >
 
 Gap SmallGroup(64,64)    Name:(C4 x C4) : C4
-
 Group names
     (C4 x C4) x: C4
     (C4 x C4 x C2) . C2
@@ -3388,7 +3307,6 @@ Word Group
 < a,b,c | a4, b4, c4, a2ca2c-1, bab-1a-1, cac2a-1c, cbc2b-1c, a2bcb-1c-1, ab2ca-1c-1 >
 
 Gap SmallGroup(64,63)    Name:(C4 x C4) : C4
-
 Group names
     (C4 x C4) x: C4
     (C4 x C4 x C2) . C2
@@ -3433,7 +3351,6 @@ Word Group
 < a,b,c | a4, b4, c4, b2cb2c-1, bab-1a-1, cac-1a-1, cbc2b-1c, a2bcb-1c-1 >
 
 Gap SmallGroup(64,57)    Name:(C4 x C4) : C4
-
 Group names
     (C4 x C4) x: C4
     C4 . (C4 x C4)
@@ -3471,7 +3388,6 @@ Word Group
 < a,b | a4, b4, a2ba2b, abababab >
 
 Gap SmallGroup(64,34)    Name:((C2 x C2 x C2) : C4) : C2
-
 Group names
     (C4 x C4) x: C4
     (C2 x D8) x: C4
@@ -3507,7 +3423,6 @@ Word Group
 < a,b,c | a4, b4, c4, baba-1, caca-1, cbc-1b-1 >
 
 Gap SmallGroup(64,65)    Name:(C4 x C4) : C4
-
 Group names
     (C4 x C4) x: C4
     C4 x: M(4x:4)3
@@ -3550,7 +3465,6 @@ Word Group
 
 Gap SmallGroup(64,25)    Name:(C8 x C2) : C4 (TODO)
 Gap SmallGroup(64,160)   Name:(C2 x C2) . (C2 x D8) = (C4 x C2) . (C2 x C2 x C2) (TODO)
-
 Group names
     (C8 x C2) x: C4
     MM16 x: C4
@@ -3593,7 +3507,6 @@ Word Group
 < a,b,c | c4, bcb3c-1, ab-1ab-1, bab-1a-1, cac-1a-1 >
 
 Gap SmallGroup(64,86)    Name:(C8 x C4) : C2
-
 Group names
     (C8 x C2) x: C4
     (C8 x C4) x: C2
@@ -3642,7 +3555,6 @@ Word Group
 < a,b,c | b4, c4, a4b-2, bab-1a-1, cbc-1b-1, a3ca-1c-1 >
 
 Gap SmallGroup(64,108)   Name:(C8 : C4) : C2
-
 Group names
     (C8 x C2) x: C4
     M(8x:4)3 x: C2
@@ -3690,7 +3602,6 @@ Word Group
 < a,b,c | b4, c2, caca-1, cbcb-1, a2ba2b-1, bab2a-1b, a3bca-1b-1 >
 
 Gap SmallGroup(64,21)    Name:(C4 : C4) : C4
-
 Group names
     (C8 x C2) x: C4
     M(4x:4)3 x: C4
@@ -3739,7 +3650,6 @@ Word Group
 < a,b,c | a8, b4, b2c2, caca-1, bab-1a-1, a4bcb-1c-1, bcbc-1bc-1b-1c-1 >
 
 Gap SmallGroup(64,114)   Name:(C8 x C4) : C2
-
 Group names
     (C8 x C4) x: C2
     M(4x:8)3 x: C2
@@ -3783,7 +3693,6 @@ Word Group
 < a,b,c | a4, c2, a2b2, a2ca2c, abacbc, abababa-1b-1, abcacaca-1cb-1 >
 
 Gap SmallGroup(64,169)   Name:(C8 x C4) : C2
-
 Group names
     (C8 x C4) x: C2
     ((C4 x C4) . C2) x: C2
@@ -3826,7 +3735,6 @@ Word Group
 < a,b,c | a8, b4, c2, bcbc, a2ca2c, acacacac, bab-1a-1, a3b2ca-1c >
 
 Gap SmallGroup(64,167)   Name:((C8 x C2) : C2) : C2
-
 Group names
     (C8 x C4) x: C2
     (D8 x: C4) x: C2
@@ -3870,7 +3778,6 @@ Word Group
 < a,b,c | a4, b2, c2, a2ba2b, a2ca2c, abababab, babca-1c, abacbcbcbc >
 
 Gap SmallGroup(64,176)   Name:((C4 x C4) : C2) : C2
-
 Group names
     (C8 x C4) x: C2
     (C2 x QD16) x: C2
@@ -3913,7 +3820,6 @@ Word Group
 < a,b,c | b4, c2, a3cac, cbcb-1, a3ba-1b-1 >
 
 Gap SmallGroup(64,109)   Name:(C8 : C4) : C2
-
 Group names
     C8 x: (C4 x C2)
     MM16 x: C4
@@ -3963,7 +3869,6 @@ Word Group
 < a,b | b2, a6ba2b, bababa-1ba-1 >
 
 Gap SmallGroup(64,31)    Name:(C16 : C2) : C2
-
 Group names
     (C16 x C2) x: C2
     MM32 x: C2
@@ -4004,7 +3909,6 @@ Word Group
 < a,b,c | b8, c2, a4b-2, caca-1, cbcb-1, abca-1b-1 >
 
 Gap SmallGroup(64,29)    Name:(C16 x C2) : C2
-
 Group names
     (C16 x C2) x: C2
     (C2 x C2) x: C16
@@ -4047,7 +3951,6 @@ Word Group
 < a,b,c | b2, c2, a8cbcb, baba-1, caca-1, bcbcbcbc >
 
 Gap SmallGroup(64,185)   Name:(C16 x C2) : C2
-
 Group names
     (C16 x C2) x: C2
     MM32 x: C2
@@ -4090,7 +3993,6 @@ Word Group
 < a,b | b2, a6ba-2b, bababa-1ba-1 >
 
 Gap SmallGroup(64,40)    Name:(C16 x C2) : C2
-
 Group names
     (C16 x C2) x: C2
     (C8 . C4) x: C2
@@ -4130,7 +4032,6 @@ Word Group
 < a,b,c | c4, cbcb-1, a2c2b-2, a3cac-1, bab-1a-1 >
 
 Gap SmallGroup(64,127)   Name:C8 : Q8
-
 Group names
     C8 x: Q8
     (C8 x C4) . C2
@@ -4175,7 +4076,6 @@ Word Group
 < a,b,c | b4, b2c2, bcbc-1, a3bab-1, a3ca-1c-1 >
 
 Gap SmallGroup(64,182)   Name:C8 : Q8
-
 Group names
     C8 x: Q8
     (C4 x C2) . D8
@@ -4219,7 +4119,6 @@ Word Group
 
 Gap SmallGroup(64,179)   Name:C8 : Q8 (TODO)
 Gap SmallGroup(64,181)   Name:C8 : Q8 (TODO)
-
 Group names
     C8 x: Q8
     C4 . QD16
@@ -4261,7 +4160,6 @@ Word Group
 
 Gap SmallGroup(64,179)   Name:C8 : Q8 (TODO)
 Gap SmallGroup(64,181)   Name:C8 : Q8 (TODO)
-
 Group names
     C8 x: Q8
     C4 . D16
@@ -4304,7 +4202,6 @@ Word Group
 < a,b | a8, b4, bab2a-1b, ba2b-1a-2, aba-1baba-1b-1 >
 
 Gap SmallGroup(64,7)     Name:Q8 : C8
-
 Group names
     Q8 x: C8
     C4 . QD16
@@ -4348,7 +4245,6 @@ Word Group
 < a,b,c | b4, c4, a4b-2, abab-1, caca-1, cbc-1b-1 >
 
 Gap SmallGroup(64,143)   Name:C4 : Q16
-
 Group names
     C4 x: Q16
     (C4 x C2) . D8
@@ -4394,7 +4290,6 @@ Word Group
 < a,b,c | b4, c4, a4b-2, abab-1, cbcb-1, cac-1a-1 >
 
 Gap SmallGroup(64,175)   Name:C4 : Q16
-
 Group names
     C4 x: Q16
     C8 . D8
@@ -4435,7 +4330,6 @@ Word Group
 < a,b | a4, b4, a2ba2b-1, bab2a-1b, ababababab-1a-1b-1a-1b-1a-1b-1 >
 
 Gap SmallGroup(64,39)    Name:Q16 : C4
-
 Group names
     Q16 x: C4
     C8 . D8
@@ -4476,7 +4370,6 @@ Word Group
 < a,b,c | b4, c4, ab2cac, a3bab-1, a2ca2c-1, cbc-1b-1, a3ca-1c-1 >
 
 Gap SmallGroup(64,122)   Name:Q16 : C4
-
 Group names
     Q16 x: C4
     C8 . (C4 x C2)
@@ -4522,7 +4415,6 @@ Word Group
 < a,b,c,d | b4, c2, d2, cdcd, a2ba2b, caca-1, cbcb-1, dbdb-1, acda-1d, abda-1b-1 >
 
 Gap SmallGroup(64,4)     Name:((C8 x C2) : C2) : C2
-
 Group names
     (C2 x C2 x C2) x: C8
     ((C2 x C2) x: C8) x: C2
@@ -4563,7 +4455,6 @@ Word Group
 < a,b,c,d | b4, c2, d2, cdcd, a4b-2, caca-1, cbcb-1, dada-1, dbdb-1, abca-1b-1 >
 
 Gap SmallGroup(64,87)    Name:C2 x ((C8 x C2) : C2)
-
 Group names
     (C2 x C2 x C2) x: C8
     (C8 x C2 x C2) x: C2
@@ -4613,7 +4504,6 @@ Word Group
 < a,b,c | a4, b4, c2, cbcb-1, abca-1b-1, a2cab-1ab-1 >
 
 Gap SmallGroup(64,33)    Name:(C4 x C2 x C2) : C4
-
 Group names
     (C4 x C2 x C2) x: C4
     ((C2 x C2) x: C4) x: C4
@@ -4651,7 +4541,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, cdcd, b2db2d, caca-1, dada-1, bcdb-1c, a2bdb-1d, bab-1a-1 >
 
 Gap SmallGroup(64,91)    Name:((C4 x C4) : C2) : C2
-
 Group names
     (C4 x C2 x C2) x: C4
     (C2 x D8) x: C4
@@ -4694,7 +4583,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, cdcd, caca-1, cbcb-1, dbdb-1, acda-1d, abda-1b-1 >
 
 Gap SmallGroup(64,23)    Name:((C4 x C2) : C2) : C4
-
 Group names
     (C4 x C2 x C2) x: C4
     ((C2 x C2) x: C4) x: C4
@@ -4732,7 +4620,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, cdcd, b2cb2c, caca-1, dada-1, dbdb-1, a2bcb-1c, abda-1b-1 >
 
 Gap SmallGroup(64,62)    Name:((C4 x C2) : C4) : C2
-
 Group names
     (C4 x C2 x C2) x: C4
     ((C4 x C2) x: C4) x: C2
@@ -4776,7 +4663,6 @@ Word Group
 < a,b,c,d | a4, c4, d2, a2b2, abab, acac-1, dada-1, dbdb-1, dcdc-1, bcdb-1c-1 >
 
 Gap SmallGroup(64,61)    Name:((C4 x C2) : C4) : C2
-
 Group names
     (C4 x C2 x C2) x: C4
     (C2 x C2) x: M(4x:4)3
@@ -4827,7 +4713,6 @@ Word Group
 < a,b,c,d | a4, b4, d2, a2c2, acac, dada-1, dbdb-1, dcdc-1, bab-1a-1, bcdb-1c-1 >
 
 Gap SmallGroup(64,58)    Name:C4 x ((C4 x C2) : C2)
-
 Group names
     (C4 x C2 x C2) x: C4
     (C4 x C4 x C2) x: C2
@@ -4876,7 +4761,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, cdcd, b2db2d, caca-1, cbcb-1, dada-1, a2bdb-1d, bab-1a-1 >
 
 Gap SmallGroup(64,195)   Name:C2 x ((C4 x C4) : C2)
-
 Group names
     (C4 x C2 x C2) x: C4
     (C4 x C4 x C2) x: C2
@@ -4926,7 +4810,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, cdcd, caca-1, cbcb-1, dbdb-1, baba-1d, abda-1b-1 >
 
 Gap SmallGroup(64,90)    Name:C2 x ((C2 x C2 x C2) : C4)
-
 Group names
     (C4 x C2 x C2) x: C4
     (C4 x C2) x: (C4 x C2)
@@ -4972,7 +4855,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, cdcd, caca-1, cbcb-1, dada-1, dbdb-1, abda-1b-1 >
 
 Gap SmallGroup(64,56)    Name:C2 x ((C4 x C2) : C4)
-
 Group names
     (C4 x C2 x C2) x: C4
     (C4 x C2) x: (C4 x C2)
@@ -5018,7 +4900,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, cdcd, caca-1, cbcb-1, dada-1, bab-1a-1, ab-1db-1d >
 
 Gap SmallGroup(64,101)   Name:C2 x ((C4 x C4) : C2)
-
 Group names
     (C4 x C4 x C2) x: C2
     D8 x: (C4 x C2)
@@ -5069,7 +4950,6 @@ Word Group
 < a,b,c,d | a4, b4, c4, d2, a2c2d, dada-1, dbdb-1, dcdc-1, bab-1a-1, bcdb-1c-1, ab2ca-1c-1 >
 
 Gap SmallGroup(64,69)    Name:((C4 x C2) : C4) : C2
-
 Group names
     (C4 x C4 x C2) x: C2
     (C2 x M(4x:4)3) x: C2
@@ -5115,7 +4995,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, b2cdcd, b2db2d, caca-1, cbcb-1, dada-1, a2bdb-1d, bab-1a-1 >
 
 Gap SmallGroup(64,210)   Name:((C4 x C4) : C2) : C2
-
 Group names
     (C4 x C4 x C2) x: C2
     (C4 x D8) x: C2
@@ -5163,7 +5042,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, cdcd, a2bdbd, a2da2d, caca-1, cbcb-1, ab2da-1d, bab-1a-1 >
 
 Gap SmallGroup(64,209)   Name:C2 x ((C4 x C4) : C2)
-
 Group names
     (C4 x C4 x C2) x: C2
     (C4 x C4) x: (C2 x C2)
@@ -5205,7 +5083,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, a2cdcd, b2db2d, caca-1, cbcb-1, dada-1, a2bdb-1d, bab-1a-1 >
 
 Gap SmallGroup(64,198)   Name:C4 x ((C4 x C2) : C2)
-
 Group names
     (C4 x C4 x C2) x: C2
     D8 x: (C4 x C2)
@@ -5255,7 +5132,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, acac, cdcd, dada-1, dbdb-1, bcdb-1c, bab-1a-1 >
 
 Gap SmallGroup(64,71)    Name:(C2 x (C4 : C4)) : C2
-
 Group names
     (C4 x C4 x C2) x: C2
     (C4 x C2) x: D8
@@ -5302,7 +5178,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, acac, b2cdcd, cbcb-1, dada-1, dbdb-1, bab-1a-1 >
 
 Gap SmallGroup(64,213)   Name:(C2 x ((C4 x C2) : C2)) : C2
-
 Group names
     (C4 x C4 x C2) x: C2
     (C4 x C2) x: D8
@@ -5350,7 +5225,6 @@ Word Group
 < a,b,c,d | a4, c2, d2, a2b2, bdbd, cdcd, abab-1, caca-1, cbcb-1, adadadad >
 
 Gap SmallGroup(64,207)   Name:C2 x ((C4 x C4) : C2)
-
 Group names
     (C4 x C4 x C2) x: C2
     (C4 x C4) x: (C2 x C2)
@@ -5398,7 +5272,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, acac, bcbc, cdcd, dada-1, dbdb-1, bab-1a-1 >
 
 Gap SmallGroup(64,211)   Name:C2 x ((C4 x C4) : C2)
-
 Group names
     (C4 x C4 x C2) x: C2
     (C4 x C2) x: D8
@@ -5440,7 +5313,6 @@ Word Group
 < a,b,c,d | b2, c2, d2, cdcd, a3cac, a3dad, ba2ba-2, abcba-1c, abcda-1b, abdba-1d >
 
 Gap SmallGroup(64,89)    Name:(C8 x C2 x C2) : C2
-
 Group names
     (C8 x C2 x C2) x: C2
     (C2 x MM16) x: C2
@@ -5485,7 +5357,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, a2cdcd, b2cb2c, b2db2d, caca-1, dada-1, a2bdb-1d, abcdb-1c, bab-1a-1 >
 
 Gap SmallGroup(64,97)    Name:((C4 x C4) : C2) : C2
-
 Group names
     (C8 x C2 x C2) x: C2
     (D8 x: C2) x: C4
@@ -5537,7 +5408,6 @@ Word Group
 
 Gap SmallGroup(64,200)   Name:(C4 x Q8) : C2 (TODO)
 Gap SmallGroup(64,248)   Name:C2 x ((C8 x C2) : C2) (TODO)
-
 Group names
     (C8 x C2 x C2) x: C2
     (C8 x C2) x: (C2 x C2)
@@ -5587,7 +5457,6 @@ Word Group
 < a,b,c,d | b2, c2, d2, bcbc, bdbd, cdcd, a2ca2c, baba-1, dada-1, a3cda-1c >
 
 Gap SmallGroup(64,95)    Name:C2 x ((C8 x C2) : C2)
-
 Group names
     (C8 x C2 x C2) x: C2
     D8 x: (C4 x C2)
@@ -5639,7 +5508,6 @@ Word Group
 < a,b,c,d | b2, c2, d2, bdbd, cdcd, abcabc, baba-1, dada-1, a3ca-1c >
 
 Gap SmallGroup(64,253)   Name:C2 x ((C8 x C2) : C2)
-
 Group names
     (C8 x C2 x C2) x: C2
     D16 x: (C2 x C2)
@@ -5692,7 +5560,6 @@ Word Group
 < a,b,c,d,e | a4, c2, d2, e2, a2b2, adad, bcbc, cdcd, cece, dede, abdbd, abab-1, caca-1, eaea-1, ebeb-1 >
 
 Gap SmallGroup(64,254)   Name:C2 x (C8 : (C2 x C2))
-
 Group names
     C8 x: (C2 x C2 x C2)
     D16 x: (C2 x C2)
@@ -5746,7 +5613,6 @@ Word Group
 < a,b,c,d | b4, c2, d2, abab, bcbc, cdcd, a4b-2, dada-1, dbdb-1, acda-1c, ab-1ab-1 >
 
 Gap SmallGroup(64,130)   Name:((C4 x C2 x C2) : C2) : C2
-
 Group names
     D8 x: D8
     Q8 x: D8
@@ -5794,7 +5660,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, acac, cdcd, dada-1, acbcb-1, bab-1a-1, ab-1db-1d >
 
 Gap SmallGroup(64,134)   Name:((C4 x C4) : C2) : C2
-
 Group names
     D8 x: D8
     (C4 x C4) x: (C2 x C2)
@@ -5838,7 +5703,6 @@ Word Group
 < a,b,c,d | a8, b2, c2, d2, acac, bcbc, bdbd, cdcd, dada-1, abda-1b >
 
 Gap SmallGroup(64,128)   Name:((C4 x C2 x C2) : C2) : C2
-
 Group names
     D8 x: D8
     (C2 x C2) x: D16
@@ -5885,7 +5749,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, acac, bdbd, a2cdcd, cbcb-1, dada-1, bab-1a-1 >
 
 Gap SmallGroup(64,228)   Name:(C2 x ((C4 x C2) : C2)) : C2
-
 Group names
     D8 x: D8
     (C4 x D8) x: C2
@@ -5934,7 +5797,6 @@ Word Group
 < a,b,c,d,e | a4, c2, d2, e2, a2b2, adad, cdcd, cece, dede, abab-1, caca-1, dbdb-1, eaea-1, ebeb-1, bceb-1c >
 
 Gap SmallGroup(64,227)   Name:(C2 x ((C4 x C2) : C2)) : C2
-
 Group names
     D8 x: D8
     (C4 x C4) x: (C2 x C2)
@@ -5989,7 +5851,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, acac, cdcd, dbdb-1, baba-1d, bcdb-1c, abda-1b-1 >
 
 Gap SmallGroup(64,138)   Name:((C2 x C2 x C2 x C2) : C2) : C2
-
 Group names
     (C4 x C2) x: D8
     (C2 x C2 x C2) x: D8
@@ -6027,7 +5888,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, acac, cdcd, baba-1, dada-1, dbdb-1, bcdb-1c >
 
 Gap SmallGroup(64,75)    Name:(C2 x ((C4 x C2) : C2)) : C2
-
 Group names
     (C4 x C2) x: D8
     (C2 x M(4x:4)3) x: C2
@@ -6070,7 +5930,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, acac, b2cdcd, baba-1, cbcb-1, dada-1, dbdb-1 >
 
 Gap SmallGroup(64,218)   Name:(C2 x ((C4 x C2) : C2)) : C2
-
 Group names
     (C4 x C2) x: D8
     (C2 x M(4x:4)3) x: C2
@@ -6115,7 +5974,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, acac, cdcd, cbcb-1, dada-1, dbdb-1, abda-1b-1 >
 
 Gap SmallGroup(64,67)    Name:(C2 x ((C4 x C2) : C2)) : C2
-
 Group names
     (C4 x C2) x: D8
     (C4 x C2) x: (C4 x C2)
@@ -6164,7 +6022,6 @@ Word Group
 < a,b,c,d,e | a4, c2, d2, e2, a2b2, bdbd, cdcd, cece, dede, abab-1, caca-1, dada-1, eaea-1, ebeb-1, bceb-1c >
 
 Gap SmallGroup(64,206)   Name:(C2 x ((C4 x C2) : C2)) : C2
-
 Group names
     (C4 x C2) x: D8
     (C4 x C4) x: (C2 x C2)
@@ -6217,7 +6074,6 @@ Word Group
 < a,b,c,d,e | a4, c2, d2, e2, a2b2, adad, bcbc, cdcd, cece, dede, abab-1, caca-1, eaea-1, ebeb-1, bdeb-1d >
 
 Gap SmallGroup(64,216)   Name:(C2 x ((C4 x C2) : C2)) : C2
-
 Group names
     (C4 x C2) x: D8
     (C4 x C4) x: (C2 x C2)
@@ -6268,7 +6124,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, acac, cdcd, dada-1, dbdb-1, abda-1b, bcdb-1c >
 
 Gap SmallGroup(64,73)    Name:(C2 x C2 x D8) : C2
-
 Group names
     (C4 x C2) x: D8
     (C2 x C2 x C2) x: D8
@@ -6307,7 +6162,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, acac, cdcd, baba-1, cbcb-1, dada-1, dbdb-1 >
 
 Gap SmallGroup(64,203)   Name:C2 x ((C4 x C2 x C2) : C2)
-
 Group names
     (C4 x C2) x: D8
     (C4 x C2 x C2 x C2) x: C2
@@ -6357,7 +6211,6 @@ Word Group
 < a,b,c,d | b2, c2, d2, cdcd, a3cac, a3dad, a2ba2b, abacbd, abcba-1c, abdba-1d >
 
 Gap SmallGroup(64,98)    Name:(C2 x (C4 : C4)) : C2
-
 Group names
     D8 x: (C4 x C2)
     Q8 x: (C4 x C2)
@@ -6409,7 +6262,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, acac, a2cdcd, b2db2d, cbcb-1, dada-1, a2bdb-1d, bab-1a-1 >
 
 Gap SmallGroup(64,201)   Name:((C4 x C4) : C2) : C2
-
 Group names
     D8 x: (C4 x C2)
     (C4 x C2) x: (C4 x C2)
@@ -6459,7 +6311,6 @@ Word Group
 < a,b,c,d,e | a4, b2, c2, d2, e2, bcbc, bdbd, bebe, cdcd, dede, cdece, caca-1, dada-1, eaea-1, abda-1b >
 
 Gap SmallGroup(64,199)   Name:(C2 x ((C4 x C2) : C2)) : C2
-
 Group names
     D8 x: (C4 x C2)
     (C4 x C2) x: (C4 x C2)
@@ -6509,7 +6360,6 @@ Word Group
 < a,b,c,d,e | a4, c2, d2, e2, a2b2, bcbc, cdcd, cece, a2dede, abab-1, abdbde, caca-1, dada-1, eaea-1, ebeb-1 >
 
 Gap SmallGroup(64,256)   Name:((C8 x C2) : C2) : C2
-
 Group names
     D16 x: (C2 x C2)
     QD16 x: (C2 x C2)
@@ -6560,7 +6410,6 @@ Word Group
 < a,b,c,d,e | a4, c2, d2, e2, a2b2, adad, cdcd, abdbd, a2cece, a2dede, abab-1, caca-1, cbcb-1, eaea-1, ebeb-1 >
 
 Gap SmallGroup(64,258)   Name:(C2 x QD16) : C2
-
 Group names
     D16 x: (C2 x C2)
     QD16 x: (C2 x C2)
@@ -6612,7 +6461,6 @@ Word Group
 < a,b,c,d | b2, c2, d2, bcbc, cdcd, a3bab, a3dad, a3ca-1c, abdba-1d >
 
 Gap SmallGroup(64,257)   Name:(C2 x D16) : C2
-
 Group names
     D16 x: (C2 x C2)
     QD16 x: (C2 x C2)
@@ -6661,7 +6509,6 @@ Word Group
 < a,b,c,d | b4, d2, acac, b2c2, a4b-2, bcbc-1, dada-1, dbdb-1, dcdc-1, ac-1ac-1, abda-1b-1 >
 
 Gap SmallGroup(64,129)   Name:(C2 x QD16) : C2
-
 Group names
     (C2 x C2) x: QD16
     Q8 x: D8
@@ -6708,7 +6555,6 @@ Word Group
 < a,b,c,d,e | a4, c2, d2, e2, a2b2, adad, cdcd, cece, dede, abdbd, abab-1, caca-1, eaea-1, ebeb-1, bceb-1c >
 
 Gap SmallGroup(64,131)   Name:((C2 x Q8) : C2) : C2
-
 Group names
     (C2 x C2) x: QD16
     (C8 x C2) x: (C2 x C2)
@@ -6755,7 +6601,6 @@ Word Group
 < a,b,c,d,e | a4, c2, d2, e2, a2b2, cdcd, cece, a2dede, abab-1, abdbde, caca-1, cbcb-1, dada-1, eaea-1, ebeb-1 >
 
 Gap SmallGroup(64,255)   Name:C2 x ((C2 x Q8) : C2)
-
 Group names
     QD16 x: (C2 x C2)
     Q16 x: (C2 x C2)
@@ -6808,7 +6653,6 @@ Word Group
 < a,b,c,d | a4, c4, d2, a2b2, abab, caca-1, dada-1, dbdb-1, dcdc-1, bcdb-1c-1 >
 
 Gap SmallGroup(64,66)    Name:(C2 x (C4 : C4)) : C2
-
 Group names
     (C4 x C2) x: (C4 x C2)
     (C2 x C2) x: M(4x:4)3
@@ -6858,7 +6702,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, cdcd, b2db2d, caca-1, dada-1, a2bdb-1d, bab-1a-1, ab-1cb-1c >
 
 Gap SmallGroup(64,102)   Name:(C2 x (C8 : C2)) : C2
-
 Group names
     (C4 x C4) x: (C2 x C2)
     MM16 x: (C2 x C2)
@@ -6908,7 +6751,6 @@ Word Group
 < a,b,c,d,e | a4, c2, d2, e2, a2b2, adad, cdcd, abdbd, a2cece, a2dede, abab-1, abcbce, caca-1, eaea-1, ebeb-1 >
 
 Gap SmallGroup(64,136)   Name:((C4 x C4) : C2) : C2
-
 Group names
     (C4 x C4) x: (C2 x C2)
     MM16 x: (C2 x C2)
@@ -6952,7 +6794,6 @@ Word Group
 < a,b,c,d | a4, c2, d2, a2b2, cdcd, abab-1, caca-1, dbdb-1, adadadad, abcbcda-1d >
 
 Gap SmallGroup(64,232)   Name:((C4 x C4) : C2) : C2
-
 Group names
     (C4 x C4) x: (C2 x C2)
     (C4 x C2 x C2) x: (C2 x C2)
@@ -7001,7 +6842,6 @@ Word Group
 < a,b,c,d | a4, c2, d2, a2b2, bdbd, cdcd, abab-1, caca-1, abcbcdad, adadadad >
 
 Gap SmallGroup(64,219)   Name:(C4 x D8) : C2
-
 Group names
     (C4 x C4) x: (C2 x C2)
     (C4 x C2 x C2) x: (C2 x C2)
@@ -7051,7 +6891,6 @@ Word Group
 < a,b,c,d,e | a4, b2, c2, d2, e2, abab, bcbc, bdbd, cdcd, dede, acadc, bdebe, a2cece, dada-1, eaea-1 >
 
 Gap SmallGroup(64,241)   Name:((C4 x C2 x C2) : C2) : C2
-
 Group names
     (C4 x C4) x: (C2 x C2)
     (C4 x C2 x C2) x: (C2 x C2)
@@ -7094,7 +6933,6 @@ Word Group
 < a,b,c,d | a4, c2, d2, a2b2, bcbc, cdcd, a2da2d, abab-1, abdabd, acdadc >
 
 Gap SmallGroup(64,242)   Name:((C4 x C4) : C2) : C2
-
 Group names
     (C4 x C4) x: (C2 x C2)
     (C2 x C2 x C2 x C2) x: (C2 x C2)
@@ -7132,7 +6970,6 @@ Word Group
 < a,b,c,d | b2, c2, d2, bcbc, bdbd, cdcd, a3cac, a3dad, ba2ba-2, abcda-1b >
 
 Gap SmallGroup(64,88)    Name:(C2 x (C8 : C2)) : C2
-
 Group names
     (C8 x C2) x: (C2 x C2)
     (C2 x C2) x: MM16
@@ -7177,7 +7014,6 @@ Word Group
 < a,b,c,d | b2, c2, d2, bcbc, cdcd, a3cac, a3dad, baba-1, abdba-1d >
 
 Gap SmallGroup(64,249)   Name:(C2 x (C8 : C2)) : C2
-
 Group names
     (C8 x C2) x: (C2 x C2)
     MM16 x: (C2 x C2)
@@ -7225,7 +7061,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, acac, cdcd, b2cb2c, b2db2d, dada-1, a2bdb-1d, acbcdb-1, bab-1a-1 >
 
 Gap SmallGroup(64,99)    Name:((C4 x C4) : C2) : C2
-
 Group names
     (C8 x C2) x: (C2 x C2)
     M(4x:4)3 x: (C2 x C2)
@@ -7273,7 +7108,6 @@ Word Group
 < a,b,c | b4, c2, a3cac, baba-1, cbcb-1 >
 
 Gap SmallGroup(64,104)   Name:(C4 : C8) : C2
-
 Group names
     C4 x: MM16
     M(4x:8)3 x: C2
@@ -7321,7 +7155,6 @@ Word Group
 < a,b,c | b4, c2, a3cac, cbcb-1, abca-1b-1 >
 
 Gap SmallGroup(64,24)    Name:(C8 : C2) : C4
-
 Group names
     MM16 x: C4
     (C4 x C2 x C2) . C4
@@ -7365,7 +7198,6 @@ Word Group
 < a,b,c | c2, a4b-2, a2ba2b, cbcb-1, abca-1b-1 >
 
 Gap SmallGroup(64,30)    Name:(C16 : C2) : C2
-
 Group names
     MM32 x: C2
     C8 . D8
@@ -7405,7 +7237,6 @@ Word Group
 < a,b | b2, a2ba2b, a4ba-1baba-1ba >
 
 Gap SmallGroup(64,42)    Name:(C16 : C2) : C2
-
 Group names
     MM32 x: C2
     (C8 . C4) x: C2
@@ -7444,7 +7275,6 @@ Word Group
 < a,b,c,d | a4, b4, c4, d2, a2bcbc, caca-1, dada-1, dbdb-1, dcdc-1, bab-1a-1, bcdb-1c-1 >
 
 Gap SmallGroup(64,70)    Name:(C4 : C4) : C4
-
 Group names
     C4 x: M(4x:4)3
     M(4x:4)3 x: C4
@@ -7492,7 +7322,6 @@ Word Group
 < a,b,c,d | a4, c4, d2, a2b2, abab-1, dada-1, dbdb-1, dcdc-1, acab-1c-1, bcdb-1c-1 >
 
 Gap SmallGroup(64,9)     Name:(C4 : C4) : C4
-
 Group names
     M(4x:4)3 x: C4
     (C2 x Q8) x: C4
@@ -7534,7 +7363,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, acac, cdcd, dada-1, dbdb-1, ab-1cbc, abda-1b-1 >
 
 Gap SmallGroup(64,8)     Name:((C8 x C2) : C2) : C2
-
 Group names
     M(4x:4)3 x: C4
     (C2 x D8) x: C4
@@ -7575,7 +7403,6 @@ Word Group
 < a,b,c,d | a4, b4, d2, a2c2, dada-1, dbdb-1, dcdc-1, bab-1a-1, bcdb-1c-1, ab2ca-1c-1 >
 
 Gap SmallGroup(64,68)    Name:(C4 : C4) : C4
-
 Group names
     M(4x:4)3 x: C4
     (C4 x C4 x C2) . C2
@@ -7622,7 +7449,6 @@ Word Group
 < a,b,c | b4, b2c2, bcbc, caca-1, a3bab-1 >
 
 Gap SmallGroup(64,113)   Name:(C8 : C4) : C2
-
 Group names
     M(4x:8)3 x: C2
     M(8x:4)5 x: C2
@@ -7667,7 +7493,6 @@ Word Group
 < a,b,c | a8, b4, c2, b2cb2c, baba-1, caca-1, a4bcb-1c, bcbcbcbc >
 
 Gap SmallGroup(64,105)   Name:(C4 : C8) : C2
-
 Group names
     M(4x:8)3 x: C2
     (C8 x C2 x C2) . C2
@@ -7715,7 +7540,6 @@ Word Group
 < a,b,c | b4, c4, bcbc, caca-1, ababc-2, bc-1bc-1, a3ba-1b-1 >
 
 Gap SmallGroup(64,159)   Name:(C8 : C4) : C2
-
 Group names
     M(4x:8)3 x: C2
     M(8x:4)3 x: C2
@@ -7761,7 +7585,6 @@ Word Group
 
 Gap SmallGroup(64,155)   Name:(C8 : C4) : C2 (TODO)
 Gap SmallGroup(64,157)   Name:(C8 : C4) : C2 (TODO)
-
 Group names
     M(4x:8)3 x: C2
     M(8x:4)3 x: C2
@@ -7808,7 +7631,6 @@ Word Group
 
 Gap SmallGroup(64,155)   Name:(C8 : C4) : C2 (TODO)
 Gap SmallGroup(64,157)   Name:(C8 : C4) : C2 (TODO)
-
 Group names
     M(4x:8)3 x: C2
     M(8x:4)7 x: C2
@@ -7854,7 +7676,6 @@ Word Group
 < a,b,c,d | a4, c4, d2, a2b2, adad, abdbd, a2cdcd, abab-1, c2dc2d, cac-1a-1, cbc-1b-1 >
 
 Gap SmallGroup(64,145)   Name:(C4 x Q8) : C2
-
 Group names
     M(4x:8)3 x: C2
     (C4 x Q8) x: C2
@@ -7902,7 +7723,6 @@ Word Group
 < a,b | a8, b2, a2ba2b, ababababababa-1ba-1b >
 
 Gap SmallGroup(64,12)    Name:(C4 : C8) : C2
-
 Group names
     M(4x:8)3 x: C2
     C4 . D16
@@ -7940,7 +7760,6 @@ Word Group
 < a,b,c | a4, b2, c2, a2ba2b, caca-1, abababab, abacbcbcbc, babcba-1bc >
 
 Gap SmallGroup(64,144)   Name:((C8 x C2) : C2) : C2
-
 Group names
     M(4x:8)3 x: C2
     (C4 x D8) x: C2
@@ -7987,7 +7806,6 @@ Word Group
 < a,b,c | b4, c4, a4b-2, a2ba2b, abcacb-1, cbc-1b-1, a3ca-1c-1 >
 
 Gap SmallGroup(64,166)   Name:(Q8 : C4) : C2
-
 Group names
     M(8x:4)3 x: C2
     M(8x:4)7 x: C2
@@ -8033,7 +7851,6 @@ Word Group
 
 Gap SmallGroup(64,164)   Name:(Q8 : C4) : C2 (TODO)
 Gap SmallGroup(64,165)   Name:(Q8 : C4) : C2 (TODO)
-
 Group names
     M(8x:4)3 x: C2
     (Q8 x: C4) x: C2
@@ -8078,7 +7895,6 @@ Word Group
 < a,b,c | b4, c4, a4b-2, baba-1, cbcb-1, a3ca-1c-1 >
 
 Gap SmallGroup(64,151)   Name:(Q8 : C4) : C2
-
 Group names
     M(8x:4)3 x: C2
     (C2 x Q16) x: C2
@@ -8123,7 +7939,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, a2ca2c, ab2cac, abcbdc, acadcd, b2db2d, bcb2cb, dada-1, a2bdb-1d, bab-1a-1 >
 
 Gap SmallGroup(64,163)   Name:((C8 x C2) : C2) : C2
-
 Group names
     M(8x:4)3 x: C2
     M(8x:4)7 x: C2
@@ -8168,7 +7983,6 @@ Word Group
 
 Gap SmallGroup(64,161)   Name:((C8 x C2) : C2) : C2 (TODO)
 Gap SmallGroup(64,162)   Name:((C8 x C2) : C2) : C2 (TODO)
-
 Group names
     M(8x:4)3 x: C2
     (C2 x M(4x:4)3) x: C2
@@ -8213,7 +8027,6 @@ Word Group
 < a,b,c | b4, c2, bcbc, a3bab-1, acba-1c, a2b-1aba >
 
 Gap SmallGroup(64,10)    Name:(C8 : C4) : C2
-
 Group names
     M(8x:4)5 x: C2
     (C4 x C2) . D8
@@ -8250,7 +8063,6 @@ Word Group
 < a,b,c | b4, b2c2, bcbc-1, a3ba-1b, a3cac-1, a2ba2b-1 >
 
 Gap SmallGroup(64,170)   Name:(C8 : C4) : C2
-
 Group names
     M(8x:4)5 x: C2
     (C4 x: Q8) x: C2
@@ -8294,7 +8106,6 @@ Word Group
 < a,b,c | b4, c4, abab, a4b-2, cbcb-1, a3cac-1, ab-1ab-1 >
 
 Gap SmallGroup(64,178)   Name:(C4 : Q8) : C2
-
 Group names
     M(8x:4)5 x: C2
     (C2 x Q16) x: C2
@@ -8337,7 +8148,6 @@ Word Group
 < a,b,c | b4, c2, bcbc, a2ca2c, a3bab-1, a2b-1aba, abcab-1c >
 
 Gap SmallGroup(64,171)   Name:((C8 x C2) : C2) : C2
-
 Group names
     M(8x:4)5 x: C2
     (D8 x: C4) x: C2
@@ -8379,7 +8189,6 @@ Word Group
 
 Gap SmallGroup(64,164)   Name:(Q8 : C4) : C2 (TODO)
 Gap SmallGroup(64,165)   Name:(Q8 : C4) : C2 (TODO)
-
 Group names
     M(8x:4)7 x: C2
     (Q8 x: C4) x: C2
@@ -8424,7 +8233,6 @@ Word Group
 < a,b,c | b4, c4, a4b-2, acac-1, cbcb-1, bab-1a-1 >
 
 Gap SmallGroup(64,148)   Name:(Q8 : C4) : C2
-
 Group names
     M(8x:4)7 x: C2
     (C2 x C2) x: Q16
@@ -8472,7 +8280,6 @@ Word Group
 
 Gap SmallGroup(64,161)   Name:((C8 x C2) : C2) : C2 (TODO)
 Gap SmallGroup(64,162)   Name:((C8 x C2) : C2) : C2 (TODO)
-
 Group names
     M(8x:4)7 x: C2
     (C2 x M(4x:4)3) x: C2
@@ -8517,7 +8324,6 @@ Word Group
 < a,b,c,d | b2, c2, d2, bcbc, bdbd, cdcd, a3dad, abca-1b, acda-1c >
 
 Gap SmallGroup(64,32)    Name:((C8 : C2) : C2) : C2
-
 Group names
     (C2 x C2 x C2 x C2) x: C4
     ((C2 x C2) x: C4) x: C4
@@ -8555,7 +8361,6 @@ Word Group
 < a,b,c,d,e | a4, b2, c2, d2, e2, bcbc, bdbd, bebe, cdcd, cece, dede, dada-1, eaea-1, abda-1b, acea-1c >
 
 Gap SmallGroup(64,60)    Name:(C2 x ((C4 x C2) : C2)) : C2
-
 Group names
     (C2 x C2 x C2 x C2) x: C4
     (C4 x C2 x C2) x: (C2 x C2)
@@ -8595,7 +8400,6 @@ Word Group
 < a,b,c,d,e | a4, b2, c2, d2, e2, bcbc, bdbd, bebe, cdcd, cece, dede, baba-1, dada-1, eaea-1, acda-1c >
 
 Gap SmallGroup(64,193)   Name:C2 x C2 x ((C4 x C2) : C2)
-
 Group names
     (C2 x C2 x C2 x C2) x: C4
     (C4 x C2 x C2 x C2) x: C2
@@ -8642,7 +8446,6 @@ Word Group
 < a,b,c,d,e | a4, b2, c2, d2, e2, bcbc, bdbd, bebe, cdcd, dede, a2cece, baba-1, dada-1, eaea-1, acda-1c >
 
 Gap SmallGroup(64,205)   Name:C2 x ((C4 x C2 x C2) : C2)
-
 Group names
     (C4 x C2 x C2 x C2) x: C2
     (C4 x C2 x C2) x: (C2 x C2)
@@ -8689,7 +8492,6 @@ Word Group
 < a,b,c,d,e | a4, c2, d2, e2, a2b2, bdbd, cdcd, cece, dede, abab-1, caca-1, cbcb-1, dada-1, eaea-1, ebeb-1 >
 
 Gap SmallGroup(64,263)   Name:C2 x C2 x ((C4 x C2) : C2)
-
 Group names
     (C4 x C2 x C2 x C2) x: C2
     D8 x: (C2 x C2 x C2)
@@ -8736,7 +8538,6 @@ Word Group
 < a,b,c,d | a4, c4, d2, a2b2, cdcd, abab-1, dada-1, bc2db-1d, cac-1a-1, cbc-1b-1 >
 
 Gap SmallGroup(64,235)   Name:(C2 x (C4 : C4)) : C2
-
 Group names
     D8 x: Q8
     (C4 x Q8) x: C2
@@ -8785,7 +8586,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, acac, bdbd, a2bcbc, a2cdcd, b2cb2c, dada-1, bab-1a-1 >
 
 Gap SmallGroup(64,229)   Name:(C2 x ((C4 x C2) : C2)) : C2
-
 Group names
     Q8 x: D8
     (C4 x D8) x: C2
@@ -8834,7 +8634,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, acac, bcbc, bdbd, a2cdcd, dada-1, bab-1a-1 >
 
 Gap SmallGroup(64,231)   Name:(C2 x ((C4 x C2) : C2)) : C2
-
 Group names
     Q8 x: D8
     (C4 x D8) x: C2
@@ -8880,7 +8679,6 @@ Word Group
 < a,b,c,d | a4, b4, d2, a2c2, acac-1, dada-1, dbdb-1, dcdc-1, bab-1a-1, bcdb-1c-1 >
 
 Gap SmallGroup(64,72)    Name:(C2 x Q8) : C4
-
 Group names
     (C4 x C2) x: Q8
     (C2 x Q8) x: C4
@@ -8927,7 +8725,6 @@ Word Group
 < a,b,c,d | a4, b4, d2, a2c2, baba-1, cdc2dc, dada-1, dbdb-1, ab2cac-1, acadc-1d, cbc-1b-1 >
 
 Gap SmallGroup(64,225)   Name:(C4 : Q8) : C2
-
 Group names
     (C4 x C2) x: Q8
     ((C4 x C4) . C2) x: C2
@@ -8973,7 +8770,6 @@ Word Group
 < a,b,c,d | a4, c4, d2, a2b2, abab-1, dada-1, dcdc-1, bc2db-1d, cac-1a-1, cbc-1b-1 >
 
 Gap SmallGroup(64,214)   Name:(C4 x Q8) : C2
-
 Group names
     (C4 x C2) x: Q8
     (C4 x Q8) x: C2
@@ -9020,7 +8816,6 @@ Word Group
 < a,b,c,d | a4, b4, d2, a2c2, acac-1, baba-1, dada-1, dbdb-1, dcdc-1, bcdb-1c-1 >
 
 Gap SmallGroup(64,76)    Name:(C4 x C2) : Q8
-
 Group names
     (C4 x C2) x: Q8
     (C4 x C2) . D8
@@ -9060,7 +8855,6 @@ Word Group
 < a,b,c,d | a4, b4, d2, a2c2, acac-1, baba-1, dada-1, dbdb-1, dcdc-1, cbc-1b-1 >
 
 Gap SmallGroup(64,212)   Name:C2 x (C4 : Q8)
-
 Group names
     (C4 x C2) x: Q8
     C2 x (C4 x: Q8)
@@ -9106,7 +8900,6 @@ Word Group
 < a,b,c,d | b4, c2, d2, cdcd, a4b-2, ababd, caca-1, cbcb-1, dada-1, dbdb-1, ab-1adb-1 >
 
 Gap SmallGroup(64,96)    Name:C2 x (Q8 : C4)
-
 Group names
     Q8 x: (C4 x C2)
     C2 x (Q8 x: C4)
@@ -9157,7 +8950,6 @@ Word Group
 < a,b,c,d | b4, d2, b2c2, a4b-2, acac-1, bcbc-1, dada-1, dbdb-1, dcdc-1, abda-1b-1 >
 
 Gap SmallGroup(64,132)   Name:(C2 x Q16) : C2
-
 Group names
     (C2 x C2) x: Q16
     (C2 x Q16) x: C2
@@ -9203,7 +8995,6 @@ Word Group
 < a,b,c,d,e | a4, b2, c2, d2, e2, acac, bcbc, bdbd, bebe, cdcd, dede, cdece, dada-1, eaea-1, abda-1b >
 
 Gap SmallGroup(64,215)   Name:(C2 x C2 x D8) : C2
-
 Group names
     (C2 x C2 x C2) x: D8
     (C4 x C2 x C2) x: (C2 x C2)
@@ -9249,7 +9040,6 @@ Word Group
 < a,b,c,d,e | a4, b2, c2, d2, e2, acac, bcbc, bdbd, bebe, cdcd, cece, dede, dada-1, eaea-1, abda-1b >
 
 Gap SmallGroup(64,202)   Name:C2 x ((C2 x C2 x C2 x C2) : C2)
-
 Group names
     (C2 x C2 x C2) x: D8
     (C4 x C2 x C2) x: (C2 x C2)
@@ -9294,7 +9084,6 @@ Word Group
 < a,b,c,d,e | a4, c2, d2, e2, a2b2, adad, bcbc, cdcd, cece, dede, abab-1, caca-1, dbdb-1, eaea-1, ebeb-1 >
 
 Gap SmallGroup(64,264)   Name:C2 x ((C2 x C2 x C2) : (C2 x C2))
-
 Group names
     D8 x: (C2 x C2 x C2)
     (C4 x C2 x C2) x: (C2 x C2)
@@ -9339,7 +9128,6 @@ Word Group
 < a,b,c,d,e | a4, b2, c2, d2, e2, bcbc, bdbd, cece, dede, a2bebe, dada-1, eaea-1, abda-1b, acea-1c >
 
 Gap SmallGroup(64,139)   Name:((C4 x C2 x C2) : C2) : C2
-
 Group names
     (C4 x C2 x C2) x: (C2 x C2)
     ((C4 x C2) x: C4) x: C2
@@ -9377,7 +9165,6 @@ Word Group
 < a,b,c,d,e | a4, c2, d2, e2, a2b2, bcbc, cdcd, cece, a2dede, abab-1, caca-1, dada-1, dbdb-1, eaea-1, ebeb-1 >
 
 Gap SmallGroup(64,266)   Name:(C2 x ((C4 x C2) : C2)) : C2
-
 Group names
     (C4 x C2 x C2) x: (C2 x C2)
     (C2 x D8) x: (C2 x C2)
@@ -9418,7 +9205,6 @@ Word Group
 < a,b,c,d | b2, c2, d2, bcbc, bdbd, cdcd, a3dad, baba-1, acda-1c >
 
 Gap SmallGroup(64,92)    Name:C2 x ((C8 : C2) : C2)
-
 Group names
     MM16 x: (C2 x C2)
     C2 x (MM16 x: C2)
@@ -9463,7 +9249,6 @@ Word Group
 < a,b,c,d | a4, c2, d2, a2b2, cdcd, abab-1, caca-1, dbdb-1, abcbcdad, adadadad >
 
 Gap SmallGroup(64,224)   Name:((C2 x Q8) : C2) : C2
-
 Group names
     M(4x:4)3 x: (C2 x C2)
     (C2 x C2 x C2) x: Q8
@@ -9504,7 +9289,6 @@ Word Group
 < a,b,c,d,e | a4, c2, d2, e2, a2b2, cdcd, cece, dede, abab-1, caca-1, cbcb-1, dada-1, eaea-1, ebeb-1, bdeb-1d >
 
 Gap SmallGroup(64,204)   Name:C2 x ((C2 x Q8) : C2)
-
 Group names
     M(4x:4)3 x: (C2 x C2)
     (C2 x C2 x C2) x: Q8
@@ -9556,7 +9340,6 @@ Word Group
 
 Gap SmallGroup(64,156)   Name:Q8 : Q8 (TODO)
 Gap SmallGroup(64,158)   Name:Q8 : Q8 (TODO)
-
 Group names
     Q8 x: Q8
     C4 . QD16
@@ -9603,7 +9386,6 @@ Word Group
 
 Gap SmallGroup(64,156)   Name:Q8 : Q8 (TODO)
 Gap SmallGroup(64,158)   Name:Q8 : Q8 (TODO)
-
 Group names
     Q8 x: Q8
     C4 . Q16
@@ -9649,7 +9431,6 @@ Word Group
 < a,b,c,d | a4, b4, c4, b2d2, cbcb-1, dada-1, a2b2c-2, bab-1a-1, cac-1a-1, dcd-1c-1, a2bdb-1d-1 >
 
 Gap SmallGroup(64,238)   Name:Q8 : Q8
-
 Group names
     Q8 x: Q8
     (C4 x C4) . (C2 x C2)
@@ -9690,7 +9471,6 @@ Word Group
 < a,b,c,d | a4, c4, d2, a2b2, acac, abab-1, dada-1, dbdb-1, dcdc-1, ac-1ac-1, bcdb-1c-1 >
 
 Gap SmallGroup(64,74)    Name:((C4 x C2) : C4) : C2
-
 Group names
     (C2 x C2 x C2) x: Q8
     ((C2 x C2) x Q8) x: C2
@@ -9731,7 +9511,6 @@ Word Group
 < a,b,c,d | c2, d2, cdcd, b2a-2, dada-1, dbdb-1, abacb-1 >
 
 Gap SmallGroup(64,110)   Name:C2 x (C4 . D8 = C4 . (C4 x C2))
-
 Group names
     C2 x (C8 . C4)
     (C8 . C4) x: C2
@@ -9778,7 +9557,6 @@ Word Group
 < a,b,c,d | b4, c2, d2, cdcd, a4b-2, cbcb-1, dada-1, dbdb-1, baba-1c, abca-1b-1 >
 
 Gap SmallGroup(64,93)    Name:C2 x (C2 . ((C4 x C2) : C2) = (C2 x C2) . (C4 x C2))
-
 Group names
     C2 x (C4 . D8)
     (C4 . D8) x: C2
@@ -9823,7 +9601,6 @@ Word Group
 < a,b,c,d | a4, b4, d2, a2c2, baba-1, dada-1, dbdb-1, dcdc-1, ab2cac-1, cbc-1b-1 >
 
 Gap SmallGroup(64,208)   Name:C2 x ((C2 x C2) . (C2 x C2 x C2))
-
 Group names
     C2 x ((C4 x C4) . C2)
     (C4 x C4 x C2) . C2
@@ -9865,7 +9642,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, acac, b2cdcd, b2db2d, cbcb-1, dada-1, a2bdb-1d, bab-1a-1 >
 
 Gap SmallGroup(64,223)   Name:(C4 x D8) : C2
-
 Group names
     (C4 x D8) x: C2
     (C4 x Q8) x: C2
@@ -9913,7 +9689,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, bdbd, a2bcbc, a2ca2c, a2cdcd, dada-1, ab2ca-1c, bab-1a-1 >
 
 Gap SmallGroup(64,220)   Name:(C4 x D8) : C2
-
 Group names
     (C4 x D8) x: C2
     (C2 x M(4x:4)3) x: C2
@@ -9961,7 +9736,6 @@ Word Group
 
 Gap SmallGroup(64,236)   Name:((C4 x C4) : C2) : C2 (TODO)
 Gap SmallGroup(64,240)   Name:(C4 x D8) : C2 (TODO)
-
 Group names
     (C4 x D8) x: C2
     (C4 x: D8) x: C2
@@ -10006,7 +9780,6 @@ Word Group
 
 Gap SmallGroup(64,236)   Name:((C4 x C4) : C2) : C2 (TODO)
 Gap SmallGroup(64,240)   Name:(C4 x D8) : C2 (TODO)
-
 Group names
     (C4 x D8) x: C2
     (C4 x Q8) x: C2
@@ -10050,7 +9823,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, bcbc, a2ca2c, b2db2d, dada-1, a2bdb-1d, ab2ca-1c, aca-1dcd, bab-1a-1 >
 
 Gap SmallGroup(64,234)   Name:((C4 x C4) : C2) : C2
-
 Group names
     (C4 x D8) x: C2
     (C2 x M(4x:4)3) x: C2
@@ -10096,7 +9868,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, acac, b2cb2c, b2cdcd, b2db2d, dada-1, a2bcb-1c, a2bdb-1d, bab-1a-1 >
 
 Gap SmallGroup(64,221)   Name:(C4 x D8) : C2
-
 Group names
     (C4 x D8) x: C2
     (C4 x: D8) x: C2
@@ -10139,7 +9910,6 @@ Word Group
 < a,b,c,d | b2, c2, d2, bdbd, cdcd, a3dad, a2cbcb, abda-1b, acda-1c >
 
 Gap SmallGroup(64,153)   Name:(C8 : (C2 x C2)) : C2
-
 Group names
     (C2 x D16) x: C2
     (C8 . C4) x: C2
@@ -10182,7 +9952,6 @@ Word Group
 < a,b,c,d | b2, c2, d2, cdcd, a3dad, a2cbcb, a3ba-1b, acda-1c >
 
 Gap SmallGroup(64,152)   Name:((C8 : C2) : C2) : C2
-
 Group names
     (C2 x QD16) x: C2
     (C8 . C4) x: C2
@@ -10228,7 +9997,6 @@ Word Group
 < a,b,c,d | b4, c2, d2, cdcd, a4b-2, cbcb-1, dada-1, dbdb-1, a3ca-1c, abda-1b-1 >
 
 Gap SmallGroup(64,133)   Name:((C2 x Q8) : C2) : C2
-
 Group names
     (C2 x QD16) x: C2
     (C2 x Q16) x: C2
@@ -10277,7 +10045,6 @@ Word Group
 < a,b,c | b4, c2, a3cac, a4b-2, cbcb-1, a2ba2b-1, ababab-1ab-1 >
 
 Gap SmallGroup(64,100)   Name:(Q8 : C4) : C2
-
 Group names
     (C2 x Q8) x: C4
     (Q8 x: C4) x: C2
@@ -10326,7 +10093,6 @@ Word Group
 
 Gap SmallGroup(64,200)   Name:(C4 x Q8) : C2 (TODO)
 Gap SmallGroup(64,248)   Name:C2 x ((C8 x C2) : C2) (TODO)
-
 Group names
     (C2 x Q8) x: C4
     (C4 x Q8) x: C2
@@ -10371,7 +10137,6 @@ Word Group
 < a,b,c,d | a4, c4, d2, a2b2, abab-1, bc2dbd, dada-1, a2cdc-1d, cac-1a-1, cbc-1b-1 >
 
 Gap SmallGroup(64,222)   Name:(C4 x Q8) : C2
-
 Group names
     (C4 x Q8) x: C2
     ((C4 x C4) . C2) x: C2
@@ -10415,7 +10180,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, a2bcbc, a2ca2c, b2db2d, dada-1, a2bdb-1d, ab2ca-1c, aca-1dcd, bab-1a-1 >
 
 Gap SmallGroup(64,237)   Name:((C4 x C4) : C2) : C2
-
 Group names
     (C4 x Q8) x: C2
     ((C4 x C2) x: C4) x: C2
@@ -10461,7 +10225,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, a2ca2c, a2cdcd, b2db2d, cbcb-1, dada-1, a2bdb-1d, ab2ca-1c, bab-1a-1 >
 
 Gap SmallGroup(64,233)   Name:((C4 x C4) : C2) : C2
-
 Group names
     (C4 x Q8) x: C2
     (C2 x M(4x:4)3) x: C2
@@ -10509,7 +10272,6 @@ Word Group
 < a,b,c,d | b4, c2, d2, a4b-2, abab-1, b2cdcd, bcb2cb, caca-1, dada-1, dbdb-1, a2bcdb-1c >
 
 Gap SmallGroup(64,154)   Name:(C2 . ((C4 x C2) : C2) = (C2 x C2) . (C4 x C2)) : C2
-
 Group names
     (C2 x Q16) x: C2
     (C8 . C4) x: C2
@@ -10552,7 +10314,6 @@ Word Group
 < a,b,c,d | b2, c2, d2, a3dad, abacbc, abadbd, caca-1, a3ba-1b, acdca-1d >
 
 Gap SmallGroup(64,259)   Name:(C2 x Q16) : C2
-
 Group names
     (C2 x Q16) x: C2
     (D16 x: C2) x: C2
@@ -10601,7 +10362,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, acac, a2bcbc, a2cdcd, b2cb2c, b2db2d, dada-1, a2bdb-1d, bab-1a-1 >
 
 Gap SmallGroup(64,217)   Name:((C4 x C4) : C2) : C2
-
 Group names
     ((C2 x C2) x Q8) x: C2
     ((C4 x C2) x: C4) x: C2
@@ -10649,7 +10409,6 @@ Word Group
 < a,b,c,d,e | a4, c2, d2, e2, a2b2, cdcd, cece, a2dede, abab-1, caca-1, cbcb-1, dada-1, dbdb-1, eaea-1, ebeb-1 >
 
 Gap SmallGroup(64,265)   Name:C2 x ((C2 x Q8) : C2)
-
 Group names
     ((C2 x C2) x Q8) x: C2
     (C2 x Q8) x: (C2 x C2)
@@ -10692,7 +10451,6 @@ Word Group
 < a,b,c,d | b2, c2, d2, bdbd, cdcd, a3dad, baba-1, acda-1c, abcba-1dc >
 
 Gap SmallGroup(64,94)    Name:(C2 x (C8 : C2)) : C2
-
 Group names
     (C2 x MM16) x: C2
     (C4 . D8) x: C2
@@ -10738,7 +10496,6 @@ Word Group
 < a,b,c | a4, b4, c4, baba-1, a2bcbc-1, a2ca2c-1, ab2ca-1c, cbc2b-1c, c2ac-2a-1 >
 
 Gap SmallGroup(64,78)    Name:(C2 x (C4 : C4)) : C2
-
 Group names
     (C2 x M(4x:4)3) x: C2
     ((C4 x C2) x: C4) x: C2
@@ -10779,7 +10536,6 @@ Word Group
 
 Gap SmallGroup(64,77)    Name:(C2 x (C4 : C4)) : C2 (TODO)
 Gap SmallGroup(64,80)    Name:((C4 x C2) : C4) : C2 (TODO)
-
 Group names
     (C2 x M(4x:4)3) x: C2
     ((C4 x C2) x: C4) x: C2
@@ -10821,7 +10577,6 @@ Word Group
 
 Gap SmallGroup(64,77)    Name:(C2 x (C4 : C4)) : C2 (TODO)
 Gap SmallGroup(64,80)    Name:((C4 x C2) : C4) : C2 (TODO)
-
 Group names
     (C2 x M(4x:4)3) x: C2
     ((C4 x C2) x: C4) x: C2
@@ -10862,7 +10617,6 @@ Word Group
 < a,b,c | c2, a3bab, b2cbcb, caca-1, ab3a-1b-1, a2b-1ab-1a >
 
 Gap SmallGroup(64,111)   Name:(C4 . D8 = C4 . (C4 x C2)) : C2
-
 Group names
     (C8 . C4) x: C2
     C8 . (C4 x C2)
@@ -10907,7 +10661,6 @@ Word Group
 < a,b | a8, b4, a2ba2b, a3b2ab-2, a2b-1a2b-1, ababab-1ab-1 >
 
 Gap SmallGroup(64,36)    Name:(C2 . ((C4 x C2) : C2) = (C2 x C2) . (C4 x C2)) : C2
-
 Group names
     (C4 . D8) x: C2
     (C4 x C4) . C4
@@ -10943,7 +10696,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, acac, a2cdcd, dada-1, acbcb-1, bab-1a-1, ab-1db-1d >
 
 Gap SmallGroup(64,137)   Name:(C4 : Q8) : C2
-
 Group names
     (C4 . D8) x: C2
     (D8 x: C4) x: C2
@@ -10986,7 +10738,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, acac, a2cdcd, dada-1, abcb-1c, bab-1a-1, ab-1db-1d >
 
 Gap SmallGroup(64,135)   Name:((C4 x C4) : C2) : C2
-
 Group names
     (C4 . D8) x: C2
     (D8 x: C4) x: C2
@@ -11030,7 +10781,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, adad, a2bdbd, a2ca2c, a2cdcd, b2db2d, a2bcb-1c, ab2ca-1c, bab-1a-1 >
 
 Gap SmallGroup(64,243)   Name:((C4 x C2 x C2) : C2) : C2
-
 Group names
     (C4 x: D8) x: C2
     ((C4 x C4) . C2) x: C2
@@ -11073,7 +10823,6 @@ Word Group
 < a,b,c,d | a4, b4, c2, d2, a2bdbd, a2ca2c, a2cdcd, a2da2d, ab2cac, a2bcb-1c, ab2da-1d, bab-1a-1 >
 
 Gap SmallGroup(64,244)   Name:(C4 : Q8) : C2
-
 Group names
     ((C4 x C4) . C2) x: C2
     ((C4 x C4) x: C2) x: C2
@@ -11117,7 +10866,6 @@ Word Group
 < a,b | b4, a2b-1ab-1a >
 
 Gap SmallGroup(64,45)    Name:C8 . D8 = C4 . (C8 x C2)
-
 Group names
     C8 . C8
     C8 . D8
@@ -11157,7 +10905,6 @@ Word Group
 < a,b | abab3, a2ba2b-1, a7ba-1b-1 >
 
 Gap SmallGroup(64,49)    Name:C4 . D16 = C8 . (C4 x C2)
-
 Group names
     C16 . C4
     C4 . D16
@@ -11195,7 +10942,6 @@ Word Group
 < a,b | b4, a2ba2b-1, bab2a-1b, abababab-1, a6b-1a-2b-1 >
 
 Gap SmallGroup(64,43)    Name:C2 . ((C8 x C2) : C2) = C8 . (C4 x C2)
-
 Group names
     C8 . D8
     C4 . D16
@@ -11235,7 +10981,6 @@ Word Group
 
 Gap SmallGroup(64,13)    Name:(C2 x C2) . ((C4 x C2) : C2) = (C4 x C2) . (C4 x C2) (TODO)
 Gap SmallGroup(64,14)    Name:(C2 x C2) . ((C4 x C2) : C2) = (C4 x C2) . (C4 x C2) (TODO)
-
 Group names
     C4 . D16
     C4 . QD16
@@ -11276,7 +11021,6 @@ Word Group
 
 Gap SmallGroup(64,13)    Name:(C2 x C2) . ((C4 x C2) : C2) = (C4 x C2) . (C4 x C2) (TODO)
 Gap SmallGroup(64,14)    Name:(C2 x C2) . ((C4 x C2) : C2) = (C4 x C2) . (C4 x C2) (TODO)
-
 Group names
     C4 . QD16
     C4 . Q16
@@ -11314,7 +11058,6 @@ Word Group
 < a,b,c | b4, c4, a4b-2, cbcb-1, ababc-2, a2ba2b-1, cac-1a-1 >
 
 Gap SmallGroup(64,168)   Name:(C2 x C2) . (C2 x D8) = (C4 x C2) . (C2 x C2 x C2)
-
 Group names
     C4 . QD16
     (C8 x C4) . C2
@@ -11357,7 +11100,6 @@ Word Group
 < a,b | a8, b4, ba2ba-2, a3b2ab-2, ababab-1ab-1 >
 
 Gap SmallGroup(64,37)    Name:C2 . ((C2 x C2 x C2) : C4) = (C4 x C2) . (C4 x C2)
-
 Group names
     (C4 x C4) . C4
     (C4 x C2) . D8
@@ -11393,7 +11135,6 @@ Word Group
 < a,b,c | c2, a3cac, cbcb-1, baba-1c, ab3ca-1b-1 >
 
 Gap SmallGroup(64,19)    Name:C4 . (C4 x C4)
-
 Group names
     (C8 x C2) . C4
     C4 . (C4 x C4)
@@ -11430,7 +11171,6 @@ Word Group
 < a,b,c | c2, a3cac, acba-1b, baba-1c, b2ab-2a-1 >
 
 Gap SmallGroup(64,22)    Name:(C4 x C2) . D8 = C4 . (C4 x C4)
-
 Group names
     (C8 x C2) . C4
     C4 . (C4 x C4)
@@ -11470,7 +11210,6 @@ Word Group
 < a,b,c | b4, c4, ab2cac, cbcb-1, bab-1a-1, a3ca-1c-1 >
 
 Gap SmallGroup(64,180)   Name:(C2 x C2) . (C2 x D8) = (C4 x C2) . (C2 x C2 x C2)
-
 Group names
     (C8 x C4) . C2
     C8 . Q8
@@ -11511,7 +11250,6 @@ Word Group
 < a,b,c | b4, c4, a4b-2, cbcb-1, baba-1c, abca-1b-1 >
 
 Gap SmallGroup(64,11)    Name:(C2 x C2) . ((C4 x C2) : C2) = (C4 x C2) . (C4 x C2)
-
 Group names
     (C4 x C2) . D8
     (C4 x C2) . (C4 x C2)
@@ -11548,7 +11286,6 @@ Word Group
 
 Gap SmallGroup(64,25)    Name:(C8 x C2) : C4 (TODO)
 Gap SmallGroup(64,160)   Name:(C2 x C2) . (C2 x D8) = (C4 x C2) . (C2 x C2 x C2) (TODO)
-
 Group names
     (C4 x C2) . D8
     (C4 x C4) . (C2 x C2)
@@ -11594,7 +11331,6 @@ Word Group
 < a,b,c | b4, c4, a4b-2, cbcb-1, a3cac-1, ababc-2, a2ba2b-1 >
 
 Gap SmallGroup(64,172)   Name:(C2 x C2) . (C2 x D8) = (C4 x C2) . (C2 x C2 x C2)
-
 Group names
     (C4 x C2) . D8
     (C4 x C4) . (C2 x C2)
@@ -11635,7 +11371,6 @@ Word Group
 < a,b,c | a4, b4, c4, baba-1, a2ca2c-1, ab2ca-1c, cbc2b-1c, c2ac-2a-1, a2bcb-1c-1 >
 
 Gap SmallGroup(64,81)    Name:(C2 x C2 x C2) . (C2 x C2 x C2)
-
 Group names
     (C4 x C2) . D8
     (C4 x C2) . Q8
@@ -11675,7 +11410,6 @@ Word Group
 < a,b,c,d | a4, b4, c4, d2, a2c2d, baba-1, caca-1, dada-1, dbdb-1, dcdc-1, bcdb-1c-1 >
 
 Gap SmallGroup(64,79)    Name:(C2 x C2 x C2) . (C2 x C2 x C2)
-
 Group names
     (C4 x C2) . D8
     (C4 x C2) . Q8
@@ -11716,7 +11450,6 @@ Word Group
 < a,b,c,d | a4, b4, a2c2, b2d2, adad-1, cbcb-1, a2bdbd-1, bab-1a-1, dcd-1c-1, ab2ca-1c-1 >
 
 Gap SmallGroup(64,245)   Name:(C2 x C2) . (C2 x C2 x C2 x C2)
-
 Group names
     (C4 x C4) . (C2 x C2)
     (C4 x C2) . (C2 x C2 x C2)
@@ -11749,7 +11482,6 @@ Word Group
 < a,b,c | a4, b4, c4, abacbc, a2ba2b-1, a2bcbc-1, a2ca2c-1, ab2ca-1c, bab2a-1b, c2ac-2a-1 >
 
 Gap SmallGroup(64,82)    Name:(C2 x C2 x C2) . (C2 x C2 x C2)
-
 Group names
     (C4 x C2 x C2) . (C2 x C2)
     (C2 x C2 x C2) . (C2 x C2 x C2)
@@ -11758,4 +11490,4 @@ Group names
     (C2 x C2) . (D8 x: C2)
 
 Total Groups:267
-# End Time:20m21s
+# End Time:20m10s
