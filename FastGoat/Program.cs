@@ -33,12 +33,16 @@ using GroupRegX = System.Text.RegularExpressions.Group;
 
 Console.WriteLine("Hello World");
 
-void GroupsFromDB(int max = 16)
+void GroupsFromDB(int min = 1, int max = 16, bool names = false)
 {
     GlobalStopWatch.Restart();
 
-    GroupExt.DB.Select(s => s.Split(';'))
-        .Where(s => int.Parse(s[0]) <= max)
+    var all = GroupExt.DB.Select(s => s.Split(';'))
+        .Where(s =>
+        {
+            var ord = int.Parse(s[0]);
+            return ord >= min && ord <= max;
+        })
         .Select(s =>
         {
             Logger.Level = LogLevel.Off;
@@ -47,12 +51,15 @@ void GroupsFromDB(int max = 16)
             return g;
         })
         .Select(g => g.AllSubgroups().ToGroupWrapper())
-        .FilterIsomorphic()
-        .Naming()
-        .DisplayNames(showBasegroup: false)
-        .CheckMissings();
+        .FilterIsomorphic();
+
+    if (names)
+        all.Naming().DisplayNames(showBasegroup: false);
+    else
+        all.DisplayBoxes();
 
     GlobalStopWatch.Show("End");
+    Console.WriteLine();
 }
 
 IEnumerable<AllSubgroups<WElt>> GetAllProds(int ord)
@@ -319,7 +326,8 @@ void Ord64()
 {
     // AllGroupsUpto63();
     // Ord64();
-    GroupsFromDB(64);
+    // GroupsFromDB(max: 32, names: true);
+    GroupsFromDB(max:64);
     // Total Groups:586
-    // # End Time:10m28s
+    // # End Time:1m0s
 }
