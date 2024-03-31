@@ -258,7 +258,9 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
         var tmp = new List<SubgroupConjugates<T>>();
         foreach (var cj in der)
         {
-            if (cj.FullName.Contains("SubGr"))
+            if (cj.Representative.SetEquals(Parent))
+                cj.Representative.Name = Parent.Name;
+            else if (cj.FullName.Contains("SubGr"))
             {
                 var sub = Restriction(cj.Representative);
                 sub.Naming();
@@ -279,7 +281,9 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
         var tmp = new List<SubgroupConjugates<T>>();
         foreach (var cj in lower)
         {
-            if (cj.FullName.Contains("SubGr"))
+            if (cj.Representative.SetEquals(Parent))
+                cj.Representative.Name = Parent.Name;
+            else if (cj.FullName.Contains("SubGr"))
             {
                 var sub = Restriction(cj.Representative);
                 sub.Naming();
@@ -300,7 +304,9 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
         var tmp = new List<SubgroupConjugates<T>>();
         foreach (var cj in upper)
         {
-            if (cj.FullName.Contains("SubGr"))
+            if (cj.Representative.SetEquals(Parent))
+                cj.Representative.Name = Parent.Name;
+            else if (cj.FullName.Contains("SubGr"))
             {
                 var sub = Restriction(cj.Representative);
                 sub.Naming();
@@ -374,7 +380,18 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
     public ConcreteGroup<T> ZentrumSubGroup()
     {
         var z = Group.Zentrum(Parent);
-        return AllRepresentatives.First(sg => sg.SetEquals(z));
+        var z0 = AllRepresentatives.First(sg => sg.SetEquals(z));
+        
+        if (z0.Name.Contains("SubGr"))
+        {
+            var sub = Restriction(z0);
+            sub.Naming();
+            var name = z0.Name = sub.AllRepresentatives.Last().Name;
+            var cj = AllSubgroupConjugates.First(cj0 => cj0.Contains(z0));
+            cj.Conjugates.ForEach(sg => sg.Name = name);
+        }
+
+        return z0;
     }
 
     public ConcreteGroup<T> FrattiniSubGroup()
@@ -382,7 +399,18 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
         var elts = Parent.ToHashSet();
         foreach (var sg in MaximalSubgroups().SelectMany(cj => cj.Conjugates))
             elts.IntersectWith(sg);
-        return AllRepresentatives.First(sg => sg.SetEquals(elts));
+        var frat = AllRepresentatives.First(sg => sg.SetEquals(elts));
+
+        if (frat.Name.Contains("SubGr"))
+        {
+            var sub = Restriction(frat);
+            sub.Naming();
+            var name = frat.Name = sub.AllRepresentatives.Last().Name;
+            var cj = AllSubgroupConjugates.First(cj0 => cj0.Contains(frat));
+            cj.Conjugates.ForEach(sg => sg.Name = name);
+        }
+
+        return frat;
     }
 
     public ConcreteGroup<T> FittingSubGroup()
@@ -390,10 +418,21 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
         if (Parent.Count() == 1)
             return AllSubgroupConjugates.First(cj => cj.IsTrivial).Representative;
 
-        return AllSubgroupConjugates.Where(cj => cj.IsProperNormal)
+        var fit = AllSubgroupConjugates.Where(cj => cj.IsProperNormal)
             .Descending()
             .Select(cj => cj.Representative)
             .First(sg => Group.IsNilpotent(sg));
+        
+        if (fit.Name.Contains("SubGr"))
+        {
+            var sub = Restriction(fit);
+            sub.Naming();
+            var name = fit.Name = sub.AllRepresentatives.Last().Name;
+            var cj = AllSubgroupConjugates.First(cj0 => cj0.Contains(fit));
+            cj.Conjugates.ForEach(sg => sg.Name = name);
+        }
+
+        return fit;
     }
 
     public IEnumerable<ConcreteGroup<T>> All => AllSubgroupConjugates.SelectMany(sc => sc.Conjugates);
