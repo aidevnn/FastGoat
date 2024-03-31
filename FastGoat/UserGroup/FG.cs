@@ -24,7 +24,7 @@ public static partial class FG
         CyclotomicPolynomials = new() { [1] = x - 1 };
         CnfBasisMap = new();
         
-        allIds = GroupExt.DB.Select(txt => new IdGroup(txt)).GroupBy(e => e.Order).ToDictionary(e => e.Key, e => e.Order().ToArray());
+        allIds = GroupExt.DBGap.Select(txt => new IdGroup(txt)).GroupBy(e => e.Order).ToDictionary(e => e.Key, e => e.Order().ToArray());
         nbSubGroupsDetails = allIds.ToDictionary(
             e => e.Key,
             e => e.Value.GroupBy(a => a.Infos).ToDictionary(a => a.Key, a => a.Count()));
@@ -154,7 +154,7 @@ public static partial class FG
 
     public static WordGroup AbelianWg(string name, params int[] seq)
     {
-        if (seq.Length > 5 || seq.Min() < 1)
+        if (seq.Length > 6 || seq.Min() < 1)
             throw new GroupException(GroupExceptionType.GroupDef);
 
         var n = seq.Length.Range();

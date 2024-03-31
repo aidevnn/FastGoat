@@ -295,7 +295,7 @@ public static partial class FG
     }
 
     public static (AllSubgroups<T> subsg, ANameElt[] names)[]
-        DisplayNames<T>(this IEnumerable<(AllSubgroups<T>subsg, ANameElt[] names)> seq, bool rename = false)
+        DisplayNames<T>(this IEnumerable<(AllSubgroups<T>subsg, ANameElt[] names)> seq, bool rename = false, bool showBasegroup = true)
         where T : struct, IElt<T>
     {
         var lt = seq.OrderBy(e => e.subsg.Parent.Count())
@@ -313,7 +313,7 @@ public static partial class FG
             var o = subsg.Parent.Count();
             var s = GroupExt.A000001.Length >= o ? $"/{GroupExt.A000001[o]}" : "";
             Console.WriteLine($"Group{o}[{++dicOrd[o]}{s}]");
-            DisplayName(subsg.Parent, subsg, names, rename, maxLt: maxLt);
+            DisplayName(subsg.Parent, subsg, names, rename, showBasegroup, maxLt);
         }
 
         Console.WriteLine($"Total Groups:{nb}");
@@ -386,8 +386,7 @@ public static partial class FG
         Console.WriteLine(line);
         Console.WriteLine(fmt, g.Name);
         Console.WriteLine(line);
-
-        subsg.Naming();
+        
         var derived = subsg.GetDerivedSerie();
         var upper = subsg.GetUpperSerie();
         var lower = subsg.GetLowerSerie();

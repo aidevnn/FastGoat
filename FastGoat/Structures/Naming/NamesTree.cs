@@ -112,21 +112,22 @@ public static class NamesTree
         if (G.GroupType == GroupType.NonAbelianGroup && subgroups.IsSimple())
             return new[] { (subgroups, tr, ANameElt.DecompType.SimpleNonAbelian) };
 
-        var allProds = subgroups.DecomposeProducts()
+        var normals = subgroups.ProperNonTrivialNormalSubgroups();
+        var allProds = subgroups.DecomposeProducts(normals)
             .Select(e => (e.Item1, e.Item2, e.Item3 ? ANameElt.DecompType.DirectProduct : ANameElt.DecompType.SemiDirectProduct))
             .Select(e => (subgroups.Restriction(e.Item1.Representative), subgroups.Restriction(e.Item2.Representative), e.Item3))
             .ToArray();
         
         var usedNormals = allProds.SelectMany(e =>
                 e.Item3 == ANameElt.DecompType.DirectProduct ? new[] { e.Item1.Parent, e.Item2.Parent } : new[] { e.Item1.Parent })
-            .Select(sg => subgroups.First(sc => sc.Representative.SetEquals(sg))).ToArray();
-        
-        var remNormals = subgroups.ProperNonTrivialNormalSubgroups().Except(usedNormals).ToArray();
+            .Select(sg => subgroups.First(sc => sc.Representative.SetEquals(sg))).Distinct().ToArray();
+
+        var remNormals = normals.Except(usedNormals).ToArray();
         var extOps = remNormals.Select(e => (e, G.Over(e.Representative).ToGroupWrapper()))
             .Select(e => (subgroups.Restriction(e.e.Representative), new AllSubgroups<WElt>(e.Item2),
                 ANameElt.DecompType.Extension))
             .ToArray();
-        
+
         var allProdsFiltered = allProds.ToHashSet(EqProducts<WElt, WElt>());
         return [..allProdsFiltered, ..extOps];
     }

@@ -125,10 +125,10 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
     {
         return AllSubgroupConjugates.Where(cj => cj.IsProperNormal && !cj.IsTrivial).ToArray();
     }
-
-    public List<(SubgroupConjugates<T>, SubgroupConjugates<T>, bool)> DecomposeProducts()
+    
+    public List<(SubgroupConjugates<T>, SubgroupConjugates<T>, bool)> DecomposeProducts(SubgroupConjugates<T>[] subgnormals)
     {
-        var normals = new Queue<SubgroupConjugates<T>>(ProperNonTrivialNormalSubgroups());
+        var normals = new Queue<SubgroupConjugates<T>>(subgnormals);
         var og = Parent.Count();
         var allProds = new List<(SubgroupConjugates<T>, SubgroupConjugates<T>, bool)>();
         while (normals.Any())
@@ -255,7 +255,20 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
         var digits = AllSubgroupConjugates.Max(sg => $"{sg.FullName}".Length) + 1;
         var all = AllSubgroupConjugates;
         var der = Group.DerivedChain(Parent).Select(sg => all.First(cj => cj.Contains(sg))).ToList();
-        return new(der, SerieType.Derived, digits);
+        var tmp = new List<SubgroupConjugates<T>>();
+        foreach (var cj in der)
+        {
+            if (cj.FullName.Contains("SubGr"))
+            {
+                var sub = Restriction(cj.Representative);
+                sub.Naming();
+                var name = sub.AllRepresentatives.Last().Name;
+                cj.Conjugates.ForEach(sg => sg.Name = name);
+            }
+            
+            tmp.Add(cj);
+        }
+        return new(tmp, SerieType.Derived, digits);
     }
 
     public Serie<T> GetLowerSerie()
@@ -263,7 +276,20 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
         var digits = AllSubgroupConjugates.Max(sg => $"{sg.FullName}".Length) + 1;
         var all = AllSubgroupConjugates;
         var lower = Group.CommutatorsChain(Parent).Select(sg => all.First(cj => cj.Contains(sg))).ToList();
-        return new(lower, SerieType.Lower, digits);
+        var tmp = new List<SubgroupConjugates<T>>();
+        foreach (var cj in lower)
+        {
+            if (cj.FullName.Contains("SubGr"))
+            {
+                var sub = Restriction(cj.Representative);
+                sub.Naming();
+                var name = sub.AllRepresentatives.Last().Name;
+                cj.Conjugates.ForEach(sg => sg.Name = name);
+            }
+            
+            tmp.Add(cj);
+        }
+        return new(tmp, SerieType.Lower, digits);
     }
 
     public Serie<T> GetUpperSerie()
@@ -271,7 +297,20 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
         var digits = AllSubgroupConjugates.Max(sg => $"{sg.FullName}".Length) + 1;
         var all = AllSubgroupConjugates;
         var upper = Group.ZentrumsChainFast(Parent).Select(sg => all.First(cj => cj.Contains(sg))).Reverse().ToList();
-        return new(upper, SerieType.Upper, digits);
+        var tmp = new List<SubgroupConjugates<T>>();
+        foreach (var cj in upper)
+        {
+            if (cj.FullName.Contains("SubGr"))
+            {
+                var sub = Restriction(cj.Representative);
+                sub.Naming();
+                var name = sub.AllRepresentatives.Last().Name;
+                cj.Conjugates.ForEach(sg => sg.Name = name);
+            }
+            
+            tmp.Add(cj);
+        }
+        return new(tmp, SerieType.Upper, digits);
     }
 
     public Dictionary<SerieType, Serie<T>[]> AllSeries()
