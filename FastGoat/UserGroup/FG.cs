@@ -237,6 +237,12 @@ public static partial class FG
         return all;
     }
     
+    public static WordGroup MetaCyclicSdpWg(int m, int n, int r)
+    {
+        var name = IntExt.Gcd(m, n * (r - 1)) == 1 ? $"Frob({m},{n},{r})" : $"MtCyc({m},{n},{r})";
+        return WordGroup(name, $"a{m}, b{n}, b-1ab = a{r}");
+    }
+
     public static ConcreteGroup<Ep2<ZnInt, ZnInt>> MetaCyclicSdp(int m, int n, int r)
     {
         var cm = new Cn(m);
