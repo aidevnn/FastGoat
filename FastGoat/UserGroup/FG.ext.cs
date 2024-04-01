@@ -385,7 +385,6 @@ public static partial class FG
         var lvl = Logger.Level;
         Logger.Level = LogLevel.Off;
         var rels = Graph.DefiningRelatorsOfGroup(g);
-        Logger.Level = lvl;
         var gens = rels.Where(c => char.IsLetter(c)).Distinct().Select(c => char.ToLower(c)).Order().ToArray();
         var def = $"< {gens.Glue(",")} | {rels.Replace(" ", "").Replace(",", ", ").Replace("=", " = ")} >";
         Console.WriteLine("Word Group");
@@ -397,6 +396,7 @@ public static partial class FG
         foreach (var e in gapInfos)
             Console.WriteLine($"{$"Gap SmallGroup({e.Order},{e.No})",-24} Name:{e.Name}{s}");
 
+        Logger.Level = lvl;
         Console.WriteLine();
     }
 
@@ -501,6 +501,126 @@ public static partial class FG
                     return [AllIds(ord).First(e => e.No == 4)];
                 else
                     return [AllIds(ord).First(e => e.No == 2)];
+            }
+        }
+
+        if (ord == 64)
+        {
+            if (infos.ToTuples() == (37, 27, 21))
+            {
+                var g6416 = MetaCyclicSdp(8, 8, 7);
+                if (g6416.IsIsomorphicTo(g))
+                    return [AllIds(ord).First(e => e.No == 16)];
+                else
+                    return [AllIds(ord).First(e => e.No == 15)];
+            }
+            
+            if (infos.ToTuples() == (45, 23, 17))
+            {
+                var g6447 = MetaCyclicSdp(16, 4, 15);
+                if (g6447.IsIsomorphicTo(g))
+                    return [AllIds(ord).First(e => e.No == 47)];
+                else
+                    return [AllIds(ord).First(e => e.No == 48)];
+            }
+            
+            if (infos.ToTuples() == (57, 32, 19))
+            {
+                var g6413 = WordGroup("b4, a4b-2, a2ba2b-1, ababababab-1ab-1a-1b-1a-1b-1");
+                if (g6413.IsIsomorphicTo(g))
+                    return [AllIds(ord).First(e => e.No == 13)];
+                else
+                    return [AllIds(ord).First(e => e.No == 14)];
+            }
+            
+            if (infos.ToTuples() == (89, 52, 27))
+            {
+                var g64164 = WordGroup("b4, c2, cbcb-1, ca2ca-2, a2ba2b-1, ab2ca-1c, a3ba-1b-1");
+                if (g64164.IsIsomorphicTo(g))
+                    return [AllIds(ord).First(e => e.No == 164)];
+                else
+                    return [AllIds(ord).First(e => e.No == 165)];
+            }
+            
+            if (infos.ToTuples() == (97, 65, 49))
+            {
+                var g64106 = WordGroup("b4, c2, caca-1, cbcb-1, a2ba2b-1, a3ba-1b-1");
+                if (g64106.IsIsomorphicTo(g))
+                    return [AllIds(ord).First(e => e.No == 106)];
+                else
+                    return [AllIds(ord).First(e => e.No == 107)];
+            }
+            
+            if (infos.ToTuples() == (113, 57, 27))
+            {
+                var g64162 = WordGroup("b4, c2, abcabc, cbcb-1, ca2ca-2, a2ba2b-1, a3ba-1b-1");
+                if (g64162.IsIsomorphicTo(g))
+                    return [AllIds(ord).First(e => e.No == 162)];
+                else
+                    return [AllIds(ord).First(e => e.No == 161)];
+            }
+            
+            if (infos.ToTuples() == (101, 54, 29))
+            {
+                var g64157 = WordGroup("b4, b2c2, bcbc, caca-1, a3ba-1b-1");
+                if (g64157.IsIsomorphicTo(g))
+                    return [AllIds(ord).First(e => e.No == 157)];
+                else
+                    return [AllIds(ord).First(e => e.No == 155)];
+            }
+            
+            if (infos.ToTuples() == (77, 48, 29))
+            {
+                var g64156 = WordGroup("b4, c4, caca-1, ababc-2, a2ba2b-1, cbc-1b-1, a3ba-1b-1");
+                if (g64156.IsIsomorphicTo(g))
+                    return [AllIds(ord).First(e => e.No == 156)];
+                else
+                    return [AllIds(ord).First(e => e.No == 158)];
+            }
+            
+            if (infos.ToTuples() == (81, 49, 33))
+            {
+                var g64179 = WordGroup("b4, b2c2, bcbc-1, bab-1a-1, a3ca-1c-1");
+                if (g64179.IsIsomorphicTo(g))
+                    return [AllIds(ord).First(e => e.No == 179)];
+                else
+                    return [AllIds(ord).First(e => e.No == 181)];
+            }
+            
+            if (infos.ToTuples() == (145, 133, 121))
+            {
+                var g64248 = WordGroup("b2, c2, d2, cdcd, a3cac, a3dad, baba-1, abcba-1c, abdba-1d");
+                if (g64248.IsIsomorphicTo(g))
+                    return [AllIds(ord).First(e => e.No == 248)];
+                else
+                    return [AllIds(ord).First(e => e.No == 200)];
+            }
+            
+            if (infos.ToTuples() == (165, 93, 39))
+            {
+                var g6480 = WordGroup("a4, b4, c4, baba-1, caca-1, b2cb2c-1, cbc2b-1c, a2bcb-1c-1");
+                if (g6480.IsIsomorphicTo(g))
+                    return [AllIds(ord).First(e => e.No == 80)];
+                else
+                    return [AllIds(ord).First(e => e.No == 77)];
+            }
+            
+            if (infos.ToTuples() == (181, 118, 75))
+            {
+                var g64236 = WordGroup("a4, b4, c2, d2, adad, a2bdbd, a2ca2c, a2cdcd, b2db2d, a2bcb-1c, ab2ca-1c, bab-1a-1");
+                if (g64236.IsIsomorphicTo(g))
+                    return [AllIds(ord).First(e => e.No == 236)];
+                else
+                    return [AllIds(ord).First(e => e.No == 240)];
+            }
+            
+            if (infos.ToTuples() == (69, 45, 27))
+            {
+                var g6425 = WordGroup("a8, a4b4, bab2a-1b, ba2b-1a-2, ababab-1ab-1");
+                if (g6425.IsIsomorphicTo(g))
+                    return [AllIds(ord).First(e => e.No == 25)];
+                else
+                    return [AllIds(ord).First(e => e.No == 160)];
             }
         }
 

@@ -454,8 +454,7 @@ Fitting  F(G) = M(4x:8)3
 Word Group
 < a,b | a8, ab-1a-1b3, ab3a-1b-1 >
 
-Gap SmallGroup(64,15)    Name:C8 : C8 (TODO)
-Gap SmallGroup(64,16)    Name:C8 : C8 (TODO)
+Gap SmallGroup(64,15)    Name:C8 : C8
 Group names
     M(8x:8)3
     C4 . QD16
@@ -532,8 +531,7 @@ Fitting  F(G) = M(4x:8)3
 Word Group
 < a,b | a8, b8, baba-1 >
 
-Gap SmallGroup(64,15)    Name:C8 : C8 (TODO)
-Gap SmallGroup(64,16)    Name:C8 : C8 (TODO)
+Gap SmallGroup(64,16)    Name:C8 : C8
 Group names
     M(8x:8)7
     C4 . D16
@@ -651,8 +649,7 @@ Fitting  F(G) = M(8x:4)7
 Word Group
 < a,b | b4, a2ba2b-1, bab2a-1b, a7ba-1b-1, ababab-1ab-1 >
 
-Gap SmallGroup(64,47)    Name:C16 : C4 (TODO)
-Gap SmallGroup(64,48)    Name:C16 : C4 (TODO)
+Gap SmallGroup(64,48)    Name:C16 : C4
 Group names
     M(16x:4)7
     C2 . QD32
@@ -773,8 +770,7 @@ Fitting  F(G) = M(8x:4)7
 Word Group
 < a,b | b4, a16, abab-1 >
 
-Gap SmallGroup(64,47)    Name:C16 : C4 (TODO)
-Gap SmallGroup(64,48)    Name:C16 : C4 (TODO)
+Gap SmallGroup(64,47)    Name:C16 : C4
 Group names
     M(16x:4)15
     C2 . D32
@@ -1755,8 +1751,7 @@ Fitting  F(G) = M(8x:4)3
 Word Group
 < a,b,c | b4, c2, caca-1, cbcb-1, a2ba2b-1, a3ba-1b-1 >
 
-Gap SmallGroup(64,106)   Name:C2 x (C8 : C4) (TODO)
-Gap SmallGroup(64,107)   Name:C2 x (C8 : C4) (TODO)
+Gap SmallGroup(64,106)   Name:C2 x (C8 : C4)
 Group names
     C2 x M(8x:4)3
     (C8 x C2) x: C4
@@ -1849,8 +1844,7 @@ Fitting  F(G) = M(8x:4)7
 Word Group
 < a,b,c | a8, b4, c2, abab-1, caca-1, cbcb-1 >
 
-Gap SmallGroup(64,106)   Name:C2 x (C8 : C4) (TODO)
-Gap SmallGroup(64,107)   Name:C2 x (C8 : C4) (TODO)
+Gap SmallGroup(64,107)   Name:C2 x (C8 : C4)
 Group names
     C2 x M(8x:4)7
     (C8 x C2) x: C4
@@ -3463,8 +3457,7 @@ Fitting  F(G) = C2 x MM16
 Word Group
 < a,b,c | c2, caca-1, a3bab-1c, bab2a-1b, abca-1b-1 >
 
-Gap SmallGroup(64,25)    Name:(C8 x C2) : C4 (TODO)
-Gap SmallGroup(64,160)   Name:(C2 x C2) . (C2 x D8) = (C4 x C2) . (C2 x C2 x C2) (TODO)
+Gap SmallGroup(64,25)    Name:(C8 x C2) : C4
 Group names
     (C8 x C2) x: C4
     MM16 x: C4
@@ -4117,8 +4110,7 @@ Fitting  F(G) = M(8x:4)3
 Word Group
 < a,b,c | b4, b2c2, bcbc-1, bab-1a-1, a3ca-1c-1 >
 
-Gap SmallGroup(64,179)   Name:C8 : Q8 (TODO)
-Gap SmallGroup(64,181)   Name:C8 : Q8 (TODO)
+Gap SmallGroup(64,179)   Name:C8 : Q8
 Group names
     C8 x: Q8
     C4 . QD16
@@ -4158,8 +4150,7 @@ Fitting  F(G) = M(8x:4)7
 Word Group
 < a,b,c | a8, b4, b2c2, acac-1, bcbc-1, bab-1a-1 >
 
-Gap SmallGroup(64,179)   Name:C8 : Q8 (TODO)
-Gap SmallGroup(64,181)   Name:C8 : Q8 (TODO)
+Gap SmallGroup(64,181)   Name:C8 : Q8
 Group names
     C8 x: Q8
     C4 . D16
@@ -5406,8 +5397,7 @@ Fitting  F(G) = (C8 x C2) x: C2
 Word Group
 < a,b,c,d | b2, c2, d2, cdcd, a3cac, a3dad, baba-1, abcba-1c, abdba-1d >
 
-Gap SmallGroup(64,200)   Name:(C4 x Q8) : C2 (TODO)
-Gap SmallGroup(64,248)   Name:C2 x ((C8 x C2) : C2) (TODO)
+Gap SmallGroup(64,248)   Name:C2 x ((C8 x C2) : C2)
 Group names
     (C8 x C2 x C2) x: C2
     (C8 x C2) x: (C2 x C2)
@@ -7583,8 +7573,7 @@ Fitting  F(G) = D8 x: C4
 Word Group
 < a,b,c | b4, b2c2, bcbc, caca-1, a3ba-1b-1 >
 
-Gap SmallGroup(64,155)   Name:(C8 : C4) : C2 (TODO)
-Gap SmallGroup(64,157)   Name:(C8 : C4) : C2 (TODO)
+Gap SmallGroup(64,157)   Name:(C8 : C4) : C2
 Group names
     M(4x:8)3 x: C2
     M(8x:4)3 x: C2
@@ -7629,8 +7618,7 @@ Fitting  F(G) = D8 x: C4
 Word Group
 < a,b,c | a8, b4, b2c2, bcbc, abab-1, caca-1 >
 
-Gap SmallGroup(64,155)   Name:(C8 : C4) : C2 (TODO)
-Gap SmallGroup(64,157)   Name:(C8 : C4) : C2 (TODO)
+Gap SmallGroup(64,155)   Name:(C8 : C4) : C2
 Group names
     M(4x:8)3 x: C2
     M(8x:4)7 x: C2
@@ -7849,8 +7837,7 @@ Fitting  F(G) = (C2 x C2) x: C8
 Word Group
 < a,b,c | b4, c2, cbcb-1, ca2ca-2, a2ba2b-1, ab2ca-1c, a3ba-1b-1 >
 
-Gap SmallGroup(64,164)   Name:(Q8 : C4) : C2 (TODO)
-Gap SmallGroup(64,165)   Name:(Q8 : C4) : C2 (TODO)
+Gap SmallGroup(64,164)   Name:(Q8 : C4) : C2
 Group names
     M(8x:4)3 x: C2
     (Q8 x: C4) x: C2
@@ -7981,8 +7968,7 @@ Fitting  F(G) = (C2 x C2) x: C8
 Word Group
 < a,b,c | b4, c2, abcabc, cbcb-1, ca2ca-2, a2ba2b-1, a3ba-1b-1 >
 
-Gap SmallGroup(64,161)   Name:((C8 x C2) : C2) : C2 (TODO)
-Gap SmallGroup(64,162)   Name:((C8 x C2) : C2) : C2 (TODO)
+Gap SmallGroup(64,162)   Name:((C8 x C2) : C2) : C2
 Group names
     M(8x:4)3 x: C2
     (C2 x M(4x:4)3) x: C2
@@ -8187,8 +8173,7 @@ Fitting  F(G) = (C2 x C2) x: C8
 Word Group
 < a,b,c | b4, b2c2, bcbc, acac-1, a3ba-1b >
 
-Gap SmallGroup(64,164)   Name:(Q8 : C4) : C2 (TODO)
-Gap SmallGroup(64,165)   Name:(Q8 : C4) : C2 (TODO)
+Gap SmallGroup(64,165)   Name:(Q8 : C4) : C2
 Group names
     M(8x:4)7 x: C2
     (Q8 x: C4) x: C2
@@ -8278,8 +8263,7 @@ Fitting  F(G) = (C2 x C2) x: C8
 Word Group
 < a,b,c | a8, b4, c2, abab-1, cbcb-1, ca2ca-2, ab2ca-1c >
 
-Gap SmallGroup(64,161)   Name:((C8 x C2) : C2) : C2 (TODO)
-Gap SmallGroup(64,162)   Name:((C8 x C2) : C2) : C2 (TODO)
+Gap SmallGroup(64,161)   Name:((C8 x C2) : C2) : C2
 Group names
     M(8x:4)7 x: C2
     (C2 x M(4x:4)3) x: C2
@@ -9338,8 +9322,7 @@ Fitting  F(G) = M(8x:4)3
 Word Group
 < a,b,c | b4, c4, caca-1, ababc-2, a2ba2b-1, cbc-1b-1, a3ba-1b-1 >
 
-Gap SmallGroup(64,156)   Name:Q8 : Q8 (TODO)
-Gap SmallGroup(64,158)   Name:Q8 : Q8 (TODO)
+Gap SmallGroup(64,156)   Name:Q8 : Q8
 Group names
     Q8 x: Q8
     C4 . QD16
@@ -9384,8 +9367,7 @@ Fitting  F(G) = M(8x:4)7
 Word Group
 < a,b,c | a8, b4, c4, abab-1, caca-1, a4b2c-2, cbc-1b-1 >
 
-Gap SmallGroup(64,156)   Name:Q8 : Q8 (TODO)
-Gap SmallGroup(64,158)   Name:Q8 : Q8 (TODO)
+Gap SmallGroup(64,158)   Name:Q8 : Q8
 Group names
     Q8 x: Q8
     C4 . Q16
@@ -9734,8 +9716,7 @@ Fitting  F(G) = C4 x: D8
 Word Group
 < a,b,c,d | a4, b4, c2, d2, a2ca2c, b2db2d, dada-1, a2bcb-1c, a2bdb-1d, ab2ca-1c, aca-1dcd, bab-1a-1 >
 
-Gap SmallGroup(64,236)   Name:((C4 x C4) : C2) : C2 (TODO)
-Gap SmallGroup(64,240)   Name:(C4 x D8) : C2 (TODO)
+Gap SmallGroup(64,240)   Name:(C4 x D8) : C2
 Group names
     (C4 x D8) x: C2
     (C4 x: D8) x: C2
@@ -9778,8 +9759,7 @@ Fitting  F(G) = C4 x: D8
 Word Group
 < a,b,c,d | a4, b4, c2, d2, bcbc, bdbd, a2ca2c, a2cdcd, ab2cac, dada-1, bab-1a-1 >
 
-Gap SmallGroup(64,236)   Name:((C4 x C4) : C2) : C2 (TODO)
-Gap SmallGroup(64,240)   Name:(C4 x D8) : C2 (TODO)
+Gap SmallGroup(64,240)   Name:(C4 x D8) : C2
 Group names
     (C4 x D8) x: C2
     (C4 x Q8) x: C2
@@ -10091,8 +10071,7 @@ Fitting  F(G) = (C4 x C2) x: C4
 Word Group
 < a,b,c,d | a4, c4, d2, a2b2, abab-1, c2dc2d, dada-1, dbdb-1, a2cdc-1d, cac-1a-1, cbc-1b-1 >
 
-Gap SmallGroup(64,200)   Name:(C4 x Q8) : C2 (TODO)
-Gap SmallGroup(64,248)   Name:C2 x ((C8 x C2) : C2) (TODO)
+Gap SmallGroup(64,200)   Name:(C4 x Q8) : C2
 Group names
     (C2 x Q8) x: C4
     (C4 x Q8) x: C2
@@ -10534,8 +10513,7 @@ Fitting  F(G) = (C4 x C2) x: C4
 Word Group
 < a,b,c | a4, b4, c4, baba-1, caca-1, b2cb2c-1, cbc2b-1c, a2bcb-1c-1 >
 
-Gap SmallGroup(64,77)    Name:(C2 x (C4 : C4)) : C2 (TODO)
-Gap SmallGroup(64,80)    Name:((C4 x C2) : C4) : C2 (TODO)
+Gap SmallGroup(64,80)    Name:((C4 x C2) : C4) : C2
 Group names
     (C2 x M(4x:4)3) x: C2
     ((C4 x C2) x: C4) x: C2
@@ -10575,8 +10553,7 @@ Fitting  F(G) = (C4 x C2) x: C4
 Word Group
 < a,b,c,d | a4, c4, d2, a2b2, acac, dada-1, dbdb-1, dcdc-1, ababc-2, ac-1ac-1, bcdb-1c-1 >
 
-Gap SmallGroup(64,77)    Name:(C2 x (C4 : C4)) : C2 (TODO)
-Gap SmallGroup(64,80)    Name:((C4 x C2) : C4) : C2 (TODO)
+Gap SmallGroup(64,77)    Name:(C2 x (C4 : C4)) : C2
 Group names
     (C2 x M(4x:4)3) x: C2
     ((C4 x C2) x: C4) x: C2
@@ -10979,8 +10956,7 @@ Fitting  F(G) = M(4x:8)3
 Word Group
 < a,b | b4, a4b-2, a2ba2b-1, ababababab-1ab-1a-1b-1a-1b-1 >
 
-Gap SmallGroup(64,13)    Name:(C2 x C2) . ((C4 x C2) : C2) = (C4 x C2) . (C4 x C2) (TODO)
-Gap SmallGroup(64,14)    Name:(C2 x C2) . ((C4 x C2) : C2) = (C4 x C2) . (C4 x C2) (TODO)
+Gap SmallGroup(64,13)    Name:(C2 x C2) . ((C4 x C2) : C2) = (C4 x C2) . (C4 x C2)
 Group names
     C4 . D16
     C4 . QD16
@@ -11019,8 +10995,7 @@ Fitting  F(G) = M(4x:8)3
 Word Group
 < a,b | a8, b4, a2ba2b-1, bab2a-1b, aba-1baba-1b-1 >
 
-Gap SmallGroup(64,13)    Name:(C2 x C2) . ((C4 x C2) : C2) = (C4 x C2) . (C4 x C2) (TODO)
-Gap SmallGroup(64,14)    Name:(C2 x C2) . ((C4 x C2) : C2) = (C4 x C2) . (C4 x C2) (TODO)
+Gap SmallGroup(64,14)    Name:(C2 x C2) . ((C4 x C2) : C2) = (C4 x C2) . (C4 x C2)
 Group names
     C4 . QD16
     C4 . Q16
@@ -11284,8 +11259,7 @@ Fitting  F(G) = M(8x:4)3
 Word Group
 < a,b,c | b4, b2c2, caca-1, a3ba-1b-1, abacb-1c-1 >
 
-Gap SmallGroup(64,25)    Name:(C8 x C2) : C4 (TODO)
-Gap SmallGroup(64,160)   Name:(C2 x C2) . (C2 x D8) = (C4 x C2) . (C2 x C2 x C2) (TODO)
+Gap SmallGroup(64,160)   Name:(C2 x C2) . (C2 x D8) = (C4 x C2) . (C2 x C2 x C2)
 Group names
     (C4 x C2) . D8
     (C4 x C4) . (C2 x C2)
@@ -11490,4 +11464,4 @@ Group names
     (C2 x C2) . (D8 x: C2)
 
 Total Groups:267
-# End Time:20m10s
+# End Time:21m0s
