@@ -67,6 +67,7 @@ void PrimitivesTransitivesOfSn(int n)
     Console.WriteLine();
 }
 
+void Test()
 {
     PrimitivesTransitivesOfSn(3);
     PrimitivesTransitivesOfSn(4);
@@ -75,4 +76,37 @@ void PrimitivesTransitivesOfSn(int n)
     PrimitivesTransitivesOfSn(7);
     
     Console.Beep();
+}
+
+void WreathProduct<T>(ConcreteGroup<T> H, ConcreteGroup<Perm> S) where T : struct, IElt<T>
+{
+    var n = S.Neutral().Sn.N;
+    var Hn = Product.GpGenerate(H, n);
+    var autHn = Group.AutBase(Hn);
+    var op = S.ToDictionary(s => s, s => new Automorphism<Ep<T>>(autHn, Hn.ToDictionary(ep => ep, ep => new Ep<T>(s.Apply(ep.Ei)))));
+    var theta = new Homomorphism<Perm, Automorphism<Ep<T>>>(S, op);
+    var wr = Group.SemiDirectProd($"{H.NameParenthesis()} wr {S.NameParenthesis()}", Hn, theta, S);
+    
+    FG.DisplayBox(wr.AllSubgroups(), 0);
+    // var subgs = wr.AllSubgroups().ToGroupWrapper();
+    // var names = NamesTree.BuildName(subgs);
+    // FG.DisplayName(subgs.Parent, subgs, names);
+}
+
+{
+    WreathProduct(FG.AbelianPerm(2), FG.AbelianPerm(2));
+    WreathProduct(FG.AbelianPerm(3), FG.AbelianPerm(2));
+    WreathProduct(FG.AbelianPerm(2), FG.AbelianPerm(3));
+    WreathProduct(FG.AbelianPerm(4), FG.AbelianPerm(2));
+    WreathProduct(FG.AbelianPerm(2, 2), FG.AbelianPerm(2));
+    WreathProduct(FG.AbelianPerm(2), FG.Symmetric(3));
+    WreathProduct(FG.AbelianPerm(5), FG.AbelianPerm(2));
+    WreathProduct(FG.AbelianPerm(2), FG.AbelianPerm(4));
+    WreathProduct(FG.AbelianPerm(2), FG.AbelianPerm(2, 2)); // [64,226]
+    var V = FG.PermGroup("C2 x C2", 4, ((1, 2), (3, 4)), ((1, 3), (2, 4)));
+    WreathProduct(FG.AbelianPerm(2), V); // [64,138]
+    WreathProduct(FG.AbelianPerm(6), FG.AbelianPerm(2));
+    WreathProduct(FG.Symmetric(3), FG.AbelianPerm(2));
+    WreathProduct(FG.AbelianPerm(3), FG.AbelianPerm(3));
+    WreathProduct(FG.AbelianPerm(7), FG.AbelianPerm(2));
 }
