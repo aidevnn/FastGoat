@@ -28,7 +28,7 @@ public class GLnq : IGroup<MatFq>
         _hashNeutral = _neutralMat.Aggregate(0, (acc, a) => a.GetHashCode() + Fq.Q * acc);
 
         Hash = (n, q).GetHashCode();
-        Name = $"Gl({n}, {Fq})";
+        Name = $"GL({n}, {Fq})";
     }
 
     private EPoly<ZnInt>[] _neutralMat;
