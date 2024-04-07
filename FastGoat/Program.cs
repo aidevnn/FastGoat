@@ -33,7 +33,7 @@ using GroupRegX = System.Text.RegularExpressions.Group;
 
 Console.WriteLine("Hello World");
 
-MatFq Transpose(MatFq m, EPoly<ZnInt> ax)
+MatFq Transpose(MatFq m)
 {
     var table = m.Table.ToArray();
     var n = m.GLnq.N;
@@ -55,244 +55,176 @@ MatFq Adjoint(MatFq m, EPoly<ZnInt> ax)
     return new(m.GLnq, table);
 }
 
-ConcreteGroup<MatFq> U2p(int p)
+MatFq MulTransp(MatFq m) => m.GLnq.Op(m, Transpose(m));
+
+MatFq TranspMul(MatFq m) => m.GLnq.Op(Transpose(m), m);
+
+ConcreteGroup<MatFq> UnitaryGroup(int p, int ord, bool special = false)
 {
-    if (p < 2 || !Primes10000.Contains(p))
+    if (!Primes10000.Contains(p) || p > 17)
         throw new();
 
     var n = 2;
-    var p2 = p * p;
-    var Glnq = new GLnq(2, p2);
-
-    var a = FG.FqX(p2, 'a');
+    var q2 = p * p;
+    var Glnq = new GLnq(n, q2);
+    var a = Glnq.Fq.X;
     var ax = a.F[0] / a;
-
-    var (_, x1, x2, x3, x4, x5, x6, x7, x8) = Ring.Polynomial(a, MonomOrder.Lex, (9, "x")).Deconstruct();
-    var m = new[] { x1 + a * x2, x3 + a * x4, x5 + a * x6, x7 + a * x8 }.ToKMatrix(2);
-    var mc = new[] { x1 + ax * x2, x5 + ax * x6, x3 + ax * x4, x7 + ax * x8 }.ToKMatrix(2);
-    var j = new[] { x1.Zero, x1.One, x1.One, x1.Zero }.ToKMatrix(n);
-    var P = mc * j * m - j;
-
-    var gens = new List<MatFq>();
-    if (p == 2)
-        gens.Add(Glnq[0, 1, 1, 1]);
-
-    {
-        var subs = new[]
-        {
-            (x1.ExtractIndeterminate, x1.Zero),
-            (x2.ExtractIndeterminate, x1.One),
-            (x3.ExtractIndeterminate, x1.Zero),
-            (x4.ExtractIndeterminate, x1.Zero),
-            (x5.ExtractIndeterminate, x1.Zero),
-            (x6.ExtractIndeterminate, x1.Zero),
-            (x7.ExtractIndeterminate, x1.Zero)
-        }.ToList();
-        var P1 = P.Select(c => c.Substitute(subs)).ToKMatrix(n);
-        var arrP1 = P1.Where(c => !c.IsZero()).ToArray();
-        var sol = Ring.ReducedGrobnerBasis(arrP1)[0];
-
-        var c0 = -sol.ConstTerm;
-        var gi = Glnq[a, 0, 0, c0 * a];
-        gens.Add(gi);
-    }
-
-    {
-        var subs = new[]
-        {
-            (x1.ExtractIndeterminate, x1.Zero),
-            (x2.ExtractIndeterminate, x1.Zero),
-            (x3.ExtractIndeterminate, x1.One),
-            (x4.ExtractIndeterminate, x1.Zero),
-            (x5.ExtractIndeterminate, x1.One),
-            (x6.ExtractIndeterminate, x1.Zero)
-        }.ToList();
-        var P1 = P.Select(c => c.Substitute(subs)).ToKMatrix(n);
-        var arrP1 = P1.Where(c => !c.IsZero()).ToArray();
-        var sol = Ring.ReducedGrobnerBasis(arrP1)[0];
-
-        var e = sol[x7.ExtractMonom];
-        var f = sol[x8.ExtractMonom];
-        var c0 = -(p - 1) * e / f;
-        var gi = Glnq[0, 1, 1, (p - 1) * e + c0 * a];
-        gens.Add(gi);
-    }
-
-    var unp = Group.Generate($"U(2,{p})", Glnq, gens.ToArray());
+    var arrFq = Group.MulGroup($"F{q2}", a).Prepend(a.Zero).ToArray();
     var J = Glnq[0, 1, 1, 0];
-    Console.WriteLine(unp.All(A => J.Equals(Glnq.Op(Adjoint(A, ax), Glnq.Op(J, A)))));
-    return unp;
+    
+    MatFq Prod(MatFq m) => Glnq.Op(Adjoint(m, ax), Glnq.Op(J, m));
+    var gen0 = arrFq.Grid2D().Where(x => !x.t1.IsZero() && !x.t2.IsZero())
+        .Select(x => !special ? Glnq[a, 0, 0, x.t1] : Glnq[0, x.t1, x.t2, 0])
+        .First(m => !m.Equals(Glnq.Neutral()) && Prod(m).Equals(J) && (!special || Glnq.Determinant(m).Equals(a.One)));
+    var gen1 = arrFq.Grid2D().Where(x => !x.t1.IsZero() && !x.t2.IsZero())
+        .Select(x => !special ? Glnq[0, 1, 1, x.t1] : Glnq[0, x.t1, x.t2, 1])
+        .First(m => Prod(m).Equals(J) && (!special || Glnq.Determinant(m).Equals(a.One)));
+
+    var gens = new HashSet<MatFq>() { gen0, gen1 };
+    if (p == 2)
+        gens.Add(Glnq[1, 0, 1, 1]);
+
+    var name = special ? $"SU(2,{p})" : $"GU(2,{p})";
+    var group = Group.Generate(name, Glnq, [..gens]);
+    
+    var check1 = group.GetGenerators().All(m => Prod(m).Equals(J));
+    if (special)
+    {
+        var check2 = group.GetGenerators().All(m => Glnq.Determinant(m).Equals(a.One));
+        Console.WriteLine("All A in {0}, bA*J*A=J {1}, Det A=1 {2}", group.Name, check1, check2);
+    }
+    else
+        Console.WriteLine("All A in {0}, bA*J*A=J {1}", group.Name, check1);
+    
+    group.GetGenerators().Select(m => $"Glnq[{m.Table.Glue(",")}]").Println($"Generators of {group.ShortName}");
+    Console.WriteLine();
+    
+    if (group.Count() != ord)
+        throw new ($"############ expected {ord}");
+    
+    return group;
 }
 
-void TestUnp()
+ConcreteGroup<MatFq> OrthogonalGroup(int q, int ord, bool special = false)
 {
-    GlobalStopWatch.Restart();
-    foreach (var p in Primes10000.Take(4)) // p in { 2,3,5,7,11,13,17 }
+    if (q < 2 || PrimesDec(q).Count != 1)
+        throw new();
+
+    var n = 3;
+    var Glnq = new GLnq(n, q);
+    var a = Glnq.Fq.X;
+    var arrFq = Group.MulGroup($"F{q}", a).Prepend(a.Zero).ToArray();
+    var randGen = (int t0 = 2) =>
+    {
+        while (true)
+        {
+            EPoly<ZnInt>[] m;
+            var (z, o) = (a.Zero, a.One);
+            if (t0 == 0 || t0 == 1)
+            {
+                var t1 = 1 - t0;
+                m = q > 7
+                    ? 6.Range().Select(_ => arrFq[Rng.Next(0, q)]).Concat([o * t0, o * t1, z]).ToArray()
+                    : 9.Range().Select(_ => arrFq[Rng.Next(0, q)]).ToArray();
+            }
+            else
+            {
+                var (r0, r1, r2) = (arrFq[Rng.Next(1, q)], arrFq[Rng.Next(1, q)], arrFq[Rng.Next(1, q)]);
+                m = new[] { r0, z, z, z, z, r1, z, r2, z }.ToArray();
+            }
+            
+            var m0 = new MatFq(Glnq, m);
+            if (MulTransp(m0).Equals(Glnq.Neutral()))
+            {
+                if (!special || Glnq.Determinant(m0).Equals(a.One))
+                    return m0;
+            }
+        }
+    };
+
+    var gens0 = new List<MatFq>() { randGen(), randGen(0), randGen(1) };
+    var set0 = Group.GenerateElements(Glnq, gens0.ToArray());
+    var set = new GroupSubset<MatFq>(gens0.ToHashSet(), set0);
+    while (set.Count < ord)
+    {
+        var sz = set.Count;
+        gens0 = set.Generators.Concat([randGen(), randGen(0), randGen(1)]).ToList();
+        var elts = Group.GenerateElements(Glnq, set.Elements, gens0);
+        if (sz < elts.Count)
+            set = new(gens0.ToHashSet(), elts);
+    }
+
+    if (!set.Generators.All(m => TranspMul(m).Equals(Glnq.Neutral()) && MulTransp(m).Equals(Glnq.Neutral())))
+        throw new();
+
+    var name = special ? $"SO(3,{q})" : $"O(3,{q})";
+    var group = Group.Generate(name, Glnq, set.Generators.ToArray());
+    var check1 = group.All(m => TranspMul(m).Equals(Glnq.Neutral()) && MulTransp(m).Equals(Glnq.Neutral()));
+    if (special)
+    {
+        var check2 = group.All(m => Glnq.Determinant(m).Equals(a.One));
+        Console.WriteLine("All A in {0}, A*AT=I {1}, Det A=1 {2}", group.Name, check1, check2);
+    }
+    else
+        Console.WriteLine("All A in {0}, A*AT=I {1}", group.Name, check1);
+    
+    group.GetGenerators().Select(m => $"Glnq[{m.Table.Glue(",")}]").Println($"Generators of {group.ShortName}");
+    Console.WriteLine();
+
+    return group;
+}
+
+void Test_GU_SU()
+{
+    var infos = new[]
+    {
+        (2, 18, false), (2, 6, true),
+        (3, 96, false), (3, 24, true),
+        (5, 720, false), (5, 120, true),
+        (7, 2688, false), (7, 336, true),
+        (11, 15840, false), (11, 1320, true),
+        (13, 30576, false), (13, 2184, true),
+        // (17, 88128, false), (17, 4896, true), // 10mn
+    };
+    foreach (var (q, ord, isSpecial) in infos)
     {
         GlobalStopWatch.AddLap();
-        var Unp = U2p(p);
-        Console.WriteLine(Unp.ShortName);
-        // if (Unp.Count() < 100)
-        // {
-        //     var sg = Unp.AllSubgroups();
-        //     var idGr = FG.FindIdGroup(Unp, sg.Infos)[0];
-        //     Console.WriteLine(idGr.FullName);
-        // }
-        //
-        GlobalStopWatch.Show(Unp.Name);
+        var group = UnitaryGroup(q, ord, isSpecial);
+        GlobalStopWatch.Show(group.Name);
         Console.WriteLine();
     }
 
     Console.Beep();
 }
-/* |U(2,2)| = 18
-   SmallGroup(18,3) Name:C3 x S3
-   # U(2,2) Time:20ms
 
-   |U(2,3)| = 96
-   SmallGroup(96,67) Name:SL(2,3) : C4
-   # U(2,3) Time:351ms
-
-   |U(2,5)| = 720
-   # U(2,5) Time:66ms
-
-   |U(2,7)| = 2688
-   # U(2,7) Time:541ms
-
-   |U(2,11)| = 15840
-   # U(2,11) Time:14.788s
-
-   |U(2,13)| = 30576
-   # U(2,13) Time:1m6s
-
-   |U(2,17)| = 88128
-   # U(2,17) Time:10m17s
-*/
-
-ConcreteGroup<MatFq> O3p(int p)
+void Test_GO_SO()
 {
-    if (p < 2 || PrimesDec(p).Count != 1)
-        throw new();
-
-    var n = 3;
-    var Glnq = new GLnq(n, p);
-    var a = Glnq.Fq.X;
-    var gens = new List<MatFq>();
-    var randGen1 = () =>
-    {
-        while (true)
-        {
-            var (r0, r1, r2, z) = (Rng.Next(0, p) * a.One, Rng.Next(0, p) * a.One, Rng.Next(0, p) * a.One, a.Zero);
-            var m = new[] { r0, z, z, z, z, r1, z, r2, z }.ToKMatrix(3);
-            var m0 = new MatFq(Glnq, m.ToArray());
-            if ((m * m.T).Equals(m.One)) // (m.T * m).Equals(m.One) && 
-                return m0;
-        }
-    };
-    var randGen2 = (bool t) =>
-    {
-        var t0 = t ? 1 : 0;
-        var t1 = t ? 0 : 1;
-        while (true)
-        {
-            var m = p > 5
-                ? 6.Range().Select(_ => a.One * Rng.Next(0, p)).Concat([a.One * t0, a.One * t1, a.Zero]).ToKMatrix(3)
-                : 9.Range().Select(_ => a.One * Rng.Next(0, p)).ToKMatrix(3);
-            var m0 = new MatFq(Glnq, m.ToArray());
-            if ((m * m.T).Equals(m.One)) // (m.T * m).Equals(m.One) && 
-                return m0;
-        }
-    };
-    
-    gens.AddRange([randGen1(), randGen2(true), randGen2(false)]);
-
-    if (!gens.Select(m => m.Table.ToKMatrix(3)).All(m => (m.T * m).Equals(m.One) && (m * m.T).Equals(m.One)))
-        throw new();
-
-    var o3p = Group.Generate($"O(3,{p})", Glnq, gens.ToArray());
-    var check = o3p.Select(m => m.Table.ToKMatrix(3)).All(m => (m.T * m).Equals(m.One) && (m * m.T).Equals(m.One));
-    Console.WriteLine("All A in {0}, A*AT=I {1}", o3p.Name, check);
-    o3p.GetGenerators().Select(m => $"Glnq[{m.Table.Select(e=>e[0].K).Glue(",")}]").Println($"Generators of {o3p.ShortName}");
-    Console.WriteLine();
-
-    return o3p;
-}
-
-{
-    // TestUnp();
     GlobalStopWatch.Restart();
-    var ps = Primes10000.Take(7).ToArray();
-    var ords = new[] { 6, 48, 240, 672, 2640, 4368, 9792 };
-    for (int k = 0; k < 7; k++)
+    var infos = new[]
     {
-        for (int i = 0; i < 5; i++)
-        {
-            GlobalStopWatch.AddLap();
-            var o3p = O3p(ps[k]);
-            if (o3p.Count() == ords[k])
-            {
-                GlobalStopWatch.Show(o3p.Name);
-                Console.WriteLine();
-                break;
-            }
-            else
-            {
-                GlobalStopWatch.Show($"###### |{o3p}| expected:{ords[k]} actual:{o3p.Count()} ######");
-                Console.WriteLine();
-            }
-        }
+        (2, 6, false), (2, 6, true),
+        (4, 60, false), (4, 60, true),
+        (8, 504, false), (8, 504, true),
+        (3, 48, false), (3, 24, true),
+        (9, 1440, false), (9, 720, true),
+        (5, 240, false), (5, 120, true),
+        (7, 672, false), (7, 336, true),
+        (11, 2640, false), (11, 1320, true),
+        (13, 4368, false), (13, 2184, true),
+        (17, 9792, false), (17, 4896, true),
+    };
+    foreach (var (q, ord, isSpecial) in infos)
+    {
+        GlobalStopWatch.AddLap();
+        var group = OrthogonalGroup(q, ord, isSpecial);
+        GlobalStopWatch.Show(group.Name);
+        Console.WriteLine();
     }
 
     Console.Beep();
 }
 
-/* All A in O(3,2), A*AT=I True
-   Generators of |O(3,2)| = 6
-       Glnq[0,0,1,0,1,0,1,0,0]
-       Glnq[0,1,0,0,0,1,1,0,0]
-   
-   # O(3,2) Time:131ms
-   
-   All A in O(3,3), A*AT=I True
-   Generators of |O(3,3)| = 48
-       Glnq[0,0,1,0,1,0,1,0,0]
-       Glnq[0,0,1,0,2,0,1,0,0]
-       Glnq[1,0,0,0,0,2,0,1,0]
-   
-   # O(3,3) Time:40ms
-   
-   Generators of |O(3,5)| = 240
-       Glnq[1,0,0,0,0,4,0,1,0]
-       Glnq[2,1,4,1,2,4,4,4,2]
-   
-   # O(3,5) Time:760ms
-   
-   All A in O(3,7), A*AT=I True
-   Generators of |O(3,7)| = 672
-       Glnq[0,2,2,0,2,5,1,0,0]
-       Glnq[0,6,0,0,0,1,1,0,0]
-   
-   # O(3,7) Time:1.012s
-   
-   All A in O(3,11), A*AT=I True
-   Generators of |O(3,11)| = 2640
-       Glnq[0,8,6,0,5,8,1,0,0]
-       Glnq[3,0,6,5,0,3,0,1,0]
-   
-   # O(3,11) Time:6.356s
-   
-   All A in O(3,13), A*AT=I True
-   Generators of |O(3,13)| = 4368
-       Glnq[0,0,12,0,12,0,1,0,0]
-       Glnq[0,2,6,0,7,2,1,0,0]
-   
-   # O(3,13) Time:12.084s
-   
-   
-   All A in O(3,17), A*AT=I True
-   Generators of |O(3,17)| = 9792
-       Glnq[0,6,4,0,13,6,1,0,0]
-       Glnq[0,11,4,0,4,6,1,0,0]
-   
-   # O(3,17) Time:48.947s
-*/
+{
+    Test_GU_SU();
+    Test_GO_SO();
+}
