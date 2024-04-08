@@ -1,4 +1,6 @@
+using FastGoat.Commons;
 using FastGoat.Structures;
+using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup;
 using FastGoat.UserGroup.Matrix;
 using FastGoat.UserGroup.Perms;
@@ -210,6 +212,87 @@ public static class UnitaryGroup
                 Console.WriteLine($"{u4_2} is isomorphic to {psp43}");
                 break;
             }
+        }
+    }
+
+    /// <summary>
+    /// Computes and displays the generators of the General Unitary (GU2q) and Special Unitary (SU2q) Groups
+    /// of dimension 2 matrix over a finite field F(q^2).
+    /// </summary>
+    public static void SU2_q()
+    {
+        Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+
+        // Iterate over various values of q and whether the group is special or general
+        foreach (var q in new[] { 2, 4, 8, 3, 9, 5, 7, 11, 13 })
+        {
+            foreach (var isSpecial in new[] { false, true })
+            {
+                // Obtain the appropriate group based on whether it's special or general
+                var group = !isSpecial ? FG.GU2q(q) : FG.SU2q(q);
+
+                // Display the generators of the group
+                group.GetGenerators().Println(m => $"[{m.Table.Glue(",").Replace(" ", "")}]", $"Generators of {group.ShortName}");
+                
+                Console.WriteLine();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Computes and displays the generators of the General Orthogonal (GO3q) and Special Orthogonal (SO3q) Groups
+    /// of dimension 3 matrix over a finite field F(q).
+    /// </summary>
+    public static void SO3_q()
+    {
+        Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+
+        // Iterate over various values of q and whether the group is special or general
+        foreach (var q in new[] { 2, 4, 8, 3, 9, 5, 7, 11, 13 })
+        {
+            foreach (var isSpecial in new[] { false, true })
+            {
+                // Obtain the appropriate group based on whether it's special or general
+                var group = !isSpecial ? FG.GO3q(q) : FG.SO3q(q);
+
+                // Display the generators of the group
+                group.GetGenerators().Println(m => $"[{m.Table.Glue(",").Replace(" ", "")}]", $"Generators of {group.ShortName}");
+                
+                Console.WriteLine();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Determines if the Special Unitary Group of dimension 2 and the Special Orthogonal Group of dimension 3
+    /// are isomorphic for various values of q.
+    /// </summary>
+    public static void Isomorphism_SU2q_SO3q()
+    {
+        Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+
+        // Iterate over various values of q
+        foreach (var q in new[] { 2, 4, 8, 16, 3, 9, 5, 7, 11, 13, 17 })
+        {
+            GlobalStopWatch.AddLap();
+
+            // Get the Special Unitary Group of dimension 2
+            GlobalStopWatch.AddLap();
+            var su2q = FG.SU2q(q);
+            GlobalStopWatch.Show(su2q.ShortName);
+
+            // Get the Special Orthogonal Group of dimension 3
+            GlobalStopWatch.AddLap();
+            var so3q = FG.SO3q(q);
+            GlobalStopWatch.Show(so3q.ShortName);
+
+            // Check if the groups are isomorphic
+            GlobalStopWatch.AddLap();
+            DisplayGroup.AreIsomorphics(su2q, so3q);
+            GlobalStopWatch.Show("Iso");
+            
+            GlobalStopWatch.Show("End");
+            Console.WriteLine();
         }
     }
 }
