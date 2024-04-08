@@ -1,6 +1,4 @@
 ﻿using System.Collections;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Numerics;
 using FastGoat.Commons;
@@ -44,6 +42,10 @@ MatFq Transpose(MatFq m)
     return new(m.GLnq, table);
 }
 
+MatFq MulTransp(MatFq m) => m.GLnq.Op(m, Transpose(m));
+
+MatFq TranspMul(MatFq m) => m.GLnq.Op(Transpose(m), m);
+
 MatFq SelfAdjoint(MatFq m, EPoly<ZnInt> ax)
 {
     var table = m.Table.ToArray();
@@ -66,27 +68,21 @@ ConcreteGroup<MatFq> UnitaryGroup(int q, bool special = false)
     var Glnq = new GLnq(n, q2);
     var a = Glnq.Fq.X;
     var arrFq = Group.MulGroup($"F{q2}", a).Prepend(a.Zero).ToArray();
-    
-    // conj(conj(x))=x then ax(ax) = a
+
+    // conj(conj(x))=x then ax(ax(a)) = a
     var ax = arrFq.First(e => !e.IsZero() && !e.Equals(a) && a.F.Substitute(e).IsZero() && e.Substitute(e).Equals(a));
 
     var J = Glnq[0, 1, 1, 0];
     MatFq Prod(MatFq m) => Glnq.Op(SelfAdjoint(m, ax), Glnq.Op(J, m));
 
-    var gens = arrFq.Grid2D()
-        .SelectMany(x => new[]
+    var gens = arrFq.Grid2D().SelectMany(x => new[]
         {
-            Glnq[0, 1, x.t1, x.t2],
-            Glnq[a, x.t1, 0, x.t2],
-            Glnq[0, x.t1, x.t2, 0],
+            Glnq[0, 1, 1, x.t2],
             Glnq[0, x.t1, x.t2, 1],
-            Glnq[x.t1, 0, 0, x.t2]
+            Glnq[a, 0, 0, x.t2]
         })
         .Where(m => Prod(m).Equals(J) && (!special || Glnq.Determinant(m).Equals(a.One)))
         .ToHashSet();
-
-    if (q == 2)
-        gens.Add(Glnq[1, 0, 1, 1]);
 
     var name = special ? $"SU(2,{q})" : $"GU(2,{q})";
     var group = Group.Generate(name, Glnq, [..gens]);
@@ -106,9 +102,70 @@ ConcreteGroup<MatFq> UnitaryGroup(int q, bool special = false)
     return group;
 }
 
+ConcreteGroup<MatFq> OrthogonalGroup(int q, bool special = false)
+{
+    if (q < 2 || PrimesDec(q).Count != 1 || q > 19)
+        throw new();
+
+    var n = 3;
+    var Glnq = new GLnq(n, q);
+    var a = Glnq.Fq.X;
+    var arrFq = Group.MulGroup($"F{q}", a).Prepend(a.Zero).ToArray();
+
+    var gen0 = arrFq.Grid3D().Where(x => !x.t1.IsZero() && !x.t2.IsZero() && !x.t3.IsZero())
+        .SelectMany(x => new[]
+        {
+            Glnq[x.t1, 0, 0, 0, 0, x.t2, 0, x.t3, 0],
+            Glnq[0, x.t1, 0, 0, 0, x.t2, x.t3, 0, 0],
+            Glnq[0, x.t1, x.t2, 0, x.t3, x.t1, 1, 0, 0],
+            Glnq[x.t1, x.t2, 0, 0, x.t3, x.t1, 1, 0, 0],
+            Glnq[x.t1, x.t2, 1, 1, 1, x.t3, x.t2, x.t1, 1]
+        })
+        .Where(m => MulTransp(m).Equals(Glnq.Neutral()) && (!special || Glnq.Determinant(m).Equals(a.One)))
+        .OrderBy(m => m, Comparer<MatFq>.Create((m0, m1) => m0.Table.SequenceCompareTo(m1.Table)))
+        .ToHashSet();
+
+    if (!gen0.All(m => TranspMul(m).Equals(Glnq.Neutral()) && MulTransp(m).Equals(Glnq.Neutral())))
+        throw new();
+
+    var name = special ? $"SO(3,{q})" : $"O(3,{q})";
+    var group = Group.Generate(name, Glnq, gen0.ToArray());
+    var check1 = group.GetGenerators().All(m => TranspMul(m).Equals(Glnq.Neutral()) && MulTransp(m).Equals(Glnq.Neutral()));
+    if (special)
+    {
+        var check2 = group.All(m => Glnq.Determinant(m).Equals(a.One));
+        Console.WriteLine("All A in {0}, A*AT=I {1}, Det A=1 {2}", group.Name, check1, check2);
+    }
+    else
+        Console.WriteLine("All A in {0}, A*AT=I {1}", group.Name, check1);
+
+    group.GetGenerators().Select(m => $"Glnq[{m.Table.Glue(",")}]").Println($"Generators of {group.ShortName}");
+    Console.WriteLine();
+
+    return group;
+}
+
+void Test_GO_SO()
+{
+    GlobalStopWatch.Restart();
+    foreach (var q in new[] { 2, 4, 8, 16, 3, 9, 5, 7, 11, 13, 17 })
+    {
+        foreach (var isSpecial in new[] { false, true })
+        {
+            GlobalStopWatch.AddLap();
+            var group = OrthogonalGroup(q, isSpecial);
+            GlobalStopWatch.Show(group.Name);
+            Console.WriteLine();
+        }
+    }
+
+    Console.Beep();
+}
+
+void Test_GU_SU()
 {
     Ring.DisplayPolynomial = MonomDisplay.StarCaret;
-    foreach (var q in new[] { 2, 4, 8, 16, 3, 9, 5, 7, 11, 13 })
+    foreach (var q in new[] { 2, 4, 8, 3, 9, 5, 7, 11 })
     {
         foreach (var isSpecial in new[] { false, true })
         {
@@ -121,161 +178,7 @@ ConcreteGroup<MatFq> UnitaryGroup(int q, bool special = false)
 
     Console.Beep();
 }
-/* All A in GU(2,2), bA*J*A=J True
-   Generators of |GU(2,2)| = 18
-       Glnq[0,1,1,0]
-       Glnq[0,1,1,1]
-       Glnq[0,x,x,0]
-   
-   # GU(2,2) Time:536ms
-   
-   All A in SU(2,2), bA*J*A=J True, Det A=1 True
-   Generators of |SU(2,2)| = 6
-       Glnq[0,1,1,0]
-       Glnq[0,1,1,1]
-   
-   # SU(2,2) Time:8ms
-   
-   All A in GU(2,4), bA*J*A=J True
-   Generators of |GU(2,4)| = 300
-       Glnq[0,1,1,0]
-       Glnq[0,1,1,1]
-       Glnq[0,1,1,x^2 + x]
-       Glnq[0,x,x^3 + x^2 + x,0]
-   
-   # GU(2,4) Time:289ms
-   
-   All A in SU(2,4), bA*J*A=J True, Det A=1 True
-   Generators of |SU(2,4)| = 60
-       Glnq[0,1,1,0]
-       Glnq[0,1,1,1]
-       Glnq[0,1,1,x^2 + x]
-   
-   # SU(2,4) Time:92ms
-   
-   All A in GU(2,8), bA*J*A=J True
-   Generators of |GU(2,8)| = 4536
-       Glnq[0,1,1,0]
-       Glnq[0,1,1,1]
-       Glnq[0,1,1,x^4 + x^2 + x]
-       Glnq[0,x,x^5 + x^3 + x^2,0]
-   
-   # GU(2,8) Time:3.758s
-   
-   All A in SU(2,8), bA*J*A=J True, Det A=1 True
-   Generators of |SU(2,8)| = 504
-       Glnq[0,1,1,0]
-       Glnq[0,1,1,1]
-       Glnq[0,1,1,x^4 + x^2 + x]
-   
-   # SU(2,8) Time:1.664s
-   
-   All A in GU(2,16), bA*J*A=J True
-   Generators of |GU(2,16)| = 69360
-       Glnq[0,1,1,0]
-       Glnq[0,1,1,1]
-       Glnq[0,1,1,x^3 + x]
-       Glnq[0,x,x^4 + x^2 + x,0]
-   
-   # GU(2,16) Time:3m40s
-   
-   All A in SU(2,16), bA*J*A=J True, Det A=1 True
-   Generators of |SU(2,16)| = 4080
-       Glnq[0,1,1,0]
-       Glnq[0,1,1,1]
-       Glnq[0,1,1,x^3 + x]
-   
-   # SU(2,16) Time:38.470s
-   
-   All A in GU(2,3), bA*J*A=J True
-   Generators of |GU(2,3)| = 96
-       Glnq[0,1,1,0]
-       Glnq[0,1,1,x + 1]
-       Glnq[0,x,2*x,0]
-   
-   # GU(2,3) Time:15ms
-   
-   All A in SU(2,3), bA*J*A=J True, Det A=1 True
-   Generators of |SU(2,3)| = 24
-       Glnq[0,x + 1,x + 1,0]
-       Glnq[0,x + 1,x + 1,1]
-   
-   # SU(2,3) Time:11ms
-   
-   All A in GU(2,9), bA*J*A=J True
-   Generators of |GU(2,9)| = 7200
-       Glnq[0,1,1,0]
-       Glnq[0,1,1,x^2 + 2]
-       Glnq[0,x,x^3 + 2,0]
-   
-   # GU(2,9) Time:3.934s
-   
-   All A in SU(2,9), bA*J*A=J True, Det A=1 True
-   Generators of |SU(2,9)| = 720
-       Glnq[0,x^2 + 2,2*x^3 + x^2 + 2*x + 1,0]
-       Glnq[0,x^2 + 2,2*x^3 + x^2 + 2*x + 1,1]
-       Glnq[0,x^3 + x + 1,2*x^3 + 2*x^2 + 2*x,0]
-       Glnq[0,x^3 + x + 1,2*x^3 + 2*x^2 + 2*x,1]
-   
-   # SU(2,9) Time:1.336s
-   
-   All A in GU(2,5), bA*J*A=J True
-   Generators of |GU(2,5)| = 720
-       Glnq[0,1,1,0]
-       Glnq[0,1,1,x + 2]
-       Glnq[0,x,3*x,0]
-   
-   # GU(2,5) Time:140ms
-   
-   All A in SU(2,5), bA*J*A=J True, Det A=1 True
-   Generators of |SU(2,5)| = 120
-       Glnq[0,x + 2,2*x + 4,0]
-       Glnq[0,x + 2,2*x + 4,1]
-   
-   # SU(2,5) Time:70ms
-   
-   All A in GU(2,7), bA*J*A=J True
-   Generators of |GU(2,7)| = 2688
-       Glnq[0,1,1,0]
-       Glnq[0,1,1,x + 3]
-       Glnq[0,x,5*x,0]
-   
-   # GU(2,7) Time:808ms
-   
-   All A in SU(2,7), bA*J*A=J True, Det A=1 True
-   Generators of |SU(2,7)| = 336
-       Glnq[0,x + 3,x + 3,0]
-       Glnq[0,x + 3,x + 3,1]
-   
-   # SU(2,7) Time:275ms
-   
-   All A in GU(2,11), bA*J*A=J True
-   Generators of |GU(2,11)| = 15840
-       Glnq[0,1,1,0]
-       Glnq[0,1,1,x +  9]
-       Glnq[0,x, 6*x,0]
-   
-   # GU(2,11) Time:17.813s
-   
-   All A in SU(2,11), bA*J*A=J True, Det A=1 True
-   Generators of |SU(2,11)| = 1320
-       Glnq[0,x +  9, 5*x + 1,0]
-       Glnq[0,x +  9, 5*x + 1,1]
-   
-   # SU(2,11) Time:1.978s
-   
-   All A in GU(2,13), bA*J*A=J True
-   Generators of |GU(2,13)| = 30576
-       Glnq[0,1,1,0]
-       Glnq[0,1,1,x +  6]
-       Glnq[0,x, 7*x,0]
-   
-   # GU(2,13) Time:1m6s
-   
-   All A in SU(2,13), bA*J*A=J True, Det A=1 True
-   Generators of |SU(2,13)| = 2184
-       Glnq[0,x +  6, 8*x +  9,0]
-       Glnq[0,x +  6, 8*x +  9,1]
-   
-   # SU(2,13) Time:3.483s
-*/
+
+{
+    Test_GO_SO();
+}
