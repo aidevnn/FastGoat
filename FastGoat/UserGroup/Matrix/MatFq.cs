@@ -24,6 +24,20 @@ public struct MatFq : IElt<MatFq>
         Table = table.ToArray();
         Hash = hash;
     }
+    
+    public MatFq T
+    {
+        get
+        {
+            var table = Table.ToArray();
+            var n = GLnq.N;
+            for (int i = 0; i < n; i++)
+            for (int j = 0; j < n; j++)
+                table[j * n + i] = Table[i * n + j];
+
+            return new(GLnq, table);
+        }
+    }
 
     public bool Equals(MatFq other) => Table.SequenceEqual(other.Table);
 
