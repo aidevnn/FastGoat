@@ -519,6 +519,95 @@ public static partial class FG
         return Group.Generate($"SL({n},{q})", gl, a, b);
     }
 
+    static HashSet<MatFq> GeneratorsGU2q(int q, bool special)
+    {
+        MatFq SelfAdjoint(MatFq m, EPoly<ZnInt> ax)
+        {
+            var table = m.Table.ToArray();
+            var n = m.GLnq.N;
+            for (int i = 0; i < n; i++)
+            for (int j = 0; j < n; j++)
+                table[j * n + i] = m.Table[i * n + j].Substitute(ax);
+
+            return new(m.GLnq, table);
+        }
+
+        var dec = IntExt.PrimesDec(q);
+        if (dec.Count > 2 || q > 17)
+            throw new();
+
+        var q2 = q * q;
+        var Glnq = new GLnq(2, q2);
+        var a = Glnq.Fq.X;
+        var arrFq = Group.MulGroup($"F{q2}", a).Prepend(a.Zero).ToArray();
+
+        // conj(conj(x))=x then ax(ax(a)) = a
+        var ax = arrFq.First(e => !e.IsZero() && !e.Equals(a) && a.F.Substitute(e).IsZero() && e.Substitute(e).Equals(a));
+
+        var J = Glnq[0, 1, 1, 0];
+        MatFq Prod(MatFq m) => Glnq.Op(SelfAdjoint(m, ax), Glnq.Op(J, m));
+
+        return arrFq.Grid2D().SelectMany(x => new[]
+            {
+                Glnq[0, 1, 1, x.t2],
+                Glnq[0, x.t1, x.t2, 1],
+                Glnq[a, 0, 0, x.t2]
+            })
+            .Where(m => Prod(m).Equals(J) && (!special || Glnq.Determinant(m).Equals(a.One)))
+            .ToHashSet();
+    }
+
+    static HashSet<MatFq> GeneratorsGO3q(int q, bool special)
+    {
+        if (q < 2 || IntExt.PrimesDec(q).Count != 1 || q > 19)
+            throw new();
+        
+        var Glnq = new GLnq(3, q);
+        var a = Glnq.Fq.X;
+        var arrFq = Group.MulGroup($"F{q}", a).Prepend(a.Zero).ToArray();
+
+        return arrFq.Grid3D().Where(x => !x.t1.IsZero() && !x.t2.IsZero() && !x.t3.IsZero())
+            .SelectMany(x => new[]
+            {
+                Glnq[x.t1, 0, 0, 0, 0, x.t2, 0, x.t3, 0],
+                Glnq[0, x.t1, 0, 0, 0, x.t2, x.t3, 0, 0],
+                Glnq[0, x.t1, x.t2, 0, x.t3, x.t1, 1, 0, 0],
+                Glnq[x.t1, x.t2, 0, 0, x.t3, x.t1, 1, 0, 0],
+                Glnq[x.t1, x.t2, 1, 1, 1, x.t3, x.t2, x.t1, 1]
+            })
+            .Where(m => Glnq.Op(m, m.T).Equals(Glnq.Neutral()) && (!special || Glnq.Determinant(m).Equals(a.One)))
+            .OrderBy(m => m, Comparer<MatFq>.Create((m0, m1) => m0.Table.SequenceCompareTo(m1.Table)))
+            .ToHashSet();
+    }
+
+    public static ConcreteGroup<MatFq> GU2q(int q)
+    {
+        var gens = GeneratorsGU2q(q, special: false);
+        var Glnq = gens.First().GLnq;
+        return Group.Generate($"GU(2,{q})", Glnq, [..gens]);
+    }
+
+    public static ConcreteGroup<MatFq> GO3q(int q)
+    {
+        var gens = GeneratorsGO3q(q, special: false);
+        var Glnq = gens.First().GLnq;
+        return Group.Generate($"GO(3,{q})", Glnq, [..gens]);
+    }
+
+    public static ConcreteGroup<MatFq> SU2q(int q)
+    {
+        var gens = GeneratorsGU2q(q, special: true);
+        var Glnq = gens.First().GLnq;
+        return Group.Generate($"SU(2,{q})", Glnq, [..gens]);
+    }
+
+    public static ConcreteGroup<MatFq> SO3q(int q)
+    {
+        var gens = GeneratorsGO3q(q, special: true);
+        var Glnq = gens.First().GLnq;
+        return Group.Generate($"SO(3,{q})", Glnq, [..gens]);
+    }
+
     public static GLn<K> GLnK<K>(int n, K scalar) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         return new GLn<K>(n, scalar);
