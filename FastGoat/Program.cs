@@ -164,6 +164,7 @@ void Test_GO_SO()
 
 void Test_GU_SU()
 {
+    GlobalStopWatch.Restart();
     Ring.DisplayPolynomial = MonomDisplay.StarCaret;
     foreach (var q in new[] { 2, 4, 8, 3, 9, 5, 7, 11 })
     {
@@ -180,5 +181,17 @@ void Test_GU_SU()
 }
 
 {
-    Test_GO_SO();
+    Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+    foreach (var q in new[] { 2, 4, 8, 16, 3, 9, 5, 7, 11, 13, 17 })
+    {
+        GlobalStopWatch.AddLap();
+        var su2q = UnitaryGroup(q, special: true);
+        GlobalStopWatch.Show(su2q.Name);
+        GlobalStopWatch.AddLap();
+        var so3q = OrthogonalGroup(q, special: true);
+        GlobalStopWatch.Show(so3q.Name);
+        Console.WriteLine();
+        DisplayGroup.AreIsomorphics(su2q, so3q);
+        Console.WriteLine();
+    }
 }
