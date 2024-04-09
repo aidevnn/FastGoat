@@ -24,6 +24,8 @@ public struct MatFq : IElt<MatFq>
         Table = table.ToArray();
         Hash = hash;
     }
+
+    public EPoly<ZnInt> Det => GLnq.Determinant(this);
     
     public MatFq T
     {
@@ -48,7 +50,6 @@ public struct MatFq : IElt<MatFq>
 
     public override string ToString()
     {
-        // return $"[{Table.Glue("; ", GLnq.Fmt)}]";
         return Table.ToKMatrix(GLnq.N).ToString();
     }
 }
