@@ -355,7 +355,8 @@ public static partial class FG
 
     public static (KPoly<EPoly<ZnInt>> x, EPoly<ZnInt> a) FqX_Poly(int q) => FqX_Poly(q, ('x', 'a'));
 
-    public static BigInteger GLnqOrder(int n, int q) => BigInteger.Pow(q, n * (n - 1) / 2) * n.Range().Select(k => BigInteger.Pow(q, n - k) - 1)
+    public static BigInteger GLnqOrder(int n, int q) => BigInteger.Pow(q, n * (n - 1) / 2) * n.Range()
+        .Select(k => BigInteger.Pow(q, n - k) - 1)
         .Aggregate(BigInteger.One, (acc, pk) => acc * pk);
 
     public static BigInteger SLnqOrder(int n, int q) => GLnqOrder(n, q) / (q - 1);
@@ -451,7 +452,7 @@ public static partial class FG
         var arrB = b0.Table.Select(e => e[0].K).ToArray();
         return (gl.Create(arrA), gl.Create(arrB));
     }
-    
+
     public static (Mat a, Mat b) SLnpGenerators(int n, int p)
     {
         var (a0, b0) = SLnqGenerators(n, p);
@@ -473,6 +474,7 @@ public static partial class FG
         var gl = a.GL;
         return Group.Generate(gl, a, b);
     }
+
     public static ConcreteGroup<Mat> SLnp(int n, int p)
     {
         var og = SLnqOrder(n, p);
@@ -521,17 +523,6 @@ public static partial class FG
 
     static HashSet<MatFq> GeneratorsGU2q(int q, bool special)
     {
-        MatFq SelfAdjoint(MatFq m, EPoly<ZnInt> ax)
-        {
-            var table = m.Table.ToArray();
-            var n = m.GLnq.N;
-            for (int i = 0; i < n; i++)
-            for (int j = 0; j < n; j++)
-                table[j * n + i] = m.Table[i * n + j].Substitute(ax);
-
-            return new(m.GLnq, table);
-        }
-
         var dec = IntExt.PrimesDec(q);
         if (dec.Count > 2 || q > 17)
             throw new();
@@ -539,29 +530,33 @@ public static partial class FG
         var q2 = q * q;
         var Glnq = new GLnq(2, q2);
         var a = Glnq.Fq.X;
-        var arrFq = Group.MulGroup($"F{q2}", a).Prepend(a.Zero).ToArray();
-
-        // conj(conj(x))=x then ax(ax(a)) = a
-        var ax = arrFq.First(e => !e.IsZero() && !e.Equals(a) && a.F.Substitute(e).IsZero() && e.Substitute(e).Equals(a));
-
-        var J = Glnq[0, 1, 1, 0];
-        MatFq Prod(MatFq m) => Glnq.Op(SelfAdjoint(m, ax), Glnq.Op(J, m));
-
-        return arrFq.Grid2D().SelectMany(x => new[]
-            {
-                Glnq[0, 1, 1, x.t2],
-                Glnq[0, x.t1, x.t2, 1],
-                Glnq[a, 0, 0, x.t2]
-            })
-            .Where(m => Prod(m).Equals(J) && (!special || Glnq.Determinant(m).Equals(a.One)))
-            .ToHashSet();
+        var Fq2 = Group.MulGroup($"F{q2}", a);
+        var ax = a.Pow(q); // in F(q^2), (a^q)^q=a
+        
+        if (!special)
+        {
+            var a0 = Glnq[a, 0, 0, ax.Inv()];
+            var e = Fq2.Where(x => x.Equals(-x.Substitute(ax))).MinBy(x => Fq2.ElementsOrders[x]);
+            var a1 = Glnq[0, 1, 1, e];
+            var J = Glnq[0, 1, 1, 0];
+            return q == 2 ? [J, a0, a1] : [a0, a1];
+        }
+        else
+        {
+            var a0 = Fq2.Where(x =>{
+                var xi = x.Inv();
+                var xib = xi.Substitute(ax);
+                return (xi + xib).Equals(a.Zero) && (-x * xib).Equals(a.One);
+            }).Distinct().Take(2).SelectMany(e1 => new[]{Glnq[1, e1, -e1.Inv(), 0],Glnq[0, e1, -e1.Inv(), 0]});
+            return [..a0];
+        }
     }
 
     static HashSet<MatFq> GeneratorsGO3q(int q, bool special)
     {
         if (q < 2 || IntExt.PrimesDec(q).Count != 1 || q > 19)
             throw new();
-        
+
         var Glnq = new GLnq(3, q);
         var a = Glnq.Fq.X;
         var arrFq = Group.MulGroup($"F{q}", a).Prepend(a.Zero).ToArray();
