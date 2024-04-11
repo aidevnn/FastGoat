@@ -361,6 +361,12 @@ public static partial class FG
 
     public static BigInteger SLnqOrder(int n, int q) => GLnqOrder(n, q) / (q - 1);
 
+    public static BigInteger GUnqOrder(int n, int q) => BigInteger.Pow(q, n * (n - 1) / 2) * n.Range(1)
+        .Select(k => BigInteger.Pow(q, k) - (-1).Pow(k))
+        .Aggregate(BigInteger.One, (acc, pk) => acc * pk);
+
+    public static BigInteger SUnqOrder(int n, int q) => GUnqOrder(n, q) / (q + 1);
+
     public static (MatFq a, MatFq b) GLnqGenerators(int n, int q)
     {
         var gl = new GLnq(n, q);
