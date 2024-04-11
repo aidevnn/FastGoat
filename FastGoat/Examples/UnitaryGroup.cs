@@ -295,4 +295,37 @@ public static class UnitaryGroup
             Console.WriteLine();
         }
     }
+
+    /// <summary>
+    /// Determines if the Special Unitary Group of dimension 2 and the Special Linear Group of dimension 2
+    /// are isomorphic for various values of q.
+    /// </summary>
+    public static void Isomorphism_SU2q_SL2q()
+    {
+        Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+
+        // Iterate over various values of q
+        foreach (var q in new[] { 2, 4, 8, 16, 3, 9, 5, 7, 11, 13, 17 })
+        {
+            GlobalStopWatch.AddLap();
+
+            // Get the Special Unitary Group of dimension 2
+            GlobalStopWatch.AddLap();
+            var su2q = FG.SU2q(q);
+            GlobalStopWatch.Show(su2q.ShortName);
+
+            // Get the Special Linear Group of dimension 2
+            GlobalStopWatch.AddLap();
+            var sl2q = FG.SLnq(2, q);
+            GlobalStopWatch.Show(sl2q.ShortName);
+
+            // Check if the groups are isomorphic
+            GlobalStopWatch.AddLap();
+            DisplayGroup.AreIsomorphics(su2q, sl2q);
+            GlobalStopWatch.Show("Iso");
+            
+            GlobalStopWatch.Show("End");
+            Console.WriteLine();
+        }
+    }
 }
