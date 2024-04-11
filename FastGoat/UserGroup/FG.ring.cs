@@ -529,9 +529,8 @@ public static partial class FG
 
     static HashSet<MatFq> GeneratorsGU2q(int q, bool special)
     {
-        var dec = IntExt.PrimesDec(q);
-        if (dec.Count > 2 || q > 17)
-            throw new();
+        if (q < 2 || IntExt.PrimesDec(q).Count > 2 || (!special && GUnqOrder(2, q) > 50000) || (special && SUnqOrder(2, q) > 50000))
+            throw new($"Out of bounds, q={q} not prime p^r or GU(2,q)>50000 or SU(2,q)>50000");
 
         var q2 = q * q;
         var Glnq = new GLnq(2, q2);
@@ -539,22 +538,47 @@ public static partial class FG
         var Fq2 = Group.MulGroup($"F{q2}", a);
         var ax = a.Pow(q); // in F(q^2), (a^q)^q=a
         
+        if (q == 2)
+        {
+            var J = Glnq[0, 1, 1, 0];
+            if (!special)
+            {
+                var A = Glnq[a, a, 0, a];
+                return [A, J];
+            }
+            else
+            {
+                var A = Glnq[1, 1, 0, 1];
+                return [A, J];
+            }
+        }
+        
         if (!special)
         {
-            var a0 = Glnq[a, 0, 0, ax.Inv()];
+            var gen0 = Glnq[a, 0, 0, ax.Inv()];
             var e = Fq2.Where(x => x.Equals(-x.Substitute(ax))).MinBy(x => Fq2.ElementsOrders[x]);
-            var a1 = Glnq[0, 1, 1, e];
-            var J = Glnq[0, 1, 1, 0];
-            return q == 2 ? [J, a0, a1] : [a0, a1];
+            var gen1 = Glnq[0, 1, 1, e];
+            return [gen0, gen1];
         }
         else
         {
-            var a0 = Fq2.Where(x =>{
+            var e0 = Fq2.Where(x =>
+            {
                 var xi = x.Inv();
                 var xib = xi.Substitute(ax);
                 return (xi + xib).Equals(a.Zero) && (-x * xib).Equals(a.One);
-            }).Distinct().Take(2).SelectMany(e1 => new[]{Glnq[1, e1, -e1.Inv(), 0],Glnq[0, e1, -e1.Inv(), 0]});
-            return [..a0];
+            }).Distinct().MaxBy(x => Fq2.ElementsOrders[x]);
+            var gen0 = Glnq[1, e0, -e0.Inv(), 0];
+
+            if (q == 3)
+            {
+                var gen01 = Glnq[0, e0, -e0.Inv(), 0];
+                return [gen0, gen01];
+            }
+            
+            var e1 = Fq2.Where(x => (x.Inv() * x.Substitute(ax)).Equals(a.One)).MaxBy(x => Fq2.ElementsOrders[x]);
+            var gen1 = Glnq[e1, 0, 0, e1.Inv()];
+            return [gen1, gen0];
         }
     }
 
