@@ -367,6 +367,22 @@ public static partial class FG
 
     public static BigInteger SUnqOrder(int n, int q) => GUnqOrder(n, q) / (q + 1);
 
+    public static BigInteger GOnqOrder(int n, int q)
+    {
+        var k = q % 2 == 0 ? 1 : 2;
+        if (n % 2 != 0)
+        {
+            return k * BigInteger.Pow(q, (n - 1).Pow(2) / 4) *
+                   ((n - 1) / 2).Range(1)
+                   .Select(i => BigInteger.Pow(q, 2 * i) - 1)
+                   .Aggregate(BigInteger.One, (acc, pk) => acc * pk);
+        }
+        else
+            throw new($"n={n} must be odd");
+    }
+
+    public static BigInteger SOnqOrder(int n, int q) => q % 2 == 0 ? GOnqOrder(n, q) : GOnqOrder(n, q) / 2;
+
     public static (MatFq a, MatFq b) GLnqGenerators(int n, int q)
     {
         var gl = new GLnq(n, q);
@@ -584,8 +600,8 @@ public static partial class FG
 
     static HashSet<MatFq> GeneratorsGO3q(int q, bool special)
     {
-        if (q < 2 || IntExt.PrimesDec(q).Count != 1 || q > 19)
-            throw new();
+        if (q < 2 || IntExt.PrimesDec(q).Count != 1 || (!special && GOnqOrder(3, q) > 50000) || (special && SOnqOrder(3, q) > 50000))
+            throw new($"Out of bounds, q={q} not prime p^r or GO(2,q)>50000 or SO(2,q)>50000");
 
         var Glnq = new GLnq(3, q);
         var a = Glnq.Fq.X;
