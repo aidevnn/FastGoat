@@ -174,4 +174,22 @@ public static class PSL2q
         var l2_27 = sl2_27.Over(zg2_27, "L2(27)");
         DisplayGroup.Head(l2_27); // |L2(27)| = 9828
     }
+
+    public static void L2pWordGroup()
+    {
+        foreach (var p in new[] { 5, 7, 11, 13 })
+        {
+            if (!IntExt.Primes10000.Contains(p) || p <= 3)
+                throw new();
+
+            var s = $"a4ba{(p + 1) / 2}b";
+            var rel = $"a{p}, {s}{s}, ababab=b2";
+            var wg = FG.WordGroup($"L({p})", rel);
+
+            Console.WriteLine($"{wg.ShortName}");
+            Console.WriteLine($"{wg.Definition}");
+            DisplayGroup.AreIsomorphics(wg, FG.L2p(p));
+            Console.WriteLine();
+        }
+    }
 }
