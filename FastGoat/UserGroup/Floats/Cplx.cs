@@ -52,6 +52,7 @@ public readonly struct Cplx : IElt<Cplx>, IRingElt<Cplx>, IFieldElt<Cplx>, IVsEl
     public bool IsZero() => K.Magnitude < EpsSingle;
     public bool IsReal() => Double.Abs(K.Imaginary) < EpsSingle;
     public bool IsImaginary() => Double.Abs(K.Real) < EpsSingle;
+    public BigCplx ToBigComplex(int O = 40) => new(BigReal.FromDouble(RealPart, O), BigReal.FromDouble(ImaginaryPart, O));
 
     public static Cplx I => new(Complex.ImaginaryOne);
 
