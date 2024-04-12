@@ -1,4 +1,5 @@
 using FastGoat.Structures;
+using FastGoat.UserGroup;
 using FastGoat.UserGroup.Matrix;
 using FastGoat.UserGroup.Perms;
 
@@ -89,5 +90,22 @@ public static class PSLnp
         var pMap = Group.PartialMap((a2, ra), (b2, rb));
         var isom = Group.IsomorphismMap(pg, l33, pMap);
         Console.WriteLine("{0} IsIsomorphicTo {1} : {2}", pg, l33, isom.Count == l33.Count());
+    }
+
+    public static void L42()
+    {
+        var sl42 = FG.SLnp(4, 2);
+        DisplayGroup.HeadOrders(sl42);
+
+        var a8 = FG.Alternate(8);
+        DisplayGroup.AreIsomorphics(sl42, a8);
+        
+        var sl34 = FG.SLnq(3, 4);
+        DisplayGroup.HeadOrders(sl34);
+        var zsl34 = Group.Zentrum(sl34);
+        var l34 = sl34.Over(zsl34, "L3(4)");
+        DisplayGroup.HeadOrders(l34);
+        
+        DisplayGroup.AreIsomorphics(sl42, l34);
     }
 }
