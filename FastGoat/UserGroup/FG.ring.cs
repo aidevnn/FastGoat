@@ -603,22 +603,44 @@ public static partial class FG
         if (q < 2 || IntExt.PrimesDec(q).Count != 1 || (!special && GOnqOrder(3, q) > 50000) || (special && SOnqOrder(3, q) > 50000))
             throw new($"Out of bounds, q={q} not prime p^r or GO(2,q)>50000 or SO(2,q)>50000");
 
+        int OrderMatOrth(EPoly<ZnInt> x0, EPoly<ZnInt> y0)
+        {
+            var (x1, y1) = (x0.One, y0.Zero);
+            for (int i = 1; i < 50; i++)
+            {
+                (x1, y1) = (x0 * x1 - y0 * y1, x0 * y1 + y0 * x1);
+                if (x1.Equals(x1.One) && y1.IsZero())
+                    return i;
+            }
+
+            throw new("####################################");
+        }
+
         var Glnq = new GLnq(3, q);
         var a = Glnq.Fq.X;
-        var arrFq = Group.MulGroup($"F{q}", a).Prepend(a.Zero).ToArray();
+        var arrFq = Group.MulGroup($"F{q}", a);
+        var pows = q.Range(-1).ToDictionary(k => k == -1 ? a.Zero : a.Pow(k), k => k);
+        var square = arrFq.Append(a.Zero).Select(x => (x, x2: x * x)).GroupBy(e => e.x2)
+            .ToDictionary(e => e.Key, e => e.Select(f => f.x).ToArray());
+        var dicSquare = arrFq.ToDictionary(x => x, x => square.ContainsKey(x) ? square[x] : []);
+        dicSquare[a.Zero] = [];
+        var possibles = arrFq.Append(a.Zero)
+            .Select(x0 => (x: x0, yList: dicSquare[1 - x0 * x0]))
+            .Where(e => e.yList.Length != 0)
+            .SelectMany(e => e.yList.Select(y0 => (e.x, y: y0)))
+            .Distinct()
+            .Select(e => (e.x, e.y, mat: Glnq[1, 0, 0, 0, e.x, e.y, 0, -e.y, e.x]))
+            .Select(e => (e, OrderMatOrth(e.x, e.y)))
+            .OrderByDescending(e => e.Item2)
+            .ThenByDescending(e => pows[e.e.x])
+            .ToArray();
 
-        return arrFq.Grid3D().Where(x => !x.t1.IsZero() && !x.t2.IsZero() && !x.t3.IsZero())
-            .SelectMany(x => new[]
-            {
-                Glnq[x.t1, 0, 0, 0, 0, x.t2, 0, x.t3, 0],
-                Glnq[0, x.t1, 0, 0, 0, x.t2, x.t3, 0, 0],
-                Glnq[0, x.t1, x.t2, 0, x.t3, x.t1, 1, 0, 0],
-                Glnq[x.t1, x.t2, 0, 0, x.t3, x.t1, 1, 0, 0],
-                Glnq[x.t1, x.t2, 1, 1, 1, x.t3, x.t2, x.t1, 1]
-            })
-            .Where(m => Glnq.Op(m, m.T).Equals(Glnq.Neutral()) && (!special || Glnq.Determinant(m).Equals(a.One)))
-            .OrderBy(m => m, Comparer<MatFq>.Create((m0, m1) => m0.Table.SequenceCompareTo(m1.Table)))
-            .ToHashSet();
+        var e0 = special ? a.One : -a.One;
+        var ide = Glnq[e0, 0, 0, 0, e0, 0, 0, 0, e0];
+
+        var m0 = possibles[0].e.mat;
+        var m1 = q != 5 ? Glnq[0, 1, 0, 0, 0, 1, 1, 0, 0] : Glnq[3, 1, 1, 1, 4, 3, 4, 2, 1];
+        return [m0, Glnq.Op(m1, ide)];
     }
 
     public static ConcreteGroup<MatFq> GU2q(int q)
