@@ -73,6 +73,16 @@ public static class ReadMeCode
         var P = x.Pow(7) - 8 * x.Pow(5) - 2 * x.Pow(4) + 16 * x.Pow(3) + 6 * x.Pow(2) - 6 * x - 2; // GroupNames website
         GaloisApplicationsPart2.GaloisGroupChebotarev(P, details: true);
     }
+
+    public static void ExampleMatrixGeneratorsGroup21()
+    {
+        var c7 = new Cn(7);
+        var c3 = new Cn(3);
+        var g21 = Group.SemiDirectProd(c7, c3);
+        var gl27 = FG.GL2p(7);
+        var g21mat = Group.IsomorphicSubgroup(gl27, g21);
+        DisplayGroup.HeadGenerators(g21mat);
+    }
     
     public static void ExampleGaloisCyclicGroup5()
     {

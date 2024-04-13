@@ -110,6 +110,33 @@ NormalSubGroup  |N| = 7
 # Group21 Time:1 ms
 ```
 
+## Matrix form of the group $C_7 \rtimes C_3$
+
+Expressing the group $C_7 \rtimes C_3$ in $GL(2,\mathbb{F}_7)$
+
+```csharp
+var gl27 = FG.GL2p(7);
+var g21mat = Group.IsomorphicSubgroup(gl27, g21);
+DisplayGroup.HeadGenerators(g21mat);
+```
+will output
+```dotnetcli
+|C7 x: C3| = 21
+Type        NonAbelianGroup
+BaseGroup   GL(2,7)
+SuperGroup  |GL(2,7)| = 2016
+
+Generators of C7 x: C3
+gen1 of order 3
+[2, 0]
+[0, 1]
+
+gen2 of order 7
+[1, 1]
+[0, 1]
+```
+
+
 ## Characters Table
 
 Displaying characters table for the group $C_7 \rtimes C_3$ in $\textbf{S}_7$
