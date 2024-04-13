@@ -128,6 +128,17 @@ public static class DisplayGroup
                 .GlueMap(fmt: "[{0}]:{1}"));
     }
 
+    public static void Generators<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
+    {
+        Console.WriteLine($"Generators of {g.Name}");
+        foreach (var (elt, i) in g.GetGenerators().OrderBy(elt => g.ElementsOrders[elt]).Select((e, i) => (e, i + 1)))
+        {
+            Console.WriteLine($"gen{i} of order {g.ElementsOrders[elt]}");
+            Console.WriteLine(elt);
+            Console.WriteLine();
+        }
+    }
+
     public static void HeadOrders<T>(ConcreteGroup<T> g, bool newline = true) where T : struct, IElt<T>
     {
         Head(g);
@@ -300,5 +311,11 @@ public static class DisplayGroup
         Console.WriteLine(infos);
         names.Println("Group names");
         Console.WriteLine();
+    }
+
+    public static void HeadGenerators<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
+    {
+        Head(g);
+        Generators(g);
     }
 }
