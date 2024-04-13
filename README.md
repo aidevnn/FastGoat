@@ -112,7 +112,7 @@ NormalSubGroup  |N| = 7
 
 ## Matrix form of the group $C_7 \rtimes C_3$
 
-Expressing the group $C_7 \rtimes C_3$ in $GL(2,\mathbb{F}_7)$
+Expressing the group $C_7 \rtimes C_3$ in $\textbf{GL}(2,\mathbb{F}_7)$
 
 ```csharp
 var gl27 = FG.GL2p(7);
