@@ -57,6 +57,8 @@ public struct Mat : IElt<Mat>
         }
     }
 
+    public int Det => GL.Det(this);
+
     public Mat At(Tuple2Array at, int value) => GL.At(Table, at, value);
     public bool Equals(Mat other) => Hash == other.Hash && Table.SequenceEqual(other.Table);
 
