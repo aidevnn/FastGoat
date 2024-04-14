@@ -232,7 +232,7 @@ public static partial class Group
         if (iso.HomMap is null)
             throw new GroupException(GroupExceptionType.GroupDef);
 
-        return Generate($"{name}", g, iso.Image().ToArray());
+        return Generate($"{name}", g, sg.GetGenerators().Select(e => iso[e]).ToArray());
     }
 
     public static ConcreteGroup<T1> IsomorphicSubgroup<T1, T2>(ConcreteGroup<T1> g, ConcreteGroup<T2> sg)
