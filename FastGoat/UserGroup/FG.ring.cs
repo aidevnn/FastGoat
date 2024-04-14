@@ -657,6 +657,28 @@ public static partial class FG
         return Group.Generate($"GO(3,{q})", Glnq, [..gens]);
     }
 
+    public static ConcreteGroup<Mat> GO3p(int p)
+    {
+        if (!IntExt.Primes10000.Contains(p))
+            throw new($"p={p} isnt prime");
+        
+        var gens = GeneratorsGO3q(p, special: false);
+        var gl = new GL(3, p);
+        var gens0 = gens.Select(m => gl.Create(m.Table.Select(c => c[0].K).ToArray())).ToArray();
+        return Group.Generate($"GO(3,{p})", gl, gens0);
+    }
+
+    public static ConcreteGroup<Mat> SO3p(int p)
+    {
+        if (!IntExt.Primes10000.Contains(p))
+            throw new($"p={p} isnt prime");
+        
+        var gens = GeneratorsGO3q(p, special: true);
+        var gl = new GL(3, p);
+        var gens0 = gens.Select(m => gl.Create(m.Table.Select(c => c[0].K).ToArray())).ToArray();
+        return Group.Generate($"SO(3,{p})", gl, gens0);
+    }
+
     public static ConcreteGroup<MatFq> SU2q(int q)
     {
         var gens = GeneratorsGU2q(q, special: true);
