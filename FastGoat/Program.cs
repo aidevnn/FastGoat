@@ -82,11 +82,11 @@ void MatrixFormGroupsOrd9()
     var g33 = Group.Generate("(C3 x C3)mat", gl2, gen3a, gen3b);
     var ab9 = FG.Abelian(9);
     var ab33 = FG.Abelian(3, 3);
-    
+
     DisplayGroup.Generators(g9);
     DisplayGroup.AreIsomorphics(g9, ab9);
     Console.WriteLine();
-    
+
     DisplayGroup.Generators(g33);
     DisplayGroup.AreIsomorphics(g33, ab33);
     Console.WriteLine();
@@ -133,10 +133,65 @@ void MatrixFormGroupsOrd14()
     }
 }
 
+// {
+//     MatrixFormGroupsOrd8();
+//     MatrixFormGroupsOrd9();
+//     MatrixFormGroupsOrd10();
+//     MatrixFormGroupsOrd12();
+//     MatrixFormGroupsOrd14();
+// }
+
+(ZnInt x, ZnInt y) FindGLnp(int n)
 {
-    MatrixFormGroupsOrd8();
-    MatrixFormGroupsOrd9();
-    MatrixFormGroupsOrd10();
-    MatrixFormGroupsOrd12();
-    MatrixFormGroupsOrd14();
+    int OrderMatOrth(ZnInt x0, ZnInt y0)
+    {
+        var (x1, y1) = (x0.One, y0.Zero);
+        for (int i = 1; i < 1000; i++)
+        {
+            (x1, y1) = (x0 * x1 - y0 * y1, x0 * y1 + y0 * x1);
+            if (x1.Equals(x1.One) && y1.IsZero())
+                return i;
+        }
+
+        throw new("####################################");
+    }
+
+    foreach (var p in Primes10000.Where(p => p >= n))
+    {
+        var a = Un.FirstGen(p);
+        var Zp = Group.MulGroup($"F{p}", a);
+        var square = Zp.Append(a.Zero).Select(x => (x, x2: x * x)).GroupBy(e => e.x2)
+            .ToDictionary(e => e.Key, e => e.Select(f => f.x).ToArray());
+        var dicSquare = Zp.ToDictionary(x => x, x => square.ContainsKey(x) ? square[x] : []);
+        dicSquare[a.Zero] = [];
+        var candidates = Zp.Append(a.Zero)
+            .Select(x0 => (x: x0, yList: dicSquare[1 - x0 * x0]))
+            .Where(e => e.yList.Length != 0)
+            .SelectMany(e => e.yList.Select(y0 => (e.x, y: y0)))
+            .Distinct()
+            .Select(e => (e.x, e.y))
+            .Where(e => OrderMatOrth(e.x, e.y) == n)
+            .OrderBy(e => e.x.K)
+            .ToArray();
+
+        if (candidates.Length != 0)
+            return candidates[0];
+    }
+
+    throw new();
+}
+
+{
+    for (int n = 3; n < 33; n++)
+    {
+        var (x, y) = FindGLnp(n);
+        var gl = new GL(2, x.P);
+        var a = gl[x.K, y.K, (-y).K, x.K];
+        var b = gl[0, 1, 1, 0];
+        var D2n = Group.Generate($"D{2 * n}", gl, a, b);
+        DisplayGroup.HeadGenerators(D2n);
+        var subgs = D2n.AllSubgroups();
+        FG.FindIdGroup(D2n, subgs.Infos).Println(e => e.FullName);
+        Console.WriteLine();
+    }
 }
