@@ -545,8 +545,9 @@ public static partial class FG
 
     static HashSet<MatFq> GeneratorsGU2q(int q, bool special)
     {
-        if (q < 2 || IntExt.PrimesDec(q).Count > 2 || (!special && GUnqOrder(2, q) > 50000) || (special && SUnqOrder(2, q) > 50000))
-            throw new($"Out of bounds, q={q} not prime p^r or GU(2,q)>50000 or SU(2,q)>50000");
+        if (q < 2 || IntExt.PrimesDec(q).Count > 2 || (!special && GUnqOrder(2, q) > MatrixGroupMaxOrder) ||
+            (special && SUnqOrder(2, q) > MatrixGroupMaxOrder))
+            throw new($"Out of bounds, q={q} not prime p^r or GU(2,q)>{MatrixGroupMaxOrder} or SU(2,q)>{MatrixGroupMaxOrder}");
 
         var q2 = q * q;
         var Glnq = new GLnq(2, q2);
@@ -600,8 +601,9 @@ public static partial class FG
 
     static HashSet<MatFq> GeneratorsGO3q(int q, bool special)
     {
-        if (q < 2 || IntExt.PrimesDec(q).Count != 1 || (!special && GOnqOrder(3, q) > 50000) || (special && SOnqOrder(3, q) > 50000))
-            throw new($"Out of bounds, q={q} not prime p^r or GO(2,q)>50000 or SO(2,q)>50000");
+        if (q < 2 || IntExt.PrimesDec(q).Count != 1 || (!special && GOnqOrder(3, q) > MatrixGroupMaxOrder) ||
+            (special && SOnqOrder(3, q) > MatrixGroupMaxOrder))
+            throw new($"Out of bounds, q={q} not prime p^r or GO(3,q)>{MatrixGroupMaxOrder} or SO(3,q)>{MatrixGroupMaxOrder}");
 
         int OrderMatOrth(EPoly<ZnInt> x0, EPoly<ZnInt> y0)
         {
