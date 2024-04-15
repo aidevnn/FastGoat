@@ -136,8 +136,9 @@ public static class DisplayGroup
         {
             Console.WriteLine($"gen{i} of order {g.ElementsOrders[elt]}");
             Console.WriteLine(elt);
-            Console.WriteLine();
         }
+        
+        Console.WriteLine();
     }
 
     public static void HeadOrders<T>(ConcreteGroup<T> g, bool newline = true) where T : struct, IElt<T>
