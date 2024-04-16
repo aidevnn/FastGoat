@@ -23,9 +23,9 @@ public readonly struct ZnInt : IElt<ZnInt>, IRingElt<ZnInt>, IFieldElt<ZnInt>
     public static ZnInt ZpZero(int p = 2) =>
         IntExt.Primes10000.Contains(p) ? new(p, 0) : throw new GroupException(GroupExceptionType.GroupDef);
 
-    public ZnInt(int m, int k)
+    public ZnInt(int mod, int k)
     {
-        Mod = m;
+        Mod = mod;
         K = Mod == 0 ? k : IntExt.AmodP(k, Mod);
         Hash = (K, Mod).GetHashCode();
     }
