@@ -95,6 +95,16 @@ public static partial class FG
         return d2n;
     }
 
+    public static ConcreteGroup<Mat> DihedralGL2p(int n)
+    {
+        var p = IntExt.Primes10000.First(p => (p - 1) % n == 0);
+        var a0 = IntExt.Solve_k_pow_m_equal_one_mod_n_strict(p, n);
+        var ord_n = new ZnInt(p, a0);
+        var gl = new GL(2, p);
+        var m0 = gl[ord_n.K, 0, 0, ord_n.Inv().K];
+        var m1 = gl[0, 1, 1, 0];
+        return Group.Generate($"D{2 * n}", gl, m0, m1);
+    }
     public static ConcreteGroup<Perm> PermGroup(string name, int n, params ValueType[] generators)
     {
         var sn = new Sn(n);
@@ -304,41 +314,21 @@ public static partial class FG
 
         return all;
     }
-    
-    public static WordGroup DiCyclic(int n) => new($"Dic{n}wg", $"a{n} = b2, b2 = abab");
+
+    public static WordGroup DiCyclic(int n) => new(int.IsPow2(4 * n) ? $"Q{4 * n}" : $"Dic{n}", $"a{n} = b2, b2 = abab");
 
     public static ConcreteGroup<Mat> Quaternion(int k)
     {
-        var m = Math.Log2(k);
-        if (Math.Abs(m - 3.0) < 1e-5)
-        {
-            var gl = new GL(2, 3);
-            return Group.Generate("Q8", gl, gl[2, 2, 2, 1], gl[0, 1, 2, 0]);
-        }
+        if (int.IsPow2(k))
+            return DicyclicGL2p(k / 4);
 
-        if (Math.Abs(m - 4.0) < 1e-5)
-        {
-            var gl = new GL(2, 7);
-            return Group.Generate("Q16", gl, gl[0, 1, 6, 3], gl[6, 1, 5, 1]);
-        }
+        throw new GroupException(GroupExceptionType.GroupDef);
+    }
 
-        if (Math.Abs(m - 5.0) < 1e-5)
-        {
-            var gl = new GL(2, 17);
-            return Group.Generate("Q32", gl, gl[14, 0, 0, 11], gl[0, 16, 1, 0]);
-        }
-
-        if (Math.Abs(m - 6.0) < 1e-5)
-        {
-            var gl = new GL(2, 31);
-            return Group.Generate("Q64", gl, gl[16, 12, 12, 11], gl[0, 1, 30, 0]);
-        }
-
-        if (Math.Abs(m - 7.0) < 1e-5)
-        {
-            var gl = new GL(2, 193);
-            return Group.Generate("Q128", gl, gl[78, 38, 155, 78], gl[71, 13, 13, 122]);
-        }
+    public static WordGroup QuaternionWg(int k)
+    {
+        if (int.IsPow2(k))
+            return DiCyclic(k / 4);
 
         throw new GroupException(GroupExceptionType.GroupDef);
     }
@@ -397,6 +387,21 @@ public static partial class FG
         return Group.SemiDirectProd($"Dic{n}", cn, theta1, c4);
     }
 
+    public static ConcreteGroup<Mat> DicyclicGL2p(int m)
+    {
+        var (p, a0) = IntExt.Primes10000.Select(p => (p, IntExt.Solve_k_pow_m_equal_one_mod_n_strict(p, 2 * m)))
+            .First(e => e.Item2 != -1);
+        var a = new ZnInt(p, a0);
+        var ai = a.Inv();
+        var gl = new GL(2, p);
+        var Am = gl[a.K, 0, 0, ai.K];
+        var B = gl[0, 1, -1, 0];
+        var Dic_m = Group.Generate($"Dic{m}", gl, Am, B);
+        if (int.IsPow2(Dic_m.Count()))
+            Dic_m.Name = $"Q{m * 4}";
+        
+        return Dic_m;
+    }
     public static WordGroup SemiDihedral(int n)
     {
         var n1 = 1 << (n - 1);

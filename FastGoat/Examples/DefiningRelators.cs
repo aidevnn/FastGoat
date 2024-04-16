@@ -326,11 +326,11 @@ public static class DefiningRelators
         ShowRelators(FG.DiCyclic(5));
         ShowRelators(FG.DiCyclic(6));
         
-        ShowRelators(FG.DiCyclicSdp(2));
-        ShowRelators(FG.DiCyclicSdp(3));
-        ShowRelators(FG.DiCyclicSdp(4));
-        ShowRelators(FG.DiCyclicSdp(5));
-        ShowRelators(FG.DiCyclicSdp(6)); // TODO fix it
+        ShowRelators(FG.DicyclicGL2p(2));
+        ShowRelators(FG.DicyclicGL2p(3));
+        ShowRelators(FG.DicyclicGL2p(4));
+        ShowRelators(FG.DicyclicGL2p(5));
+        ShowRelators(FG.DicyclicGL2p(6));
     }
     
     public static void Example4PermGroup()

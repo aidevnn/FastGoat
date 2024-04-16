@@ -80,18 +80,24 @@ public class UserGroupUnitTest
     {
         var d2 = FG.DiCyclic(2);
         var d2sdp = FG.DiCyclicSdp(2);
+        var d2gl = FG.DicyclicGL2p(2);
         Assert.Equal(8, d2.Count());
         Assert.True(d2.IsIsomorphicTo(d2sdp));
+        Assert.True(d2.IsIsomorphicTo(d2gl));
 
         var d3 = FG.DiCyclic(3);
         var d3sdp = FG.DiCyclicSdp(3);
+        var d3gl = FG.DicyclicGL2p(3);
         Assert.Equal(12, d3.Count());
         Assert.True(d3.IsIsomorphicTo(d3sdp));
+        Assert.True(d3.IsIsomorphicTo(d3gl));
 
         var d5 = FG.DiCyclic(5);
         var d5sdp = FG.DiCyclicSdp(5);
+        var d5gl = FG.DicyclicGL2p(5);
         Assert.Equal(20, d5.Count());
         Assert.True(d5.IsIsomorphicTo(d5sdp));
+        Assert.True(d5.IsIsomorphicTo(d5gl));
     }
 
     [Fact]

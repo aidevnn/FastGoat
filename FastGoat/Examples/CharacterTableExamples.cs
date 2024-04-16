@@ -365,10 +365,10 @@ public static class CharacterTableExamples
     public static void OtherExamples()
     {
         {
-            FG.CharacterTable(FG.DiCyclicSdp(5)).DisplayCells();
-            FG.CharacterTable(FG.DiCyclicSdp(6)).DisplayCells();
-            FG.CharacterTable(FG.DiCyclicSdp(7)).DisplayCells();
-            FG.CharacterTable(FG.DiCyclicSdp(8)).DisplayCells();
+            FG.CharacterTable(FG.DicyclicGL2p(5)).DisplayCells();
+            FG.CharacterTable(FG.DicyclicGL2p(6)).DisplayCells();
+            FG.CharacterTable(FG.DicyclicGL2p(7)).DisplayCells();
+            FG.CharacterTable(FG.DicyclicGL2p(8)).DisplayCells();
         }
 
         {

@@ -29,24 +29,6 @@ public static class GroupMatrixForm
         var gens = seq2.Select((v, k) => gl.Create(Diag(dim, k, v))).ToArray();
         return Group.Generate(seq.Glue(" x ", "C{0}"), gl, gens);
     }
-    static ConcreteGroup<Mat> DihedralGL2p(int n = 16)
-    {
-        var p = IntExt.Primes10000.First(p => (p - 1) % n == 0);
-        var a0 = IntExt.Solve_k_pow_m_equal_one_mod_n_strict(p, p - 1);
-        var a = new ZnInt(p, a0);
-        var ord_2 = a.Pow((p - 1) / 2);
-        var ord_n = a.Pow((p - 1) / n);
-    
-        var gl = new GL(2, p);
-        var id = gl.Neutral();
-        var p0 = gl[1, a.K, 1, 1];
-        var m0 = gl.Op(gl.Invert(p0), gl.Op(gl[ord_n.K, 0, 0, ord_n.Inv().K], p0));
-
-        var Zp = Group.MulGroup($"F{p}", a);
-        var m1 = Zp.Select(c0 => gl[1, 0, c0.K, 1]).Select(p1 => gl.Op(gl.Invert(p1), gl.Op(gl[1, 0, 0, ord_2.K], p1)))
-            .First(m1 => gl.Times(gl.Op(m0, m1), 2).Equals(id));
-        return Group.Generate($"D{2 * n}", gl, m0, m1);
-    }
 
     static int OrderMatOrth(ZnInt x0, ZnInt y0)
     {
@@ -99,22 +81,6 @@ public static class GroupMatrixForm
         return Group.Generate($"D{2 * n}", gl, m0, m1);
     }
 
-    static ConcreteGroup<Mat> DicyclicGL2p(int m)
-    {
-        var (p, a0) = IntExt.Primes10000.Select(p => (p, IntExt.Solve_k_pow_m_equal_one_mod_n_strict(p, 2 * m)))
-            .First(e => e.Item2 != -1);
-        var a = new ZnInt(p, a0);
-        var ai = a.Inv();
-        var gl = new GL(2, p);
-        var Am = gl[a.K, 0, 0, ai.K];
-        var B = gl[0, 1, -1, 0];
-        var Dic_m = Group.Generate($"Dic{m}", gl, Am, B);
-        if (int.IsPow2(Dic_m.Count()))
-            Dic_m.Name = $"Q{m * 4}";
-        
-        return Dic_m;
-    }
-
     public static void ExampleDihedalGO2p()
     {
         for (int n = 3; n < 33; n++)
@@ -135,14 +101,17 @@ public static class GroupMatrixForm
     {
         for (int n = 3; n < 33; n++)
         {
-            var D2n = DihedralGL2p(n);
+            var D2n = FG.DihedralGL2p(n);
             var D2pg = FG.Dihedral(n);
             D2pg.Name = $"{D2pg}pg";
             
             DisplayGroup.Generators(D2n);
             DisplayGroup.Generators(D2pg);
             
-            DisplayGroup.AreIsomorphics(D2n, D2pg);
+            if (!D2n.IsIsomorphicTo(D2pg))
+                throw new();
+            
+            Console.WriteLine($"{D2n} IsIsomorphicTo {D2pg}");
             Console.WriteLine();
         }
     }
@@ -161,10 +130,10 @@ public static class GroupMatrixForm
                 
                 DisplayGroup.Generators(abMat);
                 DisplayGroup.Generators(ab);
-                DisplayGroup.AreIsomorphics(abMat, ab);
                 if (!ab.IsIsomorphicTo(abMat))
                     throw new();
-                
+            
+                Console.WriteLine($"{abMat} IsIsomorphicTo {ab}");
                 Console.WriteLine();
 
                 maxP = int.Max(maxP, abMat.Neutral().GL.P);
@@ -180,7 +149,7 @@ public static class GroupMatrixForm
     {
         for (int m = 2; m < 33; m++)
         {
-            var Dic_m = DicyclicGL2p(m);
+            var Dic_m = FG.DicyclicGL2p(m);
             var Dic_m_wg = FG.DiCyclic(m);
             Dic_m_wg.Name = $"{Dic_m_wg}_wg";
             DisplayGroup.HeadGenerators(Dic_m);
