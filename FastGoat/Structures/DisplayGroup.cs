@@ -320,4 +320,11 @@ public static class DisplayGroup
         Head(g);
         Generators(g, showBaseGroup: false);
     }
+
+    public static void HeadOrdersGenerators<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
+    {
+        Head(g);
+        Orders(g);
+        Generators(g, showBaseGroup: false);
+    }
 }
