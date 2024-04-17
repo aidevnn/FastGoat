@@ -46,6 +46,17 @@ public struct Mat : IElt<Mat>
         }
     }
 
+    public bool IsDiag
+    {
+        get
+        {
+            var n = GL.N;
+            var rg = n.Range();
+            var t0 = Table;
+            return rg.Grid2D(rg).Where(e => e.t1 != e.t2).All(e => t0[e.t1 * n + e.t2] == 0);
+        }
+    }
+
     public bool IsSym
     {
         get
