@@ -195,6 +195,18 @@ public partial class Graph
     public IEnumerable<char> Generators() => Gens.Select(c => c.V).Where(c => char.IsLower(c));
     public IEnumerable<IEnumerable<char>> Words() => Classes.Skip(1).Select(c => c.Word.Select(e => e.V));
 
+    public bool CheckHomomorphism<T>(ConcreteGroup<T> g, Dictionary<char, T> map) where T : struct, IElt<T>
+    {
+        foreach (var rel in Relators)
+        {
+            var r = g.OpSeq(rel.Gens.Select(e => char.IsLower(e.V) ? map[e.V] : g.Invert(map[char.ToLower(e.V)])));
+            if (!r.Equals(g.Neutral()))
+                return false;
+        }
+
+        return true;
+    }
+
     public static Graph Run(string sg, string rel)
     {
         var g = new Graph(sg, rel);
