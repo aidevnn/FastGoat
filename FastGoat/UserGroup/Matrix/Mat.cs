@@ -57,6 +57,17 @@ public struct Mat : IElt<Mat>
         }
     }
 
+    public bool Is2ndDiag
+    {
+        get
+        {
+            var n = GL.N;
+            var rg = n.Range();
+            var t0 = Table;
+            return rg.Grid2D(rg).Where(e => e.t1 + e.t2 != n - 1).All(e => t0[e.t1 * n + e.t2] == 0);
+        }
+    }
+
     public bool IsSym
     {
         get
@@ -69,6 +80,16 @@ public struct Mat : IElt<Mat>
     }
 
     public int Det => GL.Det(this);
+    public Mat T 
+    {
+        get
+        {
+            var n = GL.N;
+            var rg = n.Range();
+            var t0 = Table;
+            return GL.Create(rg.Grid2D(rg).Select(e => t0[e.t2 * n + e.t1]).ToArray());
+        }
+    }
 
     public Mat At(Tuple2Array at, int value) => GL.At(Table, at, value);
     public bool Equals(Mat other) => Hash == other.Hash && Table.SequenceEqual(other.Table);

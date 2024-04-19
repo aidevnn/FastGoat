@@ -41,6 +41,61 @@ public struct MatFq : IElt<MatFq>
         }
     }
 
+    public bool IsUT
+    {
+        get
+        {
+            var n = GLnq.N;
+            var rg = n.Range();
+            var t0 = Table;
+            return rg.Grid2D(rg).Where(e => e.t1 > e.t2).All(e => t0[e.t1 * n + e.t2].IsZero());
+        }
+    }
+
+    public bool IsLT
+    {
+        get
+        {
+            var n = GLnq.N;
+            var rg = n.Range();
+            var t0 = Table;
+            return rg.Grid2D(rg).Where(e => e.t1 < e.t2).All(e => t0[e.t1 * n + e.t2].IsZero());
+        }
+    }
+
+    public bool IsDiag
+    {
+        get
+        {
+            var n = GLnq.N;
+            var rg = n.Range();
+            var t0 = Table;
+            return rg.Grid2D(rg).Where(e => e.t1 != e.t2).All(e => t0[e.t1 * n + e.t2].IsZero());
+        }
+    }
+
+    public bool Is2ndDiag
+    {
+        get
+        {
+            var n = GLnq.N;
+            var rg = n.Range();
+            var t0 = Table;
+            return rg.Grid2D(rg).Where(e => e.t1 + e.t2 != n - 1).All(e => t0[e.t1 * n + e.t2].IsZero());
+        }
+    }
+
+    public bool IsSym
+    {
+        get
+        {
+            var n = GLnq.N;
+            var rg = n.Range();
+            var t0 = Table;
+            return rg.Grid2D(rg).Where(e => e.t1 < e.t2).All(e => t0[e.t1 * n + e.t2].Equals(t0[e.t2 * n + e.t1]));
+        }
+    }
+
     public bool Equals(MatFq other) => Table.SequenceEqual(other.Table);
 
     public int CompareTo(MatFq other) => Table.SequenceCompareTo(other.Table);
