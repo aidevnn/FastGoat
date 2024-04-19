@@ -63,62 +63,6 @@ Console.WriteLine("Hello World");
     return all.ToArray();
 }
 
-ConcreteGroup<Mat> MetaCyclicGL2p_Meth1(int m, int n, int r)
-{
-    var mtSdp = FG.MetaCyclicSdp(m, n, r);
-    foreach (var p in Primes10000.Where(p => (p - 1) % m == 0 && (p - 1) % n == 0).Take(10))
-    {
-        var gl = new GL(2, p);
-        var gl3 = new GL(3, p);
-        var x = Solve_k_pow_m_equal_one_mod_n_strict(p, p - 1);
-        var Fp = Group.MulGroup($"F{p}", new ZnInt(p, x));
-        var ordms = Fp.Where(e => Fp.ElementsOrders[e] == m).Select(e => e.K).ToArray();
-        var ordns = Fp.Where(e => Fp.ElementsOrders[e] == n).Select(e => e.K).ToArray();
-
-        var a0s = ordms.Grid2D().Where(e => PowMod(e.t1, r, p) == e.t2 && PowMod(e.t2, r, p) == e.t1).ToArray();
-        var b0s = ordns.Grid2D().Where(e => Group.Cycle(gl, gl[0, e.t1, e.t2, 0]).Count == n).ToArray();
-
-        if (a0s.Length == 0 || b0s.Length == 0)
-            continue;
-
-        foreach (var (a0, a1) in a0s)
-        {
-            var a2 = ordms.Except([a0, a1]).FirstOrDefault(e => Fp.ElementsOrders[new(p, e)] == m, a0);
-            foreach (var (b0, b1) in b0s)
-            {
-                {
-                    var m0 = gl[a0, 0, 0, a1];
-                    var m1 = gl[0, b0, b1, 0];
-                    var mtGl = Group.Generate($"M({m}x:{n}){r}", gl, m0, m1);
-                    if (mtGl.IsIsomorphicTo(mtSdp))
-                        return mtGl;
-                }
-
-                {
-                    var m03 = gl3[a2, 0, 0, 0, a0, 0, 0, 0, a1];
-                    var m13 = gl3[1, 0, 0, 0, 0, b0, 0, b1, 0];
-                    var mtGl3 = Group.Generate($"M({m}x:{n}){r}", gl3, m03, m13);
-
-                    if (mtGl3.IsIsomorphicTo(mtSdp))
-                        return mtGl3;
-                }
-
-                {
-                    var m03 = gl3[1, 0, 0, 0, a0, 0, 0, 0, a1];
-                    var m13 = gl3[b0, 0, 0, 0, 0, b0, 0, b1, 0];
-                    var mtGl3 = Group.Generate($"M({m}x:{n}){r}", gl3, m03, m13);
-
-                    if (mtGl3.IsIsomorphicTo(mtSdp))
-                        return mtGl3;
-                }
-            }
-        }
-    }
-
-    var gl12 = new GL(1, 2);
-    return Group.Generate("()", gl12, gl12.Neutral());
-}
-
 bool IsOrder(Mat m, int o)
 {
     var gl = m.GL;
@@ -135,13 +79,46 @@ bool IsOrder(Mat m, int o)
     return mk.Equals(e);
 }
 
+ConcreteGroup<Mat> MetaCyclicGL2p_Meth1(int m, int n, int r)
+{
+    var mtSdp = FG.MetaCyclicSdp(m, n, r);
+    var p = Primes10000.First(p => (p - 1) % m == 0 && (p - 1) % n == 0);
+    
+    var gl = new GL(2, p);
+    var Fp = FG.UnInt(p);
+    var ordms = Fp.Where(e => Fp.ElementsOrders[e] == m).Select(e => e.K).ToArray();
+    var ordns = Fp.Where(e => Fp.ElementsOrders[e] == n).Select(e => e.K).ToArray();
+
+    var a0s = ordms.Grid2D().Where(e => PowMod(e.t1, r, p) == e.t2 && PowMod(e.t2, r, p) == e.t1).ToArray();
+    var b0s = ordns.Grid2D().Where(e => IsOrder(gl[0, e.t1, e.t2, 0], n)).ToArray();
+
+    foreach (var (a0, a1) in a0s)
+    {
+        foreach (var (b0, b1) in b0s)
+        {
+            {
+                var m0 = gl[a0, 0, 0, a1];
+                var m1 = gl[0, b0, b1, 0];
+                var mtGl = Group.Generate($"M({m}x:{n}){r}", gl, m0, m1);
+                if (mtGl.Count() == m * n)
+                    return mtGl;
+                    
+                // if (mtGl.IsIsomorphicTo(mtSdp))
+                //     return mtGl;
+            }
+        }
+    }
+
+    return Group.Generate(new GL(1, 2));
+}
+
 ConcreteGroup<Mat> MetaCyclicGL2p_Meth2(int m, int n, int r)
 {
+    var mtSdp = FG.MetaCyclicSdp(m, n, r);
     foreach (var p in Primes10000.Where(p => m % p == 0 && (p - 1) % n == 0))
     {
         var Fp = FG.UnInt(p);
         var gl = new GL(2, p);
-        var i2 = gl.Neutral();
 
         var ordm = Fp.Where(e => m % Fp.ElementsOrders[e] == 0).ToArray();
         var ordn = Fp.Where(e => Fp.ElementsOrders[e] == n).ToArray();
@@ -155,19 +132,55 @@ ConcreteGroup<Mat> MetaCyclicGL2p_Meth2(int m, int n, int r)
             .Where(mat => IsOrder(mat, n))
             .ToArray();
 
-        var (m0, m1) = m0s.Grid2D(m1s)
-            .FirstOrDefault(e => gl.Op(gl.Invert(e.t2), gl.Op(e.t1, e.t2)).Equals(gl.Times(e.t1, r)), (t1: i2, t2: i2));
-
-        if (m0.Equals(i2) && m1.Equals(i2))
-            continue;
-        
-        var mtGL = Group.Generate($"M({m}x:{n}){r}", gl, m0, m1);
-        if (mtGL.IsIsomorphicTo(FG.MetaCyclicSdp(m, n, r)))
-            return mtGL;
+        foreach (var (m0, m1) in m0s.Grid2D(m1s).Where(e => gl.Op(gl.Invert(e.t2), gl.Op(e.t1, e.t2)).Equals(gl.Times(e.t1, r))))
+        {
+            var mtGl = Group.Generate($"M({m}x:{n}){r}", gl, m0, m1);
+            if (mtGl.Count() == m * n)
+                return mtGl;
+                    
+            // if (mtGl.IsIsomorphicTo(mtSdp))
+            //     return mtGl;
+        }
     }
 
-    var gl12bs = new GL(1, 2);
-    return Group.Generate("()", gl12bs, gl12bs.Neutral());
+    return Group.Generate(new GL(1, 2));
+}
+
+IEnumerable<Mat> GL3MatrixPerm(GL gl, (ZnInt t1, ZnInt t2, ZnInt t3) e, int ord) => new[]
+    {
+        gl[e.t1.K, 0, 0, 0, 0, e.t2.K, 0, e.t3.K, 0],
+        gl[0, 0, e.t1.K, 0, e.t2.K, 0, e.t3.K, 0, 0],
+        gl[0, e.t1.K, 0, e.t2.K, 0, 0, 0, 0, e.t3.K],
+        gl[0, e.t1.K, 0, 0, 0, e.t2.K, e.t3.K, 0, 0],
+        gl[0, 0, e.t1.K, e.t2.K, 0, 0, 0, e.t3.K, 0]
+    }
+    .Where(mat => IsOrder(mat, ord));
+
+ConcreteGroup<Mat> MetaCyclicGL2p_Meth3(int m, int n, int r)
+{
+    var mtSdp = FG.MetaCyclicSdp(m, n, r);
+    var p = Primes10000.First(p => (p - 1) % m == 0 && (p - 1) % n == 0);
+    var gl = new GL(3, p);
+    var Fp = FG.UnInt(p);
+    var ordm = Fp.Where(e => m % Fp.ElementsOrders[e] == 0).OrderBy(e => e.K).ToArray();
+    var ordn = Fp.Where(e => n % Fp.ElementsOrders[e] == 0).OrderBy(e => e.K).ToArray();
+
+    var m0s = ordm.Grid3D().Select(e => gl[e.t1.K, 0, 0, 0, e.t2.K, 0, 0, 0, e.t3.K])
+        .Where(mat => IsOrder(mat, m))
+        .ToArray();
+    var m1s = ordn.Grid3D().SelectMany(e => GL3MatrixPerm(gl, e, n)).ToArray();
+
+    foreach (var (m0, m1) in m0s.Grid2D(m1s).Where(e => gl.Op(gl.Invert(e.t2), gl.Op(e.t1, e.t2)).Equals(gl.Times(e.t1, r))))
+    {
+        var mtGl = Group.Generate($"M({m}x:{n}){r}", gl, m0, m1);
+        if (mtGl.Count() == m * n)
+            return mtGl;
+                    
+        // if (mtGl.IsIsomorphicTo(mtSdp))
+        //     return mtGl;
+    }
+    
+    return Group.Generate(new GL(1, 2));
 }
 
 void Run(int maxOrd = 32, bool frob = false)
@@ -182,16 +195,22 @@ void Run(int maxOrd = 32, bool frob = false)
 
     foreach (var (_, e) in isoMtCycSdp)
     {
-        var mtGL1 = MetaCyclicGL2p_Meth1(e.m, e.n, e.r);
-        if (mtGL1.Count() != 1)
-            DisplayGroup.HeadOrdersGenerators(mtGL1);
+        var mtGLmeth1 = MetaCyclicGL2p_Meth1(e.m, e.n, e.r);
+        if (mtGLmeth1.Count() != 1)
+            DisplayGroup.HeadOrdersGenerators(mtGLmeth1);
         else
         {
-            var mtGL2 = MetaCyclicGL2p_Meth2(e.m, e.n, e.r);
-            if (mtGL2.Count() != 1)
-                DisplayGroup.HeadOrdersGenerators(mtGL2);
+            var mtGLmeth2 = MetaCyclicGL2p_Meth2(e.m, e.n, e.r);
+            if (mtGLmeth2.Count() != 1)
+                DisplayGroup.HeadOrdersGenerators(mtGLmeth2);
             else
-                missing.Add(e);
+            {
+                var mtGLmeth3 = MetaCyclicGL2p_Meth3(e.m, e.n, e.r);
+                if (mtGLmeth3.Count() != 1)
+                    DisplayGroup.HeadOrdersGenerators(mtGLmeth3);
+                else
+                    missing.Add(e);
+            }
         }
     }
 
@@ -210,18 +229,16 @@ void Run(int maxOrd = 32, bool frob = false)
     
     Run(maxOrd:64);
     // Run(maxOrd:96);
+
 }
 
-// Missing:9 Found:102/111
-//     M(9x:3)4
+// Missing:6 Found:105/111
 //     M(5x:8)2
 //     M(9x:6)2
-//     M(9x:6)4
 //     M(5x:12)2
 //     M(15x:4)2
-//     M(7x:9)2
 //     M(16x:4)3
 //     M(16x:4)5
-// var missing = new [] { (9, 3, 4), (5, 8, 2), (9, 6, 2), (9, 6, 4), (5, 12, 2), (15, 4, 2), (7, 9, 2), (16, 4, 3), (16, 4, 5) };
-// # END Time:9.438s
+// var missing = new [] { (5, 8, 2), (9, 6, 2), (5, 12, 2), (15, 4, 2), (16, 4, 3), (16, 4, 5) };
+// # END Time:2.742s
 // 
