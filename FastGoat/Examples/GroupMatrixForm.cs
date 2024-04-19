@@ -161,4 +161,22 @@ public static class GroupMatrixForm
         }
     }
 
+    public static void ExampleSemiDihedralAndModularMax()
+    {
+        for (int n = 3; n < 9; n++)
+        {
+            var qd = FG.SemiDihedralGL2p(n);
+            DisplayGroup.HeadGenerators(qd);
+            if (!qd.IsIsomorphicTo(FG.SemiDihedral(n)))
+                throw new();
+        
+            var mm = FG.ModularMaxGL2p(n);
+            DisplayGroup.HeadGenerators(mm);
+            if (!mm.IsIsomorphicTo(FG.ModularMax(n)))
+                throw new();
+
+            Console.WriteLine();
+        }
+    }
+
 }

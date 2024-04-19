@@ -423,6 +423,23 @@ public static partial class FG
         var theta = Group.Hom(c2, Group.HomomorphismMap(c2, aut, pMap));
         return Group.SemiDirectProd($"QD{n1 * 2}", cn, theta, c2);
     }
+    
+    public static ConcreteGroup<Mat> SemiDihedralGL2p(int n)
+    {
+        var n1 = 1 << (n - 1);
+        var n2 = (1 << (n - 2)) - 1;
+    
+        var p = IntExt.Primes10000.First(p => (p - 1) % n1 == 0);
+        var gl = new GL(2, p);
+        var ordns = IntExt.SolveAll_k_pow_m_equal_one_mod_n_strict(p, n1).ToArray();
+        var a0 = ordns.First(e => IntExt.PowMod(IntExt.PowMod(e, n2, p), n2, p) == e);
+        var a1 = IntExt.PowMod(a0, n2, p);
+
+        var m0 = gl[a0, 0, 0, a1];
+        var m1 = gl[0, 1, 1, 0];
+    
+        return Group.Generate($"QD{2 * n1}", gl, m0, m1);
+    }
 
     public static WordGroup ModularMax(int n)
     {
@@ -446,6 +463,23 @@ public static partial class FG
         return Group.SemiDirectProd($"MM{n1 * 2}", cn, theta, c2);
     }
 
+    
+    public static ConcreteGroup<Mat> ModularMaxGL2p(int n)
+    {
+        var n1 = 1 << (n - 1);
+        var n2 = (1 << (n - 2)) + 1;
+    
+        var p = IntExt.Primes10000.First(p => (p - 1) % n1 == 0);
+        var gl = new GL(2, p);
+        var ordns = IntExt.SolveAll_k_pow_m_equal_one_mod_n_strict(p, n1).ToArray();
+        var a0 = ordns.First(e => IntExt.PowMod(IntExt.PowMod(e, n2, p), n2, p) == e);
+        var a1 = IntExt.PowMod(a0, n2, p);
+
+        var m0 = gl[a0, 0, 0, a1];
+        var m1 = gl[0, 1, 1, 0];
+    
+        return Group.Generate($"MM{2 * n1}", gl, m0, m1);
+    }
     public static WordGroup WordGroup(string relators) => new WordGroup(relators);
     public static WordGroup WordGroup(string name, string relators) => new WordGroup(name, relators);
 
