@@ -661,6 +661,19 @@ public static class IntExt
     }
 
     /// <summary>
+    /// Solves the equation k^m = 1 (mod n) and gcd(k, n) = 1.
+    /// </summary>
+    /// <param name="n">The modulus.</param>
+    /// <param name="m">The exponent.</param>
+    /// <returns>A list of all solutions to the equation k^m = 1 (mod n).</returns>
+    public static List<int> SolveAll_k_pow_m_equal_one_mod_n_strict(int n, int m)
+    {
+        var seq = Enumerable.Range(2, n - 2);
+        var criteria = seq.Where(i => Gcd(i, n) == 1 && PowModEqualOne(i, m, n));
+        return criteria.ToList();
+    }
+
+    /// <summary>
     /// Solves the equation a^m = 1 (mod n).
     /// </summary>
     /// <param name="n">The modulus.</param>
