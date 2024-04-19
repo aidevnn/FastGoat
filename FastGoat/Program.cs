@@ -22,6 +22,7 @@ using static FastGoat.Commons.EnumerableExt;
 using FastGoat.UserGroup.Padic;
 using FastGoat.UserGroup.Words.Tools;
 using GroupRegX = System.Text.RegularExpressions.Group;
+using OrdMats = System.Collections.Generic.Dictionary<int, FastGoat.UserGroup.Matrix.Mat[]>;
 
 //////////////////////////////////
 //                              //
@@ -30,29 +31,3 @@ using GroupRegX = System.Text.RegularExpressions.Group;
 //////////////////////////////////
 
 Console.WriteLine("Hello World");
-
-{
-    foreach (var q in new[] { 4, 5, 7, 8, 9, 11, 13, 17, 19, 23, 25 })
-    {
-        Console.WriteLine($"############# Start F{q} #############");
-        var x = FG.FqX(q);
-        var FqMul = Group.MulGroup($"F{q}*", x);
-        var (p, r) = PrimesDec(q).First();
-        var gens = r.Range(1).Select(i => x.Pow(i)).ToArray();
-        var FqAdd = Group.AddGroup($"F{q}+", gens);
-        DisplayGroup.HeadOrdersGenerators(FqAdd);
-        DisplayGroup.HeadOrdersGenerators(FqMul);
-
-        var sdp1 = Group.SemiDirectProd(FqAdd, FqMul);
-        DisplayGroup.HeadOrders(sdp1);
-
-        var cpr = FG.Abelian(Enumerable.Repeat(p, r).ToArray());
-        var cqx = FG.Abelian(q - 1);
-        var sdp2 = Group.SemiDirectProd(cpr, cqx);
-        DisplayGroup.HeadOrders(sdp2);
-        DisplayGroup.AreIsomorphics(sdp1, sdp2);
-        Console.WriteLine();
-        Console.WriteLine($"############# End   F{q} #############");
-        Console.WriteLine();
-    }
-}
