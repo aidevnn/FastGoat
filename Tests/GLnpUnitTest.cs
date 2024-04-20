@@ -12,7 +12,7 @@ public class GLnpUnitTest
     [Fact]
     public void Test1Ops()
     {
-        for (int n = 2; n < 6; n++) // n = 2, 3, 4, 5
+        for (int n = 2; n <= 6; n++) // n = 2, 3, 4, 5
         {
             for (int p0 = 0; p0 < 5; p0++) // p = 2, 3, 5, 7, 11
             {
