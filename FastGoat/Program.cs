@@ -234,26 +234,43 @@ void Run(int maxOrd = 32, bool frob = false)
         .Select(e => (e, FG.MetaCyclicSdp(e.m, e.n, e.r).AllSubgroups())).ToDictionary(e => e.Item2, e => e.e);
     var isoMtCycSdp = allMtCycSdp.Keys.FilterIsomorphic().ToDictionary(e => e, e => allMtCycSdp[e]);
 
-    foreach (var (_, e) in isoMtCycSdp)
+    foreach (var (mt, e) in isoMtCycSdp)
     {
+        var idGap = FG.FindIdGroup(mt.Parent, mt.Infos)[0].FullName;
         var mtGLmeth1 = MetaCyclicGL2p_Meth1(e.m, e.n, e.r);
         if (mtGLmeth1.Count() != 1)
+        {
             DisplayGroup.HeadOrdersGenerators(mtGLmeth1);
+            Console.WriteLine(idGap);
+            Console.WriteLine();
+        }
         else
         {
             var mtGLmeth2 = MetaCyclicGL2p_Meth2(e.m, e.n, e.r);
             if (mtGLmeth2.Count() != 1)
+            {
                 DisplayGroup.HeadOrdersGenerators(mtGLmeth2);
+                Console.WriteLine(idGap);
+                Console.WriteLine();
+            }
             else
             {
                 var mtGLmeth3 = MetaCyclicGL3p_Meth(e.m, e.n, e.r);
                 if (mtGLmeth3.Count() != 1)
+                {
                     DisplayGroup.HeadOrdersGenerators(mtGLmeth3);
+                    Console.WriteLine(idGap);
+                    Console.WriteLine();
+                }
                 else
                 {
                     var mtGLmeth4 = MetaCyclicGL4p_Meth(e.m, e.n, e.r);
                     if (mtGLmeth4.Count() != 1)
+                    {
                         DisplayGroup.HeadOrdersGenerators(mtGLmeth4);
+                        Console.WriteLine(idGap);
+                        Console.WriteLine();
+                    }
                     else
                         missing.Add(e);
                 }
