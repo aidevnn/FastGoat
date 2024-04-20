@@ -177,6 +177,9 @@ public readonly struct EPolynomial<K> : IVsElt<K, EPolynomial<K>>, IElt<EPolynom
             return (num2, denom2);
         }
 
+        if (nbNum > 3 || nbDenom > 3)
+            return (num, denom);
+
         var lcm = Ring.LcmPolynomial(num, denom);
         var num0 = basis.Rem(lcm / denom);
         var denom0 = basis.Rem(lcm / num);
