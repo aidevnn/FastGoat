@@ -15,7 +15,7 @@ public class WordGroup : ConcreteGroup<Word>
         Graph = Graph.Run(WGbase.Relators);
         Elements = Graph.Words().Select(s => new Word(wg, s)).ToHashSet();
         Ord = Elements.Count;
-        if (Ord < Group.StorageCapacity)
+        if (Ord < Group.GetStorageCapacity())
         {
             InvertTable = new(2 * Ord);
             OpTable = new(2 * Ord * Ord);
@@ -78,7 +78,7 @@ public class WordGroup : ConcreteGroup<Word>
 
     public override Word Invert(Word e)
     {
-        if (Ord >= Group.StorageCapacity)
+        if (Ord >= Group.GetStorageCapacity())
             return new(WGbase, Rewrite(e.Get().Revert()));
         else
         {
@@ -93,7 +93,7 @@ public class WordGroup : ConcreteGroup<Word>
 
     public override Word Op(Word e1, Word e2)
     {
-        if (Ord >= Group.StorageCapacity)
+        if (Ord >= Group.GetStorageCapacity())
             return new(WGbase, Rewrite(e1.Get().Add(e2.Get())));
         else
         {

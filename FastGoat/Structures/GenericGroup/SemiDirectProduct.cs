@@ -29,7 +29,7 @@ public class SemiDirectProduct<T1, T2> : ConcreteGroup<Ep2<T1, T2>>
             generators.Add(Product.Elt(e, G.Neutral()));
 
         Ord = N.Count() * G.Count();
-        if (Ord < Group.StorageCapacity)
+        if (Ord < Group.GetStorageCapacity())
         {
             InvertTable = new(2 * Ord);
             OpTable = new(2 * Ord * Ord);
@@ -65,7 +65,7 @@ public class SemiDirectProduct<T1, T2> : ConcreteGroup<Ep2<T1, T2>>
 
     public override Ep2<T1, T2> Invert(Ep2<T1, T2> e)
     {
-        if (Ord >= Group.StorageCapacity)
+        if (Ord >= Group.GetStorageCapacity())
         {
             var gi = G.Invert(e.E2);
             var xi = N.Invert(e.E1);
@@ -85,7 +85,7 @@ public class SemiDirectProduct<T1, T2> : ConcreteGroup<Ep2<T1, T2>>
 
     public override Ep2<T1, T2> Op(Ep2<T1, T2> e1, Ep2<T1, T2> e2)
     {
-        if (Ord >= Group.StorageCapacity)
+        if (Ord >= Group.GetStorageCapacity())
         {
             var n = N.Op(e1.E1, Theta[e1.E2][e2.E1]);
             var g = G.Op(e1.E2, e2.E2);

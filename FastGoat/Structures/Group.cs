@@ -6,7 +6,12 @@ namespace FastGoat.Structures;
 
 public static partial class Group
 {
-    public const int StorageCapacity = 1000;
+    private const int StorageCapacity = 1000;
+    private static bool StorageState = true;
+
+    public static void ActivedStorage(bool state = true) => StorageState = state;
+    public static int GetStorageCapacity() => StorageState ? StorageCapacity : 0;
+        
     public static string WithParenthesis(this string name) => (name.First() == '(' && name.Last() == ')') || !name.Contains(' ')
         ? name
         : $"({name})";

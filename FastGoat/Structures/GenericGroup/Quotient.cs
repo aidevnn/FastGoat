@@ -13,7 +13,7 @@ public class Quotient<T> : IGroup<Coset<T>> where T : struct, IElt<T>
         Name = $"{G.NameParenthesis()}/{H.NameParenthesis()}";
 
         Ord = H.Count();
-        if (Ord < Group.StorageCapacity)
+        if (Ord < Group.GetStorageCapacity())
         {
             InvertTable = new(2 * Ord);
             OpTable = new(2 * Ord * Ord);
@@ -56,7 +56,7 @@ public class Quotient<T> : IGroup<Coset<T>> where T : struct, IElt<T>
 
     public Coset<T> Invert(Coset<T> e)
     {
-        if (Ord >= Group.StorageCapacity)
+        if (Ord >= Group.GetStorageCapacity())
             return GetRepresentative(H.Invert(e.X));
         
         if (InvertTable.TryGetValue(e.X, out var r))
@@ -68,7 +68,7 @@ public class Quotient<T> : IGroup<Coset<T>> where T : struct, IElt<T>
 
     public Coset<T> Op(Coset<T> e1, Coset<T> e2)
     {
-        if (Ord >= Group.StorageCapacity)
+        if (Ord >= Group.GetStorageCapacity())
             return GetRepresentative(H.Op(e1.X, e2.X));
 
         var e12 = (e1.X, e2.X);
