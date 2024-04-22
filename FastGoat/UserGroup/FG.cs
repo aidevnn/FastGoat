@@ -225,36 +225,20 @@ public static partial class FG
 
     public static WordGroup DihedralWg(int n) => new($"D{2 * n}", $"a{n}, b2, abab");
 
-    public static List<WordGroup> Frobenius(int o)
-    {
-        var ms = IntExt.Dividors(o).Where(d => d > 1 && d % 2 == 1).ToArray();
-
-        List<WordGroup> all = new();
-        foreach (var m in ms)
-        {
-            var n = o / m;
-            var rs = FrobeniusGetR(m, n);
-            foreach (var r in rs)
-            {
-                var wg = new WordGroup($"Frob({m},{n},{r})", $"a{m}, b{n}, b-1ab = a{r}");
-                if (all.Any(g => g.IsIsomorphicTo(wg)))
-                    continue;
-
-                all.Add(wg);
-            }
-        }
-
-        return all;
-    }
-    
     public static WordGroup MetaCyclicSdpWg(int m, int n, int r)
     {
+        if (IntExt.PowMod(r, n, m) != 1 || IntExt.Gcd(r, m) != 1)
+            throw new GroupException(GroupExceptionType.GroupDef);
+        
         var name = IntExt.Gcd(m, n * (r - 1)) == 1 ? $"Frob({m},{n},{r})" : $"MtCyc({m},{n},{r})";
         return WordGroup(name, $"a{m}, b{n}, b-1ab = a{r}");
     }
 
     public static ConcreteGroup<Ep2<ZnInt, ZnInt>> MetaCyclicSdp(int m, int n, int r)
     {
+        if (IntExt.PowMod(r, n, m) != 1 || IntExt.Gcd(r, m) != 1)
+            throw new GroupException(GroupExceptionType.GroupDef);
+
         var cm = new Cn(m);
         var cn = new Cn(n);
         var autCm = Group.AutBase(cm);
@@ -266,53 +250,51 @@ public static partial class FG
         return Group.SemiDirectProd(name, cm, theta, cn);
     }
 
+    public static int[] MetaCyclicSdpGetR(int m, int n)
+    {
+        var rs = IntExt.SolveAll_k_pow_m_equal_one_mod_n(m, n);
+        var nCoprimes = IntExt.Coprimes(n).ToArray();
+        return rs.Select(r => nCoprimes.Select(k => IntExt.PowMod(r, k, m)).ToHashSet())
+            .Distinct(new SetEquality<int>())
+            .Select(e => e.Where(c => c != 1).Min())
+            .ToArray();
+    }
+
     public static int[] FrobeniusGetR(int m, int n)
     {
-        return m.Range().Where(r => IntExt.Gcd(m, n * (r - 1)) == 1 && IntExt.PowMod(r, n, m) == 1).ToArray();
+        return MetaCyclicSdpGetR(m, n).Where(r => IntExt.Gcd(m, n * (r - 1)) == 1).ToArray();
+    }
+
+    public static List<WordGroup> MetaCyclicSdpWg(int o)
+    {
+        return IntExt.Dividors(o).Where(d => d > 1 && d % 2 == 1)
+            .SelectMany(m => MetaCyclicSdpGetR(m, o / m).Select(r => (m, n: o / m, r)))
+            .Select(e => MetaCyclicSdpWg(e.m, e.n, e.r))
+            .ToList();
+    }
+
+    public static List<WordGroup> Frobenius(int order)
+    {
+        return IntExt.Dividors(order).Where(d => d > 1 && d % 2 == 1)
+            .SelectMany(m => FrobeniusGetR(m, order / m).Select(r => (m, n: order / m, r)))
+            .Select(e => MetaCyclicSdpWg(e.m, e.n, e.r))
+            .ToList();
     }
 
     public static List<ConcreteGroup<Ep2<ZnInt, ZnInt>>> FrobeniusSdp(int order)
     {
-        var ms = IntExt.Dividors(order).Where(d => d > 1 && d % 2 == 1).ToArray();
-
-        List<ConcreteGroup<Ep2<ZnInt, ZnInt>>> all = new();
-        foreach (var m in ms)
-        {
-            var n = order / m;
-            var rs = FrobeniusGetR(m, n);
-            foreach (var r in rs)
-            {
-                var sdp = MetaCyclicSdp(m, n, r);
-                if (all.Any(g => g.IsIsomorphicTo(sdp)))
-                    continue;
-
-                all.Add(sdp);
-            }
-        }
-
-        return all;
+        return IntExt.Dividors(order).Where(d => d > 1 && d % 2 == 1)
+            .SelectMany(m => FrobeniusGetR(m, order / m).Select(r => (m, n: order / m, r)))
+            .Select(e => MetaCyclicSdp(e.m, e.n, e.r))
+            .ToList();
     }
 
     public static List<ConcreteGroup<Ep2<ZnInt, ZnInt>>> MetaCyclicSdp(int order)
     {
-        var ms = IntExt.Dividors(order).Where(d => d > 1).ToArray();
-
-        List<ConcreteGroup<Ep2<ZnInt, ZnInt>>> all = new();
-        foreach (var m in ms)
-        {
-            var n = order / m;
-            var rs = IntExt.SolveAll_k_pow_m_equal_one_mod_n(m, n);
-            foreach (var r in rs)
-            {
-                var sdp = MetaCyclicSdp(m, n, r);
-                if (all.Any(g => g.IsIsomorphicTo(sdp)))
-                    continue;
-
-                all.Add(sdp);
-            }
-        }
-
-        return all;
+        return IntExt.Dividors(order).Where(d => d > 1 && d % 2 == 1)
+            .SelectMany(m => MetaCyclicSdpGetR(m, order / m).Select(r => (m, n: order / m, r)))
+            .Select(e => MetaCyclicSdp(e.m, e.n, e.r))
+            .ToList();
     }
 
     public static WordGroup DiCyclic(int n) => new(int.IsPow2(4 * n) ? $"Q{4 * n}" : $"Dic{n}", $"a{n} = b2, b2 = abab");
