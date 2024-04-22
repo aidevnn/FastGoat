@@ -256,7 +256,7 @@ public static partial class FG
         var nCoprimes = IntExt.Coprimes(n).ToArray();
         return rs.Select(r => nCoprimes.Select(k => IntExt.PowMod(r, k, m)).ToHashSet())
             .Distinct(new SetEquality<int>())
-            .Select(e => e.Where(c => c != 1).Min())
+            .Select(e => e.Min())
             .ToArray();
     }
 
@@ -267,7 +267,7 @@ public static partial class FG
 
     public static List<WordGroup> MetaCyclicSdpWg(int o)
     {
-        return IntExt.Dividors(o).Where(d => d > 1 && d % 2 == 1)
+        return IntExt.Dividors(o).Where(d => d > 1)
             .SelectMany(m => MetaCyclicSdpGetR(m, o / m).Select(r => (m, n: o / m, r)))
             .Select(e => MetaCyclicSdpWg(e.m, e.n, e.r))
             .ToList();
@@ -291,7 +291,7 @@ public static partial class FG
 
     public static List<ConcreteGroup<Ep2<ZnInt, ZnInt>>> MetaCyclicSdp(int order)
     {
-        return IntExt.Dividors(order).Where(d => d > 1 && d % 2 == 1)
+        return IntExt.Dividors(order).Where(d => d > 1)
             .SelectMany(m => MetaCyclicSdpGetR(m, order / m).Select(r => (m, n: order / m, r)))
             .Select(e => MetaCyclicSdp(e.m, e.n, e.r))
             .ToList();
