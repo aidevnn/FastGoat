@@ -222,6 +222,9 @@ public static class GroupMatrixForm
                         Console.WriteLine();
                     }
 
+                    if (!mtGL.IsIsomorphicTo(m0.Parent))
+                        throw new();
+                    
                     break;
                 }
 
@@ -237,6 +240,9 @@ public static class GroupMatrixForm
                             Console.WriteLine(id[0].FullName);
                             Console.WriteLine();
                         }
+
+                        if (!mtGL2.IsIsomorphicTo(m0.Parent))
+                            throw new();
 
                         break;
                     }
@@ -425,11 +431,20 @@ public static class GroupMatrixForm
 
     public static void ExampleAllMetaCyclicSemiDirectProducts()
     {
-        Ring.MatrixDisplayForm = Ring.MatrixDisplay.SquareBracketNoFmt;
+        // Ring.MatrixDisplayForm = Ring.MatrixDisplay.SquareBracketNoFmt;
         Group.ActivedStorage(false);
 
         // AllGensOfMtCycSdpUpToOrder(32);
         // AllGensOfMtCycSdpUpToOrder(64);
         AllGensOfMtCycSdpUpToOrder(128);
+    }
+
+    public static void ExampleGL7p()
+    {
+        Group.ActivedStorage(false);
+        AllGensOfMtCycSdpUpToOrder(128, altGL2Meth: false);
+        // Missing:1 Found:310/311
+        // M(11x:10)2
+
     }
 }
