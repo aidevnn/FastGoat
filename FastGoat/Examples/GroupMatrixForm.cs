@@ -2,9 +2,11 @@ using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.CartesianProduct;
 using FastGoat.Structures.GenericGroup;
+using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup;
 using FastGoat.UserGroup.Integers;
 using FastGoat.UserGroup.Matrix;
+using FastGoat.UserGroup.Perms;
 
 namespace FastGoat.Examples;
 
@@ -31,6 +33,24 @@ public static class GroupMatrixForm
                 return false;
 
             mk = gl.Op(mk, m);
+        }
+
+        return mk.Equals(e);
+    }
+
+    static bool IsOrder(KMatrix<ZnInt> m, int o)
+    {
+        var e = m.One;
+        var mk = m.One;
+        if (!m.Det.Pow(o).Equals(m.KOne))
+            return false;
+
+        for (int k = 0; k < o; k++)
+        {
+            if (k != 0 && mk.Equals(e))
+                return false;
+
+            mk *= m;
         }
 
         return mk.Equals(e);
@@ -193,6 +213,66 @@ public static class GroupMatrixForm
         return Group.Generate(new GL(1, 2));
     }
 
+    static ConcreteGroup<KMatrix<ZnInt>> MetaCyclicGLnK_DiagByPerm(int m, int n, int r, int dim)
+    {
+        var distinctTypes = IntExt.Partitions32[dim].Where(l => l.Count == l.Distinct().Count()).Select(l => l.Order().ToArray())
+            .OrderBy(l => l.Length).ToArray();
+        var nks = distinctTypes.Select(l => l.Aggregate((a0, a1) => a0 * a1))
+            .SelectMany(e => IntExt.Dividors(e).Append(e).Where(j => j != 1)).Append(n).ToHashSet();
+        foreach (var p in nks.Select(nk => IntExt.Primes10000.First(p => (p - 1) % m == 0 && (p - 1) % nk == 0)).Distinct().Order())
+        {
+            var Fp = FG.UnInt(p);
+            var GL = FG.GLnK($"F{p}", dim, Fp.Neutral());
+            var sn = new Sn(dim);
+            var o = GL.Neutral().Rows.Select(rw => rw.ToArray()).ToArray();
+
+            var ordn = Fp.Where(e => n % Fp.ElementsOrders[e] == 0)
+                .Select(e =>
+                {
+                    var diag = Ring.Diagonal(e.One, dim);
+                    diag[0, 0] = e;
+                    return new KMatrix<ZnInt>(diag);
+                }).ToArray();
+
+            var m1s = distinctTypes.Select(t => IntExt.PermAndCyclesFromType(t)).Select(e =>
+            {
+                var perm0 = sn.CreateElement(e.perm.Select(i => i + 1).ToArray());
+                var o0 = perm0.Apply(o.Select(l => l.ToArray()).ToArray());
+                var mat0 = o0.SelectMany(rw => rw).ToKMatrix(dim);
+                return ordn.Select(mat1 => mat1 * mat0).Where(mat1 => IsOrder(mat1, n)).Select(mat1 => (e.perm, e.cycles, mat1));
+            }).SelectMany(e => e);
+
+            foreach (var (perm, cycles, m1) in m1s)
+            {
+                var sols = cycles.Select(c => c.Length).Select(l =>
+                {
+                    var r0 = IntExt.PowMod(r, l, m);
+                    var ordm = Fp.Where(e => e.K != 1 && m % Fp.ElementsOrders[e] == 0 && e.Pow(r0).Equals(e))
+                        .OrderByDescending(e => Fp.ElementsOrders[e]);
+
+                    return ordm.Select(a => l.Range(1).Select(k => a.Pow(IntExt.PowMod(r, k, m))).Reverse().ToArray());
+                }).MultiLoop().Select(l => l.ToArray()).FirstOrDefault(Array.Empty<ZnInt[]>());
+                if (sols.Length == 0)
+                    continue;
+
+                var arr = new int[dim * dim];
+                foreach (var (sol, idx) in sols.Zip(cycles).SelectMany(e => e.First.Zip(e.Second)))
+                    arr[perm[idx] * (dim + 1)] = sol.K;
+
+                var m0 = arr.Select(i => i * Fp.Neutral()).ToKMatrix(dim);
+                if (IsOrder(m0, m) && (m1.Inv() * m0 * m1).Equals(m0.Pow(r)))
+                {
+                    var mtGL = Group.Generate($"M({m}x:{n}){r}", GL, m0, m1);
+                    if (mtGL.Count() == m * n)
+                        return mtGL;
+                }
+            }
+        }
+
+        return Group.Generate(FG.GLnK("F2", 1, ZnInt.ZnZero(2)));
+    }
+
+
     static void AllGensOfMtCycSdpUpToOrder(int maxOrd, bool altGL2Meth = true)
     {
         GlobalStopWatch.Restart();
@@ -224,7 +304,7 @@ public static class GroupMatrixForm
 
                     if (!mtGL.IsIsomorphicTo(m0.Parent))
                         throw new();
-                    
+
                     break;
                 }
 
@@ -257,6 +337,36 @@ public static class GroupMatrixForm
         missing.Println(e => $"M({e.Item1}x:{e.Item2}){e.Item3}", $"Missing:{missing.Count} Found:{total - missing.Count}/{total}");
         GlobalStopWatch.Show("End Gens");
         GlobalStopWatch.Show("END");
+        Console.Beep();
+    }
+
+    static void AllGensOfMtCycSdpUpToOrder(int maxOrd, int maxDim)
+    {
+        GlobalStopWatch.Restart();
+        var missing = new List<(int, int, int)>();
+        var allMtCycSdp = (maxOrd - 5).Range(6).SelectMany(ord => MetaCyclicSdp(ord)).ToArray();
+
+        foreach (var e in allMtCycSdp)
+        {
+            var found = false;
+            foreach (var dim in maxDim.Range(1).Where(d => d != 1 && (IntExt.Gcd(e.m, d) != 1 || IntExt.Gcd(e.m - 1, d) != 1)))
+            {
+                var mtGL = MetaCyclicGLnK_DiagByPerm(e.m, e.n, e.r, dim);
+                if (mtGL.Count() != 1)
+                {
+                    found = true;
+                    DisplayGroup.HeadOrdersGenerators(mtGL);
+                    break;
+                }
+            }
+
+            if (!found)
+                missing.Add(e);
+        }
+
+        var total = allMtCycSdp.Length;
+        missing.Println(e => $"M({e.Item1}x:{e.Item2}){e.Item3}", $"Missing:{missing.Count} Found:{total - missing.Count}/{total}");
+        GlobalStopWatch.Show("End Gens");
         Console.Beep();
     }
 
@@ -442,9 +552,11 @@ public static class GroupMatrixForm
     public static void ExampleGL7p()
     {
         Group.ActivedStorage(false);
-        AllGensOfMtCycSdpUpToOrder(128, altGL2Meth: false);
+        // AllGensOfMtCycSdpUpToOrder(128, altGL2Meth: false);
         // Missing:1 Found:310/311
         // M(11x:10)2
-
+        
+        // AllGensOfMtCycSdpUpToOrder(maxOrd: 128, maxDim: 10);
+        AllGensOfMtCycSdpUpToOrder(maxOrd: 256, maxDim: 12);
     }
 }
