@@ -933,4 +933,27 @@ public static class IntExt
 
         arr[cycle[n - 1]] = a0;
     }
+
+    /// <summary>
+    /// Gets a permutation and its cycles representation from a given type
+    /// </summary>
+    /// <param name="type">The type of the permutation.</param>
+    /// <returns>A permutation and an array of cycles.</returns>
+    public static (int[] perm, int[][] cycles) PermAndCyclesFromType(int[] type)
+    {
+        var dim = type.Sum();
+        var lt = new List<int[]>();
+        var rg = dim.Range();
+        var perm = new int[dim];
+        foreach (var k in type.Order())
+        {
+            var r0 = rg.Take(k).ToArray();
+            rg = rg.Skip(k).ToArray();
+            lt.Add(r0);
+            for (int i = 0; i < k; i++)
+                perm[r0[i]] = r0[(i + 1) % k];
+        }
+
+        return (perm, lt.ToArray());
+    }
 }
