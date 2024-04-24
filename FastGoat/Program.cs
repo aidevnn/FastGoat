@@ -50,11 +50,15 @@ bool IsOrder(KMatrix<ZnInt> m, int o)
     return mk.Equals(e);
 }
 
-(int[] perm, int[][] cycles)[] PartitionsToPerm(int dim)
+int[][] DistinctPartition(int dim) => Partitions32[dim].Where(l => l.Count == l.Distinct().Count())
+    .Select(l => l.Order().ToArray())
+    .OrderBy(l => l.Length)
+    .ToArray();
+
+IEnumerable<(int[] perm, int[][] cycles)> PartitionsToPerm(int dim)
 {
-    var all = Partitions32[dim].Select(l => l.Order().ToArray()).ToArray();
     var list = new List<(int[] perm, int[][] cycles)>();
-    foreach (var type in all)
+    foreach (var type in DistinctPartition(dim))
     {
         var lt = new List<int[]>();
         var rg = dim.Range();
@@ -68,51 +72,54 @@ bool IsOrder(KMatrix<ZnInt> m, int o)
                 perm[r0[i]] = r0[(i + 1) % k];
         }
 
-        list.Add((perm, lt.ToArray()));
+        yield return (perm, lt.ToArray());
     }
-
-    return list.ToArray();
 }
 
-(int[] perm, int[][] cycles, KMatrix<ZnInt> mat)[] PartitionsToMatrix(GLn<ZnInt> GL, ZnInt e)
+IEnumerable<(int[] perm, int[][] cycles, KMatrix<ZnInt> mat)> PartitionsToMatrixOfOrder(GLn<ZnInt> GL, int ord)
 {
     var dim = GL.N;
     var sn = new Sn(dim);
-    var seq = PartitionsToPerm(dim);
     var o = GL.Neutral().Rows.Select(r => r.ToArray()).ToArray();
-    var list = new List<(int[] perm, int[][] cycles, KMatrix<ZnInt>)>();
-    foreach (var (perm, cycles) in seq)
+    
+    var Fp = FG.UnInt(GL.Neutral().P);
+    var ordn = Fp.Where(e => ord % Fp.ElementsOrders[e] == 0)
+        .Select(e =>
+        {
+            var diag = Ring.Diagonal(e.One, dim);
+            diag[0, 0] = e;
+            return new KMatrix<ZnInt>(diag);
+        }).ToArray();
+    
+    foreach (var (perm, cycles) in PartitionsToPerm(dim))
     {
         var perm0 = sn.CreateElement(perm.Select(i => i + 1).ToArray());
         var o0 = perm0.Apply(o.Select(l => l.ToArray()).ToArray());
-        o0[0] = o0[0].Select(c => c * e).ToArray();
-        var mat = o0.SelectMany(r => r).ToKMatrix(dim);
-        list.Add((perm, cycles, mat));
+        var mat0 = o0.SelectMany(r => r).ToKMatrix(dim);
+        foreach (var m in ordn)
+        {
+            var mat = m * mat0;
+            if (IsOrder(mat, ord))
+                yield return (perm, cycles, mat);
+        }
     }
-
-    return list.ToArray();
 }
 
-ConcreteGroup<KMatrix<ZnInt>> MetaCyclicGLnp_DiagByPerm_Slow(int m, int n, int r, int dim)
+ConcreteGroup<KMatrix<ZnInt>> MetaCyclicGLnp_DiagByPerm(int m, int n, int r, int dim)
 {
-    var nks = Partitions32[dim].Select(l => l.Aggregate((a0, a1) => a0 * a1))
+    var nks = DistinctPartition(dim).Select(l => l.Aggregate((a0, a1) => a0 * a1))
         .SelectMany(e => Dividors(e).Append(e).Where(j => j != 1))
         .Append(n)
         .Distinct()
         .ToArray();
-    foreach (var p in nks.Select(nk => Primes10000.First(p => (p - 1) % m == 0 && (p - 1) % nk == 0)).Order())
+    foreach (var p in nks.Select(nk => Primes10000.First(p => (p - 1) % m == 0 && (p - 1) % nk == 0)).Distinct().Order())
     {
         var Fp = FG.UnInt(p);
         var o = Fp.Neutral();
         var GL = FG.GLnK($"F{p}", dim, o);
         // Console.WriteLine($"Solve M({m}x:{n}){r} in {GL}");
-        
-        var m1s = Fp.Where(e => n % Fp.ElementsOrders[e] == 0)
-            .SelectMany(e => PartitionsToMatrix(GL, e))
-            .Where(m1 => IsOrder(m1.mat, n))
-            .ToArray();
 
-        foreach (var (perm, cycles, m1) in m1s)
+        foreach (var (perm, cycles, m1) in PartitionsToMatrixOfOrder(GL, n))
         {
             var m1i = m1.Inv();
             var seq = cycles.Select(c => c.Length).Select(l =>
@@ -122,8 +129,8 @@ ConcreteGroup<KMatrix<ZnInt>> MetaCyclicGLnp_DiagByPerm_Slow(int m, int n, int r
                     .OrderByDescending(e => Fp.ElementsOrders[e]).ToArray();
 
                 return ordm.Select(a => l.Range(1).Select(k => a.Pow(IntExt.PowMod(r, k, m))).Reverse().ToArray());
-            }).MultiLoop().Select(l => l.ToArray());
-            foreach (var l in seq)
+            }).MultiLoop().Select(l => l.ToArray()).Where(l => l.All(l1 => l1.Any(e => !e.Equals(e.One))));
+            foreach (var l in seq.Take(1))
             {
                 var arr = new int[dim * dim];
                 foreach (var (sols, idxs) in l.Zip(cycles))
@@ -136,6 +143,7 @@ ConcreteGroup<KMatrix<ZnInt>> MetaCyclicGLnp_DiagByPerm_Slow(int m, int n, int r
                     var mtGL = Group.Generate($"M({m}x:{n}){r}", GL, m0, m1);
                     if (mtGL.Count() == m * n)
                     {
+                        Console.WriteLine($"{mtGL} Perm type[{cycles.Select(l0 => l0.Length).Glue(",")}] rank:{cycles.Length}");
                         return mtGL;
                     }
                 }
@@ -153,70 +161,38 @@ ConcreteGroup<KMatrix<ZnInt>> MetaCyclicGLnp_DiagByPerm_Slow(int m, int n, int r
         .ToArray();
 }
 
-void Test()
-{
-    DisplayGroup.HeadOrdersGenerators(MetaCyclicGLnp_DiagByPerm_Slow(4, 4, 3, 3));
-    DisplayGroup.HeadOrdersGenerators(MetaCyclicGLnp_DiagByPerm_Slow(7, 3, 2, 3));
-    DisplayGroup.HeadOrdersGenerators(MetaCyclicGLnp_DiagByPerm_Slow(5, 4, 2, 2));
-    DisplayGroup.HeadOrdersGenerators(MetaCyclicGLnp_DiagByPerm_Slow(5, 4, 2, 3));
-    DisplayGroup.HeadOrdersGenerators(MetaCyclicGLnp_DiagByPerm_Slow(5, 4, 2, 4));
-    DisplayGroup.HeadOrdersGenerators(MetaCyclicGLnp_DiagByPerm_Slow(11, 10, 2, 5));
-    DisplayGroup.HeadOrdersGenerators(MetaCyclicGLnp_DiagByPerm_Slow(11, 10, 2, 6));
-    DisplayGroup.HeadOrdersGenerators(MetaCyclicGLnp_DiagByPerm_Slow(11, 10, 2, 7));
-    DisplayGroup.HeadOrdersGenerators(MetaCyclicGLnp_DiagByPerm_Slow(11, 10, 2, 10));
-}
-
 void AllGensOfMtCycSdpUpToOrder(int maxOrd, int maxDim)
 {
     GlobalStopWatch.Restart();
-    Console.WriteLine("Start filtering MetaCyclic Groups");
-    GlobalStopWatch.AddLap();
     var missing = new List<(int, int, int)>();
-    var allMtCycSdp = (maxOrd - 5).Range(6).SelectMany(ord => MetaCyclicSdp(ord))
-        .Select(e => (e, FG.MetaCyclicSdp(e.m, e.n, e.r).AllSubgroups())).ToDictionary(e => e.Item2, e => e.e);
-    var isoMtCycSdp = allMtCycSdp.Keys.FilterIsomorphic().ToDictionary(e => e, e => allMtCycSdp[e]);
-    GlobalStopWatch.Show("End filtering");
+    var allMtCycSdp = (maxOrd - 5).Range(6).SelectMany(ord => MetaCyclicSdp(ord)).ToArray();
 
-    GlobalStopWatch.AddLap();
-    foreach (var (m0, e) in isoMtCycSdp)
+    foreach (var e in allMtCycSdp)
     {
-        var id = FG.FindIdGroup(m0.Parent, m0.Infos);
         var found = false;
-        for (int dim = 2; dim <= maxDim; dim++)
+        foreach (var dim in maxDim.Range(1).Where(d => d != 1 && (Gcd(e.m, d) != 1 || Gcd(e.m - 1, d) != 1)))
         {
-            var mtGL = MetaCyclicGLnp_DiagByPerm_Slow(e.m, e.n, e.r, dim);
+            var mtGL = MetaCyclicGLnp_DiagByPerm(e.m, e.n, e.r, dim);
             if (mtGL.Count() != 1)
             {
                 found = true;
                 DisplayGroup.HeadOrdersGenerators(mtGL);
-                if (!mtGL.IsIsomorphicTo(m0.Parent))
-                    throw new();
-
                 break;
             }
         }
 
         if (!found)
             missing.Add(e);
-        else
-        {
-            if (id.Length != 0)
-            {
-                Console.WriteLine(id[0].FullName);
-                Console.WriteLine();
-            }
-        }
     }
 
-    var total = isoMtCycSdp.Count;
+    var total = allMtCycSdp.Length;
     missing.Println(e => $"M({e.Item1}x:{e.Item2}){e.Item3}", $"Missing:{missing.Count} Found:{total - missing.Count}/{total}");
     GlobalStopWatch.Show("End Gens");
-    GlobalStopWatch.Show("END");
     Console.Beep();
 }
 
-
 {
-    // AllGensOfMtCycSdpUpToOrder(maxOrd:64, maxDim:6);
-    AllGensOfMtCycSdpUpToOrder(maxOrd:128, maxDim:10);
+    // Ring.MatrixDisplayForm = Ring.MatrixDisplay.OneLineArray;
+    
+    AllGensOfMtCycSdpUpToOrder(maxOrd: 256, maxDim: 12);
 }
