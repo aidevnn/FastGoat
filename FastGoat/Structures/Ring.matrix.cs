@@ -509,6 +509,9 @@ public static partial class Ring
         var cols = mat.GetLength(1);
         var rgCols = cols.Range();
         var rgRows = rows.Range();
+        if (MatrixDisplayForm == MatrixDisplay.OneLineArray)
+            return $"[{rgRows.Grid2D(rgCols).Select(e => mat[e.t1, e.t2]).Glue(sep)}]";
+        
         var digitsByCols = rgCols.Select(j => rgRows.Max(i => $"{mat[i, j]}".Length))
             .Select(d => MatrixDisplayForm == MatrixDisplay.TableLeft ? $"{{0,-{d}}}" : $"{{0,{d}}}").ToArray();
         if (MatrixDisplayForm == MatrixDisplay.CurlyBracketNoFmt || MatrixDisplayForm == MatrixDisplay.SquareBracketNoFmt)
@@ -544,6 +547,7 @@ public static partial class Ring
         SquareBracket,
         CurlyBracketNoFmt,
         SquareBracketNoFmt,
+        OneLineArray,
         Table,
         TableLeft
     }
