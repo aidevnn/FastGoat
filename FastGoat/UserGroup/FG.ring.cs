@@ -8,6 +8,7 @@ using FastGoat.UserGroup.Floats;
 using FastGoat.UserGroup.Integers;
 using FastGoat.UserGroup.Matrix;
 using FastGoat.UserGroup.Padic;
+using FastGoat.UserGroup.Perms;
 using FastGoat.UserGroup.Polynoms;
 
 namespace FastGoat.UserGroup;
@@ -554,7 +555,7 @@ public static partial class FG
         var a = Glnq.Fq.X;
         var Fq2 = Group.MulGroup($"F{q2}", a);
         var ax = a.Pow(q); // in F(q^2), (a^q)^q=a
-        
+
         if (q == 2)
         {
             var J = Glnq[0, 1, 1, 0];
@@ -569,7 +570,7 @@ public static partial class FG
                 return [A, J];
             }
         }
-        
+
         if (!special)
         {
             var gen0 = Glnq[a, 0, 0, ax.Inv()];
@@ -592,7 +593,7 @@ public static partial class FG
                 var gen01 = Glnq[0, e0, -e0.Inv(), 0];
                 return [gen0, gen01];
             }
-            
+
             var e1 = Fq2.Where(x => (x.Inv() * x.Substitute(ax)).Equals(a.One)).MaxBy(x => Fq2.ElementsOrders[x]);
             var gen1 = Glnq[e1, 0, 0, e1.Inv()];
             return [gen1, gen0];
@@ -663,7 +664,7 @@ public static partial class FG
     {
         if (!IntExt.Primes10000.Contains(p))
             throw new($"p={p} isnt prime");
-        
+
         var gens = GeneratorsGO3q(p, special: false);
         var gl = new GL(3, p);
         var gens0 = gens.Select(m => gl.Create(m.Table.Select(c => c[0].K).ToArray())).ToArray();
@@ -674,7 +675,7 @@ public static partial class FG
     {
         if (!IntExt.Primes10000.Contains(p))
             throw new($"p={p} isnt prime");
-        
+
         var gens = GeneratorsGO3q(p, special: true);
         var gl = new GL(3, p);
         var gens0 = gens.Select(m => gl.Create(m.Table.Select(c => c[0].K).ToArray())).ToArray();
@@ -693,6 +694,94 @@ public static partial class FG
         var gens = GeneratorsGO3q(q, special: true);
         var Glnq = gens.First().GLnq;
         return Group.Generate($"SO(3,{q})", Glnq, [..gens]);
+    }
+    
+    public static ConcreteGroup<Mat> AbelianMat(params int[] seq)
+    {
+        var dim = seq.Length;
+        var p = IntExt.Primes10000.First(p => seq.All(o => (p - 1) % o == 0));
+        var gl = new GL(dim, p);
+        var Up = FG.UnInt(p);
+        var seq2 = seq.Select(o => Up.ElementsOrders.First(e => e.Value == o).Key.K).ToArray();
+        var gens = seq2.Select((v, k) => gl.At(gl.Neutral().Table, k * (dim + 1), v)).ToArray();
+        return Group.Generate(seq.Glue(" x ", "C{0}"), gl, gens);
+    }
+    
+    public static ConcreteGroup<Mat> MetaCyclicGLnp_DiagByPerm(int m, int n, int r, int dim)
+    {
+        // Console.WriteLine($"Solve M({m}x:{n}){r} in GL({dim},{p})");
+        var distinctTypes = IntExt.Partitions32[dim].Where(l => l.Count == l.Distinct().Count()).Select(l => l.Order().ToArray())
+            .OrderBy(l => l.Length).ToArray();
+        var nks = distinctTypes.Select(l => l.Aggregate((a0, a1) => a0 * a1))
+            .SelectMany(e => IntExt.Dividors(e).Append(e).Where(j => j != 1)).Append(n).ToHashSet();
+        foreach (var p in nks.Select(nk => IntExt.Primes10000.First(p => (p - 1) % m == 0 && (p - 1) % nk == 0)).Distinct().Order())
+        {
+            var Up = UnInt(p);
+            var gl = new GL(dim, p);
+            var ordn = Up.Where(e => n % Up.ElementsOrders[e] == 0)
+                .OrderByDescending(e => Up.ElementsOrders[e])
+                .Select(e => gl.At(gl.Neutral().Table, 0, e.K))
+                .ToArray();
+            var sn = new Sn(dim);
+            var m1s = IntExt.Partitions32[dim].Where(l => l.Count == l.Distinct().Count())
+                .OrderBy(l => l.Count)
+                .Select(t => IntExt.PermAndCyclesFromType(t.Order().ToArray()))
+                .Select(e =>
+                {
+                    var e0 = gl.Neutral().Table.Chunk(dim).ToArray();
+                    var perm = sn.CreateElement(e.perm.Select(i => i + 1).ToArray());
+                    var e1 = perm.Apply(e0);
+                    var mat0 = gl.Create(e1.SelectMany(v => v).ToArray());
+                    return ordn.Select(mat => gl.Op(mat0, mat))
+                        .Where(mat => mat.IsOrder(n))
+                        .Select(mat => (e.perm, e.cycles, mat));
+                })
+                .SelectMany(e => e);
+
+            foreach (var (perm, cycles, m1) in m1s)
+            {
+                var m1i = gl.Invert(m1);
+                var seq = cycles.Select(c => c.Length).Select(l =>
+                {
+                    var r0 = IntExt.PowMod(r, l, m);
+                    var ordm = Up.Where(e => m % Up.ElementsOrders[e] == 0 && e.Pow(r0).Equals(e))
+                        .OrderByDescending(e => Up.ElementsOrders[e]);
+                    return ordm.Select(a => l.Range(1).Select(k => a.Pow(IntExt.PowMod(r, k, m))).Reverse().ToArray());
+                }).MultiLoop().Select(l => l.ToArray());
+                foreach (var l in seq)
+                {
+                    var arr = new int[dim * dim];
+                    foreach (var (sols, idxs) in l.Zip(cycles))
+                    foreach (var (idx, sol) in idxs.Zip(sols))
+                        arr[perm[idx] * (dim + 1)] = sol.K;
+
+                    var m0 = gl.Create(arr);
+                    if (m0.IsOrder(m) && gl.Op(m1i, gl.Op(m0, m1)).Equals(gl.Times(m0, r)))
+                    {
+                        var mtGL = Group.Generate($"M({m}x:{n}){r}", gl, m0, m1);
+                        if (mtGL.Count() == m * n)
+                        {
+                            // Console.WriteLine($"Permutation Type[{cycles.Select(c => c.Length).Glue(",")}] in {gl}");
+                            return mtGL;
+                        }
+                    }
+                }
+            }
+        }
+
+        return Group.Generate(new GL(1, 2));
+    }
+
+    public static ConcreteGroup<Mat> MetaCyclicSdpMat(int m, int n, int r, int maxDim = 12)
+    {
+        foreach (var dim in maxDim.Range(1).Where(d => d != 1 && (IntExt.Gcd(m, d) != 1 || IntExt.Gcd(m - 1, d) != 1)))
+        {
+            var mtGL = MetaCyclicGLnp_DiagByPerm(m, n, r, dim);
+            if (mtGL.Count() != 1)
+                return mtGL;
+        }
+
+        throw new GroupException(GroupExceptionType.GroupDef);
     }
 
     public static GLn<K> GLnK<K>(int n, K scalar) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
