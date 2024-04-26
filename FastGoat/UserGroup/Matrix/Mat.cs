@@ -91,6 +91,14 @@ public struct Mat : IElt<Mat>
         }
     }
 
+    public bool IsOrder(int ord)
+    {
+        if (IntExt.PowMod(Det, ord, GL.P) != 1)
+            return false;
+
+        return Group.ElementIsOrder(GL, this, ord);
+    }
+
     public Mat At(Tuple2Array at, int value) => GL.At(Table, at, value);
     public bool Equals(Mat other) => Hash == other.Hash && Table.SequenceEqual(other.Table);
 

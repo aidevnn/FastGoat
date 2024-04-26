@@ -286,6 +286,14 @@ public struct KMatrix<K> : IVsElt<K, KMatrix<K>>, IElt<KMatrix<K>>, IRingElt<KMa
         }
     }
 
+    public bool IsOrder(int ord)
+    {
+        if (!Det.Pow(ord).Equals(KOne))
+            return false;
+
+        return Group.ElementIsOrder(new GLn<K>(M, KOne), this, ord);
+    }
+
     public override int GetHashCode() => Hash;
 
     public override string ToString()
