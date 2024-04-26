@@ -635,6 +635,15 @@ public static class IntExt
     public static int InvModP(int a, int p) => Enumerable.Range(1, p - 1).First(e => AmodP(e * a, p) == 1);
 
     /// <summary>
+    /// Calculates the inverse modulo of a number a modulo p.
+    /// Using Bezout method
+    /// </summary>
+    /// <param name="a">The number to calculate the inverse modulo of.</param>
+    /// <param name="p">The modulo.</param>
+    /// <returns>The inverse modulo of a modulo p.</returns>
+    public static int InvModPbez(int a, int p) => AmodP(Bezout(a, p).x, p);
+
+    /// <summary>
     /// Creates a dictionary with keys from 1 to n, and values are the invert mod n of the keys. 
     /// </summary>
     /// <param name="n">The upper limit of the range of numbers.</param>
