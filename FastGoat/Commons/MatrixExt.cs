@@ -313,4 +313,123 @@ public static class MatrixExt
             c * f * l * s * y - a * h * l * s * y - b * f * m * s * y + a * g * m * s * y;
         return det;
     }
+
+    public static void MulRows(int n, int p, int i, int a, int[] A)
+    {
+        for (int k = 0; k < n; k++)
+            A[i * n + k] = IntExt.AmodP(a * A[i * n + k], p);
+    }
+
+    public static void SwapRows(int n, int p, int i, int j, int[] A)
+    {
+        for (int k = 0; k < n; k++)
+            (A[i * n + k], A[j * n + k]) = (IntExt.AmodP(-A[j * n + k], p), A[i * n + k]);
+    }
+
+    public static void CombineRows(int n, int p, int i, int j, int a, int[] A)
+    {
+        for (int k = 0; k < n; k++)
+            A[i * n + k] = IntExt.AmodP(A[i * n + k] + A[j * n + k] * a, p);
+    }
+
+    public static int DeterminantByPivot(int n, int p, int[] A)
+    {
+        if (n <= 0)
+            throw new ArgumentException();
+
+        if (n * n != A.Length)
+            return 0;
+
+        var A0 = A.ToArray();
+        for (int k = 0; k < n; k++)
+        {
+            // Console.WriteLine(new { k, dim });
+            if (A0[k * n + k] == 0)
+            {
+                var i = 0;
+                for (i = k + 1; i < n; i++)
+                {
+                    if (A0[i * n + k] != 0)
+                        break;
+                }
+
+                if (i == n)
+                    return A0[k * n + k];
+
+                SwapRows(n, p, i, k, A0);
+            }
+
+            var a = A0[k * n + k];
+            for (int i = k + 1; i < n; i++)
+            {
+                var b = A0[i * n + k];
+                if (b == 0)
+                    continue;
+
+                var a0 = IntExt.AmodP(-b * IntExt.InvModPbez(a, p), p);
+                CombineRows(n, p, i, k, a0, A0);
+            }
+        }
+
+        return n.Range().Select(k => A0[k * n + k]).Aggregate((a, b) => IntExt.AmodP(a * b, p));
+    }
+
+    public static (int[] P, int[] A0) ReducedRowsEchelonForm(int m, int n, int p, int[] A)
+    {
+        if (m <= 0 || n <= 0 || A.Length != m * n)
+            throw new ArgumentException();
+
+        var A0 = A.ToArray();
+        var P = Identity(m);
+
+        int i = 0, j = 0;
+        while (i < m && j < n)
+        {
+            var pivotFound = true;
+            if (A0[i * n + j] == 0)
+            {
+                pivotFound = false;
+                for (int i0 = i + 1; i0 < m; i0++)
+                {
+                    if (A0[i0 * n + j] != 0)
+                    {
+                        SwapRows(n, p, i0, i, A0);
+                        SwapRows(m, p, i0, i, P);
+                        pivotFound = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!pivotFound)
+            {
+                ++j;
+                continue;
+            }
+
+            var a = A0[i * n + j];
+            MulRows(n, p, i, IntExt.InvModPbez(a, p), A0);
+            MulRows(m, p, i, IntExt.InvModPbez(a, p), P);
+            for (int i0 = 0; i0 < m; i0++)
+            {
+                if (i0 == i)
+                    continue;
+
+                var b = A0[i0 * n + j];
+                if (b == 0)
+                    continue;
+
+                var a0 = IntExt.AmodP(-b, p);
+                CombineRows(n, p, i0, i, a0, A0);
+                CombineRows(m, p, i0, i, a0, P);
+            }
+
+            ++i;
+            ++j;
+        }
+
+        return (P, A0);
+    }
+
+    public static int[] InversionByRREF(int n, int p, int[] A) => ReducedRowsEchelonForm(n, n, p, A).P;
 }

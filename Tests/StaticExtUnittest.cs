@@ -81,4 +81,32 @@ public class StaticExtUnittest
         var (x0, y0) = Ring.Bezout(a, b);
         Assert.Equal(gcd, a * x0 + b * y0);
     }
+    
+    [Fact]
+    public void Test5MatrixPivotRREF()
+    {
+        for (int n = 2; n < 6; n++)
+        {
+            var p = IntExt.Primes10000[IntExt.Rng.Next(12)];
+            var id = MatrixExt.Identity(n);
+            
+            var rg = Enumerable.Range(0, n * n).ToArray();
+            for (int k = 0; k < 5; k++)
+            {
+                var mat = rg.Select(_ => IntExt.Rng.Next(p)).ToArray();
+                var det0 = MatrixExt.ComputeDeterminant(mat);
+                var det1 = MatrixExt.DeterminantByPivot(n, p, mat);
+                Assert.True(IntExt.AmodP(det0, p) == det1);
+                if (det1 == 0)
+                {
+                    --k;
+                    continue;
+                }
+
+                var inv = MatrixExt.InversionByRREF(n, p, mat);
+                var dot = MatrixExt.ModP(p, MatrixExt.Dot(inv, mat));
+                Assert.True(id.SequenceEqual(dot));
+            }
+        }
+    }
 }
