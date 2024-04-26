@@ -19,123 +19,6 @@ public static class GroupMatrixForm
             .ToArray();
     }
 
-    static bool IsOrder(Mat m, int o)
-    {
-        var gl = m.GL;
-        var e = gl.Neutral();
-        var mk = gl.Neutral();
-        if (IntExt.PowMod(m.Det, o, gl.P) != 1)
-            return false;
-
-        for (int k = 0; k < o; k++)
-        {
-            if (k != 0 && mk.Equals(e))
-                return false;
-
-            mk = gl.Op(mk, m);
-        }
-
-        return mk.Equals(e);
-    }
-
-    static bool IsOrder(KMatrix<ZnInt> m, int o)
-    {
-        var e = m.One;
-        var mk = m.One;
-        if (!m.Det.Pow(o).Equals(m.KOne))
-            return false;
-
-        for (int k = 0; k < o; k++)
-        {
-            if (k != 0 && mk.Equals(e))
-                return false;
-
-            mk *= m;
-        }
-
-        return mk.Equals(e);
-    }
-
-    static (int[] perm, int[][] cycles) MatrixToPermutation(Mat mat)
-    {
-        var dim = mat.GL.N;
-        if (dim.Range().Any(i => dim.Range().Count(j => mat.Table[i * dim + j] == 0) != dim - 1))
-            throw new("Matrix is not a permutation");
-
-        var perm = dim.Range();
-        var set = perm.ToHashSet();
-        var cycles = new List<int[]>();
-        while (set.Any())
-        {
-            var i = set.Min();
-            var lt = new List<int>();
-            while (i != lt.FirstOrDefault(-1))
-            {
-                lt.Add(i);
-                set.Remove(i);
-                var i0 = i;
-                i = dim.Range().First(j => mat.Table[i0 * dim + j] != 0);
-                perm[i0] = i;
-            }
-
-            cycles.Add(lt.ToArray());
-        }
-
-        return (perm, cycles.ToArray());
-    }
-
-    static IEnumerable<Mat> GetGLnPermutations(int dim, int n, int p)
-    {
-        var Fp = FG.UnInt(p);
-        var gl = new GL(dim, p);
-        var ordn = Fp.Where(e => n % Fp.ElementsOrders[e] == 0).ToArray();
-        return ordn.Select(e => e.K)
-            .SelectMany(e =>
-            {
-                if (gl.N == 2)
-                    return new[]
-                    {
-                        gl[0, e, 1, 0] // type[2]
-                    };
-                if (gl.N == 3)
-                    return new[]
-                    {
-                        gl[0, e, 0, 0, 0, 1, 1, 0, 0], // type[3]
-                        gl[e, 0, 0, 0, 0, 1, 0, 1, 0], // type[1,2]
-                    };
-                if (gl.N == 4)
-                    return new[]
-                    {
-                        gl[0, e, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0], // type[4]
-                        gl[e, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0], // type[1,3]
-                        // gl[0, e, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0], // type[2,2]
-                    };
-                if (gl.N == 5)
-                    return new[]
-                    {
-                        gl[0, e, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0], // type[5]
-                        gl[e, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0], // type[1,4]
-                        gl[0, e, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0], // type[2,3]
-                    };
-                if (gl.N == 6)
-                    return new[]
-                    {
-                        gl[0, e, 0, 0, 0, 0,
-                            0, 0, 1, 0, 0, 0,
-                            0, 0, 0, 1, 0, 0,
-                            0, 0, 0, 0, 1, 0,
-                            0, 0, 0, 0, 0, 1,
-                            1, 0, 0, 0, 0, 0], // type[6]
-                        // gl[0, e, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0], // type[3,3]
-                        // gl[0, e, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0], // type[2.4]
-                        // gl[e, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0], // type[1,5]
-                    };
-
-                throw new();
-            })
-            .Where(mat => IsOrder(mat, n));
-    }
-
     static ConcreteGroup<Mat> MetaCyclicGLnp_DiagByPerm(int m, int n, int r, int dim)
     {
         // Console.WriteLine($"Solve M({m}x:{n}){r} in GL({dim},{p})");
@@ -147,12 +30,27 @@ public static class GroupMatrixForm
         {
             var p = IntExt.Primes10000.First(p => (p - 1) % m == 0 && (p - 1) % (n / nk) == 0);
             var Fp = FG.UnInt(p);
-            var m1s = GetGLnPermutations(dim, n, p);
-            foreach (var m1 in m1s)
+            var gl = new GL(dim, p);
+            var ordn = Fp.Where(e => n % Fp.ElementsOrders[e] == 0).Select(e => gl.At(gl.Neutral().Table, 0, e.K)).ToArray();
+            var sn = new Sn(dim);
+            var m1s = IntExt.Partitions32[dim].Where(l => l.Count == l.Distinct().Count() && l.Count <= 2)
+                .OrderBy(l => l.Count)
+                .Select(t => IntExt.PermAndCyclesFromType(t.Order().ToArray()))
+                .Select(e =>
+                {
+                    var e0 = gl.Neutral().Table.Chunk(dim).ToArray();
+                    var perm = sn.CreateElement(e.perm.Select(i => i + 1).ToArray());
+                    var e1 = perm.Apply(e0);
+                    var mat0 = gl.Create(e1.SelectMany(v => v).ToArray());
+                    return ordn.Select(mat => gl.Op(mat0, mat))
+                        .Where(mat => mat.IsOrder(n))
+                        .Select(mat => (e.perm, e.cycles, mat));
+                })
+                .SelectMany(e => e);
+            
+            foreach (var (perm, cycles, m1) in m1s)
             {
-                var gl = m1.GL;
                 var m1i = gl.Invert(m1);
-                var (perm, cycles) = MatrixToPermutation(m1);
                 var seq = cycles.Select(c => c.Length).Select(l =>
                 {
                     var r0 = IntExt.PowMod(r, l, m);
@@ -168,7 +66,7 @@ public static class GroupMatrixForm
                         arr[perm[idx] * (dim + 1)] = sol.K;
 
                     var m0 = gl.Create(arr);
-                    if (IsOrder(m0, m) && gl.Op(m1i, gl.Op(m0, m1)).Equals(gl.Times(m0, r)))
+                    if (m0.IsOrder(m) && gl.Op(m1i, gl.Op(m0, m1)).Equals(gl.Times(m0, r)))
                     {
                         var mtGL = Group.Generate($"M({m}x:{n}){r}", gl, m0, m1);
                         if (mtGL.Count() == m * n)
@@ -195,11 +93,11 @@ public static class GroupMatrixForm
             var ordn = Fp.Where(e => Fp.ElementsOrders[e] == n).ToArray();
 
             var m0s = ordm.Select(e => gl[e.K, 1, 0, e.K])
-                .Where(mat => IsOrder(mat, m))
+                .Where(mat => mat.IsOrder(m))
                 .ToArray();
 
             var m1s = ordn.Grid2D(ordn.Append(Fp.Neutral())).Select(e => gl[e.t1.K, 0, 0, e.t2.K])
-                .Where(mat => IsOrder(mat, n))
+                .Where(mat => mat.IsOrder(n))
                 .ToArray();
 
             foreach (var (m0, m1) in m0s.Grid2D(m1s).Where(e => gl.Op(gl.Invert(e.t2), gl.Op(e.t1, e.t2)).Equals(gl.Times(e.t1, r))))
@@ -239,7 +137,7 @@ public static class GroupMatrixForm
                 var perm0 = sn.CreateElement(e.perm.Select(i => i + 1).ToArray());
                 var o0 = perm0.Apply(o.Select(l => l.ToArray()).ToArray());
                 var mat0 = o0.SelectMany(rw => rw).ToKMatrix(dim);
-                return ordn.Select(mat1 => mat1 * mat0).Where(mat1 => IsOrder(mat1, n)).Select(mat1 => (e.perm, e.cycles, mat1));
+                return ordn.Select(mat1 => mat1 * mat0).Where(mat1 => mat1.IsOrder(n)).Select(mat1 => (e.perm, e.cycles, mat1));
             }).SelectMany(e => e);
 
             foreach (var (perm, cycles, m1) in m1s)
@@ -260,7 +158,7 @@ public static class GroupMatrixForm
                     arr[perm[idx] * (dim + 1)] = sol.K;
 
                 var m0 = arr.Select(i => i * Fp.Neutral()).ToKMatrix(dim);
-                if (IsOrder(m0, m) && (m1.Inv() * m0 * m1).Equals(m0.Pow(r)))
+                if (m0.IsOrder(m) && (m1.Inv() * m0 * m1).Equals(m0.Pow(r)))
                 {
                     var mtGL = Group.Generate($"M({m}x:{n}){r}", GL, m0, m1);
                     if (mtGL.Count() == m * n)
@@ -271,8 +169,7 @@ public static class GroupMatrixForm
 
         return Group.Generate(FG.GLnK("F2", 1, ZnInt.ZnZero(2)));
     }
-
-
+    
     static void AllGensOfMtCycSdpUpToOrder(int maxOrd, bool altGL2Meth = true)
     {
         GlobalStopWatch.Restart();
@@ -296,15 +193,6 @@ public static class GroupMatrixForm
                 {
                     found = true;
                     DisplayGroup.HeadOrdersGenerators(mtGL);
-                    if (id.Length != 0)
-                    {
-                        Console.WriteLine(id[0].FullName);
-                        Console.WriteLine();
-                    }
-
-                    if (!mtGL.IsIsomorphicTo(m0.Parent))
-                        throw new();
-
                     break;
                 }
 
@@ -315,15 +203,6 @@ public static class GroupMatrixForm
                     {
                         found = true;
                         DisplayGroup.HeadOrdersGenerators(mtGL2);
-                        if (id.Length != 0)
-                        {
-                            Console.WriteLine(id[0].FullName);
-                            Console.WriteLine();
-                        }
-
-                        if (!mtGL2.IsIsomorphicTo(m0.Parent))
-                            throw new();
-
                         break;
                     }
                 }
@@ -331,11 +210,19 @@ public static class GroupMatrixForm
 
             if (!found)
                 missing.Add(e);
+            else
+            {
+                if (id.Length != 0)
+                {
+                    Console.WriteLine(id[0].FullName);
+                    Console.WriteLine();
+                }
+            }
         }
 
         var total = isoMtCycSdp.Count;
         missing.Println(e => $"M({e.Item1}x:{e.Item2}){e.Item3}", $"Missing:{missing.Count} Found:{total - missing.Count}/{total}");
-        GlobalStopWatch.Show("End Gens");
+        GlobalStopWatch.Show("Generators");
         GlobalStopWatch.Show("END");
         Console.Beep();
     }
@@ -366,7 +253,7 @@ public static class GroupMatrixForm
 
         var total = allMtCycSdp.Length;
         missing.Println(e => $"M({e.Item1}x:{e.Item2}){e.Item3}", $"Missing:{missing.Count} Found:{total - missing.Count}/{total}");
-        GlobalStopWatch.Show("End Gens");
+        GlobalStopWatch.Show("Generators");
         Console.Beep();
     }
 
@@ -388,73 +275,6 @@ public static class GroupMatrixForm
 
         var gens = seq2.Select((v, k) => gl.Create(Diag(dim, k, v))).ToArray();
         return Group.Generate(seq.Glue(" x ", "C{0}"), gl, gens);
-    }
-
-    static int OrderMatOrth(ZnInt x0, ZnInt y0)
-    {
-        var (x1, y1) = (x0.One, y0.Zero);
-        for (int i = 1; i < 1000; i++)
-        {
-            (x1, y1) = (x0 * x1 - y0 * y1, x0 * y1 + y0 * x1);
-            if (x1.Equals(x1.One) && y1.IsZero())
-                return i;
-        }
-
-        throw new("####################################");
-    }
-
-    static ConcreteGroup<Mat> DihedralGO2p(int n = 16)
-    {
-        int p = 2;
-        ZnInt a, x = ZnInt.ZnZero(p), y = ZnInt.ZnZero(p);
-        foreach (var p0 in IntExt.Primes10000.Where(p0 => (p0 - 1) % n == 0))
-        {
-            p = p0;
-            var a0 = IntExt.Solve_k_pow_m_equal_one_mod_n_strict(p, p - 1);
-            a = new ZnInt(p, a0);
-            var Zp = Group.MulGroup($"F{p}", a);
-            var square = Zp.Append(a.Zero).Select(x0 => (x: x0, x2: x0 * x0)).GroupBy(e => e.x2)
-                .ToDictionary(e => e.Key, e => e.Select(f => f.x).ToArray());
-            var dicSquare = Zp.ToDictionary(x0 => x0, x0 => square.ContainsKey(x0) ? square[x0] : []);
-            dicSquare[a.Zero] = [];
-            var XYs = Zp.Append(a.Zero)
-                .Select(x0 => (x: x0, yList: dicSquare[1 - x0 * x0]))
-                .Where(e => e.yList.Length != 0)
-                .SelectMany(e => e.yList.Select(y0 => (e.x, y: y0)))
-                .Distinct()
-                .Select(e => (e.x, e.y))
-                .Where(e => OrderMatOrth(e.x, e.y) == n)
-                .OrderBy(e => e.x.K)
-                .ToArray();
-
-            if (XYs.Length != 0)
-            {
-                (x, y) = XYs[0];
-                break;
-            }
-        }
-
-        var gl = new GL(2, p);
-        var m0 = gl[x.K, y.K, (-y).K, x.K];
-        var m1 = gl[0, 1, 1, 0];
-
-        return Group.Generate($"D{2 * n}", gl, m0, m1);
-    }
-
-    public static void ExampleDihedalGO2p()
-    {
-        for (int n = 3; n < 33; n++)
-        {
-            var D2n = DihedralGO2p(n);
-            var D2pg = FG.Dihedral(n);
-            D2pg.Name = $"{D2pg}pg";
-
-            DisplayGroup.Generators(D2n);
-            DisplayGroup.Generators(D2pg);
-
-            DisplayGroup.AreIsomorphics(D2n, D2pg);
-            Console.WriteLine();
-        }
     }
 
     public static void ExampleDihedalGL2p()
@@ -547,16 +367,20 @@ public static class GroupMatrixForm
         // AllGensOfMtCycSdpUpToOrder(32);
         // AllGensOfMtCycSdpUpToOrder(64);
         AllGensOfMtCycSdpUpToOrder(128);
+        // Missing:0 Found:311/311
+        // # Generators Time:1.026s
     }
 
-    public static void ExampleGL7p()
+    public static void ExampleAllMetaCyclicSdpUptoOrder256()
     {
         Group.ActivedStorage(false);
         // AllGensOfMtCycSdpUpToOrder(128, altGL2Meth: false);
         // Missing:1 Found:310/311
         // M(11x:10)2
-        
+
         // AllGensOfMtCycSdpUpToOrder(maxOrd: 128, maxDim: 10);
         AllGensOfMtCycSdpUpToOrder(maxOrd: 256, maxDim: 12);
+        // Missing:0 Found:1113/1113
+        // # Generators Time:21.672s
     }
 }
