@@ -237,6 +237,21 @@ public static partial class Group
         return new ConcreteGroup<T>(g);
     }
 
+    public static bool ElementIsOrder<T>(IGroup<T> g, T e, int ord) where T : struct, IElt<T>
+    {
+        var n = g.Neutral();
+        var ek = g.Neutral();
+        for (int k = 0; k < ord; k++)
+        {
+            if (k != 0 && ek.Equals(n))
+                return false;
+
+            ek = g.Op(e, ek);
+        }
+
+        return ek.Equals(n);
+    }
+
     public static ConcreteGroup<T> Generate<T>(IGroup<T> g, params T[] generators) where T : struct, IElt<T>
     {
         generators = generators.Length == 0 ? g.GetGenerators().ToArray() : generators;
