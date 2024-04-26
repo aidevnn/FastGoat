@@ -27,9 +27,9 @@ public readonly struct GLn<K> : IGroup<KMatrix<K>> where K : struct, IElt<K>, IR
     {
         Generators = others.Prepend(e0).ToArray();
         idN = e0.One;
-        var one = idN.KOne;
-        if (Generators.Select(m => m.Det).Any(d => !d.Equals(one) || !d.Equals(-one)))
-            throw new Exception($"|Det| != 1");
+        var zero = idN.KZero;
+        if (Generators.Select(m => m.Det).Any(d => d.Equals(zero)))
+            throw new Exception($"|Det| == 0");
 
         Hash = Generators.Aggregate(0, (acc, m) => (acc, m.Hash).GetHashCode());
         Name = name;
@@ -37,16 +37,16 @@ public readonly struct GLn<K> : IGroup<KMatrix<K>> where K : struct, IElt<K>, IR
 
     public GLn(int n, K scalar)
     {
-        Generators = Array.Empty<KMatrix<K>>();
         idN = new KMatrix<K>(scalar, n, n).One;
+        Generators = [idN];
         Name = $"GL({idN.N}, {scalar})";
         Hash = Name.GetHashCode();
     }
 
     public GLn(string name, int n, K scalar)
     {
-        Generators = Array.Empty<KMatrix<K>>();
         idN = new KMatrix<K>(scalar, n, n).One;
+        Generators = [idN];
         Name = $"GL({idN.N}, {name})";
         Hash = Name.GetHashCode();
     }
