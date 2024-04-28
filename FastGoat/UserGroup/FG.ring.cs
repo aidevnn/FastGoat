@@ -719,7 +719,7 @@ public static partial class FG
             var Up = UnInt(p);
             var gl = new GL(dim, p);
             var ordn = Up.Where(e => n % Up.ElementsOrders[e] == 0)
-                .OrderByDescending(e => Up.ElementsOrders[e])
+                .OrderBy(e => Up.ElementsOrders[e])
                 .Select(e => gl.At(gl.Neutral().Table, 0, e.K))
                 .ToArray();
             var sn = new Sn(dim);
@@ -758,12 +758,10 @@ public static partial class FG
                     var m0 = gl.Create(arr);
                     if (m0.IsOrder(m) && gl.Op(m1i, gl.Op(m0, m1)).Equals(gl.Times(m0, r)))
                     {
-                        var mtGL = Group.Generate($"M({m}x:{n}){r}", gl, m0, m1);
+                        var name = IntExt.Gcd(m, n * (r - 1)) == 1 ? $"Frob({m},{n},{r})" : $"MtCyc({m},{n},{r})";
+                        var mtGL = Group.Generate(name, gl, m0, m1);
                         if (mtGL.Count() == m * n)
-                        {
-                            // Console.WriteLine($"Permutation Type[{cycles.Select(c => c.Length).Glue(",")}] in {gl}");
                             return mtGL;
-                        }
                     }
                 }
             }
@@ -782,6 +780,14 @@ public static partial class FG
         }
 
         throw new GroupException(GroupExceptionType.GroupDef);
+    }
+
+    public static List<ConcreteGroup<Mat>> MetaCyclicSdpMat(int ord, int maxDim = 12)
+    {
+        return IntExt.Dividors(ord).Where(d => d > 1)
+            .SelectMany(m => MetaCyclicSdpGetR(m, ord / m).Select(r => (m, n: ord / m, r)))
+            .Select(e => MetaCyclicSdpMat(e.m, e.n, e.r, maxDim))
+            .ToList();
     }
 
     public static GLn<K> GLnK<K>(int n, K scalar) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>

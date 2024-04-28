@@ -265,10 +265,10 @@ public static partial class FG
         return MetaCyclicSdpGetR(m, n).Where(r => IntExt.Gcd(m, n * (r - 1)) == 1).ToArray();
     }
 
-    public static List<WordGroup> MetaCyclicSdpWg(int o)
+    public static List<WordGroup> MetaCyclicSdpWg(int ord)
     {
-        return IntExt.Dividors(o).Where(d => d > 1)
-            .SelectMany(m => MetaCyclicSdpGetR(m, o / m).Select(r => (m, n: o / m, r)))
+        return IntExt.Dividors(ord).Where(d => d > 1)
+            .SelectMany(m => MetaCyclicSdpGetR(m, ord / m).Select(r => (m, n: ord / m, r)))
             .Select(e => MetaCyclicSdpWg(e.m, e.n, e.r))
             .ToList();
     }
@@ -497,5 +497,31 @@ public static partial class FG
         var gf = new GFp(f);
         var gens = f.P.Range().Where(e => !f.Substitute(e).IsZero()).Select(e => gf.X - e).ToArray();
         return (gf, Group.Generate(gf, gens));
+    }
+    
+    public static IEnumerable<WordGroup> AllGroupsOfOrder(int ord)
+    {
+        return GroupExt.DB.Select(s => s.Split(';'))
+            .Where(s => int.Parse(s[0]) == ord)
+            .Select(s =>
+            {
+                Logger.Level = LogLevel.Off;
+                var g = WordGroup(s[1], s[2]);
+                Logger.Level = LogLevel.Level1;
+                return g;
+            });
+    }
+    
+    public static IEnumerable<WordGroup> AllGroupsOfOrder(int minOrd, int maxOrder)
+    {
+        return GroupExt.DB.Select(s => s.Split(';'))
+            .Where(s => int.Parse(s[0]) >= minOrd &&  int.Parse(s[0]) <= maxOrder)
+            .Select(s =>
+            {
+                Logger.Level = LogLevel.Off;
+                var g = WordGroup(s[1], s[2]);
+                Logger.Level = LogLevel.Level1;
+                return g;
+            });
     }
 }
