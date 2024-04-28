@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Text.RegularExpressions;
 using FastGoat.Commons;
 using FastGoat.Structures.GenericGroup;
 using FastGoat.Structures.Subgroups;
@@ -46,7 +47,7 @@ public class Leaf : ANameElt
         Depth = 0;
         Weight = 30;
     }
-    
+
     static string SimpleNonAbelians(ConcreteGroup<WElt> G)
     {
         var og = G.Count();
@@ -66,5 +67,29 @@ public class Leaf : ANameElt
             return "A7";
 
         return G.Name;
+    }
+
+    public (string prefix, int[] coefs) LeafDetails()
+    {
+        if (ContentGroup!.GroupType == GroupType.AbelianGroup)
+            return ("C", Group.AbelianGroupType(ContentGroup));
+
+        string regX = @"(Q|Dic|A|S|L2)(\d+)|(GL|SL)\((\d+),(\d+)\)";
+        var match = Regex.Match(Name, regX);
+        var s1 = match.Groups["1"].Value;
+        var s3 = match.Groups["3"].Value;
+        if (string.IsNullOrEmpty(s3) && !string.IsNullOrEmpty(s1))
+        {
+            var n = int.Parse(match.Groups["2"].Value);
+            return (s1, [n]);
+        }
+        else if (string.IsNullOrEmpty(s1) && !string.IsNullOrEmpty(s3))
+        {
+            var n = int.Parse(match.Groups["4"].Value);
+            var p = int.Parse(match.Groups["5"].Value);
+            return (s3, [n, p]);
+        }
+
+        throw new();
     }
 }
