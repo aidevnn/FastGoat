@@ -51,7 +51,7 @@ public class WordGroup : ConcreteGroup<Word>
     private Graph Graph { get; }
     public IEnumerable<char> Rewrite(IEnumerable<char> s) => Graph.Rewrite(s);
 
-    public bool CheckHomomorphism<T>(ConcreteGroup<T> g, Dictionary<char, T> map) where T : struct, IElt<T>
+    public bool CheckHomomorphism<T>(IGroup<T> g, Dictionary<char, T> map) where T : struct, IElt<T>
     {
         return Graph.CheckHomomorphism(g, map);
     }
