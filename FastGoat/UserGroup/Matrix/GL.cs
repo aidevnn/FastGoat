@@ -119,11 +119,11 @@ public class GL : IGroup<Mat>
             return new(this, hash, _cache);
         }
 
-        if (N == 5)
-        {
-            var hash = Inv5x5(e.Table, _cache);
-            return new(this, hash, _cache);
-        }
+        // if (N == 5)
+        // {
+        //     var hash = Inv5x5(e.Table, _cache);
+        //     return new(this, hash, _cache);
+        // }
 
         var table = MatrixExt.InversionByRREF(N, P, e.Table);
         return new(this, IntExt.GenHash(P, table), table);
