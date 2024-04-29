@@ -432,4 +432,28 @@ public static class MatrixExt
     }
 
     public static int[] InversionByRREF(int n, int p, int[] A) => ReducedRowsEchelonForm(n, n, p, A).P;
+    
+    public static int[] MergeDiagonalBlocks(params (int[] A, int aRows)[] Mats)
+    {
+        if (Mats.Any(e => e.A.Length % e.aRows != 0))
+            throw new();
+
+        var Mats0 = Mats.Select(e => (e.A, e.aRows, aCols: e.A.Length / e.aRows)).ToArray();
+
+        var mRows = Mats0.Sum(e => e.aRows);
+        var mCols = Mats0.Sum(e => e.aCols);
+        var mat0 = new int[mRows * mCols];
+        var (m0, n0) = (0, 0);
+        foreach (var (mat, rows, cols) in Mats0)
+        {
+            for (int i = 0; i < rows; i++)
+            for (int j = 0; j < cols; j++)
+                mat0[(m0 + i) * mCols + n0 + j] = mat[i * cols + j];
+
+            (m0, n0) = (m0 + rows, n0 + cols);
+        }
+
+        return mat0;
+    }
+
 }
