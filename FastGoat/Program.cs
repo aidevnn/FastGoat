@@ -125,7 +125,7 @@ ConcreteGroup<Mat> ProductDiagPerm(ConcreteGroup<Mat> group0, ConcreteGroup<Mat>
 void MatrixFormTinyGroups(int maxOrder)
 {
     var total = 0;
-    var missing = new List<ANameElt>();
+    var missing = new List<ANameElt[]>();
     foreach (var g in maxOrder.Range(1).SelectMany(o => FG.AllGroupsOfOrder(o)))
     {
         ++total;
@@ -134,7 +134,7 @@ void MatrixFormTinyGroups(int maxOrder)
         var (mat, check) = MatrixFormFromNames(names[0]);
 
         if (mat.Count() == 1 && !check)
-            missing.Add(names[0]);
+            missing.Add(names);
         else
         {
             FG.DisplayName(gSubgrs.Parent, gSubgrs, names, false, false, 20);
@@ -146,8 +146,22 @@ void MatrixFormTinyGroups(int maxOrder)
         }
     }
 
-    missing.Println($"Missing:{missing.Count} Found:{total - missing.Count}/{total}");
-    missing.Where(e => e.ContentType == ANameElt.NodeType.DirectProduct).Println("Missing Direct Product");
+    missing.Println(e => e[0].ContentGroup.ShortName, $"Missing:{missing.Count} Found:{total - missing.Count}/{total}");
+    missing.Where(e => e[0].ContentType == ANameElt.NodeType.DirectProduct).Println(e => e[0].ContentGroup.ShortName, "Missing Direct Product");
+    missing.SelectMany(e => e.Where(f => f is ExtensionOp f0 && f0.Lhs.ContentGroup.GetGenerators().Count() == 1 && f0.Rhs.ContentGroup.GetGenerators().Count() == 1).Take(1))
+        .Println(e => $"{e.Name} -> {e.ContentGroup.ShortName}", "Missing Non Split Metacyclic");
+}
+
+IEnumerable<AllSubgroups<Mat>> MtCyclicSubgroups(int order, int factor = 4)
+{
+    var total = 0;
+    foreach (var g in factor.Range(1).SelectMany(k => FG.MetaCyclicSdpMat(k * order)))
+    {
+        ++total;
+        var gSubgrs = g.AllSubgroups();
+	    foreach(var sg in gSubgrs.Where(cj => cj.Order == order).Select(cj => gSubgrs.Restriction(cj.Representative)))
+		    yield return sg;
+    }
 }
 
 void TestProdAbMtCyc()
@@ -166,6 +180,8 @@ void TestProdAbMtCyc()
 }
 
 {
-    MatrixFormTinyGroups(maxOrder: 63);
-    // Missing:65 Found:254/319
+    // MatrixFormTinyGroups(64);
+    MtCyclicSubgroups(32, factor: 5).Select(e => e.ToGroupWrapper()).FilterIsomorphic().Naming().DisplayNames();
+    MtCyclicSubgroups(48, factor: 5).Select(e => e.ToGroupWrapper()).FilterIsomorphic().Naming().DisplayNames();
+    MtCyclicSubgroups(64, factor: 5).Select(e => e.ToGroupWrapper()).FilterIsomorphic().Naming().DisplayNames();
 }
