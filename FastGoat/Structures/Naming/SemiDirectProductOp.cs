@@ -31,7 +31,7 @@ public class SemiDirectProductOp : ANameElt
     public int[] MetaCyclicDetails()
     {
         if (Lhs.ContentGroup!.GetGenerators().Count() > 1 || Rhs.ContentGroup!.GetGenerators().Count() > 1)
-            return [];
+            return Array.Empty<int>();
 
         string regX = @"(S|D|QD|MM)(\d+)|(F|M)\((\d+)x:(\d+)\)(\d+)";
         var match = Regex.Match(Name, regX);
@@ -40,18 +40,18 @@ public class SemiDirectProductOp : ANameElt
         if (string.IsNullOrEmpty(s3) && !string.IsNullOrEmpty(s1))
         {
             if (Name == "S3")
-                return [3, 2, 2];
+                return new[] { 3, 2, 2 };
             
             var m = int.Parse(match.Groups["2"].Value) / 2;
             var (n, r) = s1[0] == 'D' ? (2, m - 1) : s1[0] == 'Q' ? (2, m / 2 - 1) : (2, m / 2 + 1);
-            return [m, n, r];
+            return new[] { m, n, r };
         }
         else if (string.IsNullOrEmpty(s1) && !string.IsNullOrEmpty(s3))
         {
             var m = int.Parse(match.Groups["4"].Value);
             var n = int.Parse(match.Groups["5"].Value);
             var r = int.Parse(match.Groups["6"].Value);
-            return [m, n, r];
+            return new[] { m, n, r };
         }
 
         throw new();

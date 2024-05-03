@@ -165,7 +165,7 @@ public static class AbelianInvariantsFactorsPart2
         
         var ord = g.Count();
         if (ord == 1)
-            return [1];
+            return new [] { 1 };
         
         var dec = IntExt.PrimesDec(ord);
         var lt = new List<(int, int, int)>();

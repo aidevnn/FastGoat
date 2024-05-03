@@ -13,13 +13,13 @@ public class DirectProductOp : ANameElt
         ContentType = NodeType.DirectProduct;
         ContentGroup = g;
         if (lhs.ContentType == NodeType.DirectProduct && rhs.ContentType == NodeType.DirectProduct)
-            Elts = [..((DirectProductOp)lhs).Elts, ..((DirectProductOp)rhs).Elts];
+            Elts = ((DirectProductOp)lhs).Elts.Concat(((DirectProductOp)rhs).Elts).ToArray();
         else if (lhs.ContentType == NodeType.DirectProduct)
-            Elts = [..((DirectProductOp)lhs).Elts, rhs];
+            Elts = ((DirectProductOp)lhs).Elts.Append(rhs).ToArray();
         else if (rhs.ContentType == NodeType.DirectProduct)
-            Elts = [..((DirectProductOp)rhs).Elts, lhs];
+            Elts = ((DirectProductOp)rhs).Elts.Append(lhs).ToArray();
         else
-            Elts = [lhs, rhs];
+            Elts = new[] {lhs, rhs};
 
         var abGens = Elts.Where(e => e.ContentGroup!.GroupType == GroupType.AbelianGroup)
             .SelectMany(e => e.ContentGroup!.GetGenerators()).Distinct().ToArray();
@@ -28,7 +28,7 @@ public class DirectProductOp : ANameElt
             var nab = Elts.Where(e => e.ContentGroup!.GroupType == GroupType.NonAbelianGroup).ToArray();
             var ab = Group.Generate("Ab", g, abGens);
             var leaf = new Leaf(ab);
-            Elts = [leaf, ..nab];
+            Elts = nab.Prepend(leaf).ToArray();
         }
 
         Elts = Elts.Order().ToArray();

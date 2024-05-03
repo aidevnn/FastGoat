@@ -1,6 +1,5 @@
 using System.Collections;
 using FastGoat.Structures;
-using FastGoat.UserGroup.Integers;
 
 namespace FastGoat.Structures.VecSpace;
 
@@ -38,7 +37,7 @@ public readonly struct GLn<K> : IGroup<KMatrix<K>> where K : struct, IElt<K>, IR
     public GLn(int n, K scalar)
     {
         idN = new KMatrix<K>(scalar, n, n).One;
-        Generators = [idN];
+        Generators = new[] { idN };
         Name = $"GL({idN.N}, {scalar})";
         Hash = Name.GetHashCode();
     }
@@ -46,7 +45,7 @@ public readonly struct GLn<K> : IGroup<KMatrix<K>> where K : struct, IElt<K>, IR
     public GLn(string name, int n, K scalar)
     {
         idN = new KMatrix<K>(scalar, n, n).One;
-        Generators = [idN];
+        Generators = new[] { idN };
         Name = $"GL({idN.N}, {name})";
         Hash = Name.GetHashCode();
     }

@@ -390,6 +390,9 @@ public static partial class FG
         Console.WriteLine("Word Group");
         Console.WriteLine(def);
         Console.WriteLine();
+        
+        DisplayGroup.Generators(g);
+        Console.WriteLine();
 
         var gapInfos = FindIdGroup(g, subsg.Infos);
         var s = gapInfos.Length > 1 ? " (TODO)" : "";
@@ -465,7 +468,7 @@ public static partial class FG
         return nbSubGroupsDetails.ContainsKey(ord) ? nbSubGroupsDetails[ord][infos] : -1;
     }
 
-    public static IdGroup[] AllIds(int o) => allIds.ContainsKey(o) ? allIds[o] : [];
+    public static IdGroup[] AllIds(int o) => allIds.ContainsKey(o) ? allIds[o] : new IdGroup[0];
 
     public static IdGroup[] FindIdGroup<T>(ConcreteGroup<T> g, SubGroupsInfos infos) where T : struct, IElt<T>
     {
@@ -477,18 +480,18 @@ public static partial class FG
                 var g3244 = Group.AllSemiDirectProd(SemiDihedralSdp(4), Abelian(2))
                     .First(e => e.AllSubgroups().Infos.ToTuples() == (42, 30, 20));
                 if (g3244.IsIsomorphicTo(g))
-                    return [AllIds(ord).First(e => e.No == 44)];
+                    return new [] { AllIds(ord).First(e => e.No == 44) };
                 else
-                    return [AllIds(ord).First(e => e.No == 33)];
+                    return new [] { AllIds(ord).First(e => e.No == 33) };
             }
 
             if (infos.ToTuples() == (26, 18, 14))
             {
                 var g3213 = MetaCyclicSdp(8, 4, 3);
                 if (g3213.IsIsomorphicTo(g))
-                    return [AllIds(ord).First(e => e.No == 13)];
+                    return new [] { AllIds(ord).First(e => e.No == 13) };
                 else
-                    return [AllIds(ord).First(e => e.No == 14)];
+                    return new [] { AllIds(ord).First(e => e.No == 14) };
             }
         }
 
@@ -498,9 +501,9 @@ public static partial class FG
             {
                 var g424 = Product.Generate(Abelian(3), DihedralSdp(7));
                 if (g424.IsIsomorphicTo(g))
-                    return [AllIds(ord).First(e => e.No == 4)];
+                    return new [] { AllIds(ord).First(e => e.No == 4) };
                 else
-                    return [AllIds(ord).First(e => e.No == 2)];
+                    return new [] { AllIds(ord).First(e => e.No == 2) };
             }
         }
 
@@ -510,117 +513,117 @@ public static partial class FG
             {
                 var g6416 = MetaCyclicSdp(8, 8, 7);
                 if (g6416.IsIsomorphicTo(g))
-                    return [AllIds(ord).First(e => e.No == 16)];
+                    return new [] { AllIds(ord).First(e => e.No == 16) };
                 else
-                    return [AllIds(ord).First(e => e.No == 15)];
+                    return new [] { AllIds(ord).First(e => e.No == 15) };
             }
             
             if (infos.ToTuples() == (45, 23, 17))
             {
                 var g6447 = MetaCyclicSdp(16, 4, 15);
                 if (g6447.IsIsomorphicTo(g))
-                    return [AllIds(ord).First(e => e.No == 47)];
+                    return new [] { AllIds(ord).First(e => e.No == 47) };
                 else
-                    return [AllIds(ord).First(e => e.No == 48)];
+                    return new [] { AllIds(ord).First(e => e.No == 48) };
             }
             
             if (infos.ToTuples() == (57, 32, 19))
             {
                 var g6413 = WordGroup("b4, a4b-2, a2ba2b-1, ababababab-1ab-1a-1b-1a-1b-1");
                 if (g6413.IsIsomorphicTo(g))
-                    return [AllIds(ord).First(e => e.No == 13)];
+                    return new [] { AllIds(ord).First(e => e.No == 13) };
                 else
-                    return [AllIds(ord).First(e => e.No == 14)];
+                    return new [] { AllIds(ord).First(e => e.No == 14) };
             }
             
             if (infos.ToTuples() == (89, 52, 27))
             {
                 var g64164 = WordGroup("b4, c2, cbcb-1, ca2ca-2, a2ba2b-1, ab2ca-1c, a3ba-1b-1");
                 if (g64164.IsIsomorphicTo(g))
-                    return [AllIds(ord).First(e => e.No == 164)];
+                    return new [] { AllIds(ord).First(e => e.No == 164) };
                 else
-                    return [AllIds(ord).First(e => e.No == 165)];
+                    return new [] { AllIds(ord).First(e => e.No == 165) };
             }
             
             if (infos.ToTuples() == (97, 65, 49))
             {
                 var g64106 = WordGroup("b4, c2, caca-1, cbcb-1, a2ba2b-1, a3ba-1b-1");
                 if (g64106.IsIsomorphicTo(g))
-                    return [AllIds(ord).First(e => e.No == 106)];
+                    return new [] { AllIds(ord).First(e => e.No == 106) };
                 else
-                    return [AllIds(ord).First(e => e.No == 107)];
+                    return new [] { AllIds(ord).First(e => e.No == 107) };
             }
             
             if (infos.ToTuples() == (113, 57, 27))
             {
                 var g64162 = WordGroup("b4, c2, abcabc, cbcb-1, ca2ca-2, a2ba2b-1, a3ba-1b-1");
                 if (g64162.IsIsomorphicTo(g))
-                    return [AllIds(ord).First(e => e.No == 162)];
+                    return new [] { AllIds(ord).First(e => e.No == 162) };
                 else
-                    return [AllIds(ord).First(e => e.No == 161)];
+                    return new [] { AllIds(ord).First(e => e.No == 161) };
             }
             
             if (infos.ToTuples() == (101, 54, 29))
             {
                 var g64157 = WordGroup("b4, b2c2, bcbc, caca-1, a3ba-1b-1");
                 if (g64157.IsIsomorphicTo(g))
-                    return [AllIds(ord).First(e => e.No == 157)];
+                    return new [] { AllIds(ord).First(e => e.No == 157) };
                 else
-                    return [AllIds(ord).First(e => e.No == 155)];
+                    return new [] { AllIds(ord).First(e => e.No == 155) };
             }
             
             if (infos.ToTuples() == (77, 48, 29))
             {
                 var g64156 = WordGroup("b4, c4, caca-1, ababc-2, a2ba2b-1, cbc-1b-1, a3ba-1b-1");
                 if (g64156.IsIsomorphicTo(g))
-                    return [AllIds(ord).First(e => e.No == 156)];
+                    return new [] { AllIds(ord).First(e => e.No == 156) };
                 else
-                    return [AllIds(ord).First(e => e.No == 158)];
+                    return new [] { AllIds(ord).First(e => e.No == 158) };
             }
             
             if (infos.ToTuples() == (81, 49, 33))
             {
                 var g64179 = WordGroup("b4, b2c2, bcbc-1, bab-1a-1, a3ca-1c-1");
                 if (g64179.IsIsomorphicTo(g))
-                    return [AllIds(ord).First(e => e.No == 179)];
+                    return new [] { AllIds(ord).First(e => e.No == 179) };
                 else
-                    return [AllIds(ord).First(e => e.No == 181)];
+                    return new [] { AllIds(ord).First(e => e.No == 181) };
             }
             
             if (infos.ToTuples() == (145, 133, 121))
             {
                 var g64248 = WordGroup("b2, c2, d2, cdcd, a3cac, a3dad, baba-1, abcba-1c, abdba-1d");
                 if (g64248.IsIsomorphicTo(g))
-                    return [AllIds(ord).First(e => e.No == 248)];
+                    return new [] { AllIds(ord).First(e => e.No == 248) };
                 else
-                    return [AllIds(ord).First(e => e.No == 200)];
+                    return new [] { AllIds(ord).First(e => e.No == 200) };
             }
             
             if (infos.ToTuples() == (165, 93, 39))
             {
                 var g6480 = WordGroup("a4, b4, c4, baba-1, caca-1, b2cb2c-1, cbc2b-1c, a2bcb-1c-1");
                 if (g6480.IsIsomorphicTo(g))
-                    return [AllIds(ord).First(e => e.No == 80)];
+                    return new [] { AllIds(ord).First(e => e.No == 80) };
                 else
-                    return [AllIds(ord).First(e => e.No == 77)];
+                    return new [] { AllIds(ord).First(e => e.No == 77) };
             }
             
             if (infos.ToTuples() == (181, 118, 75))
             {
                 var g64236 = WordGroup("a4, b4, c2, d2, adad, a2bdbd, a2ca2c, a2cdcd, b2db2d, a2bcb-1c, ab2ca-1c, bab-1a-1");
                 if (g64236.IsIsomorphicTo(g))
-                    return [AllIds(ord).First(e => e.No == 236)];
+                    return new [] { AllIds(ord).First(e => e.No == 236) };
                 else
-                    return [AllIds(ord).First(e => e.No == 240)];
+                    return new [] { AllIds(ord).First(e => e.No == 240) };
             }
             
             if (infos.ToTuples() == (69, 45, 27))
             {
                 var g6425 = WordGroup("a8, a4b4, bab2a-1b, ba2b-1a-2, ababab-1ab-1");
                 if (g6425.IsIsomorphicTo(g))
-                    return [AllIds(ord).First(e => e.No == 25)];
+                    return new [] { AllIds(ord).First(e => e.No == 25) };
                 else
-                    return [AllIds(ord).First(e => e.No == 160)];
+                    return new [] { AllIds(ord).First(e => e.No == 160) };
             }
         }
 
@@ -630,18 +633,18 @@ public static partial class FG
             {
                 var g729Type = Group.AbelianGroupType(g);
                 if (g729Type.SequenceEqual([36, 2]))
-                    return [AllIds(ord).First(e => e.No == 9)];
+                    return new [] { AllIds(ord).First(e => e.No == 9) };
                 else
-                    return [AllIds(ord).First(e => e.No == 14)];
+                    return new [] { AllIds(ord).First(e => e.No == 14) };
             }
 
             if (infos.ToTuples() == (48, 48, 48))
             {
                 var g729Type = Group.AbelianGroupType(g);
                 if (g729Type.SequenceEqual([18, 2, 2]))
-                    return [AllIds(ord).First(e => e.No == 18)];
+                    return new [] { AllIds(ord).First(e => e.No == 18) };
                 else
-                    return [AllIds(ord).First(e => e.No == 36)];
+                    return new [] { AllIds(ord).First(e => e.No == 36) };
             }
         }
 

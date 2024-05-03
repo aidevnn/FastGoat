@@ -20,8 +20,10 @@ public static class AllGroupsUptoOrder64
 
     static (AllSubgroups<WElt> subsg, ANameElt[] names)[] AllGroupsUpTo32()
     {
-        var allAb = 32.Range(1).SelectMany(k => FG.AllAbelianGroupsOfOrder(k)).Select(e => e.AllSubgroups().ToGroupWrapper());
-        var allMtCycSdp = 32.Range(1).SelectMany(k => FG.MetaCyclicSdp(k)).Select(e => e.AllSubgroups().ToGroupWrapper());
+        var allAb = 32.Range(1).SelectMany(k => FG.AllAbelianGroupsOfOrder(k))
+            .Select(e => e.AllSubgroups().ToGroupWrapper());
+        var allMtCycSdp = 32.Range(1).SelectMany(k => FG.MetaCyclicSdp(k))
+            .Select(e => e.AllSubgroups().ToGroupWrapper());
         var ext8 = FG.AllExtensions((FG.Abelian(2), FG.Abelian(2, 2))).Select(e => e.allSubs.ToGroupWrapper());
         var ext12 = FG.AllExtensions((FG.Abelian(2, 2), FG.Abelian(3))).Select(e => e.allSubs.ToGroupWrapper());
         var ext16 = FG.AllExtensions((FG.Abelian(8), FG.Abelian(2)), (FG.Abelian(4, 2), FG.Abelian(2)))
@@ -138,14 +140,17 @@ public static class AllGroupsUptoOrder64
             )
             .Select(e => e.allSubs.ToGroupWrapper());
 
-        return allExt.AppendIsomorphic([a5], GetAllProds(ord)).Take(GroupExt.A000001[ord]);
+        return allExt.AppendIsomorphic(new[] { a5 }, GetAllProds(ord)).Take(GroupExt.A000001[ord]);
     }
 
     static (AllSubgroups<WElt> subsg, ANameElt[] names)[] AllGroupsFrom33to63()
     {
         return 31.Range(33).SelectMany(o => GetAllProds(o))
             .FilterIsomorphic()
-            .Concat([..Ord36(), ..Ord40(), ..Ord48(), ..Ord50(), ..Ord54(), ..Ord56(), ..Ord60()])
+            .Concat(new[]
+            {
+                Ord36(), Ord40(), Ord48(), Ord50(), Ord54(), Ord56(), Ord60()
+            }.SelectMany(e => e))
             .FilterIsomorphic()
             .Naming()
             .ToArray();
@@ -234,14 +239,16 @@ public static class AllGroupsUptoOrder64
             .First(e => e.AllSubgroups().Infos.ToTuples() == (50, 38, 26))
             .ToCGW();
         var sdp2 = Product.Generate(FG.Abelian(2), FG.ModularMaxSdp(4)).ToCGW();
-        var listByC2 = sdps.Concat([
-            (sdp1, FG.Abelian(2)),
-            (sdp2, FG.Abelian(2)),
-            (g3232, FG.Abelian(2)),
-            (FG.Abelian(8, 4).ToCGW(), FG.Abelian(2)),
-            (FG.Abelian(4, 4, 2).ToCGW(), FG.Abelian(2)),
-            (FG.Abelian(32).ToCGW(), FG.Abelian(2))
-        ]);
+        var listByC2 = sdps.Concat(new[]
+            {
+                (sdp1, FG.Abelian(2)),
+                (sdp2, FG.Abelian(2)),
+                (g3232, FG.Abelian(2)),
+                (FG.Abelian(8, 4).ToCGW(), FG.Abelian(2)),
+                (FG.Abelian(4, 4, 2).ToCGW(), FG.Abelian(2)),
+                (FG.Abelian(32).ToCGW(), FG.Abelian(2))
+            }
+        );
         var listByC4_C2C2 = new[]
         {
             (FG.Abelian(8, 2).ToCGW(), FG.Abelian(4)),
@@ -264,19 +271,22 @@ public static class AllGroupsUptoOrder64
             .Concat(ord8.Grid2D(ord8).Select(e => Product.Generate(e.t1, e.t2).AllSubgroups().ToGroupWrapper()))
             .Concat(FG.AllSDPFilter(g1612, FG.Abelian(2, 2)).Select(e => e.AllSubgroups().ToGroupWrapper()))
             .Concat(FG.AllSDPFilter(FG.Abelian(4, 2), FG.DihedralSdp(4)).Select(e => e.AllSubgroups().ToGroupWrapper()))
-            .Concat(FG.AllSDPFilter(FG.Abelian(4, 2, 2), FG.Abelian(2, 2)).Select(e => e.AllSubgroups().ToGroupWrapper()));
+            .Concat(FG.AllSDPFilter(FG.Abelian(4, 2, 2), FG.Abelian(2, 2))
+                .Select(e => e.AllSubgroups().ToGroupWrapper()));
 
         var listSdp64b = FG.AllSDPFilter(FG.Abelian(4, 4), FG.Abelian(2)).Select(e => e.AllSubgroups().ToGroupWrapper())
             .Concat(FG.AllSDPFilter(FG.ModularMaxSdp(4), FG.Abelian(2)).Select(e => e.AllSubgroups().ToGroupWrapper()))
             .Append(Product.Generate(FG.Abelian(4), FG.Quaternion(8)).AllSubgroups().ToGroupWrapper())
             .FilterIsomorphic().Naming().ToArray()
             .SelectMany(c =>
-                FG.AllSDPFilter(c.subsg.Parent, FG.Abelian(2), trivial: true).Select(e => e.AllSubgroups().ToGroupWrapper()));
-
+                FG.AllSDPFilter(c.subsg.Parent, FG.Abelian(2), trivial: true)
+                    .Select(e => e.AllSubgroups().ToGroupWrapper()));
+        
         var listAb64 = FG.AllAbelianGroupsOfOrder(64).Select(e => e.AllSubgroups().ToGroupWrapper());
-        var listExts = FG.AllExtensions([..listByC2, ..listByC4_C2C2]).Select(e => e.allSubs.ToGroupWrapper());
+        var listExts = FG.AllExtensions(new[] { listByC2, listByC4_C2C2 }.SelectMany(e => e).ToArray())
+            .Select(e => e.allSubs.ToGroupWrapper());
 
-        var seq = listAb64.Concat([..listSdp64a, ..listSdp64b, ..listExts])
+        var seq = listAb64.Concat(new[] { listSdp64a, listSdp64b, listExts }.SelectMany(e => e))
             .FilterIsomorphic()
             .Take(GroupExt.A000001[64])
             .Naming()
@@ -311,12 +321,12 @@ public static class AllGroupsUptoOrder64
         // GroupsFromDB(maxOrd: 32);
         // Total Groups:144
         // # End Time:7.464s
-        
+
         // GroupsFromDB(maxOrd: 32, names: true);
         // Total Groups:144
         // # End Time:11.198s
-        
-        GroupsFromDB(maxOrd:64);
+
+        GroupsFromDB(maxOrd: 64);
         // Total Groups:586
         // # End Time:1m21s
     }

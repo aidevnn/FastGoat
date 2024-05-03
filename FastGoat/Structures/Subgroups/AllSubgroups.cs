@@ -340,9 +340,9 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
             [SerieType.Serie] = series,
             [SerieType.Chief] = chiefSeries.OrderBy(s => s.Count).ToArray(),
             [SerieType.Composition] = compSeries.OrderBy(s => s.Count).ToArray(),
-            [SerieType.Upper] = [GetUpperSerie()],
-            [SerieType.Lower] = [GetLowerSerie()],
-            [SerieType.Derived] = [GetDerivedSerie()]
+            [SerieType.Upper] = new[]{GetUpperSerie()},
+            [SerieType.Lower] = new[]{GetLowerSerie()},
+            [SerieType.Derived] = new[]{GetDerivedSerie()}
         };
         
         return allSeries;

@@ -340,7 +340,7 @@ public static partial class Group
         var table = new Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>>(og * og, new GroupSetEquality<T>());
         var tableCyc = new Dictionary<ConcreteGroup<T>, List<ConcreteGroup<T>>>(og * og, new GroupSetEquality<T>());
 
-        HashSet<int> pArr = [p];
+        HashSet<int> pArr = new() { p };
         foreach (var e in g)
         {
             var oe = g.ElementsOrders[e];
@@ -679,7 +679,7 @@ public static partial class Group
             throw new GroupException(GroupExceptionType.OnlyAbelianGroups);
 
         if (g.Count() == 1)
-            return [1];
+            return new[] { 1 };
 
         var ord = g.Count();
         var dec = IntExt.PrimesDec(ord);
@@ -728,7 +728,7 @@ public static partial class Group
         List<(T g, int o)> facts = new();
         foreach (var (e, oe) in can)
         {
-            var dec = oe == 1 ? [1] : IntExt.PrimesDec(oe).Select(kv => kv.Key.Pow(kv.Value)).ToArray();
+            var dec = oe == 1 ? new[] { 1 } : IntExt.PrimesDec(oe).Select(kv => kv.Key.Pow(kv.Value)).ToArray();
             var cyc = Cycle(g, e).ToDictionary(kv => kv.Key, kv => g.ElementsOrders[kv.Key]);
             facts.AddRange(dec.Select(q => (cyc.First(e0 => e0.Value == q).Key, q)));
         }

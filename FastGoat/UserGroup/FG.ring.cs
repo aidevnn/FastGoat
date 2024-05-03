@@ -562,12 +562,12 @@ public static partial class FG
             if (!special)
             {
                 var A = Glnq[a, a, 0, a];
-                return [A, J];
+                return new () { A, J };
             }
             else
             {
                 var A = Glnq[1, 1, 0, 1];
-                return [A, J];
+                return new () { A, J };
             }
         }
 
@@ -576,7 +576,7 @@ public static partial class FG
             var gen0 = Glnq[a, 0, 0, ax.Inv()];
             var e = Fq2.Where(x => x.Equals(-x.Substitute(ax))).MinBy(x => Fq2.ElementsOrders[x]);
             var gen1 = Glnq[0, 1, 1, e];
-            return [gen0, gen1];
+            return new () { gen0, gen1 };
         }
         else
         {
@@ -591,12 +591,12 @@ public static partial class FG
             if (q == 3)
             {
                 var gen01 = Glnq[0, e0, -e0.Inv(), 0];
-                return [gen0, gen01];
+                return new () { gen0, gen01 };
             }
 
             var e1 = Fq2.Where(x => (x.Inv() * x.Substitute(ax)).Equals(a.One)).MaxBy(x => Fq2.ElementsOrders[x]);
             var gen1 = Glnq[e1, 0, 0, e1.Inv()];
-            return [gen1, gen0];
+            return new () { gen1, gen0 };
         }
     }
 
@@ -625,8 +625,9 @@ public static partial class FG
         var pows = q.Range(-1).ToDictionary(k => k == -1 ? a.Zero : a.Pow(k), k => k);
         var square = arrFq.Append(a.Zero).Select(x => (x, x2: x * x)).GroupBy(e => e.x2)
             .ToDictionary(e => e.Key, e => e.Select(f => f.x).ToArray());
-        var dicSquare = arrFq.ToDictionary(x => x, x => square.ContainsKey(x) ? square[x] : []);
-        dicSquare[a.Zero] = [];
+        var dicSquare =
+            arrFq.ToDictionary(x => x, x => square.TryGetValue(x, out var value) ? value : new EPoly<ZnInt>[0]);
+        dicSquare[a.Zero] = new EPoly<ZnInt>[0];
         var possibles = arrFq.Append(a.Zero)
             .Select(x0 => (x: x0, yList: dicSquare[1 - x0 * x0]))
             .Where(e => e.yList.Length != 0)
@@ -643,7 +644,7 @@ public static partial class FG
 
         var m0 = possibles[0].e.mat;
         var m1 = q != 5 ? Glnq[0, 1, 0, 0, 0, 1, 1, 0, 0] : Glnq[3, 1, 1, 1, 4, 3, 4, 2, 1];
-        return [m0, Glnq.Op(m1, ide)];
+        return new () { m0, Glnq.Op(m1, ide) };
     }
 
     public static ConcreteGroup<MatFq> GU2q(int q)

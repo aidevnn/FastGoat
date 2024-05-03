@@ -6,7 +6,8 @@ namespace FastGoat.Structures.Naming;
 
 public static class NamesTree
 {
-    public static EqualityComparer<(AllSubgroups<T1> lhs, AllSubgroups<T2> rhs, ANameElt.DecompType)> EqProducts<T1, T2>()
+    public static EqualityComparer<(AllSubgroups<T1> lhs, AllSubgroups<T2> rhs, ANameElt.DecompType)>
+        EqProducts<T1, T2>()
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
     {
@@ -30,74 +31,75 @@ public static class NamesTree
             .GlueMap(fmt: "[{0}]:{1}");
 
         if (og == 12 && orders == "[1]:1, [2]:3, [3]:8")
-            return [new Leaf(G, "A4")];
+            return new[] { new Leaf(G, "A4") };
         if (og == 24 && orders == "[1]:1, [2]:9, [3]:8, [4]:6")
-            return [new Leaf(G, "S4")];
+            return new[] { new Leaf(G, "S4") };
         if (og == 120 && orders == "[1]:1, [2]:25, [3]:20, [4]:30, [5]:24, [6]:20")
-            return [new Leaf(G, "S5")];
+            return new[] { new Leaf(G, "S5") };
         if (og == 720 && orders == "[1]:1, [2]:75, [3]:80, [4]:180, [5]:144, [6]:240")
-            return [new Leaf(G, "S6")];
+            return new[] { new Leaf(G, "S6") };
         if (og == 5040 && orders == "[1]:1, [2]:231, [3]:350, [4]:840, [5]:504, [6]:1470, [7]:720, [10]:504, [12]:420")
-            return [new Leaf(G, "S7")];
+            return new[] { new Leaf(G, "S7") };
 
         if (og == 8 && orders == "[1]:1, [2]:1, [4]:6")
-            return [new Leaf(G, "Q8")];
+            return new[] { new Leaf(G, "Q8") };
         if (og == 16 && orders == "[1]:1, [2]:1, [4]:10, [8]:4")
-            return [new Leaf(G, "Q16")];
+            return new[] { new Leaf(G, "Q16") };
         if (og == 32 && orders == "[1]:1, [2]:1, [4]:18, [8]:4, [16]:8")
-            return [new Leaf(G, "Q32")];
+            return new[] { new Leaf(G, "Q32") };
         if (og == 64 && orders == "[1]:1, [2]:1, [4]:34, [8]:4, [16]:8, [32]:16")
-            return [new Leaf(G, "Q64")];
+            return new[] { new Leaf(G, "Q64") };
 
         if (og == 24 && orders == "[1]:1, [2]:1, [3]:8, [4]:6, [6]:8")
-            return [new Leaf(G, "SL(2,3)")];
+            return new[] { new Leaf(G, "SL(2,3)") };
         if (og == 48 && orders == "[1]:1, [2]:13, [3]:8, [4]:6, [6]:8, [8]:12")
-            return [new Leaf(G, "GL(2,3)")];
+            return new[] { new Leaf(G, "GL(2,3)") };
         if (og == 120 && orders == "[1]:1, [2]:1, [3]:20, [4]:30, [5]:24, [6]:20, [10]:24")
-            return [new Leaf(G, "SL(2,5)")];
-        if (og == 480 && orders == "[1]:1, [2]:31, [3]:20, [4]:152, [5]:24, [6]:20, [8]:40, [10]:24, [12]:40, [20]:48, [24]:80")
-            return [new Leaf(G, "GL(2,5)")];
+            return new[] { new Leaf(G, "SL(2,5)") };
+        if (og == 480 && orders ==
+            "[1]:1, [2]:31, [3]:20, [4]:152, [5]:24, [6]:20, [8]:40, [10]:24, [12]:40, [20]:48, [24]:80")
+            return new[] { new Leaf(G, "GL(2,5)") };
 
         if (og == 12 && orders == "[1]:1, [2]:1, [3]:2, [4]:6, [6]:2")
-            return [new Leaf(G, "Dic3")];
+            return new[] { new Leaf(G, "Dic3") };
         if (og == 16 && orders == "[1]:1, [2]:1, [4]:10, [8]:4")
-            return [new Leaf(G, "Dic4")];
+            return new[] { new Leaf(G, "Dic4") };
         if (og == 20 && orders == "[1]:1, [2]:1, [4]:10, [5]:4, [10]:4")
-            return [new Leaf(G, "Dic5")];
+            return new[] { new Leaf(G, "Dic5") };
         if (og == 24 && orders == "[1]:1, [2]:1, [3]:2, [4]:14, [6]:2, [12]:4")
-            return [new Leaf(G, "Dic6")];
+            return new[] { new Leaf(G, "Dic6") };
         if (og == 28 && orders == "[1]:1, [2]:1, [4]:14, [7]:6, [14]:6")
-            return [new Leaf(G, "Dic7")];
+            return new[] { new Leaf(G, "Dic7") };
         if (og == 36 && orders == "[1]:1, [2]:1, [3]:2, [4]:18, [6]:2, [9]:6, [18]:6")
-            return [new Leaf(G, "Dic9")];
+            return new[] { new Leaf(G, "Dic9") };
         if (og == 40 && orders == "[1]:1, [2]:1, [4]:22, [5]:4, [10]:4, [20]:8")
-            return [new Leaf(G, "Dic10")];
+            return new[] { new Leaf(G, "Dic10") };
         if (og == 44 && orders == "[1]:1, [2]:1, [4]:22, [11]:10, [22]:10")
-            return [new Leaf(G, "Dic11")];
+            return new[] { new Leaf(G, "Dic11") };
         if (og == 48 && orders == "[1]:1, [2]:1, [3]:2, [4]:26, [6]:2, [8]:4, [12]:4, [24]:8")
-            return [new Leaf(G, "Dic12")];
+            return new[] { new Leaf(G, "Dic12") };
         if (og == 52 && orders == "[1]:1, [2]:1, [4]:26, [13]:12, [26]:12")
-            return [new Leaf(G, "Dic13")];
+            return new[] { new Leaf(G, "Dic13") };
         if (og == 56 && orders == "[1]:1, [2]:1, [4]:30, [7]:6, [14]:6, [28]:12")
-            return [new Leaf(G, "Dic14")];
+            return new[] { new Leaf(G, "Dic14") };
         if (og == 60 && orders == "[1]:1, [2]:1, [3]:2, [4]:30, [5]:4, [6]:2, [10]:4, [15]:8, [30]:8")
-            return [new Leaf(G, "Dic15")];
+            return new[] { new Leaf(G, "Dic15") };
         if (og == 68 && orders == "[1]:1, [2]:1, [4]:34, [17]:16, [34]:16")
-            return [new Leaf(G, "Dic17")];
+            return new[] { new Leaf(G, "Dic17") };
         if (og == 72 && orders == "[1]:1, [2]:1, [3]:2, [4]:38, [6]:2, [9]:6, [12]:4, [18]:6, [36]:12")
-            return [new Leaf(G, "Dic18")];
+            return new[] { new Leaf(G, "Dic18") };
         if (og == 76 && orders == "[1]:1, [2]:1, [4]:38, [19]:18, [38]:18")
-            return [new Leaf(G, "Dic19")];
+            return new[] { new Leaf(G, "Dic19") };
         if (og == 80 && orders == "[1]:1, [2]:1, [4]:42, [5]:4, [8]:4, [10]:4, [20]:8, [40]:16")
-            return [new Leaf(G, "Dic20")];
+            return new[] { new Leaf(G, "Dic20") };
         if (og == 84 && orders == "[1]:1, [2]:1, [3]:2, [4]:42, [6]:2, [7]:6, [14]:6, [21]:12, [42]:12")
-            return [new Leaf(G, "Dic21")];
+            return new[] { new Leaf(G, "Dic21") };
         if (og == 88 && orders == "[1]:1, [2]:1, [4]:46, [11]:10, [22]:10, [44]:20")
-            return [new Leaf(G, "Dic22")];
+            return new[] { new Leaf(G, "Dic22") };
         if (og == 92 && orders == "[1]:1, [2]:1, [4]:46, [23]:22, [46]:22")
-            return [new Leaf(G, "Dic23")];
+            return new[] { new Leaf(G, "Dic23") };
         if (og == 96 && orders == "[1]:1, [2]:1, [3]:2, [4]:50, [6]:2, [8]:4, [12]:4, [16]:8, [24]:8, [48]:16")
-            return [new Leaf(G, "Dic24")];
+            return new[] { new Leaf(G, "Dic24") };
 
         return Array.Empty<Leaf>();
     }
@@ -108,18 +110,22 @@ public static class NamesTree
         var tr = subgroups.Restriction(Group.Generate("C1", G, G.Neutral()));
         if (G.GroupType == GroupType.AbelianGroup)
             return new[] { (subgroups, tr, ANameElt.DecompType.Abelian) };
-        
+
         if (G.GroupType == GroupType.NonAbelianGroup && subgroups.IsSimple())
             return new[] { (subgroups, tr, ANameElt.DecompType.SimpleNonAbelian) };
 
         var normals = subgroups.ProperNonTrivialNormalSubgroups();
         var allProds = subgroups.DecomposeProducts(normals)
-            .Select(e => (e.Item1, e.Item2, e.Item3 ? ANameElt.DecompType.DirectProduct : ANameElt.DecompType.SemiDirectProduct))
-            .Select(e => (subgroups.Restriction(e.Item1.Representative), subgroups.Restriction(e.Item2.Representative), e.Item3))
+            .Select(e => (e.Item1, e.Item2,
+                e.Item3 ? ANameElt.DecompType.DirectProduct : ANameElt.DecompType.SemiDirectProduct))
+            .Select(e => (subgroups.Restriction(e.Item1.Representative), subgroups.Restriction(e.Item2.Representative),
+                e.Item3))
             .ToArray();
-        
+
         var usedNormals = allProds.SelectMany(e =>
-                e.Item3 == ANameElt.DecompType.DirectProduct ? new[] { e.Item1.Parent, e.Item2.Parent } : new[] { e.Item1.Parent })
+                e.Item3 == ANameElt.DecompType.DirectProduct
+                    ? new[] { e.Item1.Parent, e.Item2.Parent }
+                    : new[] { e.Item1.Parent })
             .Select(sg => subgroups.First(sc => sc.Representative.SetEquals(sg))).Distinct().ToArray();
 
         var remNormals = normals.Except(usedNormals).ToArray();
@@ -129,7 +135,7 @@ public static class NamesTree
             .ToArray();
 
         var allProdsFiltered = allProds.ToHashSet(EqProducts<WElt, WElt>());
-        return [..allProdsFiltered, ..extOps];
+        return allProdsFiltered.Concat(extOps).ToArray();
     }
 
     public static ANameElt[] BuildName(AllSubgroups<WElt> subgroups, bool renaming = true)

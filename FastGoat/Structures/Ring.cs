@@ -1,7 +1,6 @@
 using System.Numerics;
 using FastGoat.Commons;
 using FastGoat.Structures.VecSpace;
-using FastGoat.UserGroup.Integers;
 
 namespace FastGoat.Structures;
 

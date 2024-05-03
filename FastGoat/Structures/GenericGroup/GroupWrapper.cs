@@ -1,7 +1,5 @@
 using System.Collections;
 using FastGoat.Commons;
-using FastGoat.UserGroup.Integers;
-using Mono.Options;
 
 namespace FastGoat.Structures.GenericGroup;
 

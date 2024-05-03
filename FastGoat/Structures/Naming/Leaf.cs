@@ -81,13 +81,13 @@ public class Leaf : ANameElt
         if (string.IsNullOrEmpty(s3) && !string.IsNullOrEmpty(s1))
         {
             var n = int.Parse(match.Groups["2"].Value);
-            return (s1, [n]);
+            return (s1, new[] { n });
         }
         else if (string.IsNullOrEmpty(s1) && !string.IsNullOrEmpty(s3))
         {
             var n = int.Parse(match.Groups["4"].Value);
             var p = int.Parse(match.Groups["5"].Value);
-            return (s3, [n, p]);
+            return (s3, new[] { n, p });
         }
 
         throw new();
