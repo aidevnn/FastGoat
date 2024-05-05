@@ -59,7 +59,7 @@ ConcreteGroup<Mat> ProductDiagPerm(ConcreteGroup<Mat> group0, ConcreteGroup<Mat>
 
     var Gens0 = gens0.Select(e => MatrixExt.MergeDiagonalBlocks(e, (gl1.Neutral().Table, gl1.N))).Select(e => gl.Create(e)).ToArray();
     var Gens1 = gens1.Select(e => MatrixExt.MergeDiagonalBlocks((gl0.Neutral().Table, gl0.N), e)).Select(e => gl.Create(e)).ToArray();
-    return Group.Generate($"{group0.NameParenthesis()} x {group1.NameParenthesis()}", gl, [..Gens0, ..Gens1]);
+    return Group.Generate($"{group0.NameParenthesis()} x {group1.NameParenthesis()}", gl, Gens0.Concat(Gens1).ToArray());
 }
 
 (ConcreteGroup<Mat> mat, bool isDiagByPerm) MatrixFormFromNames(ANameElt name)
@@ -132,7 +132,7 @@ void MatrixFormTinyGroups(int maxOrder)
         var gSubgrs = g.AllSubgroups().ToGroupWrapper();
         var names = NamesTree.BuildName(gSubgrs);
         var (mat, check) = MatrixFormFromNames(names[0]);
-
+        
         if (mat.Count() == 1 && !check)
             missing.Add(names);
         else
@@ -140,16 +140,16 @@ void MatrixFormTinyGroups(int maxOrder)
             FG.DisplayName(gSubgrs.Parent, gSubgrs, names, false, false, 20);
             DisplayGroup.Generators(mat);
             Console.WriteLine();
-            
+
             if (!mat.IsIsomorphicTo(g))
                 throw new();
         }
     }
 
-    missing.Println(e => e[0].ContentGroup.ShortName, $"Missing:{missing.Count} Found:{total - missing.Count}/{total}");
-    missing.Where(e => e[0].ContentType == ANameElt.NodeType.DirectProduct).Println(e => e[0].ContentGroup.ShortName, "Missing Direct Product");
-    missing.SelectMany(e => e.Where(f => f is ExtensionOp f0 && f0.Lhs.ContentGroup.GetGenerators().Count() == 1 && f0.Rhs.ContentGroup.GetGenerators().Count() == 1).Take(1))
-        .Println(e => $"{e.Name} -> {e.ContentGroup.ShortName}", "Missing Non Split Metacyclic");
+    missing.Println(e => e[0].ContentGroup!.ShortName, $"Missing:{missing.Count} Found:{total - missing.Count}/{total}");
+    missing.Where(e => e[0].ContentType == ANameElt.NodeType.DirectProduct).Println(e => e[0].ContentGroup!.ShortName, "Missing Direct Product");
+    missing.SelectMany(e => e.Where(f => f is ExtensionOp f0 && f0.Lhs.ContentGroup!.GetGenerators().Count() == 1 && f0.Rhs.ContentGroup!.GetGenerators().Count() == 1).Take(1))
+        .Println(e => $"{e.Name} -> {e.ContentGroup!.ShortName}", "Missing Non Split Metacyclic");
 }
 
 IEnumerable<AllSubgroups<Mat>> MtCyclicSubgroups(int order, int factor = 4)
@@ -159,8 +159,8 @@ IEnumerable<AllSubgroups<Mat>> MtCyclicSubgroups(int order, int factor = 4)
     {
         ++total;
         var gSubgrs = g.AllSubgroups();
-	    foreach(var sg in gSubgrs.Where(cj => cj.Order == order).Select(cj => gSubgrs.Restriction(cj.Representative)))
-		    yield return sg;
+        foreach (var sg in gSubgrs.Where(cj => cj.Order == order).Select(cj => gSubgrs.Restriction(cj.Representative)))
+            yield return sg;
     }
 }
 
@@ -180,8 +180,9 @@ void TestProdAbMtCyc()
 }
 
 {
-    // MatrixFormTinyGroups(64);
-    MtCyclicSubgroups(32, factor: 5).Select(e => e.ToGroupWrapper()).FilterIsomorphic().Naming().DisplayNames();
-    MtCyclicSubgroups(48, factor: 5).Select(e => e.ToGroupWrapper()).FilterIsomorphic().Naming().DisplayNames();
-    MtCyclicSubgroups(64, factor: 5).Select(e => e.ToGroupWrapper()).FilterIsomorphic().Naming().DisplayNames();
+    Group.ActivedStorage(false);
+    MatrixFormTinyGroups(32);
+    // MtCyclicSubgroups(32, factor: 5).Select(e => e.ToGroupWrapper()).FilterIsomorphic().Naming().DisplayNames();
+    // MtCyclicSubgroups(48, factor: 5).Select(e => e.ToGroupWrapper()).FilterIsomorphic().Naming().DisplayNames();
+    // MtCyclicSubgroups(64, factor: 5).Select(e => e.ToGroupWrapper()).FilterIsomorphic().Naming().DisplayNames();
 }
