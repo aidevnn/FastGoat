@@ -23,7 +23,7 @@ public static partial class FG
         var x = QPoly('X');
         CyclotomicPolynomials = new() { [1] = x - 1 };
         CnfBasisMap = new();
-        
+
         allIds = GroupExt.DBGap.Select(txt => new IdGroup(txt)).GroupBy(e => e.Order).ToDictionary(e => e.Key, e => e.Order().ToArray());
         nbSubGroupsDetails = allIds.ToDictionary(
             e => e.Key,
@@ -62,7 +62,7 @@ public static partial class FG
     {
         return new(gr);
     }
-    
+
     public static CnfBasis CnfBasis(int ord)
     {
         if (CnfBasisMap.TryGetValue(ord, out var infos))
@@ -85,6 +85,9 @@ public static partial class FG
 
     public static ConcreteGroup<Perm> Dihedral(int n)
     {
+        if (n == 2)
+            return PermGroup("D4", 4, ((1, 2), (3, 4)), ((1, 3), (2, 4)));
+
         var m = (n % 2) == 0 ? 1 : 2;
         var sn = new Sn(n);
         var an = Enumerable.Range(1, n).ToArray();
@@ -156,7 +159,7 @@ public static partial class FG
     {
         if (k == 1)
             return new() { Abelian(1) };
-        
+
         var dec = IntExt.PrimesDec(k);
         return dec.Select(e => IntExt.Partitions32[e.Value].Select(l => l.Select(i => e.Key.Pow(i)).ToArray())).MultiLoop()
             .Select(l => Abelian(l.SelectMany(i => i).OrderDescending().ToArray())).ToList();
@@ -192,7 +195,7 @@ public static partial class FG
     {
         if (k == 1)
             return new() { AbelianWg(1) };
-        
+
         var dec = IntExt.PrimesDec(k);
         return dec.Select(e => IntExt.Partitions32[e.Value].Select(l => l.Select(i => e.Key.Pow(i)).ToArray())).MultiLoop()
             .Select(l => AbelianWg(l.SelectMany(i => i).OrderDescending().ToArray())).ToList();
@@ -229,7 +232,7 @@ public static partial class FG
     {
         if (IntExt.PowMod(r, n, m) != 1 || IntExt.Gcd(r, m) != 1)
             throw new GroupException(GroupExceptionType.GroupDef);
-        
+
         var name = IntExt.Gcd(m, n * (r - 1)) == 1 ? $"Frob({m},{n},{r})" : $"MtCyc({m},{n},{r})";
         return WordGroup(name, $"a{m}, b{n}, b-1ab = a{r}");
     }
@@ -381,7 +384,7 @@ public static partial class FG
         var Dic_m = Group.Generate($"Dic{m}", gl, Am, B);
         if (int.IsPow2(Dic_m.Count()))
             Dic_m.Name = $"Q{m * 4}";
-        
+
         return Dic_m;
     }
     public static WordGroup SemiDihedral(int n)
@@ -405,12 +408,12 @@ public static partial class FG
         var theta = Group.Hom(c2, Group.HomomorphismMap(c2, aut, pMap));
         return Group.SemiDirectProd($"QD{n1 * 2}", cn, theta, c2);
     }
-    
+
     public static ConcreteGroup<Mat> SemiDihedralGL2p(int n)
     {
         var n1 = 1 << (n - 1);
         var n2 = (1 << (n - 2)) - 1;
-    
+
         var p = IntExt.Primes10000.First(p => (p - 1) % n1 == 0);
         var gl = new GL(2, p);
         var ordns = IntExt.SolveAll_k_pow_m_equal_one_mod_n_strict(p, n1).ToArray();
@@ -419,7 +422,7 @@ public static partial class FG
 
         var m0 = gl[a0, 0, 0, a1];
         var m1 = gl[0, 1, 1, 0];
-    
+
         return Group.Generate($"QD{2 * n1}", gl, m0, m1);
     }
 
@@ -445,12 +448,12 @@ public static partial class FG
         return Group.SemiDirectProd($"MM{n1 * 2}", cn, theta, c2);
     }
 
-    
+
     public static ConcreteGroup<Mat> ModularMaxGL2p(int n)
     {
         var n1 = 1 << (n - 1);
         var n2 = (1 << (n - 2)) + 1;
-    
+
         var p = IntExt.Primes10000.First(p => (p - 1) % n1 == 0);
         var gl = new GL(2, p);
         var ordns = IntExt.SolveAll_k_pow_m_equal_one_mod_n_strict(p, n1).ToArray();
@@ -459,7 +462,7 @@ public static partial class FG
 
         var m0 = gl[a0, 0, 0, a1];
         var m1 = gl[0, 1, 1, 0];
-    
+
         return Group.Generate($"MM{2 * n1}", gl, m0, m1);
     }
     public static WordGroup WordGroup(string relators) => new WordGroup(relators);
@@ -498,7 +501,7 @@ public static partial class FG
         var gens = f.P.Range().Where(e => !f.Substitute(e).IsZero()).Select(e => gf.X - e).ToArray();
         return (gf, Group.Generate(gf, gens));
     }
-    
+
     public static IEnumerable<WordGroup> AllGroupsOfOrder(int ord)
     {
         return GroupExt.DB.Select(s => s.Split(';'))
@@ -511,11 +514,11 @@ public static partial class FG
                 return g;
             });
     }
-    
+
     public static IEnumerable<WordGroup> AllGroupsOfOrder(int minOrd, int maxOrder)
     {
         return GroupExt.DB.Select(s => s.Split(';'))
-            .Where(s => int.Parse(s[0]) >= minOrd &&  int.Parse(s[0]) <= maxOrder)
+            .Where(s => int.Parse(s[0]) >= minOrd && int.Parse(s[0]) <= maxOrder)
             .Select(s =>
             {
                 Logger.Level = LogLevel.Off;
