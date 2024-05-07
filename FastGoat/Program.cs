@@ -159,12 +159,13 @@ IEnumerable<(int[] perm, int[][] cycles, Mat mat)> CGenerators(int m, int n, int
         .SelectMany(e => IntExt.Dividors(e).Append(e).Where(j => j != 1)).Append(n).ToHashSet();
     foreach (var p in nks.SelectMany(nk => IntExt.Primes10000.Where(p => (p - 1) % m == 0 && (p - 1) % nk == 0).Take(6)).Distinct().Order().Where(p => p < 62))
     {
-        if ((dim < 4 && BigInteger.Pow(p, dim) > 10000) || BigInteger.Pow(p, dim) > 100000)
-            continue;
-
         var Up = FG.UnInt(p);
         var gl = new GL(dim, p);
-        var matn = Up.MultiLoop(dim).Select(l => gl.Create(MatrixExt.Diagonal(l.Select(e => e.K).ToArray()))).ToArray();
+        var matn = Up.Where(e => n % Up.ElementsOrders[e] == 0)
+            .OrderBy(e => Up.ElementsOrders[e])
+            .Select(e => gl.At(gl.Neutral().Table, 0, e.K))
+            .ToArray();
+
         // Console.WriteLine($"{gl} press key...");
         // Console.ReadLine();
         var sn = new Sn(dim);
@@ -188,7 +189,7 @@ IEnumerable<(int[] perm, int[][] cycles, Mat mat)> CGenerators(int m, int n, int
     }
 }
 
-(Word[] Mgens, Word Cgen, string name)[] ExtractGeneratorsSdp(ANameElt[] names)
+(Word[] Mgens, Word Cgen, string name)[] ExtractGenerators(ANameElt[] names)
 {
     foreach(SemiDirectProductOp e0 in names.Where(e => e is SemiDirectProductOp e0 &&
             e0.Lhs.ContentGroup!.GroupType == GroupType.AbelianGroup &&
@@ -208,7 +209,7 @@ IEnumerable<(int[] perm, int[][] cycles, Mat mat)> CGenerators(int m, int n, int
 
 ConcreteGroup<Mat> MatrixFormFromNamesMeth2(WordGroup g, ANameElt[] names)
 {
-    var ext = ExtractGeneratorsSdp(names);
+    var ext = ExtractGenerators(names);
     if (ext.Length == 0)
         return Group.Generate(new GL(1,2));
 
@@ -320,5 +321,5 @@ void MatrixFormTinyGroups(int maxOrder)
 
     |(C4 x C4) . C2| = 32
 
-    # End Time:1m22s
+    # End Time:27.616s
 */
