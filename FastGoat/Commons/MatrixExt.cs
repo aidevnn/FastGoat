@@ -11,6 +11,24 @@ public static class MatrixExt
     /// <param name="nb">Size of the matrix.</param>
     /// <param name="v">Value to fill the diagonal.</param>
     /// <returns>An array of size nb filled with v on the diagonal.</returns>
+    public static int[] Diagonal(int[] v)
+    {
+        int nb = v.Length;
+        int[] mat0 = new int[nb * nb];
+        for (int i = 0; i < nb; i++)
+        {
+            mat0[i * (nb + 1)] = v[i];
+        }
+
+        return mat0;
+    }
+
+    /// <summary>
+    /// Creates an matrix of size nb x nb and fills it with the value v on the diagonal.
+    /// </summary>
+    /// <param name="nb">Size of the matrix.</param>
+    /// <param name="v">Value to fill the diagonal.</param>
+    /// <returns>An array of size nb filled with v on the diagonal.</returns>
     public static int[] Diagonal(int nb, int v)
     {
         int[] mat0 = new int[nb * nb];
