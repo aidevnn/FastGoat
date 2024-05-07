@@ -32,6 +32,8 @@ using GroupRegX = System.Text.RegularExpressions;
 
 Console.WriteLine("Hello World");
 
+#region Method1
+
 ConcreteGroup<Mat> ProductMatrixBlock(ConcreteGroup<Mat> group0, ConcreteGroup<Mat> group1)
 {
     var (gl0, gl1) = (group0.Neutral().GL, group1.Neutral().GL);
@@ -122,264 +124,48 @@ ConcreteGroup<Mat> ProductMatrixBlock(ConcreteGroup<Mat> group0, ConcreteGroup<M
     return (Group.Generate(new GL(1, 2)), false);
 }
 
-ConcreteGroup<Mat> SpecialCases(WordGroup g)
-{
-    // not implemented yet
-    return Group.Generate(new GL(1, 2));
-}
+#endregion
 
-void MatrixFormTinyGroups(int maxOrder)
-{
-    var total = 0;
-    var missing = new List<(WordGroup g, SubGroupsInfos infos, ANameElt[] names)>();
-    foreach (var g in maxOrder.Range(1).SelectMany(o => FG.AllGroupsOfOrder(o)))
-    {
-        ++total;
-        var gSubgrs = g.AllSubgroups().ToGroupWrapper();
-        var names = NamesTree.BuildName(gSubgrs);
-        var (mat, check) = MatrixFormFromNames(names[0]);
-
-        if (mat.Count() == 1 && !check)
-        {
-            var mat0 = SpecialCases(g);
-            if (mat0.Count() == 1)
-            {
-                missing.Add((g, gSubgrs.Infos, names));
-                continue;
-            }
-        }
-
-        FG.DisplayName(gSubgrs.Parent, gSubgrs, names, false, false, 20);
-        DisplayGroup.Generators(mat);
-        Console.WriteLine();
-
-        if (!mat.IsIsomorphicTo(g))
-            throw new();
-    }
-
-    Console.WriteLine($"Missing:{missing.Count} Found:{total - missing.Count}/{total}");
-    foreach (var (g, infos, names) in missing)
-    {
-        names.Where(e => e is SemiDirectProductOp e0 &&
-            e0.Lhs.ContentGroup!.GroupType == GroupType.AbelianGroup &&
-            e0.Rhs.ContentGroup!.GroupType == GroupType.AbelianGroup)
-        .Println(g.ShortName);
-    }
-
-    missing.Where(e => e.names[0].ContentType == ANameElt.NodeType.DirectProduct).Println(e => e.names[0].ContentGroup!.ShortName, "Missing Direct Product");
-    missing.SelectMany(e => e.names.Where(f => f is ExtensionOp f0 && f0.Lhs.ContentGroup!.GetGenerators().Count() == 1 && f0.Rhs.ContentGroup!.GetGenerators().Count() == 1).Take(1))
-        .Println(e => $"{e.Name} -> {e.ContentGroup!.ShortName}", "Missing Non Split Metacyclic");
-}
-
-IEnumerable<AllSubgroups<Mat>> MtCyclicSubgroups(int order, int factor = 4)
-{
-    var total = 0;
-    foreach (var g in factor.Range(1).SelectMany(k => FG.MetaCyclicSdpMat(k * order)))
-    {
-        ++total;
-        var gSubgrs = g.AllSubgroups();
-        foreach (var sg in gSubgrs.Where(cj => cj.Order == order).Select(cj => gSubgrs.Restriction(cj.Representative)))
-            yield return sg;
-    }
-}
-
-void TestProdAbMtCyc()
-{
-    var c2c4 = FG.AbelianMat(2, 4);
-    var d8 = FG.DihedralGL2p(4);
-    var c2c4d8 = ProductMatrixBlock(c2c4, d8);
-    DisplayGroup.HeadNames(c2c4d8);
-    DisplayGroup.Generators(c2c4d8);
-
-    var c3c3 = FG.AbelianMat(3, 3);
-    var dic3 = FG.DicyclicGL2p(3);
-    var c3c3dic3 = ProductMatrixBlock(c3c3, dic3);
-    DisplayGroup.HeadNames(c3c3dic3);
-    DisplayGroup.Generators(c3c3dic3);
-}
-
-{
-    Group.ActivedStorage(false);
-    // MatrixFormTinyGroups(24);
-    // MtCyclicSubgroups(16, factor: 8).Select(e => e.ToGroupWrapper()).FilterIsomorphic().Naming().DisplayNames();
-    // MtCyclicSubgroups(32, factor: 5).Select(e => e.ToGroupWrapper()).FilterIsomorphic().Naming().DisplayNames();
-    // MtCyclicSubgroups(48, factor: 5).Select(e => e.ToGroupWrapper()).FilterIsomorphic().Naming().DisplayNames();
-    // MtCyclicSubgroups(64, factor: 5).Select(e => e.ToGroupWrapper()).FilterIsomorphic().Naming().DisplayNames();
-}
-
-void ProductGroupSubgroups<T>(params ConcreteGroup<T>[] tp) where T : struct, IElt<T>
-{
-    var g = Product.GpGenerate(tp);
-    var gSubgrs = g.AllSubgroups();
-    gSubgrs.Where(cj => cj.GroupType == GroupType.NonAbelianGroup)
-        .Select(cj => gSubgrs.Restriction(cj.Representative))
-        .FilterIsomorphic()
-        .DisplayBoxes();
-}
-
-void ManualSearch()
-{
-    Group.ActivedStorage(false);
-    // Ring.MatrixDisplayForm = Ring.MatrixDisplay.OneLineArray;
-    
-    // |(C2 x C2) x: C4| = 16   Gap SmallGroup(16,3)
-    // ProductGroupSubgroups(FG.DihedralGL2p(4), FG.AbelianMat(4));
-    var c4d8 = ProductMatrixBlock(FG.DihedralGL2p(4), FG.AbelianMat(4));
-    var g_16_3 = FG.WordGroup("(C2 x C2) x: C4", "a4, b2, c2, bcbc, caca-1, abca-1b");
-    // DisplayGroup.HeadOrders(c4d8);
-    // DisplayGroup.HeadOrders(g_16_3);
-    DisplayGroup.Generators(Group.IsomorphicSubgroup(c4d8, g_16_3));
-
-    // |D8 x: C2| = 16          Gap SmallGroup(16,13)
-    // ProductGroupSubgroups(FG.GL2p(5));
-    var gl25 = FG.GL2p(5);
-    var g_16_13 = FG.WordGroup("D8 x: C2", "a4, b2, c2, a2bcbc, baba-1, caca-1");
-    // DisplayGroup.HeadOrders(gl25);
-    // DisplayGroup.HeadOrders(g_16_13);
-    DisplayGroup.Generators(Group.IsomorphicSubgroup(gl25, g_16_13));
-
-    // |(C3 x C3) x: C2| = 18   Gap mallGroup(18,4)
-    // ProductGroupSubgroups(FG.DihedralGL2p(3), FG.DihedralGL2p(3));
-    var s3s3 = ProductMatrixBlock(FG.DihedralGL2p(3), FG.DihedralGL2p(3));
-    var g_18_4 = FG.WordGroup("(C3 x C3) x: C2", "a3, b3, c2, acac, bcbc, bab-1a-1");
-    // DisplayGroup.HeadOrders(s3s3);
-    // DisplayGroup.HeadOrders(g_18_4);
-    DisplayGroup.Generators(Group.IsomorphicSubgroup(s3s3, g_18_4));
-
-    // |C3 x: D8| = 24          Gap SmallGroup(24,8)
-    // ProductGroupSubgroups(FG.DihedralGL2p(3), FG.DihedralGL2p(4));
-    var s3d8 = ProductMatrixBlock(FG.DihedralGL2p(3), FG.DihedralGL2p(4));
-    var g_24_8 = FG.WordGroup("C3 x: D8", "a6, b2, c2, abab, a3bcbc, caca-1");
-    // DisplayGroup.HeadOrders(s3d8);
-    // DisplayGroup.HeadOrders(g_24_8);
-    DisplayGroup.Generators(Group.IsomorphicSubgroup(s3d8, g_24_8));
-
-    // |(C3 x C3) x: C3| = 27   Gap SmallGroup(27,3)
-    // Character Table with max dimension 3, in GL(3,Q(ξ3)), 
-    // lucky candidat in GL(3,3)
-    var gl33 = FG.GLnp(3, 3);
-    var g_27_3 = FG.WordGroup("(C3 x C3) x: C3", "a3, b3, c3, bab-1a-1, cbc-1b-1, ab-1ca-1c-1");
-    // DisplayGroup.HeadOrders(gl33);
-    // DisplayGroup.HeadOrders(g_27_3);
-    DisplayGroup.Generators(Group.IsomorphicSubgroup(gl33, g_27_3));
-}
-/*
-    Generators of (C2 x C2) x: C4 in GL(3,5)
-    gen1 of order 2
-    [0, 3, 0]
-    [2, 0, 0]
-    [0, 0, 1]
-    gen2 of order 4
-    [0, 1, 0]
-    [1, 0, 0]
-    [0, 0, 2]
-
-    Generators of D8 x: C2 in GL(2,5)
-    gen1 of order 2
-    [0, 3]
-    [2, 0]
-    gen2 of order 2
-    [4, 0]
-    [0, 1]
-    gen3 of order 4
-    [3, 0]
-    [0, 3]
-
-    Generators of (C3 x C3) x: C2 in GL(4,7)
-    gen1 of order 2
-    [0, 1, 0, 0]
-    [1, 0, 0, 0]
-    [0, 0, 0, 1]
-    [0, 0, 1, 0]
-    gen2 of order 3
-    [1, 0, 0, 0]
-    [0, 1, 0, 0]
-    [0, 0, 4, 0]
-    [0, 0, 0, 2]
-    gen3 of order 3
-    [4, 0, 0, 0]
-    [0, 2, 0, 0]
-    [0, 0, 1, 0]
-    [0, 0, 0, 1]
-
-    Generators of C3 x: D8 in GL(4,13)
-    gen1 of order 2
-    [ 0,  1,  0,  0]
-    [ 1,  0,  0,  0]
-    [ 0,  0,  0,  1]
-    [ 0,  0,  1,  0]
-    gen2 of order 2
-    [ 1,  0,  0,  0]
-    [ 0,  1,  0,  0]
-    [ 0,  0,  0,  5]
-    [ 0,  0,  8,  0]
-    gen3 of order 6
-    [ 9,  0,  0,  0]
-    [ 0,  3,  0,  0]
-    [ 0,  0, 12,  0]
-    [ 0,  0,  0, 12]
-
-    Generators of (C3 x C3) x: C3 in GL(3,3)
-    gen1 of order 3
-    [0, 2, 2]
-    [1, 1, 0]
-    [0, 1, 2]
-    gen2 of order 3
-    [1, 0, 0]
-    [1, 1, 0]
-    [2, 0, 1]
-*/
+#region Method2
 
 IEnumerable<Mat[]> MGenerators(int p, int[] type, int dim)
 {
-    if (dim < type.Length)
-        throw new();
-        
+    if ((dim < 4 && BigInteger.Pow(p, dim) > 10000) || BigInteger.Pow(p, dim) > 100000)
+    {
+        yield break;
+    }
+
     var sz = type.Length;
     var m = Gcd(type);
     var Up = FG.UnInt(p);
     var sn = FG.Symmetric(dim);
     var gl = new GL(dim, p);
-                
-    var primaries = type.Select(k => Up.Where(e => Up.ElementsOrders[e] == k).ToArray())
-                        .MultiLoop()
-                        .Select(l => l.Select(z => z.K).ToArray())
-                        .ToArray();
-                       
-    var secondaries = Up.Where(e => m % Up.ElementsOrders[e] == 0)
-                .MultiLoop(dim - type.Length)
-                .Select(l => l.Select(z => z.K).ToArray())
-                .ToArray();
-                
-    if (secondaries.Length == 0)
-        secondaries = new int[1][] { new int[0] };
-    
-    foreach(var (f, s) in primaries.Grid2D(secondaries))
-    {
-        foreach(var o in sn)
-        {
-            foreach(var l in f.Select((k, i) => new[]
-                    {
-                        o.Apply(sz.Range().Select(j => j == i ? k : 1).Concat(s).ToArray()),
-                        o.Apply(Enumerable.Repeat(k, sz).Concat(s).ToArray())
-                    }).MultiLoop())
-                yield return l.Select(v => gl.Create(MatrixExt.Diagonal(v.ToArray()))).ToArray();
-        }
-    }
+
+    var byOrders = Up.MultiLoop(dim).Select(l => gl.Create(MatrixExt.Diagonal(l.Select(z => z.K).ToArray())))
+                    .GroupBy(mat => Group.Cycle(gl, mat).Count)
+                    .ToDictionary(e => e.Key, e => e.ToArray());
+
+    if (type.Any(k => !byOrders.ContainsKey(k)))
+        yield break;
+
+    foreach(var mat in type.Select(f => byOrders[f]).MultiLoop().Select(ms => ms.ToArray()))
+        yield return mat;
 }
 
 IEnumerable<(int[] perm, int[][] cycles, Mat mat)> CGenerators(int m, int n, int dim)
 {
-    var distinctTypes = IntExt.Partitions32[dim].Where(l => l.Count == l.Distinct().Count()).Select(l => l.Order().ToArray())
-            .OrderBy(l => l.Length).ToArray();
-    var nks = distinctTypes.Select(l => l.Aggregate((a0, a1) => a0 * a1))
+    var allTypes = IntExt.Partitions32[dim].Select(l => l.Order().ToArray()).OrderBy(l => l.Length).ToArray();
+    var nks = allTypes.Select(l => l.Aggregate((a0, a1) => a0 * a1))
         .SelectMany(e => IntExt.Dividors(e).Append(e).Where(j => j != 1)).Append(n).ToHashSet();
-    foreach (var p in nks.SelectMany(nk => IntExt.Primes10000.Where(p => (p - 1) % m == 0 && (p - 1) % nk == 0).Take(6)).Distinct().Order().Take(6))
+    foreach (var p in nks.SelectMany(nk => IntExt.Primes10000.Where(p => (p - 1) % m == 0 && (p - 1) % nk == 0).Take(6)).Distinct().Order().Where(p => p < 62))
     {
+        if ((dim < 4 && BigInteger.Pow(p, dim) > 10000) || BigInteger.Pow(p, dim) > 100000)
+            continue;
+
         var Up = FG.UnInt(p);
         var gl = new GL(dim, p);
         var matn = Up.MultiLoop(dim).Select(l => gl.Create(MatrixExt.Diagonal(l.Select(e => e.K).ToArray()))).ToArray();
-        Console.WriteLine($"{gl} press key...");
+        // Console.WriteLine($"{gl} press key...");
         // Console.ReadLine();
         var sn = new Sn(dim);
         var m1s = IntExt.Partitions32[dim]//.Where(l => l.Count == l.Distinct().Count())
@@ -396,24 +182,13 @@ IEnumerable<(int[] perm, int[][] cycles, Mat mat)> CGenerators(int m, int n, int
                     .Select(mat => (e.perm, e.cycles, mat));
             })
             .SelectMany(e => e);
-        
+
         foreach(var e in m1s)
             yield return e;
     }
 }
 
-void PrepareWordGroup(string rels, int dim)
-{
-    var g = FG.WordGroup("H", rels);
-    var gSubgrs = g.AllSubgroups().ToGroupWrapper();
-    var names = NamesTree.BuildName(gSubgrs);
-    g.Name = gSubgrs.Parent.Name = names[0].Name;
-    var (Mgens, Cgen, name) = ExtractGeneratorsSdp(names);
-    Mgens.Append(Cgen).Select(w => (w, g.ElementsOrders[w])).Println(name);
-    AbelianByCyclicSdp(g, Mgens, Cgen, dim);
-}
-
-(Word[] Mgens, Word Cgen, string name) ExtractGeneratorsSdp(ANameElt[] names)
+(Word[] Mgens, Word Cgen, string name)[] ExtractGeneratorsSdp(ANameElt[] names)
 {
     foreach(SemiDirectProductOp e0 in names.Where(e => e is SemiDirectProductOp e0 &&
             e0.Lhs.ContentGroup!.GroupType == GroupType.AbelianGroup &&
@@ -423,26 +198,34 @@ void PrepareWordGroup(string rels, int dim)
             .Select(e => char.IsUpper(e.Get()[0]) ? new Word(e.WGroup, e.Get().Revert()) : e).ToArray();
         var Cgens = e0.Rhs.ContentGroup!.GetGenerators().Select(m0 => (Word)m0.E)
             .Select(e => char.IsUpper(e.Get()[0]) ? new Word(e.WGroup, e.Get().Revert()) : e).ToArray();
-        
-        if (Cgens.Length == 1 && Cgens.Concat(Mgens).All(w => w.Get().All(c => char.IsLower(c))))
-            return (Mgens, Cgens[0], e0.Name);
+
+        if (Cgens.Length == 1 && Cgens.Concat(Mgens).All(w => w.Get().Length == 1 && w.Get().All(c => char.IsLower(c))))
+            return new (Word[] Mgens, Word Cgen, string name)[1] {(Mgens, Cgens[0], e0.Name)};
     }
-    
-    throw new();
+
+    return new (Word[] Mgens, Word Cgen, string name)[0];
 }
 
-void AbelianByCyclicSdp(WordGroup g, Word[] Mgens, Word Cgen, int dim)
+ConcreteGroup<Mat> MatrixFormFromNamesMeth2(WordGroup g, ANameElt[] names)
 {
+    var ext = ExtractGeneratorsSdp(names);
+    if (ext.Length == 0)
+        return Group.Generate(new GL(1,2));
+
+    var (Mgens, Cgen, name) = ext[0];
+    // Console.WriteLine($"{g.ShortName} {g.Definition}");
+    // Mgens.Append(Cgen).Select(w => (w, g.ElementsOrders[w])).Println(name);
+
     var type = Mgens.Select(e => g.ElementsOrders[e]).ToArray();
     var m = Gcd(type);
     var n = g.ElementsOrders[Cgen];
-    // foreach (var dim in 4.Range(1).Where(d => d != 1 && (IntExt.Gcd(m, d) != 1 || IntExt.Gcd(m - 1, d) != 1)))
+    foreach (var dim in 4.Range(1).Where(d => d >= type.Length && (IntExt.Gcd(m, d) != 1 || IntExt.Gcd(m - 1, d) != 1)))
     {
         foreach(var (perm, cycles, m1) in CGenerators(m, n, dim))
         {
             var gl = m1.GL;
             var p = gl.P;
-            Console.WriteLine($"{g} in {gl} type:[{type.Glue(" ")}] cycles:{cycles.Select(c => c.Glue(" ")).Glue("","({0})")} m:{m} n:{n}");
+            // Console.WriteLine($"{g} in {gl} type:[{type.Glue(" ")}] cycles:{cycles.Select(c => c.Glue(" ")).Glue("","({0})")} m:{m} n:{n}");
             // Console.WriteLine($"m1:{m1}");
             foreach(var m0s in MGenerators(p, type, dim))
             {
@@ -452,34 +235,90 @@ void AbelianByCyclicSdp(WordGroup g, Word[] Mgens, Word Cgen, int dim)
                 {
                     // map.Println("Gens");
                     // Console.ReadLine();
-                    var mat = Group.Generate(g.Name, gl, map.Values.ToArray());                    
+                    var mat = Group.Generate(g.Name, gl, map.Values.ToArray());
                     if (mat.Count() == g.Count())
-                    {
-                        Console.WriteLine();
-                        Console.WriteLine("############   Found   ############");
-                        DisplayGroup.HeadGenerators(mat);
-                        Console.WriteLine("############   Found   ############");
-                        Console.WriteLine();
-                        return;
-                    }
+                        return mat;
                 }
             }
         }
     }
 
-    throw new GroupException(GroupExceptionType.GroupDef);
+    return Group.Generate(new GL(1,2));
 }
 
-{   
+#endregion
+
+void MatrixFormTinyGroups(int maxOrder)
+{
+    var total = 0;
+    var missing = new List<(WordGroup g, SubGroupsInfos infos, ANameElt[] names)>();
+    foreach (var g in maxOrder.Range(1).SelectMany(o => FG.AllGroupsOfOrder(o)))
+    {
+        ++total;
+        var gSubgrs = g.AllSubgroups().ToGroupWrapper();
+        var names = NamesTree.BuildName(gSubgrs);
+        var (mat, check) = MatrixFormFromNames(names[0]);
+
+        if (mat.Count() == 1 && !check)
+        {
+            var mat0 = MatrixFormFromNamesMeth2(g, names);
+            if (mat0.Count() == 1)
+            {
+                missing.Add((g, gSubgrs.Infos, names));
+                continue;
+            }
+            else
+                mat = mat0;
+        }
+
+        FG.DisplayName(mat, mat.AllSubgroups(), names, false, false, 20);
+
+        if (!mat.IsIsomorphicTo(g))
+            throw new();
+    }
+
+    Console.WriteLine($"Missing:{missing.Count} Found:{total - missing.Count}/{total}");
+    foreach (var (g, infos, names) in missing)
+    {
+        names.Where(e => e is SemiDirectProductOp e0 &&
+            e0.Lhs.ContentGroup!.GroupType == GroupType.AbelianGroup &&
+            e0.Rhs.ContentGroup!.GroupType == GroupType.AbelianGroup)
+        .Println(g.ShortName);
+    }
+}
+
+{
     Group.ActivedStorage(false);
-    Ring.MatrixDisplayForm = Ring.MatrixDisplay.OneLineArray;
-    
-    PrepareWordGroup("a4, b2, c2, bcbc, caca-1, abca-1b", 3); // |(C2 x C2) x: C4| = 16 Gap SmallGroup(16,3)
-    PrepareWordGroup("a4, b2, c2, a2bcbc, baba-1, caca-1", 2); // |D8 x: C2| = 16 Gap SmallGroup(16,13)
-    PrepareWordGroup("a3, b3, c3, bab-1a-1, cbc-1b-1, ab-1ca-1c-1", 3); // |(C3 x C3) x: C3| = 27 Gap SmallGroup(27,3)
-    PrepareWordGroup("a4, b4, c2, caca-1, bab-1a-1, ab-1cb-1c", 2); // |(D8 x: C4)| = 32 Gap SmallGroup(32,11)
-    PrepareWordGroup("a4, b2, c2, d2, bcbc, bdbd, cdcd, baba-1, dada-1, acda-1c", 4); // |(C2 x C2 x C2) x: C4| = 32 Gap SmallGroup(32,22)
-    PrepareWordGroup("a8, b2, c2, bcbc, caca-1, abca-1b", 3); // |(C2 x C2) x: C8| = 32 Gap SmallGroup(32,5)
-    PrepareWordGroup("a6, b6, c2, caca-1, bab-1a-1, ab-1cb-1c", 4); // |(D12 x: C6)| = 72 Gap SmallGroup(72,30) super group for C3 x: D8
+    GlobalStopWatch.Restart();
+    MatrixFormTinyGroups(32);
+    GlobalStopWatch.Show("End");
+    Console.Beep();
 }
 
+/*
+    Missing:11 Found:133/144
+    |D16 x: C2| = 32
+        C8 x: (C2 x C2)
+    |QD16 x: C2| = 32
+
+    |C4 x: Q8| = 32
+
+    |Q8 x: C4| = 32
+
+    |D8 x: (C2 x C2)| = 32
+        (C4 x C2) x: (C2 x C2)
+        (C2 x C2 x C2) x: (C2 x C2)
+    |MM16 x: C2| = 32
+
+    |M(4x:4)3 x: C2| = 32
+
+    |(C2 x Q8) x: C2| = 32
+
+    |C8 . C4| = 32
+
+    |C4 . D8| = 32
+
+    |(C4 x C4) . C2| = 32
+
+    # End Time:1m22s
+*/
