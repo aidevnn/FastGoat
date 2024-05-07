@@ -1421,7 +1421,7 @@ public static class GroupExt
         "32;(C2 x C2 x C2) x: C4;a4, b2, c2, d2, bcbc, bdbd, cdcd, baba-1, dada-1, acda-1c",
         "32;(C4 x C2 x C2) x: C2;a4, b2, c2, d2, bdbd, cdcd, a2bcbc, baba-1, dada-1, acda-1c",
         "32;(C4 x C2 x C2) x: C2;a4, b2, c2, d2, bdbd, cdcd, a2bcbc, baba-1, caca-1, dada-1",
-        "32;(C2 x C2) x: D8;a4, b2, c2, d2, acac, bcbc, bdbd, cdcd, dada-1, abda-1b",
+        "32;(C2 x C2) x: D8;a2, b2, c2, d2, e2, abab, acac, bcbc, bdbd, bebe, cdcd, cece, dede, abdad, aceae",
         "32;D8 x: (C2 x C2);a4, b2, c2, d2, abab, bcbc, bdbd, a2cdcd, caca-1, dada-1",
         "32;MM16 x: C2;a8, b2, a2ba2b, aba-1baba-1b",
         "32;M(4x:4)3 x: C2;a4, d2, a2b2, a2c2, acac, bcbcd, abab-1, dada-1, dbdb-1, dcdc-1",
