@@ -130,15 +130,12 @@ ConcreteGroup<Mat> ProductMatrixBlock(ConcreteGroup<Mat> group0, ConcreteGroup<M
 
 IEnumerable<Mat[]> MGenerators(int p, int[] type, int dim)
 {
-    if ((dim < 4 && BigInteger.Pow(p, dim) > 10000) || BigInteger.Pow(p, dim) > 100000)
-    {
+    if ((dim < 4 && BigInteger.Pow(p, dim) > 10000) || BigInteger.Pow(p, dim) > 150000)
         yield break;
-    }
 
     var sz = type.Length;
     var m = Gcd(type);
     var Up = FG.UnInt(p);
-    var sn = FG.Symmetric(dim);
     var gl = new GL(dim, p);
 
     var byOrders = Up.MultiLoop(dim).Select(l => gl.Create(MatrixExt.Diagonal(l.Select(z => z.K).ToArray())))
@@ -157,6 +154,7 @@ IEnumerable<(int[] perm, int[][] cycles, Mat mat)> CGenerators(int m, int n, int
     var allTypes = IntExt.Partitions32[dim].Select(l => l.Order().ToArray()).OrderBy(l => l.Length).ToArray();
     var nks = allTypes.Select(l => l.Aggregate((a0, a1) => a0 * a1))
         .SelectMany(e => IntExt.Dividors(e).Append(e).Where(j => j != 1)).Append(n).ToHashSet();
+    // nks.Println($"nks dim:{dim}");
     foreach (var p in nks.SelectMany(nk => IntExt.Primes10000.Where(p => (p - 1) % m == 0 && (p - 1) % nk == 0).Take(6)).Distinct().Order().Where(p => p < 62))
     {
         var Up = FG.UnInt(p);
@@ -200,6 +198,7 @@ IEnumerable<(int[] perm, int[][] cycles, Mat mat)> CGenerators(int m, int n, int
         var Cgens = e0.Rhs.ContentGroup!.GetGenerators().Select(m0 => (Word)m0.E)
             .Select(e => char.IsUpper(e.Get()[0]) ? new Word(e.WGroup, e.Get().Revert()) : e).ToArray();
 
+        // Cgens.Concat(Mgens).Println();
         if (Cgens.Length == 1 && Cgens.Concat(Mgens).All(w => w.Get().Length == 1 && w.Get().All(c => char.IsLower(c))))
             return new (Word[] Mgens, Word Cgen, string name)[1] {(Mgens, Cgens[0], e0.Name)};
     }
@@ -220,7 +219,7 @@ ConcreteGroup<Mat> MatrixFormFromNamesMeth2(WordGroup g, ANameElt[] names)
     var type = Mgens.Select(e => g.ElementsOrders[e]).ToArray();
     var m = Gcd(type);
     var n = g.ElementsOrders[Cgen];
-    foreach (var dim in 4.Range(1).Where(d => d >= type.Length && (IntExt.Gcd(m, d) != 1 || IntExt.Gcd(m - 1, d) != 1)))
+    foreach (var dim in 6.Range(1).Where(d => d != 5 && d >= type.Length))
     {
         foreach(var (perm, cycles, m1) in CGenerators(m, n, dim))
         {
@@ -258,23 +257,20 @@ void MatrixFormTinyGroups(int maxOrder)
         ++total;
         var gSubgrs = g.AllSubgroups().ToGroupWrapper();
         var names = NamesTree.BuildName(gSubgrs);
-        var (mat, check) = MatrixFormFromNames(names[0]);
-
-        if (mat.Count() == 1 && !check)
+        var mat0 = MatrixFormFromNamesMeth2(g, names);
+        if (mat0.Count() == 1)
         {
-            var mat0 = MatrixFormFromNamesMeth2(g, names);
-            if (mat0.Count() == 1)
+            (mat0, bool check) = MatrixFormFromNames(names[0]);
+            if (mat0.Count() == 1 && !check)
             {
                 missing.Add((g, gSubgrs.Infos, names));
                 continue;
             }
-            else
-                mat = mat0;
         }
 
-        FG.DisplayName(mat, mat.AllSubgroups(), names, false, false, 20);
+        FG.DisplayName(mat0, mat0.AllSubgroups(), names, false, false, 20);
 
-        if (!mat.IsIsomorphicTo(g))
+        if (!mat0.IsIsomorphicTo(g))
             throw new();
     }
 
@@ -288,10 +284,13 @@ void MatrixFormTinyGroups(int maxOrder)
     }
 }
 
+// void RunMatrixFormTinyGroups()
 {
     Group.ActivedStorage(false);
     GlobalStopWatch.Restart();
-    MatrixFormTinyGroups(32);
+    // MatrixFormTinyGroups(36);
+    MatrixFormTinyGroups(48);
+    // MatrixFormTinyGroups(63); // missing 2 groups (Mab x: Cn)
     GlobalStopWatch.Show("End");
     Console.Beep();
 }
@@ -323,3 +322,4 @@ void MatrixFormTinyGroups(int maxOrder)
 
     # End Time:27.616s
 */
+
