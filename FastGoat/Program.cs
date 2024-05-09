@@ -267,7 +267,8 @@ void MatrixFormTinyGroups(int maxOrder)
                 continue;
             }
         }
-
+        
+        mat0.Name = g.Name;
         FG.DisplayName(mat0, mat0.AllSubgroups(), names, false, false, 20);
 
         if (!mat0.IsIsomorphicTo(g))
@@ -288,7 +289,7 @@ void MatrixFormTinyGroups(int maxOrder)
 {
     Group.ActivedStorage(false);
     GlobalStopWatch.Restart();
-    // MatrixFormTinyGroups(36);
+    // MatrixFormTinyGroups(32);
     // MatrixFormTinyGroups(48);
     MatrixFormTinyGroups(63);
     GlobalStopWatch.Show("End");
@@ -305,35 +306,6 @@ dotnet run --no-launch-profile --configuration Release --no-build
 
 */
 
-/*
-    Missing:11 Found:133/144
-    |D16 x: C2| = 32
-        C8 x: (C2 x C2)
-    |QD16 x: C2| = 32
-
-    |C4 x: Q8| = 32
-
-    |Q8 x: C4| = 32
-
-    |D8 x: (C2 x C2)| = 32
-        (C4 x C2) x: (C2 x C2)
-        (C2 x C2 x C2) x: (C2 x C2)
-    |MM16 x: C2| = 32
-
-    |M(4x:4)3 x: C2| = 32
-
-    |(C2 x Q8) x: C2| = 32
-
-    |C8 . C4| = 32
-
-    |C4 . D8| = 32
-
-    |(C4 x C4) . C2| = 32
-
-    # End Time:27.616s
-*/
-
-
 void CheckGroup(WordGroup g)
 {
     var gSubgrs = g.AllSubgroups().ToGroupWrapper();
@@ -346,7 +318,7 @@ void CheckGroup(WordGroup g)
 }
 
 // SemiDirectProd.cs L44 
-// PseudoGenerators = new(uniqueGenerators); -> PseudoGenerators = new(uniqueGenerators);
+// PseudoGenerators = new(uniqueGenerators); -> PseudoGenerators = new(generators.ToArray());
 void FixRelators()
 {
     FG.AllSDPFilter(FG.Abelian(3, 3),FG.Abelian(6)).Select(g => g.AllSubgroups()).FilterIsomorphic().DisplayBoxes();

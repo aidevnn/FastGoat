@@ -41,7 +41,7 @@ public class SemiDirectProduct<T1, T2> : ConcreteGroup<Ep2<T1, T2>>
         }
         
         var (tmpElements, uniqueGenerators) = Group.UniqueGenerators(this, generators.ToArray());
-        PseudoGenerators = new(uniqueGenerators);
+        PseudoGenerators = new(generators.ToArray());
         Elements = tmpElements;
         ElementsOrders = Group.ElementsOrders(this, Elements);
         GroupType = Group.IsCommutative(this, PseudoGenerators)
