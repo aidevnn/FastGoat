@@ -155,7 +155,7 @@ IEnumerable<(int[] perm, int[][] cycles, Mat mat)> CGenerators(int m, int n, int
     var nks = allTypes.Select(l => l.Aggregate((a0, a1) => a0 * a1))
         .SelectMany(e => IntExt.Dividors(e).Append(e).Where(j => j != 1)).Append(n).ToHashSet();
     // nks.Println($"nks dim:{dim}");
-    foreach (var p in nks.SelectMany(nk => IntExt.Primes10000.Where(p => (p - 1) % m == 0 && (p - 1) % nk == 0).Take(6)).Distinct().Order().Where(p => p < 62))
+    foreach (var p in nks.SelectMany(nk => IntExt.Primes10000.Where(p => (p - 1) % m == 0 && (p - 1) % nk == 0).Take(10)).Distinct().Order().Where(p => p < 62))
     {
         var Up = FG.UnInt(p);
         var gl = new GL(dim, p);
@@ -219,7 +219,7 @@ ConcreteGroup<Mat> MatrixFormFromNamesMeth2(WordGroup g, ANameElt[] names)
     var type = Mgens.Select(e => g.ElementsOrders[e]).ToArray();
     var m = Gcd(type);
     var n = g.ElementsOrders[Cgen];
-    foreach (var dim in 6.Range(1).Where(d => d != 5 && d >= type.Length))
+    foreach (var dim in 7.Range(1).Where(d => d != 5 && d >= type.Length))
     {
         foreach(var (perm, cycles, m1) in CGenerators(m, n, dim))
         {
@@ -289,11 +289,21 @@ void MatrixFormTinyGroups(int maxOrder)
     Group.ActivedStorage(false);
     GlobalStopWatch.Restart();
     // MatrixFormTinyGroups(36);
-    MatrixFormTinyGroups(48);
-    // MatrixFormTinyGroups(63); // missing 2 groups (Mab x: Cn)
+    // MatrixFormTinyGroups(48);
+    MatrixFormTinyGroups(63);
     GlobalStopWatch.Show("End");
     Console.Beep();
 }
+
+/* 
+C# commands for gedit
+
+clear
+dotnet clean --configuration Release
+dotnet build --configuration Release
+dotnet run --no-launch-profile --configuration Release --no-build
+
+*/
 
 /*
     Missing:11 Found:133/144
@@ -322,4 +332,33 @@ void MatrixFormTinyGroups(int maxOrder)
 
     # End Time:27.616s
 */
+
+
+void CheckGroup(WordGroup g)
+{
+    var gSubgrs = g.AllSubgroups().ToGroupWrapper();
+    var names = NamesTree.BuildName(gSubgrs);
+    var mat0 = MatrixFormFromNamesMeth2(g, names);
+    FG.DisplayName(mat0, mat0.AllSubgroups(), names, false, false, 20);
+
+    if (!mat0.IsIsomorphicTo(g))
+        throw new();
+}
+
+// SemiDirectProd.cs L44 
+// PseudoGenerators = new(uniqueGenerators); -> PseudoGenerators = new(uniqueGenerators);
+void FixRelators()
+{
+    FG.AllSDPFilter(FG.Abelian(3, 3),FG.Abelian(6)).Select(g => g.AllSubgroups()).FilterIsomorphic().DisplayBoxes();
+    FG.AllSDPFilter(FG.Abelian(14, 2),FG.Abelian(2)).Select(g => g.AllSubgroups()).FilterIsomorphic().DisplayBoxes();
+}
+
+void TestNewRelators()
+{
+    Ring.MatrixDisplayForm = Ring.MatrixDisplay.OneLineArray;
+    GlobalStopWatch.Restart();
+    CheckGroup(FG.WordGroup("(C14 x C2) x: C2", "b2, c2, a14, bcbc, abacb, caca-1"));
+    CheckGroup(FG.WordGroup("(C3 x C3) x: C6", "a6, b3, c3, baba-1, cbc-1b-1, ab-1ca-1c"));
+    GlobalStopWatch.Show("End");
+}
 

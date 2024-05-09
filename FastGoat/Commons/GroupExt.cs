@@ -1560,7 +1560,7 @@ public static class GroupExt
         "54;C3 x M(3x:6)2;a3, b3, c3, d2, adad, dbdb-1, dcdc-1, bab-1a-1, cac-1a-1, cbc-1b-1",
         "54;C3 x: D18;a9, b3, c2, acac, bcbc, bab-1a-1",
         "54;(C3 x C3) x: C6;a6, b3, c3, bcbcbc, bab-1a-1, cac-1a-1, a2cbc-1b-1, cb-1cb-1cb-1",
-        "54;(C3 x C3) x: C6;a3, b3, c2, acac, ababab, cbcb-1",
+        "54;(C3 x C3) x: C6;a6, b3, c3, baba-1, cbc-1b-1, ab-1ca-1c",
         "54;(C3 x C3) x: C6;a6, b3, c3, baba-1, caca-1, cbc-1b-1",
         "54;(C3 x C3 x C3) x: C2;a3, b3, c3, d2, adad, bdbd, cdcd, bab-1a-1, cac-1a-1, cbc-1b-1",
         "54;(C3 x C3) x: S3;a3, b3, c3, d2, adad, cdcd, dbdb-1, bab-1a-1, cbc-1b-1, ab-1ca-1c-1",
