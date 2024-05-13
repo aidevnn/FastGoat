@@ -75,6 +75,16 @@ public struct Sn : IGroup<Perm>
         return p;
     }
 
+    public Perm CreateElementTable(params int[] table)
+    {
+        if (!IntExt.CheckTable(N, table))
+            throw new GroupException(GroupExceptionType.GroupDef);
+
+        var hash = IntExt.GenHash(N, table);
+        var p = new Perm(this, table, hash);
+        return p;
+    }
+
     public Perm Cycle(params int[] cycle) => ComposesCycles(new Tuple2Array(cycle));
 
     public Perm ComposesCycles(params Tuple2Array[] cycles)
