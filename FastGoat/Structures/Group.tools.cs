@@ -218,7 +218,7 @@ public static partial class Group
         var conjsH = Orbits(gens, ByConjugateSet(g), h.ToSet());
         foreach (var (cj, i) in conjsH.Select((cj, i) => (cj, i + 1)))
         {
-            var sg = Generate($"{h.Name}[{i}]", G, cj.ToArray());
+            var sg = Generate($"{h.Name}[{i}]", G, cj.Generators.ToArray());
             all.Add(sg);
         }
 
