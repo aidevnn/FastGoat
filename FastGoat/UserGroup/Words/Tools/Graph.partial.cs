@@ -218,9 +218,9 @@ public partial class Graph
 
     public static Graph Run(string rel) => Run("i", rel);
 
-    private static Graph ClassesFromGroupSubgroup<T>(ConcreteGroup<T> g, ConcreteGroup<T> h) where T : struct, IElt<T>
+    private static Graph ClassesFromGroupSubgroup<T>(ConcreteGroup<T> g, ConcreteGroup<T> h, T[] E) where T : struct, IElt<T>
     {
-        var E = g.GetGenerators().OrderByDescending(e => g.ElementsOrders[e]).ToArray();
+        // var E = g.GetGenerators().OrderByDescending(e => g.ElementsOrders[e]).ToArray();
         var r = E.Length;
         var cosets = Group.Cosets(g, h, CosetType.Right);
         var repr = cosets.ToDictionary(a => a.Key, a => a.Value.X);
@@ -267,15 +267,20 @@ public partial class Graph
         F.Clear();
         return graph;
     }
-
+    
     public static string DefiningRelatorsOfGroup<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
+    {
+        return DefiningRelatorsOfGroup(g, g.GetGenerators().OrderByDescending(e => g.ElementsOrders[e]).ToArray());
+    }
+    
+    public static string DefiningRelatorsOfGroup<T>(ConcreteGroup<T> g, T[] E) where T : struct, IElt<T>
     {
         var h = Group.Generate("()", g, g.Neutral());
 
         if (Logger.Level != LogLevel.Off)
             GlobalStopWatch.AddLap();
 
-        var graph = ClassesFromGroupSubgroup(g, h);
+        var graph = ClassesFromGroupSubgroup(g, h, E);
 
         if (Logger.Level != LogLevel.Off)
             Console.WriteLine(g.ShortName);
