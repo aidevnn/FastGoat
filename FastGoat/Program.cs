@@ -341,7 +341,7 @@ ConcreteGroup<Mat> GLDiagPermOrd(int n, int p, int ord)
 
 ConcreteGroup<Mat> GLDiagPerm(int n, int p) => GLDiagPermOrd(n, p, p - 1);
 
-ConcreteGroup<Mat> SearchDiagPermGL<T>(ConcreteGroup<Mat> dpgl, WordGroup g, ConcreteGroup<T> m1, ConcreteGroup<T> m2)
+ConcreteGroup<Mat> SearchDiagPermGL<T>(ConcreteGroup<Mat> dpgl, WordGroup g, ConcreteGroup<T> m1, ConcreteGroup<T> m2, bool show = true)
     where T : struct, IElt<T>
 {
     var allIso2 = Group.AllMorphisms(m2, dpgl, Group.MorphismType.Isomorphism).ToArray();
@@ -351,16 +351,20 @@ ConcreteGroup<Mat> SearchDiagPermGL<T>(ConcreteGroup<Mat> dpgl, WordGroup g, Con
         ++k1;
         var k2 = 0;
         var gens1 = m1.GetGenerators().Select(e => iso1[e]).ToArray();
-        var set = iso1.Image().ToHashSet();
-        foreach (var iso2 in allIso2.Where(iso => set.Intersect(iso.Image()).Count() == 1))
+        foreach (var iso2 in allIso2)
         {
             // Console.WriteLine($"Search Iso1:{k1} Iso2:{++k2}/{allIso2.Length}");
             var gens = m2.GetGenerators().Select(e => iso2[e]).Concat(gens1).Distinct().ToArray();
             var matForm = Group.Generate(g.Name, dpgl, gens);
             if (matForm.IsIsomorphicTo(g))
             {
-                Console.WriteLine();
-                DisplayGroup.HeadOrdersGenerators(matForm);
+                if (show)
+                {
+                    var matFormAllSubgroups = matForm.AllSubgroups();
+                    var names = NamesTree.BuildName(matFormAllSubgroups.ToGroupWrapper(), renaming: false);
+                    FG.DisplayName(matForm, matFormAllSubgroups, names, false, false, 20);
+                }
+                
                 return matForm;
             }
         }
@@ -372,12 +376,7 @@ ConcreteGroup<Mat> SearchDiagPermGL<T>(ConcreteGroup<Mat> dpgl, WordGroup g, Con
 void MissingGroupsOrder32()
 {
     Group.ActivedStorage(false);
-    GlobalStopWatch.Restart();
     GlobalStopWatch.AddLap();
-    MatrixFormTinyGroups(32);
-    GlobalStopWatch.Show("Order32");
-    Console.Beep();
-    Console.WriteLine();
 
     var dpgl25 = GLDiagPerm(2, 5);
     DisplayGroup.HeadOrders(dpgl25);
@@ -392,7 +391,9 @@ void MissingGroupsOrder32()
     var dpgl45 = GLDiagPerm(4, 5);
     DisplayGroup.HeadOrders(dpgl45);
 
-    var g1 = FG.WordGroup("D16 x: C2", "b2, c2, abacbc, caca-1, a3ba-1b");
+    var lvl = Logger.Level;
+    Logger.Level = LogLevel.Off;
+    var g1 = FG.WordGroup("D16 x: C2", "a2, b2, c2, acac, abcbabcb, bcbcbcbc, abababcabc");
     var g2 = FG.WordGroup("QD16 x: C2", "a4, b2, c2, a2ba2b, a2bcbc, caca-1, abababa-1b");
     var g3 = FG.WordGroup("Q8 x: C4", "b4, c2, a4b-2, ababc, caca-1, cbcb-1, ab-1acb-1");
     var g4 = FG.WordGroup("M(4x:4)3 x: C2", "a4, d2, a2b2, a2c2, acac, bcbcd, abab-1, dada-1, dbdb-1, dcdc-1");
@@ -401,43 +402,114 @@ void MissingGroupsOrder32()
     var g7 = FG.WordGroup("C8 . C4", "c2, ab2ac, a2cb-2, cbcb-1, abcab-1");
     var g8 = FG.WordGroup("D8 x: (C2 x C2)", "a4, b2, c2, d2, abab, bcbc, bdbd, a2cdcd, caca-1, dada-1");
     var g9 = FG.WordGroup("(C2 x Q8) x: C2", "a4, c2, d2, a2b2, a2cdcd, abab-1, caca-1, cbcb-1, dada-1, dbdb-1");
-
-    GlobalStopWatch.AddLap();
+    var g10 = FG.WordGroup("(C4 x C4) . C2", "a4, b4, a2c2, baba-1, ab2cac-1, cbc-1b-1");
+    var g11 = FG.WordGroup("C4 . D8", "b4, c2, a4b-2, cbcb-1, baba-1c, abca-1b-1");
+    
+    // (C4 x C4) . C2 is subgroup of (C8 x C4) : C2
+    var gbs0 = FG.WordGroup("(C8 x C4) : C2", "a4, c2, a2b2, a2ca2c, abacbc, abababa-1b-1, abcacaca-1cb-1");
+    // C4 . D8 is a subgroup of (C2 x QD16) x: C2
+    var gbs1 = FG.WordGroup("(C2 x QD16) x: C2", "b2, c2, d2, cdcd, a3dad, a2cbcb, a3ba-1b, acda-1c");
+    Logger.Level = lvl;
+    
     var (c2, c4, c8) = (FG.AbelianMat(2), FG.AbelianMat(4), FG.AbelianMat(8));
-    SearchDiagPermGL(dpgl217, g1, FG.DihedralGL2p(8), c2);
+    
+    SearchDiagPermGL(dpgl45, g1, FG.DihedralGL2p(8), c2);
     SearchDiagPermGL(dpgl45, g2, FG.SemiDihedralGL2p(4), c2);
     SearchDiagPermGL(dpgl317, g3, FG.Quaternion(8), c4);
     SearchDiagPermGL(dpgl45, g4, FG.MetaCyclicSdpMat(4, 4, 3), c2);
     SearchDiagPermGL(dpgl45, g5, FG.Quaternion(8), c4);
     SearchDiagPermGL(dpgl43, g6, FG.ModularMaxGL2p(4), c2);
-    SearchDiagPermGL(dpgl217, g7, FG.AbelianMat(8), c8);
-    Console.Beep();
-    GlobalStopWatch.Show("Missing, 7");
-
-    GlobalStopWatch.AddLap();
+    SearchDiagPermGL(dpgl217, g7, c8, c8);
     SearchDiagPermGL(dpgl43, g8, ProductMatrixBlock(FG.DihedralGL2p(4), c2), c2);
-    Console.Beep();
-    GlobalStopWatch.Show(g8.Name);
-
-    GlobalStopWatch.AddLap();
+    
     var gl = new GL(2, 5);
     var d8byc2 = Group.Generate("D8 x: C2", gl, gl[1, 0, 0, 4], gl[0, 1, 1, 0], gl[2, 0, 0, 2]);
-    SearchDiagPermGL(dpgl45, g9, d8byc2, c2);
-    GlobalStopWatch.Show(g9.Name);
-    Console.Beep();
+    SearchDiagPermGL(dpgl45, g9, d8byc2, c2); // slow ~ 40s
 
-    GlobalStopWatch.Show("END"); // Time:1m17s
+    var gSubgrs = gbs0.AllSubgroups();
+    var names = NamesTree.BuildName(gSubgrs.ToGroupWrapper());
+    var matBs = MatrixFormFromNamesMeth2(gbs0, names);
+    SearchDiagPermGL(matBs, g10, FG.AbelianMat(4, 4), c4);
+
+    var prod = ProductMatrixBlock(FG.SemiDihedralGL2p(4), FG.AbelianMat(2, 1));
+    var gl417 = prod.Neutral().GL;
+    var perms = GLPermGenerators(gl417);
+    var s = Group.Generate("Sub-GL(4,17)", gl417, prod.GetGenerators().Concat(perms).ToArray());
+
+    var mBs = SearchDiagPermGL(s, gbs1, prod, FG.AbelianMat(2), show: false);
+    SearchDiagPermGL(mBs, g11, FG.ModularMaxGL2p(4), FG.AbelianMat(4));
+    
+    GlobalStopWatch.Show("END missing groups of order 32"); // Time:49.336s
+    Console.WriteLine();
 }
 
 void MatrixFormUpto63()
 {
     Group.ActivedStorage(false);
-    GlobalStopWatch.Restart();
+    GlobalStopWatch.AddLap();
     MatrixFormTinyGroups(63); // Missing:23 Found:296/319
-    GlobalStopWatch.Show("END");
+    GlobalStopWatch.Show("END groups upto 63");
+    Console.WriteLine();
+}
+
+void MissingGroupsOrder48and54()
+{
+    GlobalStopWatch.AddLap();
+    
+    var dpgl37 = GLDiagPerm(3, 7);
+    var dpgl313 = GLDiagPerm(3, 13);
+    var dpgl47 = GLDiagPerm(4, 7);
+    
+    var (c2, c4, c3) = (FG.AbelianMat(2), FG.AbelianMat(4), FG.AbelianMat(3));
+    
+    var lvl = Logger.Level;
+    Logger.Level = LogLevel.Off;
+    var g1 = FG.WordGroup("C3 x: D16", "a8, b2, a2ba2b, ababababa-1ba-1b");
+    var g2 = FG.WordGroup("D24 x: C2", "b2, c2, abab, a2ca2c, a2cbcb, a5ca-1c");
+    var g3 = FG.WordGroup("(C3 x: QD16)[1]", "c2, a3b-2, b2cb2c, a2ba-1b, ca2ca-2, bcb-1cb2");
+    var g4 = FG.WordGroup("(C3 x: QD16)[2]", "c4, bcbc, a3b-2, caca-1, a2ba-1b, bc-1bc-1");
+    var g5 = FG.WordGroup("A4 x: C4", "a4, b3, a2ba2b-1, abababab");
+    var g6 = FG.WordGroup("C3 x: Q16", "b4, a4b-2, a2ba2b-1, abababab-1a-1b-1a-1b-1");
+    var g7 = FG.WordGroup("Dic3 x: C4", "b4, c2, a6b-2, ababc, caca-1, cbcb-1, ab-1acb-1");
+    var g8 = FG.WordGroup("Dic6 x: C2", "b4, c2, a2ca2c, ab2cac, abab-1, a2cbcb-1, a5b-1a-1b-1");
+    var g9 = FG.WordGroup("SL(2,3) x: C2", "a4, c3, a2b2, abab, acacac, cbc-1b-1");
+    var g10 = FG.WordGroup("C3 x: MM16", "c2, a3b-2, b2cbcb, caca-1, a2ba-1b");
+    var g11 = FG.WordGroup("(C3 x C3) x: S3", "a3, b3, c3, d2, adad, cdcd, dbdb-1, bab-1a-1, cbc-1b-1, ab-1ca-1c-1");
+    Logger.Level = lvl;
+    
+    var gl = new GL(2, 5);
+    var d8byc2 = Group.Generate("D8 x: C2", gl, gl[1, 0, 0, 4], gl[0, 1, 1, 0], gl[2, 0, 0, 2]);
+    
+    SearchDiagPermGL(dpgl47, g1, FG.DihedralGL2p(12), c2);
+    SearchDiagPermGL(ProductMatrixBlock(d8byc2, FG.DihedralGL2p(3)), g2, FG.DihedralGL2p(12), c2);
+    SearchDiagPermGL(dpgl47, g3, FG.MetaCyclicSdpMat(3, 8, 2), c2);
+    SearchDiagPermGL(ProductMatrixBlock(FG.DihedralGL2p(3), FG.SemiDihedralGL2p(4)), g4, FG.SemiDihedralGL2p(4), c3);
+    
+    var gl33 = new GL(3, 3);
+    var a4 = Group.Generate("A4", gl33, gl33[0, 1, 0, 0, 0, 1, 1, 0, 0], gl33[0, 0, 1, 2, 0, 0, 0, 2, 0]);
+    SearchDiagPermGL(dpgl313, g5, a4, c4);
+    SearchDiagPermGL(ProductMatrixBlock(FG.DihedralGL2p(3), FG.Quaternion(16)), g6, FG.Quaternion(16), c3);
+    SearchDiagPermGL(ProductMatrixBlock(FG.DicyclicGL2p(6), FG.MetaCyclicSdpMat(12, 2, 5)), g7, FG.DicyclicGL2p(3), c4);
+    
+    SearchDiagPermGL(ProductMatrixBlock(FG.DihedralGL2p(3), d8byc2), g8, FG.DicyclicGL2p(6), c2);
+    SearchDiagPermGL(ProductMatrixBlock(FG.GL2p(3), FG.DihedralGL2p(4)), g9, FG.SL2p(3), c2);
+    SearchDiagPermGL(ProductMatrixBlock(FG.DihedralGL2p(3), FG.ModularMaxGL2p(4)), g10, FG.ModularMaxGL2p(4), c3);
+    
+    var c3c3 = FG.AbelianMat(3, 3);
+    var s3 = FG.DihedralGL2p(3);
+    SearchDiagPermGL(dpgl37, g11, c3c3, s3);
+
+    GlobalStopWatch.Show("END missing groups of order 48 and 54");
 }
 
 {
-    // MatrixFormUpto63();
+    GlobalStopWatch.Restart();
+    
+    MatrixFormUpto63();
+    
     MissingGroupsOrder32();
+    MissingGroupsOrder48and54();
+    
+    Console.Beep();
+    GlobalStopWatch.Show("END"); // Time:4m3s, Missing C2 . S4
 }
