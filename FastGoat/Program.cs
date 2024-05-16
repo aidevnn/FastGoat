@@ -524,8 +524,11 @@ void Run()
     // C2 . S4 ~ SL(2,3) . C2
     // generators of order 4, 3, and 4
     
-    FG.CharacterTable(c2s4).DisplayCells();
-    // Max chi dimension 4, and √2 in Q(ξ4)
+    var ct = FG.CharacterTable(c2s4);
+    ct.DisplayCells();
+    ct.AllCharacters.Println();
+    // Console.WriteLine(FG.CyclotomicPolynomial(8));
+    // Max chi dimension 4, and √2 in Q(ξ8), MinPol(ξ8) = X^4 + 1
     // lucky candidat GL(4,5)
     
     var dpgl45 = GLDiagPerm(4, 5);
