@@ -502,6 +502,7 @@ void MissingGroupsOrder48and54()
     GlobalStopWatch.Show("END missing groups of order 48 and 54");
 }
 
+void Run()
 {
     GlobalStopWatch.Restart();
     
@@ -513,3 +514,100 @@ void MissingGroupsOrder48and54()
     Console.Beep();
     GlobalStopWatch.Show("END"); // Time:4m3s, Missing C2 . S4
 }
+
+{
+    var c2s4 = FG.WordGroup("C2 . S4", "a4, c3, a2b2, abab-1, acacac, cbcb-1");
+
+    DisplayGroup.HeadOrdersNames(c2s4);
+    Console.WriteLine($"Generators of ({c2s4}):{c2s4.GetGenerators().ToDictionary(e => e, e => c2s4.ElementsOrders[e]).GlueMap()}");
+    Console.WriteLine();
+    // C2 . S4 ~ SL(2,3) . C2
+    // generators of order 4, 3, and 4
+    
+    FG.CharacterTable(c2s4).DisplayCells();
+    // Max chi dimension 4, and √2 in Q(ξ4)
+    // lucky candidat GL(4,5)
+    
+    var dpgl45 = GLDiagPerm(4, 5);
+    SearchDiagPermGL(dpgl45, c2s4, FG.SL2p(3), FG.AbelianMat(4));
+}
+
+/*
+   |C2 . S4| = 48
+   Type        NonAbelianGroup
+   BaseGroup   WG[a,b,c]
+   
+   Elements Orders : [1]:1, [2]:1, [3]:8, [4]:18, [6]:8, [8]:12
+   SubGroupsInfos { AllSubGr = 35, AllConjsCl = 13, AllNorms = 5 }
+   Group names
+       C2 . S4
+       SL(2,3) . C2
+       Q8 . S3
+   
+   Generators of (C2 . S4):a->4, b->4, c->3
+   
+   |C2 . S4| = 48
+   Type        NonAbelianGroup
+   BaseGroup   WG[a,b,c]
+   
+   [Class      1   2   3  4a  4b   6   8a   8b]
+   [ Size      1   1   8   6  12   8    6    6]
+   [                                          ]
+   [  Ꭓ.1      1   1   1   1   1   1    1    1]
+   [  Ꭓ.2      1   1   1   1  -1   1   -1   -1]
+   [  Ꭓ.3      2   2  -1   2   0  -1    0    0]
+   [  Ꭓ.4      2  -2  -1   0   0   1   √2  -√2]
+   [  Ꭓ.5      2  -2  -1   0   0   1  -√2   √2]
+   [  Ꭓ.6      3   3   0  -1   1   0   -1   -1]
+   [  Ꭓ.7      3   3   0  -1  -1   0    1    1]
+   [  Ꭓ.8      4  -4   1   0   0  -1    0    0]
+   All i,                 Sum[g](Xi(g)Xi(g^−1)) = |G|      : True
+   All i <> j,            Sum[g](Xi(g)Xj(g^−1)) =  0       : True
+   All g, h in Cl(g),     Sum[r](Xr(g)Xr(h^−1)) = |Cl(g)|  : True
+   All g, h not in Cl(g), Sum[r](Xr(g)Xr(h^−1)) =  0       : True
+   
+   ########################################################
+   ################        C2 . S4         ################
+   ########################################################
+   |C2 . S4| = 48
+   NotSimple, NonAbelianGroup, NotNilpotent, Solvable
+   
+   Elements Orders : [1]:1, [2]:1, [3]:8, [4]:18, [6]:8, [8]:12
+   SubGroupsInfos { AllSubGr = 35, AllConjsCl = 13, AllNorms = 5 }
+   Lower Serie
+   SL(2,3) --> C2 . S4
+   Upper Serie
+   C1      --> C2
+   Derived Serie
+   C1      --> C2      --> Q8      --> SL(2,3) --> C2 . S4
+   Zentrum  Z(G) = C2
+   Frattini Φ(G) = C2
+   Fitting  F(G) = Q8
+   
+   Word Group
+   < a,b,c | a4, c3, a2b2, abcb-1c >
+   
+   Generators of C2 . S4 in GL(4,5)
+   gen1 of order 3
+   [0, 0, 1, 0]
+   [0, 1, 0, 0]
+   [0, 0, 0, 1]
+   [1, 0, 0, 0]
+   gen2 of order 4
+   [0, 0, 4, 0]
+   [0, 0, 0, 1]
+   [1, 0, 0, 0]
+   [0, 4, 0, 0]
+   gen3 of order 4
+   [0, 3, 0, 0]
+   [3, 0, 0, 0]
+   [0, 0, 2, 0]
+   [0, 0, 0, 3]
+   
+   
+   Gap SmallGroup(48,28)    Name:C2 . S4 = SL(2,3) . C2
+   Group names
+       C2 . S4
+       SL(2,3) . C2
+       Q8 . S3
+*/
