@@ -68,6 +68,14 @@ public static class GroupMatrixFormPart2
         return m.GetGenerators().Select(e => e.Table.Select(k => iso0[k]).ToArray()).ToArray();
     }
 
+    static bool IsDiagPerm(Mat m)
+    {
+        var n = m.GL.N;
+        var rg = n.Range();
+        return rg.All(i => rg.Count(j => m.Table[i * n + j] == 0) == n - 1)
+               && rg.All(j => rg.Count(i => m.Table[i * n + j] == 0) == n - 1);
+    }
+
     static ConcreteGroup<Mat> ProductMatrixBlock(ConcreteGroup<Mat> group0, ConcreteGroup<Mat> group1)
     {
         var (gl0, gl1) = (group0.Neutral().GL, group1.Neutral().GL);
@@ -83,11 +91,20 @@ public static class GroupMatrixFormPart2
             .Select(e => gl.Create(e)).ToArray();
         var Gens1 = gens1.Select(e => MatrixExt.MergeDiagonalBlocks((gl0.Neutral().Table, gl0.N), e))
             .Select(e => gl.Create(e)).ToArray();
-        return Group.Generate($"{group0.NameParenthesis()} x {group1.NameParenthesis()}", gl,
+        var group2 = Group.Generate($"{group0.NameParenthesis()} x {group1.NameParenthesis()}", gl,
             Gens0.Concat(Gens1).ToArray());
+
+        if (group2.Count() != group0.Count() * group1.Count())
+            throw new();
+
+        if ((group0.GetGenerators().Any(mat => !IsDiagPerm(mat)) && p0 != p) ||
+            (group1.GetGenerators().Any(mat => !IsDiagPerm(mat)) && p1 != p))
+            throw new();
+
+        return group2;
     }
 
-    private static Dictionary<(int n, int p), ConcreteGroup<Mat>> DPGLs { get; }
+    static Dictionary<(int n, int p), ConcreteGroup<Mat>> DPGLs { get; }
 
     static ConcreteGroup<Mat> GetDPGL(int n, int p)
     {
@@ -414,8 +431,7 @@ public static class GroupMatrixFormPart2
             return SearchDiagPermGL(ProductMatrixBlock(FG.DicyclicGL2p(6), FG.MetaCyclicSdpMat(12, 2, 5)), g,
                 FG.DicyclicGL2p(3), FG.AbelianMat(4));
         if (id.No == 33)
-            return SearchDiagPermGL(ProductMatrixBlock(FG.GL2p(3), FG.DihedralGL2p(4)), g, FG.SL2p(3),
-                FG.AbelianMat(2));
+            return SearchDiagPermGL(GetDPGL(4, 5), g, FG.SL2p(3), FG.AbelianMat(2));
         if (id.No == 10)
             return SearchDiagPermGL(ProductMatrixBlock(FG.DihedralGL2p(3), FG.ModularMaxGL2p(4)), g,
                 FG.ModularMaxGL2p(4),
@@ -503,7 +519,7 @@ public static class GroupMatrixFormPart2
             .Select(g => MatrixFormOfGroup(g))
             .Select(e => (e.matSubgrs, e.names))
             .DisplayNames();
-        
+
         // Mab x: C3 Of order 24
         FG.AllAbelianGroupsOfOrder(8)
             .Select(ab => FG.Abelian(Group.AbelianGroupType(ab)))
