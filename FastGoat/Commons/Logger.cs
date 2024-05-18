@@ -10,4 +10,11 @@ public enum LogLevel
 public static class Logger
 {
     public static LogLevel Level { get; set; } = LogLevel.Off;
+
+    public static LogLevel SetOff()
+    {
+        var lvl = Level;
+        Level = LogLevel.Off;
+        return lvl;
+    }
 }
