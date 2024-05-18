@@ -707,7 +707,43 @@ public static partial class FG
         var gens = seq2.Select((v, k) => gl.At(gl.Neutral().Table, k * (dim + 1), v)).ToArray();
         return Group.Generate(seq.Glue(" x ", "C{0}"), gl, gens);
     }
-    
+
+    public static Mat[] SnGensMat(int n)
+    {
+        var sn = new Sn(n);
+        var gl = new GL(n, 2);
+        var id = gl.Neutral().Table;
+        var idc = id.Chunk(gl.N).ToArray();
+        var genSn = sn.GetGenerators().ToArray();
+        var M2 = gl.Create(genSn[0].Apply(idc).SelectMany(l => l).ToArray());
+        var Mn = gl.Create(genSn[1].Apply(idc).SelectMany(l => l).ToArray());
+        return new[] { M2, Mn };
+    }
+
+    public static Mat[] AnGensMat(int n)
+    {
+        var sn = new Sn(n);
+        var gl = new GL(n, 2);
+        var id = gl.Neutral().Table;
+        var idc = id.Chunk(gl.N).ToArray();
+        var gensAn = (gl.N - 2).Range(3).Select(i => sn[(1, 2, i)]).ToArray();
+        return gensAn.Select(e => gl.Create(e.Apply(idc).SelectMany(l => l).ToArray())).ToArray();
+    }
+
+    public static ConcreteGroup<Mat> SymmetricMat(int n)
+    {
+        var gensMatSn = SnGensMat(n);
+        var gl = gensMatSn[0].GL;
+        return Group.Generate($"Symm{n}", gl, gensMatSn);
+    }
+
+    public static ConcreteGroup<Mat> AlternateMat(int n)
+    {
+        var gensMatAn = AnGensMat(n);
+        var gl = gensMatAn[0].GL;
+        return Group.Generate($"Alt{n}", gl, gensMatAn);
+    }
+
     public static ConcreteGroup<Mat> MetaCyclicGLnp_DiagByPerm(int m, int n, int r, int dim)
     {
         // Console.WriteLine($"Solve M({m}x:{n}){r} in GL({dim},{p})");

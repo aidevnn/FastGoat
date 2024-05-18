@@ -28,22 +28,11 @@ public static class GroupMatrixFormPart2
         return gl.At(id, 0, e0);
     }
 
-    static Mat[] GLPermGenerators(GL gl)
-    {
-        var id = gl.Neutral().Table;
-        var idc = id.Chunk(gl.N).ToArray();
-        var sn = new Sn(gl.N);
-        var genSn = sn.GetGenerators().ToArray();
-        var M2 = gl.Create(genSn[0].Apply(idc).SelectMany(l => l).ToArray());
-        var Mn = gl.Create(genSn[1].Apply(idc).SelectMany(l => l).ToArray());
-        return new Mat[2] { M2, Mn };
-    }
-
     static Mat[] GLDiagPermOrdGenerators(int n, int p, int ord)
     {
         var gl = new GL(n, p);
         var diag = GLDiagOrdGenerators(gl, ord);
-        var perms = GLPermGenerators(gl);
+        var perms = FG.SnGensMat(n).Select(e => gl.Create(e.Table)).ToArray();
         return perms.Append(diag).ToArray();
     }
 
@@ -91,16 +80,17 @@ public static class GroupMatrixFormPart2
             .Select(e => gl.Create(e)).ToArray();
         var Gens1 = gens1.Select(e => MatrixExt.MergeDiagonalBlocks((gl0.Neutral().Table, gl0.N), e))
             .Select(e => gl.Create(e)).ToArray();
-        var group2 = Group.Generate($"{group0.NameParenthesis()} x {group1.NameParenthesis()}", gl,
-            Gens0.Concat(Gens1).ToArray());
-
-        if (group2.Count() != group0.Count() * group1.Count())
-            throw new();
 
         if ((group0.GetGenerators().Any(mat => !IsDiagPerm(mat)) && p0 != p) ||
             (group1.GetGenerators().Any(mat => !IsDiagPerm(mat)) && p1 != p))
             throw new();
 
+        var group2 = Group.Generate($"{group0.NameParenthesis()} x {group1.NameParenthesis()}", gl,
+            Gens0.Concat(Gens1).ToArray());
+
+        if (group2.Count() != group0.Count() * group1.Count())
+            throw new();
+        
         return group2;
     }
 
@@ -133,27 +123,22 @@ public static class GroupMatrixFormPart2
             }
             else if (pr == "A" || pr == "S")
             {
-                if (coefs[0] == 4)
-                {
-                    var gl = new GL(3, 3);
-                    var (a, b) = pr == "S"
-                        ? (gl[0, 1, 0, 0, 0, 1, 1, 0, 0], gl[1, 0, 0, 0, 0, 1, 0, 2, 0])
-                        : (gl[0, 1, 0, 0, 0, 1, 1, 0, 0], gl[0, 0, 1, 2, 0, 0, 0, 2, 0]);
-                    return (Group.Generate(name.Name, gl, a, b), true);
-                }
-
-                if (coefs[0] == 5)
-                {
-                    var so35 = FG.SO3p(5);
-                    if (pr == "S")
-                        return (so35, false);
-                    else
-                        return (Group.IsomorphicSubgroup(so35, FG.Alternate(5)), false);
-                }
+                var n = coefs[0];
+                var gens = pr == "S" ? FG.SnGensMat(n) : FG.AnGensMat(n);
+                var gl = gens[0].GL;
+                return (Group.Generate(name.Name, gl, gens), true);
             }
             else if (pr == "GL" || pr == "SL")
             {
                 var gMat = pr == "GL" ? FG.GLnp(coefs[0], coefs[1]) : FG.SLnp(coefs[0], coefs[1]);
+                if (coefs[0] == 2 && coefs[1] == 3)
+                {
+                    var lvl = Logger.SetOff();
+                    var wg = FG.WordGroup(gMat.Name, Graph.DefiningRelatorsOfGroup(gMat));
+                    Logger.Level = lvl;
+                    var gMat0 = SearchDiagPermGL(GetDPGL(4, 5), wg, gMat, FG.AbelianMat(1));
+                    return (gMat0, true);
+                }
                 return (gMat, false);
             }
         }
@@ -183,9 +168,7 @@ public static class GroupMatrixFormPart2
     {
         if ((dim < 4 && BigInteger.Pow(p, dim) > 10000) || BigInteger.Pow(p, dim) > 150000)
             yield break;
-
-        var sz = type.Length;
-        var m = IntExt.Gcd(type);
+        
         var Up = FG.UnInt(p);
         var gl = new GL(dim, p);
 
@@ -269,8 +252,7 @@ public static class GroupMatrixFormPart2
         if (cgens.Length == 0)
             return Group.Generate(new GL(1, 2));
 
-        var lvl = Logger.Level;
-        Logger.Level = LogLevel.Off;
+        var lvl = Logger.SetOff();
         var wg = FG.WordGroup(name, Graph.DefiningRelatorsOfGroup(g, mgens.Concat(cgens).ToArray()));
         Logger.Level = lvl;
         var Mgens = wg.GetGenerators().SkipLast(1).ToArray();
@@ -281,7 +263,7 @@ public static class GroupMatrixFormPart2
         var c = wg.ElementsOrders[Cgen];
         foreach (var dim in 7.Range(1).Where(d => d != 5 && d >= mtype.Length))
         {
-            foreach (var (perm, cycles, m1) in CGenerators(m, c, dim))
+            foreach (var (_, _, m1) in CGenerators(m, c, dim))
             {
                 var gl = m1.GL;
                 var p = gl.P;
@@ -362,8 +344,7 @@ public static class GroupMatrixFormPart2
 
         if (id.No == 32)
         {
-            var lvl = Logger.Level;
-            Logger.Level = LogLevel.Off;
+            var lvl = Logger.SetOff();
             var gbs0 = FG.WordGroup("(C8 x C4) : C2", "a4, c2, a2b2, a2ca2c, abacbc, abababa-1b-1, abcacaca-1cb-1");
             Logger.Level = lvl;
             var gSubgrs0 = gbs0.AllSubgroups();
@@ -376,10 +357,9 @@ public static class GroupMatrixFormPart2
         {
             var prod = ProductMatrixBlock(FG.SemiDihedralGL2p(4), FG.AbelianMat(2, 1));
             var gl417 = prod.Neutral().GL;
-            var perms = GLPermGenerators(gl417);
+            var perms = FG.SnGensMat(gl417.N).Select(e => gl417.Create(e.Table)).ToArray();
             var s = Group.Generate("Sub-GL(4,17)", gl417, prod.GetGenerators().Concat(perms).ToArray());
-            var lvl = Logger.Level;
-            Logger.Level = LogLevel.Off;
+            var lvl = Logger.SetOff();
             var gbs1 = FG.WordGroup("(C2 x QD16) x: C2", "b2, c2, d2, cdcd, a3dad, a2cbcb, a3ba-1b, acda-1c");
             Logger.Level = lvl;
             var mBs = SearchDiagPermGL(s, gbs1, prod, FG.AbelianMat(2));
@@ -467,10 +447,13 @@ public static class GroupMatrixFormPart2
                 mat0 = MatrixFormMissingOrder48and54(g, gSubgrs);
 
             if (mat0.Count() == 1)
-                (mat0, bool check) = MatrixFormFromNames(names[0]);
+                (mat0, _) = MatrixFormFromNames(names[0]);
         }
 
         mat0.Name = g.Name;
+        if (mat0.GetGenerators().Any(mat => !IsDiagPerm(mat)))
+            throw new($"{g} Matrix Form is not Diag Perm");
+        
         if (!mat0.IsIsomorphicTo(g))
             throw new();
 
@@ -547,6 +530,7 @@ public static class GroupMatrixFormPart2
 
     public static void ExampleGroupOrderUpTo63()
     {
+        Ring.MatrixDisplayForm = Ring.MatrixDisplay.OneLineArray;
         MatrixFormGroupsOfOrder(minOrd: 1, maxOrd: 63);
         // Missing:0 Found:319/319
         // # END Time:4m39s

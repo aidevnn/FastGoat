@@ -78,7 +78,7 @@ public static partial class FG
         if (n < 3)
             throw new GroupException(GroupExceptionType.GroupDef);
 
-        var sn = new Symm(n);
+        var sn = new Sn(n);
         var gi = (n - 2).Range(3).Select(i => sn[(1, 2, i)]).ToArray();
         return Group.Generate($"Alt{n}", sn, gi);
     }
