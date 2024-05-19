@@ -562,12 +562,12 @@ public static partial class FG
             if (!special)
             {
                 var A = Glnq[a, a, 0, a];
-                return new () { A, J };
+                return new() { A, J };
             }
             else
             {
                 var A = Glnq[1, 1, 0, 1];
-                return new () { A, J };
+                return new() { A, J };
             }
         }
 
@@ -576,7 +576,7 @@ public static partial class FG
             var gen0 = Glnq[a, 0, 0, ax.Inv()];
             var e = Fq2.Where(x => x.Equals(-x.Substitute(ax))).MinBy(x => Fq2.ElementsOrders[x]);
             var gen1 = Glnq[0, 1, 1, e];
-            return new () { gen0, gen1 };
+            return new() { gen0, gen1 };
         }
         else
         {
@@ -591,12 +591,12 @@ public static partial class FG
             if (q == 3)
             {
                 var gen01 = Glnq[0, e0, -e0.Inv(), 0];
-                return new () { gen0, gen01 };
+                return new() { gen0, gen01 };
             }
 
             var e1 = Fq2.Where(x => (x.Inv() * x.Substitute(ax)).Equals(a.One)).MaxBy(x => Fq2.ElementsOrders[x]);
             var gen1 = Glnq[e1, 0, 0, e1.Inv()];
-            return new () { gen1, gen0 };
+            return new() { gen1, gen0 };
         }
     }
 
@@ -644,7 +644,7 @@ public static partial class FG
 
         var m0 = possibles[0].e.mat;
         var m1 = q != 5 ? Glnq[0, 1, 0, 0, 0, 1, 1, 0, 0] : Glnq[3, 1, 1, 1, 4, 3, 4, 2, 1];
-        return new () { m0, Glnq.Op(m1, ide) };
+        return new() { m0, Glnq.Op(m1, ide) };
     }
 
     public static ConcreteGroup<MatFq> GU2q(int q)
@@ -696,7 +696,7 @@ public static partial class FG
         var Glnq = gens.First().GLnq;
         return Group.Generate($"SO(3,{q})", Glnq, [..gens]);
     }
-    
+
     public static ConcreteGroup<Mat> AbelianMat(params int[] seq)
     {
         var dim = seq.Length;
@@ -708,22 +708,25 @@ public static partial class FG
         return Group.Generate(seq.Glue(" x ", "C{0}"), gl, gens);
     }
 
-    public static Mat[] SnGensMat(int n)
+    public static Mat[] SnGensMat(int n, int p = 2)
     {
+        if (n < 1 || !IntExt.Primes10000.Contains(p))
+            throw new GroupException(GroupExceptionType.GroupDef);
+
         var sn = new Sn(n);
-        var gl = new GL(n, 2);
+        var gl = new GL(n, p);
         var id = gl.Neutral().Table;
         var idc = id.Chunk(gl.N).ToArray();
-        var genSn = sn.GetGenerators().ToArray();
-        var M2 = gl.Create(genSn[0].Apply(idc).SelectMany(l => l).ToArray());
-        var Mn = gl.Create(genSn[1].Apply(idc).SelectMany(l => l).ToArray());
-        return new[] { M2, Mn };
+        return sn.GetGenerators().Select(e => gl.Create(e.Apply(idc).SelectMany(l => l).ToArray())).ToArray();
     }
 
-    public static Mat[] AnGensMat(int n)
+    public static Mat[] AnGensMat(int n, int p = 2)
     {
+        if (n < 3 || !IntExt.Primes10000.Contains(p))
+            throw new GroupException(GroupExceptionType.GroupDef);
+
         var sn = new Sn(n);
-        var gl = new GL(n, 2);
+        var gl = new GL(n, p);
         var id = gl.Neutral().Table;
         var idc = id.Chunk(gl.N).ToArray();
         var gensAn = (gl.N - 2).Range(3).Select(i => sn[(1, 2, i)]).ToArray();
@@ -861,13 +864,15 @@ public static partial class FG
     {
         var e0 = basis[0];
         var polyBasis = new PolynomialBasis<Rational, Xi>(e0.Indeterminates, basis);
-        return e0.Indeterminates.Select(xi => new Polynomial<Rational, Xi>(new Monom<Xi>(e0.Indeterminates, xi, 1), e0.KOne))
+        return e0.Indeterminates
+            .Select(xi => new Polynomial<Rational, Xi>(new Monom<Xi>(e0.Indeterminates, xi, 1), e0.KOne))
             .Select(xi => new EPolynomial<Rational>(xi, polyBasis)).ToArray();
     }
 
     public static EPolynomial<Rational> NumberFieldQ(Polynomial<Rational, Xi> e0) => NumberFieldQ(new[] { e0 })[0];
 
-    public static (EPolynomial<Rational>, EPolynomial<Rational>) NumberFieldQ(Polynomial<Rational, Xi> e0, Polynomial<Rational, Xi> e1)
+    public static (EPolynomial<Rational>, EPolynomial<Rational>) NumberFieldQ(Polynomial<Rational, Xi> e0,
+        Polynomial<Rational, Xi> e1)
     {
         var nbf = NumberFieldQ(new[] { e0, e1 });
         var x0 = e0.ExtractIndeterminate;
@@ -884,7 +889,8 @@ public static partial class FG
         return NumberFieldQ(a);
     }
 
-    public static (EPolynomial<Rational> x, EPolynomial<Rational> p0) NumberFieldQ(KPoly<Rational> e, string x, string p0)
+    public static (EPolynomial<Rational> x, EPolynomial<Rational> p0) NumberFieldQ(KPoly<Rational> e, string x,
+        string p0)
     {
         var all = new[] { x, p0, "_t_" };
         var xis = Ring.Polynomial(Rational.KZero(), MonomOrder.Lex, all);
@@ -971,7 +977,8 @@ public static partial class FG
                 x.Pow(7) + 7 * x.Pow(3) + 7 * x.Pow(2) + 7 * x - 1,
                 x.Pow(7) - 14 * x.Pow(5) + 56 * x.Pow(3) - 56 * x + 22,
                 x.Pow(7) + 2,
-                x.Pow(7) - 7 * x.Pow(3) + 14 * x.Pow(2) - 7 * x + 1, x.Pow(7) + 7 * x.Pow(4) + 14 * x + 3, x.Pow(7) + x + 1
+                x.Pow(7) - 7 * x.Pow(3) + 14 * x.Pow(2) - 7 * x + 1, x.Pow(7) + 7 * x.Pow(4) + 14 * x + 3,
+                x.Pow(7) + x + 1
             };
 
         throw new();
