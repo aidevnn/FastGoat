@@ -509,3 +509,9 @@ Department of Pure Mathematics
 The University of Sydney
 Australia 2006.
 arXiv:2201.09155v1
+
+[Groups and Symmetries From Finite Groups to Lie Groups](https://doi.org/10.1007/978-3-030-94360-8)
+<b>Yvette Kosmann-Schwarzbach, Stephanie Frank Singer</b>
+Groups and Symmetries From Finite Groups to Lie Groups.
+Springer. 2th Edition. 2022.
+<i>Chapter 2. Representations of Finite Groups</i>

@@ -102,7 +102,6 @@ void AllGensOfMtCycSdpUpToOrder(int maxOrd, int maxDim = 6)
             
             ct.DisplayCells(tableOnly: true);
             Console.WriteLine();
-            continue;
         }
     }
 
