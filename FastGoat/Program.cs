@@ -47,11 +47,11 @@ void AllGensOfMtCycSdpUpToOrder(int maxOrd, int maxDim = 6)
 
     foreach (var e in allMtCycSdp)
     {
-        var mt = FG.MetaCyclicSdpWg(e.m, e.n, e.r);
         var mtGL = FG.MetaCyclicSdpMat(e.m, e.n, e.r, maxDim);
         if (mtGL.Count() != 1)
         {
             mtGL.Name = $"M({e.m}x:{e.n}){e.r}";
+            DisplayGroup.Head(mtGL);
             var n = mtGL.Neutral().GL.N;
             var p = mtGL.Neutral().GL.P;
             var Up = FG.UnInt(p);
@@ -67,8 +67,8 @@ void AllGensOfMtCycSdpUpToOrder(int maxOrd, int maxDim = 6)
             var ct = FG.CharacterTable(mtGL);
             foreach (var (mat, k) in mtGLnC.GetGenerators().Select((mat, k) => (mat, k + 1)))
             {
-                Console.WriteLine(
-                    $"gen{k} of order {ct.Classes.GetClassName(gens[mat])} Tr={IntFactorisation.PrettyPrintCnf(mat.Trace.Simplify())}");
+                var tr = CharacterTable<Mat>.PrettyPrintCnf(mat.Trace.Simplify()).c;
+                Console.WriteLine($"gen{k} of order {ct.Classes.GetClassName(gens[mat])} Tr={tr}");
                 Console.WriteLine(gens[mat]);
                 Console.WriteLine();
                 Console.WriteLine(mat);
@@ -77,50 +77,65 @@ void AllGensOfMtCycSdpUpToOrder(int maxOrd, int maxDim = 6)
             if (!mtGL.IsIsomorphicTo(mtGLnC))
                 throw new();
 
+            var m0 = mtGL.Neutral();
             var cl_tr = gens.ToDictionary(kv => ct.Classes.GetRepresentative(kv.Value), kv => kv.Key.Trace);
-            var chis = ct.AllCharacters
-                .Where(chi => cl_tr.All(kv => (kv.Value - chi[kv.Key]!).Value.Simplify().IsZero()))
+            var allChis = ct.AllCharacters.Order().Select((chi, k) => (chi, k: k + 1)).ToArray();
+            var oneChis = allChis.Where(ck => (ck.chi[m0]! - n)!.Value.IsZero() &&
+                                           cl_tr.All(kv => (kv.Value - ck.chi[kv.Key]!).Value.IsZero()))
                 .ToArray();
-            if (chis.Length == 0)
+            
+            if (oneChis.Length == 0)
             {
-                if (n > ct.AllCharacters.Max(chi => chi[mtGL.Neutral()]!.Value.E[0].Num))
-                    Console.WriteLine("Diagonal block representation");
+                var twoChis = allChis.Grid2D().Where(ck => ck.t1.k < ck.t2.k)
+                    .Select(ck => (chi: ck.t1.chi + ck.t2.chi, k1: ck.t1.k, k2: ck.t2.k))
+                    .Where(ck => (ck.chi[m0]! - n)!.Value.IsZero() &&
+                                 cl_tr.All(kv => (kv.Value - ck.chi[kv.Key]!).Value.IsZero()))
+                    .ToArray();
+                
+                if (twoChis.Length == 0)
+                    missing.Add(e);
                 else
-                {
-                    cl_tr.ToDictionary(kv => ct.Classes.GetClassName(kv.Key), kv => kv.Value)
-                        .Println("Classe and Trace");
-                    Console.WriteLine();
-                    foreach (var chi in ct.AllCharacters)
-                    {
-                        cl_tr.Select(kv => (ct.Classes.GetClassName(kv.Key), kv.Value, chi[kv.Key],
-                                (kv.Value - chi[kv.Key])!.Value.Simplify()))
-                            .Println($"Chi:{chi}");
-                    }
-
-                    throw new();
-                }
+                    twoChis.Select(ck => $"Ꭓ.{ck.k1} + Ꭓ.{ck.k2} = {ck.chi}").Println("Two Characters");
             }
             else
-                chis.Println("Characters");
+                oneChis.Select(ck => $"Ꭓ.{ck.k} = {ck.chi}").Println("Characters");
             
             ct.DisplayCells(tableOnly: true);
-
-            var hom = Group.AllHomomorphisms(mt, mtGL);
-            Console.WriteLine($"Nb Endo({mtGL}):{hom.Count}");
             Console.WriteLine();
             continue;
         }
-
-        missing.Add(e);
     }
 
     var total = allMtCycSdp.Length;
     missing.Println(e => $"M({e.Item1}x:{e.Item2}){e.Item3}",
-        $"Missing:{missing.Count} Found:{total - missing.Count}/{total}");
+        $"Characters Missing:{missing.Count} Found:{total - missing.Count}/{total}");
     GlobalStopWatch.Show("END");
     Console.Beep();
 }
 
+Mat GLDiagOrdGenerators(GL gl, int ord)
 {
-    AllGensOfMtCycSdpUpToOrder(32);
+    var id = gl.Neutral().Table;
+    var e0 = IntExt.Solve_k_pow_m_equal_one_mod_n_strict(gl.P, ord);
+    return gl.At(id, 0, e0);
+}
+
+Mat[] GLDiagPermOrdGenerators(int n, int p, int ord)
+{
+    var gl = new GL(n, p);
+    var diag = GLDiagOrdGenerators(gl, ord);
+    var perms = FG.SnGensMat(n).Select(e => gl.Create(e.Table)).ToArray();
+    return perms.Append(diag).ToArray();
+}
+
+ConcreteGroup<Mat> GLDiagPermOrd(int n, int p, int ord)
+{
+    var gens = GLDiagPermOrdGenerators(n, p, ord);
+    return Group.Generate($"DPGL({n},{p})", gens[0].GL, gens);
+}
+
+ConcreteGroup<Mat> GLDiagPerm(int n, int p) => GLDiagPermOrd(n, p, p - 1);
+
+{
+    AllGensOfMtCycSdpUpToOrder(48);
 }
