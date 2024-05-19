@@ -152,14 +152,14 @@ public readonly struct Character<T> : IElt<Character<T>>, IRingElt<Character<T>>
             var cstr = $"{c}";
             if (Gr.Neutral().Equals(e))
             {
-                if (cstr.Contains('+'))
+                if (cstr.Contains(" + ") || cstr.Contains(" - "))
                     str.Add($"({cstr})");
                 else
                     str.Add($"{cstr}");
             }
             else
             {
-                if (cstr.Contains('+'))
+                if (cstr.Contains(" + ") || cstr.Contains(" - "))
                     str.Add($"({cstr})({t})");
                 else
                 {
@@ -173,7 +173,7 @@ public readonly struct Character<T> : IElt<Character<T>>, IRingElt<Character<T>>
             }
         }
 
-        return str.Count == 0 ? "0" : str.Glue(" + ");
+        return str.Count == 0 ? "0" : str.Glue(" + ").Replace("+ -", "- ");
     }
 
     public bool IsZero() => Map.Values.All(c => c.HasValue && c.Value.IsZero());
