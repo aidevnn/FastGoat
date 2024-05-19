@@ -431,7 +431,7 @@ public static class GroupMatrixFormPart2
 
     #endregion
 
-    static (WordGroup g, ConcreteGroup<Mat> mat, AllSubgroups<Mat> matSubgrs, ANameElt[] names)
+    public static (WordGroup g, ConcreteGroup<Mat> mat, AllSubgroups<Mat> matSubgrs, ANameElt[] names)
         MatrixFormOfGroup(WordGroup g)
     {
         var gSubgrs = g.AllSubgroups();
