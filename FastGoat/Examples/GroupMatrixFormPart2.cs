@@ -5,8 +5,10 @@ using FastGoat.Structures.GenericGroup;
 using FastGoat.Structures.Naming;
 using FastGoat.Structures.Subgroups;
 using FastGoat.UserGroup;
+using FastGoat.UserGroup.Characters;
 using FastGoat.UserGroup.Matrix;
 using FastGoat.UserGroup.Perms;
+using FastGoat.UserGroup.Polynoms;
 using FastGoat.UserGroup.Words;
 using FastGoat.UserGroup.Words.Tools;
 
@@ -90,7 +92,7 @@ public static class GroupMatrixFormPart2
 
         if (group2.Count() != group0.Count() * group1.Count())
             throw new();
-        
+
         return group2;
     }
 
@@ -139,6 +141,7 @@ public static class GroupMatrixFormPart2
                     var gMat0 = SearchDiagPermGL(GetDPGL(4, 5), wg, gMat, FG.AbelianMat(1));
                     return (gMat0, true);
                 }
+
                 return (gMat, false);
             }
         }
@@ -168,7 +171,7 @@ public static class GroupMatrixFormPart2
     {
         if ((dim < 4 && BigInteger.Pow(p, dim) > 10000) || BigInteger.Pow(p, dim) > 150000)
             yield break;
-        
+
         var Up = FG.UnInt(p);
         var gl = new GL(dim, p);
 
@@ -431,7 +434,7 @@ public static class GroupMatrixFormPart2
 
     #endregion
 
-    public static (WordGroup g, ConcreteGroup<Mat> mat, AllSubgroups<Mat> matSubgrs, ANameElt[] names)
+    static (WordGroup g, ConcreteGroup<Mat> mat, AllSubgroups<Mat> matSubgrs, ANameElt[] names)
         MatrixFormOfGroup(WordGroup g)
     {
         var gSubgrs = g.AllSubgroups();
@@ -453,7 +456,7 @@ public static class GroupMatrixFormPart2
         mat0.Name = g.Name;
         if (mat0.GetGenerators().Any(mat => !IsDiagPerm(mat)))
             throw new($"{g} Matrix Form is not Diag Perm");
-        
+
         if (!mat0.IsIsomorphicTo(g))
             throw new();
 
@@ -490,7 +493,68 @@ public static class GroupMatrixFormPart2
         GlobalStopWatch.Show("END");
     }
 
-    public static void MatrixFormGroupsOfOrder(int ord) => MatrixFormGroupsOfOrder(ord, ord);
+    static void MatrixFormGroupsOfOrder(int ord) => MatrixFormGroupsOfOrder(ord, ord);
+
+    static void GetCharacter(ConcreteGroup<Mat> mtGL)
+    {
+        var n = mtGL.Neutral().GL.N;
+        var p = mtGL.Neutral().GL.P;
+
+        var Up = FG.UnInt(p);
+        var e0 = Up.GetGenerators().First();
+        var cnf = Cnf.Nth(p - 1);
+        var GLnC = FG.GLnK("C", n, cnf);
+        var iso = (p - 1).Range().ToDictionary(k => e0.Pow(k).K, k => cnf.Pow(k).Simplify());
+        iso[0] = cnf.Zero;
+        var gens = mtGL.GetGenerators().ToDictionary(mat => mat.Table.Select(z => iso[z]).ToKMatrix(n), mat => mat);
+        var mtGLnC = Group.Generate(mtGL.Name, GLnC, gens.Keys.ToArray());
+
+        var lvl = Logger.SetOff();
+        var ct = FG.CharacterTable(mtGL);
+        Console.WriteLine($"Generators in {GLnC}");
+        foreach (var (mat, k) in mtGLnC.GetGenerators().Select((mat, k) => (mat, k + 1)))
+        {
+            var tr = CharacterTable<Mat>.PrettyPrintCnf(mat.Trace.Simplify()).c;
+            Console.WriteLine($"gen{k} of class {ct.Classes.GetClassName(gens[mat])} Tr = {tr}");
+            Console.WriteLine(mat);
+        }
+
+        if (!mtGL.IsIsomorphicTo(mtGLnC))
+            throw new();
+
+        var found = false;
+
+        var isoMt = Group.IsomorphismMap(mtGL, mtGLnC, gens.ToDictionary(kv => kv.Value, kv => kv.Key));
+        var map = ct.Classes.ToDictionary(cl => cl, cl => isoMt[cl].Trace);
+        var chiMt = new Character<Mat>(ct.Classes, map.ToDictionary(kv => kv.Key, kv => new Nullable<Cnf>(kv.Value)));
+
+        var allChis = ct.AllCharacters.Order().Select((chi, k) => (chi, k: k + 1)).ToArray();
+        for (int i = 1; i <= n; i++)
+        {
+            var chis = IntExt.YieldCombsKinN(i, allChis.Length)
+                .Select(l => l.Zip(allChis).Where(fs => fs.First).Select(fs => fs.Second).ToArray())
+                .Select(ck => (chi: ck.Select(ck0 => ck0.chi).Aggregate((a0, a1) => a0 + a1),
+                    ks: ck.Select(ck0 => ck0.k).ToArray()))
+                .FirstOrDefault(ck => ck.chi.Equals(chiMt), (chi: chiMt.Zero, ks: new int[0]));
+
+            if (chis.ks.Length != 0)
+            {
+                Console.WriteLine();
+                Console.WriteLine($"Character");
+                Console.WriteLine($"{chis.ks.Glue(" + ", "Ꭓ.{0}")} = {chiMt}");
+                found = true;
+                break;
+            }
+        }
+
+        if (!found)
+            throw new();
+
+        Console.WriteLine();
+        ct.DisplayCells(tableOnly: true);
+        Logger.Level = lvl;
+        Console.WriteLine();
+    }
 
     public static void ExamplesAbelianByC2()
     {
@@ -534,5 +598,42 @@ public static class GroupMatrixFormPart2
         MatrixFormGroupsOfOrder(minOrd: 1, maxOrd: 63);
         // Missing:0 Found:319/319
         // # END Time:4m39s
+    }
+    
+    public static void ExampleMetaCyclicGroupsRepresentations()
+    {
+        GlobalStopWatch.Restart();
+        var maxOrd = 24;
+        foreach (var mtGL in (maxOrd - 5).Range(6).SelectMany(o => FG.MetaCyclicSdpMat(o)))
+        {
+            var mtGLSubgrs = mtGL.AllSubgroups();
+            var names = NamesTree.BuildName(mtGL);
+            FG.DisplayName(mtGL, mtGLSubgrs, names, false, false, 20);
+            GetCharacter(mtGL);
+        }
+
+        GlobalStopWatch.Show("END");
+        Console.Beep();
+    }
+
+    public static void ExampleGroupsRepresentations()
+    {
+        GlobalStopWatch.Restart();
+        var maxOrd = 16;
+        foreach (var (g, mtGL, matSubgrs, names) in maxOrd.Range(1)
+                     .SelectMany(o => FG.AllGroupsOfOrder(o).Select(sg => MatrixFormOfGroup(sg))))
+        {
+            if (mtGL.Name.Contains("SL(2,3)"))
+            {
+                Console.WriteLine($"TODO {mtGL} representation");
+                continue;
+            }
+
+            FG.DisplayName(mtGL, matSubgrs, names, false, false, 20);
+            GetCharacter(mtGL);
+        }
+
+        GlobalStopWatch.Show("END");
+        Console.Beep();
     }
 }
