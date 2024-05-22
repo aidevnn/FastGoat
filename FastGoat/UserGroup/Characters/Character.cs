@@ -51,6 +51,7 @@ public readonly struct Character<T> : IElt<Character<T>>, IRingElt<Character<T>>
     }
 
     public bool HasAllValues => Map.Values.All(c => c.HasValue);
+    public bool IsLinear => HasAllValues && (Map[Gr.Neutral()] - 1)!.Value.IsZero();
     public bool IsIdentity => Map.Values.All(c => c.HasValue && c.Value.Equals(Cnf.CnfOne));
     public Character<T> Simplify() => new(Classes, Map.ToDictionary(e => e.Key, e => (Cnf?)e.Value!.Value.Simplify()));
 
