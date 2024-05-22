@@ -19,10 +19,8 @@ public static class AllGroupsUptoOrder32
 
         var name = g.Name;
         maxLt = int.Max(name.Length, maxLt);
-        FG.DisplayName(g, subgroups, names, showBasegroup:false, maxLt: maxLt);
+        FG.DisplayName(g, subgroups, names, showBasegroup:false, showGenerators:false, maxLt: maxLt);
 
-        Console.WriteLine("Characters Table");
-        Console.WriteLine();
         if (g.Name == "SL(2,3)")
         {
             var gl23 = FG.GL2p(3);
@@ -41,8 +39,15 @@ public static class AllGroupsUptoOrder32
         else
         {
             var ctG = FG.CharacterTableEmpty(g);
-            ctG.DerivedSubGroupLift();
-            ctG.InductionFromSubGroups(subgroups);
+            if(g.GroupType == GroupType.AbelianGroup)
+                ctG.AbelianTable();
+            else
+            {
+                ctG.DerivedSubGroupLift();
+                ctG.InductionFromStabilizers();
+                ctG.InductionFromSubGroups(subgroups);
+            }
+            
             ctG.DisplayCells(tableOnly: true);
             Console.WriteLine();
         }
@@ -127,7 +132,7 @@ public static class AllGroupsUptoOrder32
     public static void Run()
     {
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
-        DetailsGroupsUptoOrder32(html: false); // #  Time:10m23s
+        DetailsGroupsUptoOrder32(html: false); // #  Time:2m59s
     }
 
     public static void A5()
