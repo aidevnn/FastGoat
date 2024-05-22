@@ -6,7 +6,7 @@ using FastGoat.UserGroup.Polynoms;
 
 namespace FastGoat.UserGroup.Characters;
 
-public class CharacterTable<T> where T : struct, IElt<T>
+public partial class CharacterTable<T> where T : struct, IElt<T>
 {
     public CharacterTable(ConcreteGroup<T> gr, bool empty = false)
     {
@@ -16,6 +16,7 @@ public class CharacterTable<T> where T : struct, IElt<T>
         NbClasses = Classes.Count();
         AllCharacters = NbClasses.Range().Select(i => one.Zero).ToArray();
         ChiE = AllCharacters[0] = one;
+        
         if (!empty)
         {
             if (gr.GroupType == GroupType.AbelianGroup)
@@ -25,6 +26,7 @@ public class CharacterTable<T> where T : struct, IElt<T>
             else
             {
                 DerivedSubGroupLift();
+                InductionFromStabilizers();
                 InductionFromSubGroups();
             }
         }
@@ -36,6 +38,9 @@ public class CharacterTable<T> where T : struct, IElt<T>
     public ConjugacyClasses<T> Classes { get; }
     public Character<T>[] AllCharacters { get; set; }
     public int NbClasses { get; }
+    public bool TableComplete => AllCharacters.All(chi => chi.HasAllValues);
+    public Character<T>[] DoneChis => AllCharacters.Where(chi => chi.HasAllValues).ToArray();
+    public Character<T>[] ToDoChis => AllCharacters.Where(chi => !chi.HasAllValues).ToArray();
 
     public void ClearTable()
     {
@@ -48,11 +53,14 @@ public class CharacterTable<T> where T : struct, IElt<T>
         if (Gr.GroupType != GroupType.AbelianGroup)
             throw new GroupException(GroupExceptionType.GroupDef);
 
-        AllCharacters = FG.LinearCharacters(Gr).ToArray();
+        AllCharacters = FG.LinearCharacters(Gr).Select(chi => chi.Simplify()).ToArray();
     }
 
     public void DerivedSubGroupLift()
     {
+        if(TableComplete)
+            return;
+
         var der = Group.Derived(Gr);
         var od = der.Count();
         if (od == Gr.Count())
@@ -65,7 +73,7 @@ public class CharacterTable<T> where T : struct, IElt<T>
     {
         var quo = Gr.Over(normal);
         var ctQuo = new CharacterTable<Coset<T>>(quo);
-        foreach (var chi in ctQuo.AllCharacters.Where(chi => chi.HasAllValues))
+        foreach (var chi in ctQuo.DoneChis)
         {
             var lift = FG.Lift(chi, Classes);
             var liftState = AddCharacter(lift);
@@ -75,32 +83,56 @@ public class CharacterTable<T> where T : struct, IElt<T>
 
         InductionFromSubGroup(normal);
     }
+    
+    public void InductionFromStabilizers()
+    {
+        if (TableComplete)
+            return;
 
+        var stabilizers = Classes.Skip(1)
+                .Select(e => Group.Generate($"Stab({Classes.GetClassName(e)})", Gr, Classes.GetClassStabx(e).ToArray()))
+                .Where(sg => sg.Count() != Gr.Count());
+        foreach (var sg in stabilizers)
+        {
+            if (TableComplete)
+                break;
+            
+            if (Gr.All(x => sg.Select(y => Gr.Op(x, y)).ToHashSet().SetEquals(sg.Select(y => Gr.Op(y, x)))))
+                NormalSubGroupLift(sg);
+            else
+                InductionFromSubGroup(sg);
+        }
+    }
+    
     public void InductionFromSubGroups()
     {
+        if (TableComplete)
+            return;
+        
         InductionFromSubGroups(Gr.AllSubgroups());
     }
 
     public void InductionFromSubGroups(AllSubgroups<T> subgroups)
     {
-        if (AllCharacters.All(chi => chi.HasAllValues))
+        if (TableComplete)
             return;
 
-        foreach (var cj in subgroups.AllSubgroupConjugates.Where(cj => !cj.IsTrivial && cj.IsProper).Order())
+        foreach (var cj in subgroups.AllSubgroupConjugates.Where(cj => !cj.IsTrivial && cj.IsProper))
         {
-            InductionFromSubGroup(cj.Representative);
-            if (AllCharacters.All(chi => chi.HasAllValues))
+            if (!cj.IsNormal)
+                InductionFromSubGroup(cj.Representative);
+            else
+                NormalSubGroupLift(cj.Representative);
+
+            if (TableComplete)
                 return;
         }
 
-        if (AllCharacters.All(chi => chi.HasAllValues))
-            return;
-
-        foreach (var sg in subgroups.AllSubgroupConjugates.Where(cj => !cj.IsTrivial && cj.IsProper).Order()
+        foreach (var sg in subgroups.AllSubgroupConjugates.Where(cj => !cj.IsNormal && cj.IsProper)
                      .SelectMany(cj => cj.Conjugates.Skip(1)))
         {
             InductionFromSubGroup(sg);
-            if (AllCharacters.All(chi => chi.HasAllValues))
+            if (TableComplete)
                 return;
         }
     }
@@ -113,7 +145,8 @@ public class CharacterTable<T> where T : struct, IElt<T>
         var sum = (int)doneChis.Sum(chi => Double.Pow(chi[ne]!.Value.Module, 2));
         var rem = Gr.Count() - sum;
         var nbChis = NbClasses - doneChis.Length;
-        if (nbChis == 0 || !IntExt.SolveSquareInt.ContainsKey(nbChis) || !IntExt.SolveSquareInt[nbChis].ContainsKey(rem))
+        if (nbChis == 0 || !IntExt.SolveSquareInt.ContainsKey(nbChis) ||
+            !IntExt.SolveSquareInt[nbChis].ContainsKey(rem))
             return;
 
         var sq = IntExt.SolveSquareInt[nbChis][rem];
@@ -121,12 +154,35 @@ public class CharacterTable<T> where T : struct, IElt<T>
         if (cd.Length == 1)
         {
             var lt = cd[0];
-            var todoChis = AllCharacters.Where(e => !e.HasAllValues).ToArray();
+            var todoChis = ToDoChis;
             for (int i = 0; i < nbChis; i++)
             {
                 todoChis[i].Map[ne] = lt[i] * Cnf.CnfOne;
             }
         }
+    }
+
+    private bool RegularCharacter()
+    {
+        if (AllCharacters.Count(chi => !chi.HasAllValues) != 1)
+            return false;
+
+        var e = Gr.Neutral();
+        var doneChis = DoneChis;
+        var idx = AllCharacters.ToList().FindIndex(chi => !chi.HasAllValues);
+
+        Cnf? Starting(T e0) => e0.Equals(e) ? Cnf.CnfOne * Gr.Count() : Cnf.CnfZero;
+        var map = Classes.ToDictionary(
+            cl => cl,
+            cl => doneChis.Aggregate(Starting(cl), (sum, chi) => sum - chi[e] * chi[cl])
+        );
+
+        var c0 = AllCharacters[idx][e];
+        foreach (var (k,v) in map.ToArray())
+            map[k] = v / c0;
+        
+        AllCharacters[idx] = new(Classes, map);
+        return true;
     }
 
     public void InductionFromSubGroup(ConcreteGroup<T> subGr)
@@ -136,15 +192,15 @@ public class CharacterTable<T> where T : struct, IElt<T>
 
         SolveSumSquare();
         AllCharacters = AllCharacters.Order().ToArray();
-        if (AllCharacters.All(chi => chi.HasAllValues))
+        if (TableComplete)
             return;
 
         var ctSubGr = new CharacterTable<T>(subGr);
-        foreach (var chi in ctSubGr.AllCharacters.Where(chi => chi.HasAllValues))
+        foreach (var chi in ctSubGr.DoneChis)
         {
             var ind = FG.Induction(chi, Classes);
             var indState = AddCharacter(ind);
-            if (indState == AddCharacterState.TableFull)
+            if (indState == AddCharacterState.TableFull || RegularCharacter())
                 return;
         }
     }
@@ -156,14 +212,14 @@ public class CharacterTable<T> where T : struct, IElt<T>
 
         SolveSumSquare();
         AllCharacters = AllCharacters.Order().ToArray();
-        if (AllCharacters.All(chi => chi.HasAllValues))
+        if (TableComplete)
             return;
 
-        foreach (var chi in ctSubGr.AllCharacters.Where(chi => chi.HasAllValues))
+        foreach (var chi in ctSubGr.DoneChis)
         {
             var ind = FG.Induction(chi, Classes);
             var indState = AddCharacter(ind);
-            if (indState == AddCharacterState.TableFull)
+            if (indState == AddCharacterState.TableFull || RegularCharacter())
                 return;
         }
     }
@@ -181,15 +237,15 @@ public class CharacterTable<T> where T : struct, IElt<T>
             return;
 
         AllCharacters = AllCharacters.Order().ToArray();
-        if (AllCharacters.All(chi => chi.HasAllValues))
+        if (TableComplete)
             return;
 
         var ctSuperGr = new CharacterTable<T>(superGr);
-        foreach (var chi in ctSuperGr.AllCharacters.Where(chi => chi.HasAllValues))
+        foreach (var chi in ctSuperGr.DoneChis)
         {
             var res = FG.Restriction(chi, Classes);
             var resState = AddCharacter(res);
-            if (resState == AddCharacterState.TableFull)
+            if (resState == AddCharacterState.TableFull || RegularCharacter())
                 return;
         }
     }
@@ -207,14 +263,14 @@ public class CharacterTable<T> where T : struct, IElt<T>
             return;
 
         AllCharacters = AllCharacters.Order().ToArray();
-        if (AllCharacters.All(chi => chi.HasAllValues))
+        if (TableComplete)
             return;
 
-        foreach (var chi in ctSuperGr.AllCharacters.Where(chi => chi.HasAllValues))
+        foreach (var chi in ctSuperGr.DoneChis)
         {
             var res = FG.Restriction(chi, Classes);
             var resState = AddCharacter(res);
-            if (resState == AddCharacterState.TableFull)
+            if (resState == AddCharacterState.TableFull || RegularCharacter())
                 return;
         }
     }
@@ -227,8 +283,7 @@ public class CharacterTable<T> where T : struct, IElt<T>
             var e = Gr.Neutral();
             if (chi2[e]!.Value.Module > 1)
             {
-                var linears = AllCharacters.Where(chi => chi.HasAllValues && !chi.Equals(ChiE) && chi[e]!.Value.Equals(Cnf.CnfOne))
-                    .ToArray();
+                var linears = AllCharacters.Where(chi => chi.IsLinear && !chi.Equals(ChiE)).ToArray();
                 foreach (var chiLinear in linears)
                 {
                     var chi3 = chi2 * chiLinear;
@@ -246,7 +301,7 @@ public class CharacterTable<T> where T : struct, IElt<T>
     private (AddCharacterState, Character<T>) AddCharacterInternal(Character<T> chi1)
     {
         var e = Gr.Neutral();
-        var doneChis = AllCharacters.Where(c => c.HasAllValues).ToList();
+        var doneChis = DoneChis;
         var todoChis = AllCharacters.Select((c, i) => (c, i)).Where(c => !c.c.HasAllValues).ToList();
 
         if (todoChis.Count == 0)
@@ -272,7 +327,7 @@ public class CharacterTable<T> where T : struct, IElt<T>
                 AllCharacters[i] = chi2.Simplify();
                 return (todoChis.Count > 1 ? AddCharacterState.Done : AddCharacterState.TableFull, chi2);
             }
-            
+
             return (AddCharacterState.NotIrr, chi2);
         }
 
@@ -281,7 +336,7 @@ public class CharacterTable<T> where T : struct, IElt<T>
 
     public void CheckProperties()
     {
-        if (AllCharacters.Any(chi => !chi.HasAllValues))
+        if (!TableComplete)
             return;
 
         var rg = NbClasses.Range();
@@ -297,7 +352,8 @@ public class CharacterTable<T> where T : struct, IElt<T>
             rg.All(i => ggi.Aggregate(e0.Zero, (sum, kp) => sum + chis[i][kp.g]!.Value * chis[i][kp.gi]!.Value)
                 .Equals(e0.One * Gr.Count())));
         Console.WriteLine("All i <> j,            Sum[g](Xi(g)Xj(g^−1)) =  0       : {0}",
-            allCombs.All(e => ggi.Aggregate(e0.Zero, (sum, kp) => sum + chis[e.i][kp.g]!.Value * chis[e.j][kp.gi]!.Value).IsZero()));
+            allCombs.All(e =>
+                ggi.Aggregate(e0.Zero, (sum, kp) => sum + chis[e.i][kp.g]!.Value * chis[e.j][kp.gi]!.Value).IsZero()));
 
         Console.WriteLine("All g, h in Cl(g),     Sum[r](Xr(g)Xr(h^−1)) = |Cl(g)|  : {0}",
             clggi.All(kp =>
@@ -406,6 +462,8 @@ public class CharacterTable<T> where T : struct, IElt<T>
         if (!tableOnly)
             DisplayGroup.Head(Gr);
 
+        Console.WriteLine("Characters Table");
+        Console.WriteLine();
         Ring.DisplayMatrix(Cells, " ");
 
         if (!tableOnly)
