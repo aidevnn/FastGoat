@@ -17,7 +17,8 @@ public record ExtInfos<Tn, Tg>(CrMap<Tn, Tg> c, ConcreteGroup<Ep2<Tn, Tg>> ext, 
     where Tg : struct, IElt<Tg>
     where Tn : struct, IElt<Tn>
 {
-    private (GroupType, int, SubGroupsInfos) ToTuples() => (ext.GroupType, -ext.ElementsOrders.Values.Max(), allSubs.Infos);
+    private (GroupType, int, SubGroupsInfos) ToTuples() =>
+        (ext.GroupType, -ext.ElementsOrders.Values.Max(), allSubs.Infos);
 
     public int CompareTo(ExtInfos<Tn, Tg>? other)
     {
@@ -31,7 +32,8 @@ public record ExtInfos<Tn, Tg>(CrMap<Tn, Tg> c, ConcreteGroup<Ep2<Tn, Tg>> ext, 
 public static partial class FG
 {
     public static EqualityComparer<Homomorphism<Tg, Automorphism<Tn>>>
-        EqOpByAut<Tn, Tg>(ConcreteGroup<Tg> G, ConcreteGroup<Automorphism<Tg>> autG, ConcreteGroup<Automorphism<Tn>> autN)
+        EqOpByAut<Tn, Tg>(ConcreteGroup<Tg> G, ConcreteGroup<Automorphism<Tg>> autG,
+            ConcreteGroup<Automorphism<Tn>> autN)
         where Tn : struct, IElt<Tn>
         where Tg : struct, IElt<Tg>
     {
@@ -113,7 +115,8 @@ public static partial class FG
         }
     }
 
-    public static IEnumerable<ExtInfos<Tn, Tg>> AllExtensions<Tn, Tg>(params (ConcreteGroup<Tn>, ConcreteGroup<Tg>)[] tuples)
+    public static IEnumerable<ExtInfos<Tn, Tg>> AllExtensions<Tn, Tg>(
+        params (ConcreteGroup<Tn>, ConcreteGroup<Tg>)[] tuples)
         where Tg : struct, IElt<Tg>
         where Tn : struct, IElt<Tn>
     {
@@ -160,7 +163,8 @@ public static partial class FG
         }
     }
 
-    public static IEnumerable<SemiDirectProduct<T1, T2>> AllSDPFilterLazy<T1, T2>(ConcreteGroup<T1> N, ConcreteGroup<T2> G,
+    public static IEnumerable<SemiDirectProduct<T1, T2>> AllSDPFilterLazy<T1, T2>(ConcreteGroup<T1> N,
+        ConcreteGroup<T2> G,
         bool trivial = false)
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
@@ -257,7 +261,8 @@ public static partial class FG
         }
     }
 
-    public static IEnumerable<(AllSubgroups<T> subsg, ANameElt[] names)> Naming<T>(this IEnumerable<ConcreteGroup<T>> groups,
+    public static IEnumerable<(AllSubgroups<T> subsg, ANameElt[] names)> Naming<T>(
+        this IEnumerable<ConcreteGroup<T>> groups,
         bool rename = true)
         where T : struct, IElt<T>
     {
@@ -271,7 +276,8 @@ public static partial class FG
         }
     }
 
-    public static IEnumerable<(AllSubgroups<T> subsg, ANameElt[] names)> Naming<T>(this IEnumerable<AllSubgroups<T>> subsg,
+    public static IEnumerable<(AllSubgroups<T> subsg, ANameElt[] names)> Naming<T>(
+        this IEnumerable<AllSubgroups<T>> subsg,
         bool rename = true)
         where T : struct, IElt<T>
     {
@@ -295,7 +301,8 @@ public static partial class FG
     }
 
     public static (AllSubgroups<T> subsg, ANameElt[] names)[]
-        DisplayNames<T>(this IEnumerable<(AllSubgroups<T> subsg, ANameElt[] names)> seq, bool rename = false, bool showBasegroup = true)
+        DisplayNames<T>(this IEnumerable<(AllSubgroups<T> subsg, ANameElt[] names)> seq, bool rename = false,
+            bool showBasegroup = true, bool showGenerators = true)
         where T : struct, IElt<T>
     {
         var lt = seq.OrderBy(e => e.subsg.Parent.Count())
@@ -313,14 +320,15 @@ public static partial class FG
             var o = subsg.Parent.Count();
             var s = GroupExt.A000001.Length >= o ? $"/{GroupExt.A000001[o]}" : "";
             Console.WriteLine($"Group{o}[{++dicOrd[o]}{s}]");
-            DisplayName(subsg.Parent, subsg, names, rename, showBasegroup, maxLt);
+            DisplayName(subsg.Parent, subsg, names, rename, showBasegroup, showGenerators, maxLt);
         }
 
         Console.WriteLine($"Total Groups:{nb}");
         return lt;
     }
 
-    public static AllSubgroups<T>[] DisplayBoxes<T>(this IEnumerable<AllSubgroups<T>> seq, bool rename = false)
+    public static AllSubgroups<T>[] DisplayBoxes<T>(this IEnumerable<AllSubgroups<T>> seq, bool rename = false,
+        bool showGenerators = false)
         where T : struct, IElt<T>
     {
         var list = seq.OrderBy(e => e.Parent.Count())
@@ -339,14 +347,15 @@ public static partial class FG
             var o = subsg.Parent.Count();
             var s = GroupExt.A000001.Length >= o ? $"/{GroupExt.A000001[o]}" : "";
             Console.WriteLine($"Group{o}[{++dicOrd[o]}{s}]");
-            DisplayBox(subsg, ++k, rename, false, maxLt);
+            DisplayBox(subsg, ++k, rename, false, showGenerators, maxLt);
         }
 
         Console.WriteLine($"Total Groups:{nb}");
         return list;
     }
 
-    public static void DisplayDetails<T>(AllSubgroups<T> subsg, bool showBasegroup) where T : struct, IElt<T>
+    public static void DisplayDetails<T>(AllSubgroups<T> subsg, bool showBasegroup, bool showGenerators = true)
+        where T : struct, IElt<T>
     {
         var g = subsg.Parent;
         var derived = subsg.GetDerivedSerie();
@@ -391,8 +400,11 @@ public static partial class FG
         Console.WriteLine(def);
         Console.WriteLine();
 
-        DisplayGroup.Generators(g);
-        Console.WriteLine();
+        if (showGenerators)
+        {
+            DisplayGroup.Generators(g);
+            Console.WriteLine();
+        }
 
         var gapInfos = FindIdGroup(g, subsg.Infos);
         var s = gapInfos.Length > 1 ? " (TODO)" : "";
@@ -404,7 +416,7 @@ public static partial class FG
     }
 
     public static void DisplayBox<T>(AllSubgroups<T> subsg, int nb, bool rename = false,
-        bool showBasegroup = true, int maxLt = -1) where T : struct, IElt<T>
+        bool showBasegroup = true, bool showGenerators = true, int maxLt = -1) where T : struct, IElt<T>
     {
         var nbSharp = 16;
         if (rename)
@@ -422,11 +434,11 @@ public static partial class FG
         Console.WriteLine(fmt, name);
         Console.WriteLine(line);
 
-        DisplayDetails(subsg, showBasegroup);
+        DisplayDetails(subsg, showBasegroup, showGenerators);
     }
 
     public static void DisplayName<T>(ConcreteGroup<T> g, AllSubgroups<T> subsg, ANameElt[] names, bool rename = false,
-        bool showBasegroup = true, int maxLt = -1)
+        bool showBasegroup = true, bool showGenerators = true, int maxLt = -1)
         where T : struct, IElt<T>
     {
         if (rename)
@@ -434,7 +446,7 @@ public static partial class FG
         else
             subsg.Parent.Name = g.Name;
 
-        DisplayBox(subsg, 0, rename, showBasegroup, maxLt);
+        DisplayBox(subsg, 0, rename, showBasegroup, showGenerators, maxLt);
         if (Console.CursorTop > 0)
             Console.CursorTop--;
         names.Println("Group names");
@@ -611,7 +623,8 @@ public static partial class FG
 
             if (infos.ToTuples() == (181, 118, 75))
             {
-                var g64236 = WordGroup("a4, b4, c2, d2, adad, a2bdbd, a2ca2c, a2cdcd, b2db2d, a2bcb-1c, ab2ca-1c, bab-1a-1");
+                var g64236 =
+                    WordGroup("a4, b4, c2, d2, adad, a2bdbd, a2ca2c, a2cdcd, b2db2d, a2bcb-1c, ab2ca-1c, bab-1a-1");
                 if (g64236.IsIsomorphicTo(g))
                     return new[] { AllIds(ord).First(e => e.No == 236) };
                 else
