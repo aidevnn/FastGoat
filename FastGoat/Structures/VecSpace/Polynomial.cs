@@ -1,4 +1,5 @@
 using FastGoat.Commons;
+using FastGoat.UserGroup.Polynoms;
 
 namespace FastGoat.Structures.VecSpace;
 
@@ -430,7 +431,7 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
                 return string.IsNullOrEmpty(sm) ? "-1" : $"-{sm}";
 
             var k0 = $"{k}";
-            k0 = k0.Contains('+') ? $"({k0})" : k0;
+            k0 = k0.Contains('+') || (k0.Any(char.IsLetter) && k0.Contains('-')) ? $"({k0})" : k0;
             return string.IsNullOrEmpty(sm) ? $"{k}" : $"{k0}{sep}{sm}";
         }
 
