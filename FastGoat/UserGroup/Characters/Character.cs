@@ -6,7 +6,7 @@ using FastGoat.UserGroup.Polynoms;
 
 namespace FastGoat.UserGroup.Characters;
 
-public readonly struct Character<T> : IElt<Character<T>>, IRingElt<Character<T>> where T : struct, IElt<T>
+public readonly struct Character<T> : IElt<Character<T>>, IRingElt<Character<T>>, IFieldElt<Character<T>> where T : struct, IElt<T>
 {
     public ConjugacyClasses<T> Classes { get; }
     public ConcreteGroup<T> Gr => Classes.Gr;
@@ -15,14 +15,16 @@ public readonly struct Character<T> : IElt<Character<T>>, IRingElt<Character<T>>
     {
         Classes = Group.ConjugacyClasses(gr);
         var map = Map = Classes.ToDictionary(e => e, _ => (Cnf?)Cnf.CnfOne);
-        Hash = Classes.Aggregate(0, (hash, g) => (hash, map[g]?.GetHashCode() ?? 0).GetHashCode());
+        Hash = Classes.Aggregate(0,
+            (hash, g) => (hash, map[g].HasValue ? map[g]!.Value.Simplify().GetHashCodeSlow() : 0).GetHashCode());
     }
 
     public Character(ConjugacyClasses<T> classes, Dictionary<T, Cnf?> map)
     {
         Map = map;
         Classes = classes;
-        Hash = Classes.Aggregate(0, (hash, g) => (hash, map[g]?.GetHashCode() ?? 0).GetHashCode());
+        Hash = Classes.Aggregate(0,
+            (hash, g) => (hash, map[g].HasValue ? map[g]!.Value.Simplify().GetHashCodeSlow() : 0).GetHashCode());
     }
 
     public Dictionary<T, Cnf?> Map { get; }
@@ -219,7 +221,9 @@ public readonly struct Character<T> : IElt<Character<T>>, IRingElt<Character<T>>
     public static Character<T> operator *(Character<T> a, Character<T> b) => a.Mul(b);
 
     public static Character<T> operator *(int a, Character<T> b) => b.Mul(a);
-    public static Character<T> operator *(Cnf a, Character<T> b) => new(b.Classes, b.Map.ToDictionary(e => e.Key, e => e.Value * a));
+
+    public static Character<T> operator *(Cnf a, Character<T> b) =>
+        new(b.Classes, b.Map.ToDictionary(e => e.Key, e => e.Value * a));
 
     public static Character<T> operator *(Character<T> a, int b) => a.Mul(b);
 
@@ -227,4 +231,24 @@ public readonly struct Character<T> : IElt<Character<T>>, IRingElt<Character<T>>
 
     public static Character<T> operator /(Character<T> a, int b) =>
         new(a.Classes, a.Map.ToDictionary(e => e.Key, e => (Cnf?)(e.Value!.Value / b)));
+
+    public int P => 0;
+    public Character<T> Inv()
+    {
+        if (!Invertible())
+            throw new GroupException(GroupExceptionType.GroupDef);
+
+        return new(Classes, Map.ToDictionary(e => e.Key, e => (Cnf?)e.Value!.Value.Inv()));
+    }
+
+    public bool Invertible() => Map.Values.All(c => c.HasValue && !c.Value.IsZero());
+
+    public static Character<T> operator /(int a, Character<T> b)
+    {
+        return a * b.Inv();
+    }
+
+    public static double Abs(Character<T> t) => double.Sqrt(Cnf.Abs(FG.InnerProduct(t, t)));
+
+    public static bool IsValuedField => true;
 }
