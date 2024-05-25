@@ -42,7 +42,6 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
         }
     }
 
-
     public void SolveOrthogonality(params (int dim, int[] linIdx)[] infos)
     {
         PrefillOrthogonality();
@@ -50,13 +49,6 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
         var todoChis = AllCharacters.Select((chi, k) => (chi, k)).Where(e => !e.chi.HasAllValues).ToArray();
         if (todoChis.Length == 0)
             return;
-        if (todoChis.Length > 3)
-        {
-            Console.WriteLine($"Missing {todoChis.Length} characters or more");
-            // return;
-        }
-
-        // Classes.Select(e=>$"{Classes.GetClassName(e)} Stabx:{Classes.GetClassStabx(e).Count()}").Println("Stabx");
 
         var cells = new List<(int, int)>();
         for (int i = 0; i < NbClasses; i++)
@@ -143,9 +135,9 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
             var xi0 = mat[firstIdx, i];
             var xi1 = -NbClasses.Range()
                 .Where(k => k != firstIdx)
-                .Aggregate(xz.Zero, (sum, k) => sum + list[k][0] * list[k][i]) / list[firstIdx][0];
+                .Aggregate(xz.Zero, (sum, k) => sum + list[k][0] * list[k][i]);
 
-            eqs.Add(xi0 - xi1);
+            eqs.Add(xi0 * list[firstIdx][0] - xi1);
         }
 
         Console.WriteLine();
@@ -189,7 +181,7 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
         var subsEq = eqs.Select(eq => solDegreeOne.Aggregate(eq, (eq0, s) => eq0.Substitute(s.Value, s.Key)))
             .Where(eq => !eq.IsZero()).Distinct().ToArray();
         subsEq.Println("Substitute Eqs");
-        var (subs, subsEq2) = SubstitutionDegreeOne(subsEq);
+        var (subs, subsEq2) = SubstitutionDegreeOne(subsEq, mapXiDegDim);
         subs.Println();
         subsEq2.Println("Substitute Eqs2");
         var redEqs = Ring.ReducedGrobnerBasis(subsEq2);
@@ -232,17 +224,18 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
         return mapSol;
     }
 
-    private (List<(Xi, Polynomial<Cnf, Xi>)>, Polynomial<Cnf, Xi>[]) SubstitutionDegreeOne(Polynomial<Cnf, Xi>[] eqs)
+    private (List<(Xi, Polynomial<Cnf, Xi>)>, Polynomial<Cnf, Xi>[]) SubstitutionDegreeOne(Polynomial<Cnf, Xi>[] eqs,
+        Dictionary<Xi, (int deg, int dim)> mapXiDegDim)
     {
         var eqs0 = eqs.ToArray();
         var lt = new List<(Xi, Polynomial<Cnf, Xi>)>();
         while (eqs0.Any(eq => eq.Degree == 1))
         {
             var eq = eqs0.Where(eq => eq.Degree == 1)
-                .OrderBy(eq => eq.Coefs.Count)
-                .ThenByDescending(eq => eq.ExtractAllIndeterminates.Order().Last())
+                .OrderByDescending(eq => eq.ExtractAllIndeterminates.Max(xi => mapXiDegDim[xi].deg))
+                .ThenBy(eq => eq.Coefs.Count)
                 .First(eq => eq.Degree == 1);
-            var xi = eq.ExtractAllIndeterminates.Order().Last();
+            var xi = eq.ExtractAllIndeterminates.MaxBy(xi => mapXiDegDim[xi].deg);
             var ci = eq[new(eq.Indeterminates, xi)];
             var yi = -eq / ci + eq.X(xi);
             lt.Add((xi, yi));
@@ -345,31 +338,27 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
         if (xis.Length == 1 && p.Degree == 2)
         {
             var ind = xis[0];
-            var (deg, dim) = mapXi[ind];
-            var c = Cnf.Nth(deg).Simplify();
-            var f0 = p.ToKPoly(ind);
-            if (!f0.Coefs.Any(c0 => c0.E.Poly.Degree > 0))
-            {
-                var x = FG.QPoly();
-                var f = p.ToKPoly(ind).Coefs.Select((c0, i) => c0.E[0] * x.Pow(i))
-                    .Aggregate(x.Zero, (sum, xi) => sum + xi);
-
-                var X = FG.KPoly('X', c.E);
-                var P = f.Substitute(X);
-                Console.WriteLine($"Factors of {P} in splitting field {c.E.F} of Q({c})[x]");
-                var pows = IntExt.Coprimes(deg).ToArray();
-                var aroots = IntFactorisation.AlgebraicRoots(P);
-                var roots = aroots.SelectMany(r => pows.Select(c0 => new Cnf(deg, r.Poly.Substitute(c.E.Pow(c0))))
-                        .Where(cr => p.Substitute(cr, ind).IsZero()))
-                    .Distinct()
-                    .ToArray();
-                roots.Select(r => (ind, r, p.Substitute(r, ind).IsZero())).Println($"Nb possibilities:{roots.Length}");
-                return roots.Select(r => new[] { (ind, r) });
-            }
-            else
-            {
-                Console.WriteLine($"############# Faillure to solve {p} = 0");
-            }
+            var deg0 = mapXi[ind].deg;
+            var p0 = p.ToKPoly(ind);
+            var coefs0 = p0.Coefs.ToArray();
+            var deg1 = IntExt.Lcm(p0.Coefs.Select(c0 => c0.N).ToArray());
+            
+            var deg = IntExt.Lcm(deg0, deg1);
+            var e = FG.CyclotomicEPoly(deg);
+            var coefs = coefs0.Select(c0 => c0.E.Substitute(e.Pow(deg / c0.N))).ToArray();
+            var c = Cnf.Nth(deg);
+        
+            var X = FG.KPoly('X', e);
+            var P = coefs.Select((c0, i) => c0 * X.Pow(i)).Aggregate(X.Zero, (sum, xi) => sum + xi);
+            Console.WriteLine($"Factors of {P} in splitting field {e.F} of Q({e.F.x})[x] with {e.F.x} = {c}");
+            var roots = IntFactorisation.AlgebraicRoots(P).Select(r => new Cnf(deg, r))
+                .OrderByDescending(r => r.E.Poly.Coefs.All(c0 => c0.Denom == 1)) // alg. int. first
+                .ToArray();
+            roots.Select(r => (ind, r, p.Substitute(r, ind), p.Substitute(r, ind).IsZero())).Println($"Nb possibilities:{roots.Length}");
+            if (roots.Length == 0)
+                throw new();
+            
+            return roots.Select(r => new[] { (ind, r) });
         }
 
         if (xis.Length > 0)
