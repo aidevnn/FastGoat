@@ -76,6 +76,7 @@ public struct Cnf : IElt<Cnf>, IRingElt<Cnf>, IFieldElt<Cnf>
 
     public Complex ToComplex => Complex.FromPolarCoordinates(Module, Phase);
 
+    public int GetHashCodeSlow() => E.GetHashCodeSlow();
     public bool Equals(Cnf other) => (this - other).IsZero();
 
     public int CompareTo(Cnf other)

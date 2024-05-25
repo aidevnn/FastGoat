@@ -61,6 +61,8 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
         }
     }
 
+    public int GetHashCodeSlow() => Coefs.Aggregate(0, (acc, a) => (acc, a.GetHashCode()).GetHashCode());
+
     public bool Equals(KPoly<K> other) => Hash == other.Hash && Coefs.SequenceEqual(other.Coefs); // Avoid collisions
 
     public int CompareTo(KPoly<K> other)
