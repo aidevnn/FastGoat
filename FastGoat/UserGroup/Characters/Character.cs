@@ -33,10 +33,10 @@ public readonly struct Character<T> : IElt<Character<T>>, IRingElt<Character<T>>
 
     public IEnumerable<T> Kernel()
     {
-        var chiNeutral = this[Gr.Neutral()];
+        var chiNeutral = this[Gr.Neutral()]!.Value;
         foreach (var g in Gr)
         {
-            if (this[g].Equals(chiNeutral))
+            if (this[g]!.Value.Equals(chiNeutral))
                 yield return g;
         }
     }

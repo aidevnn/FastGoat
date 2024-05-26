@@ -21,36 +21,21 @@ public static class AllGroupsUptoOrder32
         maxLt = int.Max(name.Length, maxLt);
         FG.DisplayName(g, subgroups, names, showBasegroup:false, showGenerators:false, maxLt: maxLt);
 
-        if (g.Name == "SL(2,3)")
-        {
-            var gl23 = FG.GL2p(3);
-            var ctGL23 = FG.CharacterTable(gl23);
-
-            var a = gl23[1, 1, 0, 1];
-            var b = gl23[0, 1, 2, 0];
-
-            var sl23 = Group.Generate("SL(2,3)", gl23, a, b);
-            var ctSL23 = FG.CharacterTableEmpty(sl23);
-            ctSL23.DerivedSubGroupLift();
-            ctSL23.RestrictionFromSuperGroup(ctGL23);
-            ctSL23.DisplayCells(tableOnly: true);
-            Console.WriteLine();
-        }
+        var ctG = FG.CharacterTableEmpty(g);
+        if(g.GroupType == GroupType.AbelianGroup)
+            ctG.AbelianTable();
         else
         {
-            var ctG = FG.CharacterTableEmpty(g);
-            if(g.GroupType == GroupType.AbelianGroup)
-                ctG.AbelianTable();
+            ctG.DerivedSubGroupLift();
+            ctG.InductionFromStabilizers();
+            if (g.Name == "SL(2,3)")
+                ctG.SolveOrthogonality((2, new[] { 0, 1, 2 }));
             else
-            {
-                ctG.DerivedSubGroupLift();
-                ctG.InductionFromStabilizers();
                 ctG.InductionFromSubGroups(subgroups);
-            }
-            
-            ctG.DisplayCells(tableOnly: true);
-            Console.WriteLine();
         }
+            
+        ctG.DisplayCells(tableOnly: true);
+        Console.WriteLine();
     }
 
     static void DisplayGroupDetails(IEnumerable<(AllSubgroups<WElt>subsg, ANameElt[] names)> seq, bool html)
@@ -133,6 +118,7 @@ public static class AllGroupsUptoOrder32
     {
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
         DetailsGroupsUptoOrder32(html: false); // #  Time:2m59s
+        Console.Beep();
     }
 
     public static void A5()
