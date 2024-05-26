@@ -536,7 +536,7 @@ public static class GroupMatrixFormPart2
         Console.WriteLine($"Generators in {GLnC}");
         foreach (var (mat, k) in mtGL.GetGenerators().Select((mat, k) => (mat, k + 1)))
         {
-            var tr = CharacterTable<Mat>.PrettyPrintCnf(isoMt[mat].Trace.Simplify()).c;
+            var tr = FG.PrettyPrintCnf(isoMt[mat].Trace.Simplify()).c;
             Console.WriteLine($"gen{k} of class {ct.Classes.GetClassName(mat)} Tr = {tr}");
             Console.WriteLine(mat);
         }

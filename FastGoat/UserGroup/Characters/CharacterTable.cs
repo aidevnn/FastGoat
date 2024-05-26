@@ -31,7 +31,7 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
             }
         }
     }
-
+    
     public Character<T> ChiE { get; }
 
     public ConcreteGroup<T> Gr { get; }
@@ -67,6 +67,7 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
             return;
 
         NormalSubGroupLift(der);
+        InductionFromSubGroup(der);
     }
 
     public void NormalSubGroupLift(ConcreteGroup<T> normal)
@@ -80,8 +81,6 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
             if (liftState == AddCharacterState.TableFull)
                 return;
         }
-
-        InductionFromSubGroup(normal);
     }
     
     public void InductionFromStabilizers()
@@ -99,8 +98,8 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
             
             if (Gr.All(x => sg.Select(y => Gr.Op(x, y)).ToHashSet().SetEquals(sg.Select(y => Gr.Op(y, x)))))
                 NormalSubGroupLift(sg);
-            else
-                InductionFromSubGroup(sg);
+            
+            InductionFromSubGroup(sg);
         }
     }
     
@@ -119,11 +118,10 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
 
         foreach (var cj in subgroups.AllSubgroupConjugates.Where(cj => !cj.IsTrivial && cj.IsProper))
         {
-            if (!cj.IsNormal)
-                InductionFromSubGroup(cj.Representative);
-            else
+            if (cj.IsNormal)
                 NormalSubGroupLift(cj.Representative);
-
+            
+            InductionFromSubGroup(cj.Representative);
             if (TableComplete)
                 return;
         }
@@ -364,38 +362,6 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
                 rg.Aggregate(e0.Zero, (sum, r) => sum + chis[r][e.gi]!.Value * chis[r][clggi[e.gj]]!.Value).IsZero()));
     }
 
-    public static (string c, string minus_c, string conj_c, string minus_conj) PrettyPrintCnf(Cnf c)
-    {
-        var cStr = $"{c}";
-        if (!cStr.Contains(' ') || cStr.Contains('I'))
-            return (cStr, $"{-c}", $"{c.Conj}", $"{-c.Conj}");
-
-        if (c.Im.IsZero())
-        {
-            var p0 = IntFactorisation.PrettyPrintCnf(c);
-            if (!$"{p0}".Contains(Cnf.RootsOfUnit))
-            {
-                var p1 = -p0;
-                var p2 = p0;
-                var p3 = -p2;
-                return ($"{p0}", $"{p1}", $"{p2}", $"{p3}");
-            }
-        }
-        else
-        {
-            var p0 = IntFactorisation.PrettyPrintCnf(c);
-            if (!$"{p0}".Contains(Cnf.RootsOfUnit))
-            {
-                var p1 = -p0;
-                var p2 = IntFactorisation.PrettyPrintCnf(c.Conj);
-                var p3 = -p2;
-                return ($"{p0}", $"{p1}", $"{p2}", $"{p3}");
-            }
-        }
-
-        return (cStr, $"{-c}", $"{c.Conj}", $"{-c.Conj}");
-    }
-
     private string[,] PrepareTable()
     {
         var idxs = NbClasses.Range().Grid2D().ToArray();
@@ -407,7 +373,7 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
         {
             if (!cnf2str.ContainsKey(c))
             {
-                var (c0, c1, c2, c3) = PrettyPrintCnf(c);
+                var (c0, c1, c2, c3) = FG.PrettyPrintCnf(c);
                 cnf2str[c] = c0;
                 if (!c.IsZero())
                 {

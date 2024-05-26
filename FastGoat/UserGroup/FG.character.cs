@@ -106,4 +106,36 @@ public static partial class FG
 
         return new(clG, map);
     }
+    
+    public static (string c, string minus_c, string conj_c, string minus_conj) PrettyPrintCnf(Cnf c)
+    {
+        var cStr = $"{c}";
+        if (!cStr.Contains(' '))
+            return (cStr, $"{-c}", $"{c.Conj}", $"{-c.Conj}");
+
+        if (c.Im.IsZero())
+        {
+            var p0 = IntFactorisation.PrettyPrintCnf(c);
+            if (!$"{p0}".Contains(Cnf.RootsOfUnit))
+            {
+                var p1 = -p0;
+                var p2 = p0;
+                var p3 = -p2;
+                return ($"{p0}", $"{p1}", $"{p2}", $"{p3}");
+            }
+        }
+        else
+        {
+            var p0 = IntFactorisation.PrettyPrintCnf(c);
+            if (!$"{p0}".Contains(Cnf.RootsOfUnit))
+            {
+                var p1 = -p0;
+                var p2 = IntFactorisation.PrettyPrintCnf(c.Conj);
+                var p3 = -p2;
+                return ($"{p0}", $"{p1}", $"{p2}", $"{p3}");
+            }
+        }
+
+        return (cStr, $"{-c}", $"{c.Conj}", $"{-c.Conj}");
+    }
 }
