@@ -140,7 +140,7 @@ public readonly struct Cplx : IElt<Cplx>, IRingElt<Cplx>, IFieldElt<Cplx>, IVsEl
         if (Double.Abs(K.Real) < EpsSingle)
             return b0;
 
-        return $"({a0} + {b0})";
+        return $"({a0} + {b0})".Replace("+ -", "- ");
     }
 
     public Rational KZero => Rational.KZero();
