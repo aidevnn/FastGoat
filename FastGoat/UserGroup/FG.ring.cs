@@ -194,6 +194,11 @@ public static partial class FG
 
     public static KPoly<Rational> PrimitiveZPoly(this KPoly<Rational> P) => P.ZPoly().Primitive();
 
+    public static Cnf Substitute(this KPoly<Rational> P, Cnf c)
+    {
+        return new(c.N, P.Substitute(c.E));
+    }
+
     public static Rational NormB(this KPoly<Rational> P, int b)
     {
         if (b < 1)
