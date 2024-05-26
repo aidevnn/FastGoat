@@ -86,9 +86,12 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
             }
         }
 
-        Console.WriteLine();
-        Console.WriteLine(Ring.Matrix2String(mat));
-        Console.WriteLine();
+        if (Logger.Level != LogLevel.Off)
+        {
+            Console.WriteLine();
+            Console.WriteLine(Ring.Matrix2String(mat));
+            Console.WriteLine();
+        }
 
         var list = new List<Polynomial<Cnf, Xi>[]>();
         for (int i = 0; i < NbClasses; i++)
@@ -140,9 +143,12 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
             eqs.Add(xi0 * list[firstIdx][0] - xi1);
         }
 
-        Console.WriteLine();
-        Console.WriteLine(Ring.Matrix2String(Ring.Matrix(list.Count, list.SelectMany(l => l).ToArray())));
-        Console.WriteLine();
+        if (Logger.Level != LogLevel.Off)
+        {
+            Console.WriteLine();
+            Console.WriteLine(Ring.Matrix2String(Ring.Matrix(list.Count, list.SelectMany(l => l).ToArray())));
+            Console.WriteLine();
+        }
 
         var rg = NbClasses.Range();
         var Ocl = Classes.ToDictionary(e => e, e => Classes.GetClassStabx(e).Count());
@@ -175,26 +181,42 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
                 (sum, r) => sum + list[r][e.i] * list[r][clggi[e.j]])));
 
         eqs.RemoveAll(e => e.IsZero());
-        eqs.Distinct().OrderBy(eq => eq.Degree).ThenBy(eq => eq.Coefs.Count).Println("System");
+        if (Logger.Level != LogLevel.Off)
+            eqs.Distinct().OrderBy(eq => eq.Degree).ThenBy(eq => eq.Coefs.Count).Println("System");
 
         var solDegreeOne = SolveDegreOne(eqs.Where(eq => eq.Degree == 1).ToArray(), mapXiDegDim, xz);
         var subsEq = eqs.Select(eq => solDegreeOne.Aggregate(eq, (eq0, s) => eq0.Substitute(s.Value, s.Key)))
             .Where(eq => !eq.IsZero()).Distinct().ToArray();
-        subsEq.Println("Substitute Eqs");
-        var (subs, subsEq2) = SubstitutionDegreeOne(subsEq, mapXiDegDim);
-        subs.Println();
-        subsEq2.Println("Substitute Eqs2");
-        var redEqs = Ring.ReducedGrobnerBasis(subsEq2);
 
-        redEqs.Println("Reduced System");
-        Console.WriteLine();
+        if (Logger.Level != LogLevel.Off)
+            subsEq.Println("Substitute Eqs");
+        
+        var (subs, subsEq2) = SubstitutionDegreeOne(subsEq, mapXiDegDim);
+        
+        if (Logger.Level != LogLevel.Off)
+        {
+            subs.Println();
+            subsEq2.Println("Substitute Eqs2");
+        }
+        
+        var redEqs = Ring.ReducedGrobnerBasis(subsEq2);
+        
+        if (Logger.Level != LogLevel.Off)
+        {
+            redEqs.Println("Reduced System");
+            Console.WriteLine();
+        }
         var allSolutions = SolveSystem(solDegreeOne, redEqs, mapXiDegDim, xz)
             .Select(sol => ReverseSubstitution(sol, subs));
 
         var firstSol =
             allSolutions.FirstOrDefault(sol => sol.Count + 1 == xis.Length, new Dictionary<Xi, Cnf>());
-        firstSol.Println("Solutions");
-        Console.WriteLine();
+        
+        if (Logger.Level != LogLevel.Off)
+        {
+            firstSol.Println("Solutions");
+            Console.WriteLine();
+        }
         foreach (var (xi, cnf) in firstSol)
         {
             if (!mapInd.ContainsKey(xi))
@@ -285,7 +307,9 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
                 yield break;
 
             var pos0 = pos.ToArray();
-            pos0.Println("Possibility");
+            if (Logger.Level != LogLevel.Off)
+                pos0.Println("Possibility");
+            
             var subsEq = eqs.Select(eq => pos0.Aggregate(eq, (eq0, s) => eq0.Substitute(s.Item2, s.Item1)))
                 .Where(eq => !eq.IsZero()).ToArray();
 
@@ -314,8 +338,11 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
             }
             else
             {
-                subsEq.Println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ Rejected System");
-                Console.WriteLine();
+                if (Logger.Level != LogLevel.Off)
+                {
+                    subsEq.Println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ Rejected System");
+                    Console.WriteLine();
+                }
             }
         }
     }
@@ -350,11 +377,19 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
         
             var X = FG.KPoly('X', e);
             var P = coefs.Select((c0, i) => c0 * X.Pow(i)).Aggregate(X.Zero, (sum, xi) => sum + xi);
-            Console.WriteLine($"Factors of {P} in splitting field {e.F} of Q({e.F.x})[x] with {e.F.x} = {c}");
-            var roots = IntFactorisation.AlgebraicRoots(P).Select(r => new Cnf(deg, r))
+
+            var lvl = Logger.SetOff();
+            var roots = IntFactorisation.AlgebraicRoots(P).Select(r => new Cnf(deg, r).Simplify())
                 .OrderByDescending(r => r.E.Poly.Coefs.All(c0 => c0.Denom == 1)) // alg. int. first
                 .ToArray();
-            roots.Select(r => (ind, r, p.Substitute(r, ind), p.Substitute(r, ind).IsZero())).Println($"Nb possibilities:{roots.Length}");
+            Logger.Level = lvl;
+            
+            if (Logger.Level != LogLevel.Off)
+            {
+                Console.WriteLine($"Factors of {P} in splitting field {e.F} of Q({e.F.x})[x] with {e.F.x} = {c}");
+                roots.Select(r => (ind, r, p.Substitute(r, ind), p.Substitute(r, ind).IsZero()))
+                    .Println($"Nb possibilities:{roots.Length}");
+            }
             if (roots.Length == 0)
                 throw new();
             
@@ -372,7 +407,9 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
                 .ToArray();
 
             var total = seqs.Select(e => BigInteger.Pow(e.deg + 1, e.dim)).Aggregate((a0, a1) => a0 * a1);
-            seqs.Select(e => (e.xi, e.dim, e.deg, e.seq.Count)).Println($"Nb possibilities:{total}");
+
+            if (Logger.Level != LogLevel.Off)
+                seqs.Select(e => (e.xi, e.dim, e.deg, e.seq.Count)).Println($"Nb possibilities:{total}");
 
             var xseqs = seqs.Select(e => e.seq.MultiLoop(e.dim).Select(l => l.Aggregate((a0, a1) => a0 + a1))
                     .Distinct()
