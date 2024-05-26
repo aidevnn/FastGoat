@@ -508,9 +508,9 @@ public static partial class FG
             .Where(s => int.Parse(s[0]) == ord)
             .Select(s =>
             {
-                Logger.Level = LogLevel.Off;
+                var lvl = Logger.SetOff();
                 var g = WordGroup(s[1], s[2]);
-                Logger.Level = LogLevel.Level1;
+                Logger.Level = lvl;
                 return g;
             });
     }
@@ -521,9 +521,9 @@ public static partial class FG
             .Where(s => int.Parse(s[0]) >= minOrd && int.Parse(s[0]) <= maxOrder)
             .Select(s =>
             {
-                Logger.Level = LogLevel.Off;
+                var lvl = Logger.SetOff();
                 var g = WordGroup(s[1], s[2]);
-                Logger.Level = LogLevel.Level1;
+                Logger.Level = lvl;
                 return g;
             });
     }
