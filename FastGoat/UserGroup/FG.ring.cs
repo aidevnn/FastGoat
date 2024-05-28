@@ -755,8 +755,7 @@ public static partial class FG
     public static ConcreteGroup<Mat> MetaCyclicGLnp_DiagByPerm(int m, int n, int r, int dim)
     {
         // Console.WriteLine($"Solve M({m}x:{n}){r} in GL({dim},{p})");
-        var distinctTypes = IntExt.Partitions32[dim].Where(l => l.Count == l.Distinct().Count()).Select(l => l.Order().ToArray())
-            .OrderBy(l => l.Length).ToArray();
+        var distinctTypes = IntExt.Partitions32[dim].Select(l => l.Order().ToArray()).OrderBy(l => l.Length).ToArray();
         var nks = distinctTypes.Select(l => l.Aggregate((a0, a1) => a0 * a1))
             .SelectMany(e => IntExt.Dividors(e).Append(e).Where(j => j != 1)).Append(n).ToHashSet();
         foreach (var p in nks.Select(nk => IntExt.Primes10000.First(p => (p - 1) % m == 0 && (p - 1) % nk == 0)).Distinct().Order())
@@ -768,8 +767,7 @@ public static partial class FG
                 .Select(e => gl.At(gl.Neutral().Table, 0, e.K))
                 .ToArray();
             var sn = new Sn(dim);
-            var m1s = IntExt.Partitions32[dim].Where(l => l.Count == l.Distinct().Count())
-                .OrderBy(l => l.Count)
+            var m1s = IntExt.Partitions32[dim].OrderBy(l => l.Count)
                 .Select(t => IntExt.PermAndCyclesFromType(t.Order().ToArray()))
                 .Select(e =>
                 {
