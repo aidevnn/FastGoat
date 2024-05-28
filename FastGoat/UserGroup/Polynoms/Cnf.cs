@@ -136,6 +136,9 @@ public struct Cnf : IElt<Cnf>, IRingElt<Cnf>, IFieldElt<Cnf>
     public override string ToString()
     {
         var (cf, p0) = FG.CnfBasis(N).Simplify(this);
+        if (N == 4)
+            p0 = p0.Div(cf.E.F).rem;
+        
         var letter = cf.N == 4 ? "I" : $"{RootsOfUnit}{cf.N}";
         var ind = Ring.Indeterminates(letter);
         ind.SetOrder(MonomOrder.RevLex);
