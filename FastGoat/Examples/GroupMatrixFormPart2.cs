@@ -512,25 +512,23 @@ public static class GroupMatrixFormPart2
 
         var lvl = Logger.SetOff();
         var ct = FG.CharacterTableEmpty(mtGL);
-        if(mtGL.GroupType == GroupType.AbelianGroup)
+        if (mtGL.GroupType == GroupType.AbelianGroup)
             ct.AbelianTable();
         else
         {
             ct.DerivedSubGroupLift();
             ct.InductionFromStabilizers();
         }
-        
+
         if (!mtGL.Name.Contains("SL(2,3)"))
             ct.InductionFromSubGroups(mtGLSubgrs);
         else
         {
-            var gl = mtGL.Neutral().GL;
-            var m0 = new [] { 4, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0 };
-            var m1 = gl.N == 4
-                ? gl.Create(m0)
-                : gl.Create(MatrixExt.MergeDiagonalBlocks(([1], 1), (m0, 4)));
-            var mtGLSuper = Group.Generate("H", gl, mtGL.GetGenerators().Append(m1).ToArray());
-            ct.RestrictionFromSuperGroup(mtGLSuper);
+            // independant from representation and from super group
+            if (mtGL.Count() == 24)
+                ct.SolveOrthogonality((2, 3.Range()));
+            else
+                ct.SolveOrthogonality((2, 6.Range()));
         }
 
         Console.WriteLine($"Generators in {GLnC}");
@@ -551,7 +549,7 @@ public static class GroupMatrixFormPart2
 
         // var isoMt = Group.IsomorphismMap(mtGL, mtGLnC, gens.ToDictionary(kv => kv.Value, kv => kv.Key));
         var map = ct.Classes.ToDictionary(cl => cl, cl => isoMt[cl].Trace);
-        var chiMt = new Character<Mat>(ct.Classes, map.ToDictionary(kv => kv.Key, kv => new Nullable<Cnf>(kv.Value)));
+        var chiMt = new Character<Mat>(ct.Classes, map.ToDictionary(kv => kv.Key, kv => (Cnf?)kv.Value.Simplify()));
 
         var allChis = ct.AllCharacters.Order().Select((chi, k) => (chi, k: k + 1)).ToArray();
         for (int i = 1; i <= n; i++)
@@ -620,11 +618,11 @@ public static class GroupMatrixFormPart2
     public static void ExampleGroupOrderUpTo63()
     {
         Ring.MatrixDisplayForm = Ring.MatrixDisplay.OneLineArray;
-        MatrixFormGroupsOfOrder(minOrd: 1, maxOrd: 32);
+        MatrixFormGroupsOfOrder(minOrd: 1, maxOrd: 63);
         // Missing:0 Found:319/319
         // # END Time:4m39s
     }
-    
+
     public static void ExampleMetaCyclicGroupsRepresentations()
     {
         GlobalStopWatch.Restart();
