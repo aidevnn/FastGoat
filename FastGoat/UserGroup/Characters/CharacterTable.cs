@@ -16,7 +16,7 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
         NbClasses = Classes.Count();
         AllCharacters = NbClasses.Range().Select(i => one.Zero).ToArray();
         ChiE = AllCharacters[0] = one;
-        
+
         if (!empty)
         {
             if (gr.GroupType == GroupType.AbelianGroup)
@@ -31,7 +31,7 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
             }
         }
     }
-    
+
     public Character<T> ChiE { get; }
 
     public ConcreteGroup<T> Gr { get; }
@@ -53,12 +53,12 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
         if (Gr.GroupType != GroupType.AbelianGroup)
             throw new GroupException(GroupExceptionType.GroupDef);
 
-        AllCharacters = FG.LinearCharacters(Gr).Select(chi => chi.Simplify()).ToArray();
+        AllCharacters = FG.LinearCharacters(Gr).Order().ToArray();
     }
 
     public void DerivedSubGroupLift()
     {
-        if(TableComplete)
+        if (TableComplete)
             return;
 
         var der = Group.Derived(Gr);
@@ -82,32 +82,32 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
                 return;
         }
     }
-    
+
     public void InductionFromStabilizers()
     {
         if (TableComplete)
             return;
 
         var stabilizers = Classes.Skip(1)
-                .Select(e => Group.Generate($"Stab({Classes.GetClassName(e)})", Gr, Classes.GetClassStabx(e).ToArray()))
-                .Where(sg => sg.Count() != Gr.Count());
+            .Select(e => Group.Generate($"Stab({Classes.GetClassName(e)})", Gr, Classes.GetClassStabx(e).ToArray()))
+            .Where(sg => sg.Count() != Gr.Count());
         foreach (var sg in stabilizers)
         {
             if (TableComplete)
                 break;
-            
+
             if (Gr.All(x => sg.Select(y => Gr.Op(x, y)).ToHashSet().SetEquals(sg.Select(y => Gr.Op(y, x)))))
                 NormalSubGroupLift(sg);
-            
+
             InductionFromSubGroup(sg);
         }
     }
-    
+
     public void InductionFromSubGroups()
     {
         if (TableComplete)
             return;
-        
+
         InductionFromSubGroups(Gr.AllSubgroups());
     }
 
@@ -120,7 +120,7 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
         {
             if (cj.IsNormal)
                 NormalSubGroupLift(cj.Representative);
-            
+
             InductionFromSubGroup(cj.Representative);
             if (TableComplete)
                 return;
@@ -176,9 +176,9 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
         );
 
         var c0 = AllCharacters[idx][e];
-        foreach (var (k,v) in map.ToArray())
+        foreach (var (k, v) in map.ToArray())
             map[k] = v / c0;
-        
+
         AllCharacters[idx] = new(Classes, map);
         return true;
     }
@@ -322,7 +322,7 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
                 var dim = chi2[e]!.Value.Module;
                 var idx = todoChis.FindIndex(c => c.c[e].HasValue && c.c[e]!.Value.Module.Equals(dim));
                 var (_, i) = idx == -1 ? todoChis.First() : todoChis[idx];
-                AllCharacters[i] = chi2.Simplify();
+                AllCharacters[i] = chi2;
                 return (todoChis.Count > 1 ? AddCharacterState.Done : AddCharacterState.TableFull, chi2);
             }
 
@@ -365,7 +365,8 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
     private string[,] PrepareTable()
     {
         var idxs = NbClasses.Range().Grid2D().ToArray();
-        var allCnfs = idxs.Select(e => AllCharacters[e.t1][Classes.GetRepresentative(e.t2)])
+        var allCnfs = idxs.Where(e => !AllCharacters[e.t1].IsLinear)
+            .Select(e => AllCharacters[e.t1][Classes.GetRepresentative(e.t2)])
             .Where(e => e.HasValue).Select(e => e!.Value.Simplify()).ToHashSet();
         var cnf2str = new Dictionary<Cnf, string>(NbClasses.Pow(2));
 
@@ -390,8 +391,12 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
         var cellStrs = new string[NbClasses, NbClasses];
         foreach (var (i, j) in idxs)
         {
-            var c = AllCharacters[i][Classes.GetRepresentative(j)];
-            cellStrs[i, j] = !c.HasValue ? "#" : " " + cnf2str[c.Value];
+            var chi = AllCharacters[i];
+            var c = chi[Classes.GetRepresentative(j)];
+            if (!chi.IsLinear)
+                cellStrs[i, j] = !c.HasValue ? "#" : $" {cnf2str[c.Value]}";
+            else
+                cellStrs[i, j] = !c.HasValue ? "#" : $" {c.Value}";
         }
 
         return cellStrs;

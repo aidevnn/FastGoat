@@ -36,23 +36,20 @@ public static partial class FG
         if (gr.GroupType == GroupType.NonAbelianGroup)
             throw new GroupException(GroupExceptionType.GroupDef);
 
-        var facts = AbelianInvariantsFactors.Reduce(gr).ToArray();
-        var gr0 = Abelian(facts);
-        var isoMap = Group.AllMorphisms(gr, gr0, Group.MorphismType.Isomorphism).First();
+        var Gab = gr.AbelianDirectSum();
         var o = gr.Count();
-        var w = new Cnf(o);
-        var wi = facts.Select(i => w.Pow(o / i)).ToArray();
         var clG = Group.ConjugacyClasses(gr);
-        var rg = facts.Length.Range();
-
-        var ct = new List<Character<T>>();
-        foreach (var h1 in gr0)
+        var oi = Gab.Decomp.Select((e, k) => (e.o, k)).ToArray();
+        var ct = new List<Character<T>>(gr.Count() * 2);
+        foreach (var h1 in Gab.AbCanonic)
         {
-            var mapChi = clG.ToDictionary(e => e, _ => (Cnf?)Cnf.CnfZero);
-            foreach (var g2 in gr)
+            var mapChi = gr.ToDictionary(e => e, _ => (Cnf?)Cnf.CnfZero);
+            foreach (var h2 in Gab.AbCanonic)
             {
-                var h2 = isoMap[g2];
-                mapChi[g2] = rg.Aggregate(w.One, (prod, i) => prod * wi[i].Pow(h1.Ei[i].K * h2.Ei[i].K));
+                var g2 = Gab.CanToGElt(h2);
+                var sum = oi.Aggregate(0, (sum, e) => (sum + o / e.o * h1.Ei[e.k].K * h2.Ei[e.k].K) % o);
+                var k = IntExt.Gcd(sum, o);
+                mapChi[g2] = Cnf.Nth(o / k).Pow(sum / k).Simplify();
             }
 
             ct.Add(new(clG, mapChi));

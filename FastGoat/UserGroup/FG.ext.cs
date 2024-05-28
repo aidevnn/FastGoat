@@ -447,8 +447,6 @@ public static partial class FG
             subsg.Parent.Name = g.Name;
 
         DisplayBox(subsg, 0, rename, showBasegroup, showGenerators, maxLt);
-        if (Console.CursorTop > 0)
-            Console.CursorTop--;
         names.Println("Group names");
         Console.WriteLine();
     }

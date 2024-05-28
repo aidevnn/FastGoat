@@ -15,8 +15,7 @@ public readonly struct Character<T> : IElt<Character<T>>, IRingElt<Character<T>>
     {
         Classes = Group.ConjugacyClasses(gr);
         var map = Map = Classes.ToDictionary(e => e, _ => (Cnf?)Cnf.CnfOne);
-        Hash = Classes.Aggregate(0,
-            (hash, g) => (hash, map[g].HasValue ? map[g]!.Value.Simplify().GetHashCodeSlow() : 0).GetHashCode());
+        Hash = Classes.Aggregate(0, (hash, g) => (hash, map[g]!.Value.GetHashCodeSlow()).GetHashCode());
     }
 
     public Character(ConjugacyClasses<T> classes, Dictionary<T, Cnf?> map)
@@ -24,7 +23,7 @@ public readonly struct Character<T> : IElt<Character<T>>, IRingElt<Character<T>>
         Map = map;
         Classes = classes;
         Hash = Classes.Aggregate(0,
-            (hash, g) => (hash, map[g].HasValue ? map[g]!.Value.Simplify().GetHashCodeSlow() : 0).GetHashCode());
+            (hash, g) => (hash, map[g].HasValue ? map[g]!.Value.GetHashCodeSlow() : 0).GetHashCode());
     }
 
     public Dictionary<T, Cnf?> Map { get; }

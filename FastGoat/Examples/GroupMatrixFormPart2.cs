@@ -538,7 +538,7 @@ public static class GroupMatrixFormPart2
         {
             var tr = FG.PrettyPrintCnf(isoMt[mat].Trace.Simplify()).c;
             Console.WriteLine($"gen{k} of class {ct.Classes.GetClassName(mat)} Tr = {tr}");
-            Console.WriteLine(mat);
+            Console.WriteLine(isoMt[mat]);
         }
 
         // var mtGLnC = Group.Generate(mtGL.Name, GLnC, gens.Keys.ToArray());
@@ -645,8 +645,7 @@ public static class GroupMatrixFormPart2
     {
         GlobalStopWatch.Restart();
         var maxOrd = 32;
-        foreach (var (g, mtGL, matSubgrs, names) in maxOrd.Range(1)
-                     .SelectMany(o => FG.AllGroupsOfOrder(o).Select(sg => MatrixFormOfGroup(sg))))
+        foreach (var (g, mtGL, matSubgrs, names) in FG.AllGroupsOfOrder(1, maxOrd).Select(sg => MatrixFormOfGroup(sg)))
         {
             FG.DisplayName(mtGL, matSubgrs, names, false, false, true, 20);
             GetCharacter(mtGL, matSubgrs);

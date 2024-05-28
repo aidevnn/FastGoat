@@ -117,7 +117,7 @@ public static class AllGroupsUptoOrder32
     public static void Run()
     {
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
-        DetailsGroupsUptoOrder32(html: false); // #  Time:2m59s
+        DetailsGroupsUptoOrder32(html: false); // #  Time:1m32s
         Console.Beep();
     }
 
