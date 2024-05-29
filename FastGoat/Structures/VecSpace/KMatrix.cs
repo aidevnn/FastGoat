@@ -269,6 +269,8 @@ public struct KMatrix<K> : IVsElt<K, KMatrix<K>>, IElt<KMatrix<K>>, IRingElt<KMa
         return (nullity, new(coeffs));
     }
 
+    public KMatrix<K> CoMatrix => new(Ring.CoMatrix(Coefs, KZero));
+
     public K Det => Ring.DeterminantByPivot(Coefs);
 
     public K Trace

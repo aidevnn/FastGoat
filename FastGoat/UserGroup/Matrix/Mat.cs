@@ -80,6 +80,16 @@ public struct Mat : IElt<Mat>
     }
 
     public int Det => GL.Det(this);
+    public int Trace 
+    {
+        get
+        {
+            var n = GL.N;
+            var t0 = Table;
+            return n.SeqLazy().Sum(k => t0[k * (n + 1)]) % GL.P;
+        }
+    }
+    
     public Mat T 
     {
         get
