@@ -291,7 +291,7 @@ public static partial class IntFactorisation
             var prod = L.Aggregate(g.One, (acc, h) => acc * h);
             var seq = L.Glue(" * ", "({0})");
             Console.WriteLine($"{prod} = {seq}");
-            Console.WriteLine($"Are equals {f.Substitute(g.X).Equals(prod)}");
+            Console.WriteLine($"Are equals {f.Substitute(g.X).Monic.Equals(prod.Monic)}");
             Console.WriteLine();
         }
 
