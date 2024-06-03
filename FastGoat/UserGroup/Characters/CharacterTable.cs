@@ -96,7 +96,7 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
             if (TableComplete)
                 break;
 
-            if (Gr.All(x => sg.Select(y => Gr.Op(x, y)).ToHashSet().SetEquals(sg.Select(y => Gr.Op(y, x)))))
+            if (Group.IsNormalSubgroup(Gr, sg))
                 NormalSubGroupLift(sg);
 
             InductionFromSubGroup(sg);

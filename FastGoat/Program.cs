@@ -32,3 +32,18 @@ using GroupRegX = System.Text.RegularExpressions;
 //////////////////////////////////
 
 Console.WriteLine("Hello World");
+
+{
+    var s5 = FG.Symmetric(4);
+    var ct = FG.CharacterTableEmpty(s5);
+    ct.DerivedSubGroupLift();
+    ct.InductionFromStabilizers();
+    ct.DisplayCells();
+    
+    var sub = s5.AllSubgroups();
+    sub.Naming();
+    foreach (var cj in sub)
+    {
+        Console.WriteLine($"{cj} {cj.IsNormal}/{Group.IsNormalSubgroup(s5, cj.Representative)}");
+    }
+}

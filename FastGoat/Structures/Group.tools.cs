@@ -94,6 +94,15 @@ public static partial class Group
         return AllOrbits(gr, gr.ToArray(), act);
     }
 
+    public static bool IsNormalSubgroup<T>(ConcreteGroup<T> g, ConcreteGroup<T> n) where T : struct, IElt<T>
+    {
+        if (!n.SubSetOf(g))
+            throw new GroupException(GroupExceptionType.NotNormal);
+
+        var orbx = Orbits(g.GetGenerators().ToHashSet(), ByConjugateSet(g), n.ToSet());
+        return orbx.Count == 1;
+    }
+
     public static (string name, T repr, HashSet<T> stabx, HashSet<T> orbx)[] AllConjugacyClassesNames<T>(ConcreteGroup<T> gr)
         where T : struct, IElt<T>
     {
