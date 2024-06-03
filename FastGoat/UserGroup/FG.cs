@@ -233,7 +233,7 @@ public static partial class FG
         if (IntExt.PowMod(r, n, m) != 1 || IntExt.Gcd(r, m) != 1)
             throw new GroupException(GroupExceptionType.GroupDef);
 
-        var name = IntExt.Gcd(m, n * (r - 1)) == 1 ? $"Frob({m},{n},{r})" : $"MtCyc({m},{n},{r})";
+        var name = IntExt.Gcd(m, n * (r - 1)) == 1 ? $"F({m}x:{n}){r}" : $"M({m}x:{n}){r}";
         return WordGroup(name, $"a{m}, b{n}, b-1ab = a{r}");
     }
 
@@ -249,7 +249,7 @@ public static partial class FG
         var aut = Group.Generate(autCm, g1);
         var pMap = Group.PartialMap((cn[0], autCm.Neutral()), (cn[1], g1));
         var theta = Group.Hom(cn, Group.HomomorphismMap(cn, aut, pMap));
-        var name = IntExt.Gcd(m, n * (r - 1)) == 1 ? $"Frob({m},{n},{r})" : $"MtCyc({m},{n},{r})";
+        var name = IntExt.Gcd(m, n * (r - 1)) == 1 ? $"F({m},{n},{r})" : $"M({m},{n},{r})";
         return Group.SemiDirectProd(name, cm, theta, cn);
     }
 
