@@ -122,7 +122,8 @@ public static partial class FG
     public static KPoly<ZnInt> ToZnPoly(this KPoly<Rational> P, int p) =>
         new(P.x, ZnInt.ZnZero(p), P.Coefs.Select(c => c.ToZnInt(p)).ToArray());
 
-    public static KPoly<Cplx> ToCPoly(this KPoly<Rational> P) => new(P.x, Cplx.CZero, P.Coefs.Select(c => c * Cplx.COne).ToArray());
+    public static KPoly<Cplx> ToCPoly(this KPoly<Rational> P) =>
+        new(P.x, Cplx.CZero, P.Coefs.Select(c => c * Cplx.COne).ToArray());
 
     public static KPoly<BigReal> ToBrPoly(this KPoly<Rational> P, int O = 40) =>
         new(P.x, BigReal.BrZero(O), P.Coefs.Select(c => BigReal.BrOne(O) * BigReal.FromRational(c, O)).ToArray());
@@ -197,6 +198,54 @@ public static partial class FG
     public static Cnf Substitute(this KPoly<Rational> P, Cnf c)
     {
         return new(c.N, P.Substitute(c.E));
+    }
+
+    public static KPoly<Cnf> ToCnfPoly(this KPoly<EPoly<Rational>> P)
+    {
+        var Fs = P.Coefs.Select(c => c.F).Distinct().ToArray();
+        var keys = CyclotomicPolynomials.Where(e => e.Value.Coefs.SequenceEqual(Fs[0].Coefs)).Take(1).ToArray();
+        if (Fs.Length != 1 || keys.Length != 1)
+        {
+            keys.Println("Keys");
+            throw new($"Fs:{Fs.Glue(", ")}");
+        }
+
+        var N = keys[0].Key;
+        var arr = P.Coefs.Select(c => new Cnf(N, c)).ToArray();
+        return new('X', Cnf.CnfZero, arr);
+    }
+
+    public static KPoly<Cnf> ToCnfPoly(this KPoly<EPoly<Rational>> P, int N)
+    {
+        var pol = CyclotomicPolynomial(N);
+        var Fs = P.Coefs.Select(c => c.F).Distinct().ToArray();
+        if (Fs.Length != 1 || !Fs[0].Coefs.SequenceEqual(pol.Coefs))
+            throw new($"Fs:{Fs.Glue(", ")}");
+
+        var arr = P.Coefs.Select(c => new Cnf(N, c)).ToArray();
+        return new('X', Cnf.CnfZero, arr);
+    }
+
+    public static KPoly<Cnf> ToCnfPoly(this KPoly<Cnf> P, int N)
+    {
+        return new('X', Cnf.CnfZero, P.Coefs.Select(c => c.ToCnfN(N)).ToArray());
+    }
+
+    public static Cnf ToCnfN(this Cnf c, int N)
+    {
+        var lcm = (N * c.N) / (IntExt.Gcd(N, c.N));
+        var a = CyclotomicEPoly(lcm);
+        var a1 = a.Pow(lcm / c.N);
+        return new(lcm, c.E.Substitute(a1));
+    }
+
+    public static KPoly<EPoly<Rational>> ToEPolyX(this KPoly<Cnf> P, char x = 'X', char y = 'y')
+    {
+        var Ns = P.Coefs.Select(c => c.N).ToArray();
+        var lcm = IntExt.Lcm(Ns);
+        var a = CyclotomicEPoly(lcm);
+        var arr = P.Coefs.Select(c => c.E.Substitute(a.Pow(lcm / c.N))).ToArray();
+        return new(x, a.Zero, arr);
     }
 
     public static Rational NormB(this KPoly<Rational> P, int b)
@@ -553,7 +602,8 @@ public static partial class FG
     {
         if (q < 2 || IntExt.PrimesDec(q).Count > 2 || (!special && GUnqOrder(2, q) > MatrixGroupMaxOrder) ||
             (special && SUnqOrder(2, q) > MatrixGroupMaxOrder))
-            throw new($"Out of bounds, q={q} not prime p^r or GU(2,q)>{MatrixGroupMaxOrder} or SU(2,q)>{MatrixGroupMaxOrder}");
+            throw new(
+                $"Out of bounds, q={q} not prime p^r or GU(2,q)>{MatrixGroupMaxOrder} or SU(2,q)>{MatrixGroupMaxOrder}");
 
         var q2 = q * q;
         var Glnq = new GLnq(2, q2);
@@ -609,7 +659,8 @@ public static partial class FG
     {
         if (q < 2 || IntExt.PrimesDec(q).Count != 1 || (!special && GOnqOrder(3, q) > MatrixGroupMaxOrder) ||
             (special && SOnqOrder(3, q) > MatrixGroupMaxOrder))
-            throw new($"Out of bounds, q={q} not prime p^r or GO(3,q)>{MatrixGroupMaxOrder} or SO(3,q)>{MatrixGroupMaxOrder}");
+            throw new(
+                $"Out of bounds, q={q} not prime p^r or GO(3,q)>{MatrixGroupMaxOrder} or SO(3,q)>{MatrixGroupMaxOrder}");
 
         int OrderMatOrth(EPoly<ZnInt> x0, EPoly<ZnInt> y0)
         {
@@ -758,7 +809,8 @@ public static partial class FG
         var distinctTypes = IntExt.Partitions32[dim].Select(l => l.Order().ToArray()).OrderBy(l => l.Length).ToArray();
         var nks = distinctTypes.Select(l => l.Aggregate((a0, a1) => a0 * a1))
             .SelectMany(e => IntExt.Dividors(e).Append(e).Where(j => j != 1)).Append(n).ToHashSet();
-        foreach (var p in nks.Select(nk => IntExt.Primes10000.First(p => (p - 1) % m == 0 && (p - 1) % nk == 0)).Distinct().Order())
+        foreach (var p in nks.Select(nk => IntExt.Primes10000.First(p => (p - 1) % m == 0 && (p - 1) % nk == 0))
+                     .Distinct().Order())
         {
             var Up = UnInt(p);
             var gl = new GL(dim, p);
@@ -779,7 +831,8 @@ public static partial class FG
                         .Where(mat => mat.IsOrder(n))
                         .Select(mat => (e.perm, e.cycles, mat));
                 })
-                .SelectMany(e => e);
+                .SelectMany(e => e)
+                .AsParallel();
 
             foreach (var (perm, cycles, m1) in m1s)
             {
@@ -801,7 +854,7 @@ public static partial class FG
                     var m0 = gl.Create(arr);
                     if (m0.IsOrder(m) && gl.Op(m1i, gl.Op(m0, m1)).Equals(gl.Times(m0, r)))
                     {
-                        var name = IntExt.Gcd(m, n * (r - 1)) == 1 ? $"Frob({m},{n},{r})" : $"MtCyc({m},{n},{r})";
+                        var name = IntExt.Gcd(m, n * (r - 1)) == 1 ? $"F({m}x:{n}){r}" : $"M({m}x:{n}){r}";
                         var mtGL = Group.Generate(name, gl, m0, m1);
                         if (mtGL.Count() == m * n)
                             return mtGL;
