@@ -22,6 +22,7 @@ public struct Cnf : IElt<Cnf>, IRingElt<Cnf>, IFieldElt<Cnf>
     public static Cnf CnfZero { get; }
     public static Cnf CnfOne { get; }
     public static Cnf I { get; }
+    public static KPoly<Cnf> X => FG.KPoly('X', CnfOne);
     public int N { get; }
     public EPoly<Rational> E { get; }
 
