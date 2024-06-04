@@ -648,8 +648,30 @@ public static class GroupMatrixFormPart2
     public static void ExampleGroupsRepresentations()
     {
         GlobalStopWatch.Restart();
-        var maxOrd = 32;
+        var maxOrd = 48;
         foreach (var (g, mtGL, matSubgrs, names) in FG.AllGroupsOfOrder(1, maxOrd).Select(sg => MatrixFormOfGroup(sg)))
+        {
+            FG.DisplayName(mtGL, matSubgrs, names, false, false, true, 20);
+            GetCharacter(mtGL, matSubgrs);
+        }
+
+        GlobalStopWatch.Show("END");
+        Console.Beep();
+        
+        // All groups of order up to 48
+        // END Time:11m50s
+        //
+        // Irreductible:141 groups
+        // Reductible, Isotypic components:107 groups
+        // Non Isotypic decomposition:2 groups, C2 x SL(2,3), SL(2,3) x: C2
+    }
+
+    public static void ExampleNonIsotypicDecomposition()
+    {
+        GlobalStopWatch.Restart();
+        var c2sl23 = FG.WordGroup("C2 x SL(2,3)", "a4, b3, c2, ababab, caca-1, cbcb-1, a2ba2b-1");
+        var sl23byc2 = FG.WordGroup("SL(2,3) x: C2", "a4, c3, a2b2, abab, acacac, cbc-1b-1");
+        foreach (var (g, mtGL, matSubgrs, names) in new[] { c2sl23, sl23byc2 }.Select(sg => MatrixFormOfGroup(sg)))
         {
             FG.DisplayName(mtGL, matSubgrs, names, false, false, true, 20);
             GetCharacter(mtGL, matSubgrs);
