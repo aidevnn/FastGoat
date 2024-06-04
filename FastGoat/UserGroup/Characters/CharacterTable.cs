@@ -160,11 +160,12 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
         }
     }
 
-    private bool RegularCharacter()
+    private Character<T> RegularCharacter()
     {
         if (AllCharacters.Count(chi => !chi.HasAllValues) != 1)
-            return false;
+            return ChiE;
 
+        SolveSumSquare();
         var e = Gr.Neutral();
         var doneChis = DoneChis;
         var idx = AllCharacters.ToList().FindIndex(chi => !chi.HasAllValues);
@@ -179,8 +180,7 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
         foreach (var (k, v) in map.ToArray())
             map[k] = v / c0;
 
-        AllCharacters[idx] = new(Classes, map);
-        return true;
+        return new Character<T>(Classes, map);
     }
 
     public void InductionFromSubGroup(ConcreteGroup<T> subGr)
@@ -198,7 +198,7 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
         {
             var ind = FG.Induction(chi, Classes);
             var indState = AddCharacter(ind);
-            if (indState == AddCharacterState.TableFull || RegularCharacter())
+            if (indState == AddCharacterState.TableFull)
                 return;
         }
     }
@@ -217,7 +217,7 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
         {
             var ind = FG.Induction(chi, Classes);
             var indState = AddCharacter(ind);
-            if (indState == AddCharacterState.TableFull || RegularCharacter())
+            if (indState == AddCharacterState.TableFull)
                 return;
         }
     }
@@ -243,7 +243,7 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
         {
             var res = FG.Restriction(chi, Classes);
             var resState = AddCharacter(res);
-            if (resState == AddCharacterState.TableFull || RegularCharacter())
+            if (resState == AddCharacterState.TableFull)
                 return;
         }
     }
@@ -268,7 +268,7 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
         {
             var res = FG.Restriction(chi, Classes);
             var resState = AddCharacter(res);
-            if (resState == AddCharacterState.TableFull || RegularCharacter())
+            if (resState == AddCharacterState.TableFull)
                 return;
         }
     }
@@ -286,10 +286,16 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
                 {
                     var chi3 = chi2 * chiLinear;
                     var (chiLinState, _) = AddCharacterInternal(chi3);
-                    // Console.WriteLine(new { chiLinState, chiLinear, chi2, chi3 });
                     if (chiLinState == AddCharacterState.TableFull)
                         return AddCharacterState.TableFull;
                 }
+            }
+
+            var reg = RegularCharacter();
+            if (!reg.IsIdentity)
+            {
+                AddCharacterInternal(reg);
+                return AddCharacterState.TableFull;
             }
         }
 
