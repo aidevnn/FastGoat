@@ -323,7 +323,7 @@ public static partial class IntFactorisation
         var (P1, c) = ConstCoef(P, monic: true);
         P1 = P1.Monic;
         var D = P1[1].Pow(2) - 4 * P1[0];
-        var (numD, _) = D.Decomp();
+        var (numD, _) = new Rational(D.Sign * IntExt.LcmBigInt(D.Num * D.Sign, D.Denom)).Decomp();
         var numD0 = numD.Where(e => e.Item2 % 2 != 0).ToArray();
         if (numD0.Length == 0)
             throw new("P must be irreductible");
