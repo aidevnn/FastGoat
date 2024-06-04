@@ -190,42 +190,53 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
 
         if (Logger.Level != LogLevel.Off)
             subsEq.Println("Substitute Eqs");
-        
+
         var (subs, subsEq2) = SubstitutionDegreeOne(subsEq, mapXiDegDim);
-        
+
         if (Logger.Level != LogLevel.Off)
         {
             subs.Println();
             subsEq2.Println("Substitute Eqs2");
         }
-        
+
         var redEqs = Ring.ReducedGrobnerBasis(subsEq2);
-        
+
         if (Logger.Level != LogLevel.Off)
         {
             redEqs.Println("Reduced System");
             Console.WriteLine();
         }
+
         var allSolutions = SolveSystem(solDegreeOne, redEqs, mapXiDegDim, xz)
             .Select(sol => ReverseSubstitution(sol, subs));
 
         var firstSol =
             allSolutions.FirstOrDefault(sol => sol.Count + 1 == xis.Length, new Dictionary<Xi, Cnf>());
-        
+
         if (Logger.Level != LogLevel.Off)
         {
             firstSol.Println("Solutions");
             Console.WriteLine();
         }
-        foreach (var (xi, cnf) in firstSol)
+        
+        var chis = AllCharacters.Select(chi => new Character<T>(Classes, chi.Map)).ToArray();
+        var todoIdx = todoChis.Select(e => e.k).ToHashSet();
+        foreach (var groupXis in firstSol.Where(e => mapInd.ContainsKey(e.Key)).GroupBy(e => mapInd[e.Key].Item1))
         {
-            if (!mapInd.ContainsKey(xi))
+            var chiMap = chis[groupXis.Key].Map.ToDictionary(kv => kv.Key, kv => kv.Value);
+            foreach (var (xi, cnf) in groupXis)
+            {
+                var j = mapInd[xi].Item2;
+                chiMap[Classes.GetRepresentative(j)] = cnf;
+            }
+            
+            var chi = chis[groupXis.Key] = new Character<T>(Classes, chiMap);
+            if (!chi.HasAllValues || !todoIdx.Contains(groupXis.Key))
                 continue;
 
-            var (i, j) = mapInd[xi];
-            var chiMap = AllCharacters[i].Map.ToDictionary(kv => kv.Key, kv => kv.Value);
-            chiMap[Classes.GetRepresentative(j)] = cnf;
-            AllCharacters[i] = new(Classes, chiMap);
+            var state = AddCharacter(chi);
+            if (state == AddCharacterState.TableFull)
+                break;
         }
     }
 
@@ -309,7 +320,7 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
             var pos0 = pos.ToArray();
             if (Logger.Level != LogLevel.Off)
                 pos0.Println("Possibility");
-            
+
             var subsEq = eqs.Select(eq => pos0.Aggregate(eq, (eq0, s) => eq0.Substitute(s.Item2, s.Item1)))
                 .Where(eq => !eq.IsZero()).ToArray();
 
@@ -369,12 +380,12 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
             var p0 = p.ToKPoly(ind);
             var coefs0 = p0.Coefs.ToArray();
             var deg1 = IntExt.Lcm(p0.Coefs.Select(c0 => c0.N).ToArray());
-            
+
             var deg = IntExt.Lcm(deg0, deg1);
             var e = FG.CyclotomicEPoly(deg);
             var coefs = coefs0.Select(c0 => c0.E.Substitute(e.Pow(deg / c0.N))).ToArray();
             var c = Cnf.Nth(deg);
-        
+
             var X = FG.KPoly('X', e);
             var P = coefs.Select((c0, i) => c0 * X.Pow(i)).Aggregate(X.Zero, (sum, xi) => sum + xi);
 
@@ -383,16 +394,17 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
                 .OrderByDescending(r => r.E.Poly.Coefs.All(c0 => c0.Denom == 1)) // alg. int. first
                 .ToArray();
             Logger.Level = lvl;
-            
+
             if (Logger.Level != LogLevel.Off)
             {
                 Console.WriteLine($"Factors of {P} in splitting field {e.F} of Q({e.F.x})[x] with {e.F.x} = {c}");
                 roots.Select(r => (ind, r, p.Substitute(r, ind), p.Substitute(r, ind).IsZero()))
                     .Println($"Nb possibilities:{roots.Length}");
             }
+
             if (roots.Length == 0)
                 throw new();
-            
+
             return roots.Select(r => new[] { (ind, r) });
         }
 
