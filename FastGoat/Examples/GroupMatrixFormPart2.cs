@@ -539,42 +539,48 @@ public static class GroupMatrixFormPart2
             Console.WriteLine(isoMt[mat]);
         }
 
+        Console.WriteLine();
+
         // var mtGLnC = Group.Generate(mtGL.Name, GLnC, gens.Keys.ToArray());
         // if (!mtGLnC.SetEquals(isoMt.Values))
         //     throw new();
         // if (!mtGL.IsIsomorphicTo(mtGLnC))
         //     throw new();
 
-        var found = false;
+        ct.AllCharacters = ct.AllCharacters.Order().ToArray();
 
         // var isoMt = Group.IsomorphismMap(mtGL, mtGLnC, gens.ToDictionary(kv => kv.Value, kv => kv.Key));
         var map = ct.Classes.ToDictionary(cl => cl, cl => isoMt[cl].Trace);
         var chiMt = new Character<Mat>(ct.Classes, map.ToDictionary(kv => kv.Key, kv => (Cnf?)kv.Value.Simplify()));
 
-        var allChis = ct.AllCharacters.Order().Select((chi, k) => (chi, k: k + 1)).ToArray();
-        for (int i = 1; i <= n; i++)
+        var chiDecomp = ct.AllCharacters.Select((chi, k) => (chi, k))
+            .Select(e => (FG.InnerProduct(e.chi, chiMt).Simplify(), e.k))
+            .Where(e => !e.Item1.IsZero())
+            .ToArray();
+
+        var isIrreductible = (FG.InnerProduct(chiMt, chiMt) - Cnf.CnfOne).IsZero();
+        var head = isIrreductible ? $"Ꭓ.{chiDecomp[0].k + 1}" : "ρ";
+        var isIsotypic = chiDecomp.All(e =>
+            e.Item1.Im.IsZero() && e.Item1.Re.E.Degree == 0 && e.Item1.Re.E[0].Num.Sign == 1);
+
+        Console.WriteLine($"Character Irreductible:{isIrreductible}");
+        Console.WriteLine($"{head} = {chiMt}");
+        if (!isIrreductible)
         {
-            var chis = IntExt.YieldCombsKinN(i, allChis.Length)
-                .Select(l => l.Zip(allChis).Where(fs => fs.First).Select(fs => fs.Second).ToArray())
-                .Select(ck => (chi: ck.Select(ck0 => ck0.chi).Aggregate((a0, a1) => a0 + a1),
-                    ks: ck.Select(ck0 => ck0.k).ToArray()))
-                .FirstOrDefault(ck => ck.chi.Equals(chiMt), (chi: chiMt.Zero, ks: new int[0]));
-
-            if (chis.ks.Length != 0)
-            {
-                Console.WriteLine();
-                Console.WriteLine($"Character");
-                Console.WriteLine($"{chis.ks.Glue(" + ", "Ꭓ.{0}")} = {chiMt}");
-                found = true;
-                break;
-            }
+            if (isIsotypic)
+                Console.WriteLine("Isotypic components: {0}", 
+                    chiDecomp.Select(e => $"{((e.Item1 - 1).IsZero() ? "" : e.Item1)}Ꭓ.{e.Item2 + 1}").Glue(" + "));
+            else
+                chiDecomp.Println(e => $"({FG.PrettyPrintCnf(e.Item1).c}, Ꭓ.{e.Item2 + 1})", $"Decomposition");
         }
-
-        if (!found)
-            throw new();
 
         Console.WriteLine();
         ct.DisplayCells(tableOnly: true);
+
+        var sum = chiDecomp.Select(e => e.Item1 * ct.AllCharacters[e.k]).Aggregate((chi0, chi1) => chi0 + chi1);
+        if (!(sum - chiMt).IsZero())
+            throw new();
+
         Logger.Level = lvl;
         Console.WriteLine();
     }
