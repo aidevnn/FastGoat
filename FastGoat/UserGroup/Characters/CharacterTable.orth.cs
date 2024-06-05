@@ -42,12 +42,15 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
         }
     }
 
-    public void SolveOrthogonality(params (int dim, int[] linIdx)[] infos)
+    public void SolveOrthogonality()
     {
         PrefillOrthogonality();
 
         var todoChis = AllCharacters.Select((chi, k) => (chi, k)).Where(e => !e.chi.HasAllValues).ToArray();
         if (todoChis.Length == 0)
+            return;
+
+        if (todoChis.Length > 3)
             return;
 
         var cells = new List<(int, int)>();
@@ -99,39 +102,7 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
 
         var eqs = new List<Polynomial<Cnf, Xi>>();
         var firstIdx = todoChis.Max(e => e.k);
-
-        var rmSeq = todoChis.GroupBy(e => e.chi[Gr.Neutral()]!.Value)
-            .ToDictionary(l => (int)l.Key.E[0].Num, l => l.Select(e => e.k).ToArray());
-
-        var allIdx = infos.SelectMany(l => l.linIdx).Distinct().ToArray();
-        var linChis = AllCharacters.Where(chi => chi.IsLinear)
-            .Select((chi, k) => (chi, k))
-            .Where(e => allIdx.Contains(e.k))
-            .ToDictionary(e => e.k, e => e.chi);
-
-        var infosDim = infos.GroupBy(e => e.dim).ToDictionary(e => e.Key, e => e.Select(l => l.linIdx).ToArray());
-        foreach (var (dim, linIdxs) in infosDim)
-        {
-            var rm = rmSeq[dim];
-            int nb = 0;
-            foreach (var linIdx in linIdxs)
-            {
-                var k0 = rm[nb];
-                nb += linIdx.Length;
-                foreach (var (idx, i) in linIdx.Select((idx, i) => (l0: idx, i)))
-                {
-                    var k1 = k0 + i;
-                    var linChi = linChis[idx];
-                    var pol = NbClasses.Range().Select(k => mat[k0, k] * linChi[Classes.GetRepresentative(k)]!.Value)
-                        .ToArray();
-                    foreach (var i0 in NbClasses.Range())
-                        eqs.Add(list[k1][i0] - pol[i0]);
-
-                    list[k1] = pol;
-                }
-            }
-        }
-
+        
         // Regular Character
         for (int i = 1; i < NbClasses; ++i)
         {
@@ -158,8 +129,7 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
         var clggi = rg.ToDictionary(i => i, i => Classes.GetIndex(Gr.Invert(Classes.GetRepresentative(i))));
 
         var mapXiDegDim = mapCells.ToDictionary(e => e.Key.ExtractIndeterminate,
-            e => (Classes.GetClassStabx(e.Value.Item2).Count(),
-                (int)AllCharacters[e.Value.Item1][Gr.Neutral()]!.Value.E[0].Num));
+            e => (Gr.ElementsOrders[Classes.GetRepresentative(e.Value.Item2)], AllCharacters[e.Value.Item1].Dim));
 
         // All i, Sum[g](Xi(g)Xi(g^−1))= |G|
         eqs.AddRange(rg.Select(i =>
@@ -218,7 +188,7 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
             firstSol.Println("Solutions");
             Console.WriteLine();
         }
-        
+
         var chis = AllCharacters.Select(chi => new Character<T>(Classes, chi.Map)).ToArray();
         var todoIdx = todoChis.Select(e => e.k).ToHashSet();
         foreach (var groupXis in firstSol.Where(e => mapInd.ContainsKey(e.Key)).GroupBy(e => mapInd[e.Key].Item1))
@@ -229,7 +199,7 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
                 var j = mapInd[xi].Item2;
                 chiMap[Classes.GetRepresentative(j)] = cnf;
             }
-            
+
             var chi = chis[groupXis.Key] = new Character<T>(Classes, chiMap);
             if (!chi.HasAllValues || !todoIdx.Contains(groupXis.Key))
                 continue;
@@ -383,8 +353,7 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
 
             var deg = IntExt.Lcm(deg0, deg1);
             var e = FG.CyclotomicEPoly(deg);
-            var coefs = coefs0.Select(c0 => c0.E.Substitute(e.Pow(deg / c0.N))).ToArray();
-            var c = Cnf.Nth(deg);
+            var coefs = p0.ToCnfPoly(deg).Coefs.Select(c0 => c0.E).ToArray();
 
             var X = FG.KPoly('X', e);
             var P = coefs.Select((c0, i) => c0 * X.Pow(i)).Aggregate(X.Zero, (sum, xi) => sum + xi);
@@ -397,7 +366,8 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
 
             if (Logger.Level != LogLevel.Off)
             {
-                Console.WriteLine($"Factors of {P} in splitting field {e.F} of Q({e.F.x})[x] with {e.F.x} = {c}");
+                Console.WriteLine(
+                    $"Factors of {P} in splitting field {e.F} of Q({e.F.x})[x] with {e.F.x} = {Cnf.Nth(deg)}");
                 roots.Select(r => (ind, r, p.Substitute(r, ind), p.Substitute(r, ind).IsZero()))
                     .Println($"Nb possibilities:{roots.Length}");
             }
@@ -414,7 +384,10 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
                 .ToArray();
 
             var seqs = cidim.Select(e => (e.xi, e.deg, e.dim,
-                    seq: e.deg.Range().Select(k => Cnf.Nth(e.deg).Pow(k).Simplify()).Append(Cnf.CnfZero).Order()
+                    seq: e.deg.Range().Select(k => Cnf.Nth(e.deg).Pow(k).Simplify())
+                        .Append(Cnf.CnfZero)
+                        .OrderBy(c => c.N)
+                        .ThenBy(c => c)
                         .ToHashSet()))
                 .ToArray();
 
@@ -434,60 +407,5 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
         }
 
         throw new();
-    }
-
-    private Cnf[] SolveBak(Polynomial<Cnf, Xi> p, Xi ind, Cnf c, int dim)
-    {
-        List<Cnf> algSol = new();
-        var f0 = p.ToKPoly(ind);
-        if (f0.Degree == 1)
-        {
-            var sol = -f0[0] / f0[1];
-            // Console.WriteLine($"Eq {f} = 0 with solutions {{{sol}}}");
-            algSol.Add(sol * c.One);
-            return algSol.ToArray();
-        }
-
-        var x = FG.QPoly();
-        if (f0.Coefs.Any(c0 => c0.E.Poly.Degree > 0))
-        {
-            throw new Exception($"############# Faillure to solve {p} = 0");
-        }
-
-        var f = p.ToKPoly(ind).Coefs.Select((c0, i) => c0.E[0] * x.Pow(i)).Aggregate(x.Zero, (sum, xi) => sum + xi);
-        // var facts0 = PolynomialFactorizationPart2.FirrZ(f, details: true);
-        var facts0 = IntFactorisation.FirrZ(f);
-        var degreeOne = facts0.Where(fi => fi.Degree == 1).ToArray();
-        var sols = degreeOne.Select(fi => -fi[0] / fi[1]).ToArray();
-
-        var irrs = facts0.Where(fi => fi.Degree > 1).ToArray();
-        if (irrs.Length == 0)
-        {
-            // Console.WriteLine($"Eq {f} = 0 with solutions {{{sols.Glue("; ")}}}");
-            algSol.AddRange(sols.Select(s => c.One * s));
-            return algSol.ToArray();
-        }
-
-        algSol.AddRange(sols.Select(s => s * c));
-        foreach (var fi in irrs)
-        {
-            var (X, a) = FG.EPolyXc(c.E.F, 'a');
-            var P = fi.Substitute(X);
-            Console.WriteLine($"Factors of {P} in splitting field {a.F} of Q({c})[x]");
-            // var facts = AlgebraicFactorization.AlgebraicFactors(P, details: true);
-            var facts = IntFactorisation.AlgebraicFactors(P);
-            var degreeOneAlg = facts.Where(fj => fj.Degree == 1).ToArray();
-            var irrsAlg = facts.Where(fj => fj.Degree > 1).ToArray();
-            if (irrsAlg.Length > 0)
-            {
-                throw new Exception($"############# Faillure to solve {p} = 0");
-            }
-
-            algSol.AddRange(degreeOneAlg.Select(fj =>
-                (-fj[0] / fj[1]).Poly.Coefs.Select((k, i) => k * c.Pow(i)).Aggregate(c.Zero, (sum, ci) => sum + ci)));
-        }
-
-        // Console.WriteLine($"Eq {f} = 0 with solutions {{{algSol.Glue("; ")}}}");
-        return algSol.ToArray();
     }
 }

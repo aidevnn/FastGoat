@@ -525,10 +525,9 @@ public static class GroupMatrixFormPart2
         else
         {
             if (mtGL.Count() == 24)
-                ct.SolveOrthogonality((2, 3.Range()));
+                ct.SolveOrthogonality();
             else
             {
-                // ct.SolveOrthogonality((2, 6.Range()));
                 var gl = mtGL.Neutral().GL;
                 var m0 = new [] { 4, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0 };
                 var m1 = gl.N == 4

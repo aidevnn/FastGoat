@@ -29,7 +29,7 @@ public static class AllGroupsUptoOrder32
             ctG.DerivedSubGroupLift();
             ctG.InductionFromStabilizers();
             if (g.Name == "SL(2,3)")
-                ctG.SolveOrthogonality((2, new[] { 0, 1, 2 }));
+                ctG.SolveOrthogonality();
             else
                 ctG.InductionFromSubGroups(subgroups);
         }
