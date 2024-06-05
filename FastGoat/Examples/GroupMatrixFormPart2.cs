@@ -525,18 +525,13 @@ public static class GroupMatrixFormPart2
             ct.InductionFromSubGroups(mtGLSubgrs);
         else
         {
-            if (mtGL.Count() == 24)
-                ct.SolveOrthogonality();
-            else
-            {
-                var gl = mtGL.Neutral().GL;
-                var m0 = new [] { 4, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0 };
-                var m1 = gl.N == 4
-                    ? gl.Create(m0)
-                    : gl.Create(MatrixExt.MergeDiagonalBlocks(([1], 1), (m0, 4)));
-                var mtGLSuper = Group.Generate("H", gl, mtGL.GetGenerators().Append(m1).ToArray());
-                ct.RestrictionFromSuperGroup(mtGLSuper);
-            }
+            var gl = mtGL.Neutral().GL;
+            var m0 = new [] { 4, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0 };
+            var m1 = gl.N == 4
+                ? gl.Create(m0)
+                : gl.Create(MatrixExt.MergeDiagonalBlocks(([1], 1), (m0, 4)));
+            var mtGLSuper = Group.Generate("H", gl, mtGL.GetGenerators().Append(m1).ToArray());
+            ct.RestrictionFromSuperGroup(mtGLSuper);
         }
 
         Console.WriteLine($"Generators in {GLnC}");
@@ -667,7 +662,7 @@ public static class GroupMatrixFormPart2
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
         GlobalStopWatch.Restart();
         var maxOrd = 48; // 24, 32
-        foreach (var (g, mtGL, matSubgrs, names) in FG.AllGroupsOfOrder(1, maxOrd).Select(sg => MatrixFormOfGroup(sg)))
+        foreach (var (g, mtGL, matSubgrs, names) in FG.AllGroupsOfOrder(24, 24).Select(sg => MatrixFormOfGroup(sg)))
         {
             FG.DisplayName(mtGL, matSubgrs, names, false, false, true, 20);
             GetCharacter(mtGL, matSubgrs);

@@ -29,7 +29,21 @@ public static class AllGroupsUptoOrder32
             ctG.DerivedSubGroupLift();
             ctG.InductionFromStabilizers();
             if (g.Name == "SL(2,3)")
-                ctG.SolveOrthogonality();
+            {
+                var gl23 = FG.GL2p(3);
+                var ctGL23 = FG.CharacterTable(gl23);
+
+                var a = gl23[1, 1, 0, 1];
+                var b = gl23[0, 1, 2, 0];
+
+                var sl23 = Group.Generate("SL(2,3)", gl23, a, b);
+                var ctSL23 = FG.CharacterTableEmpty(sl23);
+                ctSL23.DerivedSubGroupLift();
+                ctSL23.RestrictionFromSuperGroup(ctGL23);
+                ctSL23.DisplayCells(tableOnly: true);
+                Console.WriteLine();
+                return;
+            }
             else
                 ctG.InductionFromSubGroups(subgroups);
         }
