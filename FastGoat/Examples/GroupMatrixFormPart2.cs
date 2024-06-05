@@ -524,11 +524,19 @@ public static class GroupMatrixFormPart2
             ct.InductionFromSubGroups(mtGLSubgrs);
         else
         {
-            // independant from representation and from super group
             if (mtGL.Count() == 24)
                 ct.SolveOrthogonality((2, 3.Range()));
             else
-                ct.SolveOrthogonality((2, 6.Range()));
+            {
+                // ct.SolveOrthogonality((2, 6.Range()));
+                var gl = mtGL.Neutral().GL;
+                var m0 = new [] { 4, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0 };
+                var m1 = gl.N == 4
+                    ? gl.Create(m0)
+                    : gl.Create(MatrixExt.MergeDiagonalBlocks(([1], 1), (m0, 4)));
+                var mtGLSuper = Group.Generate("H", gl, mtGL.GetGenerators().Append(m1).ToArray());
+                ct.RestrictionFromSuperGroup(mtGLSuper);
+            }
         }
 
         Console.WriteLine($"Generators in {GLnC}");
@@ -568,7 +576,7 @@ public static class GroupMatrixFormPart2
         if (!isIrreductible)
         {
             if (isIsotypic)
-                Console.WriteLine("Isotypic components: {0}", 
+                Console.WriteLine("Isotypic components: ρ = {0}", 
                     chiDecomp.Select(e => $"{((e.Item1 - 1).IsZero() ? "" : e.Item1)}Ꭓ.{e.Item2 + 1}").Glue(" + "));
             else
                 chiDecomp.Println(e => $"({FG.PrettyPrintCnf(e.Item1).c}, Ꭓ.{e.Item2 + 1})", $"Decomposition");
@@ -648,7 +656,7 @@ public static class GroupMatrixFormPart2
     public static void ExampleGroupsRepresentations()
     {
         GlobalStopWatch.Restart();
-        var maxOrd = 48;
+        var maxOrd = 24;
         foreach (var (g, mtGL, matSubgrs, names) in FG.AllGroupsOfOrder(1, maxOrd).Select(sg => MatrixFormOfGroup(sg)))
         {
             FG.DisplayName(mtGL, matSubgrs, names, false, false, true, 20);
@@ -658,15 +666,14 @@ public static class GroupMatrixFormPart2
         GlobalStopWatch.Show("END");
         Console.Beep();
         
-        // All groups of order up to 48
-        // END Time:11m50s
+        // Representations of all groups of order up to 48
+        // END Time:12m13s
         //
-        // Irreductible:141 groups
-        // Reductible, Isotypic components:107 groups
-        // Non Isotypic decomposition:2 groups, C2 x SL(2,3), SL(2,3) x: C2
+        // Irreductibles:141 groups
+        // Reductibles with Isotypic components:109 groups
     }
 
-    public static void ExampleNonIsotypicDecomposition()
+    public static void ExampleIsotypicDecomposition()
     {
         GlobalStopWatch.Restart();
         var c2sl23 = FG.WordGroup("C2 x SL(2,3)", "a4, b3, c2, ababab, caca-1, cbcb-1, a2ba2b-1");

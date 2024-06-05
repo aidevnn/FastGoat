@@ -33,6 +33,7 @@ using GroupRegX = System.Text.RegularExpressions;
 
 Console.WriteLine("Hello World");
 
+void test0()
 {
     var s5 = FG.Symmetric(4);
     var ct = FG.CharacterTableEmpty(s5);
@@ -46,4 +47,8 @@ Console.WriteLine("Hello World");
     {
         Console.WriteLine($"{cj} {cj.IsNormal}/{Group.IsNormalSubgroup(s5, cj.Representative)}");
     }
+}
+
+{
+    Console.WriteLine(48.Range(1).Sum(i => GroupExt.A000001[i])); // 250 groups up to order 48
 }
