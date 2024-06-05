@@ -4,6 +4,7 @@ using FastGoat.Structures;
 using FastGoat.Structures.GenericGroup;
 using FastGoat.Structures.Naming;
 using FastGoat.Structures.Subgroups;
+using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup;
 using FastGoat.UserGroup.Characters;
 using FastGoat.UserGroup.Matrix;
@@ -566,19 +567,28 @@ public static class GroupMatrixFormPart2
             .ToArray();
 
         var isIrreductible = (FG.InnerProduct(chiMt, chiMt) - Cnf.CnfOne).IsZero();
-        var head = isIrreductible ? $"Ꭓ.{chiDecomp[0].k + 1}" : "ρ";
         var isIsotypic = chiDecomp.All(e =>
             e.Item1.Im.IsZero() && e.Item1.Re.E.Degree == 0 && e.Item1.Re.E[0].Num.Sign == 1);
 
-        Console.WriteLine($"Character Irreductible:{isIrreductible}");
-        Console.WriteLine($"{head} = {chiMt}");
-        if (!isIrreductible)
+        if (isIrreductible)
         {
+            Console.WriteLine("Irreductible Representation");
+            Console.WriteLine($"Ꭓ.{chiDecomp[0].k + 1} = {chiMt}");
+        }
+        else
+        {
+            Console.WriteLine("Reductible Representation");
+            Console.WriteLine($"ρ = {chiMt}");
             if (isIsotypic)
-                Console.WriteLine("Isotypic components: ρ = {0}", 
-                    chiDecomp.Select(e => $"{((e.Item1 - 1).IsZero() ? "" : e.Item1)}Ꭓ.{e.Item2 + 1}").Glue(" + "));
+            {
+                Console.WriteLine($"{chiDecomp.Length} Isotypic components");
+                Console.WriteLine($"ρ = {chiDecomp.Select(e => $"{((e.Item1 - 1).IsZero() ? "" : e.Item1)}Ꭓ.{e.Item2 + 1}").Glue(" + ")}");
+            }
             else
+            {
                 chiDecomp.Println(e => $"({FG.PrettyPrintCnf(e.Item1).c}, Ꭓ.{e.Item2 + 1})", $"Decomposition");
+                throw new();
+            }
         }
 
         Console.WriteLine();
@@ -654,8 +664,9 @@ public static class GroupMatrixFormPart2
 
     public static void ExampleGroupsRepresentations()
     {
+        Ring.DisplayPolynomial = MonomDisplay.StarCaret;
         GlobalStopWatch.Restart();
-        var maxOrd = 24;
+        var maxOrd = 48; // 24, 32
         foreach (var (g, mtGL, matSubgrs, names) in FG.AllGroupsOfOrder(1, maxOrd).Select(sg => MatrixFormOfGroup(sg)))
         {
             FG.DisplayName(mtGL, matSubgrs, names, false, false, true, 20);
@@ -675,6 +686,7 @@ public static class GroupMatrixFormPart2
     public static void ExampleIsotypicDecomposition()
     {
         GlobalStopWatch.Restart();
+        Ring.MatrixDisplayForm = Ring.MatrixDisplay.OneLineArray;
         var c2sl23 = FG.WordGroup("C2 x SL(2,3)", "a4, b3, c2, ababab, caca-1, cbcb-1, a2ba2b-1");
         var sl23byc2 = FG.WordGroup("SL(2,3) x: C2", "a4, c3, a2b2, abab, acacac, cbc-1b-1");
         foreach (var (g, mtGL, matSubgrs, names) in new[] { c2sl23, sl23byc2 }.Select(sg => MatrixFormOfGroup(sg)))
