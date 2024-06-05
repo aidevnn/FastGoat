@@ -154,7 +154,7 @@ public readonly struct Character<T> : IElt<Character<T>>, IRingElt<Character<T>>
             if (c.IsZero())
                 continue;
 
-            var cstr = $"{c}";
+            var cstr = $"{FG.PrettyPrintCnf(c).c}";
             if (Gr.Neutral().Equals(e))
             {
                 if (cstr.Contains(" + ") || cstr.Contains(" - "))
