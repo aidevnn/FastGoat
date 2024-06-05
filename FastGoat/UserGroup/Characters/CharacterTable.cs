@@ -439,7 +439,7 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
         if (!tableOnly)
             DisplayGroup.Head(Gr);
 
-        Console.WriteLine("Characters Table");
+        Console.WriteLine("Character Table");
         Console.WriteLine();
         Ring.DisplayMatrix(Cells, " ");
 
