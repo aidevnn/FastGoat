@@ -401,10 +401,7 @@ public static partial class FG
         Console.WriteLine();
 
         if (showGenerators)
-        {
             DisplayGroup.Generators(g);
-            Console.WriteLine();
-        }
 
         var gapInfos = FindIdGroup(g, subsg.Infos);
         var s = gapInfos.Length > 1 ? " (TODO)" : "";
