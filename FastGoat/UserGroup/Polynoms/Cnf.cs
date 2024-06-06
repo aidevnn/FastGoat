@@ -26,6 +26,9 @@ public struct Cnf : IElt<Cnf>, IRingElt<Cnf>, IFieldElt<Cnf>
     public int N { get; }
     public EPoly<Rational> E { get; }
 
+    public bool IsInteger => E.Degree == 0 && E[0].IsInteger();
+    public bool IsPositiveInteger => IsInteger && E[0].Sign == 1;
+
     public Cnf Re
     {
         get
