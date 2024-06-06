@@ -408,4 +408,39 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
 
         throw new();
     }
+
+    public static (Character<T> ext, Character<T> symm) ExtSymm(Character<T> chi)
+    {
+        var gr = chi.Gr;
+        var classes = chi.Classes;
+        var extMap = chi.Zero.Map.ToDictionary(kv => kv.Key, kv => kv.Value);
+        var symmMap = chi.Zero.Map.ToDictionary(kv => kv.Key, kv => kv.Value);
+        foreach (var g in classes)
+        {
+            var g2 = gr.Op(g, g);
+            var cg = chi[g]!.Value;
+            var cg2 = chi[g2]!.Value;
+            extMap[g] = (cg * cg - cg2) / 2;
+            symmMap[g] = (cg * cg + cg2) / 2;
+        }
+
+        return (new(classes, extMap), new(classes, symmMap));
+    }
+
+    public static bool CheckExtSymmDecomposition(Character<T>[] list)
+    {
+        foreach (var chi in list)
+        {
+            var (ext, symm) = ExtSymm(chi);
+            var extCheck = list.Select(chi0 => FG.InnerProduct(chi0, ext)).Where(e => !e.IsZero());
+            if (extCheck.Any(e => !e.IsInteger || e.E[0].Sign == -1))
+                return false;
+
+            var symmCheck = list.Select(chi0 => FG.InnerProduct(chi0, symm)).Where(e => !e.IsZero());
+            if (symmCheck.Any(e => !e.IsInteger || e.E[0].Sign == -1))
+                return false;
+        }
+
+        return true;
+    }
 }
