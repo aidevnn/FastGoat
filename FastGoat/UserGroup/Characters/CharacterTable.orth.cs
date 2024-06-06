@@ -189,13 +189,16 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
             .Where(eq => !eq.IsZero()).Distinct().ToArray();
 
         if (Logger.Level != LogLevel.Off)
+        {
+            solDegreeOne.Println(e=>$"{e.Key} <- {e.Value}", "Substitution1");
             subsEq.Println("Substitute Eqs");
+        }
 
         var (subs, subsEq2) = SubstitutionDegreeOne(subsEq, mapXiDegDim);
 
         if (Logger.Level != LogLevel.Off)
         {
-            subs.Println();
+            subs.Println(e=>$"{e.Item1} <- {e.Item2}", "Substitution2");
             subsEq2.Println("Substitute Eqs2");
         }
 
@@ -231,10 +234,10 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
             {
                 if (Logger.Level != LogLevel.Off)
                 {
-                    sols.Println("Solutions");
+                    sols.OrderBy(e => e.Key).Println("Solutions");
                     Console.WriteLine();
                 }
-                
+
                 foreach (var (_, idx) in todoChis)
                 {
                     var chi = chis[idx];
@@ -242,6 +245,12 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
                     if (state == AddCharacterState.TableFull)
                         return;
                 }
+            }
+            
+            if (Logger.Level != LogLevel.Off)
+            {
+                sols.OrderBy(e => e.Key).Println("Rejected");
+                Console.WriteLine();
             }
         }
     }
@@ -463,18 +472,55 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
         return (new(classes, extMap), new(classes, symmMap));
     }
 
+    public static void QuickDisplayTable(Character<T>[] list)
+    {
+        var classes = list[0].Classes;
+        var ordCls = classes.Count.Range().Select(i => classes.GetRepresentative(i)).ToArray();
+        var head = ordCls.Select(e => classes.GetClassName(e)).Prepend("Cl").ToArray();
+        var rows = list.SelectMany((chi, i) => ordCls.Select(e => $"{chi[e]!.Value}").Prepend($"X.{i + 1}")).ToArray();
+        Ring.DisplayMatrix(Ring.Matrix(list.Length + 1, head.Concat(rows).ToArray()), "  ");
+        Console.WriteLine();
+    }
+
     public static bool CheckExtSymmDecomposition(Character<T>[] list)
     {
-        foreach (var chi in list)
+        var chis = list.Order().ToArray();
+        foreach (var (chi, i) in chis.Select((e, i) => (e, i)))
         {
             var (ext, symm) = ExtSymm(chi);
-            var extCheck = list.Select(chi0 => FG.InnerProduct(chi0, ext)).Where(e => !e.IsZero());
-            if (extCheck.Any(e => !e.IsInteger || e.E[0].Sign == -1))
+            var symmCheck = chis.Select((chi0, k) => (c: FG.InnerProduct(chi0, symm), Xi: k + 1))
+                .Where(e => !e.c.IsZero() && !e.c.IsPositiveInteger)
+                .ToArray();
+            if (symmCheck.Length != 0)
+            {
+                if (Logger.Level != LogLevel.Off)
+                {
+                    QuickDisplayTable(chis);
+                    Console.WriteLine($"X.{i + 1} = {chis[i]}");
+                    Console.WriteLine($"X.{i + 1}_Symm = {symm}");
+                    Console.WriteLine($"        = {symmCheck.Select(e => $"{e.c} * X.{e.Xi}").Glue(" + ")}");
+                    Console.WriteLine();
+                }
+                
                 return false;
+            }
 
-            var symmCheck = list.Select(chi0 => FG.InnerProduct(chi0, symm)).Where(e => !e.IsZero());
-            if (symmCheck.Any(e => !e.IsInteger || e.E[0].Sign == -1))
+            var extCheck = chis.Select((chi0, k) => (c: FG.InnerProduct(chi0, ext), Xi: k + 1))
+                .Where(e => !e.c.IsZero() && !e.c.IsPositiveInteger)
+                .ToArray();
+            if (extCheck.Length != 0)
+            {
+                if (Logger.Level != LogLevel.Off)
+                {
+                    QuickDisplayTable(chis);
+                    Console.WriteLine($"X.{i + 1} = {chis[i]}");
+                    Console.WriteLine($"X.{i + 1}_Ext = {ext}");
+                    Console.WriteLine($"        = {extCheck.Select(e => $"{e.c} * X.{e.Xi}").Glue(" + ")}");
+                    Console.WriteLine();
+                }
+                
                 return false;
+            }
         }
 
         return true;
