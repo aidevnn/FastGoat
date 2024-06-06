@@ -42,15 +42,13 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
         }
     }
 
-    public void SolveOrthogonality()
+    public void SolveOrthogonality(params (int dim, int[] linIdx)[] infos)
     {
         PrefillOrthogonality();
+        AllCharacters = AllCharacters.Order().ToArray();
 
         var todoChis = AllCharacters.Select((chi, k) => (chi, k)).Where(e => !e.chi.HasAllValues).ToArray();
         if (todoChis.Length == 0)
-            return;
-
-        if (todoChis.Length > 3)
             return;
 
         var cells = new List<(int, int)>();
@@ -102,7 +100,39 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
 
         var eqs = new List<Polynomial<Cnf, Xi>>();
         var firstIdx = todoChis.Max(e => e.k);
-        
+
+        var rmSeq = todoChis.GroupBy(e => e.chi[Gr.Neutral()]!.Value)
+            .ToDictionary(l => (int)l.Key.E[0].Num, l => l.Select(e => e.k).ToArray());
+
+        var allIdx = infos.SelectMany(l => l.linIdx).Distinct().ToArray();
+        var linChis = AllCharacters.Where(chi => chi.IsLinear)
+            .Select((chi, k) => (chi, k))
+            .Where(e => allIdx.Contains(e.k))
+            .ToDictionary(e => e.k, e => e.chi);
+
+        var infosDim = infos.GroupBy(e => e.dim).ToDictionary(e => e.Key, e => e.Select(l => l.linIdx).ToArray());
+        foreach (var (dim, linIdxs) in infosDim)
+        {
+            var rm = rmSeq[dim];
+            int nb = 0;
+            foreach (var linIdx in linIdxs)
+            {
+                var k0 = rm[nb];
+                nb += linIdx.Length;
+                foreach (var (idx, i) in linIdx.Select((idx, i) => (l0: idx, i)))
+                {
+                    var k1 = k0 + i;
+                    var linChi = linChis[idx];
+                    var pol = NbClasses.Range().Select(k => mat[k0, k] * linChi[Classes.GetRepresentative(k)]!.Value)
+                        .ToArray();
+                    foreach (var i0 in NbClasses.Range())
+                        eqs.Add(list[k1][i0] - pol[i0]);
+
+                    list[k1] = pol;
+                }
+            }
+        }
+
         // Regular Character
         for (int i = 1; i < NbClasses; ++i)
         {
@@ -180,33 +210,39 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
         var allSolutions = SolveSystem(solDegreeOne, redEqs, mapXiDegDim, xz)
             .Select(sol => ReverseSubstitution(sol, subs));
 
-        var firstSol =
-            allSolutions.FirstOrDefault(sol => sol.Count + 1 == xis.Length, new Dictionary<Xi, Cnf>());
-
-        if (Logger.Level != LogLevel.Off)
+        foreach (var sols in allSolutions.Where(sol => sol.Count + 1 == xis.Length))
         {
-            firstSol.Println("Solutions");
-            Console.WriteLine();
-        }
-
-        var chis = AllCharacters.Select(chi => new Character<T>(Classes, chi.Map)).ToArray();
-        var todoIdx = todoChis.Select(e => e.k).ToHashSet();
-        foreach (var groupXis in firstSol.Where(e => mapInd.ContainsKey(e.Key)).GroupBy(e => mapInd[e.Key].Item1))
-        {
-            var chiMap = chis[groupXis.Key].Map.ToDictionary(kv => kv.Key, kv => kv.Value);
-            foreach (var (xi, cnf) in groupXis)
+            var chis = AllCharacters.Select(chi => new Character<T>(Classes, chi.Map)).ToArray();
+            foreach (var groupXis in sols.Where(e => mapInd.ContainsKey(e.Key)).GroupBy(e => mapInd[e.Key].Item1))
             {
-                var j = mapInd[xi].Item2;
-                chiMap[Classes.GetRepresentative(j)] = cnf;
+                var chiMap = chis[groupXis.Key].Map.ToDictionary(kv => kv.Key, kv => kv.Value);
+                foreach (var (xi, cnf) in groupXis)
+                {
+                    var j = mapInd[xi].Item2;
+                    chiMap[Classes.GetRepresentative(j)] = cnf;
+                }
+
+                chis[groupXis.Key] = new Character<T>(Classes, chiMap);
+                if (chis.All(chi => chi.HasAllValues))
+                    break;
             }
 
-            var chi = chis[groupXis.Key] = new Character<T>(Classes, chiMap);
-            if (!chi.HasAllValues || !todoIdx.Contains(groupXis.Key))
-                continue;
-
-            var state = AddCharacter(chi);
-            if (state == AddCharacterState.TableFull)
-                break;
+            if (CheckExtSymmDecomposition(chis))
+            {
+                if (Logger.Level != LogLevel.Off)
+                {
+                    sols.Println("Solutions");
+                    Console.WriteLine();
+                }
+                
+                foreach (var (_, idx) in todoChis)
+                {
+                    var chi = chis[idx];
+                    var state = AddCharacter(chi);
+                    if (state == AddCharacterState.TableFull)
+                        return;
+                }
+            }
         }
     }
 
@@ -386,8 +422,8 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
             var seqs = cidim.Select(e => (e.xi, e.deg, e.dim,
                     seq: e.deg.Range().Select(k => Cnf.Nth(e.deg).Pow(k).Simplify())
                         .Append(Cnf.CnfZero)
-                        .OrderBy(c => c.N)
-                        .ThenBy(c => c)
+                        .OrderBy(c => c.IsZero())
+                        .ThenBy(c => c.N)
                         .ToHashSet()))
                 .ToArray();
 

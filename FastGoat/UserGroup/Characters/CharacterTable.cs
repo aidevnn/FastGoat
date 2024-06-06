@@ -312,7 +312,8 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
             return (AddCharacterState.TableFull, chi1);
 
         var coefs = doneChis.Select(c => (c, FG.InnerProduct(chi1, c))).ToArray();
-        var chi2 = coefs.Aggregate(chi1, (id, e0) => id - e0.Item2 * e0.c).Simplify();
+        var chi20 = new Character<T>(Classes, chi1.Map.ToDictionary(kv => kv.Key, kv => kv.Value));
+        var chi2 = coefs.Aggregate(chi20, (id, e0) => id - e0.Item2 * e0.c).Simplify();
         if (chi2.IsZero())
             return (AddCharacterState.Rejected, chi2);
 
@@ -331,7 +332,7 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
                 AllCharacters[i] = chi2;
                 return (todoChis.Count > 1 ? AddCharacterState.Done : AddCharacterState.TableFull, chi2);
             }
-
+            
             return (AddCharacterState.NotIrr, chi2);
         }
 

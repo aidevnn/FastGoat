@@ -525,13 +525,10 @@ public static class GroupMatrixFormPart2
             ct.InductionFromSubGroups(mtGLSubgrs);
         else
         {
-            var gl = mtGL.Neutral().GL;
-            var m0 = new [] { 4, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0 };
-            var m1 = gl.N == 4
-                ? gl.Create(m0)
-                : gl.Create(MatrixExt.MergeDiagonalBlocks(([1], 1), (m0, 4)));
-            var mtGLSuper = Group.Generate("H", gl, mtGL.GetGenerators().Append(m1).ToArray());
-            ct.RestrictionFromSuperGroup(mtGLSuper);
+            if (mtGL.Count() == 24)
+                ct.SolveOrthogonality((2, 3.Range()));
+            else
+                ct.SolveOrthogonality((2, 6.Range()));
         }
 
         Console.WriteLine($"Generators in {GLnC}");
@@ -562,8 +559,7 @@ public static class GroupMatrixFormPart2
             .ToArray();
 
         var isIrreductible = (FG.InnerProduct(chiMt, chiMt) - Cnf.CnfOne).IsZero();
-        var isIsotypic = chiDecomp.All(e =>
-            e.Item1.Im.IsZero() && e.Item1.Re.E.Degree == 0 && e.Item1.Re.E[0].Num.Sign == 1);
+        var isIsotypic = chiDecomp.All(e => e.Item1.Im.IsZero() && e.Item1.Re.IsPositiveInteger);
 
         if (isIrreductible)
         {
@@ -582,6 +578,8 @@ public static class GroupMatrixFormPart2
             else
             {
                 chiDecomp.Println(e => $"({FG.PrettyPrintCnf(e.Item1).c}, Ꭓ.{e.Item2 + 1})", $"Decomposition");
+                Console.WriteLine();
+                ct.DisplayCells(tableOnly: true);
                 throw new();
             }
         }
@@ -662,7 +660,7 @@ public static class GroupMatrixFormPart2
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
         GlobalStopWatch.Restart();
         var maxOrd = 48; // 24, 32
-        foreach (var (g, mtGL, matSubgrs, names) in FG.AllGroupsOfOrder(24, 24).Select(sg => MatrixFormOfGroup(sg)))
+        foreach (var (g, mtGL, matSubgrs, names) in FG.AllGroupsOfOrder(1, maxOrd).Select(sg => MatrixFormOfGroup(sg)))
         {
             FG.DisplayName(mtGL, matSubgrs, names, false, false, true, 20);
             GetCharacter(mtGL, matSubgrs);
@@ -682,9 +680,10 @@ public static class GroupMatrixFormPart2
     {
         GlobalStopWatch.Restart();
         Ring.MatrixDisplayForm = Ring.MatrixDisplay.OneLineArray;
+        var sl23 = FG.WordGroup("SL(2,3)", "a4, b3, ababab, a2ba2b-1");
         var c2sl23 = FG.WordGroup("C2 x SL(2,3)", "a4, b3, c2, ababab, caca-1, cbcb-1, a2ba2b-1");
         var sl23byc2 = FG.WordGroup("SL(2,3) x: C2", "a4, c3, a2b2, abab, acacac, cbc-1b-1");
-        foreach (var (g, mtGL, matSubgrs, names) in new[] { c2sl23, sl23byc2 }.Select(sg => MatrixFormOfGroup(sg)))
+        foreach (var (g, mtGL, matSubgrs, names) in new[] { sl23, c2sl23, sl23byc2 }.Select(sg => MatrixFormOfGroup(sg)))
         {
             FG.DisplayName(mtGL, matSubgrs, names, false, false, true, 20);
             GetCharacter(mtGL, matSubgrs);
