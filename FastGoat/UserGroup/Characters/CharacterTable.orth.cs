@@ -431,8 +431,9 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
             var seqs = cidim.Select(e => (e.xi, e.deg, e.dim,
                     seq: e.deg.Range().Select(k => Cnf.Nth(e.deg).Pow(k).Simplify())
                         .Append(Cnf.CnfZero)
-                        .OrderBy(c => c.IsZero())
-                        .ThenBy(c => c.N)
+                        // .OrderBy(c => c) // uncomment to change ordering, for SL(2,3) log details and C2 x SL(2,3) counterexample
+                        .OrderBy(c => c.IsZero()) // comment to change ordering
+                        .ThenBy(c => c.N) // comment to change ordering
                         .ToHashSet()))
                 .ToArray();
 

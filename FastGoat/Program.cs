@@ -114,10 +114,12 @@ void TestSL(ConcreteGroup<Mat> g, ConcreteGroup<Mat> super)
     var b1 = gl55[1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0];
     var b2 = gl55[1, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 4, 0, 0];
     var b3 = gl55[1, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0];
+    
     var c2sl23 = Group.Generate("C2 x SL(2,3)", gl55, b0, b1, b2);
     var c2gl23 = Group.Generate("C2 x GL(2,3)", gl55, b0, b1, b2, b3);
 
     GlobalStopWatch.Restart();
+    Logger.Level = LogLevel.Level1;
 
     TestSL(sl23, gl23);
     TestSL(sl23byc2, gl23byc2);
