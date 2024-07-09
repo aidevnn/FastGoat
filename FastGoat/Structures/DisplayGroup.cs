@@ -327,4 +327,60 @@ public static class DisplayGroup
         Orders(g);
         Generators(g, showBaseGroup: false);
     }
+
+    public static void CayleyGraph<T>(ConcreteGroup<T> g, SortBy sortBy = SortBy.Order, params T[] gens) 
+        where T : struct, IElt<T>
+    {
+        if (gens.Length == 0)
+            gens = g.GetGenerators().ToArray();
+        if (gens.Any(e => !g.Contains(e)))
+            throw new();
+
+        var ordered = sortBy == SortBy.Value
+            ? g.ElementsOrders.Keys.Ascending()
+            : g.ElementsOrders.Keys.OrderBy(a => g.ElementsOrders[a]).ThenAscending();
+        var map = ordered.Select((e, k) => (e, k)).ToDictionary(e => e.e, e => e.k + 1);
+
+        var digits = map.Values.Max(e => $"{e}".Length) + 2;
+        var digits2 = g.ElementsOrders.Max(e => $"{e.Value}".Length) + 2;
+        var fmt1 = $"{{0,{digits}}}";
+        var fmt2 = $"{{0,{digits}}}{{1,{-digits2}}} = {{2}}";
+
+        var eqCycles = EqualityComparer<T[]>.Create((l0, l1) => l0!.ToHashSet().SetEquals(l1!), l => l.Length);
+        var gensCycles = gens.Select(e => (g.ElementsOrders[e] + 1).Range().Select(i => g.Times(e, i)).ToArray())
+            .ToArray();
+        var cyclesByGens = g.SelectMany(e0 => gensCycles.Select(l => l.Select(e1 => g.Op(e0, e1)).ToArray()))
+            .ToHashSet(eqCycles)
+            .GroupBy(l => g.Op(g.Invert(l[0]), l[1]))
+            .ToDictionary(e => e.Key, e => e.ToArray());
+
+        if (!g.SetEquals(cyclesByGens.SelectMany(kv => kv.Value.SelectMany(l => l))))
+            throw new();
+        
+        foreach (var (gen, cycles) in cyclesByGens.OrderByDescending(e => g.ElementsOrders[e.Key]))
+        {
+            cycles.OrderByDescending(l => l.Length).ThenBy(l => l[0])
+                .Println(l => l.Select(e => string.Format(fmt1, $"({map[e]})")).Glue(" --> "),
+                    $"Cycles with Gen: {string.Format(fmt2, $"({map[gen]})", $"[{g.ElementsOrders[gen]}]", gen)}");
+        }
+
+        Console.WriteLine($"Nb arrows:{cyclesByGens.Values.SelectMany(l => l).Sum(e => e.Length - 1)}");
+        Console.WriteLine();
+    }
+    
+    public static void HeadCayleyGraph<T>(ConcreteGroup<T> g, SortBy sortBy = SortBy.Order, params T[] gens) 
+        where T : struct, IElt<T>
+    {
+        Head(g);
+        CayleyGraph(g, sortBy, gens);
+    }
+
+    public static void HeadElementsCayleyGraph<T>(ConcreteGroup<T> g, SortBy sortBy = SortBy.Order, params T[] gens) 
+        where T : struct, IElt<T>
+    {
+        Head(g);
+        Elements(g, sortBy);
+        CayleyGraph(g, sortBy, gens);
+    }
+
 }
