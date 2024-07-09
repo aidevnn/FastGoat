@@ -301,6 +301,8 @@ public static partial class FG
     }
 
     public static WordGroup DiCyclic(int n) => new(int.IsPow2(4 * n) ? $"Q{4 * n}" : $"Dic{n}", $"a{n} = b2, b2 = abab");
+    public static WordGroup DiCyclicThreeGens(int n) 
+        => new(int.IsPow2(4 * n) ? $"Q{4 * n}" : $"Dic{n}", $"a-1bc, abcb-2, abc-{{n - 1}}");
 
     public static ConcreteGroup<Mat> Quaternion(int k)
     {
