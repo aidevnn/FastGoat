@@ -438,6 +438,11 @@ public static partial class FG
 
     public static BigInteger SOnqOrder(int n, int q) => q % 2 == 0 ? GOnqOrder(n, q) : GOnqOrder(n, q) / 2;
 
+    public static BigInteger DPGLnpOrder(int n, int p) =>
+        BigInteger.Pow(p - 1, n) * n.Range(1).Aggregate(BigInteger.One, (acc, k) => acc * k);
+
+    public static BigInteger DPSLnpOrder(int n, int p) => DPGLnpOrder(n, p) / (p - 1);
+
     public static (MatFq a, MatFq b) GLnqGenerators(int n, int q)
     {
         var gl = new GLnq(n, q);
@@ -751,6 +756,57 @@ public static partial class FG
         var gens = GeneratorsGO3q(q, special: true);
         var Glnq = gens.First().GLnq;
         return Group.Generate($"SO(3,{q})", Glnq, [..gens]);
+    }
+
+    public static Mat[] DPGLnpGenerators(int n, int p)
+    {
+        var og = DPGLnpOrder(n, p);
+        if (og > MatrixGroupMaxOrder)
+            throw new();
+
+        if (!IntExt.Primes10000.Contains(p))
+            throw new($"p={p} isnt prime");
+
+
+        var gl = new GL(n, p);
+        var e0 = IntExt.Solve_k_pow_m_equal_one_mod_n_strict(gl.P, p - 1);
+        var diag = gl.At(gl.Neutral().Table, 0, e0);
+        return SnGensMat(n).Select(e => gl.Create(e.Table)).Prepend(diag).ToArray();
+    }
+
+    public static Mat[] DPSLnpGenerators(int n, int p)
+    {
+        var og = DPSLnpOrder(n, p);
+        if (og > MatrixGroupMaxOrder)
+            throw new();
+
+        if (!IntExt.Primes10000.Contains(p))
+            throw new($"p={p} isnt prime");
+        
+        var gl = new GL(n, p);
+        var e0 = IntExt.Solve_k_pow_m_equal_one_mod_n_strict(gl.P, p - 1);
+        var e1 = IntExt.InvModP(e0, p);
+        var diag = gl.At(gl.Neutral().Table, (0, n + 1), (e0, e1));
+        return SnGensMat(n).Select(e => gl.Create(e.Table)).Select(m =>
+        {
+            var det = m.Det;
+            var m0 = gl.At(gl.Neutral().Table, 0, IntExt.InvModP(det, p));
+            return gl.Op(m0, m);
+        }).Prepend(diag).ToArray();
+    }
+
+    public static ConcreteGroup<Mat> DPGLnp(int n, int p)
+    {
+        var gens = DPGLnpGenerators(n, p);
+        var gl = gens[0].GL;
+        return Group.Generate($"DPGL({n},{p})", gl, gens);
+    }
+
+    public static ConcreteGroup<Mat> DPSLnp(int n, int p)
+    {
+        var gens = DPSLnpGenerators(n, p);
+        var gl = gens[0].GL;
+        return Group.Generate($"DPSL({n},{p})", gl, gens);
     }
 
     public static ConcreteGroup<Mat> AbelianMat(params int[] seq)

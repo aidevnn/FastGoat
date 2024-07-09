@@ -20,32 +20,10 @@ public static class GroupMatrixFormPart2
     static GroupMatrixFormPart2()
     {
         DPGLs = new();
+        DPSLs = new();
     }
 
     #region GL methods
-
-    static Mat GLDiagOrdGenerators(GL gl, int ord)
-    {
-        var id = gl.Neutral().Table;
-        var e0 = IntExt.Solve_k_pow_m_equal_one_mod_n_strict(gl.P, ord);
-        return gl.At(id, 0, e0);
-    }
-
-    static Mat[] GLDiagPermOrdGenerators(int n, int p, int ord)
-    {
-        var gl = new GL(n, p);
-        var diag = GLDiagOrdGenerators(gl, ord);
-        var perms = FG.SnGensMat(n).Select(e => gl.Create(e.Table)).ToArray();
-        return perms.Append(diag).ToArray();
-    }
-
-    static ConcreteGroup<Mat> GLDiagPermOrd(int n, int p, int ord)
-    {
-        var gens = GLDiagPermOrdGenerators(n, p, ord);
-        return Group.Generate($"DPGL({n},{p})", gens[0].GL, gens);
-    }
-
-    static ConcreteGroup<Mat> GLDiagPerm(int n, int p) => GLDiagPermOrd(n, p, p - 1);
 
     static int[][] ChangeGL(ConcreteGroup<Mat> m, int p)
     {
@@ -99,12 +77,23 @@ public static class GroupMatrixFormPart2
 
     static Dictionary<(int n, int p), ConcreteGroup<Mat>> DPGLs { get; }
 
-    static ConcreteGroup<Mat> GetDPGL(int n, int p)
+    static Dictionary<(int n, int p), ConcreteGroup<Mat>> DPSLs { get; }
+
+    public static ConcreteGroup<Mat> GetDPGL(int n, int p)
     {
         if (DPGLs.ContainsKey((n, p)))
             return DPGLs[(n, p)];
 
-        var dpgl = DPGLs[(n, p)] = GLDiagPerm(n, p);
+        var dpgl = DPGLs[(n, p)] = FG.DPGLnp(n, p);
+        return dpgl;
+    }
+    
+    public static ConcreteGroup<Mat> GetDPSL(int n, int p)
+    {
+        if (DPSLs.ContainsKey((n, p)))
+            return DPSLs[(n, p)];
+
+        var dpgl = DPSLs[(n, p)] = FG.DPSLnp(n, p);
         return dpgl;
     }
 
@@ -139,7 +128,7 @@ public static class GroupMatrixFormPart2
                     var lvl = Logger.SetOff();
                     var wg = FG.WordGroup(gMat.Name, Graph.DefiningRelatorsOfGroup(gMat));
                     Logger.Level = lvl;
-                    var gMat0 = SearchDiagPermGL(GetDPGL(4, 5), wg, gMat, FG.AbelianMat(1));
+                    var gMat0 = SearchDiagPermGL(FG.DPSLnp(4, 5), wg, gMat, FG.AbelianMat(1));
                     return (gMat0, true);
                 }
 
@@ -323,28 +312,25 @@ public static class GroupMatrixFormPart2
 
         var id = FG.FindIdGroup(g, gSubgrs.Infos)[0];
         if (id.No == 43)
-            return SearchDiagPermGL(GetDPGL(4, 5), g, FG.DihedralGL2p(8), FG.AbelianMat(2));
+            return SearchDiagPermGL(GetDPSL(4, 5), g, FG.DihedralGL2p(8), FG.AbelianMat(2));
         if (id.No == 44)
-            return SearchDiagPermGL(GetDPGL(4, 5), g, FG.SemiDihedralGL2p(4), FG.AbelianMat(2));
+            return SearchDiagPermGL(GetDPSL(4, 5), g, FG.SemiDihedralGL2p(4), FG.AbelianMat(2));
         if (id.No == 10)
             return SearchDiagPermGL(GetDPGL(3, 17), g, FG.Quaternion(8), FG.AbelianMat(4));
         if (id.No == 29)
             return SearchDiagPermGL(GetDPGL(4, 5), g, FG.MetaCyclicSdpMat(4, 4, 3), FG.AbelianMat(2));
         if (id.No == 35)
-            return SearchDiagPermGL(GetDPGL(4, 5), g, FG.Quaternion(8), FG.AbelianMat(4));
+            return SearchDiagPermGL(GetDPSL(4, 5), g, FG.Quaternion(8), FG.AbelianMat(4));
         if (id.No == 7)
-            return SearchDiagPermGL(GetDPGL(4, 3), g, FG.ModularMaxGL2p(4), FG.AbelianMat(2));
+            return SearchDiagPermGL(GetDPSL(4, 3), g, FG.ModularMaxGL2p(4), FG.AbelianMat(2));
         if (id.No == 15)
             return SearchDiagPermGL(GetDPGL(2, 17), g, FG.AbelianMat(8), FG.AbelianMat(8));
         if (id.No == 49)
             return SearchDiagPermGL(GetDPGL(4, 3), g, ProductMatrixBlock(FG.DihedralGL2p(4), FG.AbelianMat(2)),
                 FG.AbelianMat(2));
         if (id.No == 50)
-        {
-            var gl = new GL(2, 5);
-            var d8byc2 = Group.Generate("D8 x: C2", gl, gl[1, 0, 0, 4], gl[0, 1, 1, 0], gl[2, 0, 0, 2]);
-            return SearchDiagPermGL(GetDPGL(4, 5), g, d8byc2, FG.AbelianMat(2));
-        }
+            return SearchDiagPermGL(GetDPSL(4, 5), g, ProductMatrixBlock(FG.Quaternion(8), FG.AbelianMat(2)),
+                FG.AbelianMat(2));
 
         if (id.No == 32)
         {
@@ -356,7 +342,7 @@ public static class GroupMatrixFormPart2
             var matBs = MatrixFormFromNamesMeth2(gbs0, names0);
             return SearchDiagPermGL(matBs, g, FG.AbelianMat(4, 4), FG.AbelianMat(4));
         }
-
+        
         if (id.No == 8)
         {
             var prod = ProductMatrixBlock(FG.SemiDihedralGL2p(4), FG.AbelianMat(2, 1));
@@ -366,10 +352,10 @@ public static class GroupMatrixFormPart2
             var lvl = Logger.SetOff();
             var gbs1 = FG.WordGroup("(C2 x QD16) x: C2", "b2, c2, d2, cdcd, a3dad, a2cbcb, a3ba-1b, acda-1c");
             Logger.Level = lvl;
-            var mBs = SearchDiagPermGL(s, gbs1, prod, FG.AbelianMat(2));
-            return SearchDiagPermGL(mBs, g, FG.ModularMaxGL2p(4), FG.AbelianMat(4));
+            var matBs = SearchDiagPermGL(s, gbs1, prod, FG.AbelianMat(2));
+            return SearchDiagPermGL(matBs, g, FG.ModularMaxGL2p(4), FG.AbelianMat(4));
         }
-
+        
         return Group.Generate(new GL(1, 2));
     }
 
@@ -381,15 +367,15 @@ public static class GroupMatrixFormPart2
 
         var id = FG.FindIdGroup(g, gSubgrs.Infos)[0];
         if (og == 54 && id.No == 8)
-            return SearchDiagPermGL(GetDPGL(3, 7), g, FG.AbelianMat(3, 3), FG.DihedralGL2p(3));
+            return SearchDiagPermGL(GetDPSL(3, 7), g, FG.AbelianMat(3, 3), FG.DihedralGL2p(3));
 
         if (og == 54 && id.No != 8)
             return Group.Generate(new GL(1, 2));
 
         if (id.No == 15)
-            return SearchDiagPermGL(GetDPGL(4, 7), g, FG.DihedralGL2p(12), FG.AbelianMat(2));
+            return SearchDiagPermGL(GetDPSL(4, 7), g, FG.DihedralGL2p(12), FG.AbelianMat(2));
         if (id.No == 16)
-            return SearchDiagPermGL(GetDPGL(4, 7), g, FG.MetaCyclicSdpMat(3, 8, 2), FG.AbelianMat(2));
+            return SearchDiagPermGL(GetDPSL(4, 7), g, FG.MetaCyclicSdpMat(3, 8, 2), FG.AbelianMat(2));
         if (id.No == 17)
             return SearchDiagPermGL(ProductMatrixBlock(FG.DihedralGL2p(3), FG.SemiDihedralGL2p(4)), g,
                 FG.SemiDihedralGL2p(4), FG.AbelianMat(3));
@@ -415,13 +401,13 @@ public static class GroupMatrixFormPart2
             return SearchDiagPermGL(ProductMatrixBlock(FG.DicyclicGL2p(6), FG.MetaCyclicSdpMat(12, 2, 5)), g,
                 FG.DicyclicGL2p(3), FG.AbelianMat(4));
         if (id.No == 33)
-            return SearchDiagPermGL(GetDPGL(4, 5), g, FG.SL2p(3), FG.AbelianMat(2));
+            return SearchDiagPermGL(GetDPSL(4, 5), g, FG.SL2p(3), FG.AbelianMat(2));
         if (id.No == 10)
             return SearchDiagPermGL(ProductMatrixBlock(FG.DihedralGL2p(3), FG.ModularMaxGL2p(4)), g,
                 FG.ModularMaxGL2p(4),
                 FG.AbelianMat(3));
         if (id.No == 28)
-            return SearchDiagPermGL(GetDPGL(4, 5), g, FG.SL2p(3), FG.AbelianMat(4));
+            return SearchDiagPermGL(GetDPSL(4, 5), g, FG.SL2p(3), FG.AbelianMat(4));
         if (id.No == 39)
         {
             var gl = new GL(2, 5);
@@ -435,7 +421,7 @@ public static class GroupMatrixFormPart2
 
     #endregion
 
-    static (WordGroup g, ConcreteGroup<Mat> mat, AllSubgroups<Mat> matSubgrs, ANameElt[] names)
+    public static (WordGroup g, ConcreteGroup<Mat> mat, AllSubgroups<Mat> matSubgrs, ANameElt[] names)
         MatrixFormOfGroup(WordGroup g)
     {
         var gSubgrs = g.AllSubgroups();
@@ -496,7 +482,7 @@ public static class GroupMatrixFormPart2
 
     static void MatrixFormGroupsOfOrder(int ord) => MatrixFormGroupsOfOrder(ord, ord);
 
-    static void GetCharacter(ConcreteGroup<Mat> mtGL, AllSubgroups<Mat> mtGLSubgrs)
+    public static void GetCharacter(ConcreteGroup<Mat> mtGL, AllSubgroups<Mat> mtGLSubgrs)
     {
         var n = mtGL.Neutral().GL.N;
         var p = mtGL.Neutral().GL.P;
@@ -512,6 +498,7 @@ public static class GroupMatrixFormPart2
         var isoMt = mtGL.ToDictionary(mat => mat, mat => mat.Table.Select(z => iso[z]).ToKMatrix(n));
 
         var lvl = Logger.SetOff();
+        // Logger.Level = LogLevel.Level1;
         var ct = FG.CharacterTableEmpty(mtGL);
         if (mtGL.GroupType == GroupType.AbelianGroup)
             ct.AbelianTable();
@@ -525,10 +512,18 @@ public static class GroupMatrixFormPart2
             ct.InductionFromSubGroups(mtGLSubgrs);
         else
         {
-            if (mtGL.Count() == 24)
-                ct.SolveOrthogonality((2, 3.Range()));
-            else
-                ct.SolveOrthogonality((2, 6.Range()));
+            var gl = mtGL.Neutral().GL;
+            var m0 = new [] { 4, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0 };
+            var m1 = gl.N == 4
+                ? gl.Create(m0)
+                : gl.Create(MatrixExt.MergeDiagonalBlocks(([1], 1), (m0, 4)));
+            var mtGLSuper = Group.Generate("H", gl, mtGL.GetGenerators().Append(m1).ToArray());
+            ct.RestrictionFromSuperGroup(mtGLSuper);
+            
+            // if (mtGL.Count() == 24)
+            //     ct.SolveOrthogonality((2, 3.Range()));
+            // else
+            //     ct.SolveOrthogonality((2, 6.Range()));
         }
 
         Console.WriteLine($"Generators in {GLnC}");
@@ -628,7 +623,7 @@ public static class GroupMatrixFormPart2
 
     public static void ExampleGroupOrder48()
     {
-        MatrixFormGroupsOfOrder(ord: 48);
+        MatrixFormGroupsOfOrder(ord: 54);
     }
 
     public static void ExampleGroupOrderUpTo63()
@@ -659,7 +654,7 @@ public static class GroupMatrixFormPart2
     {
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
         GlobalStopWatch.Restart();
-        var maxOrd = 48; // 24, 32
+        var maxOrd = 48; // 24, 32, 63
         foreach (var (g, mtGL, matSubgrs, names) in FG.AllGroupsOfOrder(1, maxOrd).Select(sg => MatrixFormOfGroup(sg)))
         {
             FG.DisplayName(mtGL, matSubgrs, names, false, false, true, 20);
@@ -679,7 +674,7 @@ public static class GroupMatrixFormPart2
     public static void ExampleIsotypicDecomposition()
     {
         GlobalStopWatch.Restart();
-        Ring.MatrixDisplayForm = Ring.MatrixDisplay.OneLineArray;
+        // Ring.MatrixDisplayForm = Ring.MatrixDisplay.OneLineArray;
         var sl23 = FG.WordGroup("SL(2,3)", "a4, b3, ababab, a2ba2b-1");
         var c2sl23 = FG.WordGroup("C2 x SL(2,3)", "a4, b3, c2, ababab, caca-1, cbcb-1, a2ba2b-1");
         var sl23byc2 = FG.WordGroup("SL(2,3) x: C2", "a4, c3, a2b2, abab, acacac, cbc-1b-1");
