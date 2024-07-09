@@ -483,6 +483,38 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
         Console.WriteLine();
     }
 
+    public static bool CheckCenterAndKernel(Character<T>[] list)
+    {
+        var chis = list.Order().ToArray();
+        foreach (var (chi, i) in chis.Select((e, i) => (e, i)))
+        {
+            var g = chi.Gr;
+            var z = Group.Generate($"Z[{i + 1}]", g, chi.Centre().ToArray());
+            var ker = Group.Generate($"Ker[{i + 1}]", g, chi.Kernel().ToArray());
+            Console.WriteLine($"X.{i + 1} = {chi}");
+            Console.WriteLine($"Is Faithfull:{chi.IsFaithfull}");
+            DisplayGroup.HeadOrders(z);
+            DisplayGroup.HeadOrders(ker);
+            if (!Group.IsNormalSubgroup(g, z) || !Group.IsNormalSubgroup(g, ker) || !Group.IsNormalSubgroup(z, ker))
+                return false;
+
+            var h = z.Over(ker);
+            if (h.GroupType == GroupType.NonAbelianGroup)
+                return false;
+            
+            var hType = Group.AbelianGroupType(h);
+            if (hType.Length != 1)
+                return false;
+
+            var k = g.Over(ker);
+            var kType = Group.AbelianGroupType(Group.Zentrum(k));
+            if (kType.Length != 1 || kType[0] != hType[0])
+                return false;
+        }
+        
+        return true;
+    }
+
     public static bool CheckExtSymmDecomposition(Character<T>[] list)
     {
         var chis = list.Order().ToArray();
