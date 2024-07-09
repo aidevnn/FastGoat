@@ -33,95 +33,52 @@ using GroupRegX = System.Text.RegularExpressions;
 
 Console.WriteLine("Hello World");
 
-void TestSL(ConcreteGroup<Mat> g, ConcreteGroup<Mat> super)
+void TensorTable<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
 {
-    DisplayGroup.HeadNames(g);
+    var gSubgrs = g.AllSubgroups();
+    gSubgrs.Naming();
+    var dirProd = gSubgrs.DecomposeProducts(gSubgrs.ProperNonTrivialNormalSubgroups())
+        .Where(e => e.Item3).Take(1).ToArray();
+    if (dirProd.Length == 0)
+        return;
+
+    var (H, K) = (dirProd[0].Item1.Representative, dirProd[0].Item2.Representative);
+    var ctH = FG.CharacterTable(H);
+    var ctK = FG.CharacterTable(K);
+    ctH.DisplayCells();
+    ctK.DisplayCells();
+
+    var ctG = FG.CharacterTableEmpty(g);
+    ctG.DerivedSubGroupLift();
+    // ctG.InductionFromStabilizers();
+    ctG.DisplayCells();
+
+    foreach (var (chi1, chi2) in ctH.AllCharacters.Grid2D(ctK.AllCharacters))
+    {
+        var map = chi1.Gr.Grid2D(chi2.Gr).Select(e => (e, ctG.Classes.GetRepresentative(g.Op(e.t1, e.t2))))
+            .DistinctBy(e => e.Item2)
+            .ToDictionary(e => e.Item2, e => (Cnf?)(chi1[e.e.t1]!.Value * chi2[e.e.t2]!.Value));
+
+        var state = ctG.AddCharacter(new(ctG.Classes, map));
+        if (state == AddCharacterState.TableFull)
+            break;
+    }
+
+    ctG.DisplayCells();
+
+    Console.WriteLine("----------------------------------------------------------------------------------------------");
     
-    GlobalStopWatch.AddLap();
-    var ct0 = FG.CharacterTableEmpty(g);
-    ct0.DerivedSubGroupLift();
-    ct0.InductionFromStabilizers();
-    if (g.Count() == 24)
-        ct0.SolveOrthogonality((2, 3.Range()));
-    else
-        ct0.SolveOrthogonality((2, 6.Range()));
+    var ctG2 = FG.CharacterTableEmpty(g);
+    ctG2.DerivedSubGroupLift();
+    ctG2.InductionFromStabilizers();
+    ctG2.InductionFromSubGroups(gSubgrs);
+    ctG2.DisplayCells();
 
-    ct0.DisplayCells(tableOnly: true);
-    GlobalStopWatch.Show("With orthogonality");
+    Console.WriteLine($"END {g.ShortName}");
     Console.WriteLine();
-
-    GlobalStopWatch.AddLap();
-    var ct2 = FG.CharacterTable(super);
-    var ct1 = FG.CharacterTableEmpty(g);
-    ct1.DerivedSubGroupLift();
-    ct1.InductionFromStabilizers();
-    ct1.RestrictionFromSuperGroup(ct2);
-    ct1.DisplayCells(tableOnly: true);
-    GlobalStopWatch.Show("With restriction from super group");
-    Console.WriteLine();
-
-    ct0.AllCharacters.Zip(ct1.AllCharacters)
-        .Select(e => (e.First - e.Second).Simplify())
-        .Where(chi => !chi.IsZero())
-        .Println("Diff tables"); // empty
 }
 
 {
-    // Console.WriteLine(48.Range(1).Sum(i => GroupExt.A000001[i])); // 250 groups up to order 48
-    
-    // Generators of SL(2,3) in GL(4,5)
-    // gen1 of order 3
-    // [0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0]
-    // gen2 of order 4
-    // [0, 0, 4, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 4, 0, 0]
-    //
-    // [4, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0]
-    // 
-    
-    // Generators of SL(2,3) x: C2 in GL(4,5)
-    // gen1 of order 2
-    // [0, 0, 2, 0, 0, 0, 0, 3, 3, 0, 0, 0, 0, 2, 0, 0]
-    // gen2 of order 3
-    // [0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0]
-    //
-    // [4, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0]
-    // 
-    
-    // Generators of C2 x SL(2,3) in GL(5,5)
-    // gen1 of order 2
-    // [4, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1]
-    // gen2 of order 3
-    // [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0]
-    // gen3 of order 4
-    // [1, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 4, 0, 0]
-    //
-    // [1, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0]
-
-
-    var gl45 = new GL(4, 5);
-    var a0 = gl45[0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0];
-    var a1 = gl45[0, 0, 4, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 4, 0, 0];
-    var a2 = gl45[4, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0];
-    var a3 = gl45[0, 0, 2, 0, 0, 0, 0, 3, 3, 0, 0, 0, 0, 2, 0, 0];
-    var a4 = gl45[0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0];
-    var sl23 = Group.Generate("SL(2,3)", gl45, a0, a1);
-    var gl23 = Group.Generate("GL(2,3)", gl45, a0, a1, a2);
-    var sl23byc2 = Group.Generate("SL(2,3) x: C2", gl45, a3, a4);
-    var gl23byc2 = Group.Generate("GL(2,3) x: C2", gl45, a3, a0, a2);
-
-    var gl55 = new GL(5, 5);
-    var b0 = gl55[4, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1];
-    var b1 = gl55[1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0];
-    var b2 = gl55[1, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 4, 0, 0];
-    var b3 = gl55[1, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0];
-    
-    var c2sl23 = Group.Generate("C2 x SL(2,3)", gl55, b0, b1, b2);
-    var c2gl23 = Group.Generate("C2 x GL(2,3)", gl55, b0, b1, b2, b3);
-
-    GlobalStopWatch.Restart();
-    Logger.Level = LogLevel.Level1;
-
-    TestSL(sl23, gl23);
-    TestSL(sl23byc2, gl23byc2);
-    TestSL(c2sl23, c2gl23);
+    TensorTable(FG.Abelian(2, 3));
+    TensorTable(Product.Generate(FG.AbelianPerm(3), FG.Dihedral(4)));
 }
