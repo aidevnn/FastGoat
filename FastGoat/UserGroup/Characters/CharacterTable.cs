@@ -273,6 +273,12 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
         }
     }
 
+    public Character<T> PermutationRepresentation(T[] X, GroupAction<T, T> act)
+    {
+        var map = Classes.ToDictionary(g => g, g => (Cnf?)(Cnf.CnfOne * X.Count(x => act(g, x).Equals(x))));
+        return new Character<T>(Classes, map);
+    }
+
     public AddCharacterState AddCharacter(Character<T> chi1)
     {
         var (chiState, chi2) = AddCharacterInternal(chi1);

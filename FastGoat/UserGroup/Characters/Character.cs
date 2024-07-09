@@ -42,7 +42,7 @@ public readonly struct Character<T> : IElt<Character<T>>, IRingElt<Character<T>>
 
     public IEnumerable<T> Centre()
     {
-        var c0 = this[Gr.Neutral()]!.Value.Module;
+        var c0 = Dim;
         foreach (var g in Gr)
         {
             var abs = this[g]!.Value.Module;
