@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Runtime.CompilerServices;
 using FastGoat.Commons;
 using FastGoat.Structures.GenericGroup;
 
@@ -33,18 +34,12 @@ public readonly struct Gp<T> : IGroup<Ep<T>> where T : struct, IElt<T>
     {
         get
         {
-            dynamic us0 = new ValueType[Gi.Length];
-            if (us.Length == 1)
+            if (us.Length == 1 && Gi.Length > 1)
             {
-                dynamic us1 = us[0];
-                for (int i = 0; i < Gi.Length; ++i)
-                    us0[i] = us1[i];
+                var tuples = (ITuple)us[0];
+                return this[tuples.Length.Range().Select(i => (ValueType)tuples[i]!).ToArray()];
             }
-            else if (us.Length == Gi.Length)
-                us0 = us;
-            else
-                throw new GroupException(GroupExceptionType.GroupDef);
-
+            
             var ei = Gi.Select((g, i) => g[us[i]]).ToArray();
             return new(ei);
         }
