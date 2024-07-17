@@ -108,4 +108,9 @@ public class WordGroup : ConcreteGroup<Word>
         
         return new(WGbase, Rewrite(e1.Get().Add(e2.Get())));
     }
+
+    public void ShowClassTable() => Graph.DisplayTableOps();
+
+    public void ShowRelatorsTable() => Graph.DisplayTableRelators();
+
 }

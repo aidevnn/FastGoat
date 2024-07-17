@@ -82,7 +82,7 @@ public partial class Graph
                     Console.WriteLine($"({@class}) = ({@class.Word.Glue(" * ")})");
         }
     }
-
+    
     private void NextRelator()
     {
         var gensPos = Gens.OrderByDescending(g => char.IsLower(g.V))

@@ -151,7 +151,7 @@ public partial class Graph
         DisplayTableOps();
     }
 
-    void DisplayTableRelators()
+    public void DisplayTableRelators()
     {
         var digits = $"{Classes.Count - 1}".Length;
         var fmt = $"{{0,{digits + 1}}}";
