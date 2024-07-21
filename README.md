@@ -211,6 +211,10 @@ BaseGroup   S7
 SuperGroup  |Symm7| = 5040
 ```
 
+## Illustration
+
+![Cayley graph Group C7x:C3](./C7sdpC3.png "C7x:C3 Cayley graph")
+
 # Galois Theory
 
 Galois Group of polynomial $P = X^5 + X^4 - 4X^3 - 3X^2 + 3X + 1$
@@ -341,7 +345,7 @@ Gal( Q(β)/Q ) IsIsomorphicTo D8 : True
 
 ## Illustration
 
-![Polynomial P=X^2-5 with Galois Group C5x:C4](./C5x:C4.png "C5x:C4 Lattice")
+![Polynomial P=X^2-5 with Galois Group C5x:C4](./C5sdpC4.png "C5x:C4 Lattice")
 
 ## References
 

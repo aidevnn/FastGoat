@@ -32,3 +32,8 @@ using GroupRegX = System.Text.RegularExpressions;
 //////////////////////////////////
 
 Console.WriteLine("Hello World");
+
+{
+    DisplayGroup.HeadElementsCayleyGraph(Group.SemiDirectProd(FG.Abelian(7), FG.Abelian(3)));
+    DisplayGroup.HeadElementsCayleyGraph(Group.SemiDirectProd(FG.Abelian(4), FG.Abelian(4)));
+}
