@@ -346,25 +346,21 @@ public static class DisplayGroup
         var fmt1 = $"{{0,{digits}}}";
         var fmt2 = $"{{0,{digits}}}{{1,{-digits2}}} = {{2}}";
 
-        var eqCycles = EqualityComparer<T[]>.Create((l0, l1) => l0!.ToHashSet().SetEquals(l1!), l => l.Length);
-        var gensCycles = gens.Select(e => (g.ElementsOrders[e] + 1).Range().Select(i => g.Times(e, i)).ToArray())
-            .ToArray();
-        var cyclesByGens = g.SelectMany(e0 => gensCycles.Select(l => l.Select(e1 => g.Op(e0, e1)).ToArray()))
-            .ToHashSet(eqCycles)
-            .GroupBy(l => g.Op(g.Invert(l[0]), l[1]))
-            .ToDictionary(e => e.Key, e => e.ToArray());
-
-        if (!g.SetEquals(cyclesByGens.SelectMany(kv => kv.Value.SelectMany(l => l))))
-            throw new();
-        
-        foreach (var (gen, cycles) in cyclesByGens.OrderByDescending(e => g.ElementsOrders[e.Key]))
+        var nbArrows = 0;
+        foreach (var e in gens)
         {
-            cycles.OrderByDescending(l => l.Length).ThenBy(l => l[0])
-                .Println(l => l.Select(e => string.Format(fmt1, $"({map[e]})")).Glue(" --> "),
-                    $"Cycles with Gen: {string.Format(fmt2, $"({map[gen]})", $"[{g.ElementsOrders[gen]}]", gen)}");
+            var h = Group.Generate($"<{e}>", g, e);
+            var cyc = (g.ElementsOrders[e] + 1).Range().Select(i => g.Times(e, i)).ToArray();
+            var cosets = Group.Cosets(g, h, CosetType.Left);
+            var loops = cosets.Values.Distinct().Order()
+                .Select(a => cyc.Select(b => map[g.Op(a.X, b)]).ToArray()).ToArray();
+            loops.OrderBy(l => l[0]).Println(l => l.Select(k => string.Format(fmt1, $"({k})")).Glue(" --> "),
+                $"Loops with Gen: {string.Format(fmt2, $"({map[e]})", $"[{g.ElementsOrders[e]}]", e)}");
+
+            nbArrows += loops.Sum(l => l.Length - 1);
         }
 
-        Console.WriteLine($"Nb arrows:{cyclesByGens.Values.SelectMany(l => l).Sum(e => e.Length - 1)}");
+        Console.WriteLine($"Nb arrows:{nbArrows}");
         Console.WriteLine();
     }
     

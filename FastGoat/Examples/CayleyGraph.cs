@@ -58,8 +58,8 @@ public static class CayleyGraph
         var s4 = FG.Symmetric(4);
         DisplayGroup.HeadElementsCayleyGraph(s4);
 
-        var (c3, c4) = (s4.First(e => s4.ElementsOrders[e] == 2), s4.First(e => s4.ElementsOrders[e] == 4));
-        var s4wg = FG.WordGroup("S4", Graph.DefiningRelatorsOfGroup(s4, [c3, c4]));
+        var (c2, c4) = (s4.First(e => s4.ElementsOrders[e] == 2), s4.First(e => s4.ElementsOrders[e] == 4));
+        var s4wg = FG.WordGroup("S4", Graph.DefiningRelatorsOfGroup(s4, [c2, c4]));
         Console.WriteLine($"{s4wg}:{s4wg.Definition}");
         DisplayGroup.HeadElementsCayleyGraph(s4wg);
     }
