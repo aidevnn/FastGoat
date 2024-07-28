@@ -34,6 +34,11 @@ using GroupRegX = System.Text.RegularExpressions;
 Console.WriteLine("Hello World");
 
 {
-    DisplayGroup.HeadElementsCayleyGraph(Group.SemiDirectProd(FG.Abelian(7), FG.Abelian(3)));
-    DisplayGroup.HeadElementsCayleyGraph(Group.SemiDirectProd(FG.Abelian(4), FG.Abelian(4)));
+    var g21_1 = FG.MetaCyclicSdpWg(7, 3, 2);
+    var (_, mtGL, matSubgrs, names) = GroupMatrixFormPart2.MatrixFormOfGroup(g21_1);
+    FG.DisplayName(mtGL, matSubgrs, names, false, false, true, 20);
+    GroupMatrixFormPart2.GetCharacter(mtGL, matSubgrs);
+    
+    var (a, bi) = (g21_1["a"], g21_1["b-1"]);
+    DisplayGroup.ElementsCayleyGraph(g21_1, SortBy.Order, a, bi);
 }

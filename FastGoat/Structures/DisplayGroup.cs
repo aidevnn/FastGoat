@@ -371,6 +371,13 @@ public static class DisplayGroup
         CayleyGraph(g, sortBy, gens);
     }
 
+    public static void ElementsCayleyGraph<T>(ConcreteGroup<T> g, SortBy sortBy = SortBy.Order, params T[] gens) 
+        where T : struct, IElt<T>
+    {
+        Elements(g, sortBy);
+        CayleyGraph(g, sortBy, gens);
+    }
+
     public static void HeadElementsCayleyGraph<T>(ConcreteGroup<T> g, SortBy sortBy = SortBy.Order, params T[] gens) 
         where T : struct, IElt<T>
     {
