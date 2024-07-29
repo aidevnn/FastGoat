@@ -213,4 +213,56 @@ public static class InvariantTheory
         Invariant2Cn(7);
         Invariant2Cn(8);
     }
+
+    public static void Example_C4xC2_GL2C()
+    {
+        var gl = FG.GLnK("Cnf", 2, Cnf.CnfOne);
+        var A = gl[Cnf.I, 0, 0, -Cnf.I];
+        var B = gl[-Cnf.I, 0, 0, -Cnf.I];
+        var G = Group.Generate("C4 x C2", gl, A, B);
+        DisplayGroup.HeadElements(G);
+        InvariantGLnK(G);
+    }
+
+    public static void Example_C4xC2_GL2Z()
+    {
+        var gl = FG.GLnK("F5", 2, new ZnInt(5, 0));
+        var A = gl[2, 0, 0, 3];
+        var B = gl[3, 0, 0, 3];
+        var G = Group.Generate("C4 x C2", gl, A, B);
+        DisplayGroup.HeadElements(G);
+        InvariantGLnK(G);
+    }
+
+    public static void Example_Q8_GL2C()
+    {
+        var gl = FG.GLnK("Cnf", 2, Cnf.CnfOne);
+        var A = gl[Cnf.I, 0, 0, -Cnf.I];
+        var B = gl[0, -1, 1, 0];
+        var G = Group.Generate("Q8", gl, A, B);
+        DisplayGroup.HeadElements(G);
+        InvariantGLnK(G);
+    }
+
+    public static void Example_Q8_GL2Z()
+    {
+        var gl = FG.GLnK("F5", 2, new ZnInt(5, 0));
+        var A = gl[2, 0, 0, -2];
+        var B = gl[0, -1, 1, 0];
+        var G = Group.Generate("Q8", gl, A, B);
+        DisplayGroup.HeadElements(G);
+        InvariantGLnK(G);
+    }
+
+    public static void Example_D8_GL2C()
+    {
+        var gl = FG.GLnK("Cnf", 2, Cnf.CnfOne);
+        var n = 3;
+        var e = Cnf.Nth(n);
+        var A = gl[e, 0, 0, e.Pow(n - 1)];
+        var B = gl[0, 1, 1, 0];
+        var G = Group.Generate($"D{2 * n}", gl, A, B);
+        DisplayGroup.HeadElements(G);
+        InvariantGLnK(G);
+    }
 }

@@ -964,6 +964,10 @@ public static partial class FG
             new(P.Coefs.ToDictionary(kv => kv.Key, kv => new Rational(kv.Value.K))));
     }
 
+    public static KMatrix<ZnInt> ToKMatrix(this Mat m) => m.Table.Select(e => new ZnInt(m.GL.P, e)).ToKMatrix(m.GL.N);
+
+    public static GLn<ZnInt> ToGLnK(this GL gl) => GLnK($"F{gl.P}", gl.N, ZnInt.ZnZero(gl.P));
+    
     public static Polynomial<ZnInt, Xi> Mod(this Polynomial<ZnInt, Xi> P, int mod)
     {
         var coefs = P.Coefs.Select(e => (e.Key, IntExt.AmodP(e.Value.K, mod)))
