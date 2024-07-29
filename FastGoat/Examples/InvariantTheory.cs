@@ -1,0 +1,216 @@
+using FastGoat.Commons;
+using FastGoat.Structures;
+using FastGoat.Structures.GenericGroup;
+using FastGoat.Structures.VecSpace;
+using FastGoat.UserGroup;
+using FastGoat.UserGroup.Integers;
+using FastGoat.UserGroup.Polynoms;
+
+namespace FastGoat.Examples;
+
+/*
+ * Ideals, Varieties, and Algorithms. chap 7 Invariant Theory of Finite Groups page 345, 385
+ */
+public static class InvariantTheory
+{
+    static InvariantTheory()
+    {
+        Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+        ZnInt.Display = ZnDisplay.Signed;
+    }
+
+    static Polynomial<K, Xi> ApplyF<K>(Polynomial<K, Xi> f, KMatrix<K> A, params Polynomial<K, Xi>[] xi)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        if (xi.Length != A.M || xi.Distinct().Count() != xi.Length)
+            throw new();
+
+        var nb = xi.Length;
+        var monoms = xi.Select(x => x.ExtractIndeterminate).ToArray();
+
+        var kone = f.One;
+        var A0 = A.Select(a => a * kone).ToKMatrix(A.M);
+        var X = monoms.Select(m => m.ToPolynomial(f.One)).ToKMatrix(A.M);
+        var A0X = A0 * X;
+        var dicoSubs = nb.Range().ToDictionary(i => monoms[i], i => A0X[i, 0]);
+        return f.Substitute(dicoSubs.Select(e => (e.Key, e.Value)).ToList());
+    }
+
+    static Polynomial<K, Xi>[] Reynolds<K>(KMatrix<K>[] G, params Polynomial<K, Xi>[] xi)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var (M, N) = G[0].Dim;
+        if (M != N || G.Select(g => g.Dim).Distinct().Count() != 1)
+            throw new();
+
+        if (xi.Length != M || xi.Distinct().Count() != xi.Length)
+            throw new();
+
+        var f0 = xi[0].One;
+        var coefs = G.Length.Range(1).Select(i => xi.Aggregate((a0, a1) => a0 + a1).Pow(i))
+            .Aggregate((a0, a1) => a0 + a1);
+
+        var mn = coefs.Coefs.Keys.Select(m => m.ToPolynomial(f0)).Order().ToArray();
+        var facts = mn.Select(f => (f, G.Aggregate(f0.Zero, (acc, g) => acc + ApplyF(f, g, xi)))).ToArray();
+        facts.Println(
+            $"Reynolds Table {xi.Select((xk, k) => $"{xk}^i{k}").Glue(" * ")} when {xi.Select((xk, k) => $"i{k}").Glue(" + ")}<={G.Length}");
+        Console.WriteLine($"Nb eqs:{mn.Length}");
+        Console.WriteLine();
+
+        var res = facts.Where(e => !e.Item2.IsZero()).Select(e => e.Item2 / e.Item2.LeadingDetails.lc).Distinct()
+            .Order().ToArray();
+        return res;
+    }
+
+    static (Polynomial<K, Xi>[] invGens, Polynomial<K, Xi>[] inv, Polynomial<K, Xi>[] rfs) 
+        InvariantGLnK<K>(ConcreteGroup<KMatrix<K>> G, MonomOrder order = MonomOrder.GrLex)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var A = G.Neutral();
+        var (M, N) = A.Dim;
+        if (M != N)
+            throw new();
+
+        var xi0 = Ring.Polynomial(A.KZero, order, M.Range().Select(i => $"x{i}").ToArray());
+        var Rfs0 = Reynolds(G.ToArray(), xi0);
+        xi0[0].Indeterminates.ExtendAppend(Rfs0.Length.Range().Select(i => new Xi($"u{i}")).ToArray());
+        var xi = xi0[0].Indeterminates.Select(u => u.ToPolynomial(xi0[0].One)).ToArray();
+        var Rfs1 = Rfs0.Select((f, i) => f - xi[i + M]).ToArray();
+        Rfs1.Println("System");
+        var red = Ring.ReducedGrobnerBasis(Rfs1);
+        red.Println("Reduced System");
+        Console.WriteLine();
+        var red2 = SimplifyLoop(red);
+        red2.Println("Simplifyed generators");
+        Console.WriteLine();
+        var ui = red2.SelectMany(s => s.ExtractAllIndeterminates).Distinct().Where(e => e.xi.Contains('u')).Order()
+            .ToArray();
+        var idl = red2.Where(f => f.ExtractAllIndeterminates.All(u => ui.Contains(u))).ToArray();
+        var invGens = new Polynomial<K, Xi>[0];
+        if (idl.Length != 0)
+        {
+            var uis = idl.SelectMany(f => f.ExtractAllIndeterminates).Distinct().Order().ToArray();
+            var inv = Rfs1.Where(f => f.ExtractAllIndeterminates.Distinct().Any(u => uis.Contains(u))).Concat(idl)
+                .ToArray();
+            inv.Println("Invariant generators");
+            invGens = inv.ToArray();
+            Console.WriteLine();
+        }
+
+        return (invGens, red2, Rfs1);
+    }
+
+    static Polynomial<K, Xi>[] Simplify<K>(Polynomial<K, Xi>[] sys) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var p0 = sys[0];
+        var ind = sys[0].Indeterminates;
+        var ui = sys.SelectMany(s => s.ExtractAllIndeterminates).Distinct().Where(e => e.xi.Contains('u')).Order()
+            .ToArray();
+
+        var xi = ind.Except(ui).ToArray();
+        var subs = sys.Grid2D(ui).Where(e =>
+                e.t1.Coefs.Keys.Count(e1 => e1[e.t2] == 1 && e1.Degree == 1) == 1 &&
+                xi.All(x => !e.t1.ExtractAllIndeterminates.Contains(x)))
+            .Select(e => (e.t2, -e.t1 / e.t1.Coefs[new Monom<Xi>(ind, e.t2, 1)] + e.t2.ToPolynomial(p0.One)))
+            .GroupBy(e => e.t2).Select(e => (e.Key, e.First().Item2)).ToArray();
+
+        if (subs.Length == 0)
+            return sys;
+
+        var sub = subs.MaxBy(e => e.Key);
+        Console.WriteLine($"Sub : {sub}");
+        var sys2 = sys.Select(s => s.Substitute(sub.Item2, sub.Key)).Where(e => !e.IsZero()).Distinct().ToArray();
+        var sys3 = Ring.ReducedGrobnerBasis(sys2);
+        return sys3;
+    }
+
+    static Polynomial<K, Xi>[] SimplifyLoop<K>(Polynomial<K, Xi>[] sys)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var sys0 = sys.ToArray();
+        var sz = 0;
+        while (sys0.Length != sz)
+        {
+            sz = sys0.Length;
+            sys0 = Simplify(sys0);
+        }
+
+        return sys0;
+    }
+    
+    static (GLn<EPoly<Rational>> gl, KMatrix<EPoly<Rational>> A) RealRotation_2Pi_over_k(int k)
+    {
+        var c = Cnf.Nth(k);
+        var n0 = IntExt.Lcm(c.Re.N, c.Im.N);
+        var (cos, sin) = (c.Re.ToCnfN(n0).E, c.Im.ToCnfN(n0).E);
+        var gl = FG.GLnK($"Q(ξ{n0})", 2, cos);
+        return (gl, gl[cos, sin, -sin, cos]);
+    }
+
+    static (GLn<Cnf> gl, KMatrix<Cnf> A) RealRotation2_2Pi_over_k(int k)
+    {
+        var c = Cnf.Nth(k);
+        var (cos, sin) = (c.Re, c.Im);
+        var gl = FG.GLnK($"Cnf", 2, cos);
+        return (gl, gl[cos, sin, -sin, cos]);
+    }
+
+    static (Polynomial<EPoly<Rational>, Xi>[] invGens, Polynomial<EPoly<Rational>, Xi>[] inv, 
+        Polynomial<EPoly<Rational>, Xi>[] rfs) InvariantCn(int n)
+    {
+        var (gl, A) = RealRotation_2Pi_over_k(n);
+        var G = Group.Generate($"C{n}", gl, A);
+        DisplayGroup.HeadElements(G);
+        return InvariantGLnK(G);
+    }
+
+
+    static (Polynomial<Cnf, Xi>[] invGens, Polynomial<Cnf, Xi>[] inv, Polynomial<Cnf, Xi>[] rfs) Invariant2Cn(int n)
+    {
+        var (gl, A) = RealRotation2_2Pi_over_k(n);
+        var G = Group.Generate($"C{n}", gl, A);
+        DisplayGroup.HeadElements(G);
+        return InvariantGLnK(G);
+    }
+
+    public static void Example_Klein_GL2Q()
+    {
+        var gl = FG.GLnK("Q", 2, Rational.KOne());
+        var A = gl[-1, 0, 0, 1];
+        var B = gl[1, 0, 0, -1];
+        var G = Group.Generate("V", gl, A, B);
+        DisplayGroup.HeadElements(G);
+        InvariantGLnK(G);
+    }
+
+    public static void Example_C4_GL2C()
+    {
+        var gl = FG.GLnK("Cnf", 2, Cnf.CnfOne);
+        var A = gl[Cnf.I, 0, 0, -Cnf.I];
+        var G = Group.Generate("C4", gl, A);
+        DisplayGroup.HeadElements(G);
+        InvariantGLnK(G);
+    }
+
+    public static void Example_Invariant_GL2K_CyclicGroups()
+    {
+        InvariantCn(2);
+        InvariantCn(3);
+        InvariantCn(4);
+        InvariantCn(5);
+        InvariantCn(6);
+        InvariantCn(7);
+        InvariantCn(8);
+    }
+
+    public static void Example_Invariant2_GL2K_CyclicGroups()
+    {
+        Invariant2Cn(2);
+        Invariant2Cn(3);
+        Invariant2Cn(4);
+        Invariant2Cn(5);
+        Invariant2Cn(6);
+        Invariant2Cn(7);
+        Invariant2Cn(8);
+    }
+}
