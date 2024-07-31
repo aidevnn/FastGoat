@@ -62,7 +62,7 @@ public static class InvariantTheory
         return res;
     }
 
-    static (Polynomial<K, Xi>[] invGens, Polynomial<K, Xi>[] inv, Polynomial<K, Xi>[] rfs) 
+    static (Polynomial<K, Xi>[] invGens, Polynomial<K, Xi>[] inv, Polynomial<K, Xi>[] rfs)
         InvariantGLnK<K>(ConcreteGroup<KMatrix<K>> G, MonomOrder order = MonomOrder.GrLex)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
@@ -137,7 +137,7 @@ public static class InvariantTheory
 
         return sys0;
     }
-    
+
     static (GLn<EPoly<Rational>> gl, KMatrix<EPoly<Rational>> A) RealRotation_2Pi_over_k(int k)
     {
         var c = Cnf.Nth(k);
@@ -155,7 +155,7 @@ public static class InvariantTheory
         return (gl, gl[cos, sin, -sin, cos]);
     }
 
-    static (Polynomial<EPoly<Rational>, Xi>[] invGens, Polynomial<EPoly<Rational>, Xi>[] inv, 
+    static (Polynomial<EPoly<Rational>, Xi>[] invGens, Polynomial<EPoly<Rational>, Xi>[] inv,
         Polynomial<EPoly<Rational>, Xi>[] rfs) InvariantCn(int n)
     {
         var (gl, A) = RealRotation_2Pi_over_k(n);
@@ -171,6 +171,52 @@ public static class InvariantTheory
         var G = Group.Generate($"C{n}", gl, A);
         DisplayGroup.HeadElements(G);
         return InvariantGLnK(G);
+    }
+
+    static (EPolynomial<K>, Polynomial<K, Xi> serie) MolienSum<K>(ConcreteGroup<KMatrix<K>> G)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var id = G.Neutral();
+        var t = Ring.EPolynomial(id.KOne, MonomOrder.Lex, (1, "t"))[0];
+        var sum = t.Zero;
+        var dets = new List<KPoly<K>>();
+        foreach (var m0 in G)
+        {
+            var m1 = m0.N.Range().Grid2D().Select(e => id[e.t1, e.t2] - t * m0[e.t1, e.t2]).ToKMatrix(m0.N);
+            Console.WriteLine(m0);
+            var det = m1.Det;
+            dets.Add(det.Num.ToKPoly(det.Num.ExtractIndeterminate) * G.Count());
+            var deti = det.Inv();
+            Console.WriteLine(deti);
+            Console.WriteLine();
+            sum += deti;
+        }
+
+        sum /= G.Count();
+        Console.WriteLine(new { sum });
+        
+        var derDets = dets.Select(e => (e.One, e)).ToArray();
+        var serie = dets[0].Zero;
+
+        for (int i = 0; i < G.Count(); i++)
+        {
+            var fi = i == 0 ? sum.KOne : i.Range(1).Aggregate(sum.KOne, (a, b) => a * b);
+
+            for (int k = 0; k < derDets.Length; ++k)
+            {
+                var (nm, dnm) = derDets[k];
+                var s0 = nm[0] / dnm[0];
+                serie += s0 * fi.Inv() * nm.X.Pow(i);
+                var derNm = nm.Derivative * dnm - nm * dnm.Derivative;
+                var derDnm = dnm.Pow(2);
+                var gcd = Ring.Gcd(derNm.Monic, derDnm.Monic).Monic;
+                derDets[k] = (derNm / gcd, derDnm / gcd);
+            }
+
+            Console.WriteLine(new { i, serie });
+        }
+        
+        return (sum, serie.Substitute(t.Num));
     }
 
     public static void Example_Klein_GL2Q()
@@ -241,6 +287,9 @@ public static class InvariantTheory
         var B = gl[0, -1, 1, 0];
         var G = Group.Generate("Q8", gl, A, B);
         DisplayGroup.HeadElements(G);
+        DisplayGroup.AreIsomorphics(G, FG.Quaternion(8));
+        Console.WriteLine();
+
         InvariantGLnK(G);
     }
 
@@ -251,18 +300,90 @@ public static class InvariantTheory
         var B = gl[0, -1, 1, 0];
         var G = Group.Generate("Q8", gl, A, B);
         DisplayGroup.HeadElements(G);
+        DisplayGroup.AreIsomorphics(G, FG.Quaternion(8));
+        Console.WriteLine();
+
         InvariantGLnK(G);
     }
 
     public static void Example_D8_GL2C()
     {
         var gl = FG.GLnK("Cnf", 2, Cnf.CnfOne);
-        var n = 3;
+        var n = 4;
         var e = Cnf.Nth(n);
-        var A = gl[e, 0, 0, e.Pow(n - 1)];
+        var A = gl[e, 0, 0, e.Inv()];
         var B = gl[0, 1, 1, 0];
         var G = Group.Generate($"D{2 * n}", gl, A, B);
         DisplayGroup.HeadElements(G);
+        DisplayGroup.AreIsomorphics(G, FG.Dihedral(4));
+        Console.WriteLine();
+
         InvariantGLnK(G);
+    }
+
+    public static void Example_D12_GL2Z()
+    {
+        var gl = FG.GLnK("F7", 3, new ZnInt(7, 0));
+        var A = gl[2, 0, 0, 0, 4, 0, 0, 0, 6];
+        var B = gl[0, 1, 0, 1, 0, 0, 0, 0, 1];
+        var G = Group.Generate("D12", gl, A, B);
+        DisplayGroup.HeadElements(G);
+        DisplayGroup.AreIsomorphics(G, FG.Dihedral(6));
+        InvariantGLnK(G);
+    }
+
+    public static void Examples_MolienTheorem()
+    {
+        {
+            var gl = FG.GLnK("Cnf", 2, Cnf.CnfOne);
+            var A = gl[Cnf.I, 0, 0, -Cnf.I];
+            var B = gl[0, 1, 1, 0];
+            var G = Group.Generate("D8", gl, A, B);
+            DisplayGroup.HeadElements(G);
+            DisplayGroup.AreIsomorphics(G, FG.Dihedral(4));
+            Console.WriteLine();
+
+            var (sum, serie) = MolienSum(G);
+            Console.WriteLine($"MolienSum({G}) = {sum}");
+            Console.WriteLine($"MolienSerie({G}) = {serie}");
+            Console.WriteLine();
+            // MolienSum(D8) = -1/(-t^6 + t^4 + t^2 - 1)
+            // MolienSerie(D8) = 2*t^6 + 2*t^4 + t^2 + 1
+        }
+
+        {
+            var gl = FG.GLnK("Cnf", 2, Cnf.CnfOne);
+            var A = gl[Cnf.I, 0, 0, -Cnf.I];
+            var B = gl[0, -1, 1, 0];
+            var G = Group.Generate("Q8", gl, A, B);
+            DisplayGroup.HeadElements(G);
+            DisplayGroup.AreIsomorphics(G, FG.Quaternion(8));
+            Console.WriteLine();
+
+            var (sum, serie) = MolienSum(G);
+            Console.WriteLine($"MolienSum({G}) = {sum}");
+            Console.WriteLine($"MolienSerie({G}) = {serie}");
+            Console.WriteLine();
+            // MolienSum(Q8) = (4/3*t^4 - 4/3*t^2 + 4/3)/(4/3*t^6 - 4/3*t^4 - 4/3*t^2 + 4/3)
+            // MolienSerie(Q8) = t^6 + 2*t^4 + 1
+        }
+        
+        {
+            var gl = FG.GLnK("Cnf", 2, Cnf.CnfOne);
+            var c = Cnf.Nth(6);
+            var A = gl[c, 0, 0, c.Inv()];
+            var B = gl[0, 1, 1, 0];
+            var G = Group.Generate("D12", gl, A, B);
+            DisplayGroup.HeadElements(G);
+            DisplayGroup.AreIsomorphics(G, FG.Dihedral(6));
+            Console.WriteLine();
+
+            var (sum, serie) = MolienSum(G);
+            Console.WriteLine($"MolienSum({G}) = {sum}");
+            Console.WriteLine($"MolienSerie({G}) = {serie}");
+            Console.WriteLine();
+            // MolienSum(D12) = -1/(-t^8 + t^6 + t^2 - 1)
+            // MolienSerie(D12) = 2*t^10 + 2*t^8 + 2*t^6 + t^4 + t^2 + 1
+        }
     }
 }
