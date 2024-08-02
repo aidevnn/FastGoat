@@ -325,33 +325,10 @@ public static class InvariantTheory
         InvariantGLnK(G);
     }
 
-    public static void Example_C4xC2_GL2Z()
-    {
-        var gl = FG.GLnK("F5", 2, new ZnInt(5, 0));
-        var A = gl[2, 0, 0, 3];
-        var B = gl[3, 0, 0, 3];
-        var G = Group.Generate("C4 x C2", gl, A, B);
-        DisplayGroup.HeadElements(G);
-        InvariantGLnK(G);
-    }
-
     public static void Example_Q8_GL2C()
     {
         var gl = FG.GLnK("Cnf", 2, Cnf.CnfOne);
         var A = gl[Cnf.I, 0, 0, -Cnf.I];
-        var B = gl[0, -1, 1, 0];
-        var G = Group.Generate("Q8", gl, A, B);
-        DisplayGroup.HeadElements(G);
-        DisplayGroup.AreIsomorphics(G, FG.Quaternion(8));
-        Console.WriteLine();
-
-        InvariantGLnK(G);
-    }
-
-    public static void Example_Q8_GL2Z()
-    {
-        var gl = FG.GLnK("F5", 2, new ZnInt(5, 0));
-        var A = gl[2, 0, 0, -2];
         var B = gl[0, -1, 1, 0];
         var G = Group.Generate("Q8", gl, A, B);
         DisplayGroup.HeadElements(G);
@@ -373,17 +350,6 @@ public static class InvariantTheory
         DisplayGroup.AreIsomorphics(G, FG.Dihedral(4));
         Console.WriteLine();
 
-        InvariantGLnK(G);
-    }
-
-    public static void Example_D12_GL2Z()
-    {
-        var gl = FG.GLnK("F7", 3, new ZnInt(7, 0));
-        var A = gl[2, 0, 0, 0, 4, 0, 0, 0, 6];
-        var B = gl[0, 1, 0, 1, 0, 0, 0, 0, 1];
-        var G = Group.Generate("D12", gl, A, B);
-        DisplayGroup.HeadElements(G);
-        DisplayGroup.AreIsomorphics(G, FG.Dihedral(6));
         InvariantGLnK(G);
     }
 
