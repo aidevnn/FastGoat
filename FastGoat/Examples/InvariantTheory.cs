@@ -288,6 +288,31 @@ public static class InvariantTheory
         InvariantGLnK(G);
     }
 
+    public static void Example_C3_GL2R()
+    {
+        InvariantCn(3);
+        
+        {
+            var gl = FG.GLnK("R", 2, Rational.KOne());
+            var A = gl[0, -1, 1, -1];
+            var G = Group.Generate("C3", gl, A);
+            DisplayGroup.HeadElements(G);
+            Console.WriteLine();
+
+            InvariantGLnK(G);
+        }
+        
+        {
+            var gl = FG.GLnK("R", 3, Rational.KOne());
+            var A = gl[0, 1, 0, 0, 0, 1, 1, 0, 0];
+            var G = Group.Generate("C3", gl, A);
+            DisplayGroup.HeadElements(G);
+            Console.WriteLine();
+
+            InvariantGLnK(G); // ~4min
+        }
+    }
+
     public static void Example_Invariant_GL2K_CyclicGroups()
     {
         InvariantCn(2);
