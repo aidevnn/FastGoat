@@ -89,8 +89,9 @@ public static class InvariantTheory
 
         var xi0 = Ring.Polynomial(A.KZero, order, M.Range().Select(i => $"x{i}").ToArray());
         var Rfs0 = Reynolds(G.ToArray(), MolienSerie, xi0);
-        xi0[0].Indeterminates.ExtendAppend(Rfs0.Length.Range().Select(i => new Xi($"u{i}")).ToArray());
-        var xi = xi0[0].Indeterminates.Select(u => u.ToPolynomial(xi0[0].One)).ToArray();
+        var one = xi0[0].One;
+        one.Indeterminates.ExtendAppend(Rfs0.Length.Range().Select(i => new Xi($"u{i}")).ToArray());
+        var xi = one.Indeterminates.Select(u => u.ToPolynomial(one)).ToArray();
         var Rfs1 = Rfs0.Select((f, i) => f - xi[i + M]).ToArray();
         Rfs1.Println("System");
 
@@ -110,28 +111,23 @@ public static class InvariantTheory
 
         var red1 = SimplifyLoop(rfs1.ToArray());
         rfs1.Clear();
-        rfs1.AddRange(red1);
+        var ui = red1.SelectMany(s => s.ExtractAllIndeterminates).Distinct().Where(e => e.xi.Contains('u')).Order()
+            .ToArray();
+        var zip = ui.Zip(xi.Skip(M)).ToArray();
+        rfs1.AddRange(red1.Select(p => zip.Aggregate(p, (acc, e) => acc.Substitute(e.Second, e.First))));
         rfs1.Println("Simplifyed generators");
         Console.WriteLine();
         
-        var ui = rfs1.SelectMany(s => s.ExtractAllIndeterminates).Distinct().Where(e => e.xi.Contains('u')).Order()
-            .ToArray();
-        var idl = rfs1.Where(f => f.ExtractAllIndeterminates.All(u => ui.Contains(u))).ToArray();
-        var invGens = new Polynomial<K, Xi>[0];
-        if (idl.Length != 0)
-        {
-            var uis = idl.SelectMany(f => f.ExtractAllIndeterminates).Distinct().Order().ToArray();
-            var inv = Rfs1.Where(f => f.ExtractAllIndeterminates.Distinct().Any(u => uis.Contains(u))).Concat(idl)
-                .ToArray();
-            inv.Println("Invariant generators");
-            invGens = inv.ToArray();
-            Console.WriteLine();
-        }
-
-        return (invGens, rfs1.ToArray(), Rfs1);
+        var idl = rfs1.Where(f => f.ExtractAllIndeterminates.All(u => u.xi.Contains('u'))).ToArray();
+        var inv = Rfs1.Where(f => f.ExtractAllIndeterminates.Any(u => ui.Contains(u)))
+            .Select(p => zip.Aggregate(p, (acc, e) => acc.Substitute(e.Second, e.First)))
+            .Concat(idl).ToArray();
+        inv.Println("Invariant generators");
+        Console.WriteLine();
+        
+        return (inv.ToArray(), rfs1.ToArray(), Rfs1);
     }
-
-
+    
     static (Polynomial<K, Xi>[] invGens, Polynomial<K, Xi>[] inv, Polynomial<K, Xi>[] rfs)
         InvariantGLnK<K>(ConcreteGroup<KMatrix<K>> G, MonomOrder order = MonomOrder.GrLex)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
