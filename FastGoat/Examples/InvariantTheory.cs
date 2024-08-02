@@ -37,6 +37,16 @@ public static class InvariantTheory
         return f.Substitute(dicoSubs.Select(e => (e.Key, e.Value)).ToList());
     }
 
+    static Polynomial<K, Xi> Reynolds<K>(KMatrix<K>[] G, Polynomial<K, Xi> f, Polynomial<K, Xi>[] xi)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        if (f.P != 0)
+            throw new($"Field characteristic must be 0 but egal {f.P}");
+
+        var gi = (f.KOne * G.Length).Inv();
+        return gi * G.Aggregate(f.Zero, (acc, g) => acc + ApplyF(f, g, xi));
+    }
+
     static Polynomial<K, Xi>[] Reynolds<K>(KMatrix<K>[] G,KPoly<Rational> MolienSerie, Polynomial<K, Xi>[] xi)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
@@ -49,12 +59,15 @@ public static class InvariantTheory
 
         var degrees = MolienSerie.Coefs.Select((e, k) => (e, k)).Where(e => !e.e.IsZero()).Select(e => e.k).ToHashSet();
         var f0 = xi[0].One;
+        if (f0.P != 0)
+            throw new($"Field characteristic must be 0 but egal {f0.P}");
+        
         var coefs = G.Length.Range(1).Select(i => xi.Aggregate((a0, a1) => a0 + a1).Pow(i))
             .Aggregate((a0, a1) => a0 + a1);
 
         var mn = coefs.Coefs.Keys.Where(m => degrees.Contains(m.Degree)).Select(m => m.ToPolynomial(f0)).Order()
             .ToArray();
-        var facts = mn.Select(f => (f, G.Aggregate(f0.Zero, (acc, g) => acc + ApplyF(f, g, xi)))).ToArray();
+        var facts = mn.Select(f => (f, Reynolds(G, f, xi))).ToArray();
         facts.Println(
             $"Reynolds Table {xi.Select((xk, k) => $"{xk}^i{k}").Glue(" * ")} when {xi.Select((xk, k) => $"i{k}").Glue(" + ")}<={G.Length}");
         Console.WriteLine($"Nb eqs:{mn.Length}");
