@@ -48,7 +48,7 @@ public static class InvariantTheory
         return gi * G.Aggregate(f.Zero, (acc, g) => acc + ApplyF(f, g, xi));
     }
 
-    static Polynomial<K, Xi>[] Reynolds<K>(KMatrix<K>[] G,KPoly<Rational> MolienSerie, Polynomial<K, Xi>[] xi)
+    static Polynomial<K, Xi>[] Reynolds<K>(KMatrix<K>[] G, KPoly<Rational> MolienSerie, Polynomial<K, Xi>[] xi)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var (M, N) = G[0].Dim;
@@ -62,7 +62,7 @@ public static class InvariantTheory
         var f0 = xi[0].One;
         if (f0.P != 0)
             throw new($"Field characteristic must be 0 but egal {f0.P}");
-        
+
         var coefs = G.Length.Range(1).Select(i => xi.Aggregate((a0, a1) => a0 + a1).Pow(i))
             .Aggregate((a0, a1) => a0 + a1);
 
@@ -74,41 +74,78 @@ public static class InvariantTheory
         Console.WriteLine($"Nb eqs:{mn.Length}");
         Console.WriteLine();
 
-        var res = facts.Where(e => !e.Rf.IsZero()).Select(e => e.Rf.Monic()).Distinct().Order().ToArray();
-        return res;
+        var res = new HashSet<Polynomial<K, Xi>>();
+        foreach (var p in facts.Where(e => !e.Rf.IsZero()).Select(e => e.Rf).DistinctBy(p => p.Monic()).Order())
+        {
+            var decomp = new Dictionary<Polynomial<K, Xi>, int>();
+            var p0 = new Polynomial<K, Xi>(p.Indeterminates, p.KZero, new(p.Coefs));
+
+            foreach (var p1 in res.OrderDescending())
+            {
+                if (p1.Degree > p0.Degree)
+                    continue;
+
+                var dg = -1;
+                while (dg != p0.Degree)
+                {
+                    dg = p0.Degree;
+                    var (quo, rem) = p0.Div(p1);
+                    if (rem.IsZero())
+                    {
+                        p0 = quo;
+                        if (decomp.ContainsKey(p1))
+                            decomp[p1]++;
+                        else
+                            decomp[p1] = 1;
+                    }
+                }
+            }
+
+            var decompStr = $"[{decomp.Select(e => e.Value == 1 ? $"({e.Key})" : $"({e.Key})^{e.Value}").Glue("*")}]";
+            Console.WriteLine($"{p} = {p0} * {decompStr}");
+
+            if (p0.Degree != 0)
+                res.Add(p);
+        }
+
+        Console.WriteLine();
+        return res.Order().ToArray();
     }
 
     static (Polynomial<K, Xi>[] inv, Polynomial<K, Xi>[] mod)
         InvariantGLnK<K>(ConcreteGroup<KMatrix<K>> G, KPoly<Rational> MolienSerie, MonomOrder order)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
-        GlobalStopWatch.AddLap();
         var A = G.Neutral();
         var (M, N) = A.Dim;
         if (M != N)
             throw new();
 
         var xi0 = Ring.Polynomial(A.KZero, order, M.Range().Select(i => $"x{i}").ToArray());
-        var Rfs0 = Reynolds(G.ToArray(), MolienSerie, xi0);
+        var molien = (MolienSerie.Degree + 1).Range().ToDictionary(i => i, i => (int)MolienSerie.Coefs[i].Num);
+        var Rfs0 = Reynolds(G.ToArray(), MolienSerie, xi0)
+            .GroupBy(e => e.Degree)
+            .SelectMany(e => e.OrderBy(g => g).Take(molien[e.Key]))
+            .ToArray();
         Rfs0.Select(f => (f, Rf: Reynolds(G.ToArray(), f, xi0).Equals(f))).Println($"Invariant Check");
         var one = xi0[0].One;
         one.Indeterminates.ExtendAppend(Rfs0.Length.Range().Select(i => new Xi($"u{i}")).ToArray());
         var xi = one.Indeterminates.Select(u => u.ToPolynomial(one)).ToArray();
-        var Rfs1 = Rfs0.Select((f, i) => f.Monic() - xi[i + M]).ToArray();
+        var Rfs1 = Rfs0.Select((f, i) => f - xi[i + M]).ToArray();
         Rfs1.Println("System");
-
-        var dico = Rfs1.GroupBy(e => e.Degree).ToDictionary(e => e.Key, e => e.ToArray());
-        var degree = dico.Keys.Order().ToArray();
+        
         var rfs1 = new List<Polynomial<K, Xi>>();
-        foreach (var k in degree)
+        foreach (var p in Rfs1)
         {
-            var part = rfs1.Union(dico[k]).ToArray();
+            var part = rfs1.Append(p).ToArray();
             part.Println("Sys partial");
             var red0 = SimplifyLoop(Ring.ReducedGrobnerBasis(part));
             red0.Println("Red partial");
             Console.WriteLine();
             rfs1.Clear();
             rfs1.AddRange(red0);
+            if (rfs1.Any(f => f.ExtractAllIndeterminates.All(u => u.xi.Contains('u'))))
+                break;
         }
 
         var red1 = SimplifyLoop(rfs1.ToArray());
@@ -119,18 +156,15 @@ public static class InvariantTheory
         rfs1.AddRange(red1.Select(p => zip.Aggregate(p, (acc, e) => acc.Substitute(e.Second, e.First))));
         rfs1.Println("Simplifyed generators");
         Console.WriteLine();
-        
+
         var mod = rfs1.Where(f => f.ExtractAllIndeterminates.All(u => u.xi.Contains('u'))).ToArray();
         var inv = Rfs1.Where(f => f.ExtractAllIndeterminates.Any(u => ui.Contains(u)))
             .Select(p => zip.Aggregate(p, (acc, e) => acc.Substitute(e.Second, e.First)))
             .ToArray();
         inv.Concat(mod).Println("Invariant generators");
-        GlobalStopWatch.Show();
-        Console.WriteLine();
-        
         return (inv.ToArray(), mod);
     }
-    
+
     static (Polynomial<K, Xi>[] inv, Polynomial<K, Xi>[] mod)
         InvariantGLnK<K>(ConcreteGroup<KMatrix<K>> G, MonomOrder order = MonomOrder.GrLex)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
@@ -214,7 +248,7 @@ public static class InvariantTheory
         var id = G.Neutral();
         if (id.P != 0)
             throw new($"Field characteristic must be 0 but egal {id.P}");
-        
+
         var t = Ring.EPolynomial(id.KOne, MonomOrder.Lex, (1, "t"))[0];
         var sum = t.Zero;
         var dets = new List<KPoly<K>>();
@@ -253,7 +287,7 @@ public static class InvariantTheory
 
             Console.WriteLine(new { i, serie });
         }
-        
+
         var T = FG.QPoly('t');
         var serie0 = serie.Coefs.Select((c, k) => int.Parse($"{c}") * T.Pow(k)).Aggregate((a, b) => a + b);
         return (sum, serie0);
@@ -269,7 +303,7 @@ public static class InvariantTheory
         InvariantGLnK(G);
     }
 
-    public static void Example_C4_GL2C()
+    public static void Example_C4_GLnC()
     {
         {
             var gl = FG.GLnK("Cnf", 2, Cnf.CnfOne);
@@ -278,7 +312,7 @@ public static class InvariantTheory
             DisplayGroup.HeadElements(G);
             InvariantGLnK(G);
         }
-        
+
         {
             var gl = FG.GLnK("R", 2, Rational.KOne());
             var A = gl[0, -1, 1, 0];
@@ -286,12 +320,20 @@ public static class InvariantTheory
             DisplayGroup.HeadElements(G);
             InvariantGLnK(G);
         }
+
+        {
+            var gl = FG.GLnK("R", 3, Rational.KOne());
+            var A = gl[0, 1, 0, -1, 0, 0, 0, 0, -1];
+            var G = Group.Generate("C4", gl, A);
+            DisplayGroup.HeadElements(G);
+            InvariantGLnK(G);
+        }
     }
 
-    public static void Example_C3_GL2R()
+    public static void Example_C3_GLnR()
     {
         Invariant_Cn_GL2R_EPoly(3);
-        
+
         {
             var gl = FG.GLnK("R", 2, Rational.KOne());
             var A = gl[0, -1, 1, -1];
@@ -301,7 +343,7 @@ public static class InvariantTheory
 
             InvariantGLnK(G);
         }
-        
+
         {
             var gl = FG.GLnK("R", 3, Rational.KOne());
             var A = gl[0, 1, 0, 0, 0, 1, 1, 0, 0];
@@ -309,7 +351,7 @@ public static class InvariantTheory
             DisplayGroup.HeadElements(G);
             Console.WriteLine();
 
-            InvariantGLnK(G); // ~4min
+            InvariantGLnK(G); // Time:1.735s
         }
     }
 
@@ -321,7 +363,7 @@ public static class InvariantTheory
         DisplayGroup.HeadElements(G);
         Console.WriteLine();
 
-        InvariantGLnK(G); 
+        InvariantGLnK(G);
     }
 
     public static void Example_Invariant_GL2R_EPoly_CyclicGroups()
@@ -377,11 +419,10 @@ public static class InvariantTheory
     public static void Example_D8_GL2C()
     {
         var gl = FG.GLnK("Cnf", 2, Cnf.CnfOne);
-        var n = 4;
-        var e = Cnf.Nth(n);
-        var A = gl[e, 0, 0, e.Inv()];
+        var c = Cnf.Nth(4);
+        var A = gl[c, 0, 0, c.Inv()];
         var B = gl[0, 1, 1, 0];
-        var G = Group.Generate($"D{2 * n}", gl, A, B);
+        var G = Group.Generate("D4", gl, A, B);
         DisplayGroup.HeadElements(G);
         DisplayGroup.AreIsomorphics(G, FG.Dihedral(4));
         Console.WriteLine();
@@ -424,7 +465,7 @@ public static class InvariantTheory
             // MolienSum(Q8) = (4/3*t0^4 - 4/3*t0^2 + 4/3)/(4/3*t0^6 - 4/3*t0^4 - 4/3*t0^2 + 4/3)
             // MolienSerie(Q8) = 3*t^8 + t^6 + 2*t^4 + 1
         }
-        
+
         {
             var gl = FG.GLnK("Cnf", 2, Cnf.CnfOne);
             var c = Cnf.Nth(6);
@@ -456,7 +497,7 @@ public static class InvariantTheory
 
         InvariantGLnK(G);
     }
-    
+
     public static void Example_Dic3_GL2C()
     {
         var gl = FG.GLnK("Cnf", 2, Cnf.CnfOne);
@@ -470,7 +511,7 @@ public static class InvariantTheory
 
         InvariantGLnK(G);
     }
-    
+
     public static void Example_C3xC3_GL3C()
     {
         var gl = FG.GLnK("Cnf", 2, Cnf.CnfOne);
