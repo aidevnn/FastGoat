@@ -524,4 +524,32 @@ public static class InvariantTheory
 
         InvariantGLnK(G);
     }
+    
+    public static void Example_D12_GL2C()
+    {
+        var gl = FG.GLnK("Cnf", 3, Cnf.CnfOne);
+        var c = Cnf.Nth(3);
+        var A = gl[c, 0, 0, 0, c.Pow(2), 0, 0, 0, -1];
+        var B = gl[0, 1, 0, 1, 0, 0, 0, 0, 1];
+        var G = Group.Generate("D12", gl, A, B);
+        DisplayGroup.HeadElements(G);
+        DisplayGroup.AreIsomorphics(G, FG.Dihedral(6));
+        Console.WriteLine();
+
+        InvariantGLnK(G); // Time:32.421s
+    }
+    
+    public static void Example_D12_GL2R()
+    {
+        var gl = FG.GLnK("Cnf", 3, Cnf.CnfOne);
+        var c = Cnf.Nth(6);
+        var A = gl[c.Re, -c.Im, 0, c.Im, c.Re, 0, 0, 0, 1];
+        var B = gl[1, 0, 0, 0, -1, 0, 0, 0, -1];
+        var G = Group.Generate("D12", gl, A, B);
+        DisplayGroup.HeadElements(G);
+        DisplayGroup.AreIsomorphics(G, FG.Dihedral(6));
+        Console.WriteLine();
+
+        InvariantGLnK(G); // Time:56.759s
+    }
 }
