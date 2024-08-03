@@ -552,4 +552,51 @@ public static class InvariantTheory
 
         InvariantGLnK(G); // Time:56.759s
     }
+    
+    public static void Example_Dn_GL2C()
+    {
+        GlobalStopWatch.AddLap();
+        for (int n = 3; n < 9; n++)
+        {
+            var c = Cnf.Nth(n);
+            var gl = FG.GLnK("Cnf", 2, c);
+            var A = gl[c, 0, 0, c.Inv()];
+            var B = gl[0, 1, 1, 0];
+            var G = Group.Generate($"D{2 * n}", gl, A, B);
+            DisplayGroup.HeadElements(G);
+            DisplayGroup.AreIsomorphics(G, FG.Dihedral(n));
+            Console.WriteLine();
+
+            InvariantGLnK(G);
+        }
+
+        GlobalStopWatch.Show("End"); // Time:1m25s
+
+        // D2n = <[ξn, 0, 0, ξn^-1], [0, 1, 1, 0]>
+        // C[x, y]D2n = C[xy, x^n + y^n] TODO proof
+    }
+
+    public static void Example_Dn_GL2R()
+    {
+        GlobalStopWatch.AddLap();
+        for (int n = 3; n < 9; n++)
+        {
+            var c = Cnf.Nth(n);
+            var gl = FG.GLnK("Cnf", 2, c);
+            var A = gl[c.Re, -c.Im, c.Im, c.Re];
+            var B = gl[0, 1, 1, 0];
+            var G = Group.Generate($"D{2 * n}", gl, A, B);
+            DisplayGroup.HeadElements(G);
+            DisplayGroup.AreIsomorphics(G, FG.Dihedral(n));
+            Console.WriteLine();
+
+            InvariantGLnK(G);
+        }
+
+        GlobalStopWatch.Show("End"); // Time:3m17s
+
+        // D2n = <[cos(2π/n), -sin(2π/n), sin(2π/n), cos(2π/n)], [0, 1, 1, 0]>
+        // C[x, y]D2n TODO Invariant ring
+    }
+
 }
