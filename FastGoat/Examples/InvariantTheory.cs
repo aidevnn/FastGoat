@@ -138,8 +138,13 @@ public static class InvariantTheory
         var A = G.Neutral();
         if (A.P != 0)
             throw new($"Field characteristic must be 0 but egal {A.P}");
-        
-        return InvariantGLnK(G, MolienSum(G).serie, order);
+
+        GlobalStopWatch.AddLap();
+        var r = InvariantGLnK(G, MolienSum(G).serie, order);
+        GlobalStopWatch.Show();
+        Console.WriteLine();
+
+        return r;
     }
 
     static Polynomial<K, Xi>[] Simplify<K>(Polynomial<K, Xi>[] sys) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
@@ -227,23 +232,23 @@ public static class InvariantTheory
 
         sum /= G.Count();
         Console.WriteLine(new { sum });
-        
-        var derDets = dets.Select(e => (e.One, e)).ToArray();
-        var serie = dets[0].Zero;
 
+        var derDets = dets.Select(e => (c: e.KOne, nm: e.One, dnm: e)).ToArray();
+        var serie = dets[0].Zero;
+        
         for (int i = 0; i <= G.Count(); i++)
         {
-            var fi = i == 0 ? sum.KOne : i.Range(1).Aggregate(sum.KOne, (a, b) => a * b);
-
+            var fi = i == 0 ? sum.KOne : i * sum.KOne;
             for (int k = 0; k < derDets.Length; ++k)
             {
-                var (nm, dnm) = derDets[k];
-                var s0 = nm[0] / dnm[0];
+                var (c, nm, dnm) = derDets[k];
+                var s0 = c * nm[0] / dnm[0];
                 serie += s0 * fi.Inv() * nm.X.Pow(i);
                 var derNm = nm.Derivative * dnm - nm * dnm.Derivative;
                 var derDnm = dnm.Pow(2);
                 var gcd = Ring.Gcd(derNm.Monic, derDnm.Monic).Monic;
-                derDets[k] = (derNm / gcd, derDnm / gcd);
+                (derNm, derDnm) = (derNm / gcd, derDnm / gcd);
+                derDets[k] = (c * fi.Inv() * derNm.LT / derDnm.LT, derNm / derNm.LT, derDnm / derDnm.LT);
             }
 
             Console.WriteLine(new { i, serie });
