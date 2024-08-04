@@ -207,9 +207,23 @@ public readonly struct Monom<T> : IElt<Monom<T>> where T : struct, IElt<T>
         return (0, new(Indeterminates, content));
     }
 
+    public bool Contains(T t) => Content.ContainsKey(t);
+
+    public bool Contains(Monom<T> mn)
+    {
+        foreach (var (t,n) in mn.Content)
+        {
+            if (!Content.ContainsKey(t) || Content[t] < n)
+                return false;
+        }
+
+        return true;
+    }
+
     public bool Equals(Monom<T> other) => Hash == other.Hash && Content.Count == other.Content.Count &&
                                           Content.All(e => e.Value.Equals(other.Content[e.Key]));
 
+    public bool Equals(T t) => Content.Count == 1 && Content.ContainsKey(t) && Content[t] == 1;
     public int this[T t] => Content.ContainsKey(t) ? Content[t] : 0;
 
     public IEnumerable<(T, int)> ToTuples()
