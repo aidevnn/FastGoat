@@ -498,6 +498,58 @@ public static class InvariantTheory
         InvariantGLnK(G);
     }
 
+    public static void Example_C3xC3_GL3C()
+    {
+        var gl = FG.GLnK("Cnf", 2, Cnf.CnfOne);
+        var c = Cnf.Nth(3);
+        var A = gl[c, 0, 0, 1];
+        var B = gl[1, 0, 0, c];
+        var G = Group.Generate("C3 x C3", gl, A, B);
+        DisplayGroup.HeadElements(G);
+        Console.WriteLine();
+
+        InvariantGLnK(G);
+    }
+
+    #region Groups of order 12
+    public static void Example_C12_GL3C()
+    {
+        var gl = FG.GLnK("Cnf", 2, Cnf.CnfOne);
+        var c = Cnf.Nth(12);
+        var A = gl[c.Re, -c.Im, c.Im, c.Re];
+        var G = Group.Generate("C12", gl, A);
+        DisplayGroup.HeadElements(G);
+        Console.WriteLine();
+
+        InvariantGLnK(G);
+    }
+
+    public static void Example_C2xC6_GL3C()
+    {
+        var gl = FG.GLnK("Cnf", 3, Cnf.CnfOne);
+        var c = Cnf.Nth(6);
+        var A = gl[c.Re, -c.Im, 0, c.Im, c.Re, 0, 0, 0, 1];
+        var B = gl[1, 0, 0, 0, 1, 0, 0, 0, -1];
+        var G = Group.Generate("C2 x C6", gl, A, B);
+        DisplayGroup.HeadElements(G);
+        Console.WriteLine();
+
+        InvariantGLnK(G);
+    }
+
+    public static void Example_A4_GL2R()
+    {
+        var gl = FG.GLnK("R", 3, Rational.KOne());
+        var A = gl[0, 1, 0, 0, 0, 1, 1, 0, 0];
+        var B = gl[1, 0, 0, 0, -1, 0, 0, 0, -1];
+        var G = Group.Generate("A4", gl, A, B);
+        DisplayGroup.HeadElements(G);
+        DisplayGroup.AreIsomorphics(G, FG.Alternate(4));
+        Console.WriteLine();
+
+        InvariantGLnK(G); // Time:10.993s
+    }
+
     public static void Example_Dic3_GL2C()
     {
         var gl = FG.GLnK("Cnf", 2, Cnf.CnfOne);
@@ -562,6 +614,7 @@ public static class InvariantTheory
         // D2n = <[ξn, 0, 0, ξn^-1], [0, 1, 1, 0]>
         // C[x, y]D2n = C[xy, x^n + y^n] TODO proof
     }
+    #endregion
 
     public static void Example_Dn_GL2R()
     {
