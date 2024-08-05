@@ -190,8 +190,9 @@ public static class InvariantTheory
         return (invsf, modulos.ToArray());
     }
 
+    // TODO fix taylor serie
     static (Polynomial<K, Xi>[] inv, (Polynomial<K, Xi> p, Polynomial<K, Xi> mod)[] mods)
-        InvariantGLnK<K>(ConcreteGroup<KMatrix<K>> G, MonomOrder order = MonomOrder.GrLex)
+        InvariantGLnK<K>(ConcreteGroup<KMatrix<K>> G, MonomOrder order = MonomOrder.GrLex, bool molien = false)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var A = G.Neutral();
@@ -199,13 +200,15 @@ public static class InvariantTheory
             throw new($"Field characteristic must be 0 but egal {A.P}");
 
         GlobalStopWatch.AddLap();
-        var r = InvariantGLnK(G, MolienSum(G).serie, order);
+        var x = FG.QPoly();
+        var serie = molien ? MolienSum(G).serie : (x + 1).Pow(G.Count());
+        var r = InvariantGLnK(G, serie, order);
         GlobalStopWatch.Show();
         Console.WriteLine();
 
         return r;
     }
-
+    
     static (Polynomial<EPoly<Rational>, Xi>[] inv, (Polynomial<EPoly<Rational>, Xi> p,
         Polynomial<EPoly<Rational>, Xi>mod)[] mods) Invariant_Cn_GL2R_EPoly(int n)
     {
@@ -637,5 +640,78 @@ public static class InvariantTheory
 
         // D2n = <[cos(2π/n), -sin(2π/n), sin(2π/n), cos(2π/n)], [0, 1, 1, 0]>
         // C[x, y]D2n TODO Invariant ring
+    }
+    
+    public static void Example_M4sdp4_3_GL3C()
+    {
+        var I = Cnf.I;
+        var gl = FG.GLnK("Cnf", 3, I);
+        var A = gl[1, 0, 0, 0, I, 0, 0, 0, -I];
+        var B = gl[I, 0, 0, 0, 0, 1, 0, 1, 0];
+        var G = Group.Generate("M(4x:4)3", gl, A, B);
+        DisplayGroup.HeadElements(G);
+        DisplayGroup.AreIsomorphics(G, FG.MetaCyclicSdpWg(4, 4, 3));
+        Console.WriteLine();
+
+        InvariantGLnK(G);
+        
+        // Invariant generators
+        //     x1*x2 - u0
+        //     x1^4 + x2^4 - u1
+        //     x0^4 - u2
+        // 
+        // Generators and modulos
+        //     x0^2*x1^4 - x0^2*x2^4 - u3
+        //     u0^4*u2 - 1/4*u1^2*u2 + 1/4*u3^2
+        // 
+        // #  Time:16.015s
+    }
+    
+    public static void Example_Q16_GL2C()
+    {
+        var c = Cnf.Nth(8);
+        var gl = FG.GLnK("Cnf", 2, c);
+        var A = gl[0, 1, -1, 0];
+        var B = gl[c.Pow(3), 0, 0, -c];
+        var G = Group.Generate("Q16", gl, A, B);
+        DisplayGroup.HeadElements(G);
+        DisplayGroup.AreIsomorphics(G, FG.Quaternion(16));
+        Console.WriteLine();
+
+        InvariantGLnK(G);
+        
+        // Invariant generators
+        //     x0^2*x1^2 - u0
+        //     x0^8 + x1^8 - u1
+        // 
+        // Generators and modulos
+        //     x0^9*x1 - x0*x1^9 - u2
+        //     u0^5 - 1/4*u0*u1^2 + 1/4*u2^2
+        // 
+        // #  Time:3.524s
+    }
+    
+    public static void Example_C2xC2sdpC4_GL3C()
+    {
+        var c = Cnf.Nth(4);
+        var gl = FG.GLnK("Cnf", 3, c);
+        var A = gl[1, 0, 0, 0, 1, 0, 0, 0, -1];
+        var B = gl[1, 0, 0, 0, -1, 0, 0, 0, -1];
+        var C = gl[c, 0, 0, 0, 0, 1, 0, 1, 0];
+        var G = Group.Generate("(C2 x C2) x: C4", gl, A, B, C);
+        DisplayGroup.HeadElements(G);
+        DisplayGroup.AreIsomorphics(G, FG.WordGroup("(C2 x C2) x: C4", "a4, b2, c2, bcbc, caca-1, abca-1b"));
+        Console.WriteLine();
+
+        InvariantGLnK(G);
+        // Invariant generators
+        //     x1^2 + x2^2 - u0
+        //     x1^2*x2^2 - u1
+        //     x0^4 - u2
+        // 
+        // Generators and modulos
+        //     x0^2*x1^2 - x0^2*x2^2 - u3
+        //     u0^2*u2 - 4*u1*u2 - u3^2
+        // #  Time:13.617s
     }
 }
