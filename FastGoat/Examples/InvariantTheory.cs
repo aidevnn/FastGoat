@@ -712,4 +712,25 @@ public static class InvariantTheory
         //     u0^2*u2 - 4*u1*u2 - u3^2
         // #  Time:13.617s
     }
+    
+    public static void Example_M3sdp6_2_GL2C()
+    {
+        var c = Cnf.Nth(3);
+        var gl = FG.GLnK("Cnf", 2, c);
+        var A = gl[0, 1, c, 0];
+        var B = gl[c, 0, 0, c.Pow(2)];
+        var G = Group.Generate("M(3x:6)2", gl, A, B);
+        DisplayGroup.HeadElements(G);
+        DisplayGroup.AreIsomorphics(G, FG.MetaCyclicSdpWg(3, 6, 2));
+        Console.WriteLine();
+
+        InvariantGLnK(G);
+        
+        // Invariant generators
+        //     x0^3 + x1^3 - u0
+        //     x0^3*x1^3 - u1
+        // 
+        // #  Time:3.351s
+    }
+
 }
