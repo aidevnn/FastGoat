@@ -234,6 +234,23 @@ public static class InvariantTheory
         return InvariantGLnK(G);
     }
 
+    // AECF page 62
+    static KPoly<K> RecNewtonInverse<K>(KPoly<K> F, int N)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        if (F.Degree >= N)
+            throw new();
+
+        if (N == 1)
+            return F[0].Inv() * F.One;
+
+        var mid = (N / 2) + (N % 2);
+        var F0 = F.Div(F.X.Pow(mid)).rem;
+        var G = RecNewtonInverse(F0, mid);
+        var G0 = (G + (1 - F * G) * G).Div(F.X.Pow(N)).rem;
+        return G0;
+    }
+
     static (EPolynomial<K> sum, KPoly<Rational> serie) MolienSum<K>(ConcreteGroup<KMatrix<K>> G)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
@@ -256,32 +273,20 @@ public static class InvariantTheory
             sum += deti;
         }
 
-        sum /= G.Count();
-        Console.WriteLine(new { sum });
-
-        var derDets = dets.Select(e => (c: e.KOne, nm: e.One, dnm: e)).ToArray();
-        var serie = dets[0].Zero;
-
-        for (int i = 0; i <= G.Count(); i++)
-        {
-            var fi = i == 0 ? sum.KOne : i * sum.KOne;
-            for (int k = 0; k < derDets.Length; ++k)
-            {
-                var (c, nm, dnm) = derDets[k];
-                var s0 = c * nm[0] / dnm[0];
-                serie += s0 * fi.Inv() * nm.X.Pow(i);
-                var derNm = nm.Derivative * dnm - nm * dnm.Derivative;
-                var derDnm = dnm.Pow(2);
-                var gcd = Ring.Gcd(derNm.Monic, derDnm.Monic).Monic;
-                (derNm, derDnm) = (derNm / gcd, derDnm / gcd);
-                derDets[k] = (c * fi.Inv() * derNm.LT / derDnm.LT, derNm / derNm.LT, derDnm / derDnm.LT);
-            }
-
-            Console.WriteLine(new { i, serie });
-        }
-
+        var og = G.Count();
+        sum /= og;
+        var lc = sum.Num.LeadingDetails.lc / sum.Denom.LeadingDetails.lc;
+        var sum0 = new EPolynomial<K>(sum.Num.Monic(), sum.Denom.Monic(), sum.Basis);
+        sum = lc * sum0;
+        
+        var serNum = sum.Num.ToKPoly(t.Num.ExtractIndeterminate);
+        var serDenom = sum.Denom.ToKPoly(t.Num.ExtractIndeterminate);
+        var serie = (serNum * RecNewtonInverse(serDenom, og + 1)).Div(serNum.X.Pow(og + 1)).rem;
         var T = FG.QPoly('t');
         var serie0 = serie.Coefs.Select((c, k) => int.Parse($"{c}") * T.Pow(k)).Aggregate((a, b) => a + b);
+        
+        Console.WriteLine(new { sum });
+        Console.WriteLine(new { serie0 });
         return (sum, serie0);
     }
 
@@ -448,7 +453,7 @@ public static class InvariantTheory
             Console.WriteLine($"MolienSum({G}) = {sum}");
             Console.WriteLine($"MolienSerie({G}) = {serie}");
             Console.WriteLine();
-            // MolienSum(D8) = -1/(-t0^6 + t0^4 + t0^2 - 1)
+            // MolienSum(D8) = 1/(t0^6 - t0^4 - t0^2 + 1)
             // MolienSerie(D8) = 3*t^8 + 2*t^6 + 2*t^4 + t^2 + 1
         }
 
@@ -465,7 +470,7 @@ public static class InvariantTheory
             Console.WriteLine($"MolienSum({G}) = {sum}");
             Console.WriteLine($"MolienSerie({G}) = {serie}");
             Console.WriteLine();
-            // MolienSum(Q8) = (4/3*t0^4 - 4/3*t0^2 + 4/3)/(4/3*t0^6 - 4/3*t0^4 - 4/3*t0^2 + 4/3)
+            // MolienSum(Q8) = (t0^4 - t0^2 + 1)/(t0^6 - t0^4 - t0^2 + 1)
             // MolienSerie(Q8) = 3*t^8 + t^6 + 2*t^4 + 1
         }
 
@@ -483,7 +488,7 @@ public static class InvariantTheory
             Console.WriteLine($"MolienSum({G}) = {sum}");
             Console.WriteLine($"MolienSerie({G}) = {serie}");
             Console.WriteLine();
-            // MolienSum(D12) = -1/(-t0^8 + t0^6 + t0^2 - 1)
+            // MolienSum(D12) = 1/(t0^8 - t0^6 - t0^2 + 1)
             // MolienSerie(D12) = 3*t^12 + 2*t^10 + 2*t^8 + 2*t^6 + t^4 + t^2 + 1
         }
     }
