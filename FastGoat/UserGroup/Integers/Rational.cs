@@ -145,6 +145,20 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
             return new(q + rs, 1);
         }
     }
+    
+    public static Rational Parse(string r)
+    {
+        if (r.Any(c => !"0123456789./-".Contains(c)))
+            throw new($"Unable to parse r={r}, must contains only 0123456789./-");
+
+        var p = r.Split('/');
+        var num = BigInteger.Parse(p[0]);
+        if (p.Length == 1)
+            return new(num);
+
+        var denom = BigInteger.Parse(p[1]);
+        return new(num, denom);
+    }
 
     public static implicit operator double(Rational e) => (double)e.Num / (double)e.Denom;
     public static Rational Absolute(Rational e) => new(BigInteger.Abs(e.Num), e.Denom);
