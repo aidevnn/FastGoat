@@ -189,10 +189,9 @@ public static class InvariantTheory
 
         return (invsf, modulos.ToArray());
     }
-
-    // TODO fix taylor serie
+    
     static (Polynomial<K, Xi>[] inv, (Polynomial<K, Xi> p, Polynomial<K, Xi> mod)[] mods)
-        InvariantGLnK<K>(ConcreteGroup<KMatrix<K>> G, MonomOrder order = MonomOrder.GrLex, bool molien = false)
+        InvariantGLnK<K>(ConcreteGroup<KMatrix<K>> G, MonomOrder order = MonomOrder.GrLex)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var A = G.Neutral();
@@ -200,9 +199,7 @@ public static class InvariantTheory
             throw new($"Field characteristic must be 0 but egal {A.P}");
 
         GlobalStopWatch.AddLap();
-        var x = FG.QPoly();
-        var serie = molien ? MolienSum(G).serie : (x + 1).Pow(G.Count());
-        var r = InvariantGLnK(G, serie, order);
+        var r = InvariantGLnK(G, MolienSum(G).serie, order);
         GlobalStopWatch.Show();
         Console.WriteLine();
 
@@ -258,36 +255,25 @@ public static class InvariantTheory
         if (id.P != 0)
             throw new($"Field characteristic must be 0 but egal {id.P}");
 
-        var t = Ring.EPolynomial(id.KOne, MonomOrder.Lex, (1, "t"))[0];
-        var sum = t.Zero;
-        var dets = new List<KPoly<K>>();
-        foreach (var m0 in G)
-        {
-            var m1 = m0.N.Range().Grid2D().Select(e => id[e.t1, e.t2] - t * m0[e.t1, e.t2]).ToKMatrix(m0.N);
-            Console.WriteLine(m0);
-            var det = m1.Det;
-            dets.Add(det.Num.ToKPoly(det.Num.ExtractIndeterminate) * G.Count());
-            var deti = det.Inv();
-            Console.WriteLine(deti);
-            Console.WriteLine();
-            sum += deti;
-        }
-
         var og = G.Count();
-        sum /= og;
-        var lc = sum.Num.LeadingDetails.lc / sum.Denom.LeadingDetails.lc;
-        var sum0 = new EPolynomial<K>(sum.Num.Monic(), sum.Denom.Monic(), sum.Basis);
-        sum = lc * sum0;
+        var t = Ring.EPolynomial(id.KOne, MonomOrder.Lex, (1, "t"))[0];
+        var molienSum = G.Select(m0 =>
+                m0.N.Range().Grid2D().Select(e => id[e.t1, e.t2] - t * m0[e.t1, e.t2]).ToKMatrix(m0.N).Det.Inv())
+            .Aggregate((a, b) => a + b) / og;
+
+        var lc = molienSum.Num.LeadingDetails.lc / molienSum.Denom.LeadingDetails.lc;
+        var sum0 = new EPolynomial<K>(molienSum.Num.Monic(), molienSum.Denom.Monic(), molienSum.Basis);
+        molienSum = lc * sum0;
         
-        var serNum = sum.Num.ToKPoly(t.Num.ExtractIndeterminate);
-        var serDenom = sum.Denom.ToKPoly(t.Num.ExtractIndeterminate);
+        var serNum = molienSum.Num.ToKPoly(t.Num.ExtractIndeterminate);
+        var serDenom = molienSum.Denom.ToKPoly(t.Num.ExtractIndeterminate);
         var serie = (serNum * RecNewtonInverse(serDenom, og + 1)).Div(serNum.X.Pow(og + 1)).rem;
         var T = FG.QPoly('t');
-        var serie0 = serie.Coefs.Select((c, k) => int.Parse($"{c}") * T.Pow(k)).Aggregate((a, b) => a + b);
+        var molienSerie = serie.Coefs.Select((c, k) => int.Parse($"{c}") * T.Pow(k)).Aggregate((a, b) => a + b);
         
-        Console.WriteLine(new { sum });
-        Console.WriteLine(new { serie0 });
-        return (sum, serie0);
+        Console.WriteLine(new { sum = molienSum });
+        Console.WriteLine(new { molienSerie });
+        return (molienSum, molienSerie);
     }
 
     public static void Example_Klein_GL2Q()
