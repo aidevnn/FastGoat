@@ -171,7 +171,7 @@ public readonly struct EPolynomial<K> : IVsElt<K, EPolynomial<K>>, IElt<EPolynom
 
             var num1 = num.ToKPoly(ai);
             var denom1 = denom.ToKPoly(bi);
-            var gcd = Ring.Gcd(num1, denom1);
+            var gcd = Ring.Gcd(num1, denom1).Monic;
             var num2 = basis.Rem((num1 / gcd).ToPolynomial(num.Indeterminates, ai));
             var denom2 = basis.Rem((denom1 / gcd).ToPolynomial(num.Indeterminates, ai));
             return (num2, denom2);
