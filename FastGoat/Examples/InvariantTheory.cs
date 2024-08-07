@@ -105,6 +105,7 @@ public static class InvariantTheory
         if (M != N)
             throw new();
 
+        var og = G.Count();
         var molien = (MolienSerie.Degree + 1).Range().ToDictionary(i => i, i => (int)MolienSerie.Coefs[i].Num);
         var xKi0 = Ring.Polynomial(A.KZero, order, M.Range().Select(i => $"x{i}").ToArray());
         var xi0 = xKi0.Select(p => (p, p.Coefs.ToDictionary(e => e.Key, e => Rational.Parse($"{e.Value}"))))
@@ -135,30 +136,35 @@ public static class InvariantTheory
                 Console.WriteLine("Invariant added");
                 Console.WriteLine(p);
                 set.Remove(p);
-                Coefs(G.Count(), coefs, p);
+                Coefs(og, coefs, p);
                 Console.WriteLine();
             }
         }
 
         var invs = invariants.Zip(ui).Select(f => f.First.Monic() - f.Second).ToArray();
-        var hilbertSerie = HilbertSerie(invariants.Select(p => p.Degree).ToArray(), G.Count())
-            .Div(MolienSerie.X.Pow(G.Count() + 1)).rem;
+        var hilbertSerie = HilbertSerie(invariants.Select(p => p.Degree).ToArray(), og)
+            .Div(MolienSerie.X.Pow(og + 1)).rem;
         var delta = (MolienSerie - hilbertSerie);
         var deltaArr = delta.Coefs.Select((c, k) => (c, k)).Where(e => !e.c.IsZero()).ToArray();
         var degMin = deltaArr.Length == 0 ? 0 : deltaArr[0].k;
-        
+
+        Console.WriteLine($"Molien  Serie: {MolienSerie}");
         Console.WriteLine($"Hilbert Serie: {hilbertSerie}");
         Console.WriteLine($"Ms - Hs: {delta}");
+
         foreach (var p in set.Where(p => molien[p.Degree] != 0 && p.Degree >= degMin))
         {
-            if (coefs.Where(f => f.Degree <= p.Degree).Any(f => p.Div(f).rem.IsZero()))
+            Console.WriteLine(new { p });
+            if (coefs.Where(f => f.Degree <= p.Degree)
+                .Select(f => p.Div(f)).Any(e => e.quo.Degree == 0 && e.rem.IsZero()))
                 continue;
 
+            var invs_mods = invs.Concat(modulos.Select(e => e.p)).ToArray();
             var uf = p.Indeterminates.Where(u => u.xi.Contains('u'))
-                .Except(invs.Append(p).SelectMany(e => e.ExtractAllIndeterminates))
+                .Except(invs_mods.Append(p).SelectMany(e => e.ExtractAllIndeterminates))
                 .First();
             var pu = p.Monic() - p.X(uf);
-            var sys = invs.Append(pu).ToArray();
+            var sys = invs_mods.Append(pu).Order().ToArray();
             sys.Println("System Modulo");
             var red = Ring.ReducedGrobnerBasis(sys);
             var mods = red.Select(f => (f, xi: f.ExtractAllIndeterminates))
@@ -185,19 +191,30 @@ public static class InvariantTheory
             Console.WriteLine();
             modulos.Add((pu, mod));
 
-            var degreesF = invariants.Concat(modulos.Select(e => e.p)).Select(p0 => p0.Degree).ToArray();
-            hilbertSerie = HilbertSerie(degreesF, G.Count()).Div(MolienSerie.X.Pow(G.Count() + 1)).rem;
-            delta = (MolienSerie - hilbertSerie);
-            Console.WriteLine($"Hilbert Serie: {hilbertSerie}");
+            var x = MolienSerie.X;
+            var sum = modulos.Select(e => x.Pow(e.p.Degree)).Aggregate((a, b) => a + b);
+            var hilbertSerie0 = ((1 + sum) * hilbertSerie).Div(x.Pow(og + 1)).rem;
+            delta = (MolienSerie - hilbertSerie0);
+            Console.WriteLine($"Molien  Serie: {MolienSerie}");
+            Console.WriteLine($"Hilbert Serie: {hilbertSerie0}");
             Console.WriteLine($"Ms - Hs: {delta}");
             Console.WriteLine();
+
             if (delta.IsZero())
                 break;
+
+            deltaArr = delta.Coefs.Select((c, k) => (c, k)).Where(e => !e.c.IsZero()).ToArray();
+            if (deltaArr[0].c.Sign == -1)
+            {
+                Console.WriteLine("Rollback modulo");
+                Console.WriteLine();
+                throw new();
+            }
         }
 
         if (!delta.IsZero())
             throw new();
-        
+
         invs.Println("Invariant generators");
         Console.WriteLine();
         if (modulos.Count > 0)
@@ -352,7 +369,13 @@ public static class InvariantTheory
             //     x0*x1*x2 - u3
             //     u0*u2 - u3^2
             // 
-            // #  Time:203ms
+            //     x0^2*x2 - x1^2*x2 - u4
+            //     u0*u1^2 - 4*u3^2 - u4^2
+            // 
+            //     x0^3*x1 - x0*x1^3 - u5
+            //     u2*u4 - u3*u5
+            // 
+            // #  Time:1.086s
         }
     }
 
@@ -416,6 +439,7 @@ public static class InvariantTheory
         Invariant_Cn_GL2R_Cnf(6);
         Invariant_Cn_GL2R_Cnf(7);
         Invariant_Cn_GL2R_Cnf(8);
+        Invariant_Cn_GL2R_Cnf(9);
         GlobalStopWatch.Show("End");
     }
 
@@ -426,9 +450,8 @@ public static class InvariantTheory
         var B = gl[-Cnf.I, 0, 0, -Cnf.I];
         var G = Group.Generate("C4 x C2", gl, A, B);
         DisplayGroup.HeadElements(G);
+        DisplayGroup.AreIsomorphics(G, FG.Abelian(4, 2));
         InvariantGLnK(G);
-        
-        // TODO fix exception on Hilbert Serie
     }
 
     public static void Example_Q8_GL2C()
@@ -553,19 +576,17 @@ public static class InvariantTheory
         InvariantGLnK(G);
     }
 
-    public static void Example_C2xC6_GL3C()
+    public static void Example_C6xC2_GL3C()
     {
         var gl = FG.GLnK("Cnf", 3, Cnf.CnfOne);
         var c = Cnf.Nth(6);
         var A = gl[c.Re, -c.Im, 0, c.Im, c.Re, 0, 0, 0, 1];
         var B = gl[1, 0, 0, 0, 1, 0, 0, 0, -1];
-        var G = Group.Generate("C2 x C6", gl, A, B);
+        var G = Group.Generate("C6 x C2", gl, A, B);
         DisplayGroup.HeadElements(G);
         Console.WriteLine();
 
         InvariantGLnK(G);
-        
-        // TODO fix exception on Hilbert Serie
     }
 
     public static void Example_A4_GL2R()
@@ -579,8 +600,6 @@ public static class InvariantTheory
         Console.WriteLine();
 
         InvariantGLnK(G); // Time:10.993s
-        
-        // TODO fix exception on Hilbert Serie
     }
 
     public static void Example_Dic3_GL2C()
@@ -685,8 +704,6 @@ public static class InvariantTheory
         Console.WriteLine();
 
         InvariantGLnK(G);
-        
-        // TODO fix exception on Hilbert Serie
 
         // Invariant generators
         //     x1*x2 - u0
@@ -737,9 +754,9 @@ public static class InvariantTheory
         Console.WriteLine();
 
         InvariantGLnK(G);
-        
+
         // TODO fix exception on Hilbert Serie
-        
+
         // Invariant generators
         //     x1^2 + x2^2 - u0
         //     x1^2*x2^2 - u1
@@ -750,7 +767,7 @@ public static class InvariantTheory
         //     u0^2*u2 - 4*u1*u2 - u3^2
         // #  Time:13.617s
     }
-    
+
     public static void Example_M3sdp6_2_GL2C()
     {
         var c = Cnf.Nth(3);
@@ -763,12 +780,11 @@ public static class InvariantTheory
         Console.WriteLine();
 
         InvariantGLnK(G);
-        
+
         // Invariant generators
         //     x0^3 + x1^3 - u0
         //     x0^3*x1^3 - u1
         // 
         // #  Time:3.351s
     }
-
 }
