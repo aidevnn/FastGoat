@@ -213,6 +213,11 @@ SuperGroup  |Symm7| = 5040
 
 ## Illustration
 
+```csharp
+DisplayGroup.HeadElementsCayleyGraph(g21, gens: [g21["a"], g21["b-1"]]);
+```
+will output
+
 ![Cayley graph Group C7x:C3](./C7sdpC3.png "C7x:C3 Cayley graph")
 
 # Galois Theory

@@ -83,6 +83,12 @@ public static class ReadMeCode
         var g21mat = Group.IsomorphicSubgroup(gl27, g21);
         DisplayGroup.HeadGenerators(g21mat);
     }
+
+    public static void ExampleCayletGrapheGroup21()
+    {
+        var g21 = FG.MetaCyclicSdpWg(7, 3, 2);
+        DisplayGroup.HeadElementsCayleyGraph(g21, gens: [g21["a"], g21["b-1"]]);
+    }
     
     public static void ExampleGaloisCyclicGroup5()
     {
