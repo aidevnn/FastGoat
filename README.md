@@ -524,3 +524,10 @@ arXiv:2201.09155v1
 Groups and Symmetries From Finite Groups to Lie Groups.
 Springer. 2th Edition. 2022.
 <i>Chapter 2. Representations of Finite Groups</i>
+
+[Algorithms in Invariant Theory](https://doi.org/10.1007/978-3-211-77417-5)
+<b>Bernd Sturmfels.</b>
+Algorithms in Invariant Theory
+Second edition.
+2008 Springer-Verlag/Wien.
+<i>Chapter2 Invariant theory of finite groups.</i>
