@@ -72,7 +72,7 @@ public static class InvariantTheory
         // Console.WriteLine($"Nb eqs:{mn.Length}");
         Console.WriteLine();
 
-        return facts.Where(e => !e.Rf.IsZero()).Select(e => e.Rf).DistinctBy(p => p.Monic()).Order().ToArray();
+        return facts.Where(e => !e.Rf.IsZero()).Select(e => e.Rf.Monic()).Distinct().Order().ToArray();
     }
 
     static bool AlgebraicDependance<K>(List<Polynomial<K, Xi>> I, Polynomial<K, Xi> f)
@@ -82,8 +82,6 @@ public static class InvariantTheory
         var xi = f.Indeterminates.Last(xi => !allXis.Contains(xi));
         var s = I.Append(f * f.X(xi) - 1).ToArray();
         var red = Ring.ReducedGrobnerBasis(s);
-        s.Println("Sys");
-        red.Println("Red");
         if (red.Any(p => p.Degree == 0))
             return true;
 
@@ -132,28 +130,39 @@ public static class InvariantTheory
         var xi = one.Indeterminates.Select(u => u.ToPolynomial(one)).ToArray();
         var ui = xi.Skip(M).ToArray();
 
-        // Rfs0.Println("System");
-
         var invariants = new List<Polynomial<Rational, Xi>>();
-        var modulos = new List<(Polynomial<Rational, Xi> p, Polynomial<Rational, Xi> mod)>();
+        var modulos = new List<(Xi u, Polynomial<Rational, Xi> p, Polynomial<Rational, Xi> mod)>();
         var set = Rfs0.ToHashSet();
         var coefs = new List<Polynomial<Rational, Xi>>();
-        foreach (var p in Rfs0.Where(p => molien[p.Degree] != 0))
+        
+        var red0 = Ring.ReducedGrobnerBasis(Rfs0);
+        var solvable = red0.All(p => p.NbIndeterminates == 1) ? red0 : [];
+        if (solvable.Length == 0)
         {
-            var contains = AlgebraicDependance(invariants, p);
-            if (!contains)
+            foreach (var p in Rfs0.Where(p => molien[p.Degree] != 0))
             {
-                invariants.Add(p);
-                Console.WriteLine("Invariant added");
-                Console.WriteLine(p);
-                set.Remove(p);
-                FundamentalInvariantsBasis(og, coefs, p);
-                Console.WriteLine();
+                var contains = AlgebraicDependance(invariants, p);
+                if (!contains)
+                {
+                    invariants.Add(p);
+                    Console.WriteLine("Invariant added");
+                    Console.WriteLine(p);
+                    set.Remove(p);
+                    FundamentalInvariantsBasis(og, coefs, p);
+                    Console.WriteLine();
+                }
             }
+        }
+        else
+        {
+            set.Clear();
+            Console.WriteLine("Solvable System");
+            Console.WriteLine();
+            invariants.AddRange(solvable);
         }
 
         var t = molienSerie.X;
-        var invs = invariants.Zip(ui).Select(f => f.First.Monic() - f.Second).ToArray();
+        var invs = invariants.Zip(ui).Select(f => (p: f.First, u: f.Second.ExtractIndeterminate)).ToArray();
         var hilbertSerie = HilbertSerie(invariants.Select(p => p.Degree).ToArray(), og)
             .Div(t.Pow(og + 1)).rem.SubstituteChar(t.x);
         var delta = (molienSerie - hilbertSerie);
@@ -174,12 +183,13 @@ public static class InvariantTheory
             if (p.Degree < degMin)
                 continue;
 
-            var invs_mods = invs.Concat(modulos.Select(e => e.p)).ToArray();
+            var invs_mods = invs.Concat(modulos.Select(e => (e.p, e.u))).ToArray();
             var uf = p.Indeterminates.Where(u => u.xi.Contains('u'))
-                .Except(invs_mods.Append(p).SelectMany(e => e.ExtractAllIndeterminates))
+                .Except(invs_mods.SelectMany(e => new[] { e.p, e.p.X(e.u) })
+                    .Append(p).SelectMany(e => e.ExtractAllIndeterminates))
                 .First();
-            var pu = p.Monic() - p.X(uf);
-            var sys = invs_mods.Append(pu).Order().ToArray();
+            var pu = p - p.X(uf);
+            var sys = invs_mods.Append((p, uf)).Select(e => e.Item1 - e.Item1.X(e.Item2)).Order().ToArray();
             sys.Println($"System new invariant: {pu}");
             var red = Ring.ReducedGrobnerBasis(sys);
             var mods = red.Select(f => (f, xi: f.ExtractAllIndeterminates))
@@ -204,7 +214,7 @@ public static class InvariantTheory
 
             Console.WriteLine("Add modulo");
             Console.WriteLine();
-            modulos.Add((pu, mod));
+            modulos.Add((uf, p, mod));
 
             var sum = modulos.Select(e => t.Pow(e.p.Degree)).Aggregate((a, b) => a + b);
             var hilbertSerie0 = ((1 + sum) * hilbertSerie).Div(t.Pow(og + 1)).rem;
@@ -231,22 +241,33 @@ public static class InvariantTheory
         if (!delta.IsZero())
             throw new();
 
-        invs.Println("Fundamental Invariants");
+        invs.Println(e => $"{e.u} = {e.p}", "Fundamental Invariants");
         Console.WriteLine();
         if (modulos.Count > 0)
         {
-            Console.WriteLine("Secondary Invariants and modulos");
-            foreach (var (p, mod) in modulos)
+            Console.WriteLine("Secondary Invariants");
+            foreach (var (u, p, mod) in modulos)
             {
-                Console.WriteLine($"    {p}");
-                Console.WriteLine($"    {mod}");
+                Console.WriteLine($"    {u} = {p}");
+                Console.WriteLine($"    {mod} = 0");
                 Console.WriteLine();
             }
         }
 
+        Console.WriteLine($"GL(n, K) = {G.BaseGroup.Name}");
+        var xj = invs.Select(e => e.p).Concat(modulos.Select(e => e.p)).SelectMany(p => p.ExtractAllIndeterminates)
+            .Distinct().Order().ToArray();
+        var xjFmt = $"K[{xj.Glue(",")}]{G.NameParenthesis()}";
+        var uj = invs.Select(e => e.u).Concat(modulos.Select(e => e.u)).Distinct().Order().ToArray();
+        var ujFmt = $"K[{uj.Glue(", ")}]";
+        var rels = modulos.Select(e => e.mod).ToArray();
+        var relsFmt = rels.Length == 0 ? "" : $" / < {rels.Glue(", ")} >";
+        Console.WriteLine($"{xjFmt} ~ {ujFmt}{relsFmt}");
+        Console.WriteLine();
+
         GlobalStopWatch.Show();
         Console.WriteLine();
-        return (invs, modulos.ToArray());
+        return (invs.Select(e => e.p).ToArray(), modulos.Select(e => (e.p, e.mod)).ToArray());
     }
 
     static (Polynomial<Rational, Xi>[] inv, (Polynomial<Rational, Xi> p, Polynomial<Rational, Xi> mod)[] mods)
@@ -327,172 +348,6 @@ public static class InvariantTheory
         return RecNewtonInverse(P, int.Max(P.Degree, N) + 1);
     }
 
-    public static void Example_Klein_GL2Q()
-    {
-        var gl = FG.GLnK("Q", 2, Rational.KOne());
-        var A = gl[-1, 0, 0, 1];
-        var B = gl[1, 0, 0, -1];
-        var G = Group.Generate("V", gl, A, B);
-        DisplayGroup.HeadElements(G);
-        InvariantGLnK(G);
-    }
-
-    public static void Example_C4_GLnC()
-    {
-        {
-            var gl = FG.GLnK("Cnf", 2, Cnf.CnfOne);
-            var A = gl[Cnf.I, 0, 0, -Cnf.I];
-            var G = Group.Generate("C4", gl, A);
-            DisplayGroup.HeadElements(G);
-            InvariantGLnK(G);
-        }
-
-        {
-            var gl = FG.GLnK("R", 2, Rational.KOne());
-            var A = gl[0, -1, 1, 0];
-            var G = Group.Generate("C4", gl, A);
-            DisplayGroup.HeadElements(G);
-            InvariantGLnK(G);
-        }
-
-        {
-            var gl = FG.GLnK("R", 3, Rational.KOne());
-            var A = gl[0, 1, 0, -1, 0, 0, 0, 0, -1];
-            var G = Group.Generate("C4", gl, A);
-            DisplayGroup.HeadElements(G);
-            InvariantGLnK(G);
-
-            // Fundamental Invariants
-            //     x2^2 - u0
-            //     x0^2 + x1^2 - u1
-            //     x0^2*x1^2 - u2
-            // 
-            // Secondary Invariants and modulos
-            //     x0*x1*x2 - u3
-            //     u0*u2 - u3^2
-            // 
-            //     x0^2*x2 - x1^2*x2 - u4
-            //     u0*u1^2 - 4*u3^2 - u4^2
-            // 
-            //     x0^3*x1 - x0*x1^3 - u5
-            //     u2*u4 - u3*u5
-            // 
-            // #  Time:1.241s
-        }
-    }
-
-    public static void Example_C3_GLnR()
-    {
-        Invariant_Cn_GL2R_EPoly(3);
-
-        {
-            var gl = FG.GLnK("R", 2, Rational.KOne());
-            var A = gl[0, -1, 1, -1];
-            var G = Group.Generate("C3", gl, A);
-            DisplayGroup.HeadElements(G);
-            Console.WriteLine();
-
-            InvariantGLnK(G);
-        }
-
-        {
-            var gl = FG.GLnK("R", 3, Rational.KOne());
-            var A = gl[0, 1, 0, 0, 0, 1, 1, 0, 0];
-            var G = Group.Generate("C3", gl, A);
-            DisplayGroup.HeadElements(G);
-            Console.WriteLine();
-
-            InvariantGLnK(G); // Time:1.735s
-        }
-    }
-
-    public static void Example_C6_GL2R()
-    {
-        var gl = FG.GLnK("R", 2, Rational.KOne());
-        var A = gl[0, 1, -1, 1];
-        var G = Group.Generate("C6", gl, A);
-        DisplayGroup.HeadElements(G);
-        Console.WriteLine();
-
-        InvariantGLnK(G);
-    }
-
-    public static void Example_Invariant_GL2R_EPoly_CyclicGroups()
-    {
-        GlobalStopWatch.AddLap();
-        Invariant_Cn_GL2R_EPoly(2);
-        Invariant_Cn_GL2R_EPoly(3);
-        Invariant_Cn_GL2R_EPoly(4);
-        Invariant_Cn_GL2R_EPoly(5);
-        Invariant_Cn_GL2R_EPoly(6);
-        Invariant_Cn_GL2R_EPoly(7);
-        Invariant_Cn_GL2R_EPoly(8);
-        Invariant_Cn_GL2R_EPoly(9);
-        GlobalStopWatch.Show("End");
-    }
-
-    public static void Example_Invariant_GL2R_Cnf_CyclicGroups()
-    {
-        GlobalStopWatch.AddLap();
-        Invariant_Cn_GL2R_Cnf(2);
-        Invariant_Cn_GL2R_Cnf(3);
-        Invariant_Cn_GL2R_Cnf(4);
-        Invariant_Cn_GL2R_Cnf(5);
-        Invariant_Cn_GL2R_Cnf(6);
-        Invariant_Cn_GL2R_Cnf(7);
-        Invariant_Cn_GL2R_Cnf(8);
-        Invariant_Cn_GL2R_Cnf(9);
-        GlobalStopWatch.Show("End");
-    }
-
-    public static void Example_C4xC2_GL2C()
-    {
-        var gl = FG.GLnK("Cnf", 2, Cnf.CnfOne);
-        var A = gl[Cnf.I, 0, 0, -Cnf.I];
-        var B = gl[-Cnf.I, 0, 0, -Cnf.I];
-        var G = Group.Generate("C4 x C2", gl, A, B);
-        DisplayGroup.HeadElements(G);
-        DisplayGroup.AreIsomorphics(G, FG.Abelian(4, 2));
-        InvariantGLnK(G);
-
-        // Fundamental Invariants
-        //     x1^4 - u0
-        //     x0^4 - u1
-        // 
-        // Secondary Invariants and modulos
-        //     x0^2*x1^2 - u2
-        //     u0*u1 - u2^2
-        // 
-        // #  Time:1.027s
-    }
-
-    public static void Example_Q8_GL2C()
-    {
-        var gl = FG.GLnK("Cnf", 2, Cnf.CnfOne);
-        var A = gl[Cnf.I, 0, 0, -Cnf.I];
-        var B = gl[0, -1, 1, 0];
-        var G = Group.Generate("Q8", gl, A, B);
-        DisplayGroup.HeadElements(G);
-        DisplayGroup.AreIsomorphics(G, FG.Quaternion(8));
-        Console.WriteLine();
-
-        InvariantGLnK(G);
-    }
-
-    public static void Example_D8_GL2C()
-    {
-        var gl = FG.GLnK("Cnf", 2, Cnf.CnfOne);
-        var c = Cnf.Nth(4);
-        var A = gl[c, 0, 0, c.Inv()];
-        var B = gl[0, 1, 1, 0];
-        var G = Group.Generate("D4", gl, A, B);
-        DisplayGroup.HeadElements(G);
-        DisplayGroup.AreIsomorphics(G, FG.Dihedral(4));
-        Console.WriteLine();
-
-        InvariantGLnK(G);
-    }
-
     public static void Examples_MolienTheorem()
     {
         {
@@ -547,6 +402,18 @@ public static class InvariantTheory
             // MolienSerie(D12) = 3*t^12 + 2*t^10 + 2*t^8 + 2*t^6 + t^4 + t^2 + 1
         }
     }
+    
+    #region Solvable System
+    
+    public static void Example_Klein_GL2Q()
+    {
+        var gl = FG.GLnK("R", 2, Rational.KOne());
+        var A = gl[-1, 0, 0, 1];
+        var B = gl[1, 0, 0, -1];
+        var G = Group.Generate("V", gl, A, B);
+        DisplayGroup.HeadElements(G);
+        InvariantGLnK(G);
+    }
 
     public static void Example_C2xC2xC2_GL3R()
     {
@@ -559,6 +426,15 @@ public static class InvariantTheory
         Console.WriteLine();
 
         InvariantGLnK(G);
+        
+        // Fundamental Invariants
+        //     u0 = x1^2
+        //     u1 = x0^2
+        // 
+        // GL(n, K) = GL(2, Q)
+        // K[x0,x1]V ~ K[u0, u1]
+        // 
+        // #  Time:265ms
     }
 
     public static void Example_C3xC3_GL3C()
@@ -573,6 +449,193 @@ public static class InvariantTheory
 
         InvariantGLnK(G);
     }
+
+    public static void Example_C6xC2_GL2C()
+    {
+        var gl = FG.GLnK("Cnf", 2, Cnf.CnfOne);
+        var c = Cnf.Nth(6);
+        var A = gl[c, 0, 0, 1];
+        var B = gl[1, 0, 0, -1];
+        var G = Group.Generate("C6 x C2", gl, A, B);
+        DisplayGroup.HeadElements(G);
+        Console.WriteLine();
+
+        InvariantGLnK(G);
+    }
+
+    #endregion
+
+    #region Cyclic groups
+
+    public static void Example_C4_GLnC()
+    {
+        {
+            var gl = FG.GLnK("Cnf", 2, Cnf.CnfOne);
+            var A = gl[Cnf.I, 0, 0, -Cnf.I];
+            var G = Group.Generate("C4", gl, A);
+            DisplayGroup.HeadElements(G);
+            InvariantGLnK(G);
+        }
+
+        {
+            var gl = FG.GLnK("R", 2, Rational.KOne());
+            var A = gl[0, -1, 1, 0];
+            var G = Group.Generate("C4", gl, A);
+            DisplayGroup.HeadElements(G);
+            InvariantGLnK(G);
+        }
+
+        {
+            var gl = FG.GLnK("R", 3, Rational.KOne());
+            var A = gl[0, 1, 0, -1, 0, 0, 0, 0, -1];
+            var G = Group.Generate("C4", gl, A);
+            DisplayGroup.HeadElements(G);
+            InvariantGLnK(G);
+
+            // Fundamental Invariants
+            //     u0 = x2^2
+            //     u1 = x0^2 + x1^2
+            //     u2 = x0^2*x1^2
+            // 
+            // Secondary Invariants
+            //     u3 = x0*x1*x2
+            //     u0*u2 - u3^2 = 0
+            // 
+            //     u4 = x0^2*x2 - x1^2*x2
+            //     u0*u1^2 - 4*u3^2 - u4^2 = 0
+            // 
+            //     u5 = x0^3*x1 - x0*x1^3
+            //     u2*u4 - u3*u5 = 0
+            // 
+            // GL(n, K) = GL(3, R)
+            // K[x0,x1,x2]C4 ~ K[u0, u1, u2, u3, u4, u5] / < u0*u2 - u3^2, u0*u1^2 - 4*u3^2 - u4^2, u2*u4 - u3*u5 >
+            // 
+            // #  Time:1.150s
+        }
+    }
+
+    public static void Example_C3_GLnR()
+    {
+        Invariant_Cn_GL2R_EPoly(3);
+
+        {
+            var gl = FG.GLnK("R", 2, Rational.KOne());
+            var A = gl[0, -1, 1, -1];
+            var G = Group.Generate("C3", gl, A);
+            DisplayGroup.HeadElements(G);
+            Console.WriteLine();
+
+            InvariantGLnK(G);
+        }
+
+        {
+            var gl = FG.GLnK("R", 3, Rational.KOne());
+            var A = gl[0, 1, 0, 0, 0, 1, 1, 0, 0];
+            var G = Group.Generate("C3", gl, A);
+            DisplayGroup.HeadElements(G);
+            Console.WriteLine();
+
+            InvariantGLnK(G);
+        }
+    }
+
+    public static void Example_C6_GL2R()
+    {
+        var gl = FG.GLnK("R", 2, Rational.KOne());
+        var A = gl[0, 1, -1, 1];
+        var G = Group.Generate("C6", gl, A);
+        DisplayGroup.HeadElements(G);
+        Console.WriteLine();
+
+        InvariantGLnK(G);
+    }
+
+    public static void Example_Invariant_GL2R_EPoly_CyclicGroups()
+    {
+        GlobalStopWatch.AddLap();
+        Invariant_Cn_GL2R_EPoly(2);
+        Invariant_Cn_GL2R_EPoly(3);
+        Invariant_Cn_GL2R_EPoly(4);
+        Invariant_Cn_GL2R_EPoly(5);
+        Invariant_Cn_GL2R_EPoly(6);
+        Invariant_Cn_GL2R_EPoly(7);
+        Invariant_Cn_GL2R_EPoly(8);
+        Invariant_Cn_GL2R_EPoly(9);
+        GlobalStopWatch.Show("End");
+    }
+
+    public static void Example_Invariant_GL2R_Cnf_CyclicGroups()
+    {
+        GlobalStopWatch.AddLap();
+        Invariant_Cn_GL2R_Cnf(2);
+        Invariant_Cn_GL2R_Cnf(3);
+        Invariant_Cn_GL2R_Cnf(4);
+        Invariant_Cn_GL2R_Cnf(5);
+        Invariant_Cn_GL2R_Cnf(6);
+        Invariant_Cn_GL2R_Cnf(7);
+        Invariant_Cn_GL2R_Cnf(8);
+        Invariant_Cn_GL2R_Cnf(9);
+        GlobalStopWatch.Show("End");
+    }
+
+    #endregion
+
+    #region Groups of order 8
+
+    // C8 is in Cyclic groups region and
+    // C2 x C2 x C2 in Solvable system region 
+    
+    public static void Example_C4xC2_GL2C()
+    {
+        var gl = FG.GLnK("Cnf", 2, Cnf.CnfOne);
+        var A = gl[Cnf.I, 0, 0, -Cnf.I];
+        var B = gl[-Cnf.I, 0, 0, -Cnf.I];
+        var G = Group.Generate("C4 x C2", gl, A, B);
+        DisplayGroup.HeadElements(G);
+        DisplayGroup.AreIsomorphics(G, FG.Abelian(4, 2));
+        InvariantGLnK(G);
+
+        // Fundamental Invariants
+        //     u0 = x1^4
+        //     u1 = x0^4
+        // 
+        // Secondary Invariants
+        //     u2 = x0^2*x1^2
+        //     u0*u1 - u2^2 = 0
+        // 
+        // GL(n, K) = GL(2, Cnf)
+        // K[x0,x1](C4 x C2) ~ K[u0, u1, u2] / < u0*u1 - u2^2 >
+        // 
+        // #  Time:1.035s
+    }
+
+    public static void Example_Q8_GL2C()
+    {
+        var gl = FG.GLnK("Cnf", 2, Cnf.CnfOne);
+        var A = gl[Cnf.I, 0, 0, -Cnf.I];
+        var B = gl[0, -1, 1, 0];
+        var G = Group.Generate("Q8", gl, A, B);
+        DisplayGroup.HeadElements(G);
+        DisplayGroup.AreIsomorphics(G, FG.Quaternion(8));
+        Console.WriteLine();
+
+        InvariantGLnK(G);
+    }
+
+    public static void Example_D8_GL2C()
+    {
+        var gl = FG.GLnK("Cnf", 2, Cnf.CnfOne);
+        var A = gl[Cnf.I, 0, 0, Cnf.I];
+        var B = gl[0, 1, 1, 0];
+        var G = Group.Generate("D4", gl, A, B);
+        DisplayGroup.HeadElements(G);
+        DisplayGroup.AreIsomorphics(G, FG.Dihedral(4));
+        Console.WriteLine();
+
+        InvariantGLnK(G);
+    }
+
+    #endregion
 
     #region Groups of order 12
 
@@ -614,15 +677,18 @@ public static class InvariantTheory
         InvariantGLnK(G);
 
         // Fundamental Invariants
-        //     x0^2 + x1^2 + x2^2 - u0
-        //     x0*x1*x2 - u1
-        //     x0^2*x1^2 + x0^2*x2^2 + x1^2*x2^2 - u2
+        //     u0 = x0^2 + x1^2 + x2^2
+        //     u1 = x0*x1*x2
+        //     u2 = x0^2*x1^2 + x0^2*x2^2 + x1^2*x2^2
         // 
-        // Secondary Invariants and modulos
-        //     x0^4*x2^2 + x0^2*x1^4 + x1^2*x2^4 - u3
-        //     u0^3*u1^2 - 6*u0*u1^2*u2 + 9*u1^4 - u0*u2*u3 + 3*u1^2*u3 + u2^3 + u3^2
+        // Secondary Invariants
+        //     u3 = x0^4*x2^2 + x0^2*x1^4 + x1^2*x2^4
+        //     u0^3*u1^2 - 6*u0*u1^2*u2 + 9*u1^4 - u0*u2*u3 + 3*u1^2*u3 + u2^3 + u3^2 = 0
         // 
-        // #  Time:11.873s
+        // GL(n, K) = GL(3, R)
+        // K[x0,x1,x2]A4 ~ K[u0, u1, u2, u3] / < u0^3*u1^2 - 6*u0*u1^2*u2 + 9*u1^4 - u0*u2*u3 + 3*u1^2*u3 + u2^3 + u3^2 >
+        // 
+        // #  Time:10.330s
     }
 
     public static void Example_Dic3_GL2C()
@@ -668,6 +734,8 @@ public static class InvariantTheory
     }
 
     #endregion
+
+    #region Dihedral Groups
 
     public static void Example_Dn_GL2C()
     {
@@ -715,6 +783,10 @@ public static class InvariantTheory
         // C[x, y]D2n TODO Invariant ring
     }
 
+    #endregion
+
+    #region Groups of order 16
+
     public static void Example_M4sdp4_3_GL3C()
     {
         var I = Cnf.I;
@@ -729,15 +801,18 @@ public static class InvariantTheory
         InvariantGLnK(G);
 
         // Fundamental Invariants
-        //     x1*x2 - u0
-        //     x1^4 + x2^4 - u1
-        //     x0^4 - u2
+        //     u0 = x1*x2
+        //     u1 = x1^4 + x2^4
+        //     u2 = x0^4
         // 
-        // Secondary Invariants and modulos
-        //     x0^2*x1^4 - x0^2*x2^4 - u3
-        //     u0^4*u2 - 1/4*u1^2*u2 + 1/4*u3^2
+        // Secondary Invariants
+        //     u3 = x0^2*x1^4 - x0^2*x2^4
+        //     u0^4*u2 - 1/4*u1^2*u2 + 1/4*u3^2 = 0
         // 
-        // #  Time:14.807s
+        // GL(n, K) = GL(3, Cnf)
+        // K[x0,x1,x2]M(4x:4)3 ~ K[u0, u1, u2, u3] / < u0^4*u2 - 1/4*u1^2*u2 + 1/4*u3^2 >
+        // 
+        // #  Time:16.155s
     }
 
     public static void Example_Q16_GL2C()
@@ -754,14 +829,17 @@ public static class InvariantTheory
         InvariantGLnK(G);
 
         // Fundamental Invariants
-        //     x0^2*x1^2 - u0
-        //     x0^8 + x1^8 - u1
+        //     u0 = x0^2*x1^2
+        //     u1 = x0^8 + x1^8
         // 
-        // Secondary Invariants and modulos
-        //     x0^9*x1 - x0*x1^9 - u2
-        //     u0^5 - 1/4*u0*u1^2 + 1/4*u2^2
+        // Secondary Invariants
+        //     u2 = x0^9*x1 - x0*x1^9
+        //     u0^5 - 1/4*u0*u1^2 + 1/4*u2^2 = 0
         // 
-        // #  Time:3.933s
+        // GL(n, K) = GL(2, Cnf)
+        // K[x0,x1]Q16 ~ K[u0, u1, u2] / < u0^5 - 1/4*u0*u1^2 + 1/4*u2^2 >
+        // 
+        // #  Time:3.729s
     }
 
     public static void Example_C2xC2sdpC4_GL3C()
@@ -779,15 +857,18 @@ public static class InvariantTheory
         InvariantGLnK(G);
 
         // Fundamental Invariants
-        //     x1^2 + x2^2 - u0
-        //     x1^2*x2^2 - u1
-        //     x0^4 - u2
+        //     u0 = x1^2 + x2^2
+        //     u1 = x1^2*x2^2
+        //     u2 = x0^4
         // 
-        // Secondary Invariants and modulos
-        //     x0^2*x1^2 - x0^2*x2^2 - u3
-        //     u0^2*u2 - 4*u1*u2 - u3^2
+        // Secondary Invariants
+        //     u3 = x0^2*x1^2 - x0^2*x2^2
+        //     u0^2*u2 - 4*u1*u2 - u3^2 = 0
         // 
-        // #  Time:13.647s
+        // GL(n, K) = GL(3, Cnf)
+        // K[x0,x1,x2]((C2 x C2) x: C4) ~ K[u0, u1, u2, u3] / < u0^2*u2 - 4*u1*u2 - u3^2 >
+        // 
+        // #  Time:14.658s
     }
 
     public static void Example_MM16_GL2C()
@@ -804,15 +885,20 @@ public static class InvariantTheory
         InvariantGLnK(G);
         
         // Fundamental Invariants
-        //     x0^3*x1 + x0*x1^3 - u0
-        //     x0^4*x1^4 - u1
+        //     u0 = x0^3*x1 + x0*x1^3
+        //     u1 = x0^4*x1^4
         // 
-        // Secondary Invariants and modulos
-        //     x0^8 + x1^8 - u2
-        //     u0^4 - 4*u0^2*u1 + 2*u1^2 - u1*u2
+        // Secondary Invariants
+        //     u2 = x0^8 + x1^8
+        //     u0^4 - 4*u0^2*u1 + 2*u1^2 - u1*u2 = 0
         // 
-        // #  Time:57.124s
+        // GL(n, K) = GL(2, Cnf)
+        // K[x0,x1]MM16 ~ K[u0, u1, u2] / < u0^4 - 4*u0^2*u1 + 2*u1^2 - u1*u2 >
+        // 
+        // #  Time:56.236s
     }
+    
+    #endregion
 
     public static void Example_M3sdp6_2_GL2C()
     {
@@ -828,9 +914,12 @@ public static class InvariantTheory
         InvariantGLnK(G);
 
         // Fundamental Invariants
-        //     x0^3 + x1^3 - u0
-        //     x0^3*x1^3 - u1
+        //     u0 = x0^3 + x1^3
+        //     u1 = x0^3*x1^3
         // 
-        // #  Time:3.398s
+        // GL(n, K) = GL(2, Cnf)
+        // K[x0,x1]M(3x:6)2 ~ K[u0, u1]
+        // 
+        // #  Time:3.502s
     }
 }
