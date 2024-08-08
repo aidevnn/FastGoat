@@ -790,6 +790,30 @@ public static class InvariantTheory
         // #  Time:13.647s
     }
 
+    public static void Example_MM16_GL2C()
+    {
+        var c = Cnf.Nth(8);
+        var gl = FG.GLnK("Cnf", 2, c);
+        var A = gl[0, 1, 1, 0];
+        var B = gl[-c.Pow(3), 0, 0, c.Pow(3)];
+        var G = Group.Generate("MM16", gl, A, B);
+        DisplayGroup.HeadElements(G);
+        DisplayGroup.AreIsomorphics(G, FG.ModularMax(4));
+        Console.WriteLine();
+
+        InvariantGLnK(G);
+        
+        // Fundamental Invariants
+        //     x0^3*x1 + x0*x1^3 - u0
+        //     x0^4*x1^4 - u1
+        // 
+        // Secondary Invariants and modulos
+        //     x0^8 + x1^8 - u2
+        //     u0^4 - 4*u0^2*u1 + 2*u1^2 - u1*u2
+        // 
+        // #  Time:57.124s
+    }
+
     public static void Example_M3sdp6_2_GL2C()
     {
         var c = Cnf.Nth(3);
