@@ -75,14 +75,22 @@ public static class InvariantTheory
         return facts.Where(e => !e.Rf.IsZero()).Select(e => e.Rf).DistinctBy(p => p.Monic()).Order().ToArray();
     }
 
-    static bool IdealContains<K>(List<Polynomial<K, Xi>> I, Polynomial<K, Xi> f)
+    static bool AlgebraicDependance<K>(List<Polynomial<K, Xi>> I, Polynomial<K, Xi> f)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var allXis = I.Append(f).SelectMany(p => p.ExtractAllIndeterminates).Distinct().ToArray();
-        var xi = f.Indeterminates.First(xi => !allXis.Contains(xi));
+        var xi = f.Indeterminates.Last(xi => !allXis.Contains(xi));
         var s = I.Append(f * f.X(xi) - 1).ToArray();
         var red = Ring.ReducedGrobnerBasis(s);
-        return red.Any(p => p.Degree == 0);
+        s.Println("Sys");
+        red.Println("Red");
+        if (red.Any(p => p.Degree == 0))
+            return true;
+
+        var If = I.Append(f).Zip(f.Indeterminates.Where(e => e.xi.Contains('u')))
+            .Select(e => e.First - e.First.X(e.Second)).ToArray();
+        var red2 = Ring.ReducedGrobnerBasis(If);
+        return red2.Any(p => p.ExtractAllIndeterminates.All(e => e.xi.Contains('u')));
     }
 
     static void FundamentalInvariantsBasis<K>(int o, List<Polynomial<K, Xi>> coefs, Polynomial<K, Xi> f)
@@ -102,7 +110,7 @@ public static class InvariantTheory
     {
         GlobalStopWatch.AddLap();
         var molienSerie = MolienSum(G).serie;
-        
+
         var A = G.Neutral();
         var (M, N) = A.Dim;
         if (M != N)
@@ -132,7 +140,7 @@ public static class InvariantTheory
         var coefs = new List<Polynomial<Rational, Xi>>();
         foreach (var p in Rfs0.Where(p => molien[p.Degree] != 0))
         {
-            var contains = IdealContains(invariants, p);
+            var contains = AlgebraicDependance(invariants, p);
             if (!contains)
             {
                 invariants.Add(p);
@@ -162,8 +170,8 @@ public static class InvariantTheory
             if (coefs.Where(f => f.Degree <= p.Degree)
                 .Select(f => p.Div(f)).Any(e => e.quo.Degree == 0 && e.rem.IsZero()))
                 continue;
-            
-            if(p.Degree < degMin)
+
+            if (p.Degree < degMin)
                 continue;
 
             var invs_mods = invs.Concat(modulos.Select(e => e.p)).ToArray();
@@ -446,7 +454,7 @@ public static class InvariantTheory
         DisplayGroup.HeadElements(G);
         DisplayGroup.AreIsomorphics(G, FG.Abelian(4, 2));
         InvariantGLnK(G);
-        
+
         // Fundamental Invariants
         //     x1^4 - u0
         //     x0^4 - u1
@@ -604,7 +612,7 @@ public static class InvariantTheory
         Console.WriteLine();
 
         InvariantGLnK(G);
-        
+
         // Fundamental Invariants
         //     x0^2 + x1^2 + x2^2 - u0
         //     x0*x1*x2 - u1
