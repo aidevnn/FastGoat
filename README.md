@@ -531,3 +531,12 @@ Algorithms in Invariant Theory
 Second edition.
 2008 Springer-Verlag/Wien.
 <i>Chapter2 Invariant theory of finite groups.</i>
+
+[ntbv2](https://shoup.net/ntb/)
+<b>Victor Shoup.</b>
+A Computational Introduction to Number Theory and Algebra.
+Second edition.
+December 2008 Cambridge University Press.
+New York University
+<i>Chapter20 Algorithms for finite fields.</i>
+
