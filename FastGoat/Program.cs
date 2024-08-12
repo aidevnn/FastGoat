@@ -16,6 +16,7 @@ using FastGoat.UserGroup.Floats;
 using FastGoat.UserGroup.GModuleN;
 using FastGoat.UserGroup.Integers;
 using FastGoat.UserGroup.Matrix;
+using FastGoat.UserGroup.GModuleN;
 using FastGoat.UserGroup.Perms;
 using FastGoat.UserGroup.Polynoms;
 using FastGoat.UserGroup.Words;
