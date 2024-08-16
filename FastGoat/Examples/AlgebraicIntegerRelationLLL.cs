@@ -17,9 +17,9 @@ public static class AlgebraicIntegerRelationLLL
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
     }
 
-    public static Rational[] AlphaBetaPolynomial(BigCplx alpha, BigCplx beta, int d, int O, bool details = true)
+    public static Rational[] AlphaBetaPolynomial(BigCplx alpha, BigCplx beta, int d, int O)
     {
-        if (details)
+        if (Logger.Level != LogLevel.Off)
             Console.WriteLine("Start LLL algorithm");
 
         var pi = BigReal.Pi(alpha.O);
@@ -38,12 +38,12 @@ public static class AlgebraicIntegerRelationLLL
 
         var bpi = beta.RealPart + pi * beta.ImaginaryPart; // Re(β) + π * Im(β)
         mat.Coefs[mat.N - 1, mat.N - 1] = (bpi * N).RoundEven;
-        if (details)
-            Console.WriteLine(mat);
+        
         var lll = IntFactorisation.LLL(mat.T);
 
-        if (details)
+        if (Logger.Level == LogLevel.Level2)
         {
+            Console.WriteLine(mat);
             Console.WriteLine();
             Console.WriteLine(lll);
         }
@@ -51,7 +51,7 @@ public static class AlgebraicIntegerRelationLLL
         var col = lll.Cols
             .OrderBy(l => l.SkipLast(1).Zip(aipow).Aggregate(-beta, (acc, v) => acc + BigCplx.FromBigReal(v.First) * v.Second)
                 .Magnitude2).First();
-        if (details)
+        if (Logger.Level != LogLevel.Off)
         {
             Console.WriteLine("End LLL algorithm");
             Console.WriteLine("Possible Solution");
@@ -62,13 +62,14 @@ public static class AlgebraicIntegerRelationLLL
         return col.SkipLast(1).Select(c => -c.RoundEven.ToRational).ToArray();
     }
 
-    public static Rational[] AlphaBetaPolynomial(BigReal alpha, BigReal beta, int d, int O, bool details = true)
+    public static Rational[] AlphaBetaPolynomial(BigReal alpha, BigReal beta, int d, int O)
     {
-        return AlphaBetaPolynomial(BigCplx.FromBigReal(alpha), BigCplx.FromBigReal(beta), d, O, details);
+        return AlphaBetaPolynomial(BigCplx.FromBigReal(alpha), BigCplx.FromBigReal(beta), d, O);
     }
 
     public static void Example1()
     {
+        Logger.Level = LogLevel.Level2;
         var d = 8; // Expected polynomial degree plus one
         var O1 = 20; // rounding digits
         var O2 = 30; // maximum precision digits
@@ -92,6 +93,7 @@ public static class AlgebraicIntegerRelationLLL
 
     public static void Example2()
     {
+        Logger.Level = LogLevel.Level2;
         var d = 17; // Expected polynomial degree plus one
         var O1 = 80; // rounding digits
         var O2 = 120; // maximum precision digits
@@ -114,17 +116,16 @@ public static class AlgebraicIntegerRelationLLL
         IntFactorisation.PrimitiveElt(x.Pow(4) - 2, x.Pow(4) - 3).Println(); // more faster
     }
 
-    static ConcreteGroup<KAut<Rational>> ConjugatesOfBeta(KAutGroup<Rational> bsKAutGroup, BigCplx alpha, BigCplx beta, int d, int O,
-        bool details = true)
+    static ConcreteGroup<KAut<Rational>> ConjugatesOfBeta(KAutGroup<Rational> bsKAutGroup, BigCplx alpha, BigCplx beta, int d, int O)
     {
-        if (details)
+        if (Logger.Level != LogLevel.Off)
             GlobalStopWatch.AddLap();
 
-        var coefs = AlphaBetaPolynomial(alpha, beta, d, O, details);
+        var coefs = AlphaBetaPolynomial(alpha, beta, d, O);
         var P = new KPoly<Rational>('x', Rational.KZero(), coefs.ToArray());
         var fact = (P.Substitute(alpha) / beta).ToBigCplx(O);
         P /= fact.RealPart.ToRational.RoundEven;
-        if (details)
+        if (Logger.Level != LogLevel.Off)
         {
             Console.WriteLine(P);
             Console.WriteLine(P.Substitute(alpha));
@@ -137,7 +138,7 @@ public static class AlgebraicIntegerRelationLLL
 
         var fy = P.Substitute(bsKAutGroup.Neutral().E);
         var subGr = Group.Generate("Conjugates", bsKAutGroup, fy);
-        if (details)
+        if (Logger.Level != LogLevel.Off)
         {
             DisplayGroup.HeadElements(subGr);
             GlobalStopWatch.Show("Conjugates");
@@ -147,8 +148,7 @@ public static class AlgebraicIntegerRelationLLL
         return subGr;
     }
 
-    public static ConcreteGroup<KAut<Rational>> GaloisGroupNumericRoots(BigCplx alpha, BigCplx[] cplxRoots, KPoly<Rational> P, int O,
-        bool details = true)
+    public static ConcreteGroup<KAut<Rational>> GaloisGroupNumericRoots(BigCplx alpha, BigCplx[] cplxRoots, KPoly<Rational> P, int O)
     {
         P = P.SubstituteChar('y');
         var y = FG.EPoly(P, 'y');
@@ -158,7 +158,7 @@ public static class AlgebraicIntegerRelationLLL
         if (P.Substitute(-y).IsZero())
             subGrGal = Group.Generate("Conjugates", kAut, -y);
 
-        if (details)
+        if (Logger.Level != LogLevel.Off)
         {
             Console.WriteLine(new { alpha, O });
             DisplayGroup.HeadElements(subGrGal);
@@ -187,14 +187,14 @@ public static class AlgebraicIntegerRelationLLL
                 remains = tmp1.ToHashSet();
             }
 
-            if (details)
+            if (Logger.Level != LogLevel.Off)
                 remains.Println($"Remaining roots {remains.Count}");
 
             if (remains.Count == 0)
                 break;
 
             var beta2 = remains.First(b => (alpha - b).Magnitude > 1e-12);
-            var gr = ConjugatesOfBeta(kAut, alpha, beta2, P.Degree + 1, O, details);
+            var gr = ConjugatesOfBeta(kAut, alpha, beta2, P.Degree + 1, O);
             subGrGal = Group.DirectProduct("SubGr(Gal(P))", gr, subGrGal);
         }
 
@@ -202,20 +202,20 @@ public static class AlgebraicIntegerRelationLLL
         return subGrGal;
     }
 
-    public static ConcreteGroup<KAut<Rational>> GaloisGroupLLL(KPoly<Rational> P, int O1, int O2, bool details = true)
+    public static ConcreteGroup<KAut<Rational>> GaloisGroupLLL(KPoly<Rational> P, int O1, int O2)
     {
-        if (details)
+        if (Logger.Level != LogLevel.Off)
         {
             Console.WriteLine(P);
             GlobalStopWatch.AddLap();
         }
 
         var nRoots = FG.NRoots(P.ToBcPoly(O2));
-        if (details)
+        if (Logger.Level != LogLevel.Off)
             GlobalStopWatch.Show("Roots");
 
         var alpha = nRoots[0];
-        return GaloisGroupNumericRoots(alpha, nRoots, P, O1, details);
+        return GaloisGroupNumericRoots(alpha, nRoots, P, O1);
     }
 
     public static void Example3()
@@ -261,7 +261,6 @@ public static class AlgebraicIntegerRelationLLL
 
     public static void Example5()
     {
-        Logger.Level = LogLevel.Level1;
         var x = FG.QPoly();
         var P = x.Pow(5) - 5 * x + 12;
         var roots = IntFactorisation.SplittingField(P); // D10
@@ -270,6 +269,7 @@ public static class AlgebraicIntegerRelationLLL
         var O1 = 40; // rounding digits
         var O2 = 50; // maximum precision digits
         GlobalStopWatch.Restart();
+        Logger.Level = LogLevel.Level1;
         var galGr = GaloisGroupLLL(minPoly, O1, O2);
         DisplayGroup.HeadElements(galGr);
         var X = FG.KPoly('X', galGr.Neutral().E);
@@ -283,7 +283,6 @@ public static class AlgebraicIntegerRelationLLL
 
     public static void Example6()
     {
-        Logger.Level = LogLevel.Level1;
         var x = FG.QPoly();
         var P = x.Pow(4) + 8 * x + 12;
         var roots = IntFactorisation.SplittingField(P); // A4
@@ -292,6 +291,7 @@ public static class AlgebraicIntegerRelationLLL
         var O1 = 110; // rounding digits
         var O2 = 130; // maximum precision digits
         GlobalStopWatch.Restart();
+        Logger.Level = LogLevel.Level1;
         var galGr = GaloisGroupLLL(minPoly, O1, O2);
         DisplayGroup.HeadElements(galGr);
         var X = FG.KPoly('X', galGr.Neutral().E);
@@ -305,7 +305,6 @@ public static class AlgebraicIntegerRelationLLL
 
     public static void Example7()
     {
-        Logger.Level = LogLevel.Level1;
         var x = FG.QPoly();
         var P = x.Pow(5) + 2;
         var roots = IntFactorisation.SplittingField(P); // C5x:C4
@@ -314,6 +313,7 @@ public static class AlgebraicIntegerRelationLLL
         var O1 = 80; // rounding digits
         var O2 = 100; // maximum precision digits
         GlobalStopWatch.Restart();
+        Logger.Level = LogLevel.Level1;
         var galGr = GaloisGroupLLL(minPoly, O1, O2);
         DisplayGroup.HeadElements(galGr);
         var X = FG.KPoly('X', galGr.Neutral().E);
@@ -337,6 +337,7 @@ public static class AlgebraicIntegerRelationLLL
         var O1 = 120; // rounding digits
         var O2 = 140; // maximum precision digits
         GlobalStopWatch.Restart();
+        Logger.Level = LogLevel.Level1;
         var galGr = GaloisGroupLLL(P, O1, O2);
         DisplayGroup.HeadElements(galGr);
         var X = FG.KPoly('X', galGr.Neutral().E);

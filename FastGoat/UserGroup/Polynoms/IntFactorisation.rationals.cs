@@ -278,7 +278,7 @@ public static partial class IntFactorisation
         var nbCombs = 1;
         var itr = 0;
 
-        if (Logger.Level != LogLevel.Off)
+        if (Logger.Level == LogLevel.Level2)
             Console.WriteLine($"######## Candidate Prime P = {p}; Sigma = {o}; P^o={BigInteger.Pow(p, o)}");
 
         while (allS.Length != sz)
@@ -560,7 +560,7 @@ public static partial class IntFactorisation
         var (nf2, c2) = CoefMul(nf1);
         var c = c2 / c1;
 
-        if (Logger.Level != LogLevel.Off)
+        if (Logger.Level == LogLevel.Level2)
             if (!c.Equals(c.One))
                 Console.WriteLine($"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Simplify f={f.Monic} to nf={nf2.Monic} and c={c}");
 
