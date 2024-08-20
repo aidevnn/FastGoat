@@ -540,3 +540,9 @@ December 2008 Cambridge University Press.
 New York University
 <i>Chapter20 Algorithms for finite fields.</i>
 
+
+[pslqm2](https://www.davidhbailey.com/dhbpapers/pslqm2-alg.pdf)
+<b>David H. Bailey.</b>
+The two-level multipair PSLQ algorithm.
+May 2, 2024
+<i>PSLQM2.</i>

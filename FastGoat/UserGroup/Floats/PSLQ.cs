@@ -10,10 +10,13 @@ namespace FastGoat.UserGroup.Floats;
 The two-level multipair PSLQ algorithm
 David H. Bailey
 May 2, 2024
+pslqm2-alg.pdf
+https://www.davidhbailey.com/dhbpapers/
 
 Fortran source code
-mpfun20-mpfr-v32.tar.gz
 tpslqm2.f90
+mpfun20-mpfr-v32.tar.gz
+https://www.davidhbailey.com/dhbsoftware/
  */
 public static class PSLQ
 {
