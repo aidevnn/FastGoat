@@ -151,6 +151,8 @@ public struct KMatrix<K> : IVsElt<K, KMatrix<K>>, IElt<KMatrix<K>>, IRingElt<KMa
         return true;
     }
 
+    public KMatrix<K> Clone => new(Coefs);
+
     public KMatrix<K> Zero => new(KZero, M, N);
     public KMatrix<K> One => new(Ring.Diagonal(KOne, M));
 
@@ -465,4 +467,22 @@ public struct KMatrix<K> : IVsElt<K, KMatrix<K>>, IElt<KMatrix<K>>, IRingElt<KMa
     }
 
     public static KMatrix<FracPoly<K>> operator *(FracPoly<K> a, KMatrix<K> m) => m * a;
+
+    public static KMatrix<K> MergeBlocks(KMatrix<K> A, KMatrix<K> B)
+    {
+        var (M0, N0) = A.Dim;
+        var (M1, N1) = B.Dim;
+        var (M2, N2) = (M0 + M1, N0 + N1);
+        var C = Ring.Matrix(M2, (M2 * N2).Range().Select(_ => A.KZero).ToArray());
+        
+        for (int i = 0; i < M0; i++)
+        for (int j = 0; j < N0; j++)
+            C[i, j] = A[i, j];
+
+        for (int i = 0; i < M1; i++)
+        for (int j = 0; j < N1; j++)
+            C[i + M0, j + N0] = B[i, j];
+
+        return new(C);
+    }
 }
