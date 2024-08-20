@@ -391,7 +391,7 @@ public static class PSLQ
     // DA(N, N), DB(N, N), DH(N, N), DYSQ(N, NSQ), DY(N)
     // Multiprecision real arrays and variables (with dimensions):
     // B(N, N), H(N, N), SYQ(N, NSQ), Y(N), EPS, T
-    public static KMatrix<BigReal> TwoLevelMultipair(KMatrix<BigReal> X, BigReal gamma)
+    public static Rational[] TwoLevelMultipair(KMatrix<BigReal> X, BigReal gamma)
     {
         // 1. Initialize MPR arrays:
         // a. Set EPS = 10^NEP .
@@ -403,8 +403,8 @@ public static class PSLQ
         Dble.EpsDouble = 1e-14;
         var N = X.N;
         var o = X.KOne;
-        int NDP = gamma.O, NDR = NDP / 20, NRB = NDP / 2, O2 = 16;
-        int NEP = -(4 * NDP / 5), NSQ = 8;
+        int NDP = gamma.O, NDR = NDP / 20, NRB = NDP / 3, O2 = 16;
+        int NEP = -(9 * NDP / 10), NSQ = 8;
         var DEPS = BigReal.FromDouble(1e-14, O2);
         var DREP = BigReal.FromDouble(1e-10, O2);
 
@@ -700,7 +700,7 @@ public static class PSLQ
         // Console.WriteLine(Y);
         // Console.WriteLine(B);
         if (double.Log10(normR.ToDouble) < NRB && double.Log10((minY / maxY).ToDouble) < NDR)
-            return R;
+            return R.Select(c => c.RoundEven.ToRational).ToArray();
 
         throw new
             ($"Failure normR or (minY / maxY) IT:{IT}");

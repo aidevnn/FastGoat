@@ -196,21 +196,8 @@ void QRtest()
     }
 }
 
+KPoly<Rational> PSLQtwolvlminPoly(int r, int s, int O)
 {
-    GlobalStopWatch.Restart();
-    Ring.DisplayPolynomial = MonomDisplay.StarCaret;
-    Logger.Level = LogLevel.Level1;
-    
-    // testPSQL1();
-    // testPSQL1();
-    // testPSQL1();
-    // PSLQonelvlminPoly(3, 3, 40);
-    // PSLQonelvlminPoly(2, 5, 50);
-    // Run();
-
-    var (r, s, O) = (4, 4, 120);
-    PSLQonelvlminPoly(r, s, O);
-    
     var n = r * s + 1; // Expected polynomial degree plus one
     var alpha = BigReal.NthRoot(3, r, O) - BigReal.NthRoot(2, s, O); // a = 3^(1/r) - 2^(1/s)
     var ai = n.Range().Select(k => alpha.Pow(k)).ToKMatrix();
@@ -219,9 +206,56 @@ void QRtest()
     
     GlobalStopWatch.AddLap();
     var coefs = PSLQ.TwoLevelMultipair(ai, gamma);
-    Console.WriteLine(coefs.ToKMatrix());
-    GlobalStopWatch.Show($"Two level multipair PSLQ");
+    Console.WriteLine(coefs.Select(c => c.RoundEven).ToKMatrix());
+    var P = FG.KPoly('X', coefs).Monic;
+    GlobalStopWatch.Show($"Two level multipair PSLQ min poly a = 3^(1/{r}) - 2^(1/{s})");
+    if (Logger.Level != LogLevel.Off)
+    {
+        Console.WriteLine($"P = {P} and P(a) = {P.Substitute(alpha).ToBigReal(3 * O / 4)}");
+        Console.WriteLine();
+    }
     Console.WriteLine();
+    return P;
+}
+
+{
+    GlobalStopWatch.Restart();
+    Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+    Logger.Level = LogLevel.Level1;
+    
+    testPSQL1();
+    testPSQL1();
+    testPSQL1();
+    
+    // MinPoly of a = 3^(1/r) - 2^(1/s)
+    List<(int r, int s, int O)> rsO = new()
+    {
+        (2, 2, 20),
+        (3, 3, 50),
+        (2, 5, 60),
+        (3, 4, 70),
+        (2, 7, 90),
+        (3, 5, 90),
+        (4, 4, 90),
+        (4, 5, 120),
+        (5, 5, 180),
+    };
+
+    Logger.Level = LogLevel.Level1;
+    foreach (var (r, s, O) in rsO)
+    {
+        Console.WriteLine(
+            $"Min poly of a = 3^(1/{r}) - 2^(1/{s}) with LLL and two level multipair PSLQ algorithms on {O} digits");
+        Console.WriteLine();
+        
+        var P1 = LLLminPoly(r, s, O);
+        var P2 = PSLQtwolvlminPoly(r, s, O);
+        
+        if (!P1.Equals(P2))
+            throw new();
+    }
+
+    Console.Beep();
 }
 // Possible Solution step:230
 // [-1, 0, 0, 0, 3860, 0, 0, 0, 666, 0, 0, 0, 20, 0, 0, 0, -1]
@@ -232,4 +266,17 @@ void QRtest()
 // Possible Solution step:273
 // [1, 0, 0, 0, -3860, 0, 0, 0, -666, 0, 0, 0, -20, 0, 0, 0, 1]
 // # Two level multipair PSLQ Time:2.815s
+// 
+// ...
+// 
+// Possible Solution
+// [-1, 0, 0, 0, 0, 116255, 0, 0, 0, 0, 11240, 0, 0, 0, 0, 3760, 0, 0, 0, 0, -5, 0, 0, 0, 0, -12233]
+// 
+// # LLL min poly a = 3^(1/5) - 2^(1/5) Time:1m12s
+// P = X^25 - 5*X^20 + 3760*X^15 + 11240*X^10 + 116255*X^5 - 1 P(a) = 0
+// 
+// Possible Solution step:586
+// [-1, 0, 0, 0, 0, 116255, 0, 0, 0, 0, 11240, 0, 0, 0, 0, 3760, 0, 0, 0, 0, -5, 0, 0, 0, 0, 1]
+// # Two level multipair PSLQ min poly a = 3^(1/5) - 2^(1/5) Time:17.084s
+// P = X^25 - 5*X^20 + 3760*X^15 + 11240*X^10 + 116255*X^5 - 1 and P(a) = 0
 // 
