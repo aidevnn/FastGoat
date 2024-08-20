@@ -166,8 +166,6 @@ void QRtest()
     var B = PSLQ.LQpslq(A.T).T;
     Console.WriteLine(B.Select(c => BigReal.Round(c, 4)).ToKMatrix(3));
     Console.WriteLine();
-    var C = PSLQ.LQpslq(A.Select(c => c.ToDble).ToKMatrix(3).T).T;
-    Console.WriteLine(C.Select(c => Dble.Round(c, 4)).ToKMatrix(3));
 
     for (int i = 0; i < 20; i++)
     {
@@ -214,10 +212,11 @@ KPoly<Rational> PSLQtwolvlminPoly(int r, int s, int O)
         Console.WriteLine($"P = {P} and P(a) = {P.Substitute(alpha).ToBigReal(3 * O / 4)}");
         Console.WriteLine();
     }
-    Console.WriteLine();
+    
     return P;
 }
 
+void Run2()
 {
     GlobalStopWatch.Restart();
     Ring.DisplayPolynomial = MonomDisplay.StarCaret;
@@ -280,3 +279,42 @@ KPoly<Rational> PSLQtwolvlminPoly(int r, int s, int O)
 // # Two level multipair PSLQ min poly a = 3^(1/5) - 2^(1/5) Time:17.084s
 // P = X^25 - 5*X^20 + 3760*X^15 + 11240*X^10 + 116255*X^5 - 1 and P(a) = 0
 // 
+
+KPoly<Rational> PSLQtwolvlminPolyXP(int r, int s, int O)
+{
+    var n = r * s + 1; // Expected polynomial degree plus one
+    var alpha = BigReal.NthRoot(3, r, O) - BigReal.NthRoot(2, s, O); // a = 3^(1/r) - 2^(1/s)
+    var ai = n.Range().Select(k => alpha.Pow(k)).ToKMatrix();
+    
+    var gamma = 2 / BigReal.Sqrt(BigReal.FromBigInteger(3, O));
+    
+    GlobalStopWatch.AddLap();
+    var coefs = PSLQ.TwoLevelMultipairXP(ai, gamma);
+    Console.WriteLine(coefs.Select(c => c.RoundEven).ToKMatrix());
+    var P = FG.KPoly('X', coefs).Monic;
+    GlobalStopWatch.Show($"(XP) Two level multipair PSLQ min poly a = 3^(1/{r}) - 2^(1/{s})");
+    if (Logger.Level != LogLevel.Off)
+    {
+        Console.WriteLine($"P = {P} and P(a) = {P.Substitute(alpha).ToBigReal(3 * O / 4)}");
+        Console.WriteLine();
+    }
+    
+    return P;
+}
+
+{
+    GlobalStopWatch.Restart();
+    Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+    Logger.Level = LogLevel.Level1;
+
+    PSLQtwolvlminPoly(2, 2, 20);
+    PSLQtwolvlminPolyXP(2, 2, 20);
+    PSLQtwolvlminPoly(3, 3, 50);
+    PSLQtwolvlminPolyXP(3, 3, 50);
+    PSLQtwolvlminPoly(2, 7, 90);
+    PSLQtwolvlminPolyXP(2, 7, 90);
+    PSLQtwolvlminPoly(4, 4, 90);
+    PSLQtwolvlminPolyXP(4, 4, 90);
+    
+    // Run2();
+}
