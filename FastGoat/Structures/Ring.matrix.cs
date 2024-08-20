@@ -35,6 +35,11 @@ public static partial class Ring
         return Matrix(n, coefs);
     }
 
+    public static T[,] Matrix<T>(T v, int nbRows, int nbCols)
+    {
+        return Matrix(nbRows, Enumerable.Repeat(v, nbRows * nbCols).ToArray());
+    }
+
     public static T[,] Dot<T>(T[,] A, T[,] B) where T : IElt<T>, IRingElt<T>
     {
         var rowsA = A.GetLength(0);
@@ -66,8 +71,8 @@ public static partial class Ring
         if (A.GetLength(1) != B.GetLength(0) || A.GetLength(0) != C.GetLength(0) || B.GetLength(1) != C.GetLength(1))
             throw new ArgumentException();
 
-        var rowsA = C.GetLength(0);
-        var colsAB = A.GetLength(1);
+        var rowsA = A.GetLength(0);
+        var colsAB = B.GetLength(1);
         var t0 = A[0, 0];
         for (int i = 0; i < rowsA; i++)
         {
