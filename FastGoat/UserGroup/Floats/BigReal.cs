@@ -214,6 +214,7 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
     }
 
     public int Sign => K.Sign;
+    public Dble ToDble => new(ToDouble);
 
     public string ToSciForm()
     {
@@ -274,7 +275,7 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
         if (n < 0)
             return NthRoot(r, -n).Inv();
 
-        if (n % 2 == 0 && r.K.Sign == -1)
+        if (n % 2 == 0 && r.Sign == -1)
             throw new("Even NthRoot must has positive argument");
 
         if (n == 1)
@@ -296,6 +297,7 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
 
     public BigReal RoundEven => Round0;
 
+    // TODO Fix
     public static BigReal Round(BigReal br, int d = 0, MidpointRounding mid = MidpointRounding.ToEven,
         Rounding form = Rounding.FixForm)
     {
@@ -308,7 +310,7 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
         if (form == Rounding.FixForm && br.V - 1 >= br.NbDigits)
             return br;
 
-        if (form == Rounding.FixForm && d > br.V + 1)
+        if (form == Rounding.FixForm && -d > br.V + 1)
             return br.Zero;
 
         var d0 = form == Rounding.SciForm ? d + 1 : d + 1 + br.V;
@@ -547,6 +549,9 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
     public static BigReal operator *(Rational a, BigReal b) => b.KMul(a);
 
     public static BigReal operator /(BigReal a, Rational b) => a.KMul(b.Inv());
+
+    public static bool operator <(BigReal a, BigReal b) => a.CompareTo(b) == -1;
+    public static bool operator >(BigReal a, BigReal b) => a.CompareTo(b) == 1;
 
     // mathematica cloud
     private const string PiStr =
