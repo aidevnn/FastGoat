@@ -333,7 +333,9 @@ public static partial class IntFactorisation
             throw new Exception();
         }
 
-        var listIrr0 = listIrr.OrderBy(q => new KPoly<Rational>(q.x, q.KZero, q.Coefs.Select(Rational.Absolute).ToArray())).ToArray();
+        var listIrr0 = listIrr
+            .OrderBy(q => new KPoly<Rational>(q.x, q.KZero, q.Coefs.Select(c => c.Absolute).ToArray()))
+            .ToArray();
         if (Logger.Level != LogLevel.Off)
         {
             var nu = Nu(f);
@@ -517,7 +519,7 @@ public static partial class IntFactorisation
     static (KPoly<Rational> nf, Rational c) CoefDiv(KPoly<Rational> f0)
     {
         var f = f0.ZPoly();
-        var coefs = f.Coefs.Select(c => Rational.Absolute(c)).ToArray();
+        var coefs = f.Coefs.Select(c => c.Absolute).ToArray();
 
         var dicoNum = coefs.Select((c, i) => (c.Num, i)).Where(e => !e.Num.IsZero && e.i != 0)
             .Select(e => IntExt.PrimesDec(e.Num).Where(kp => kp.Value >= e.i)
@@ -535,7 +537,7 @@ public static partial class IntFactorisation
     {
         var f = f0.ZPoly();
         var deg = f.Degree;
-        var coefs = f.Coefs.Select(c => Rational.Absolute(c)).ToArray();
+        var coefs = f.Coefs.Select(c => c.Absolute).ToArray();
 
         var dicoNum = coefs.Select((c, i) => (c.Num, i)).Where(e => !e.Num.IsZero && e.i != deg)
             .Select(e => IntExt.PrimesDec(e.Num).Where(kp => kp.Value >= deg - e.i)

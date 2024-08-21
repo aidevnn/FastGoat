@@ -57,4 +57,7 @@ public interface IVsElt<K, T> : IEquatable<T>, IComparable<T>
 public interface IFloatElt<K> where K : IElt<K>, IRingElt<K>, IFieldElt<K>
 {
     public K RoundEven { get; }
+    public K Absolute { get; }
+    public int Sign { get; }
+    public K Sqrt();
 }

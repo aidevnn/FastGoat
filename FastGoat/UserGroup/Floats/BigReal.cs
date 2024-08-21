@@ -194,6 +194,7 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
     }
 
     public BigReal Absolute => new(BigInteger.Abs(K), V, O);
+    public BigReal Sqrt() => Sqrt(this);
 
     public Rational ToRational
     {

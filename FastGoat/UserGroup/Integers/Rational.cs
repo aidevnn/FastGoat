@@ -15,7 +15,7 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
 
     public static Rational KOne() => new(1, 1);
 
-    public static double Abs(Rational r) => Absolute(r);
+    public static double Abs(Rational r) => r.Absolute;
     public static bool IsValuedField => true;
 
     public Rational()
@@ -145,7 +145,13 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
             return new(q + rs, 1);
         }
     }
-    
+
+    public Rational Absolute => new(BigInteger.Abs(Num), Denom);
+    public Rational Sqrt()
+    {
+        throw new NotImplementedException();
+    }
+
     public static Rational Parse(string r)
     {
         if (r.Any(c => !"0123456789./-".Contains(c)))
@@ -161,7 +167,6 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
     }
 
     public static implicit operator double(Rational e) => (double)e.Num / (double)e.Denom;
-    public static Rational Absolute(Rational e) => new(BigInteger.Abs(e.Num), e.Denom);
     public static Rational operator +(Rational a, Rational b) => a.Add(b);
     public static Rational operator +(int a, Rational b) => b.Add(b.One.Mul(a));
     public static Rational operator +(Rational a, int b) => a.Add(a.One.Mul(b));

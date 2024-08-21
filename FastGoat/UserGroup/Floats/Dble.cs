@@ -3,8 +3,13 @@ using FastGoat.UserGroup.Integers;
 
 namespace FastGoat.UserGroup.Floats;
 
-public readonly struct Dble : IElt<Dble>, IRingElt<Dble>, IFieldElt<Dble>, IVsElt<Rational, Dble>
+public readonly struct Dble : IElt<Dble>, IRingElt<Dble>, IFieldElt<Dble>, IVsElt<Rational, Dble>, IFloatElt<Dble>
 {
+    public override bool Equals(object? obj)
+    {
+        return obj is Dble other && Equals(other);
+    }
+
     public static double EpsDouble = 1e-14;
     public static Dble DbleZero() => new(0.0);
     public static Dble DbleOne() => new(1.0);
@@ -71,6 +76,8 @@ public readonly struct Dble : IElt<Dble>, IRingElt<Dble>, IFieldElt<Dble>, IVsEl
     public Rational KZero => Rational.KZero();
     public Rational KOne => Rational.KOne();
     public Dble Absolute => new(Sign * K);
+    public Dble Sqrt() => Sqrt(this);
+
     public Dble RoundEven => Round(this, 0);
     public BigReal ToBigReal(int O) => BigReal.FromDouble(K, O);
 

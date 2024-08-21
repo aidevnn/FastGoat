@@ -176,7 +176,7 @@ public static partial class FG
         new(P.x, Cplx.CZero, P.Coefs.Select(c => c.Poly.Substitute(e)).ToArray());
 
     public static KPoly<Rational> ToAbsKPoly(this KPoly<Rational> P) =>
-        new(P.x, P.KZero, P.Coefs.Select(c => Rational.Absolute(c)).ToArray());
+        new(P.x, P.KZero, P.Coefs.Select(c => c.Absolute).ToArray());
 
     public static KPoly<Rational> Primitive(this KPoly<Rational> P)
     {
@@ -253,12 +253,12 @@ public static partial class FG
         if (b < 1)
             throw new();
 
-        return P.Coefs.Aggregate(P.KZero, (acc, c) => acc + Rational.Absolute(c).Pow(b));
+        return P.Coefs.Aggregate(P.KZero, (acc, c) => acc + c.Absolute.Pow(b));
     }
 
     public static Rational NormInf(this KPoly<Rational> P)
     {
-        return P.Coefs.Max(c => Rational.Absolute(c));
+        return P.Coefs.Max(c => c.Absolute);
     }
 
     public static int NbCoeffs<K>(this KPoly<K> f) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
