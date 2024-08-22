@@ -35,54 +35,6 @@ using GroupRegX = System.Text.RegularExpressions;
 
 Console.WriteLine("Hello World");
 
-void QRtest()
-{
-    var o = BigReal.BrOne(20);
-    var A = new[] { 12, -51, 4, 6, 167, -68, -4, 24, -41 }.Select(e => e * o).ToKMatrix(3);
-    Console.WriteLine("A");
-    Console.WriteLine(A);
-    Console.WriteLine();
-    
-    var (Q, R) = PSLQ.QR(A);
-    Console.WriteLine("Q");
-    Console.WriteLine(Q);
-    Console.WriteLine();
-    Console.WriteLine("R");
-    Console.WriteLine(R.Select(c => BigReal.Round(c, 4)).ToKMatrix(3));
-    Console.WriteLine();
-
-    Console.WriteLine("QRpslq");
-    var B = PSLQ.LQpslq(A.T).T;
-    Console.WriteLine(B.Select(c => BigReal.Round(c, 4)).ToKMatrix(3));
-    Console.WriteLine();
-
-    for (int i = 0; i < 20; i++)
-    {
-        var A0 = 12.Range().Select(_ => Rng.Next(-20, 21) * o).ToKMatrix(3);
-        if (Rng.Next(5) == 0)
-            A0.Coefs[0, 0] = A0.KZero;
-        
-        Console.WriteLine("A0");
-        Console.WriteLine(A0);
-        Console.WriteLine();
-        var (_, R0) = PSLQ.QR(A0);
-        Console.WriteLine("R0");
-        Console.WriteLine(R0.Select(c => BigReal.Round(c, 4)).ToKMatrix(3));
-        Console.WriteLine();
-        
-        var R1 = PSLQ.LQpslq(A0.T).T;
-        Console.WriteLine("R1");
-        Console.WriteLine(R1.Select(c => BigReal.Round(c, 4)).ToKMatrix(3));
-        Console.WriteLine();
-
-        var check = (R0 - R1).Aggregate(o.Zero, (acc, c) => acc + c * c).IsZero();
-        Console.WriteLine($"Are Equal {check}");
-        Console.WriteLine();
-        if (!check)
-            throw new();
-    }
-}
-
 void PslqExprPi(int algo = 0)
 {
     var n = 8;
@@ -90,7 +42,7 @@ void PslqExprPi(int algo = 0)
     var pi = BigReal.Pi(2 * n + O1);
     // beta = 5/8*π^6 - 35/6*π^4 - 5*π^2
     //      = −16.69947371922907049618724340073146784130179174288144470245664281170485208378578722
-    var beta = BigReal.FromBigIntegerAndExponent(BigInteger.Parse("-1669947371922907049618724340073"), 1, O1);
+    var beta = BigReal.FromBigIntegerAndExponent(BigInteger.Parse("-1669947371922907049618724340073146784"), 1, O1);
 
     var ai = n.Range().Select(k => pi.Pow(k).ToBigReal(O1)).ToKMatrix();
     ai.Coefs[0, n - 1] = beta;
@@ -98,17 +50,11 @@ void PslqExprPi(int algo = 0)
     var gamma = 2 / BigReal.Sqrt(BigReal.FromBigInteger(3, O1));
     
     GlobalStopWatch.AddLap();
-    var coefs = algo == 0
-        ? PSLQ.OnelevelMultipair(ai, gamma)
+    var (coefs, name) = algo == 0
+        ? (PSLQ.OnelevelMultipair(ai, gamma), "One level")
         : algo == 1
-            ? PSLQ.TwoLevelMultipair(ai, gamma)
-            : PSLQ.TwoLevelMultipairXP(ai, gamma);
-
-    var name = algo == 0
-        ? "One level"
-        : algo == 1
-            ? "Two level jumps"
-            : "Two level loop";
+            ? (PSLQ.TwoLevelMultipairXP(ai, gamma), "Two level bigreal/bigreal")
+            : (PSLQM2.TwoLevelMultipairXP(ai, gamma), "Two level decimal/bigreal");
 
     Console.WriteLine(coefs.ToKMatrix());
     GlobalStopWatch.Show($"{name} Multipair PSLQ");
@@ -146,17 +92,11 @@ KPoly<Rational> PslqMinPoly(int r, int s, int O, int algo = 0)
     var gamma = 2 / BigReal.Sqrt(BigReal.FromBigInteger(3, O));
     
     GlobalStopWatch.AddLap();
-    var coefs = algo == 0
-        ? PSLQ.OnelevelMultipair(ai, gamma)
+    var (coefs, name) = algo == 0
+        ? (PSLQ.OnelevelMultipair(ai, gamma), "One level")
         : algo == 1
-            ? PSLQ.TwoLevelMultipair(ai, gamma)
-            : PSLQ.TwoLevelMultipairXP(ai, gamma);
-
-    var name = algo == 0
-        ? "One level"
-        : algo == 1
-            ? "Two level jumps"
-            : "Two level loop";
+            ? (PSLQ.TwoLevelMultipairXP(ai, gamma), "Two level bigreal/bigreal")
+            : (PSLQM2.TwoLevelMultipairXP(ai, gamma), "Two level decimal/bigreal");
 
     Console.WriteLine(coefs.ToKMatrix());
     var P = FG.KPoly('X', coefs).Monic;
@@ -217,43 +157,45 @@ void RunMinPoly()
     // LLL, PSLQM1 and PSLQM2
     // Run(rsO.ToArray(), lll: true, algos: [0, 1]);
 
-    // PSLQM2 jump and PSLQM2 loop
+    // PSLQM2 bigreal and PSLQM2 decimal
     RunMinPolyWithParams(rsO.ToArray(), lll: false, algos: [0, 1, 2]);
 }
 
 {
     RunExprPi();
     RunMinPoly();
+    Console.Beep();
 }
 
 // Possible Solution step:57
 // [0, 0, 120, 0, 140, 0, -15, 24]
-// # One level Multipair PSLQ Time:251ms
+// # One level Multipair PSLQ Time:184ms
 // beta = 5/8*π^6 - 35/6*π^4 - 5*π^2
 // 
 // Possible Solution step:60
 // [0, 0, 120, 0, 140, 0, -15, 24]
-// # Two level jumps Multipair PSLQ Time:138ms
+// # Two level bigreal/bigreal Multipair PSLQ Time:93ms
 // beta = 5/8*π^6 - 35/6*π^4 - 5*π^2
 // 
 // Possible Solution step:60
 // [0, 0, 120, 0, 140, 0, -15, 24]
-// # Two level loop Multipair PSLQ Time:115ms
+// # Two level decimal/bigreal Multipair PSLQ Time:41ms
 // beta = 5/8*π^6 - 35/6*π^4 - 5*π^2
 // 
 // ...
 //
 // Possible Solution step:558
 // [1, 0, 0, 0, 0, -116255, 0, 0, 0, 0, -11240, 0, 0, 0, 0, -3760, 0, 0, 0, 0, 5, 0, 0, 0, 0, -1]
-// # One level Multipair PSLQ min poly a = 3^(1/5) - 2^(1/5) Time:2m0s
+// # One level Multipair PSLQ min poly a = 3^(1/5) - 2^(1/5) Time:2m8s
 // P = X^25 - 5*X^20 + 3760*X^15 + 11240*X^10 + 116255*X^5 - 1 and P(a) = 0
 // 
-// Possible Solution step:586
-// [-1, 0, 0, 0, 0, 116255, 0, 0, 0, 0, 11240, 0, 0, 0, 0, 3760, 0, 0, 0, 0, -5, 0, 0, 0, 0, 1]
-// # Two level jumps Multipair PSLQ min poly a = 3^(1/5) - 2^(1/5) Time:17.626s
+// Possible Solution step:598
+// [1, 0, 0, 0, 0, -116255, 0, 0, 0, 0, -11240, 0, 0, 0, 0, -3760, 0, 0, 0, 0, 5, 0, 0, 0, 0, -1]
+// # Two level bigreal/bigreal Multipair PSLQ min poly a = 3^(1/5) - 2^(1/5) Time:16.857s
 // P = X^25 - 5*X^20 + 3760*X^15 + 11240*X^10 + 116255*X^5 - 1 and P(a) = 0
 // 
-// Possible Solution step:586
-// [-1, 0, 0, 0, 0, 116255, 0, 0, 0, 0, 11240, 0, 0, 0, 0, 3760, 0, 0, 0, 0, -5, 0, 0, 0, 0, 1]
-// # Two level loop Multipair PSLQ min poly a = 3^(1/5) - 2^(1/5) Time:16.994s
+// Possible Solution step:581
+// [1, 0, 0, 0, 0, -116255, 0, 0, 0, 0, -11240, 0, 0, 0, 0, -3760, 0, 0, 0, 0, 5, 0, 0, 0, 0, -1]
+// # Two level decimal/bigreal Multipair PSLQ min poly a = 3^(1/5) - 2^(1/5) Time:5.225s
+// P = X^25 - 5*X^20 + 3760*X^15 + 11240*X^10 + 116255*X^5 - 1 and P(a) = 0
 // 
