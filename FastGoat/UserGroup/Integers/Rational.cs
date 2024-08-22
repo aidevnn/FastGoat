@@ -110,6 +110,7 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
     }
 
     public Rational Inv() => new(Denom, Num);
+    public double ToDouble => (double)Num / (double)Denom;
     public bool Invertible() => !IsZero();
     public bool IsInteger() => Denom.IsOne;
     public override int GetHashCode() => Hash;
@@ -166,7 +167,7 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
         return new(num, denom);
     }
 
-    public static implicit operator double(Rational e) => (double)e.Num / (double)e.Denom;
+    public static implicit operator double(Rational e) => e.ToDouble;
     public static Rational operator +(Rational a, Rational b) => a.Add(b);
     public static Rational operator +(int a, Rational b) => b.Add(b.One.Mul(a));
     public static Rational operator +(Rational a, int b) => a.Add(a.One.Mul(b));
