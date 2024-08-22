@@ -1,0 +1,154 @@
+using FastGoat.Structures;
+using FastGoat.UserGroup.Integers;
+
+namespace FastGoat.UserGroup.Floats;
+
+public readonly struct Dcml : IElt<Dcml>, IRingElt<Dcml>, IFieldElt<Dcml>, IVsElt<Rational, Dcml>, IFloatElt<Dcml>
+{
+    public override bool Equals(object? obj)
+    {
+        return obj is Dcml other && Equals(other);
+    }
+
+    public static decimal EpsDouble = 1.0e-26m;
+    public static Dcml DbleZero() => new(0.0m);
+    public static Dcml DbleOne() => new(1.0m);
+    public decimal K { get; }
+
+    public Dcml(decimal k)
+    {
+        K = decimal.Abs(k) < EpsDouble * 10 ? 0 : k;
+        Hash = K.GetHashCode();
+    }
+
+    public bool Equals(Dcml other) => decimal.Abs(K - other.K) < EpsDouble * 100;
+
+    public int CompareTo(Dcml other) => K.CompareTo(other.K);
+
+    public int Hash { get; }
+    public bool IsZero() => decimal.Abs(K) < EpsDouble * 100;
+
+    public Dcml Zero => new(0);
+    public Dcml One => new(1);
+    public Dcml Add(Dcml e) => new(K + e.K);
+
+    public Dcml Sub(Dcml e) => new(K - e.K);
+
+    public Dcml Opp() => new(-K);
+
+    public Dcml Mul(Dcml e) => new(K * e.K);
+
+    public (Dcml quo, Dcml rem) Div(Dcml e) => (new(K / e.K), Zero);
+
+    public Dcml Mul(int k) => new(K * k);
+
+    public Dcml Pow(int k)
+    {
+        if (k < 0)
+            return Inv().Pow(-k);
+
+        var d0 = 1.0m;
+        for (int i = 0; i < k; ++i)
+            d0 *= K;
+
+        return new(d0);
+    }
+
+    public static Dcml operator +(Dcml a, Dcml b) => a.Add(b);
+
+    public static Dcml operator +(int a, Dcml b) => new(a + b.K);
+
+    public static Dcml operator +(Dcml a, int b) => new(a.K + b);
+
+    public static Dcml operator -(Dcml a) => a.Opp();
+
+    public static Dcml operator -(Dcml a, Dcml b) => a.Sub(b);
+
+    public static Dcml operator -(int a, Dcml b) => new(a - b.K);
+
+    public static Dcml operator -(Dcml a, int b) => a.Sub(new(b));
+
+    public static Dcml operator *(Dcml a, Dcml b) => a.Mul(b);
+
+    public static Dcml operator *(int a, Dcml b) => b.Mul(a);
+
+    public static Dcml operator *(Dcml a, int b) => a.Mul(b);
+
+    public static Dcml operator /(Dcml a, Dcml b) => a.Div(b).quo;
+
+    public static Dcml operator /(Dcml a, int b) => new(a.K / b);
+
+    public int P => 0;
+    public Dcml Inv() => new(1.0m / K);
+    public int Sign => decimal.Sign(K);
+
+    public bool Invertible() => !IsZero();
+    public Rational KZero => Rational.KZero();
+    public Rational KOne => Rational.KOne();
+    public Dcml Absolute => new(Sign * K);
+    public Dcml Sqrt() => new(InternalSqrt(K));
+
+    static decimal InternalSqrt(decimal d)
+    {
+        if (d < 0)
+            throw new ArgumentException();
+        
+        var eps = 1e-25m;
+        var (d0, d1) = (d, (d + 1) / 2);
+        do
+        {
+            (d0, d1) = (d1, (d1 + d / d1) / 2);
+        } while (decimal.Abs(d0 - d1) > eps);
+
+        return d1;
+    }
+
+    public Dcml RoundEven => Round(this, 0);
+    public BigReal ToBigReal(int O) => BigReal.FromString($"{K:E28}", O);
+
+    public Dcml KMul(Rational k) => new(K * (decimal)k.ToDouble);
+
+    public override int GetHashCode() => Hash;
+    public override string ToString() => $"{K}";
+
+    public static Dcml NthRoot(Dcml a, int n) => new((decimal)double.RootN((double)a.K, n)); // TODO 
+    public static Dcml Sqrt(Dcml a) => new(InternalSqrt(a.K));
+
+    public static Dcml operator /(int a, Dcml b) => a * b.Inv();
+
+    public static double Abs(Dcml t) => (double)decimal.Abs(t.K);
+    public static Dcml Round(Dcml e, int d, MidpointRounding mode = MidpointRounding.ToEven) 
+        => new(decimal.Round(e.K, d, mode));
+
+    public static bool IsValuedField => true;
+
+    public static implicit operator decimal(Dcml e) => e.K;
+
+    public static implicit operator Dcml(Rational e) => new((decimal)e.ToDouble);
+
+    public static Dcml operator +(Dcml a, Rational b) => a.Add(b);
+
+    public static Dcml operator +(Rational a, Dcml b) => b.Add(a);
+
+    public static Dcml operator -(Dcml a, Rational b) => a.Sub(b);
+
+    public static Dcml operator -(Rational a, Dcml b) => new Dcml((decimal)a.ToDouble).Sub(b);
+
+    public static Dcml operator *(Dcml a, Rational b) => a.Mul(new Dcml((decimal)b.ToDouble));
+
+    public static Dcml operator *(Rational a, Dcml b) => new Dcml((decimal)a.ToDouble).Mul(b);
+
+    public static Dcml operator /(Dcml a, Rational b) => a.Div(b).quo;
+
+    public static bool operator ==(Dcml a, Dcml b) => a.Equals(b);
+
+    public static bool operator !=(Dcml a, Dcml b) => !(a == b);
+    public static bool operator <(Dcml a, Dcml b) => a.K < b.K;
+
+    public static bool operator >(Dcml a, Dcml b) => a.K > b.K;
+    public static bool operator <=(Dcml a, Dcml b) => (a < b) || (a == b);
+
+    public static bool operator >=(Dcml a, Dcml b) => (a > b) || (a == b);
+    public static Dcml Min(Dcml a, Dcml b) => a <= b ? a : b;
+    public static Dcml Max(Dcml a, Dcml b) => a < b ? b : a;
+}

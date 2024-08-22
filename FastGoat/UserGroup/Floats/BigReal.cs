@@ -215,7 +215,7 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
     }
 
     public int Sign => K.Sign;
-    public Dble ToDble => new(ToDouble);
+    public Dcml ToDcml => new((decimal)ToDouble);
 
     public string ToSciForm()
     {
@@ -431,7 +431,7 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
 
     public static BigReal FromDouble(double d, int o)
     {
-        var s = $"{d:E}".Split('E');
+        var s = $"{d:E17}".Split('E');
         var s10 = s[0].Replace(".", "");
         var k0 = long.Parse(s10);
         var sgn = s[1][0] == '+' ? 1 : -1;
