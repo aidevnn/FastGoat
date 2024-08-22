@@ -2,6 +2,7 @@ using System.Numerics;
 using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.VecSpace;
+using FastGoat.UserGroup.Floats;
 
 namespace FastGoat.UserGroup.Integers;
 
@@ -152,6 +153,20 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
     {
         throw new NotImplementedException();
     }
+
+    public static Rational From<T>(T e) where T : IElt<T>, IRingElt<T>, IFieldElt<T>, IFloatElt<T>
+    {
+        if (e is BigReal e0)
+            return e0.ToRational;
+        if (e is Dble e1)
+            return e1.ToBigReal(17).ToRational;
+        if (e is Dcml e2)
+            return e2.ToBigReal(28).ToRational;
+
+        throw new ArgumentException();
+    }
+
+    public static int Digits => -1;
 
     public static Rational Parse(string r)
     {

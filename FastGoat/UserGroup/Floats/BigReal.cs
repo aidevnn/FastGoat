@@ -186,6 +186,27 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
 
     public BigReal Absolute => new(BigInteger.Abs(K), V, O);
     public BigReal Sqrt() => Sqrt(this);
+    public static BigReal From<T>(T e) where T : IElt<T>, IRingElt<T>, IFieldElt<T>, IFloatElt<T>
+    {
+        if (e is BigReal e0)
+            return e0;
+        
+        if (e is Dble e1)
+            return e1.ToBigReal(17);
+        
+        if (e is Dcml e2)
+            return e2.ToBigReal(28);
+        
+        if (e is Rational e3)
+        {
+            var O = int.Max(17, int.Max($"{BigInteger.Abs(e3.Num)}".Length, $"{e3.Denom}".Length));
+            return FromBigInteger(e3.Num, O) / FromBigInteger(e3.Denom, O);
+        }
+
+        throw new ArgumentException();
+    }
+
+    public static int Digits => -1;
 
     public Rational ToRational
     {
@@ -207,6 +228,20 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
 
     public int Sign => K.Sign;
     public Dcml ToDcml => new(ToDecimal);
+    public Dble ToDble => new(ToDouble);
+
+    
+
+    public static BigReal FromFixedPrecision<T>(T e, int O) 
+        where T : struct, IElt<T>, IRingElt<T>, IFieldElt<T>, IFloatElt<T>
+    {
+        if (e is Dble e0)
+            return e0.ToBigReal(O);
+        if (e is Dcml e1)
+            return e1.ToBigReal(O);
+
+        throw new ArgumentException();
+    }
 
     public string ToSciForm()
     {

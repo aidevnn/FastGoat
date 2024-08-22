@@ -10,23 +10,23 @@ public readonly struct Dcml : IElt<Dcml>, IRingElt<Dcml>, IFieldElt<Dcml>, IVsEl
         return obj is Dcml other && Equals(other);
     }
 
-    public static decimal EpsDouble = 1.0e-26m;
+    public static decimal EpsDecimal = 1.0e-26m;
     public static Dcml DbleZero() => new(0.0m);
     public static Dcml DbleOne() => new(1.0m);
     public decimal K { get; }
 
     public Dcml(decimal k)
     {
-        K = decimal.Abs(k) < EpsDouble * 10 ? 0 : k;
+        K = decimal.Abs(k) < EpsDecimal * 10 ? 0 : k;
         Hash = K.GetHashCode();
     }
 
-    public bool Equals(Dcml other) => decimal.Abs(K - other.K) < EpsDouble * 100;
+    public bool Equals(Dcml other) => decimal.Abs(K - other.K) < EpsDecimal * 100;
 
     public int CompareTo(Dcml other) => K.CompareTo(other.K);
 
     public int Hash { get; }
-    public bool IsZero() => decimal.Abs(K) < EpsDouble * 100;
+    public bool IsZero() => decimal.Abs(K) < EpsDecimal * 100;
 
     public Dcml Zero => new(0);
     public Dcml One => new(1);
@@ -87,6 +87,24 @@ public readonly struct Dcml : IElt<Dcml>, IRingElt<Dcml>, IFieldElt<Dcml>, IVsEl
     public Rational KOne => Rational.KOne();
     public Dcml Absolute => new(Sign * K);
     public Dcml Sqrt() => new(InternalSqrt(K));
+    public static Dcml From<T>(T e) where T : IElt<T>, IRingElt<T>, IFieldElt<T>, IFloatElt<T>
+    {
+        if (e is BigReal e0)
+            return e0.ToDcml;
+
+        if (e is Dble e1)
+            return new((decimal)e1.K);
+
+        if (e is Rational e2)
+            return new((decimal)e2.ToDouble); // TODO missing digits
+
+        if (e is Dcml e3)
+            return e3;
+
+        throw new ArgumentException();
+    }
+
+    public static int Digits => 26;
 
     static decimal InternalSqrt(decimal d)
     {
@@ -94,7 +112,7 @@ public readonly struct Dcml : IElt<Dcml>, IRingElt<Dcml>, IFieldElt<Dcml>, IVsEl
             throw new ArgumentException();
         
         var eps = 1e-25m;
-        var (d0, d1) = (d, (d + 1) / 2);
+        decimal d0, d1 = (d + 1) / 2;
         do
         {
             (d0, d1) = (d1, (d1 + d / d1) / 2);
