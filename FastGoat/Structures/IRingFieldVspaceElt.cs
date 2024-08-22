@@ -60,4 +60,6 @@ public interface IFloatElt<K> where K : IElt<K>, IRingElt<K>, IFieldElt<K>
     public K Absolute { get; }
     public int Sign { get; }
     public K Sqrt();
+    public static abstract K From<T>(T e) where T : IElt<T>, IRingElt<T>, IFieldElt<T>, IFloatElt<T>;
+    public static abstract int Digits { get; }
 }
