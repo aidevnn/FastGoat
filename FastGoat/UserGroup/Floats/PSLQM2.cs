@@ -6,6 +6,18 @@ using FastGoat.UserGroup.Integers;
 
 namespace FastGoat.UserGroup.Floats;
 
+/*
+The two-level multipair PSLQ algorithm
+David H. Bailey
+May 2, 2024
+pslqm2-alg.pdf
+https://www.davidhbailey.com/dhbpapers/
+
+Fortran source code
+tpslqm2.f90
+mpfun20-mpfr-v32.tar.gz
+https://www.davidhbailey.com/dhbsoftware/
+ */
 public class PSLQM2
 {
     /// <summary>
@@ -120,7 +132,6 @@ public class PSLQM2
             }
         }
     }
-
     
     static void SaveRestore<T>(KMatrix<T> H0, KMatrix<T> A0, KMatrix<T> B0, KMatrix<T> T0, KMatrix<T> y0,
         KMatrix<T> H1, KMatrix<T> A1, KMatrix<T> B1, KMatrix<T> T1, KMatrix<T> y1)
@@ -228,6 +239,29 @@ public class PSLQM2
     private BigReal DREP { get; }
     private BigReal TwoPowNMP { get; }
 
+    // PSLQM2 (two-level multipair PSLQ):
+    // Input arguments and parameters:
+    // N            Int     Length of input vector X and output relation vector R.
+    // NDP          Int     Double Precision level in digits.
+    // NMP          Int     Multi Precision level in digits.
+    // NDR          Int     log10 of the min acceptable dynamic range of Y vector at detection;
+    //                      default = 30. A smaller range is deemed unreliable.
+    // NRB          Int     log10 of max size (Euclidean norm) of acceptable relation;
+    //                      default = 200.
+    // NEP          Int     log10 of full precision epsilon; default = 30 − NDP ; for large
+    //                      problems replace 30 by 50 or 60.
+    // X            MPR     N-long input multiprecision vector.
+    // IQ           Int     Output flag: 0 (unsuccessful) or 1 (successful).
+    // R            MPR     N-long output integer relation vector, if successful, else zeroes.
+    // NSQ          Int     Second dimension of DSYQ and SYQ; default = 8.
+    // DEPS         DP      Double precision epsilon; default = 10^−14 .
+    // DREP         DP      Dynamic range epsilon; default = 10^−10 .
+    // Integer variables:
+    // IT, ITS, IMQ, IZD, IZM
+    // Double precision arrays and variables (with dimensions):
+    // DA(N, N), DB(N, N), DH(N, N), DYSQ(N, NSQ), DY(N)
+    // Multiprecision real arrays and variables (with dimensions):
+    // B(N, N), H(N, N), SYQ(N, NSQ), Y(N), EPS, T
     private PSLQM2(KMatrix<BigReal> X, BigReal gamma)
     {
         N = X.N;
@@ -596,7 +630,91 @@ public class PSLQM2
         Step9(st);
     }
 
-    public static Rational[] TwoLevelMultipairXP(KMatrix<BigReal> X, BigReal gamma)
+    /// <summary>
+    /// One-level multipair PSLQ algorithm
+    /// PSLQM1
+    /// </summary>
+    /// <param name="x">Row Vector</param>
+    /// <param name="gamma">PSLQ gamma</param>
+    /// <returns>Integer Relation coefficients</returns>
+    /// <exception cref="Exception">Precision exhausted</exception>
+    public static Rational[] OnelevelMultipair(KMatrix<BigReal> x, BigReal gamma)
+    {
+        // Initialize:
+        // 1. For j := 1 to n: for i := 1 to n: if i = j then set Aij := 1 and Bij := 1
+        // else set Aij := 0 and Bij := 0; endfor; endfor.
+        var n = x.N;
+        var z = BigReal.BrZero(x.KOne.O);
+        var A = new KMatrix<BigReal>(z, n, n).One;
+        var B = new KMatrix<BigReal>(z, n, n).One;
+        var T = new KMatrix<BigReal>(z, n, n - 1);
+
+        // 2. For k := 1 to n: set sk :=Sqrt(Sum[j=k to n] xj^2) ; endfor; set t = 1/s1 ; for k := 1 to
+        // n: set yk := txk ; sk := tsk ; endfor.
+        var s = n.Range().Select(j => (n - j).Range(j).Aggregate(x.KZero, (acc, k) => acc + x[0, k].Pow(2)))
+            .Select(e => BigReal.Sqrt(e)).ToArray();
+        var t = s[0].Inv();
+        var y = x.Select(xi => xi * t).ToKMatrix(n);
+        s = s.Select(si => si * t).ToArray();
+
+        // 3. Initial H: For j := 1 to n − 1: for i := 1 to j − 1: set Hij := 0; endfor;
+        // set Hjj := sj+1 /sj ; for i := j + 1 to n: set Hij := −yi yj /(sj sj+1 ); endfor;
+        // endfor.
+        var H = new KMatrix<BigReal>(z, n, n - 1);
+        for (int j = 0; j < n - 1; j++)
+        {
+            for (int i = 0; i < j - 1; i++)
+                H.Coefs[i, j] = z;
+
+            H.Coefs[j, j] = s[j + 1] / s[j];
+            for (int i = j + 1; i < n; i++)
+                H.Coefs[i, j] = (-y[i, 0] * y[j, 0]) / (s[j] * s[j + 1]);
+        }
+
+        var step = 0;
+        var O1 = z.O;
+        var O2 = gamma.O;
+        var gamma_pow = (n - 1).Range().Select(i => (i, yi: gamma.Pow(i + 1))).ToArray();
+
+        // Iteration: Repeat the following steps until precision has been exhausted or a
+        // relation has been detected.
+        while (true)
+        {
+            ++step;
+            IterOneLevelMultipair(H, A, B, T, y, gamma_pow);
+
+            // 8. Norm bound: Compute M := 1/ maxj |Hjj |. Then there can exist no
+            // relation vector whose Euclidean norm is less than M .
+            // 9. Termination test: If the largest entry of A exceeds the level of numeric
+            // precision used, then precision is exhausted. If the smallest entry of the y
+            // vector is less than the detection epsilon, a relation has been detected and
+            // is given in the corresponding row of B.
+            var M = (n - 1).Range().Max(j => H[j, j]).Inv();
+            if (A.Any(e => e.V >= O1 + 2))
+                throw new("Precision is exhausted");
+
+            if (y.Any(e => e.ToBigReal(O1 - 4).IsZero()))
+            {
+                var ym = y.Select((yi, i) => (e: yi, i)).OrderBy(c => c.e.Absolute).First();
+                if (Logger.Level != LogLevel.Off)
+                    Console.WriteLine($"Possible Solution step:{step}");
+
+                return B.GetRow(ym.i).Select(c => c.RoundEven.ToRational).ToArray();
+            }
+        }
+
+        throw new();
+    }
+
+    /// <summary>
+    /// Two-level multipair PSLQ algorithm
+    /// PSLQM2
+    /// </summary>
+    /// <param name="X">Row Vector</param>
+    /// <param name="gamma">PSLQ gamma</param>
+    /// <returns>Integer Relation coefficients</returns>
+    /// <exception cref="Exception">Precision exhausted</exception>
+    public static Rational[] TwoLevelMultipair(KMatrix<BigReal> X, BigReal gamma)
     {
         var algo = new PSLQM2(X, gamma);
         algo.Run();
