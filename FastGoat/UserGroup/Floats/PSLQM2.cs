@@ -233,7 +233,7 @@ public class PSLQM2
     private KMatrix<Dcml> _DT { get; }
     private KMatrix<Dcml> _DY { get; }
     private (int i, BigReal yi)[] gamma_pow { get; }
-    private (int i, Dcml yi)[] gamma_pow_dble { get; }
+    private (int i, Dcml yi)[] gamma_pow_dcml { get; }
     private BigReal EPS { get; }
     private Dcml DEPS { get; }
     private BigReal DREP { get; }
@@ -268,6 +268,11 @@ public class PSLQM2
         this.X = new KMatrix<BigReal>(X.Coefs);
         var o = X.KOne;
         NMP = gamma.O;
+        if (NMP != X.KOne.O || NMP < 30)
+            throw new ArgumentException($"{NMP}-digits must be >=30");
+        if (NMP != X.KOne.O)
+            throw new ArgumentException($"y has {NMP}-digits and X has {X.KOne.O}-digits");
+        
         NDR = NMP / 20;
         NRB = NMP / 3;
         NDP = 26;
@@ -286,7 +291,7 @@ public class PSLQM2
         H = new KMatrix<BigReal>(o.Zero, N, N - 1);
         Yseq = NSQ.Range().Select(_ => new KMatrix<BigReal>(o, N, 1)).ToArray();
         gamma_pow = (N - 1).Range().Select(i => (i, yi: gamma.Pow(i + 1))).ToArray();
-        gamma_pow_dble = (N - 1).Range().Select(i => (i, yi: gamma.Pow(i + 1).ToDcml)).ToArray();
+        gamma_pow_dcml = (N - 1).Range().Select(i => (i, yi: gamma.Pow(i + 1).ToDcml)).ToArray();
         var z1 = Dcml.DbleZero();
         DYseq = NSQ.Range().Select(_ => new KMatrix<Dcml>(z1, N, 1)).ToArray();
         DH = new KMatrix<Dcml>(z1, N, N - 1);
@@ -362,7 +367,7 @@ public class PSLQM2
             for (int j = 0; j < N - 1; j++)
                 DH.Coefs[i, j] = (mhi * H.Coefs[i, j]).ToDcml;
         }
-
+        
         foreach (var (i, j) in N.Range().Grid2D())
         {
             if (i == j)
@@ -411,7 +416,7 @@ public class PSLQM2
     {
         var IT = st.IT + 1;
         SaveRestore(DH, DA, DB, DT, DY, _DH, _DA, _DB, _DT, _DY);
-        IterOneLevelMultipair(DH, DA, DB, DT, DY, gamma_pow_dble, st.IMQ == 1);
+        IterOneLevelMultipair(DH, DA, DB, DT, DY, gamma_pow_dcml, st.IMQ == 1);
 
         var minDY = DY.Min(e => e.Absolute);
         var IZD = minDY < DEPS ? 1 : 0;
@@ -718,6 +723,6 @@ public class PSLQM2
     {
         var algo = new PSLQM2(X, gamma);
         algo.Run();
-        return algo.Relations;
+        return algo.Relations.ToArray();
     }
 }
