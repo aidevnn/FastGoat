@@ -34,3 +34,11 @@ using GroupRegX = System.Text.RegularExpressions;
 //////////////////////////////////
 
 Console.WriteLine("Hello World");
+
+{
+    var pi = BigReal.Pi(50).Mul10PowN(-130);
+    Console.WriteLine(pi.ToSciForm());
+    var pid = double.Parse(pi.ToSciForm());
+    Console.WriteLine(pid);
+    Console.WriteLine(pi.ToDouble);
+}

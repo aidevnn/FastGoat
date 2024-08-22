@@ -180,18 +180,9 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
 
     public BigReal Round0 => Round(this);
 
-    public double ToDouble
-    {
-        get
-        {
-            if (IsZero())
-                return 0.0;
-
-            var k0 = Clamp(K, DigitsDouble);
-            var d0 = Length(k0);
-            return (double)k0 * Double.Exp10(V - d0 + 1);
-        }
-    }
+    public double ToDouble => double.Parse(ToSciForm());
+    
+    public decimal ToDecimal => decimal.Parse(ToFixForm());
 
     public BigReal Absolute => new(BigInteger.Abs(K), V, O);
     public BigReal Sqrt() => Sqrt(this);
@@ -215,7 +206,7 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
     }
 
     public int Sign => K.Sign;
-    public Dcml ToDcml => new((decimal)ToDouble);
+    public Dcml ToDcml => new(ToDecimal);
 
     public string ToSciForm()
     {
