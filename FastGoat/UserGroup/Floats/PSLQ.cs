@@ -55,7 +55,6 @@ public class PSLQ
 
         foreach (var (mi, _) in list)
         {
-            // Console.WriteLine($"Swap {(mi, mi + 1)}");
             (y.Coefs[mi, 0], y.Coefs[mi + 1, 0]) = (y[mi + 1, 0], y[mi, 0]);
             for (int k = 0; k < n; k++)
             {
@@ -65,7 +64,7 @@ public class PSLQ
                     (H.Coefs[mi, k], H.Coefs[mi + 1, k]) = (H.Coefs[mi + 1, k], H.Coefs[mi, k]);
             }
         }
-
+        
         // 4. Remove corners on H diagonal: For j := 1 to p: if mj ≤ n − 2 then set
         // t0 := Sqrt(H2mj_mj + H2mj_mj1), t1 := Hmj_mj /t0 and t2 := Hmj_mj1 /t0 ; for 
         // i := mj to n: set t3 := Hi_mj ; t4 := Hi_mj1 ; Hi_mj := t1t3 + t2t4 ; and
@@ -91,7 +90,7 @@ public class PSLQ
         for (int i = 0; i < n; i++)
         for (int j = 0; j < n - 1; j++)
             T.Coefs[i, j] = T.KZero;
-
+        
         // 5. Reduce H: For i := 2 to n: for j := 1 to n − i + 1: set l := i + j − 1; for
         // k := j +1 to l −1: set Hlj := Hlj −Tlk Hkj ; endfor; set Tlj := nint(Hlj /Hjj )
         // and Hlj := Hlj − Tlj Hjj ; endfor; endfor. [Note that the n x (n − 1) integer
@@ -118,7 +117,7 @@ public class PSLQ
             for (int i = j + 1; i < n; i++)
                 y.Coefs[j, 0] += T[i, j] * y[i, 0];
         }
-
+        
         for (int k = 0; k < n; k++)
         {
             for (int j = 0; j < n - 1; j++)
@@ -262,7 +261,7 @@ public class PSLQ
                 continue;
 
             var N2 = (m - l).Range().Select(i => H[l, l + i]).Aggregate(A.KZero, (acc, a) => acc + a * a);
-            var N = BigReal.Sqrt(N2);
+            var N = N2.Sqrt();
             if (N.IsZero())
                 continue;
 
@@ -293,333 +292,7 @@ public class PSLQ
 
         return new(H.Coefs);
     }
-
-    // PSLQM2 (two-level multipair PSLQ):
-    // Input arguments and parameters:
-    // N            Int     Length of input vector X and output relation vector R.
-    // NDP          Int     Double Precision level in digits.
-    // NMP          Int     Multi Precision level in digits.
-    // NDR          Int     log10 of the min acceptable dynamic range of Y vector at detection;
-    //                      default = 30. A smaller range is deemed unreliable.
-    // NRB          Int     log10 of max size (Euclidean norm) of acceptable relation;
-    //                      default = 200.
-    // NEP          Int     log10 of full precision epsilon; default = 30 − NDP ; for large
-    //                      problems replace 30 by 50 or 60.
-    // X            MPR     N-long input multiprecision vector.
-    // IQ           Int     Output flag: 0 (unsuccessful) or 1 (successful).
-    // R            MPR     N-long output integer relation vector, if successful, else zeroes.
-    // NSQ          Int     Second dimension of DSYQ and SYQ; default = 8.
-    // DEPS         DP      Double precision epsilon; default = 10^−14 .
-    // DREP         DP      Dynamic range epsilon; default = 10^−10 .
-    // Integer variables:
-    // IT, ITS, IMQ, IZD, IZM
-    // Double precision arrays and variables (with dimensions):
-    // DA(N, N), DB(N, N), DH(N, N), DYSQ(N, NSQ), DY(N)
-    // Multiprecision real arrays and variables (with dimensions):
-    // B(N, N), H(N, N), SYQ(N, NSQ), Y(N), EPS, T
-    /// <summary>
-    /// Two-level multipair PSLQ algorithm
-    /// PSLQM2
-    /// </summary>
-    /// <param name="X">Row Vector</param>
-    /// <param name="gamma">PSLQ gamma</param>
-    /// <returns>Integer Relation coefficients</returns>
-    /// <exception cref="Exception">Precision exhausted</exception>
-    public static Rational[] TwoLevelMultipair(KMatrix<BigReal> X, BigReal gamma)
-    {
-        // 1. Initialize MPR arrays:
-        // a. Set EPS = 10^NEP .
-        // b. Set B to an N * N identity matrix.
-        // c. Compute initial H matrix as given in multipair PSLQ algorithm above.
-        // d. Set SYQ array to zeroes.
-        // e. Set IZD, IZM, IMQ, IT and ITS to zero.
-        var N = X.N;
-        var o = X.KOne;
-        int NMP = gamma.O, NDR = NMP / 20, NRB = NMP / 3, NDP = 16;
-        int NEP = -(9 * NMP / 10), NSQ = 8;
-        var DEPS = BigReal.FromDouble(1e-14, NDP);
-        var DREP = BigReal.FromDouble(1e-10, NDP);
-
-        var EPS = BigReal.FromBigIntegerAndExponent(10, NEP, NMP);
-        var twoPowNMP = BigReal.FromBigInteger(BigInteger.Pow(2, NMP / 5), NMP);
-        var A = new KMatrix<BigReal>(Ring.Diagonal(o, N));
-        var B = new KMatrix<BigReal>(Ring.Diagonal(o, N));
-        var HT = new KMatrix<BigReal>(o, N, N - 1);
-        var Y = new KMatrix<BigReal>(o, N, 1);
-
-        var s = new BigReal[N];
-        var H = new KMatrix<BigReal>(o.Zero, N, N - 1);
-        var YSQ = NSQ.Range().Select(_ => new KMatrix<BigReal>(o, N, 1)).ToArray();
-        int IT = 0, ITS = 0, IMQ = 0, IZD = 0, IZM = 0;
-
-        var gamma_pow = (N - 1).Range().Select(i => (i, yi: gamma.Pow(i + 1))).ToArray();
-
-        var z1 = BigReal.BrZero(NDP);
-        var DYSQ = NSQ.Range().Select(_ => new KMatrix<BigReal>(z1, N, 1)).ToArray();
-        var DH = new KMatrix<BigReal>(z1, N, N - 1);
-        var DA = new KMatrix<BigReal>(z1, N, N);
-        var DB = new KMatrix<BigReal>(z1, N, N);
-        var DY = new KMatrix<BigReal>(z1, N, 1);
-        var DT = new KMatrix<BigReal>(z1, N, N - 1);
-        var (_DH, _DA, _DB, _DT, _DY) = (DH.Clone, DA.Clone, DB.Clone, DT.Clone, DY.Clone);
-
-        var T = o.Zero;
-        BigReal minY, maxY, maxB;
-        
-        for (int i = N - 1; i >= 0; i--)
-        {
-            T += X[0, i].Pow(2);
-            s[i] = BigReal.Sqrt(T);
-        }
-
-        T = s[0].Inv();
-        for (int i = 0; i < N; i++)
-        {
-            s[i] *= T;
-            Y.Coefs[i, 0] = X[0, i] * T;
-        }
-
-        for (int j = 0; j < N - 1; j++)
-        {
-            H.Coefs[j, j] = s[j + 1] / s[j];
-            var tj = Y[j, 0] / (s[j] * s[j + 1]);
-            for (int i = j + 1; i < N; i++)
-                H.Coefs[i, j] = -Y[i, 0] * tj;
-        }
-        
-        step2:
-        // 2. Check if min/max absolute value of Y < DREP . This is often true for
-        // the first few tens of iterations. If true, go to Step 7 below.
-        minY = Y.Min(e => e.Absolute);
-        maxY = Y.Max(e => e.Absolute);
-
-        if ((minY / maxY) < DREP)
-            goto step7;
-
-        step3:
-        // 3. Initialize DP arrays:
-        // a. Set T = max absolute value of Y ; set DY = Y/T , rounded to DP.
-        // b. Set T = max absolute value of H; set DH = H/T , rounded to DP.
-        // c. Set DA and DB to identity matrices.
-        // d. Set DYSQ array to zeroes.
-        var maxH = (N - 1).Range().Select(k => H[k, k]).Max(e => e.Absolute);
-        var (myi, mhi) = (maxY.Inv(), maxH.Inv());
-        for (int i = 0; i < N; i++)
-        {
-            DY.Coefs[i, 0] = (myi * Y.Coefs[i, 0]).ToBigReal(NDP);
-            for (int j = 0; j < N - 1; j++)
-                DH.Coefs[i, j] = (mhi * H.Coefs[i, j]).ToBigReal(NDP);
-        }
-
-        DA = DA.One;
-        DB = DB.One;
-        for (int i = 0; i < NSQ; i++)
-            Array.Copy(DY.Zero.Coefs, DYSQ[i].Coefs, N);
-
-        // 4. Perform an LQ decomposition on DH using DP arithmetic.
-        DH = LQpslq(DH);
-
-        step5:
-        // 5. Perform one multipair PSLQ iteration using DP arithmetic:
-        // a. Increment iteration count: IT := IT + 1; set IZD = 0.
-        // b. Save the input DA, DB, DH and DY arrays.
-        // c. Follow the steps in multipair PSLQ algorithm above to update DY, DA,
-        // DB and DH; however, if flag IMQ = 1 from a previous iteration, only
-        // select one pair of entries (i.e., set p = 1 in Steps 2, 3 and 4 in the
-        // multipair PSLQ algorithm), then set IMQ = 0. It is not necessary to
-        // compute the norm bound in the DP iterations.
-        // d. If the min absolute value of DY < DEPS, then set IZD = 1. If the
-        // max absolute value of DA or DB exceeds 10^13 , but less than 2^52 , then
-        // set IZD = 1. If the max absolute value of DA or DB exceeds 2^52
-        // (precision failure), then set IZD = 2 and restore the DA, DB, DH
-        // and DY arrays saved above in Step 5b.
-        // e. Compare the DY vector with the DY vectors of recent iterations saved
-        // in array DYSQ; if a match is found, set flag IMQ = 1, which instructs
-        // the next iteration to be performed using only one pair of indices in the
-        // multipair scheme (in practice, this occurs only very rarely).
-        // f. Save DY vector in row K of DYSQ, where K = 1 + mod(IT, NSQ)
-        // (i.e., DY vectors are stored a circular sequence in the DYSQ array).
-
-        IZD = 0;
-        ++IT;
-
-        SaveRestore(DH, DA, DB, DT, DY, _DH, _DA, _DB, _DT, _DY);
-        IterOneLevelMultipair(DH, DA, DB, DT, DY, gamma_pow, IMQ == 1);
-
-        minY = DY.Min(e => e.Absolute);
-        IZD = minY < DEPS ? 1 : 0;
-        var maxDADB = BigReal.Max(DA.Max(e => e.Absolute), DB.Max(e => e.Absolute));
-        var log2MaxDADB = double.Log2(maxDADB.ToDouble);
-        var log10MaxDADB = double.Log10(maxDADB.ToDouble);
-        if (log10MaxDADB > 13 && log2MaxDADB < 52)
-            IZD = 1;
-
-        if (log2MaxDADB >= 52)
-        {
-            IZD = 2;
-            SaveRestore(_DH, _DA, _DB, _DT, _DY, DH, DA, DB, DT, DY);
-        }
-
-        var testDY = DYSQ.Any(dy => (DY - dy).Max(e => e.Absolute) < DEPS);
-        IMQ = testDY ? 1 : 0;
-
-        Array.Copy(DY.Coefs, DYSQ[IT % NSQ].Coefs, N);
-
-        step6:
-        // 6. Check flags and, if needed, update MPR arrays from DP arrays:
-        // a. If IZD = 0, go to Step 5 (continue DP iterations). If IZD = 2,
-        // but IT > ITS + 1 (i.e., if the current iteration is more than one plus
-        // the previous iteration when a MPR update was performed), then set
-        // IZD = 1, so that after an MPR update, regular DP iterations can
-        // continue. But if IT = ITS + 1 (i.e., an MPR update was performed
-        // on the previous iteration), then leave IZD = 2.
-        // b. Update MPR arrays from DP arrays: Set Y := DB x Y (matrix mul-
-        // tiplication), then find the min absolute value of the updated Y . Set
-        // B := DB x B (matrix multiplication), then find max absolute value of
-        // updated B. Set H := DA x H (matrix multiplication). Set ITS = IT.
-        // c. The max norm bound may optionally be computed here, as described
-        // in the multipair PSLQ algorithm above, and output, along with the
-        // current min and max of Y and other data for informational purposes.
-        // d. If the min absolute value of Y is less than EPS x max absolute value
-        // of B (tentative detection), then set IZM = 1; else if the min absolute
-        // value of Y is less than EPS x 2^72 x max absolute value of B (precision
-        // exhausted), then set IZM = 2; else set IZM = 0.
-        // e. Test output flag: If IZM = 0, then if IZD = 2, go to Step 7 (start
-        // MPR iterations), else go to Step 2 (start DP iterations); else if IZM =
-        // 1, go to Step 9 (exit); else if IZM = 2, go to Step 9 (exit).
-        if (IZD == 0)
-            goto step5;
-
-        if (IZD == 2 && IT > ITS + 1)
-            IZD = 1;
-
-        var B0 = DB.Select(c => c.ToBigReal(NMP)).ToKMatrix(N);
-        var A0 = DA.Select(c => c.ToBigReal(NMP)).ToKMatrix(N);
-        var tmpY = B0 * Y;
-        var tmpB = B0 * B;
-        var tmpH = A0 * H;
-        for (int i = 0; i < N; i++)
-        {
-            Y.Coefs[i, 0] = tmpY[i, 0];
-            for (int j = 0; j < N; j++)
-            {
-                B.Coefs[i, j] = tmpB[i, j];
-                if (j < N - 1)
-                    H.Coefs[i, j] = tmpH[i, j];
-            }
-        }
-
-        ITS = IT;
-        maxB = B.Max(e => e.Absolute);
-        minY = Y.Min(e => e.Absolute);
-        IZM = 0;
-        if (minY < EPS * twoPowNMP * maxB)
-        {
-            if (minY < EPS * maxB)
-                IZM = 1;
-            else
-            {
-                IZM = 2;
-                Console.WriteLine("######## 1 ########");
-                Console.WriteLine(minY.ToFixForm());
-                Console.WriteLine(maxB.ToFixForm());
-                Console.WriteLine(EPS.ToFixForm());
-                Console.WriteLine((EPS * maxB).ToFixForm());
-            }
-        }
-
-        if (IZM == 0)
-        {
-            if (IZD != 2)
-                goto step2;
-        }
-        else
-            goto step9;
-
-        step7:
-        // 7. Perform an LQ decomposition on H using MPR arithmetic.
-        H = LQpslq(H);
-        for (int i = 0; i < NSQ; i++)
-            Array.Copy(Y.Zero.Coefs, YSQ[i].Coefs, N);
-
-        step8:
-        // 8. Perform one multipair PSLQ iteration using MPR arithmetic:
-        // a. Increment iteration count: IT := IT + 1; set IZM = 0.
-        // b. Perform one iteration of the multipair PSLQ algorithm using MPR
-        // arithmetic, as described above (except no need to compute norm bound).
-        // c. If the min absolute value of Y is less than EPS x max absolute value
-        // of B (tentative detection), then set IZM = 1; else if the min absolute
-        // value of Y is less than EPS x 2^72 x max absolute value of B (precision
-        // exhausted), then set IZM = 2.
-        // d. Test output flag: If IZM = 0, then periodically (every IPM iterations
-        // since the last MPR update) check if the min/max dynamic range of
-        // Y < DREP ; if true, go to Step 8 (continue MPR iterations); else go
-        // to Step 3 (start DP iterations); else if IZM = 1, go to Step 9 (exit);
-        // else if IZM = 2, go to Step 9 (exit).
-        ++IT;
-
-        IZM = 0;
-        IterOneLevelMultipair(H, A, B, HT, Y, gamma_pow, IMQ == 1);
-
-        var testY = YSQ.Any(y => (Y - y).Max(e => e.Absolute) < EPS * twoPowNMP);
-        IMQ = testY ? 1 : 0;
-
-        Array.Copy(Y.Coefs, YSQ[IT % NSQ].Coefs, N);
-
-        maxB = B.Max(e => e.Absolute);
-        minY = Y.Min(e => e.Absolute);
-        maxY = Y.Max(e => e.Absolute);
-        IZM = 0;
-        if (minY < EPS * twoPowNMP * maxB)
-        {
-            if (minY < EPS * maxB)
-                IZM = 1;
-            else
-            {
-                IZM = 2;
-                Console.WriteLine("######## 2 ########");
-                Console.WriteLine(minY.ToFixForm());
-                Console.WriteLine(maxB.ToFixForm());
-                Console.WriteLine(EPS.ToFixForm());
-                Console.WriteLine((EPS * maxB).ToFixForm());
-            }
-        }
-
-        if (IZM == 0)
-        {
-            if ((minY / maxY) < DREP)
-                goto step8;
-            else
-                goto step3;
-        }
-
-        step9:
-        // 9. Exit:
-        // a. If IZM = 1 find the index of Y with the min absolute value; set R =
-        // row of B corresponding to that index. If the Euclidean norm of the
-        // relation is less than 10^NRB , and the dynamic range of the Y vector
-        // is at least 10^NDR , set IQ = 1 (success) and exit; otherwise set R =
-        // zeroes and set IQ = 0 (failure), then exit.
-        // b. If IZM = 2, then set R = zeroes and set IQ = 0 (failure), then exit.
-        if (IZM == 2)
-            throw new($"Failure IZM IT:{IT}");
-
-        var (idx, _) = Y.Select((yi, i) => (i, yi)).MinBy(e => e.yi.Absolute);
-        var R = B.GetRow(idx);
-        var normR = BigReal.Sqrt(Ring.SquareNorm2(R));
-        minY = Y.Min(e => e.Absolute);
-        maxY = Y.Max(e => e.Absolute);
-
-        if (Logger.Level != LogLevel.Off)
-            Console.WriteLine($"Possible Solution step:{IT}");
-        
-        if (double.Log10(normR.ToDouble) < NRB && double.Log10((minY / maxY).ToDouble) < NDR)
-            return R.Select(c => c.RoundEven.ToRational).ToArray();
-
-        throw new
-            ($"Failure normR or (minY / maxY) IT:{IT}");
-    }
-
+    
     public readonly struct PslqState(int it, int its, int izd, int izm, int imq, int step)
     {
         // return new(IT, ITS, IZD, IZM, IMQ, STEP);
@@ -667,6 +340,29 @@ public class PSLQ
     private BigReal DREP { get; }
     private BigReal TwoPowNMP { get; }
 
+    // PSLQM2 (two-level multipair PSLQ):
+    // Input arguments and parameters:
+    // N            Int     Length of input vector X and output relation vector R.
+    // NDP          Int     Double Precision level in digits.
+    // NMP          Int     Multi Precision level in digits.
+    // NDR          Int     log10 of the min acceptable dynamic range of Y vector at detection;
+    //                      default = 30. A smaller range is deemed unreliable.
+    // NRB          Int     log10 of max size (Euclidean norm) of acceptable relation;
+    //                      default = 200.
+    // NEP          Int     log10 of full precision epsilon; default = 30 − NDP ; for large
+    //                      problems replace 30 by 50 or 60.
+    // X            MPR     N-long input multiprecision vector.
+    // IQ           Int     Output flag: 0 (unsuccessful) or 1 (successful).
+    // R            MPR     N-long output integer relation vector, if successful, else zeroes.
+    // NSQ          Int     Second dimension of DSYQ and SYQ; default = 8.
+    // DEPS         DP      Double precision epsilon; default = 10^−14 .
+    // DREP         DP      Dynamic range epsilon; default = 10^−10 .
+    // Integer variables:
+    // IT, ITS, IMQ, IZD, IZM
+    // Double precision arrays and variables (with dimensions):
+    // DA(N, N), DB(N, N), DH(N, N), DYSQ(N, NSQ), DY(N)
+    // Multiprecision real arrays and variables (with dimensions):
+    // B(N, N), H(N, N), SYQ(N, NSQ), Y(N), EPS, T
     private PSLQ(KMatrix<BigReal> X, BigReal gamma)
     {
         N = X.N;
@@ -675,13 +371,13 @@ public class PSLQ
         NMP = gamma.O;
         NDR = NMP / 20;
         NRB = NMP / 3;
-        NDP = 16;
+        NDP = 15;
         NEP = -(9 * NMP / 10);
         NSQ = 8;
         DEPS = BigReal.FromDouble(1e-14, NDP);
         DREP = BigReal.FromDouble(1e-10, NDP);
 
-        EPS = BigReal.FromBigIntegerAndExponent(10, NEP, NMP);
+        EPS = BigReal.FromBigIntegerAndExponent(1, NEP, NMP);
         TwoPowNMP = BigReal.FromBigInteger(BigInteger.Pow(2, NMP / 5), NMP);
         A = new KMatrix<BigReal>(Ring.Diagonal(o, N));
         B = new KMatrix<BigReal>(Ring.Diagonal(o, N));
@@ -1027,12 +723,19 @@ public class PSLQ
                 st = Step8(st);
             else
                 throw new("");
-
         }
 
         Step9(st);
     }
 
+    /// <summary>
+    /// Two-level multipair PSLQ algorithm
+    /// PSLQM2
+    /// </summary>
+    /// <param name="X">Row Vector</param>
+    /// <param name="gamma">PSLQ gamma</param>
+    /// <returns>Integer Relation coefficients</returns>
+    /// <exception cref="Exception">Precision exhausted</exception>
     public static Rational[] TwoLevelMultipairXP(KMatrix<BigReal> X, BigReal gamma)
     {
         var algo = new PSLQ(X, gamma);
