@@ -17,7 +17,7 @@ public static class AlgebraicIntegerRelationPSLQ
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
         GlobalStopWatch.Restart();
     }
-    
+
     public static Rational[] AlphaBetaPolynomial(BigCplx alpha, BigCplx beta, int d, int O)
     {
         if (Logger.Level != LogLevel.Off)
@@ -32,7 +32,7 @@ public static class AlgebraicIntegerRelationPSLQ
             mat.Coefs[0, i] = aipi.ToBigReal(O);
             ai *= alpha;
         }
-        
+
         mat.Coefs[0, mat.N - 1] = (beta.RealPart + pi * beta.ImaginaryPart).ToBigReal(O); // Re(β) + π * Im(β)
 
         if (Logger.Level != LogLevel.Off)
@@ -40,9 +40,10 @@ public static class AlgebraicIntegerRelationPSLQ
             Console.WriteLine(mat);
             Console.WriteLine();
         }
+
         var gamma = 2 / BigReal.Sqrt(BigReal.FromBigInteger(3, O));
-        var rel = PSLQM2.TwoLevelMultipair(mat, gamma);
-        
+        var rel = PSLQM2<Dcml>.TwoLevelMultipair(mat, gamma);
+
         if (Logger.Level != LogLevel.Off)
         {
             Console.WriteLine("End PSLQM2 algorithm");
@@ -58,6 +59,27 @@ public static class AlgebraicIntegerRelationPSLQ
     {
         return AlphaBetaPolynomial(BigCplx.FromBigReal(alpha), BigCplx.FromBigReal(beta), d, O);
     }
+
+    static KPoly<Rational> PslqMinPoly<T>(int r, int s, int O)
+        where T : struct, IElt<T>, IRingElt<T>, IFieldElt<T>, IFloatElt<T>
+    {
+        var n = r * s + 1; // Expected polynomial degree plus one
+        var alpha = BigReal.NthRoot(3, r, O) - BigReal.NthRoot(2, s, O); // a = 3^(1/r) - 2^(1/s)
+        var ai = n.Range().Select(k => alpha.Pow(k)).ToKMatrix();
+
+        var gamma = 2 / BigReal.Sqrt(BigReal.FromBigInteger(3, O));
+
+        GlobalStopWatch.AddLap();
+        var coefs = PSLQM2<T>.TwoLevelMultipair(ai, gamma);
+        Console.WriteLine(coefs.ToKMatrix());
+        var P = FG.KPoly('X', coefs).Monic;
+        GlobalStopWatch.Show($"Two level Multipair PSLQ<{typeof(T).Name}> min poly a = 3^(1/{r}) - 2^(1/{s})");
+        Console.WriteLine($"P = {P} and P(a) = {P.Substitute(alpha).ToBigReal(3 * O / 4)}");
+        Console.WriteLine();
+
+        return P;
+    }
+
 
     public static void Example1()
     {
@@ -103,7 +125,8 @@ public static class AlgebraicIntegerRelationPSLQ
         IntFactorisation.PrimitiveElt(x.Pow(4) - 2, x.Pow(4) - 3).Println(); // more faster
     }
 
-    static ConcreteGroup<KAut<Rational>> ConjugatesOfBeta(KAutGroup<Rational> bsKAutGroup, BigCplx alpha, BigCplx beta, int d, int O)
+    static ConcreteGroup<KAut<Rational>> ConjugatesOfBeta(KAutGroup<Rational> bsKAutGroup, BigCplx alpha, BigCplx beta,
+        int d, int O)
     {
         if (Logger.Level != LogLevel.Off)
             GlobalStopWatch.AddLap();
@@ -134,7 +157,8 @@ public static class AlgebraicIntegerRelationPSLQ
         return subGr;
     }
 
-    public static ConcreteGroup<KAut<Rational>> GaloisGroupNumericRoots(BigCplx alpha, BigCplx[] cplxRoots, KPoly<Rational> P, int O)
+    public static ConcreteGroup<KAut<Rational>> GaloisGroupNumericRoots(BigCplx alpha, BigCplx[] cplxRoots,
+        KPoly<Rational> P, int O)
     {
         P = P.SubstituteChar('y');
         var y = FG.EPoly(P, 'y');
@@ -213,7 +237,7 @@ public static class AlgebraicIntegerRelationPSLQ
 
         var O1 = 20; // rounding digits
         var O2 = 30; // maximum precision digits
-        
+
         GlobalStopWatch.AddLap();
         var galGr = GaloisGroupPSLQ(minPoly, O1, O2);
         DisplayGroup.HeadElements(galGr);
@@ -225,11 +249,12 @@ public static class AlgebraicIntegerRelationPSLQ
     public static void Example4()
     {
         var x = FG.QPoly();
-        var (minPoly, _, _, _) = IntFactorisation.PrimitiveElt(x.Pow(4) - 2, x.Pow(2) + 1).First(); // Gal(Q(i, √2)/Q) = D8
+        var (minPoly, _, _, _) =
+            IntFactorisation.PrimitiveElt(x.Pow(4) - 2, x.Pow(2) + 1).First(); // Gal(Q(i, √2)/Q) = D8
 
         var O1 = 30; // rounding digits
         var O2 = 40; // maximum precision digits
-        
+
         GlobalStopWatch.AddLap();
         var galGr = GaloisGroupPSLQ(minPoly, O1, O2);
         DisplayGroup.HeadElements(galGr);
@@ -266,7 +291,7 @@ public static class AlgebraicIntegerRelationPSLQ
 
         var O1 = 110; // rounding digits
         var O2 = 130; // maximum precision digits
-        
+
         Logger.Level = LogLevel.Level1;
         GlobalStopWatch.AddLap();
         var galGr = GaloisGroupPSLQ(minPoly, O1, O2);
@@ -305,7 +330,7 @@ public static class AlgebraicIntegerRelationPSLQ
 
         var O1 = 140; // rounding digits
         var O2 = 160; // maximum precision digits
-        
+
         Logger.Level = LogLevel.Level1;
         GlobalStopWatch.AddLap();
         var galGr = GaloisGroupPSLQ(P, O1, O2);
@@ -325,18 +350,49 @@ public static class AlgebraicIntegerRelationPSLQ
             ? galoisgetpol(21,1)
             %6 = [x^21 - 84*x^19 + 2436*x^17 - 31136*x^15 + 2312*x^14 + 203840*x^13 - 30688*x^12 - 733824*x^11 + 152992*x^10 + 1480192*x^9 - 359296*x^8 - 1628096*x^7 + 413952*x^6 + 892416*x^5 - 225792*x^4 - 189952*x^3 + 50176*x^2 + 3584*x - 512, 9219840]
          */
-        var P = x.Pow(21) - 84 * x.Pow(19) + 2436 * x.Pow(17) - 31136 * x.Pow(15) + 2312 * x.Pow(14) + 203840 * x.Pow(13) -
+        var P = x.Pow(21) - 84 * x.Pow(19) + 2436 * x.Pow(17) - 31136 * x.Pow(15) + 2312 * x.Pow(14) +
+            203840 * x.Pow(13) -
             30688 * x.Pow(12) - 733824 * x.Pow(11) + 152992 * x.Pow(10) + 1480192 * x.Pow(9) - 359296 * x.Pow(8) -
-            1628096 * x.Pow(7) + 413952 * x.Pow(6) + 892416 * x.Pow(5) - 225792 * x.Pow(4) - 189952 * x.Pow(3) + 50176 * x.Pow(2) +
+            1628096 * x.Pow(7) + 413952 * x.Pow(6) + 892416 * x.Pow(5) - 225792 * x.Pow(4) - 189952 * x.Pow(3) +
+            50176 * x.Pow(2) +
             3584 * x - 512; // C7x:C3
 
         var O1 = 300; // rounding digits
         var O2 = 350; // maximum precision digits
-        
+
         var galGr = GaloisGroupPSLQ(P, O1, O2);
         DisplayGroup.HeadElements(galGr);
         var X = FG.KPoly('X', galGr.Neutral().E);
         Console.WriteLine("Prod[X - ri] = {0}", galGr.Aggregate(X.One, (acc, r) => acc * (X - r)));
         GlobalStopWatch.Show("END Roots"); // Time:1m7s
     }
+
+    public static void Example_PSLQM2_Dble_and_Dcml()
+    {
+        Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+
+        PslqMinPoly<Dcml>(2, 2, 30);
+        PslqMinPoly<Dble>(2, 2, 30);
+
+        PslqMinPoly<Dcml>(3, 3, 50);
+        PslqMinPoly<Dble>(3, 3, 50);
+
+        PslqMinPoly<Dcml>(4, 4, 90);
+        PslqMinPoly<Dble>(4, 4, 90);
+
+        PslqMinPoly<Dcml>(5, 5, 180);
+        PslqMinPoly<Dble>(5, 5, 180);
+
+        PslqMinPoly<Dcml>(5, 6, 250);
+        PslqMinPoly<Dble>(5, 6, 250);
+        Console.Beep();
+    }
+    // [697, -1440, -20520, -98280, -102060, -1458, 80, -43920, 538380, -336420, 1215, 0, -80, -56160, -135540, -540, 0, 0, 40, -7380, 135, 0, 0, 0, -10, -18, 0, 0, 0, 0, 1]
+    // # Two level Multipair PSLQ<Dcml> min poly a = 3^(1/5) - 2^(1/6) Time:17.123s
+    // P = X^30 - 18*X^25 - 10*X^24 + 135*X^20 - 7380*X^19 + 40*X^18 - 540*X^15 - 135540*X^14 - 56160*X^13 - 80*X^12 + 1215*X^10 - 336420*X^9 + 538380*X^8 - 43920*X^7 + 80*X^6 - 1458*X^5 - 102060*X^4 - 98280*X^3 - 20520*X^2 - 1440*X + 697 and P(a) = 0
+    // 
+    // [697, -1440, -20520, -98280, -102060, -1458, 80, -43920, 538380, -336420, 1215, 0, -80, -56160, -135540, -540, 0, 0, 40, -7380, 135, 0, 0, 0, -10, -18, 0, 0, 0, 0, 1]
+    // # Two level Multipair PSLQ<Dble> min poly a = 3^(1/5) - 2^(1/6) Time:17.558s
+    // P = X^30 - 18*X^25 - 10*X^24 + 135*X^20 - 7380*X^19 + 40*X^18 - 540*X^15 - 135540*X^14 - 56160*X^13 - 80*X^12 + 1215*X^10 - 336420*X^9 + 538380*X^8 - 43920*X^7 + 80*X^6 - 1458*X^5 - 102060*X^4 - 98280*X^3 - 20520*X^2 - 1440*X + 697 and P(a) = 0
+    //
 }

@@ -18,7 +18,7 @@ tpslqm2.f90
 mpfun20-mpfr-v32.tar.gz
 https://www.davidhbailey.com/dhbsoftware/
  */
-public class PSLQM2
+public class PSLQM2<F> where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFloatElt<F>
 {
     /// <summary>
     /// Step Iteration of one level multipair PSLQ
@@ -221,21 +221,21 @@ public class PSLQM2
     private KMatrix<BigReal> T { get; }
     private KMatrix<BigReal> Y { get; set; }
     private KMatrix<BigReal>[] Yseq { get; }
-    private KMatrix<Dcml> DH { get; }
-    private KMatrix<Dcml> DA { get; }
-    private KMatrix<Dcml> DB { get; }
-    private KMatrix<Dcml> DT { get; }
-    private KMatrix<Dcml> DY { get; }
-    private KMatrix<Dcml>[] DYseq { get; }
-    private KMatrix<Dcml> _DH { get; }
-    private KMatrix<Dcml> _DA { get; }
-    private KMatrix<Dcml> _DB { get; }
-    private KMatrix<Dcml> _DT { get; }
-    private KMatrix<Dcml> _DY { get; }
+    private KMatrix<F> DH { get; }
+    private KMatrix<F> DA { get; }
+    private KMatrix<F> DB { get; }
+    private KMatrix<F> DT { get; }
+    private KMatrix<F> DY { get; }
+    private KMatrix<F>[] DYseq { get; }
+    private KMatrix<F> _DH { get; }
+    private KMatrix<F> _DA { get; }
+    private KMatrix<F> _DB { get; }
+    private KMatrix<F> _DT { get; }
+    private KMatrix<F> _DY { get; }
     private (int i, BigReal yi)[] gamma_pow { get; }
-    private (int i, Dcml yi)[] gamma_pow_dcml { get; }
+    private (int i, F yi)[] gamma_pow_dcml { get; }
     private BigReal EPS { get; }
-    private Dcml DEPS { get; }
+    private F DEPS { get; }
     private BigReal DREP { get; }
     private BigReal TwoPowNMP { get; }
 
@@ -275,12 +275,11 @@ public class PSLQM2
         
         NDR = NMP / 20;
         NRB = NMP / 3;
-        NDP = 26;
+        NDP = F.Digits;
         NEP = -(9 * NMP / 10);
         NSQ = 8;
-        Dcml.EpsDouble = new Dcml(0.1m).Pow(NDP);
-        DEPS = new Dcml(0.1m).Pow(NDP - 4);
-        DREP = new Dcml(0.1m).Pow(NDP - 8).ToBigReal(NMP);
+        DEPS = F.From(BigReal.BrPow10n(4 - NDP, NMP));
+        DREP = BigReal.BrPow10n(8 - NDP, NMP);
 
         EPS = BigReal.FromBigIntegerAndExponent(1, NEP, NMP);
         TwoPowNMP = BigReal.FromBigInteger(BigInteger.Pow(2, NMP / 5), NMP);
@@ -291,14 +290,14 @@ public class PSLQM2
         H = new KMatrix<BigReal>(o.Zero, N, N - 1);
         Yseq = NSQ.Range().Select(_ => new KMatrix<BigReal>(o, N, 1)).ToArray();
         gamma_pow = (N - 1).Range().Select(i => (i, yi: gamma.Pow(i + 1))).ToArray();
-        gamma_pow_dcml = (N - 1).Range().Select(i => (i, yi: gamma.Pow(i + 1).ToDcml)).ToArray();
-        var z1 = Dcml.DbleZero();
-        DYseq = NSQ.Range().Select(_ => new KMatrix<Dcml>(z1, N, 1)).ToArray();
-        DH = new KMatrix<Dcml>(z1, N, N - 1);
-        DA = new KMatrix<Dcml>(Ring.Diagonal(z1, N));
-        DB = new KMatrix<Dcml>(Ring.Diagonal(z1, N));
-        DY = new KMatrix<Dcml>(z1, N, 1);
-        DT = new KMatrix<Dcml>(z1, N, N - 1);
+        gamma_pow_dcml = (N - 1).Range().Select(i => (i, yi: F.From(gamma.Pow(i + 1)))).ToArray();
+        var z1 = F.From(o);
+        DYseq = NSQ.Range().Select(_ => new KMatrix<F>(z1, N, 1)).ToArray();
+        DH = new KMatrix<F>(z1, N, N - 1);
+        DA = new KMatrix<F>(Ring.Diagonal(z1, N));
+        DB = new KMatrix<F>(Ring.Diagonal(z1, N));
+        DY = new KMatrix<F>(z1, N, 1);
+        DT = new KMatrix<F>(z1, N, N - 1);
         (_DH, _DA, _DB, _DT, _DY) = (DH.Clone, DA.Clone, DB.Clone, DT.Clone, DY.Clone);
         Relations = Array.Empty<Rational>();
     }
@@ -363,9 +362,9 @@ public class PSLQM2
         var (myi, mhi) = (maxY.Inv(), maxH.Inv());
         for (int i = 0; i < N; i++)
         {
-            DY.Coefs[i, 0] = (myi * Y.Coefs[i, 0]).ToDcml;
+            DY.Coefs[i, 0] = F.From(myi * Y.Coefs[i, 0]);
             for (int j = 0; j < N - 1; j++)
-                DH.Coefs[i, j] = (mhi * H.Coefs[i, j]).ToDcml;
+                DH.Coefs[i, j] = F.From(mhi * H.Coefs[i, j]);
         }
         
         foreach (var (i, j) in N.Range().Grid2D())
@@ -419,10 +418,10 @@ public class PSLQM2
         IterOneLevelMultipair(DH, DA, DB, DT, DY, gamma_pow_dcml, st.IMQ == 1);
 
         var minDY = DY.Min(e => e.Absolute);
-        var IZD = minDY < DEPS ? 1 : 0;
-        var maxDADB = Dcml.Max(DA.Max(e => e.Absolute), DB.Max(e => e.Absolute));
-        var log2MaxDADB = double.Log2((double)maxDADB.K);
-        var log10MaxDADB = double.Log10((double)maxDADB.K);
+        var IZD = minDY.CompareTo(DEPS) == -1 ? 1 : 0;
+        var maxDADB = DA.Concat(DB).Max(e => F.Abs(e));
+        var log2MaxDADB = double.Log2(maxDADB);
+        var log10MaxDADB = double.Log10(maxDADB);
         if (log10MaxDADB >= 13 && log2MaxDADB < 52)
             IZD = 1;
 
@@ -432,7 +431,7 @@ public class PSLQM2
             SaveRestore(_DH, _DA, _DB, _DT, _DY, DH, DA, DB, DT, DY);
         }
 
-        var testDY = DYseq.Any(dy => (DY - dy).Max(e => e.Absolute) < DEPS);
+        var testDY = DYseq.Any(dy => (DY - dy).Max(e => F.Abs(e)) < F.Abs(DEPS));
         var IMQ = testDY ? 1 : 0;
 
         Array.Copy(DY.Coefs, DYseq[IT % NSQ].Coefs, N);
@@ -470,8 +469,8 @@ public class PSLQM2
             if (IZD == 2 && st.IT > st.ITS + 1)
                 IZD = 1;
 
-            var B0 = DB.Select(c => c.ToBigReal(NMP)).ToKMatrix(N);
-            var A0 = DA.Select(c => c.ToBigReal(NMP)).ToKMatrix(N);
+            var B0 = DB.Select(c => BigReal.FromFixedPrecision(c, NMP)).ToKMatrix(N);
+            var A0 = DA.Select(c => BigReal.FromFixedPrecision(c, NMP)).ToKMatrix(N);
             var tmpY = B0 * Y;
             var tmpB = B0 * B;
             var tmpH = A0 * H;
@@ -721,7 +720,7 @@ public class PSLQM2
     /// <exception cref="Exception">Precision exhausted</exception>
     public static Rational[] TwoLevelMultipair(KMatrix<BigReal> X, BigReal gamma)
     {
-        var algo = new PSLQM2(X, gamma);
+        var algo = new PSLQM2<F>(X, gamma);
         algo.Run();
         return algo.Relations.ToArray();
     }
