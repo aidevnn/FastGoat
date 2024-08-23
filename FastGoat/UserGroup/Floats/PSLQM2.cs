@@ -18,7 +18,7 @@ tpslqm2.f90
 mpfun20-mpfr-v32.tar.gz
 https://www.davidhbailey.com/dhbsoftware/
  */
-public class PSLQM2<F> where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFloatElt<F>
+public class PSLQM2<F> where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFloatElt<F>, IFixedPrecisionElt<F>
 {
     /// <summary>
     /// Step Iteration of one level multipair PSLQ
@@ -39,9 +39,9 @@ public class PSLQM2<F> where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFl
         // corresponding rows of A, B and H; endfor.
         var m = gamma_pow.Select(e => (e.i, (e.yi * H[e.i, e.i].Absolute)))
             .OrderByDescending(e => e.Item2).ToArray();
-        var list = new List<(int, int)>();
-        var selected = new HashSet<int>();
-        var n = gamma_pow.Length + 1;
+        var n = H.M;
+        var list = new List<(int, int)>(n);
+        var selected = new HashSet<int>(n);
         for (int i = 0; i < n - 1; i++)
         {
             var (b, c) = (m[i].i, m[i].i + 1);
@@ -88,10 +88,6 @@ public class PSLQM2<F> where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFl
                 }
             }
         }
-
-        for (int i = 0; i < n; i++)
-        for (int j = 0; j < n - 1; j++)
-            T.Coefs[i, j] = T.KZero;
         
         // 5. Reduce H: For i := 2 to n: for j := 1 to n − i + 1: set l := i + j − 1; for
         // k := j +1 to l −1: set Hlj := Hlj −Tlk Hkj ; endfor; set Tlj := nint(Hlj /Hjj )
@@ -278,8 +274,8 @@ public class PSLQM2<F> where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFl
         NDP = F.Digits;
         NEP = -(9 * NMP / 10);
         NSQ = 8;
-        DEPS = F.From(BigReal.BrPow10n(4 - NDP, NMP));
-        DREP = BigReal.BrPow10n(8 - NDP, NMP);
+        DEPS = F.From(BigReal.BrPow10n(3 - NDP, NMP));
+        DREP = BigReal.BrPow10n(6 - NDP, NMP);
 
         EPS = BigReal.FromBigIntegerAndExponent(1, NEP, NMP);
         TwoPowNMP = BigReal.FromBigInteger(BigInteger.Pow(2, NMP / 5), NMP);
@@ -354,7 +350,6 @@ public class PSLQM2<F> where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFl
     // b. Set T = max absolute value of H; set DH = H/T , rounded to DP.
     // c. Set DA and DB to identity matrices.
     // d. Set DYSQ array to zeroes.
-    // 4. Perform an LQ decomposition on DH using DP arithmetic.
     private PslqState Step3(PslqState st)
     {
         var maxY = Y.Max(e => e.Absolute);
@@ -431,7 +426,7 @@ public class PSLQM2<F> where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFl
             SaveRestore(_DH, _DA, _DB, _DT, _DY, DH, DA, DB, DT, DY);
         }
 
-        var testDY = DYseq.Any(dy => (DY - dy).Max(e => F.Abs(e)) < F.Abs(DEPS));
+        var testDY = DYseq.Any(dy => (DY - dy).Max(e => e) < DEPS);
         var IMQ = testDY ? 1 : 0;
 
         Array.Copy(DY.Coefs, DYseq[IT % NSQ].Coefs, N);

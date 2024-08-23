@@ -3,30 +3,31 @@ using FastGoat.UserGroup.Integers;
 
 namespace FastGoat.UserGroup.Floats;
 
-public readonly struct Dble : IElt<Dble>, IRingElt<Dble>, IFieldElt<Dble>, IVsElt<Rational, Dble>, IFloatElt<Dble>
+public readonly struct Dble : IElt<Dble>, IRingElt<Dble>, IFieldElt<Dble>, IVsElt<Rational, Dble>, 
+    IFloatElt<Dble>, IFixedPrecisionElt<Dble>
 {
     public override bool Equals(object? obj)
     {
         return obj is Dble other && Equals(other);
     }
 
-    public static double EpsDouble = double.Pow(10, -Digits);
+    public static double Eps => double.Pow(10, -Digits);
     public static Dble DbleZero() => new(0.0);
     public static Dble DbleOne() => new(1.0);
     public double K { get; }
 
     public Dble(double k)
     {
-        K = double.Abs(k) < EpsDouble * 10 ? 0 : k;
+        K = double.Abs(k) < Eps * 10 ? 0 : k;
         Hash = K.GetHashCode();
     }
 
-    public bool Equals(Dble other) => double.Abs(K - other.K) < EpsDouble * 100;
+    public bool Equals(Dble other) => double.Abs(K - other.K) < Eps * 100;
 
     public int CompareTo(Dble other) => K.CompareTo(other.K);
 
     public int Hash { get; }
-    public bool IsZero() => double.Abs(K) < EpsDouble * 100;
+    public bool IsZero() => double.Abs(K) < Eps * 100;
 
     public Dble Zero => new(0);
     public Dble One => new(1);

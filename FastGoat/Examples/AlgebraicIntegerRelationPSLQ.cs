@@ -61,7 +61,7 @@ public static class AlgebraicIntegerRelationPSLQ
     }
 
     static KPoly<Rational> PslqMinPoly<T>(int r, int s, int O)
-        where T : struct, IElt<T>, IRingElt<T>, IFieldElt<T>, IFloatElt<T>
+        where T : struct, IElt<T>, IRingElt<T>, IFieldElt<T>, IFloatElt<T>, IFixedPrecisionElt<T>
     {
         var n = r * s + 1; // Expected polynomial degree plus one
         var alpha = BigReal.NthRoot(3, r, O) - BigReal.NthRoot(2, s, O); // a = 3^(1/r) - 2^(1/s)
@@ -369,6 +369,7 @@ public static class AlgebraicIntegerRelationPSLQ
 
     public static void Example_PSLQM2_Dble_and_Dcml()
     {
+        Logger.Level = LogLevel.Level1;
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
 
         PslqMinPoly<Dcml>(2, 2, 30);
@@ -385,14 +386,29 @@ public static class AlgebraicIntegerRelationPSLQ
 
         PslqMinPoly<Dcml>(5, 6, 250);
         PslqMinPoly<Dble>(5, 6, 250);
+
+        PslqMinPoly<Dcml>(6, 6, 320);
+        PslqMinPoly<Dble>(6, 6, 320);
         Console.Beep();
     }
+    // Possible Solution step:840
     // [697, -1440, -20520, -98280, -102060, -1458, 80, -43920, 538380, -336420, 1215, 0, -80, -56160, -135540, -540, 0, 0, 40, -7380, 135, 0, 0, 0, -10, -18, 0, 0, 0, 0, 1]
-    // # Two level Multipair PSLQ<Dcml> min poly a = 3^(1/5) - 2^(1/6) Time:17.123s
+    // # Two level Multipair PSLQ<Dcml> min poly a = 3^(1/5) - 2^(1/6) Time:18.452s
     // P = X^30 - 18*X^25 - 10*X^24 + 135*X^20 - 7380*X^19 + 40*X^18 - 540*X^15 - 135540*X^14 - 56160*X^13 - 80*X^12 + 1215*X^10 - 336420*X^9 + 538380*X^8 - 43920*X^7 + 80*X^6 - 1458*X^5 - 102060*X^4 - 98280*X^3 - 20520*X^2 - 1440*X + 697 and P(a) = 0
     // 
+    // Possible Solution step:840
     // [697, -1440, -20520, -98280, -102060, -1458, 80, -43920, 538380, -336420, 1215, 0, -80, -56160, -135540, -540, 0, 0, 40, -7380, 135, 0, 0, 0, -10, -18, 0, 0, 0, 0, 1]
-    // # Two level Multipair PSLQ<Dble> min poly a = 3^(1/5) - 2^(1/6) Time:17.558s
+    // # Two level Multipair PSLQ<Dble> min poly a = 3^(1/5) - 2^(1/6) Time:18.912s
     // P = X^30 - 18*X^25 - 10*X^24 + 135*X^20 - 7380*X^19 + 40*X^18 - 540*X^15 - 135540*X^14 - 56160*X^13 - 80*X^12 + 1215*X^10 - 336420*X^9 + 538380*X^8 - 43920*X^7 + 80*X^6 - 1458*X^5 - 102060*X^4 - 98280*X^3 - 20520*X^2 - 1440*X + 697 and P(a) = 0
-    //
+    // 
+    // Possible Solution step:1180
+    // [1, 0, 0, 0, 0, 0, -4281690, 0, 0, 0, 0, 0, 3137919, 0, 0, 0, 0, 0, -618280, 0, 0, 0, 0, 0, -16221, 0, 0, 0, 0, 0, -30, 0, 0, 0, 0, 0, 1]
+    // # Two level Multipair PSLQ<Dcml> min poly a = 3^(1/6) - 2^(1/6) Time:54.903s
+    // P = X^36 - 30*X^30 - 16221*X^24 - 618280*X^18 + 3137919*X^12 - 4281690*X^6 + 1 and P(a) = 0
+    // 
+    // Possible Solution step:1180
+    // [1, 0, 0, 0, 0, 0, -4281690, 0, 0, 0, 0, 0, 3137919, 0, 0, 0, 0, 0, -618280, 0, 0, 0, 0, 0, -16221, 0, 0, 0, 0, 0, -30, 0, 0, 0, 0, 0, 1]
+    // # Two level Multipair PSLQ<Dble> min poly a = 3^(1/6) - 2^(1/6) Time:58.721s
+    // P = X^36 - 30*X^30 - 16221*X^24 - 618280*X^18 + 3137919*X^12 - 4281690*X^6 + 1 and P(a) = 0
+    // 
 }

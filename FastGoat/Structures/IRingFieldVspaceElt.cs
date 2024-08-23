@@ -54,12 +54,26 @@ public interface IVsElt<K, T> : IEquatable<T>, IComparable<T>
     static abstract T operator /(T a, K b);
 }
 
-public interface IFloatElt<K> where K : IElt<K>, IRingElt<K>, IFieldElt<K>
+public interface IFloatElt<K> : IEquatable<K>, IComparable<K> where K : IElt<K>, IRingElt<K>, IFieldElt<K>
 {
     public K RoundEven { get; }
     public K Absolute { get; }
     public int Sign { get; }
     public K Sqrt();
+}
+
+public interface IFixedPrecisionElt<K> : IEquatable<K>, IComparable<K> 
+    where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>, IFloatElt<K>, IFixedPrecisionElt<K>
+{
     public static abstract K From<T>(T e) where T : IElt<T>, IRingElt<T>, IFieldElt<T>, IFloatElt<T>;
     public static abstract int Digits { get; }
+    public static abstract double Eps { get; }
+    static abstract bool operator ==(K a, K b);
+    static abstract bool operator !=(K a, K b);
+    static abstract bool operator <(K a, K b);
+    static abstract bool operator >(K a, K b);
+    static abstract bool operator <=(K a, K b);
+    static abstract bool operator >=(K a, K b);
+    static abstract K Min(K a, K b);
+    static abstract K Max(K a, K b);
 }

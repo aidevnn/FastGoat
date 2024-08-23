@@ -3,30 +3,31 @@ using FastGoat.UserGroup.Integers;
 
 namespace FastGoat.UserGroup.Floats;
 
-public readonly struct Dcml : IElt<Dcml>, IRingElt<Dcml>, IFieldElt<Dcml>, IVsElt<Rational, Dcml>, IFloatElt<Dcml>
+public readonly struct Dcml : IElt<Dcml>, IRingElt<Dcml>, IFieldElt<Dcml>, IVsElt<Rational, Dcml>,
+    IFloatElt<Dcml>, IFixedPrecisionElt<Dcml>
 {
     public override bool Equals(object? obj)
     {
         return obj is Dcml other && Equals(other);
     }
 
-    public static decimal EpsDecimal = 1.0e-26m;
+    public static double Eps => 1.0e-26;
     public static Dcml DbleZero() => new(0.0m);
     public static Dcml DbleOne() => new(1.0m);
     public decimal K { get; }
 
     public Dcml(decimal k)
     {
-        K = decimal.Abs(k) < EpsDecimal * 10 ? 0 : k;
+        K = decimal.Abs(k) < (decimal)(Eps * 10) ? 0 : k;
         Hash = K.GetHashCode();
     }
 
-    public bool Equals(Dcml other) => decimal.Abs(K - other.K) < EpsDecimal * 100;
+    public bool Equals(Dcml other) => decimal.Abs(K - other.K) < (decimal)(Eps * 100);
 
     public int CompareTo(Dcml other) => K.CompareTo(other.K);
 
     public int Hash { get; }
-    public bool IsZero() => decimal.Abs(K) < EpsDecimal * 100;
+    public bool IsZero() => decimal.Abs(K) < (decimal)(Eps * 100);
 
     public Dcml Zero => new(0);
     public Dcml One => new(1);
