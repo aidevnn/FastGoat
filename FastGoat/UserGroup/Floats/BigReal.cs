@@ -269,7 +269,7 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
     public static BigReal Max(BigReal a, BigReal b) => a.CompareTo(b) >= 0 ? a : b;
 
     public static BigReal Sqrt(BigReal r) => NthRoot(r, 2);
-    public static BigReal NthRoot(BigInteger r, int n, int o) => NthRoot(new(r, 0, o), n);
+    public static BigReal NthRoot(BigInteger r, int n, int o) => NthRoot(new BigReal(r, 0, o), n);
 
     public static BigReal NthRoot(BigReal r, int n)
     {
@@ -285,20 +285,19 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
         if (n == 1)
             return r;
 
-        var ai = r.Zero;
-        var aj = Pi(ai.O);
-        while (!(ai - aj).IsZero())
+        BigReal ai;
+        var aj = 1 + r / n;
+        do
         {
             ai = aj;
             var aiPow = ai.Pow(n - 1);
             var num = aiPow * ai - r;
             var denom = n * aiPow;
             aj = ai - num / denom; // Newton iteration
-        }
+        } while (!(ai - aj).IsZero());
 
         return aj;
     }
-
     public BigReal RoundEven => Round0;
 
     // TODO Fix

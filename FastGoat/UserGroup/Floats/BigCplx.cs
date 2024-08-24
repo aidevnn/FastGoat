@@ -191,16 +191,16 @@ public readonly struct BigCplx : IElt<BigCplx>, IRingElt<BigCplx>, IFieldElt<Big
         if (n < 0)
             return NthRoot(r, -n).Inv();
 
-        var ai = r.Zero;
-        var aj = new BigCplx(BigReal.FromDouble(Double.Pi, r.O), BigReal.FromDouble(Double.E, r.O));
-        while (!(ai - aj).IsZero())
+        BigCplx ai;
+        var aj = 1 + r / n;
+        do
         {
             ai = aj;
             var aiPow = ai.Pow(n - 1);
             var num = aiPow * ai - r;
             var denom = n * aiPow;
             aj = ai - num / denom; // Newton iteration
-        }
+        } while (!(ai - aj).IsZero());
 
         return aj;
     }

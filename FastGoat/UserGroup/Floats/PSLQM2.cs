@@ -76,7 +76,7 @@ public class PSLQM2<F> where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFl
             var mj = list[j].Item1;
             if (mj < n - 2)
             {
-                var t0 = (H[mj, mj].Pow(2) + H[mj, mj + 1].Pow(2)).Sqrt();
+                var t0 = K.Sqrt(H[mj, mj].Pow(2) + H[mj, mj + 1].Pow(2));
                 var t1 = H[mj, mj] / t0;
                 var t2 = H[mj, mj + 1] / t0;
                 for (int i = mj; i < n; i++)
@@ -155,7 +155,7 @@ public class PSLQM2<F> where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFl
                 continue;
 
             var N2 = (m - l).Range().Select(i => H[l, l + i]).Aggregate(A.KZero, (acc, a) => acc + a * a);
-            var N = N2.Sqrt();
+            var N = K.Sqrt(N2);
             if (N.IsZero())
                 continue;
 

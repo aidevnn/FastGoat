@@ -12,6 +12,7 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
     public BigInteger Num { get; }
     public BigInteger Denom { get; }
     public int Sign => Num.Sign;
+
     public static Rational KZero() => new(0, 1);
 
     public static Rational KOne() => new(1, 1);
@@ -149,10 +150,6 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
     }
 
     public Rational Absolute => new(BigInteger.Abs(Num), Denom);
-    public Rational Sqrt()
-    {
-        throw new NotImplementedException();
-    }
 
     public static Rational Parse(string r)
     {
@@ -168,6 +165,15 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
         return new(num, denom);
     }
 
+    public static Rational Sqrt(Rational r)
+    {
+        throw new NotImplementedException();
+    }
+
+    public static Rational NthRoot(Rational r, int n)
+    {
+        throw new NotImplementedException();
+    }
     public static implicit operator double(Rational e) => e.ToDouble;
     public static Rational operator +(Rational a, Rational b) => a.Add(b);
     public static Rational operator +(int a, Rational b) => b.Add(b.One.Mul(a));

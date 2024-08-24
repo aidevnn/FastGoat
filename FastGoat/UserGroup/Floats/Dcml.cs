@@ -87,7 +87,6 @@ public readonly struct Dcml : IElt<Dcml>, IRingElt<Dcml>, IFieldElt<Dcml>, IVsEl
     public Rational KZero => Rational.KZero();
     public Rational KOne => Rational.KOne();
     public Dcml Absolute => new(Sign * K);
-    public Dcml Sqrt() => new(InternalSqrt(K));
     public static Dcml From<T>(T e) where T : IElt<T>, IRingElt<T>, IFieldElt<T>, IFloatElt<T>
     {
         if (e is BigReal e0)
@@ -107,21 +106,6 @@ public readonly struct Dcml : IElt<Dcml>, IRingElt<Dcml>, IFieldElt<Dcml>, IVsEl
 
     public static int Digits => 26;
 
-    static decimal InternalSqrt(decimal d)
-    {
-        if (d < 0)
-            throw new ArgumentException();
-        
-        var eps = 1e-25m;
-        decimal d0, d1 = (d + 1) / 2;
-        do
-        {
-            (d0, d1) = (d1, (d1 + d / d1) / 2);
-        } while (decimal.Abs(d0 - d1) > eps);
-
-        return d1;
-    }
-
     public Dcml RoundEven => Round(this, 0);
     public BigReal ToBigReal(int O) => BigReal.FromString($"{K:E28}", O);
 
@@ -130,8 +114,34 @@ public readonly struct Dcml : IElt<Dcml>, IRingElt<Dcml>, IFieldElt<Dcml>, IVsEl
     public override int GetHashCode() => Hash;
     public override string ToString() => $"{K}";
 
-    public static Dcml NthRoot(Dcml a, int n) => new((decimal)double.RootN((double)a.K, n)); // TODO 
-    public static Dcml Sqrt(Dcml a) => new(InternalSqrt(a.K));
+    public static Dcml NthRoot(Dcml r, int n)
+    {
+        if (n == 0)
+            return r.One;
+
+        if (n < 0)
+            return NthRoot(r, -n).Inv();
+
+        if (n % 2 == 0 && r.Sign == -1)
+            throw new("Even NthRoot must has positive argument");
+
+        if (n == 1)
+            return r;
+
+        Dcml ai;
+        var aj = 1 + r / n;
+        do
+        {
+            ai = aj;
+            var aiPow = ai.Pow(n - 1);
+            var num = aiPow * ai - r;
+            var denom = n * aiPow;
+            aj = ai - num / denom; // Newton iteration
+        } while (!(ai - aj).IsZero());
+
+        return aj;
+    }
+    public static Dcml Sqrt(Dcml a) => NthRoot(a, 2);
 
     public static Dcml operator /(int a, Dcml b) => a * b.Inv();
 

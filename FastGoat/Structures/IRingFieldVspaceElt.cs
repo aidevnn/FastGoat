@@ -54,12 +54,13 @@ public interface IVsElt<K, T> : IEquatable<T>, IComparable<T>
     static abstract T operator /(T a, K b);
 }
 
-public interface IFloatElt<K> : IEquatable<K>, IComparable<K> where K : IElt<K>, IRingElt<K>, IFieldElt<K>
+public interface IFloatElt<K> : IEquatable<K>, IComparable<K> where K : IElt<K>, IRingElt<K>, IFieldElt<K>, IFloatElt<K>
 {
     public K RoundEven { get; }
     public K Absolute { get; }
     public int Sign { get; }
-    public K Sqrt();
+    public static abstract K Sqrt(K r);
+    public static abstract K NthRoot(K r, int n);
 }
 
 public interface IFixedPrecisionElt<K> : IEquatable<K>, IComparable<K> 
