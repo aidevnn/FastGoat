@@ -264,14 +264,14 @@ public class PSLQM2<F> where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFl
         this.X = new KMatrix<BigReal>(X.Coefs);
         var o = X.KOne;
         NMP = gamma.O;
-        if (NMP != X.KOne.O || NMP < 30)
-            throw new ArgumentException($"{NMP}-digits must be >=30");
+        NDP = F.Digits;
+        if (NMP != X.KOne.O || NMP < NDP + 3)
+            throw new ArgumentException($"{NMP}-digits must be >= {NDP}");
         if (NMP != X.KOne.O)
             throw new ArgumentException($"y has {NMP}-digits and X has {X.KOne.O}-digits");
         
         NDR = NMP / 20;
         NRB = NMP / 3;
-        NDP = F.Digits;
         NEP = -(9 * NMP / 10);
         NSQ = 8;
         DEPS = F.From(BigReal.BrPow10n(3 - NDP, NMP));

@@ -59,11 +59,11 @@ public static partial class FG
         var ai = Cplx.CZero;
         var aj = new Cplx(Double.Pi + Complex.ImaginaryOne);
         var i = 0;
-        while ((ai - aj).NormInf > epsilon && i++ < maxLoop)
+        do
         {
             ai = aj;
             aj = ai - (P.Substitute(ai) / dP.Substitute(ai)); // Newton iteration
-        }
+        } while ((ai - aj).NormInf > epsilon && i++ < maxLoop);
 
         return aj;
     }
@@ -93,25 +93,37 @@ public static partial class FG
     {
         var dP = P.Derivative;
         var i = 0;
-        var ai = a0 * 1000;
+        BigCplx ai;
         var aj = a0;
-        while (!(ai - aj).IsZero() && i++ < maxLoop)
+        do
         {
             ai = aj;
             aj = ai - (P.Substitute(ai) / dP.Substitute(ai)); // Newton iteration
-        }
+        } while (!(ai - aj).IsZero() && i++ < maxLoop);
 
         return aj;
     }
 
     public static BigCplx[] NRoots(KPoly<BigCplx> P, int maxLoop = 200)
     {
+        var O1 = P.KZero.O;
+        var O2 = O1 / 2;
         var P0 = P;
         var roots = new List<BigCplx>();
+        var (pi, e) = (BigReal.Pi(O2), BigReal.E(O2));
+        var a0 = new BigCplx(pi, e);
+        
         while (P0.Degree > 0)
         {
-            var a0 = NSolve(P0, maxLoop);
-            var a1 = NSolve(P, a0, maxLoop);
+            var P1 = P0.ToBcPoly(O2);
+            a0 = NSolve(P1, BigCplx.FromBigReal(a0.ImaginaryPart / 2, a0.RealPart / 2), maxLoop / 2);
+            if (!P1.Substitute(a0).ToBigCplx(O2 / 2).IsZero())
+            {
+                a0 = new BigCplx(pi, e);
+                continue;
+            }
+            
+            var a1 = NSolve(P, a0.ToBigCplx(O1), maxLoop);
             roots.Add(a1);
             P0 /= P0.X - a1;
         }

@@ -42,7 +42,7 @@ public static class AlgebraicIntegerRelationPSLQ
         }
 
         var gamma = 2 / BigReal.Sqrt(BigReal.FromBigInteger(3, O));
-        var rel = PSLQM2<Dcml>.TwoLevelMultipair(mat, gamma);
+        var rel = PSLQM2<Dble>.TwoLevelMultipair(mat, gamma);
 
         if (Logger.Level != LogLevel.Off)
         {
@@ -173,6 +173,7 @@ public static class AlgebraicIntegerRelationPSLQ
             Console.WriteLine(new { alpha, O });
             DisplayGroup.HeadElements(subGrGal);
             cplxRoots.Println("All Complex Roots");
+            GlobalStopWatch.Show();
         }
 
         while (subGrGal.Count() < cplxRoots.Length)
@@ -243,7 +244,7 @@ public static class AlgebraicIntegerRelationPSLQ
         DisplayGroup.HeadElements(galGr);
         var X = FG.KPoly('X', galGr.Neutral().E);
         Console.WriteLine("Prod[X - ri] = {0}", galGr.Aggregate(X.One, (acc, r) => acc * (X - r)));
-        GlobalStopWatch.Show("END"); // Time:63ms
+        GlobalStopWatch.Show("END"); // Time:28ms
     }
 
     public static void Example4()
@@ -260,7 +261,7 @@ public static class AlgebraicIntegerRelationPSLQ
         DisplayGroup.HeadElements(galGr);
         var X = FG.KPoly('X', galGr.Neutral().E);
         Console.WriteLine("Prod[X - ri] = {0}", galGr.Aggregate(X.One, (acc, r) => acc * (X - r)));
-        GlobalStopWatch.Show("END"); // Time:165ms
+        GlobalStopWatch.Show("END"); // Time:68ms
     }
 
     public static void Example5()
@@ -279,7 +280,7 @@ public static class AlgebraicIntegerRelationPSLQ
         DisplayGroup.HeadElements(galGr);
         var X = FG.KPoly('X', galGr.Neutral().E);
         Console.WriteLine("Prod[X - ri] = {0}", galGr.Aggregate(X.One, (acc, r) => acc * (X - r)));
-        GlobalStopWatch.Show("END"); // Time:436ms
+        GlobalStopWatch.Show("END"); // Time:205ms
     }
 
     public static void Example6()
@@ -289,16 +290,16 @@ public static class AlgebraicIntegerRelationPSLQ
         var roots = IntFactorisation.SplittingField(P); // A4
         var minPoly = roots[0].F.SubstituteChar('X');
 
-        var O1 = 110; // rounding digits
-        var O2 = 130; // maximum precision digits
+        var O1 = 100; // rounding digits
+        var O2 = 120; // maximum precision digits
 
-        Logger.Level = LogLevel.Level1;
+        // Logger.Level = LogLevel.Level1;
         GlobalStopWatch.AddLap();
         var galGr = GaloisGroupPSLQ(minPoly, O1, O2);
         DisplayGroup.HeadElements(galGr);
         var X = FG.KPoly('X', galGr.Neutral().E);
         Console.WriteLine("Prod[X - ri] = {0}", galGr.Aggregate(X.One, (acc, r) => acc * (X - r)));
-        GlobalStopWatch.Show("END Roots"); // Time:1.417s
+        GlobalStopWatch.Show("END Roots"); // Time:680ms
     }
 
     public static void Example7()
@@ -310,13 +311,13 @@ public static class AlgebraicIntegerRelationPSLQ
 
         var O1 = 120; // rounding digits
         var O2 = 140; // maximum precision digits
-        Logger.Level = LogLevel.Level1;
+        // Logger.Level = LogLevel.Level1;
         GlobalStopWatch.AddLap();
         var galGr = GaloisGroupPSLQ(minPoly, O1, O2);
         DisplayGroup.HeadElements(galGr);
         var X = FG.KPoly('X', galGr.Neutral().E);
         Console.WriteLine("Prod[X - ri] = {0}", galGr.Aggregate(X.One, (acc, r) => acc * (X - r)));
-        GlobalStopWatch.Show("END Roots"); // Time:8.123s
+        GlobalStopWatch.Show("END Roots"); // Time:3.614s
     }
 
     public static void Example8()
@@ -331,13 +332,13 @@ public static class AlgebraicIntegerRelationPSLQ
         var O1 = 140; // rounding digits
         var O2 = 160; // maximum precision digits
 
-        Logger.Level = LogLevel.Level1;
+        // Logger.Level = LogLevel.Level1;
         GlobalStopWatch.AddLap();
         var galGr = GaloisGroupPSLQ(P, O1, O2);
         DisplayGroup.HeadElements(galGr);
         var X = FG.KPoly('X', galGr.Neutral().E);
         Console.WriteLine("Prod[X - ri] = {0}", galGr.Aggregate(X.One, (acc, r) => acc * (X - r)));
-        GlobalStopWatch.Show("END Roots"); // Time:10.873s
+        GlobalStopWatch.Show("END Roots"); // Time:3.288s
     }
 
     public static void Example9()
@@ -360,35 +361,40 @@ public static class AlgebraicIntegerRelationPSLQ
         var O1 = 300; // rounding digits
         var O2 = 350; // maximum precision digits
 
+        // Logger.Level = LogLevel.Level1;
         var galGr = GaloisGroupPSLQ(P, O1, O2);
         DisplayGroup.HeadElements(galGr);
         var X = FG.KPoly('X', galGr.Neutral().E);
         Console.WriteLine("Prod[X - ri] = {0}", galGr.Aggregate(X.One, (acc, r) => acc * (X - r)));
-        GlobalStopWatch.Show("END Roots"); // Time:1m7s
+        GlobalStopWatch.Show("END Roots"); // Time:32.311s
     }
 
     public static void Example_PSLQM2_Dble_and_Dcml()
     {
         Logger.Level = LogLevel.Level1;
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+        List<(int r, int s, int O)> rsO = new()
+        {
+            (2, 2, 30),
+            (3, 3, 40),
+            (2, 5, 50),
+            (3, 4, 70),
+            (2, 7, 90),
+            (3, 5, 90),
+            (4, 4, 90),
+            (4, 5, 120),
+            (5, 5, 180),
+            (5, 6, 250),
+            (6, 6, 320),
+        };
 
-        PslqMinPoly<Dcml>(2, 2, 30);
-        PslqMinPoly<Dble>(2, 2, 30);
 
-        PslqMinPoly<Dcml>(3, 3, 50);
-        PslqMinPoly<Dble>(3, 3, 50);
+        foreach (var (r, s, O) in rsO)
+        {
+            PslqMinPoly<Dcml>(r, s, O);
+            PslqMinPoly<Dble>(r, s, O);
+        }
 
-        PslqMinPoly<Dcml>(4, 4, 90);
-        PslqMinPoly<Dble>(4, 4, 90);
-
-        PslqMinPoly<Dcml>(5, 5, 180);
-        PslqMinPoly<Dble>(5, 5, 180);
-
-        PslqMinPoly<Dcml>(5, 6, 250);
-        PslqMinPoly<Dble>(5, 6, 250);
-
-        PslqMinPoly<Dcml>(6, 6, 320);
-        PslqMinPoly<Dble>(6, 6, 320);
         Console.Beep();
     }
     // Possible Solution step:840
