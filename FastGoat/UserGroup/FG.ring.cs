@@ -52,6 +52,7 @@ public static partial class FG
     public static KPoly<Rational> QPoly(char x = 'x') => new(x);
     public static KPoly<Cplx> CplxPoly(char x = 'x') => new(x);
     public static KPoly<BigCplx> BCplxPoly(int o = 40, char x = 'x') => new KPoly<BigCplx>(x, BigCplx.BcZero(o)).X;
+    public static KPoly<BigReal> BRealPoly(int o = 40, char x = 'x') => new KPoly<BigReal>(x, BigReal.BrZero(o)).X;
 
     public static Cplx NSolve(KPoly<Cplx> P, double epsilon = 1e-14, int maxLoop = 200)
     {
