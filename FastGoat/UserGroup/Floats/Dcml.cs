@@ -152,6 +152,7 @@ public readonly struct Dcml : IElt<Dcml>, IRingElt<Dcml>, IFieldElt<Dcml>, IVsEl
     public static bool IsValuedField => true;
 
     public static implicit operator decimal(Dcml e) => e.K;
+    public static implicit operator Dcml(decimal e) => new(e);
 
     public static implicit operator Dcml(Rational e) => new((decimal)e.ToDouble);
 

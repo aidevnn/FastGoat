@@ -120,13 +120,14 @@ public readonly struct Dble : IElt<Dble>, IRingElt<Dble>, IFieldElt<Dble>, IVsEl
 
     public static Dble operator /(int a, Dble b) => a * b.Inv();
 
-    public static double Abs(Dble t) => (double)double.Abs(t.K);
+    public static double Abs(Dble t) => double.Abs(t.K);
     public static Dble Round(Dble e, int d, MidpointRounding mode = MidpointRounding.ToEven) 
         => new(double.Round(e.K, d, mode));
 
     public static bool IsValuedField => true;
 
     public static implicit operator double(Dble e) => e.K;
+    public static implicit operator Dble(double e) => new(e);
 
     public static implicit operator Dble(Rational e) => new((double)e.ToDouble);
 
