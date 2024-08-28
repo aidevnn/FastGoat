@@ -12,8 +12,8 @@ public readonly struct Dcml : IElt<Dcml>, IRingElt<Dcml>, IFieldElt<Dcml>, IVsEl
     }
 
     public static double Eps => 1.0e-26;
-    public static Dcml DbleZero() => new(0.0m);
-    public static Dcml DbleOne() => new(1.0m);
+    public static Dcml DcmlZero() => new(0.0m);
+    public static Dcml DcmlOne() => new(1.0m);
     public decimal K { get; }
 
     public Dcml(decimal k)
@@ -142,6 +142,7 @@ public readonly struct Dcml : IElt<Dcml>, IRingElt<Dcml>, IFieldElt<Dcml>, IVsEl
         return aj;
     }
     public static Dcml Sqrt(Dcml a) => NthRoot(a, 2);
+    public double ToDouble => (double)K;
 
     public static Dcml operator /(int a, Dcml b) => a * b.Inv();
 

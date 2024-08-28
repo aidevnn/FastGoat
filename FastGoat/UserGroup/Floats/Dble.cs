@@ -108,6 +108,7 @@ public readonly struct Dble : IElt<Dble>, IRingElt<Dble>, IFieldElt<Dble>, IVsEl
     public static int Digits => 17;
 
     public Dble RoundEven => Round(this, 0);
+    public double ToDouble => K;
     public BigReal ToBigReal(int O) => BigReal.FromString($"{K:E18}", O);
 
     public Dble KMul(Rational k) => new(K * k.ToDouble);
