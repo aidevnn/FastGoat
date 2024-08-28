@@ -106,6 +106,7 @@ public readonly struct Dble : IElt<Dble>, IRingElt<Dble>, IFieldElt<Dble>, IVsEl
     }
 
     public static int Digits => 17;
+    public static Dble Pi(int o = 50) => 3.1415926535897932384;
 
     public Dble RoundEven => Round(this, 0);
     public double ToDouble => K;

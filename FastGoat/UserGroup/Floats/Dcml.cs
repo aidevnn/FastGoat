@@ -12,6 +12,8 @@ public readonly struct Dcml : IElt<Dcml>, IRingElt<Dcml>, IFieldElt<Dcml>, IVsEl
     }
 
     public static double Eps => 1.0e-26;
+    public static Dcml Pi(int o = 50) => 3.14159265358979323846264338327m;
+
     public static Dcml DcmlZero() => new(0.0m);
     public static Dcml DcmlOne() => new(1.0m);
     public decimal K { get; }

@@ -165,6 +165,11 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
         return new(num, denom);
     }
 
+    public static Rational Pi(int o)
+    {
+        throw new NotImplementedException();
+    }
+
     public static Rational Sqrt(Rational r)
     {
         throw new NotImplementedException();
