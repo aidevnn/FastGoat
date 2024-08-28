@@ -446,7 +446,7 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
     {
         var s = $"{d:E28}".Split('E');
         var s10 = s[0].Replace(".", "");
-        var k0 = long.Parse(s10);
+        var k0 = BigInteger.Parse(s10);
         var sgn = s[1][0] == '+' ? 1 : -1;
         var exp = int.Parse(s[1].Skip(1).Glue()) * sgn;
         var k1 = Clamp(k0, o);
