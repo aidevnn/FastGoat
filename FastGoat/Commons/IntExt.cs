@@ -662,11 +662,11 @@ public static class IntExt
     /// <param name="n">The modulus.</param>
     /// <param name="m">The exponent.</param>
     /// <returns>A list of all solutions to the equation k^m = 1 (mod n).</returns>
-    public static List<int> SolveAll_k_pow_m_equal_one_mod_n(int n, int m)
+    public static IEnumerable<int> SolveAll_k_pow_m_equal_one_mod_n(int n, int m)
     {
         var seq = Enumerable.Range(2, n - 2);
         var criteria = seq.Where(i => Gcd(i, n) == 1 && PowMod(i, m, n) == 1);
-        return criteria.ToList();
+        return criteria;
     }
 
     /// <summary>
@@ -675,11 +675,11 @@ public static class IntExt
     /// <param name="n">The modulus.</param>
     /// <param name="m">The exponent.</param>
     /// <returns>A list of all solutions to the equation k^m = 1 (mod n).</returns>
-    public static List<int> SolveAll_k_pow_m_equal_one_mod_n_strict(int n, int m)
+    public static IEnumerable<int> SolveAll_k_pow_m_equal_one_mod_n_strict(int n, int m)
     {
         var seq = Enumerable.Range(2, n - 2);
         var criteria = seq.Where(i => Gcd(i, n) == 1 && PowModEqualOne(i, m, n));
-        return criteria.ToList();
+        return criteria;
     }
 
     /// <summary>

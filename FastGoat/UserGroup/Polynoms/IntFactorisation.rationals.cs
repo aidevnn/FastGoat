@@ -224,8 +224,8 @@ public static partial class IntFactorisation
         if (f.Coefs.Any(c => !c.Denom.IsOne))
             throw new ArgumentException();
 
-        var ai0 = (new Un(p)).GetGenerators().First()[new(p, 1)];
-        var a0 = ZnBInt.ZnZero(p) + ai0.K;
+        var k = IntExt.SolveAll_k_pow_m_equal_one_mod_n_strict(p, p - 1).First();
+        var a0 = ZnBInt.ZnZero(p) + k;
         var po = a0.Details;
         var f0 = QPoly2ZnInt(f, po);
 
