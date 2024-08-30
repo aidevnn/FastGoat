@@ -50,9 +50,9 @@ KPoly<K> RecNewtonInverse<K>(KPoly<K> F, int N) where K : struct, IElt<K>, IRing
     return G0;
 }
 
-Polynomial<T, Xi>[] Firr<T>(Polynomial<T, Xi> F) where T : struct, IElt<T>, IRingElt<T>, IFieldElt<T>
+Polynomial<ZnInt, Xi>[] Firr(Polynomial<ZnInt, Xi> F)
 {
-    if (!Primes10000.Contains(F.P))
+    if (F.P == 0)
         throw new();
 
     var p = F.P;
@@ -65,8 +65,8 @@ Polynomial<T, Xi>[] Firr<T>(Polynomial<T, Xi> F) where T : struct, IElt<T>, IRin
     return firr.Select(fi => fi.Substitute(F.X(y))).ToArray();
 }
 
-Polynomial<T, Xi>[] HenselLiftingStep<T>(Polynomial<T, Xi> F, Polynomial<T, Xi>[] fi, Polynomial<T, Xi> I, int o)
-    where T : struct, IElt<T>, IRingElt<T>, IFieldElt<T>
+Polynomial<ZnInt, Xi>[] HenselLiftingStep(Polynomial<ZnInt, Xi> F, Polynomial<ZnInt, Xi>[] fi, Polynomial<ZnInt, Xi> I,
+    int o)
 {
     var xis = F.ExtractAllIndeterminates;
     if (xis.Length != 2)
@@ -75,7 +75,7 @@ Polynomial<T, Xi>[] HenselLiftingStep<T>(Polynomial<T, Xi> F, Polynomial<T, Xi>[
     var (x, y) = xis.Deconstruct();
     var P0 = F;
     var P1 = F.D(y);
-    var tmp = new List<Polynomial<T, Xi>>();
+    var tmp = new List<Polynomial<ZnInt, Xi>>();
     foreach (var f in fi)
     {
         var df = f.D(y).Div(I).rem;
@@ -84,7 +84,7 @@ Polynomial<T, Xi>[] HenselLiftingStep<T>(Polynomial<T, Xi> F, Polynomial<T, Xi>[
         var _F0 = F0.ToKPoly(x);
         var _F1 = F1.ToKPoly(x);
         var _x = _F0.X;
-        var div = (RecNewtonInverse(_F1, 2 * o + 1) * _F0).Div(_x.Pow(o)).rem;
+        var div = (RecNewtonInverse(_F1, int.Max(_F1.Degree, o) + 1) * _F0).Div(_x.Pow(o)).rem;
         var R1 = (df * div.ToPolynomial(F.Indeterminates, x)).Div(f).rem.Div(I).rem;
         var fr = f + R1;
         var c = fr[new(fr.Indeterminates, y)];
@@ -94,8 +94,7 @@ Polynomial<T, Xi>[] HenselLiftingStep<T>(Polynomial<T, Xi> F, Polynomial<T, Xi>[
     return tmp.Order().ToArray();
 }
 
-Polynomial<T, Xi>[] HenselLifting<T>(Polynomial<T, Xi> F, Polynomial<T, Xi>[] firr)
-    where T : struct, IElt<T>, IRingElt<T>, IFieldElt<T>
+Polynomial<ZnInt, Xi>[] HenselLifting(Polynomial<ZnInt, Xi> F, Polynomial<ZnInt, Xi>[] firr)
 {
     var (x, y) = F.ExtractAllIndeterminates.Deconstruct();
     var all = firr.ToArray();
@@ -111,15 +110,14 @@ Polynomial<T, Xi>[] HenselLifting<T>(Polynomial<T, Xi> F, Polynomial<T, Xi>[] fi
     return all;
 }
 
-Polynomial<T, Xi>[] Recombinaison<T>(Polynomial<T, Xi> F, Polynomial<T, Xi>[] fi)
-    where T : struct, IElt<T>, IRingElt<T>, IFieldElt<T>
+Polynomial<ZnInt, Xi>[] Recombinaison(Polynomial<ZnInt, Xi> F, Polynomial<ZnInt, Xi>[] fi)
 {
     var (x, y) = F.ExtractAllIndeterminates.Deconstruct();
     var o = F.DegreeOf(x) + 1;
     var xo = F.X(x).Pow(o);
 
-    var facts = new List<Polynomial<T, Xi>>();
-    var rem = new HashSet<Polynomial<T, Xi>>(fi);
+    var facts = new List<Polynomial<ZnInt, Xi>>();
+    var rem = new HashSet<Polynomial<ZnInt, Xi>>(fi);
     while (rem.Count != 0)
     {
         var sz = rem.Count;
@@ -142,11 +140,70 @@ Polynomial<T, Xi>[] Recombinaison<T>(Polynomial<T, Xi> F, Polynomial<T, Xi>[] fi
     return facts.Order().ToArray();
 }
 
+void FactorsFxy(Polynomial<Rational, Xi> F)
+{
+    if (F.Coefs.Any(e => !e.Value.IsInteger()))
+        throw new();
+
+    var (x, y) = F.ExtractAllIndeterminates.Deconstruct();
+    var disc = Ring.Discriminant(F.Substitute(F.Zero, x), y);
+    var decomp = PrimesDecompositionBigInt(disc.ConstTerm.Absolute.Num).Distinct();
+    Console.WriteLine($"F({x},{y} = {F}");
+    foreach (var p in Primes10000.Except(decomp).Where(p => p < 500))
+    {
+        var coefs = F.Coefs.ToDictionary(e => e.Key, e => new ZnInt(p, (int)e.Value.Num))
+            .Where(e => !e.Value.IsZero())
+            .ToDictionary(e => e.Key, e => e.Value);
+        var Fp = new Polynomial<ZnInt, Xi>(F.Indeterminates, ZnInt.ZpZero(p), new(coefs));
+        try
+        {
+            Console.WriteLine(new { Fp, p });
+            var firr = Firr(Fp);
+            var lifts = HenselLifting(Fp, firr);
+            var facts = Recombinaison(Fp, lifts);
+
+            var P0X2 = firr.Aggregate(Fp.One, (acc, c) => acc * c);
+            var P0 = facts.Aggregate(Fp.One, (acc, c) => acc * c);
+            if (!Fp.Equals(P0))
+                throw new();
+
+            var facts1 = facts.Select(f =>
+            {
+                var coefs1 = f.Coefs.ToDictionary(e => e.Key,
+                        e => new Rational(e.Value.K * 2 <= p ? e.Value.K : e.Value.K - p))
+                    .Where(e => !e.Value.IsZero())
+                    .ToDictionary(e => e.Key, e => e.Value);
+                return new Polynomial<Rational, Xi>(F.Indeterminates, Rational.KZero(), new(coefs1));
+            }).ToArray();
+
+            var P1 = facts1.Aggregate(F.One, (acc, c) => acc * c);
+            if (!F.Equals(P1))
+                throw new();
+
+            Console.WriteLine($"P(X1,X2) = {Fp}");
+            firr.Println($"P(0,X2) = {P0X2}");
+            lifts.Println("Hensel Lifting");
+            facts.Println($"Factors in F{p}[{x},{y}]");
+            Console.WriteLine($"{facts.Glue(" * ", "({0})")} = {P0}");
+            facts1.Println($"Factors in Q[{x},{y}]");
+            Console.WriteLine($"{facts1.Glue(" * ", "({0})")} = {P1}");
+            Console.WriteLine();
+            break;
+        }
+        catch (Exception)
+        {
+            Console.WriteLine($"########### P = {p} wont work");
+        }
+    }
+}
+
+void Run1()
 {
     Ring.DisplayPolynomial = MonomDisplay.StarCaret;
     var (X2, X1) = Ring.Polynomial(ZnInt.ZnZero(101), MonomOrder.Lex, "X2", "X1").Deconstruct();
 
-    var P = X2.Pow(4) + 99 * X2.Pow(3) + 100 * X2.Pow(2) + (2 * X1.Pow(2) + 2) * X2 + 100 * X1.Pow(4) + 100 * X1.Pow(2);
+    // (X2^2 + 100*X1^2 + 100) * (X2^2 +  99*X2 + X1^2)
+    var P = (X2.Pow(2) + 100 * X1.Pow(2) + 100) * (X2.Pow(2) + 99 * X2 + X1.Pow(2));
 
     var firr = Firr(P);
     var lifts = HenselLifting(P, firr);
@@ -162,6 +219,7 @@ Polynomial<T, Xi>[] Recombinaison<T>(Polynomial<T, Xi> F, Polynomial<T, Xi>[] fi
 
     Console.WriteLine($"{facts.Glue(" * ", "({0})")} = {P0}");
     Console.WriteLine($"Check:{P.Equals(P0)}");
+    Console.WriteLine();
 }
 
 // AECF p400-402
@@ -182,3 +240,23 @@ Polynomial<T, Xi>[] Recombinaison<T>(Polynomial<T, Xi> F, Polynomial<T, Xi>[] fi
 // (X2^2 + 100*X1^2 + 100) * (X2^2 +  99*X2 + X1^2) = X2^4 +  99*X2^3 + 100*X2^2 +   2*X1^2*X2 +   2*X2 + 100*X1^4 + 100*X1^2
 // Check:True
 // 
+
+{
+    Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+    var (X2, X1) = Ring.Polynomial(Rational.KZero(), MonomOrder.Lex, "X2", "X1").Deconstruct();
+
+    // All Working 
+    var polys = new[]
+    {
+        (X2.Pow(2) - X1.Pow(2) - 1) * (X2.Pow(2) - 2 * X2 + X1.Pow(2)),
+        (X2.Pow(2) - 3 * X2 - 4 * X1) * (X2.Pow(2) - 4 * X1 * X2 - 4),
+        (X2 - 3 * X1.Pow(2) - 2 * X1) * (X2.Pow(2) - 3 * X1 * X2 - 4),
+        (X2.Pow(2) - 3 * X1 - 3) * (X2.Pow(2) - 4 * X2 - 3 * X1.Pow(2)),
+        (X2 - 2 * X1 - 3) * (X2.Pow(2) - X2 - 2 * X1),
+        (X2 - 2 * X1 - 4) * (X2.Pow(2) - X1.Pow(2) - 3),
+        (X2 - 4 * X1.Pow(2) - 2 * X1) * (X2.Pow(2) - 4 * X1.Pow(2) - 3)
+    };
+
+    foreach (var F in polys)
+        FactorsFxy(F);
+}

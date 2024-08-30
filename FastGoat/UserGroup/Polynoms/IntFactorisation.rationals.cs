@@ -251,7 +251,7 @@ public static partial class IntFactorisation
                 var dgi = gi.Derivative.Substitute(y); // new EPoly<ZnBInt>(gi, gi.Derivative.Div(gi).rem);
                 var fi = fa.Substitute(y); // new EPoly<ZnBInt>(gi, fa.Div(gi).rem);
                 var dfi = fa.Derivative.Substitute(y); // new EPoly<ZnBInt>(gi, fa.Derivative.Div(gi).rem);
-                var ri = ((dgi * fi) / dfi).Poly;
+                var ri = (dgi * fi * dfi.Inv()).Poly;
                 tmp.Add(gi + ri);
             }
 
