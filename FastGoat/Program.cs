@@ -146,9 +146,9 @@ void FactorsFxy(Polynomial<Rational, Xi> F)
         throw new();
 
     var (x, y) = F.ExtractAllIndeterminates.Deconstruct();
-    var disc = Ring.Discriminant(F.Substitute(F.Zero, x), y);
-    var decomp = PrimesDecompositionBigInt(disc.ConstTerm.Absolute.Num).Distinct();
-    Console.WriteLine($"F({x},{y} = {F}");
+    var disc = Ring.Discriminant(F.Substitute(F.Zero, x).ToKPoly(y));
+    var decomp = PrimesDecompositionBigInt(disc.Absolute.Num).Distinct();
+    Console.WriteLine($"F({x},{y}) = {F}");
     foreach (var p in Primes10000.Except(decomp).Where(p => p < 500))
     {
         var coefs = F.Coefs.ToDictionary(e => e.Key, e => new ZnInt(p, (int)e.Value.Num))
@@ -157,7 +157,6 @@ void FactorsFxy(Polynomial<Rational, Xi> F)
         var Fp = new Polynomial<ZnInt, Xi>(F.Indeterminates, ZnInt.ZpZero(p), new(coefs));
         try
         {
-            Console.WriteLine(new { Fp, p });
             var firr = Firr(Fp);
             var lifts = HenselLifting(Fp, firr);
             var facts = Recombinaison(Fp, lifts);
@@ -241,6 +240,7 @@ void Run1()
 // Check:True
 // 
 
+void Run2()
 {
     Ring.DisplayPolynomial = MonomDisplay.StarCaret;
     var (X2, X1) = Ring.Polynomial(Rational.KZero(), MonomOrder.Lex, "X2", "X1").Deconstruct();
@@ -259,4 +259,78 @@ void Run1()
 
     foreach (var F in polys)
         FactorsFxy(F);
+}
+
+(Polynomial<Rational, Xi> F, Polynomial<Rational, Xi>[] facts) GenerateRandomPolynomialFxy(int nbFactors, int maxDegree)
+{
+    var (X2, X1) = Ring.Polynomial(Rational.KZero(), MonomOrder.Lex, "X2", "X1").Deconstruct();
+    var x1s = (1 + maxDegree).Range().Select(X1.Pow).ToArray();
+    var x2s = maxDegree.Range().Select(X2.Pow).ToArray();
+    var x1x2s = x1s.Grid2D(x2s).Select(e => e.t1 * e.t2).Where(f => f.Degree <= maxDegree).Order().ToArray();
+    var nb = x1x2s.Length;
+
+    var x2 = X2.ExtractIndeterminate;
+
+    Polynomial<Rational, Xi> Choose()
+    {
+        var f = (1 + Rng.Next(nb)).Range().Select(_ => x1x2s[Rng.Next(nb)] * Rng.Next(-5, 5))
+            .Where(e => !e.IsZero())
+            .Aggregate(X1.Zero, (acc, e) => acc + e);
+        var degX2 = f.DegreeOf(x2);
+        return f + X2.Pow(degX2 + 1);
+    }
+
+    var facts = nbFactors.Range().Select(_ => Choose()).Order().ToArray();
+    var F = facts.Aggregate((a0, a1) => a0 * a1);
+    return (F, facts);
+}
+
+bool FilterRandPolynomialFxy(Polynomial<Rational, Xi> F)
+{
+    if (F.NbIndeterminates < 2)
+        return false;
+
+    var (x, y) = F.ExtractAllIndeterminates.Deconstruct();
+    var F0y = F.Substitute(F.Zero, x).ToKPoly(y);
+    if (Ring.Discriminant(F0y).IsZero() || F0y.Degree <= 1)
+        return false;
+
+    var DF = F.D(y);
+    var DF0y = DF.Substitute(F.Zero, x).ToKPoly(y);
+    var res = Ring.FastResultant(F0y, DF0y);
+    return !res.IsZero();
+}
+
+void FactorisationRandPolFxy(int nbPoly, int nbFactors, int maxDegreeByFactor)
+{
+    var ct = 0;
+    while (ct < nbPoly)
+    {
+        var (F, facts) = GenerateRandomPolynomialFxy(nbFactors, maxDegreeByFactor);
+        if (FilterRandPolynomialFxy(F) && facts.All(f => f.Degree <= maxDegreeByFactor && f.NbIndeterminates == 2))
+        {
+            ct++;
+            facts.Println($"F = {F}");
+            FactorsFxy(F);
+            Console.WriteLine();
+        }
+    }
+}
+
+{
+    Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+    
+    FactorisationRandPolFxy(nbPoly: 10, nbFactors: 2, maxDegreeByFactor: 1);
+    FactorisationRandPolFxy(nbPoly: 10, nbFactors: 3, maxDegreeByFactor: 1);
+    FactorisationRandPolFxy(nbPoly: 10, nbFactors: 4, maxDegreeByFactor: 1);
+    FactorisationRandPolFxy(nbPoly: 10, nbFactors: 5, maxDegreeByFactor: 1);
+
+    FactorisationRandPolFxy(nbPoly: 10, nbFactors: 2, maxDegreeByFactor: 2);
+    FactorisationRandPolFxy(nbPoly: 10, nbFactors: 3, maxDegreeByFactor: 2);
+    FactorisationRandPolFxy(nbPoly: 10, nbFactors: 4, maxDegreeByFactor: 2);
+    
+    FactorisationRandPolFxy(nbPoly: 10, nbFactors: 2, maxDegreeByFactor: 3);
+    FactorisationRandPolFxy(nbPoly: 10, nbFactors: 3, maxDegreeByFactor: 3);
+
+    FactorisationRandPolFxy(nbPoly: 10, nbFactors: 2, maxDegreeByFactor: 4);
 }
