@@ -295,23 +295,6 @@ public static class InvariantTheory
         return InvariantGLnK(G);
     }
 
-    // AECF page 62
-    static KPoly<K> RecNewtonInverse<K>(KPoly<K> F, int N)
-        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
-    {
-        if (F.Degree >= N)
-            throw new($"F={F} and {N}");
-
-        if (N == 1)
-            return F[0].Inv() * F.One;
-
-        var mid = (N / 2) + (N % 2);
-        var F0 = F.Div(F.X.Pow(mid)).rem;
-        var G = RecNewtonInverse(F0, mid);
-        var G0 = (G + (1 - F * G) * G).Div(F.X.Pow(N)).rem;
-        return G0;
-    }
-
     static (EPolynomial<K> sum, KPoly<Rational> serie) MolienSum<K>(ConcreteGroup<KMatrix<K>> G)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
@@ -331,7 +314,7 @@ public static class InvariantTheory
 
         var serNum = molienSum.Num.ToKPoly(t.Num.ExtractIndeterminate);
         var serDenom = molienSum.Denom.ToKPoly(t.Num.ExtractIndeterminate);
-        var serInv = RecNewtonInverse(serDenom, int.Max(og, serDenom.Degree) + 1);
+        var serInv = FG.NewtonInverse(serDenom, int.Max(og, serDenom.Degree) + 1);
         var serie = (serNum * serInv).Div(serNum.X.Pow(og + 1)).rem;
         var T = FG.QPoly('t');
         var molienSerie = serie.Coefs.Select((c, k) => int.Parse($"{c}") * T.Pow(k)).Aggregate((a, b) => a + b);
@@ -345,7 +328,7 @@ public static class InvariantTheory
     {
         var z = FG.QPoly('z');
         var P = degrees.Select(k => 1 - z.Pow(k)).Aggregate((a, b) => a * b);
-        return RecNewtonInverse(P, int.Max(P.Degree, N) + 1);
+        return FG.NewtonInverse(P, int.Max(P.Degree, N) + 1);
     }
 
     public static void Examples_MolienTheorem()
