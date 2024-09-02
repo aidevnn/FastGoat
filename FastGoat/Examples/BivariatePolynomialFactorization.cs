@@ -13,7 +13,15 @@ public static class BivariatePolynomialFactorization
     {
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
     }
-
+    
+    /// <summary>
+    /// Computes the factorization of a given bivariate polynomial over a finite field.
+    /// First, evaluates the bivariate polynomial at x = 0 to obtain an univariate polynomial in y,
+    /// then factorizes the resulting univariate polynomial in y using Berlekamp's algorithm.
+    /// </summary>
+    /// <param name="F">The bivariate polynomial to be factorized.</param>
+    /// <returns>An array of polynomials representing the factors of the input polynomial.</returns>
+    /// <exception cref="ArgumentException">Thrown when the characteristic of the finite field is zero.</exception>
     static Polynomial<ZnInt, Xi>[] Firr(Polynomial<ZnInt, Xi> F)
     {
         if (F.P == 0)
@@ -29,6 +37,16 @@ public static class BivariatePolynomialFactorization
         return firr.Select(fi => fi.Substitute(F.X(y))).ToArray();
     }
 
+    /// <summary>
+    /// Performs one step of the Hensel Lifting method to lift the factorization of a bivariate polynomial 
+    /// from one modulus to a higher power of the modulus.
+    /// </summary>
+    /// <param name="F">The original bivariate polynomial to be factorized.</param>
+    /// <param name="fi">The array of current factors of the polynomial F.</param>
+    /// <param name="I">The ideal used in the lifting process, which is a power of 2 of the variable "x"..</param>
+    /// <param name="o">The order of the lifting step.</param>
+    /// <returns>An array of polynomials representing the factors of the input polynomial after one lifting step.</returns>
+    /// <exception cref="ArgumentException">Thrown when the polynomial does not have exactly two indeterminates.</exception>
     static Polynomial<ZnInt, Xi>[] HenselLiftingStep(Polynomial<ZnInt, Xi> F, Polynomial<ZnInt, Xi>[] fi,
         Polynomial<ZnInt, Xi> I, int o)
     {
@@ -58,6 +76,13 @@ public static class BivariatePolynomialFactorization
         return tmp.Order().ToArray();
     }
 
+    /// <summary>
+    /// Performs Hensel lifting on a bivariate polynomial over a finite field.
+    /// </summary>
+    /// <param name="F">The bivariate polynomial to be factorized.</param>
+    /// <param name="firr">An array of polynomials representing the initial irreducible factors
+    /// of the polynomial F(0, y).</param>
+    /// <returns>An array of polynomials representing the factors of the input polynomial.</returns>
     static Polynomial<ZnInt, Xi>[] HenselLifting(Polynomial<ZnInt, Xi> F, Polynomial<ZnInt, Xi>[] firr)
     {
         var (y, x) = F.Indeterminates.Deconstruct();
@@ -74,6 +99,14 @@ public static class BivariatePolynomialFactorization
         return all;
     }
 
+    /// <summary>
+    /// Recombines the lifted factors of a bivariate polynomial to form the valid factors
+    /// over the original finite field.
+    /// </summary>
+    /// <param name="F">The original bivariate polynomial over the finite field.</param>
+    /// <param name="fi">Array of lifted factors obtained from the Hensel lifting process.</param>
+    /// <returns>An array of polynomials representing the recombined factors of the input polynomial.</returns>
+    /// <exception cref="ArgumentException">Thrown when no valid recombination of factors is found.</exception>
     static Polynomial<ZnInt, Xi>[] Recombinaison(Polynomial<ZnInt, Xi> F, Polynomial<ZnInt, Xi>[] fi)
     {
         var (y, x) = F.Indeterminates.Deconstruct();
@@ -103,8 +136,14 @@ public static class BivariatePolynomialFactorization
 
         return facts.Order().ToArray();
     }
-
-    static void FactorsFxy(Polynomial<Rational, Xi> F)
+    
+    /// <summary>
+    /// Factorizes a given bivariate polynomial over the rational numbers using Hensel lifting
+    /// over finite fields and recombination techniques.
+    /// </summary>
+    /// <param name="F">The bivariate polynomial to be factorized.</param>
+    /// <exception cref="ArgumentException">Thrown when the polynomial contains non-integer coefficients.</exception>
+    static Polynomial<Rational, Xi>[] FactorsFxy(Polynomial<Rational, Xi> F)
     {
         if (F.Coefs.Any(e => !e.Value.IsInteger()))
             throw new();
@@ -152,15 +191,23 @@ public static class BivariatePolynomialFactorization
                 factsQ.Println($"Factors in Q[{x},{y}]");
                 Console.WriteLine($"{factsQ.Glue(" * ", "({0})")} = {P1}");
                 Console.WriteLine();
-                break;
+                return factsQ;
             }
             catch (Exception)
             {
                 Console.WriteLine($"########### P = {p} wont work");
             }
         }
+
+        return [F];
     }
-    
+
+    /// <summary>
+    /// Generates a random bivariate polynomial with a given number of factors and maximum degree.
+    /// </summary>
+    /// <param name="nbFactors">The number of factors in the polynomial.</param>
+    /// <param name="maxDegree">The maximum degree of the polynomial.</param>
+    /// <returns>A tuple containing the generated polynomial F and an array of the polynomial factors.</returns>
     static (Polynomial<Rational, Xi> F, Polynomial<Rational, Xi>[] facts) 
         GenerateRandomPolynomialFxy(int nbFactors, int maxDegree)
     {
@@ -184,7 +231,18 @@ public static class BivariatePolynomialFactorization
         var F = facts.Aggregate((a0, a1) => a0 * a1);
         return (F, facts);
     }
-    
+
+    /// <summary>
+    /// Filters a bivariate polynomial to determine if it can be factorized.
+    /// Checks if the polynomial has at least 2 indeterminates.
+    /// Evaluates the polynomial at x = 0 to obtain a univariate polynomial in y.
+    /// Checks if the discriminant of the univariate polynomial is non-zero and its degree is greater than 1.
+    /// Calculates the derivative of the bivariate polynomial with respect to y and evaluates it at x = 0 to obtain
+    /// a univariate polynomial in y.
+    /// Calculates the resultant of the univariate polynomials and checks if it is non-zero.
+    /// </summary>
+    /// <param name="F">The bivariate polynomial to be filtered.</param>
+    /// <returns>True if the polynomial satisfies the filtering conditions, false otherwise.</returns>
     static bool FilterRandPolynomialFxy(Polynomial<Rational, Xi> F)
     {
         if (F.NbIndeterminates < 2)
@@ -200,7 +258,19 @@ public static class BivariatePolynomialFactorization
         var res = Ring.FastResultant(F0y, DF0y);
         return !res.IsZero();
     }
-    
+
+    /// <summary>
+    /// Performs factorization of a given bivariate polynomial over the rational numbers.
+    /// The method generates random bivariate polynomials and attempts to factorize them using Berlekamp's algorithm.
+    /// The generated polynomials must satisfy the following conditions:
+    /// - Maximum degree of each factor is limited by the provided maxDegreeByFactor parameter.
+    /// - Constant term of each factor must not be zero.
+    /// - The generated polynomial must have exactly 2 indeterminates.
+    /// - The generated polynomial must pass the FilterRandPolynomialFxy filter.
+    /// </summary>
+    /// <param name="nbPoly">The number of random polynomials to generate and factorize.</param>
+    /// <param name="nbFactors">The number of factors in each generated polynomial.</param>
+    /// <param name="maxDegreeByFactor">The maximum degree allowed for each factor.</param>
     static void FactorisationRandPolFxy(int nbPoly, int nbFactors, int maxDegreeByFactor)
     {
         var ct = 0;
@@ -219,7 +289,10 @@ public static class BivariatePolynomialFactorization
             }
         }
     }
-    
+
+    /// <summary>
+    /// The BivariatePolynomialFactorization class provides methods for factorizing bivariate polynomials over a finite field.
+    /// </summary>
     public static void Example1_Fp()
     {
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
@@ -244,7 +317,15 @@ public static class BivariatePolynomialFactorization
         Console.WriteLine($"Check:{P.Equals(P0)}");
         Console.WriteLine();
     }
-    
+
+    /// <summary>
+    /// This method demonstrates an example of rational polynomial factorization using the FastGoat library.
+    /// It computes the factorization of a given bivariate polynomial over a field of rational numbers.
+    /// The example starts by setting the display format for polynomials. Then it defines a list of bivariate polynomials.
+    /// Each polynomial in the list is created using operations like addition, subtraction, multiplication, and exponentiation
+    /// on the monomials and coefficients of the variables X2 and X1.
+    /// Finally, it iterates over the list of polynomials and calls the FactorsFxy method to perform the factorization.
+    /// </summary>
     public static void Example2_Rational()
     {
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
@@ -265,7 +346,14 @@ public static class BivariatePolynomialFactorization
         foreach (var F in polys)
             FactorsFxy(F);
     }
-    
+
+    /// <summary>
+    /// The purpose of this method is to demonstrate batch factorization of random polynomials.
+    /// The method uses a nested foreach loop to iterate over pairs of values for `n` and `m`.
+    /// For each pair, the method calls the `FactorisationRandPolFxy` method with the specified parameters.
+    /// After the loop finishes, the method calls the `Console.Beep` method and then displays the elapsed time
+    /// using the `GlobalStopWatch.Show` method.
+    /// </summary>
     public static void Example3_BatchRandomPolynomial()
     {
         // IntExt.RngSeed(25413);
