@@ -381,4 +381,42 @@ public static class BivariatePolynomialFactorization
         
         FactorsFxy(F0);
     }
+    
+    public static void Example5_Substitution()
+    {
+        var (X0, X1, X2, X3) = Ring.Polynomial(Rational.KZero(), MonomOrder.Lex, (4, "X")).Deconstruct();
+        var P = (X0 * X1 + 1) * (X0 + X1 - 3);
+    
+        var (x0, x1, x2, _) = X0.Indeterminates.Deconstruct();
+        var subs = new List<(Xi, Polynomial<Rational, Xi>)>()
+        {
+            (x0, X2 + 2 * X3 + 1),
+            (x1, X2)
+        };
+
+        var Q = P.Substitute(subs);
+        Console.WriteLine(new { P, Q });
+        Ring.Decompose(P, x0).Item1.Println("P");
+        var Qcoefs = Ring.Decompose(Q, x2).Item1;
+        Qcoefs.Println("Q");
+
+        var (Y, X) = Ring.Polynomial(Rational.KZero(), MonomOrder.Lex, "Y", "X").Deconstruct();
+        var Q1 = Qcoefs.Select(e => (e.Key.ToKPoly(X2).Substitute(Y), e.Value.ToKPoly(X3).Substitute(X)))
+            .Aggregate(X.Zero, (acc, e) => acc + e.Item1 * e.Item2 / 2);
+        Console.WriteLine(Q1);
+        Ring.Decompose(Q1, Y.ExtractIndeterminate).Item1.Println();
+        
+        var FactsQ1 = FactorsFxy(Q1);
+        var FactsP = new List<Polynomial<Rational, Xi>>();
+        foreach (var f in FactsQ1)
+        {
+            var fcoefs = Ring.Decompose(f, Y.ExtractIndeterminate).Item1;
+            var g = fcoefs.Select(e => (e.Key.ToKPoly(Y).Substitute(X1), e.Value.ToKPoly(X).Substitute((X0 - X1 - 1) / 2)))
+                .Aggregate(X0.Zero, (acc, e) => 2 * e.Item1 * e.Item2 + acc);
+            FactsP.Add(g.Monic());
+        }
+
+        var prod = FactsP.Aggregate(P.One, (acc, e) => e * acc);
+        FactsP.Println($"Prod = {prod}, P = Prod:{P.Equals(prod)}");
+    }
 }
