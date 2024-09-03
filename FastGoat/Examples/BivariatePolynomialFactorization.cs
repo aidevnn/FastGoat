@@ -485,4 +485,51 @@ public static class BivariatePolynomialFactorization
         var prod = FactsP.Aggregate(P.One, (acc, e) => e * acc);
         FactsP.Println($"Prod = {prod}, P = Prod:{P.Equals(prod)}");
     }
+
+    public static void Example6_Substitution()
+    {
+        var (X2, X1) = Ring.Polynomial(Rational.KZero(), MonomOrder.Lex, "X2", "X1").Deconstruct();
+        var P = (X2 * X1 + 1) * (X2 + X1 - 3);
+        var (i, F) = RewritingPolynomial(P);
+        Console.WriteLine($"F = {P}");
+        Console.WriteLine($"Substitute {X1} <- {X1 + i * X2}");
+        var factsF0 = FactorsFxy(F);
+        var factsF = factsF0.Select(fi => fi.Substitute(X1 - i * X2, X1)).Order().ToArray();
+
+        Console.WriteLine();
+        Console.WriteLine($"Substitute {X1} <- {X1 - i * X2}");
+        factsF.Println($"Factors in Q[{X1},{X2}]");
+        Console.WriteLine();
+    }
+
+    // F = X1*X2^2 + X1^2*X2 - 3*X1*X2 + X2 + X1 - 3
+    // Substitute X1 <- X2 + X1
+    // F(X1,X2) = 2*X2^3 + 3*X1*X2^2 - 3*X2^2 + X1^2*X2 - 3*X1*X2 + 2*X2 + X1 - 3
+    // ########### P = 3 wont work
+    // ########### P = 5 wont work
+    // ########### P = 7 wont work
+    // ########### P = 11 wont work
+    // P(X1,X2) = X2^3 + 10*X1*X2^2 +  7*X2^2 +  9*X1^2*X2 +  7*X1*X2 + X2 +  9*X1 +  7
+    // P(0,X2) = X2^3 +  7*X2^2 + X2 +  7
+    //     X2 + 13
+    //     X2 +  7
+    //     X2 +  4
+    // Hensel Lifting
+    //     X2 +  9*X1 +  7
+    //     X2 +  8*X1^2 +  9*X1 +  4
+    //     X2 +  9*X1^2 +  9*X1 + 13
+    // Factors in F17[X1,X2]
+    //     X2 +  9*X1 +  7
+    //     X2^2 + X1*X2 + 1
+    // (X2 +  9*X1 +  7) * (X2^2 + X1*X2 + 1) = X2^3 + 10*X1*X2^2 +  7*X2^2 +  9*X1^2*X2 +  7*X1*X2 + X2 +  9*X1 +  7
+    // Factors in Q[X1,X2]
+    //     2*X2 + X1 - 3
+    //     X2^2 + X1*X2 + 1
+    // (2*X2 + X1 - 3) * (X2^2 + X1*X2 + 1) = 2*X2^3 + 3*X1*X2^2 - 3*X2^2 + X1^2*X2 - 3*X1*X2 + 2*X2 + X1 - 3
+    // 
+    // 
+    // Substitute X1 <- -X2 + X1
+    // Factors in Q[X1,X2]
+    //     X2 + X1 - 3
+    //     X1*X2 + 1
 }
