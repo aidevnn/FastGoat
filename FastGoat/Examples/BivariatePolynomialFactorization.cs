@@ -136,7 +136,19 @@ public static class BivariatePolynomialFactorization
 
         return facts.Order().ToArray();
     }
-    
+
+    static Polynomial<Rational, Xi> ZPoly2QPoly(Polynomial<ZnInt, Xi> f, ZnInt c)
+    {
+        var p = f.P;
+        var coefs1 = f.Coefs.ToDictionary(e => e.Key, e => e.Value * c)
+            .ToDictionary(
+                e => e.Key,
+                e => new Rational(e.Value.K * 2 <= p ? e.Value.K : e.Value.K - p))
+            .Where(e => !e.Value.IsZero())
+            .ToDictionary(e => e.Key, e => e.Value);
+        return new Polynomial<Rational, Xi>(f.Indeterminates, Rational.KZero(), new(coefs1));
+    }
+
     /// <summary>
     /// Factorizes a given bivariate polynomial over the rational numbers using Hensel lifting
     /// over finite fields and recombination techniques.
@@ -158,6 +170,8 @@ public static class BivariatePolynomialFactorization
                 .Where(e => !e.Value.IsZero())
                 .ToDictionary(e => e.Key, e => e.Value);
             var Fp = new Polynomial<ZnInt, Xi>(F.Indeterminates, ZnInt.ZpZero(p), new(coefs));
+            var lc = Fp.LeadingDetails.lc;
+            Fp *= lc.Inv();
             try
             {
                 var firr = Firr(Fp);
@@ -166,22 +180,30 @@ public static class BivariatePolynomialFactorization
 
                 var P0X2 = firr.Aggregate(Fp.One, (acc, e) => e * acc);
                 var P0 = factsFp.Aggregate(Fp.One, (acc, e) => e * acc);
-                if (!Fp.Equals(P0))
-                    throw new();
 
                 var factsQ = factsFp.Select(f =>
                 {
-                    var coefs1 = f.Coefs.ToDictionary(
-                            e => e.Key,
-                            e => new Rational(e.Value.K * 2 <= p ? e.Value.K : e.Value.K - p))
-                        .Where(e => !e.Value.IsZero())
-                        .ToDictionary(e => e.Key, e => e.Value);
-                    return new Polynomial<Rational, Xi>(F.Indeterminates, Rational.KZero(), new(coefs1));
+                    var Pi1 = ZPoly2QPoly(f, lc.One);
+                    if (F.Div(Pi1).rem.IsZero())
+                        return Pi1;
+
+                    var Pic = ZPoly2QPoly(f, lc);
+                    if (F.Div(Pic).rem.IsZero())
+                        return Pic;
+
+                    return Pi1.One;
                 }).ToArray();
 
                 var P1 = factsQ.Aggregate(F.One, (acc, e) => e * acc);
-                if (!F.Equals(P1))
+
+                if (!Fp.Div(P0).rem.IsZero())
                     throw new();
+                if (F.Degree != P1.Degree || !F.Div(P1).rem.IsZero())
+                    throw new();
+
+                var lc1 = F.LeadingDetails.lc / P1.LeadingDetails.lc;
+                if (!(lc1 - 1).IsZero())
+                    factsQ = factsQ.Prepend(lc1 * P1.One).ToArray();
 
                 Console.WriteLine($"P(X1,X2) = {Fp}");
                 firr.Println($"P(0,X2) = {P0X2}");
@@ -189,7 +211,7 @@ public static class BivariatePolynomialFactorization
                 factsFp.Println($"Factors in F{p}[{x},{y}]");
                 Console.WriteLine($"{factsFp.Glue(" * ", "({0})")} = {P0}");
                 factsQ.Println($"Factors in Q[{x},{y}]");
-                Console.WriteLine($"{factsQ.Glue(" * ", "({0})")} = {P1}");
+                Console.WriteLine($"{factsQ.Glue(" * ", "({0})")} = {lc1 * P1}");
                 Console.WriteLine();
                 return factsQ;
             }
@@ -365,14 +387,14 @@ public static class BivariatePolynomialFactorization
         // IntExt.RngSeed(25413);
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
         GlobalStopWatch.Restart();
-        
+
         foreach (var (n, m) in 4.Range(1).SelectMany(m => (5 - m).Range(2).Select(n => (n, m))))
             FactorisationRandPolFxy(nbPoly: 5, nbFactors: n, maxDegreeByFactor: m);
 
         Console.Beep();
         GlobalStopWatch.Show();
     }
-    
+
     public static void Example4_F4787_case()
     {
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
@@ -384,15 +406,15 @@ public static class BivariatePolynomialFactorization
             12 * X1 * X2.Pow(3) - 2 * X2.Pow(3) + 3 * X1.Pow(5) * X2.Pow(2) - 21 * X1.Pow(3) * X2.Pow(2) -
             6 * X1.Pow(2) * X2.Pow(2) - 18 * X2.Pow(2) + 6 * X1.Pow(6) * X2 + 3 * X1.Pow(4) * X2 - 7 * X1.Pow(3) * X2 -
             3 * X1.Pow(2) * X2 + X1 * X2 - 21 * X2 - 9 * X1.Pow(7) - 15 * X1.Pow(4) - 9 * X1.Pow(3) - 4 * X1 - 12;
-        
+
         FactorsFxy(F0);
     }
-    
+
     public static void Example5_Substitution()
     {
         var (X0, X1, X2, X3) = Ring.Polynomial(Rational.KZero(), MonomOrder.Lex, (4, "X")).Deconstruct();
         var P = (X0 * X1 + 1) * (X0 + X1 - 3);
-    
+
         var (x0, x1, x2, _) = X0.Indeterminates.Deconstruct();
         var subs = new List<(Xi, Polynomial<Rational, Xi>)>()
         {
@@ -400,7 +422,7 @@ public static class BivariatePolynomialFactorization
             (x1, X2)
         };
 
-        var Q = P.Substitute(subs);
+        var Q = P.Substitute(subs).Monic();
         Console.WriteLine(new { P, Q });
         Ring.Decompose(P, x0).Item1.Println("P");
         var Qcoefs = Ring.Decompose(Q, x2).Item1;
@@ -408,16 +430,17 @@ public static class BivariatePolynomialFactorization
 
         var (Y, X) = Ring.Polynomial(Rational.KZero(), MonomOrder.Lex, "Y", "X").Deconstruct();
         var Q1 = Qcoefs.Select(e => (e.Key.ToKPoly(X2).Substitute(Y), e.Value.ToKPoly(X3).Substitute(X)))
-            .Aggregate(X.Zero, (acc, e) => acc + e.Item1 * e.Item2 / 2);
+            .Aggregate(X.Zero, (acc, e) => acc + e.Item1 * e.Item2);
         Console.WriteLine(Q1);
         Ring.Decompose(Q1, Y.ExtractIndeterminate).Item1.Println();
-        
+
         var FactsQ1 = FactorsFxy(Q1);
         var FactsP = new List<Polynomial<Rational, Xi>>();
         foreach (var f in FactsQ1)
         {
             var fcoefs = Ring.Decompose(f, Y.ExtractIndeterminate).Item1;
-            var g = fcoefs.Select(e => (e.Key.ToKPoly(Y).Substitute(X1), e.Value.ToKPoly(X).Substitute((X0 - X1 - 1) / 2)))
+            var g = fcoefs.Select(e =>
+                    (e.Key.ToKPoly(Y).Substitute(X1), e.Value.ToKPoly(X).Substitute((X0 - X1 - 1) / 2)))
                 .Aggregate(X0.Zero, (acc, e) => 2 * e.Item1 * e.Item2 + acc);
             FactsP.Add(g.Monic());
         }
