@@ -39,6 +39,11 @@ public static class IntExt
     public static Random Rng { get; private set; }
 
     /// <summary>
+    /// Gets a Random sign.
+    /// </summary>
+    public static int RngSign => (2 * Rng.Next(2) - 1);
+
+    /// <summary>
     /// This method sets the seed value for the random number generator.
     /// </summary>
     /// <param name="seed">The seed value to be used for the random number generator.</param>
