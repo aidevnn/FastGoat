@@ -13,7 +13,7 @@ public static class BivariatePolynomialFactorization
     {
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
     }
-    
+
     /// <summary>
     /// Computes the factorization of a given bivariate polynomial over a finite field.
     /// First, evaluates the bivariate polynomial at x = 0 to obtain an univariate polynomial in y,
@@ -33,7 +33,7 @@ public static class BivariatePolynomialFactorization
         var _P0y = P0y.ToKPoly(y);
         var k = IntExt.SolveAll_k_pow_m_equal_one_mod_n_strict(p, p - 1).First();
         var a0 = k * _P0y.KOne;
-        var firr = IntFactorisation.BerlekampProbabilisticAECF(_P0y, a0).Order().ToArray();
+        var firr = IntFactorisation.Firr(_P0y, a0).Order().ToArray();
         return firr.Select(fi => fi.Substitute(F.X(y))).ToArray();
     }
 
@@ -137,6 +137,12 @@ public static class BivariatePolynomialFactorization
         return facts.Order().ToArray();
     }
 
+    /// <summary>
+    /// Converts a bivariate polynomial with coefficients in ZnInt to a bivariate polynomial with coefficients in Rational.
+    /// </summary>
+    /// <param name="f">The bivariate polynomial to be converted.</param>
+    /// <param name="c">The characteristic of the field.</param>
+    /// <returns>A bivariate polynomial with coefficients in Rational.</returns>
     static Polynomial<Rational, Xi> ZPoly2QPoly(Polynomial<ZnInt, Xi> f, ZnInt c)
     {
         var p = f.P;
@@ -175,6 +181,8 @@ public static class BivariatePolynomialFactorization
             try
             {
                 var firr = Firr(Fp);
+                // if (firr.Length != Fp.Degree)
+                //     throw new();
                 var lifts = HenselLifting(Fp, firr);
                 var factsFp = Recombinaison(Fp, lifts);
 
@@ -257,6 +265,23 @@ public static class BivariatePolynomialFactorization
 
         var facts = nbFactors.Range().Select(_ => Choose()).Order().ToArray();
         var F = facts.Aggregate((a0, a1) => a0 * a1);
+        var degX1 = Ring.Decompose(F, X1.ExtractIndeterminate).Item1.Max(e => e.Key.Degree);
+        var degX2 = Ring.Decompose(F, X2.ExtractIndeterminate).Item1.Max(e => e.Key.Degree);
+        if (degX1 > degX2)
+        {
+            var facts0 = new List<Polynomial<Rational, Xi>>();
+            var sub = new List<(Xi, Polynomial<Rational, Xi>)>()
+            {
+                (X1.ExtractIndeterminate, X2),
+                (X2.ExtractIndeterminate, X1)
+            };
+            foreach (var f in facts)
+                facts0.Add(f.Substitute(sub));
+
+            facts = facts0.ToArray();
+            F = facts.Aggregate((a0, a1) => a0 * a1);
+        }
+
         return (F, facts);
     }
 
@@ -317,7 +342,31 @@ public static class BivariatePolynomialFactorization
             }
         }
     }
-    
+
+    /// <summary>
+    /// Rewrites the given polynomial <paramref name="F"/> to simplify its leading term.
+    /// The method transforms the input polynomial such that its leading term is in the form <c>c * X2^n</c>,
+    /// where <c>c</c> is a rational coefficient and <c>n</c> is the degree.
+    /// </summary>
+    /// <param name="F">The input polynomial of type <see cref="Polynomial{Rational, Xi}"/> with indeterminates
+    /// of type <see cref="Xi"/>.</param>
+    /// <returns>
+    /// A tuple containing:
+    /// <list type="bullet">
+    /// <item>
+    /// <description>An integer <c>i</c> that indicates the index used for substitution.</description>
+    /// </item>
+    /// <item>
+    /// <description>The rewritten polynomial <c>F2</c> of type <see cref="Polynomial{Rational, Xi}"/>.</description>
+    /// </item>
+    /// </list>
+    /// </returns>
+    /// <exception cref="Exception">Thrown when no suitable substitution is found to simplify the leading term.</exception>
+    /// <remarks>
+    /// This method is part of the polynomial factorization process.
+    /// Simplifying the leading term of the polynomial is crucial for applying factorization techniques like
+    /// Hensel lifting for bivariate polynomials.
+    /// </remarks>
     static (int i, Polynomial<Rational, Xi> F2) RewritingPolynomial(Polynomial<Rational, Xi> F)
     {
         var (X3, X2, X1, X0) = Ring.Polynomial(Rational.KZero(), MonomOrder.Lex, "X3", "X2", "X1", "X0").Deconstruct();
@@ -332,7 +381,7 @@ public static class BivariatePolynomialFactorization
         if (F0coefsX1.Last().Value.Degree == 0)
             return (0, F);
 
-        var seq = 21.Range(-10).OrderBy(i => i * i).ThenDescending().ToArray();
+        var seq = 21.Range(-10).Where(i => i != 0).OrderBy(i => i * i).ThenDescending().ToArray();
         foreach (var i in seq)
         {
             var subs1 = new List<(Xi, Polynomial<Rational, Xi>)>()
@@ -486,6 +535,9 @@ public static class BivariatePolynomialFactorization
         FactsP.Println($"Prod = {prod}, P = Prod:{P.Equals(prod)}");
     }
 
+    /// <summary>
+    /// Contains example related to the substitution of variables using method Rewrite in a bivariate polynomial.
+    /// </summary>
     public static void Example6_Substitution()
     {
         var (X2, X1) = Ring.Polynomial(Rational.KZero(), MonomOrder.Lex, "X2", "X1").Deconstruct();
@@ -532,13 +584,18 @@ public static class BivariatePolynomialFactorization
     // Factors in Q[X1,X2]
     //     X2 + X1 - 3
     //     X1*X2 + 1
-    
+
+    /// <summary>
+    /// Runs a batch of polynomial substitutions and factorizations.
+    /// </summary>
     public static void Example7_SubstitutionBatch()
     {
         // IntExt.RngSeed(2519);
+        GlobalStopWatch.Restart();
         for (int m = 2; m <= 4; ++m)
         {
             var ct = 0;
+            GlobalStopWatch.AddLap();
             while (ct < 5)
             {
                 var (F, facts) = GenerateRandomPolynomialFxy(nbFactors: 2, maxDegree: m, scalarLT: false);
@@ -568,7 +625,12 @@ public static class BivariatePolynomialFactorization
                 Console.WriteLine();
                 ++ct;
             }
+
+            GlobalStopWatch.Show($"MaxDegree:{m}");
         }
+
+        GlobalStopWatch.Show("End");
+        Console.Beep();
     }
     // F = -X1^3*X2^3 - 4*X1^2*X2^3 + 6*X1*X2^3 + 5*X2^3 - 3*X1^3*X2^2 - 22*X1^2*X2^2 + 8*X1*X2^2 + 12*X2^2 +
     // 3*X1^4*X2 + X1^3*X2 - 12*X1^2*X2 + 4*X2 + 12*X1^4 - 3*X1^3 - 6*X1^2
@@ -576,4 +638,5 @@ public static class BivariatePolynomialFactorization
     //     -1
     //     X1^2*X2 - X1*X2 - X2 + 4*X1^2 - X1 - 2
     //     X1*X2^2 + 5*X2^2 - X1*X2 + 2*X2 - 3*X1^2
+
 }
