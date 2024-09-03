@@ -207,9 +207,10 @@ public static class BivariatePolynomialFactorization
     /// </summary>
     /// <param name="nbFactors">The number of factors in the polynomial.</param>
     /// <param name="maxDegree">The maximum degree of the polynomial.</param>
+    /// <param name="scalarLT">The leading term of the polynomial is scalar.</param>
     /// <returns>A tuple containing the generated polynomial F and an array of the polynomial factors.</returns>
-    static (Polynomial<Rational, Xi> F, Polynomial<Rational, Xi>[] facts) 
-        GenerateRandomPolynomialFxy(int nbFactors, int maxDegree)
+    static (Polynomial<Rational, Xi> F, Polynomial<Rational, Xi>[] facts)
+        GenerateRandomPolynomialFxy(int nbFactors, int maxDegree, bool scalarLT = true)
     {
         var (X2, X1) = Ring.Polynomial(Rational.KZero(), MonomOrder.Lex, "X2", "X1").Deconstruct();
         var x1s = (1 + maxDegree).Range().Select(X1.Pow).ToArray();
@@ -223,8 +224,13 @@ public static class BivariatePolynomialFactorization
             var f = (1 + IntExt.Rng.Next(nb)).Range().Select(_ => x1x2s[IntExt.Rng.Next(nb)] * IntExt.Rng.Next(-5, 5))
                 .Where(e => !e.IsZero())
                 .Aggregate(X1.Zero, (acc, e) => acc + e);
-            var degX2 = f.DegreeOf(x2);
-            return f + X2.Pow(degX2 + 1);
+            var degLT = scalarLT ? f.DegreeOf(x2) + 1 : int.Min(maxDegree, f.Degree);
+            var i = scalarLT ? 0 : IntExt.Rng.Next(1 + degLT / 2);
+            var j = degLT - i;
+            var g = f + X2.Pow(j) * X1.Pow(i);
+            var mn = g.Coefs.Keys.Aggregate(Monom<Xi>.Gcd);
+            var coefs = g.Coefs.ToDictionary(e => e.Key.Div(mn).Item2, e => e.Value);
+            return new(g.Indeterminates, g.KZero, new(coefs));
         }
 
         var facts = nbFactors.Range().Select(_ => Choose()).Order().ToArray();
