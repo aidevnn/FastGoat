@@ -532,4 +532,48 @@ public static class BivariatePolynomialFactorization
     // Factors in Q[X1,X2]
     //     X2 + X1 - 3
     //     X1*X2 + 1
+    
+    public static void Example7_SubstitutionBatch()
+    {
+        // IntExt.RngSeed(2519);
+        for (int m = 2; m <= 4; ++m)
+        {
+            var ct = 0;
+            while (ct < 5)
+            {
+                var (F, facts) = GenerateRandomPolynomialFxy(nbFactors: 2, maxDegree: m, scalarLT: false);
+                var (y, x) = F.Indeterminates.Deconstruct();
+                if (F.CoefMax(y).Degree == 0 || !FilterRandPolynomialFxy(F))
+                    continue;
+
+                var (i, F0) = RewritingPolynomial(F);
+                if (facts.Any(fi => fi.NbIndeterminates != 2) || !FilterRandPolynomialFxy(F0))
+                    continue;
+
+                var line = Enumerable.Repeat('#', 30).Glue();
+                Console.WriteLine(line);
+                facts.Println($"F = {F}");
+                Console.WriteLine();
+                Console.WriteLine($"Substitute {x} <- {F.X(x) + i * F.X(y)}");
+                Console.WriteLine($"F0 = {F0}");
+                Console.WriteLine(line);
+                Console.WriteLine();
+
+                var factsF0 = FactorsFxy(F0);
+                var factsF = factsF0.Select(fi => fi.Substitute(F.X(x) - i * F.X(y), x)).Order().ToArray();
+
+                Console.WriteLine();
+                facts.Println($"F = {F}");
+                factsF.Println($"Factors in Q[{x},{y}]");
+                Console.WriteLine();
+                ++ct;
+            }
+        }
+    }
+    // F = -X1^3*X2^3 - 4*X1^2*X2^3 + 6*X1*X2^3 + 5*X2^3 - 3*X1^3*X2^2 - 22*X1^2*X2^2 + 8*X1*X2^2 + 12*X2^2 +
+    // 3*X1^4*X2 + X1^3*X2 - 12*X1^2*X2 + 4*X2 + 12*X1^4 - 3*X1^3 - 6*X1^2
+    // Factors in Q[X1,X2]
+    //     -1
+    //     X1^2*X2 - X1*X2 - X2 + 4*X1^2 - X1 - 2
+    //     X1*X2^2 + 5*X2^2 - X1*X2 + 2*X2 - 3*X1^2
 }
