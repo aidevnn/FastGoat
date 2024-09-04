@@ -155,6 +155,12 @@ public static class BivariatePolynomialFactorization
         return new Polynomial<Rational, Xi>(f.Indeterminates, Rational.KZero(), new(coefs1));
     }
 
+    static Polynomial<Rational, Xi> Primitive(Polynomial<Rational, Xi> f)
+    {
+        var l = f.Coefs.Values.Where(e => !e.IsZero()).Select(e => e.Absolute.Num).Distinct().Order().ToArray();
+        return f * new Rational(f.LeadingDetails.lc.Sign, IntExt.GcdBigInt(l));
+    }
+
     /// <summary>
     /// Factorizes a given bivariate polynomial over the rational numbers using Hensel lifting
     /// over finite fields and recombination techniques.
@@ -209,6 +215,8 @@ public static class BivariatePolynomialFactorization
                 if (F.Degree != P1.Degree || !F.Div(P1).rem.IsZero())
                     throw new();
 
+                factsQ = factsQ.Select(f => Primitive(f)).Order().ToArray();
+                P1 = factsQ.Aggregate(F.One, (acc, e) => e * acc);
                 var lc1 = F.LeadingDetails.lc / P1.LeadingDetails.lc;
                 if (!(lc1 - 1).IsZero())
                     factsQ = factsQ.Prepend(lc1 * P1.One).ToArray();
@@ -255,7 +263,7 @@ public static class BivariatePolynomialFactorization
                 .Where(e => !e.IsZero())
                 .Aggregate(X1.Zero, (acc, e) => acc + e);
             var degLT = scalarLT ? f.DegreeOf(x2) + 1 : int.Min(maxDegree, f.Degree);
-            var i = scalarLT ? 0 : IntExt.Rng.Next(1 + degLT / 2);
+            var i = scalarLT ? 0 : IntExt.Rng.Next(1 + degLT);
             var j = degLT - i;
             var g = f + X2.Pow(j) * X1.Pow(i);
             var mn = g.Coefs.Keys.Aggregate(Monom<Xi>.Gcd);
@@ -278,7 +286,7 @@ public static class BivariatePolynomialFactorization
             foreach (var f in facts)
                 facts0.Add(f.Substitute(sub));
 
-            facts = facts0.ToArray();
+            facts = facts0.Order().ToArray();
             F = facts.Aggregate((a0, a1) => a0 * a1);
         }
 
@@ -330,7 +338,8 @@ public static class BivariatePolynomialFactorization
         while (ct < nbPoly)
         {
             var (F, facts) = GenerateRandomPolynomialFxy(nbFactors, maxDegreeByFactor);
-            if (facts.All(f => f.Degree <= maxDegreeByFactor
+            if (F.LeadingDetails.lm.ContentIndeterminates.Count() == 1 &&
+                facts.All(f => f.Degree <= maxDegreeByFactor
                                && !f.ConstTerm.IsZero()
                                && f.NbIndeterminates == 2)
                 && FilterRandPolynomialFxy(F))
@@ -617,7 +626,13 @@ public static class BivariatePolynomialFactorization
                 Console.WriteLine();
 
                 var factsF0 = FactorsFxy(F0);
-                var factsF = factsF0.Select(fi => fi.Substitute(F.X(x) - i * F.X(y), x)).Order().ToArray();
+                var factsF = factsF0.Select(fi => fi.Substitute(F.X(x) - i * F.X(y), x))
+                    .Select(f => Primitive(f)).Where(f => !(f - 1).IsZero()).Order().ToArray();
+                
+                var P1 = factsF.Aggregate(F.One, (acc, e) => e * acc);
+                var c0 = F.LeadingDetails.lc / P1.LeadingDetails.lc;
+                if (!(c0 - 1).IsZero())
+                    factsF = factsF.Prepend(c0 * P1.One).ToArray();
 
                 Console.WriteLine();
                 facts.Println($"F = {F}");
@@ -638,5 +653,4 @@ public static class BivariatePolynomialFactorization
     //     -1
     //     X1^2*X2 - X1*X2 - X2 + 4*X1^2 - X1 - 2
     //     X1*X2^2 + 5*X2^2 - X1*X2 + 2*X2 - 3*X1^2
-
 }
