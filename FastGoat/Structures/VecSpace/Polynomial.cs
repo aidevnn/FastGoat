@@ -75,6 +75,30 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
 
     public Polynomial<K, T> Recreate() => Recreate(Indeterminates);
 
+    public Polynomial<K, T>[] Variables
+    {
+        get
+        {
+            var list = new List<Polynomial<K, T>>();
+            foreach (var xi in Indeterminates)
+                list.Add(X(xi));
+
+            return list.ToArray();
+        }
+    }
+
+    public (T, Polynomial<K, T>)[] IndeterminatesAndVariables
+    {
+        get
+        {
+            var list = new List<(T, Polynomial<K, T>)>();
+            foreach (var xi in ExtractAllIndeterminates)
+                list.Add((xi, X(xi)));
+
+            return list.ToArray();
+        }
+    }
+
     public Polynomial<K, T> X(T t)
     {
         if (!Indeterminates.Contains(t))
@@ -208,10 +232,13 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
         return poly;
     }
 
-    public Polynomial<K, T> Substitute(Polynomial<K, T> f, Polynomial<K, T> xi) => Substitute(f, xi.ExtractIndeterminate);
+    public Polynomial<K, T> Substitute(Polynomial<K, T> f, Polynomial<K, T> xi) =>
+        Substitute(f, xi.ExtractIndeterminate);
 
     public Polynomial<K, T> Substitute(K k, T xi) => Substitute(k * One, xi);
-    public Polynomial<K, T> Substitute(K k, Polynomial<K, T> xi) => Substitute(new Polynomial<K, T>(Indeterminates, k), xi);
+
+    public Polynomial<K, T> Substitute(K k, Polynomial<K, T> xi) =>
+        Substitute(new Polynomial<K, T>(Indeterminates, k), xi);
 
     public Polynomial<K, T> Substitute(int k, T xi) => Substitute(k * One, xi);
     public Polynomial<K, T> Substitute(int k, Polynomial<K, T> xi) => Substitute(k * One, xi);
