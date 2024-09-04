@@ -454,6 +454,22 @@ public static class BivariatePolynomialFactorization
         throw new();
     }
 
+    static (int i, Polynomial<Rational, Xi> F2) RewritingPolynomial2(Polynomial<Rational, Xi> F)
+    {
+        var (x, X) = F.IndeterminatesAndVariables.First();
+        var seq = 21.Range(-10).OrderBy(i => int.Abs(i)).ThenDescending().ToArray();
+        foreach (var i in seq)
+        {
+            var F1 = F.Substitute(X + i, x);
+            if (!FilterRandPolynomialFxy(F1))
+                continue;
+
+            return (i, F1);
+        }
+
+        throw new("Not found");
+    }
+
     /// <summary>
     /// The BivariatePolynomialFactorization class provides methods for factorizing bivariate polynomials over a finite field.
     /// </summary>
@@ -700,4 +716,69 @@ public static class BivariatePolynomialFactorization
     //     -1
     //     X1^2*X2 - X1*X2 - X2 + 4*X1^2 - X1 - 2
     //     X1*X2^2 + 5*X2^2 - X1*X2 + 2*X2 - 3*X1^2
+
+    public static void Example8_ResultantZero()
+    {
+        var (X2, X1) = Ring.Polynomial(Rational.KZero(), MonomOrder.Lex, "X2", "X1").Deconstruct();
+
+        var F = X2.Pow(4) + 2 * X1 * X2.Pow(3) + X2.Pow(3) - 2 * X1.Pow(2) * X2.Pow(2) - 3 * X1 * X2.Pow(2) -
+            2 * X2.Pow(2) - 12 * X1.Pow(2) * X2 - 4 * X1 * X2 + 10 * X1.Pow(3) + 4 * X1.Pow(2);
+        var (i, F0) = RewritingPolynomial2(F);
+        Console.WriteLine(new { F });
+        Console.WriteLine($"Res(F)(0,0) != 0 : {FilterRandPolynomialFxy(F)}");
+        Console.WriteLine(new { i, F0 });
+        Console.WriteLine($"Res(F0)(0,0) != 0 : {FilterRandPolynomialFxy(F0)}");
+        FactorsFxy(F0);
+    }
+
+    public static void Example9_ResultantZeroBatch()
+    {
+        IntExt.RngSeed(2519);
+        var ct = 0;
+        while (ct < 50)
+        {
+            var (F, facts) = GenerateRandomPolynomialFxy(nbFactors: 2, maxDegree: 3, scalarLT: true);
+            var (y, x) = F.Indeterminates.Deconstruct();
+            if (facts.Any(fi => fi.NbIndeterminates != 2))
+                continue;
+
+            var line = Enumerable.Repeat('#', 30).Glue();
+            Console.WriteLine(line);
+            facts.Println($"F = {F}");
+            Console.WriteLine();
+
+            var (i, F0) = RewritingPolynomial2(F);
+            if (!FilterRandPolynomialFxy(F0))
+                throw new("Res[F](0,0) = 0");
+            if (i != 0)
+            {
+                Console.WriteLine($"Substitute {x} <- {F.X(x) + i}");
+                Console.WriteLine($"F0 = {F0}");
+            }
+            else
+                Console.WriteLine("No substitution");
+
+            Console.WriteLine(line);
+            Console.WriteLine();
+
+            var factsF0 = FactorsFxy(F0);
+            var factsF = factsF0.Select(fi => fi.Substitute(F.X(x) - i, x))
+                .Select(f => Primitive(f)).Where(f => !(f - 1).IsZero()).Order().ToArray();
+
+            var P1 = factsF.Aggregate(F.One, (acc, e) => e * acc);
+            var c0 = F.LeadingDetails.lc / P1.LeadingDetails.lc;
+            if (!(c0 - 1).IsZero())
+                factsF = factsF.Prepend(c0 * P1.One).ToArray();
+
+            if (i != 0)
+            {
+                Console.WriteLine();
+                facts.Println($"F = {F}");
+                factsF.Println($"Factors in Q[{x},{y}]");
+                Console.WriteLine();
+            }
+
+            ++ct;
+        }
+    }
 }
