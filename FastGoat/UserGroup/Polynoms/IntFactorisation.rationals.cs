@@ -176,7 +176,7 @@ public static partial class IntFactorisation
         return Double.Sqrt(n + 1) * Double.Pow(2, n) * norm;
     }
 
-    static IEnumerable<(int p, int s)> PSigma(KPoly<Rational> f)
+    public static IEnumerable<(int p, int s)> PSigma(KPoly<Rational> f, int limit = 150)
     {
         var disc = (Ring.Discriminant(f) * f.LT).Num;
 
@@ -189,7 +189,7 @@ public static partial class IntFactorisation
         if (Logger.Level == LogLevel.Level1)
             Console.WriteLine($"nu = {nu} => {Double.Log(2 * nu)} ~ {Double.Log(n + 1) / 2 + n + normb}");
 
-        var all = IntExt.Primes10000.Where(p => !BigInteger.Remainder(disc, p).IsZero).Take(150)
+        var all = IntExt.Primes10000.Where(p => !BigInteger.Remainder(disc, p).IsZero).Take(limit)
             .Select(p => (p, s: (int)((Double.Log(n + 1) / 2 + n * Double.Log(2) + normb) / Double.Log(p)) + 1))
             .OrderByDescending(e => e.s).ToArray();
 
@@ -216,7 +216,7 @@ public static partial class IntFactorisation
         return new(f.x, ZnInt.ZnZero(p), coefs);
     }
 
-    static KPoly<ZnBInt> ZPoly2ZnInt(KPoly<ZnBInt> f, Modulus po) =>
+    public static KPoly<ZnBInt> ZPoly2ZnInt(KPoly<ZnBInt> f, Modulus po) =>
         new(f.x, po.Zero, f.Coefs.Select(e => new ZnBInt(po, e.K)).ToArray());
 
     public static (KPoly<ZnBInt> f0, KPoly<ZnBInt>[] firr0, KPoly<ZnBInt>[] firr) HenselLifting(KPoly<Rational> f, int p, int o)

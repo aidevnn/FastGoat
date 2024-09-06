@@ -3,6 +3,7 @@ using FastGoat.Structures;
 using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup;
 using FastGoat.UserGroup.Integers;
+using FastGoat.UserGroup.Padic;
 using FastGoat.UserGroup.Polynoms;
 
 namespace FastGoat.Examples;
@@ -15,26 +16,99 @@ public static class BivariatePolynomialFactorization
     }
 
     /// <summary>
-    /// Computes the factorization of a given bivariate polynomial over a finite field.
-    /// First, evaluates the bivariate polynomial at x = 0 to obtain an univariate polynomial in y,
-    /// then factorizes the resulting univariate polynomial in y using Berlekamp's algorithm.
+    /// Converts a bivariate polynomial with coefficients in ZnInt to a bivariate polynomial with coefficients in Rational.
+    /// </summary>
+    /// <param name="f">The bivariate polynomial to be converted.</param>
+    /// <param name="c">The characteristic of the field.</param>
+    /// <returns>A bivariate polynomial with coefficients in Rational.</returns>
+    static Polynomial<Rational, Xi> ZPoly2QPoly(Polynomial<ZnInt, Xi> f, ZnInt c)
+    {
+        var p = f.P;
+        var coefs1 = f.Coefs.ToDictionary(e => e.Key, e => e.Value * c)
+            .ToDictionary(
+                e => e.Key,
+                e => new Rational(e.Value.K * 2 <= p ? e.Value.K : e.Value.K - p))
+            .Where(e => !e.Value.IsZero())
+            .ToDictionary(e => e.Key, e => e.Value);
+        return new Polynomial<Rational, Xi>(f.Indeterminates, Rational.KZero(), new(coefs1));
+    }
+
+    /// <summary>
+    /// Compute the primitive polynomial of a bivariate polynomial with coefficients in Rational.
+    /// </summary>
+    /// <param name="f">The bivariate polynomial.</param>
+    /// <returns>The primitive form of <paramref name="f"/>.</returns>
+    static Polynomial<Rational, Xi> Primitive(Polynomial<Rational, Xi> f)
+    {
+        var arrGcd = f.Coefs.Values.Where(e => !e.IsZero()).Select(e => e.Absolute.Num).Distinct().Order().ToArray();
+        var arrLcm = f.Coefs.Values.Select(e => e.Absolute.Denom).Distinct().Order().ToArray();
+        return f * new Rational(f.LeadingDetails.lc.Sign * IntExt.LcmBigInt(arrLcm), IntExt.GcdBigInt(arrGcd));
+    }
+
+
+    /// <summary>
+    /// Factorizes a bivariate polynomial with coefficients in Rational into Padic Integer polynomial factor.
+    /// </summary>
+    /// <param name="F0y">The bivariate polynomial to be factorized.</param>
+    /// <param name="lc">The leading coefficient of the polynomial.</param>
+    /// <param name="p">The characteristic of the field.</param>
+    /// <param name="o">The degree of the finite field.</param>
+    /// <returns>A tuple consisting of a modulus, an array of factors
+    static (Modulus po, KPoly<ZnBInt>[] firr, KPoly<ZnBInt>[] firr1) Firr(KPoly<Rational> F0y, Rational lc, int p,
+        int o)
+    {
+        var k = IntExt.SolveAll_k_pow_m_equal_one_mod_n_strict(p, p - 1).First();
+        var a0 = ZnBInt.ZnZero(p) + k;
+        var po = a0.Details;
+        var f0y = IntFactorisation.QPoly2ZnInt(F0y, po);
+        var firr = IntFactorisation.Firr(f0y.Monic, a0).ToArray();
+
+        var all = new List<KPoly<ZnBInt>>(firr);
+        while (po.O < o && all.Count > 1)
+        {
+            // ++po;
+            po *= 2;
+            var tmp = new List<KPoly<ZnBInt>>();
+            var fa = IntFactorisation.QPoly2ZnInt(F0y, po) * lc.ToZnBInt(po).Inv();
+            foreach (var g in all)
+            {
+                var gi = IntFactorisation.ZPoly2ZnInt(g, po);
+                var y = FG.EPoly(gi);
+                var dgi = gi.Derivative.Substitute(y);
+                var fi = fa.Substitute(y);
+                var dfi = fa.Derivative.Substitute(y);
+                var ri = (dgi * fi * dfi.Inv()).Poly;
+                tmp.Add(gi + ri);
+            }
+
+            all.Clear();
+            all = tmp.ToList();
+        }
+
+        return (po, firr, all.ToArray());
+    }
+
+    /// <summary>
+    /// Performs Hensel lifting on a bivariate polynomial over a finite field.
     /// </summary>
     /// <param name="F">The bivariate polynomial to be factorized.</param>
+    /// <param name="firr">An array of polynomials representing the initial irreducible factors
+    /// of the polynomial F(0, y).</param>
     /// <returns>An array of polynomials representing the factors of the input polynomial.</returns>
-    /// <exception cref="ArgumentException">Thrown when the characteristic of the finite field is zero.</exception>
-    static Polynomial<ZnInt, Xi>[] Firr(Polynomial<ZnInt, Xi> F)
+    static Polynomial<ZnBInt, Xi>[] HenselLifting(Polynomial<ZnBInt, Xi> F, Polynomial<ZnBInt, Xi>[] firr)
     {
-        if (F.P == 0)
-            throw new();
-
-        var p = F.P;
         var (y, x) = F.Indeterminates.Deconstruct();
-        var P0y = F.Substitute(F.Zero, x);
-        var _P0y = P0y.ToKPoly(y);
-        var k = IntExt.SolveAll_k_pow_m_equal_one_mod_n_strict(p, p - 1).First();
-        var a0 = k * _P0y.KOne;
-        var firr = IntFactorisation.Firr(_P0y, a0).Order().ToArray();
-        return firr.Select(fi => fi.Substitute(F.X(y))).ToArray();
+        var all = firr.ToArray();
+
+        var o = F.DegreeOf(x) + 1;
+        var I = F.X(x);
+        while (I.Degree < o)
+        {
+            I = I.Pow(2);
+            all = HenselLiftingStep(F, all, I, o);
+        }
+
+        return all;
     }
 
     /// <summary>
@@ -46,9 +120,8 @@ public static class BivariatePolynomialFactorization
     /// <param name="I">The ideal used in the lifting process, which is a power of 2 of the variable "x"..</param>
     /// <param name="o">The order of the lifting step.</param>
     /// <returns>An array of polynomials representing the factors of the input polynomial after one lifting step.</returns>
-    /// <exception cref="ArgumentException">Thrown when the polynomial does not have exactly two indeterminates.</exception>
-    static Polynomial<ZnInt, Xi>[] HenselLiftingStep(Polynomial<ZnInt, Xi> F, Polynomial<ZnInt, Xi>[] fi,
-        Polynomial<ZnInt, Xi> I, int o)
+    static Polynomial<ZnBInt, Xi>[] HenselLiftingStep(Polynomial<ZnBInt, Xi> F, Polynomial<ZnBInt, Xi>[] fi,
+        Polynomial<ZnBInt, Xi> I, int o)
     {
         var xis = F.ExtractAllIndeterminates;
         if (xis.Length != 2)
@@ -57,7 +130,7 @@ public static class BivariatePolynomialFactorization
         var (x, y) = xis.Deconstruct();
         var P0 = F;
         var P1 = F.D(y);
-        var tmp = new List<Polynomial<ZnInt, Xi>>();
+        var tmp = new List<Polynomial<ZnBInt, Xi>>();
         foreach (var f in fi)
         {
             var df = f.D(y).Div(I).rem;
@@ -77,43 +150,20 @@ public static class BivariatePolynomialFactorization
     }
 
     /// <summary>
-    /// Performs Hensel lifting on a bivariate polynomial over a finite field.
-    /// </summary>
-    /// <param name="F">The bivariate polynomial to be factorized.</param>
-    /// <param name="firr">An array of polynomials representing the initial irreducible factors
-    /// of the polynomial F(0, y).</param>
-    /// <returns>An array of polynomials representing the factors of the input polynomial.</returns>
-    static Polynomial<ZnInt, Xi>[] HenselLifting(Polynomial<ZnInt, Xi> F, Polynomial<ZnInt, Xi>[] firr)
-    {
-        var (y, x) = F.Indeterminates.Deconstruct();
-        var all = firr.ToArray();
-
-        var o = F.DegreeOf(x) + 1;
-        var I = F.X(x);
-        while (I.Degree < o)
-        {
-            I = I.Pow(2);
-            all = HenselLiftingStep(F, all, I, o);
-        }
-
-        return all;
-    }
-
-    /// <summary>
     /// Recombines the lifted factors of a bivariate polynomial to form the valid factors
     /// over the original finite field.
     /// </summary>
     /// <param name="F">The original bivariate polynomial over the finite field.</param>
     /// <param name="fi">Array of lifted factors obtained from the Hensel lifting process.</param>
     /// <returns>An array of polynomials representing the recombined factors of the input polynomial.</returns>
-    static Polynomial<ZnInt, Xi>[] Recombinaison(Polynomial<ZnInt, Xi> F, Polynomial<ZnInt, Xi>[] fi)
+    static Polynomial<ZnBInt, Xi>[] Recombinaison(Polynomial<ZnBInt, Xi> F, Polynomial<ZnBInt, Xi>[] fi)
     {
         var (y, x) = F.Indeterminates.Deconstruct();
         var o = F.DegreeOf(x) + 1;
         var xo = F.X(x).Pow(o);
 
-        var facts = new List<Polynomial<ZnInt, Xi>>();
-        var rem = new HashSet<Polynomial<ZnInt, Xi>>(fi);
+        var facts = new List<Polynomial<ZnBInt, Xi>>();
+        var rem = new HashSet<Polynomial<ZnBInt, Xi>>(fi);
         var nbCombs = 1;
         while (rem.Count != 0)
         {
@@ -136,24 +186,22 @@ public static class BivariatePolynomialFactorization
 
         return facts.Order().ToArray();
     }
+
     /// <summary>
     /// Recombines factors of a bivariate polynomial F over rational numbers from a set of polynomials fi over a finite field.
     /// </summary>
-    /// <typeparam name="Rational">The type representing rational numbers.</typeparam>
-    /// <typeparam name="Xi">The type representing the polynomial variable.</typeparam>
-    /// <typeparam name="ZnInt">The type representing integers modulo n.</typeparam>
     /// <param name="F">The polynomial over rationals to be factored.</param>
     /// <param name="fi">An array of polynomials over ZnInt which are intermediate factors.</param>
     /// <param name="c">A constant value over ZnInt.</param>
     /// <returns>
     /// An array of polynomials over rationals that are factors of the given polynomial F.
     /// </returns>
-    static Polynomial<Rational, Xi>[] Recombinaison(Polynomial<Rational, Xi> F, Polynomial<ZnInt, Xi>[] fi, ZnInt c)
+    static Polynomial<Rational, Xi>[] Recombinaison(Polynomial<Rational, Xi> F, Polynomial<ZnBInt, Xi>[] fi, ZnBInt c)
     {
         var factsQ = new List<Polynomial<Rational, Xi>>();
-        var rem = new HashSet<Polynomial<ZnInt, Xi>>(fi);
+        var rem = new HashSet<Polynomial<ZnBInt, Xi>>(fi);
         var nbCombs = 1;
-        
+
         while (rem.Count != 0)
         {
             var sz = rem.Count;
@@ -187,36 +235,96 @@ public static class BivariatePolynomialFactorization
     }
 
     /// <summary>
-    /// Converts a bivariate polynomial with coefficients in ZnInt to a bivariate polynomial with coefficients in Rational.
+    /// Converts a bivariate polynomial with coefficients in P-adic integers to a bivariate polynomial
+    /// with coefficients in Rational.
     /// </summary>
     /// <param name="f">The bivariate polynomial to be converted.</param>
     /// <param name="c">The characteristic of the field.</param>
     /// <returns>A bivariate polynomial with coefficients in Rational.</returns>
-    static Polynomial<Rational, Xi> ZPoly2QPoly(Polynomial<ZnInt, Xi> f, ZnInt c)
+    static Polynomial<Rational, Xi> ZPoly2QPoly(Polynomial<ZnBInt, Xi> f, ZnBInt c)
     {
-        var p = f.P;
         var coefs1 = f.Coefs.ToDictionary(e => e.Key, e => e.Value * c)
             .ToDictionary(
                 e => e.Key,
-                e => new Rational(e.Value.K * 2 <= p ? e.Value.K : e.Value.K - p))
+                e => new Rational(e.Value.K * 2 <= e.Value.Mod ? e.Value.K : e.Value.K - e.Value.Mod))
             .Where(e => !e.Value.IsZero())
             .ToDictionary(e => e.Key, e => e.Value);
         return new Polynomial<Rational, Xi>(f.Indeterminates, Rational.KZero(), new(coefs1));
     }
 
-    static Polynomial<Rational, Xi> Primitive(Polynomial<Rational, Xi> f)
+    /// <summary>
+    /// Performs a step in the factorization of a bivariate polynomial with coefficients in Rational.
+    /// </summary>
+    /// <param name="F">The bivariate polynomial to be factorized.</param>
+    /// <returns>An array of bivariate polynomials with coefficients in Rational.</returns>
+    static Polynomial<Rational, Xi>[] FactorsFxyStep(Polynomial<Rational, Xi> F)
     {
-        var l = f.Coefs.Values.Where(e => !e.IsZero()).Select(e => e.Absolute.Num).Distinct().Order().ToArray();
-        return f * new Rational(f.LeadingDetails.lc.Sign, IntExt.GcdBigInt(l));
+        if (F.Coefs.Any(e => !e.Value.IsInteger()))
+            throw new($"F = {F}");
+
+        var (y, x) = F.Indeterminates.Deconstruct();
+        Console.WriteLine($"F({x},{y}) = {F}");
+        var F0y = F.Substitute(F.Zero, x).ToKPoly(y);
+        var lc0 = F.LeadingDetails.lc;
+        var pMin = 2 + F.DegreeOf(y) * (2 * F.DegreeOf(x) - 1);
+        foreach (var (p, o) in IntFactorisation.PSigma(F0y).Where(e => e.p >= pMin))
+        {
+            try
+            {
+                var (po, _, firr1) = Firr(F0y, lc0, p, o);
+                var firrPAdic = firr1.Select(f => f.Monic.ToPolynomial(F.Indeterminates, y)).ToArray();
+                var P0X2 = firrPAdic.Aggregate((acc, e) => e * acc);
+                var coefs = F.Coefs.ToDictionary(e => e.Key, e => e.Value.ToZnBInt(po))
+                    .Where(e => !e.Value.IsZero())
+                    .ToDictionary(e => e.Key, e => e.Value);
+                var Fp = new Polynomial<ZnBInt, Xi>(F.Indeterminates, ZnBInt.ZnZero(p, po.O), new(coefs));
+                var lc1 = Fp.LeadingDetails.lc;
+                Fp *= lc1.Inv();
+
+                var lifts = HenselLifting(Fp, firrPAdic);
+                var factsFp = Recombinaison(Fp, lifts);
+
+                var P0 = factsFp.Aggregate(Fp.One, (acc, e) => e * acc);
+                var factsQ = Recombinaison(F, factsFp, lc1);
+                if (factsQ.Length == 0)
+                    throw new("Message:Rational Recombinaison"); // TODO
+
+                factsQ = factsQ.Select(f => Primitive(f)).Order().ToArray();
+                var P1 = factsQ.Aggregate(F.One, (acc, e) => e * acc);
+                var P2 = lc0 * P1.Monic();
+                var nbFactsQ = factsQ.Count(f => f.Degree != 0);
+                var msg1 = factsFp.Length != F.DegreeOf(y) ? "Yes" : "No";
+                var msg2 = factsFp.Length != nbFactsQ ? "Yes" : "No";
+                Console.WriteLine($"P(X1,X2) = {Fp}");
+                firrPAdic.Println($"P(0,X2) = {P0X2}");
+                lifts.Println("Hensel Lifting");
+                factsFp.Println($"Factors in F{p}[{x},{y}], Z-Recombinaison:{msg1}");
+                Console.WriteLine($"{factsFp.Glue(" * ", "({0})")} = {P0}");
+                factsQ.Println($"Factors in Q[{x},{y}], Q-Recombinaison:{msg2}");
+                Console.WriteLine();
+                return factsQ;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"########### P = {p,-5} and O = {o} wont work. {e.Message}");
+            }
+        }
+
+        return [F];
     }
 
+    /// <summary>
+    /// Computes the factors of a bivariate polynomial with coefficients in Rational.
+    /// </summary>
+    /// <param name="F">The bivariate polynomial to compute factors for.</param>
+    /// <returns>An array of bivariate polynomials with coefficients in Rational that are the factors of F.</returns>
     static Polynomial<Rational, Xi>[] FactorsFxy(Polynomial<Rational, Xi> F)
     {
         Console.WriteLine("################# Start #################");
         Console.WriteLine();
         Console.WriteLine($"F = {F}");
         Console.WriteLine();
-        
+
         var facts = new List<Polynomial<Rational, Xi>>();
         var Frem = F;
         var (y, x) = F.Indeterminates.Deconstruct();
@@ -225,91 +333,23 @@ public static class BivariatePolynomialFactorization
             var factsQ = FactorsFxyStep(Frem);
             facts.AddRange(factsQ);
             var prod = factsQ.Aggregate(F.One, (acc, f) => f * acc);
-            Frem = Frem.Div(prod).quo;
+            Frem = Primitive(Frem.Div(prod).quo);
         }
-        
-        if(!(Frem - 1).IsZero())
-            facts.Add(Frem);
+
+        var lt = F / facts.Aggregate(F.One, (acc, f) => f * acc);
+        if (!(lt - 1).IsZero())
+            facts.Add(lt);
 
         var factsFinal = facts.Order().ToArray();
-        
+
         Console.WriteLine();
         Console.WriteLine($"F = {F}");
         factsFinal.Println($"Final Factors in Q[{x},{y}]");
         Console.WriteLine();
         Console.WriteLine("#################  End  #################");
         Console.WriteLine();
-        
+
         return factsFinal;
-    }
-
-    /// <summary>
-    /// Factorizes a given bivariate polynomial over the rational numbers using Hensel lifting
-    /// over finite fields and recombination techniques.
-    /// </summary>
-    /// <param name="F">The bivariate polynomial to be factorized.</param>
-    /// <exception cref="ArgumentException">Thrown when the polynomial contains non-integer coefficients.</exception>
-    static Polynomial<Rational, Xi>[] FactorsFxyStep(Polynomial<Rational, Xi> F)
-    {
-        if (F.Coefs.Any(e => !e.Value.IsInteger()))
-            throw new();
-
-        var (y, x) = F.Indeterminates.Deconstruct();
-        var disc = Ring.Discriminant(F.Substitute(F.Zero, x).ToKPoly(y));
-        var decomp = IntExt.PrimesDecompositionBigInt(disc.Absolute.Num).Distinct();
-        Console.WriteLine($"F({x},{y}) = {F}");
-        var pMin = 2 + F.DegreeOf(y) * (2 * F.DegreeOf(x) - 1);
-        foreach (var p in IntExt.Primes10000.Except(decomp).Where(p => p >= pMin && p < 5000))
-        {
-            var coefs = F.Coefs.ToDictionary(e => e.Key, e => new ZnInt(p, (int)e.Value.Num))
-                .Where(e => !e.Value.IsZero())
-                .ToDictionary(e => e.Key, e => e.Value);
-            var Fp = new Polynomial<ZnInt, Xi>(F.Indeterminates, ZnInt.ZpZero(p), new(coefs));
-            var lc = Fp.LeadingDetails.lc;
-            Fp *= lc.Inv();
-            bool isSplitting = false;
-            try
-            {
-                var firr = Firr(Fp);
-                isSplitting = F.DegreeOf(y) == firr.Length;
-                if (firr.All(f => f.Degree != 1))
-                    throw new("Message:No degre 1 factor");
-                
-                var P0X2 = firr.Aggregate(Fp.One, (acc, e) => e * acc);
-                
-                var lifts = HenselLifting(Fp, firr.Where(f => f.Degree == 1).ToArray());
-                var factsFp = Recombinaison(Fp, lifts);
-                if (factsFp.Length == 0)
-                    throw new("Message:Fp Recombinaison"); // TODO
-
-                var P0 = factsFp.Aggregate(Fp.One, (acc, e) => e * acc);
-                var factsQ = Recombinaison(F, factsFp, lc);
-                if (factsQ.Length == 0)
-                    throw new("Message:Rational Recombinaison"); // TODO
-
-                factsQ = factsQ.Select(f => Primitive(f)).Order().ToArray();
-                var P1 = factsQ.Aggregate(F.One, (acc, e) => e * acc);
-
-                var nbFactsQ = factsQ.Count(f => f.Degree != 0);
-                var msg1 = factsFp.Length != F.DegreeOf(y) ? "Yes" : "No";
-                var msg2 = factsFp.Length != nbFactsQ ? "Yes" : "No";
-                Console.WriteLine($"P(X1,X2) = {Fp}");
-                firr.Println($"P(0,X2) = {P0X2}");
-                lifts.Println("Hensel Lifting");
-                factsFp.Println($"Factors in F{p}[{x},{y}], Z-Recombinaison:{msg1}");
-                Console.WriteLine($"{factsFp.Glue(" * ", "({0})")} = {P0}");
-                factsQ.Println($"Factors in Q[{x},{y}], Q-Recombinaison:{msg2}");
-                Console.WriteLine($"{factsQ.Glue(" * ", "({0})")} = {P1}");
-                Console.WriteLine();
-                return factsQ;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"########### P = {p,-5} wont work. Is split:{isSplitting,-5}. {e.Message}");
-            }
-        }
-
-        return [F];
     }
 
     /// <summary>
@@ -414,6 +454,9 @@ public static class BivariatePolynomialFactorization
                 var (y, x) = F.Indeterminates.Deconstruct();
                 var factsF = factsF0.Select(fi => fi.Substitute(F.X(x) - i, x))
                     .Select(f => Primitive(f)).Where(f => !(f - 1).IsZero()).Order().ToArray();
+                var lt = F / factsF.Aggregate((acc, e) => e * acc);
+                if (!(lt - 1).IsZero())
+                    factsF = factsF.Prepend(lt).ToArray();
 
                 facts.Println($"F = {F}");
                 factsF.Println($"Factors in Q[{x},{y}]");
@@ -489,6 +532,11 @@ public static class BivariatePolynomialFactorization
         throw new();
     }
 
+    /// <summary>
+    /// Rewrites a bivariate polynomial with not null resultant
+    /// </summary>
+    /// <param name="F">The bivariate polynomial to be rewritten.</param>
+    /// <returns>A tuple containing the rewriting constant and the rewritten polynomial.</returns>
     static (int i, Polynomial<Rational, Xi> F2) RewritingPolynomial2(Polynomial<Rational, Xi> F)
     {
         var (x, X) = F.IndeterminatesAndVariables.First();
@@ -511,12 +559,15 @@ public static class BivariatePolynomialFactorization
     public static void Example1_Fp()
     {
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
-        var (X2, X1) = Ring.Polynomial(ZnInt.ZnZero(101), MonomOrder.Lex, "X2", "X1").Deconstruct();
+        var (X2, X1) = Ring.Polynomial(ZnBInt.ZnZero(101), MonomOrder.Lex, "X2", "X1").Deconstruct();
 
         // (X2^2 + 100*X1^2 + 100) * (X2^2 +  99*X2 + X1^2)
         var P = (X2.Pow(2) + 100 * X1.Pow(2) + 100) * (X2.Pow(2) + 99 * X2 + X1.Pow(2));
-
-        var firr = Firr(P);
+        var k = IntExt.Solve_k_pow_m_equal_one_mod_n_strict(101, 100);
+        var P0y = P.Substitute(P.Zero, X1).ToKPoly(X2);
+        var firr = IntFactorisation.Firr(P0y, P.KOne * k)
+            .Select(f => f.ToPolynomial(P.Indeterminates, X2.ExtractIndeterminate))
+            .ToArray();
         var lifts = HenselLifting(P, firr);
         var facts = Recombinaison(P, lifts);
 
@@ -549,7 +600,6 @@ public static class BivariatePolynomialFactorization
         // All Working 
         var polys = new[]
         {
-            (X2.Pow(2) - X1.Pow(2) - 1) * (X2.Pow(2) - 2 * X2 + X1.Pow(2)),
             (X2.Pow(2) - 3 * X2 - 4 * X1) * (X2.Pow(2) - 4 * X1 * X2 - 4),
             (X2 - 3 * X1.Pow(2) - 2 * X1) * (X2.Pow(2) - 3 * X1 * X2 - 4),
             (X2.Pow(2) - 3 * X1 - 3) * (X2.Pow(2) - 4 * X2 - 3 * X1.Pow(2)),
@@ -571,7 +621,7 @@ public static class BivariatePolynomialFactorization
     /// </summary>
     public static void Example3_BatchRandomPolynomial()
     {
-        // IntExt.RngSeed(25413);
+        IntExt.RngSeed(25413);
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
         GlobalStopWatch.Restart();
 
@@ -579,7 +629,7 @@ public static class BivariatePolynomialFactorization
             FactorisationRandPolFxy(nbPoly: 10, nbFactors: n, maxDegreeByFactor: m);
 
         Console.Beep();
-        GlobalStopWatch.Show(); // Time:12.633s
+        GlobalStopWatch.Show();
     }
 
     public static void Example4_F4787_case()
@@ -595,7 +645,6 @@ public static class BivariatePolynomialFactorization
             3 * X1.Pow(2) * X2 + X1 * X2 - 21 * X2 - 9 * X1.Pow(7) - 15 * X1.Pow(4) - 9 * X1.Pow(3) - 4 * X1 - 12;
 
         FactorsFxy(F0);
-        // Avg Time:318 ms Dev:8.173
     }
 
     public static void Example5_Substitution()
@@ -715,13 +764,15 @@ public static class BivariatePolynomialFactorization
         GlobalStopWatch.Show("End");
         Console.Beep();
     }
-    // F = -X1^3*X2^3 - 4*X1^2*X2^3 + 6*X1*X2^3 + 5*X2^3 - 3*X1^3*X2^2 - 22*X1^2*X2^2 + 8*X1*X2^2 + 12*X2^2 +
-    // 3*X1^4*X2 + X1^3*X2 - 12*X1^2*X2 + 4*X2 + 12*X1^4 - 3*X1^3 - 6*X1^2
+    // F = -8*X1^2*X2^5 - 4*X1^3*X2^4 - 6*X1*X2^4 + 20*X1^3*X2^3 - 3*X1^2*X2^3 + 6*X1*X2^3 + 24*X1^2*X2^2 + 3*X2^2 - 5*X1^2*X2 + 6*X1*X2 - X2 - 2*X1
+    //     -4*X1*X2^2 - 3*X2 + 1
+    //     2*X1*X2^3 + X1^2*X2^2 - 5*X1^2*X2 - X2 - 2*X1
     // Factors in Q[X1,X2]
     //     -1
-    //     X1^2*X2 - X1*X2 - X2 + 4*X1^2 - X1 - 2
-    //     X1*X2^2 + 5*X2^2 - X1*X2 + 2*X2 - 3*X1^2
-    
+    //     4*X1*X2^2 + 3*X2 - 1
+    //     2*X1*X2^3 + X1^2*X2^2 - 5*X1^2*X2 - X2 - 2*X1
+    // 
+
     public static void Example8_ResultantZero()
     {
         var (X2, X1) = Ring.Polynomial(Rational.KZero(), MonomOrder.Lex, "X2", "X1").Deconstruct();
@@ -742,11 +793,11 @@ public static class BivariatePolynomialFactorization
 
     public static void Example9_ResultantZeroBatch()
     {
-        // IntExt.RngSeed(2519);
+        // IntExt.RngSeed(7219);
         var ct = 0;
         while (ct < 50)
         {
-            var (F, facts) = GenerateRandomPolynomialFxy(nbFactors: 2, maxDegree: 3, scalarLT: true);
+            var (F, facts) = GenerateRandomPolynomialFxy(nbFactors: 2, maxDegree: 3, scalarLT: false);
             var (y, x) = F.Indeterminates.Deconstruct();
             if (facts.Any(fi => fi.NbIndeterminates != 2))
                 continue;
@@ -795,5 +846,24 @@ public static class BivariatePolynomialFactorization
 
             ++ct;
         }
+    }
+
+    public static void Example10_Recombinaison_case()
+    {
+        var (X2, X1) = Ring.Polynomial(Rational.KZero(), MonomOrder.Lex, "X2", "X1").Deconstruct();
+        var F = 5 * X1.Pow(2) * X2.Pow(4) + 9 * X1.Pow(3) * X2.Pow(3) + 14 * X1.Pow(2) * X2.Pow(3) +
+            4 * X1.Pow(4) * X2.Pow(2) + 6 * X1.Pow(3) * X2.Pow(2) - 3 * X1.Pow(2) * X2.Pow(2) - 18 * X1 * X2.Pow(2) -
+            4 * X1.Pow(4) * X2 + X1.Pow(3) * X2 - 14 * X1.Pow(2) * X2 + 10 * X1 * X2 - 2 * X1.Pow(2) - 8;
+
+        var (i, F0) = RewritingPolynomial2(F);
+        Console.WriteLine(new { F });
+        Console.WriteLine($"Res(F)(0,0) != 0 : {FilterRandPolynomialFxy(F)}");
+        Console.WriteLine(new { i, F0 });
+        Console.WriteLine($"Substitute {X1} <- {X1 + i}");
+        Console.WriteLine($"Res(F0)(0,0) != 0 : {FilterRandPolynomialFxy(F0)}");
+        var facts = FactorsFxy(F0);
+        var factsF = facts.Select(f => f.Substitute(X1 - i, X1)).Order().ToArray();
+        Console.WriteLine($"F = {F}");
+        factsF.Println($"Factors in Q[{X1},{X2}]");
     }
 }
