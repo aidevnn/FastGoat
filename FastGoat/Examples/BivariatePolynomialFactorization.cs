@@ -298,7 +298,6 @@ public static class BivariatePolynomialFactorization
 
                 factsQ = factsQ.Select(f => Primitive(f)).Order().ToArray();
                 var P1 = factsQ.Aggregate(F.One, (acc, e) => e * acc);
-                var P2 = lc0 * P1.Monic();
                 var nbFactsQ = factsQ.Count(f => f.Degree != 0);
                 var msg1 = factsFp.Length != F.DegreeOf(y) ? "Yes" : "No";
                 var msg2 = factsFp.Length != nbFactsQ ? "Yes" : "No";
@@ -812,7 +811,7 @@ public static class BivariatePolynomialFactorization
         var ct = 0;
         while (ct < 50)
         {
-            var (F, facts) = GenerateRandomPolynomialFxy(nbFactors: 2, maxDegree: 3, scalarLT: false);
+            var (F, facts) = GenerateRandomPolynomialFxy(nbFactors: 2, maxDegree: 3, scalarLT: true);
             var (y, x) = F.Indeterminates.Deconstruct();
             if (facts.Any(fi => fi.NbIndeterminates != 2))
                 continue;
@@ -823,7 +822,7 @@ public static class BivariatePolynomialFactorization
             Console.WriteLine();
 
             var (i, F0) = RewritingPolynomial2(F);
-            if (!FilterRandPolynomialFxy(F0))
+            if (F0.IsZero() || !FilterRandPolynomialFxy(F0))
                 throw new("Res[F](0,0) = 0");
             if (i != 0)
             {
@@ -870,16 +869,29 @@ public static class BivariatePolynomialFactorization
             4 * X1.Pow(4) * X2.Pow(2) + 6 * X1.Pow(3) * X2.Pow(2) - 3 * X1.Pow(2) * X2.Pow(2) - 18 * X1 * X2.Pow(2) -
             4 * X1.Pow(4) * X2 + X1.Pow(3) * X2 - 14 * X1.Pow(2) * X2 + 10 * X1 * X2 - 2 * X1.Pow(2) - 8;
 
-        var (i, F0) = RewritingPolynomial2(F);
+        var (i0, F0) = RewritingPolynomial2(F);
         Console.WriteLine(new { F });
         Console.WriteLine($"Res(F)(0,0) != 0 : {FilterRandPolynomialFxy(F)}");
-        Console.WriteLine(new { i, F0 });
-        Console.WriteLine($"Substitute {X1} <- {X1 + i}");
+        Console.WriteLine(new { F0 });
+        Console.WriteLine($"Substitute {X1} <- {X1 + i0}");
         Console.WriteLine($"Res(F0)(0,0) != 0 : {FilterRandPolynomialFxy(F0)}");
-        var facts = FactorsFxy(F0);
-        var factsF = facts.Select(f => f.Substitute(X1 - i, X1)).Order().ToArray();
+        var (i1, F1) = RewritingPolynomial1(F0);
+        Console.WriteLine(new { F1 });
+        Console.WriteLine($"Substitute {X1} <- {X1 + i1 * X2}");
+        var facts = FactorsFxy(F1);
+        var factsF1 = facts.Select(f => f.Substitute(X1 - i0 * X2, X1)).Order().ToArray();
+        var factsF = factsF1.Select(f => f.Substitute(X1 - i1, X1))
+            .Select(f => Primitive(f)).Order().ToArray();
+        var prod = factsF.Aggregate((acc, e) => e * acc);
+        var lc = F.LeadingDetails.lc / prod.LeadingDetails.lc;
+        if (!(lc - 1).IsZero())
+            factsF = factsF.Prepend(lc * F.One).ToArray();
+        
+        prod = factsF.Aggregate((acc, e) => e * acc);
         Console.WriteLine($"F = {F}");
         factsF.Println($"Factors in Q[{X1},{X2}]");
+        Console.WriteLine();
+        Console.WriteLine($"Check:{F.Equals(prod)}");
     }
 
     // AECF p405
@@ -916,9 +928,9 @@ public static class BivariatePolynomialFactorization
             var decomp = Ring.Decompose(_f, X2.ExtractIndeterminate).Item1;
             Console.WriteLine($"f = {f}");
             decomp.Println($"_f = {_f}");
-            var row = decomp.Select(e => Truncate(e.Value.ToKPoly(X1), nu + 1, o - 1)).ToArray();
-            var gcd = row.Aggregate(Ring.FastGCD).Monic;
-            list.Add(row.Select(e => e.Div(gcd).quo).ToArray());
+            var col = decomp.Select(e => Truncate(e.Value.ToKPoly(X1), nu + 1, o - 1)).ToArray();
+            var gcd = col.Aggregate(Ring.FastGCD).Monic;
+            list.Add(col.Select(e => e.Div(gcd).quo).ToArray());
         }
 
         var maxDeg = list.Max(l => l.Max(p => p.Degree));
