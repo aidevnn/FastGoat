@@ -421,21 +421,6 @@ public static partial class FG
         return (KPoly(xa.x, a), a);
     }
     
-    public static KPoly<K> NewtonInverse<K>(KPoly<K> F, int N) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
-    {
-        if (F.Degree >= N)
-            throw new($"F={F} and {N}");
-
-        if (N == 1)
-            return F[0].Inv() * F.One;
-
-        var mid = (N / 2) + (N % 2);
-        var F0 = F.Div(F.X.Pow(mid)).rem;
-        var G = NewtonInverse(F0, mid);
-        var G0 = (G + (1 - F * G) * G).Div(F.X.Pow(N)).rem;
-        return G0;
-    }
-
     public static (KPoly<EPoly<ZnInt>> x, EPoly<ZnInt> a) FqX_Poly(int q) => FqX_Poly(q, ('x', 'a'));
 
     public static BigInteger GLnqOrder(int n, int q) => BigInteger.Pow(q, n * (n - 1) / 2) * n.Range()

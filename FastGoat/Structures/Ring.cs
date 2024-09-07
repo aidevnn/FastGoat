@@ -240,6 +240,24 @@ public static partial class Ring
     {
         return new(c, f.KZero, f.Coefs);
     }
+    
+    public static KPoly<K> NewtonInverse<K>(KPoly<K> F, int N) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        if (F.Degree >= N)
+            throw new($"F={F} and N={N}");
+
+        if (F[0].IsZero())
+            throw new($"F={F} is non invertible");
+
+        if (N == 1)
+            return F[0].Inv() * F.One;
+
+        var mid = (N / 2) + (N % 2);
+        var F0 = F.Div(F.X.Pow(mid)).rem;
+        var G = NewtonInverse(F0, mid);
+        return (G + (1 - F * G) * G).Div(F.X.Pow(N)).rem;
+    }
+
 
     public static MonomDisplay DisplayPolynomial { get; set; } = MonomDisplay.Default;
 }

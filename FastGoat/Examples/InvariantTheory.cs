@@ -314,7 +314,7 @@ public static class InvariantTheory
 
         var serNum = molienSum.Num.ToKPoly(t.Num.ExtractIndeterminate);
         var serDenom = molienSum.Denom.ToKPoly(t.Num.ExtractIndeterminate);
-        var serInv = FG.NewtonInverse(serDenom, int.Max(og, serDenom.Degree) + 1);
+        var serInv = Ring.NewtonInverse(serDenom, int.Max(og, serDenom.Degree) + 1);
         var serie = (serNum * serInv).Div(serNum.X.Pow(og + 1)).rem;
         var T = FG.QPoly('t');
         var molienSerie = serie.Coefs.Select((c, k) => int.Parse($"{c}") * T.Pow(k)).Aggregate((a, b) => a + b);
@@ -328,7 +328,7 @@ public static class InvariantTheory
     {
         var z = FG.QPoly('z');
         var P = degrees.Select(k => 1 - z.Pow(k)).Aggregate((a, b) => a * b);
-        return FG.NewtonInverse(P, int.Max(P.Degree, N) + 1);
+        return Ring.NewtonInverse(P, int.Max(P.Degree, N) + 1);
     }
 
     public static void Examples_MolienTheorem()
