@@ -94,13 +94,13 @@ public static class BivariatePolynomialFactorization
     /// <param name="F">The bivariate polynomial to be factorized.</param>
     /// <param name="firr">An array of polynomials representing the initial irreducible factors
     /// of the polynomial F(0, y).</param>
+    /// <param name="o">The precision of the lifting.</param>
     /// <returns>An array of polynomials representing the factors of the input polynomial.</returns>
-    static Polynomial<ZnBInt, Xi>[] HenselLifting(Polynomial<ZnBInt, Xi> F, Polynomial<ZnBInt, Xi>[] firr)
+    static Polynomial<ZnBInt, Xi>[] HenselLifting(Polynomial<ZnBInt, Xi> F, Polynomial<ZnBInt, Xi>[] firr, int o)
     {
         var (y, x) = F.Indeterminates.Deconstruct();
         var all = firr.ToArray();
 
-        var o = F.DegreeOf(x) + 1;
         var I = F.X(x);
         while (I.Degree < o)
         {
@@ -109,6 +109,13 @@ public static class BivariatePolynomialFactorization
         }
 
         return all;
+    }
+
+    static Polynomial<ZnBInt, Xi>[] HenselLifting(Polynomial<ZnBInt, Xi> F, Polynomial<ZnBInt, Xi>[] firr)
+    {
+        var (_, x) = F.Indeterminates.Deconstruct();
+        var o = F.DegreeOf(x) + 1;
+        return HenselLifting(F, firr, o);
     }
 
     /// <summary>
@@ -138,7 +145,7 @@ public static class BivariatePolynomialFactorization
             var F1 = P1.Div(f).rem.Div(I).rem;
             var _F = F0.ToKPoly(x);
             var _dF = F1.ToKPoly(x);
-            var _dFi = FG.NewtonInverse(_dF, int.Max(_dF.Degree, o) + 1);
+            var _dFi = Ring.NewtonInverse(_dF, int.Max(_dF.Degree, o) + 1);
             var _FDFi = (_dFi * _F).ToPolynomial(F.Indeterminates, x);
             var R1 = (df * _FDFi).Div(f).rem.Div(I).rem;
             var fr = f + R1;
@@ -553,6 +560,14 @@ public static class BivariatePolynomialFactorization
         return (0, F.Zero); // TODO
     }
 
+    static KPoly<ZnBInt> Truncate(KPoly<ZnBInt> P, int t, int o)
+    {
+        var mod = P.KZero.Details;
+        var z = ZnBInt.ZnZero(mod.P, mod.O);
+        var coefs = o.Range().Select(i => i < t ? z : P[i]).TrimSeq().ToArray();
+        return new KPoly<ZnBInt>(P.x, z, coefs);
+    }
+
     /// <summary>
     /// The BivariatePolynomialFactorization class provides methods for factorizing bivariate polynomials over a finite field.
     /// </summary>
@@ -865,5 +880,59 @@ public static class BivariatePolynomialFactorization
         var factsF = facts.Select(f => f.Substitute(X1 - i, X1)).Order().ToArray();
         Console.WriteLine($"F = {F}");
         factsF.Println($"Factors in Q[{X1},{X2}]");
+    }
+
+    // AECF p405
+    public static void Example11_Fp()
+    {
+        Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+        var (X2, X1) = Ring.Polynomial(ZnBInt.ZnZero(101), MonomOrder.Lex, "X2", "X1").Deconstruct();
+
+        // (X2^2 + 100*X1^2 + 100) * (X2^2 +  99*X2 + X1^2)
+        var P = (X2.Pow(2) + 100 * X1.Pow(2) + 100) * (X2.Pow(2) + 99 * X2 + X1.Pow(2));
+        var k = IntExt.Solve_k_pow_m_equal_one_mod_n_strict(101, 100);
+        var P0y = P.Substitute(P.Zero, X1).ToKPoly(X2);
+        var firr = IntFactorisation.Firr(P0y, P.KOne * k)
+            .Select(f => f.ToPolynomial(P.Indeterminates, X2.ExtractIndeterminate))
+            .ToArray();
+
+        var o = 10;
+        var I = X1.Pow(o);
+        var lifts = HenselLifting(P, firr, o);
+
+        var P0X2 = firr.Aggregate(P.One, (acc, c) => acc * c);
+        Console.WriteLine($"P(X1,X2) = {P}");
+        firr.Println($"P(0,X2) = {P0X2}");
+        lifts.Println("Hensel Lifting");
+        Console.WriteLine();
+        var nu = P.DegreeOf(X1.ExtractIndeterminate);
+        var list = new List<KPoly<ZnBInt>[]>();
+        var nbLifts = lifts.Length;
+        foreach (var f in lifts)
+        {
+            var _p = P.Div(f).quo;
+            var df = f.D(X2);
+            var _f = (_p * df).Div(I).rem.Monic();
+            var decomp = Ring.Decompose(_f, X2.ExtractIndeterminate).Item1;
+            Console.WriteLine($"f = {f}");
+            decomp.Println($"_f = {_f}");
+            var row = decomp.Select(e => Truncate(e.Value.ToKPoly(X1), nu + 1, o - 1)).ToArray();
+            var gcd = row.Aggregate(Ring.FastGCD).Monic;
+            list.Add(row.Select(e => e.Div(gcd).quo).ToArray());
+        }
+
+        var maxDeg = list.Max(l => l.Max(p => p.Degree));
+        var p0 = IntExt.Primes10000.First(p0 => p0 > maxDeg + 1); // p0 = 7
+        var a = FG.EPoly(FG.CyclotomicPolynomial(p0).Substitute(FG.ZbPoly(101, 1)));
+        var A = KMatrix<EPoly<ZnBInt>>.MergeSameRows(list.Select(l => l.Select(e => e.Substitute(a)).ToKMatrix(nbLifts))
+            .ToArray());
+        Console.WriteLine("A");
+        Console.WriteLine(A);
+        Console.WriteLine("Ker(A)");
+        var ker = A.NullSpace().Item2;
+        Console.WriteLine(ker);
+
+        ker.Cols.Select(col => col.Select((c, i) => c[0] * lifts[i]).Where(f => !f.IsZero())
+            .Aggregate((acc, e) => e * acc).Div(X1.Pow(nu + 1)).rem).Println($"Factors in F101[X1,X2]");
     }
 }
