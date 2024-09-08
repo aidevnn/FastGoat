@@ -540,9 +540,14 @@ December 2008 Cambridge University Press.
 New York University
 <i>Chapter20 Algorithms for finite fields.</i>
 
-
 [pslqm2](https://www.davidhbailey.com/dhbpapers/pslqm2-alg.pdf)
 <b>David H. Bailey.</b>
 The two-level multipair PSLQ algorithm.
 May 2, 2024
 <i>PSLQM2.</i>
+
+[SymPy](https://doi.org/10.7717/peerj-cs.103)
+<b>Meurer A, Smith CP, Paprocki M, Čertík O, Kirpichev SB, Rocklin M, Kumar A,Ivanov S, Moore JK, Singh S, Rathnayake T, Vig S, Granger BE, Muller RP,Bonazzi F, Gupta H, Vats S, Johansson F, Pedregosa F,Curry MJ, Terrel AR,Roučka Š, Saboo A, Fernando I, Kulal S, Cimrman R, Scopatz A.</b>
+(2017) SymPy:symbolic computing in Python.
+PeerJ Computer Science 3:e103
+<i>Version 1.12; 2023.</i>
