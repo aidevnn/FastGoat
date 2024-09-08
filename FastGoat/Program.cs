@@ -34,3 +34,8 @@ using GroupRegX = System.Text.RegularExpressions;
 //////////////////////////////////
 
 Console.WriteLine("Hello World");
+
+{
+    GlobalStopWatch.Bench(2, "SFF with FastGCD", BivariatePolynomialFactorization.Example14_NonSeparable);
+    GlobalStopWatch.Bench(5, "SFF with FastGCD", BivariatePolynomialFactorization.Example14_NonSeparable);
+}

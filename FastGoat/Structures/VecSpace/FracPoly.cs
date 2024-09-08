@@ -42,7 +42,7 @@ public readonly struct FracPoly<K> : IVsElt<K, FracPoly<K>>, IElt<FracPoly<K>>, 
         }
         else
         {
-            var gcd = Ring.Gcd(num, denom);
+            var gcd = Ring.FastGCD(num, denom);
             var num0 = num.Div(gcd).quo;
             var denom0 = denom.Div(gcd).quo;
             var c = denom0.Coefs.Last();
