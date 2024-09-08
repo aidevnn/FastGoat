@@ -102,7 +102,13 @@ public readonly struct FracPoly<K> : IVsElt<K, FracPoly<K>>, IElt<FracPoly<K>>, 
 
     public FracPoly<K> Mul(int k) => new(k * Num, Denom);
 
-    public FracPoly<K> Pow(int k) => new(Num.Pow(k), Denom.Pow(k));
+    public FracPoly<K> Pow(int k)
+    {
+        if (k < 0)
+            return new(Denom.Pow(-k), Num.Pow(-k));
+        
+        return new(Num.Pow(k), Denom.Pow(k));
+    }
 
     public override int GetHashCode() => Hash;
 
