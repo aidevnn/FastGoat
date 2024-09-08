@@ -44,8 +44,26 @@ public static class BivariatePolynomialFactorization
         var arrLcm = f.Coefs.Values.Select(e => e.Absolute.Denom).Distinct().Order().ToArray();
         return f * new Rational(f.LeadingDetails.lc.Sign * IntExt.LcmBigInt(arrLcm), IntExt.GcdBigInt(arrGcd));
     }
+    
+    static KPoly<FracPoly<Rational>> ToArrayPoly(Polynomial<Rational, Xi> F)
+    {
+        var Y = FG.KPoly('Y', FG.QFracPoly('X'));
+        var X = Y.KOne.X * Y.One;
+        var (y, x) = F.Indeterminates.Deconstruct();
+        var Fcoefs = Ring.Decompose(F, y).Item1;
+        return Fcoefs.Select(e => e.Key.ToKPoly(y).Substitute(Y) * e.Value.ToKPoly(x).Substitute(X))
+            .Aggregate((acc, e) => e + acc);
+    }
 
-
+    static Polynomial<Rational, Xi> ToMapPoly(KPoly<FracPoly<Rational>> F, Polynomial<Rational, Xi> X, Polynomial<Rational, Xi> Y)
+    {
+        var lcm = F.Coefs.Select(f => f.Denom).Aggregate(Ring.Lcm);
+        var F0 = new FracPoly<Rational>(lcm) * F;
+        if (F0.Coefs.Any(c => !(c.Denom - 1).IsZero()))
+            throw new();
+        return F0.Coefs.Select((c0, i) => c0.Num.Substitute(X) * Y.Pow(i)).Aggregate((acc, e) => e + acc);
+    }
+    
     /// <summary>
     /// Factorizes a bivariate polynomial with coefficients in Rational into Padic Integer polynomial factor.
     /// </summary>
@@ -605,7 +623,7 @@ public static class BivariatePolynomialFactorization
             return (i, Primitive(F1));
         }
 
-        return (0, F.Zero); // TODO
+        throw new("Non separable polynomial");
     }
 
     static KPoly<ZnBInt> Truncate(KPoly<ZnBInt> P, int t, int o)
@@ -1045,5 +1063,34 @@ public static class BivariatePolynomialFactorization
             4 * X2 + 4 * X1.Pow(4) - X1.Pow(3) - 2 * X1.Pow(2);
 
         FactorsFxy(F, true);
+    }
+
+    public static void Example14_NonSeparable()
+    {
+        GlobalStopWatch.Restart();
+        Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+        var (X2, X1) = Ring.Polynomial(Rational.KZero(), MonomOrder.Lex, "X2", "X1").Deconstruct();
+        var F = X2.Pow(6) - 9 * X1 * X2.Pow(5) + 25 * X1.Pow(2) * X2.Pow(4) - 3 * X1 * X2.Pow(4) -
+            44 * X1.Pow(3) * X2.Pow(3) + 27 * X1.Pow(2) * X2.Pow(3) + 72 * X1.Pow(4) * X2.Pow(2) -
+            63 * X1.Pow(3) * X2.Pow(2) - 32 * X1.Pow(5) * X2 + 24 * X1.Pow(4) * X2 - 48 * X1.Pow(6) + 36 * X1.Pow(5);
+
+        Console.WriteLine($"F = {F}");
+        GlobalStopWatch.AddLap();
+        var sff = IntFactorisation.YunSFF(ToArrayPoly(F)).Where(e => e.g.Degree > 0)
+            .Select(e => (g: ToMapPoly(e.g, X1, X2), e.i)).OrderBy(e => e.i).ToArray();
+        sff.Println("SFF");
+        GlobalStopWatch.Show("SFF");
+        
+        var ((f0, _), (f1, i)) = sff.Deconstruct();
+        var facts = FactorsFxy(f0, rewrite: true).Select(f => (g:f, i: 1)).Prepend((g:f1, i)).ToArray();
+
+        Console.WriteLine();
+        Console.WriteLine($"F = {F}");
+        facts.Println("Factors with multiplicity");
+
+        var prod = facts.Aggregate(F.One, (acc, e) => acc * e.g.Pow(e.i));
+        var check = prod.Equals(F);
+        Console.WriteLine(new { check });
+        GlobalStopWatch.Show();
     }
 }
