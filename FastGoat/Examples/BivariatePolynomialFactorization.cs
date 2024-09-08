@@ -40,6 +40,9 @@ public static class BivariatePolynomialFactorization
     /// <returns>The primitive form of <paramref name="f"/>.</returns>
     static Polynomial<Rational, Xi> Primitive(Polynomial<Rational, Xi> f)
     {
+        if (f.IsZero())
+            return f;
+        
         var arrGcd = f.Coefs.Values.Where(e => !e.IsZero()).Select(e => e.Absolute.Num).Distinct().Order().ToArray();
         var arrLcm = f.Coefs.Values.Select(e => e.Absolute.Denom).Distinct().Order().ToArray();
         return f * new Rational(f.LeadingDetails.lc.Sign * IntExt.LcmBigInt(arrLcm), IntExt.GcdBigInt(arrGcd));
@@ -61,7 +64,7 @@ public static class BivariatePolynomialFactorization
         var F0 = new FracPoly<Rational>(lcm) * F;
         if (F0.Coefs.Any(c => !(c.Denom - 1).IsZero()))
             throw new();
-        return F0.Coefs.Select((c0, i) => c0.Num.Substitute(X) * Y.Pow(i)).Aggregate((acc, e) => e + acc);
+        return Primitive(F0.Coefs.Select((c0, i) => c0.Num.Substitute(X) * Y.Pow(i)).Aggregate((acc, e) => e + acc));
     }
     
     /// <summary>
@@ -433,7 +436,7 @@ public static class BivariatePolynomialFactorization
     /// <param name="scalarLT">The leading term of the polynomial is scalar.</param>
     /// <returns>A tuple containing the generated polynomial F and an array of the polynomial factors.</returns>
     static (Polynomial<Rational, Xi> F, Polynomial<Rational, Xi>[] facts)
-        GenerateRandomPolynomialFxy(int nbFactors, int maxDegree, bool scalarLT = true)
+        GenerateRandomPolynomialFxy(int nbFactors, int maxDegree, bool scalarLT = true, bool multiplicity = false)
     {
         var (X2, X1) = Ring.Polynomial(Rational.KZero(), MonomOrder.Lex, "X2", "X1").Deconstruct();
         var x1s = (1 + maxDegree).Range().Select(X1.Pow).ToArray();
@@ -453,10 +456,12 @@ public static class BivariatePolynomialFactorization
             var g = f + X2.Pow(j) * X1.Pow(i);
             var mn = g.Coefs.Keys.Aggregate(Monom<Xi>.Gcd);
             var coefs = g.Coefs.ToDictionary(e => e.Key.Div(mn).Item2, e => e.Value);
-            return new(g.Indeterminates, g.KZero, new(coefs));
+            return Primitive(new(g.Indeterminates, g.KZero, new(coefs)));
         }
 
-        var facts = nbFactors.Range().Select(_ => Choose()).DistinctBy(f => f.Monic()).Order().ToArray();
+        var c = multiplicity ? 3 : 1;
+        var facts = nbFactors.Range().Select(_ => Choose().Pow(IntExt.Rng.Next(1, 1 + c)))
+            .DistinctBy(f => f.Monic()).Order().ToArray();
         var F = facts.Aggregate((a0, a1) => a0 * a1);
         var degX1 = Ring.Decompose(F, X1.ExtractIndeterminate).Item1.Max(e => e.Key.Degree);
         var degX2 = Ring.Decompose(F, X2.ExtractIndeterminate).Item1.Max(e => e.Key.Degree);
@@ -1076,7 +1081,7 @@ public static class BivariatePolynomialFactorization
 
         Console.WriteLine($"F = {F}");
         GlobalStopWatch.AddLap();
-        var sff = IntFactorisation.YunSFF(ToArrayPoly(F)).Where(e => e.g.Degree > 0)
+        var sff = IntFactorisation.MusserSFF(ToArrayPoly(F)).Where(e => e.g.Degree > 0)
             .Select(e => (g: ToMapPoly(e.g, X1, X2), e.i)).OrderBy(e => e.i).ToArray();
         sff.Println("SFF");
         GlobalStopWatch.Show("SFF");
@@ -1092,5 +1097,74 @@ public static class BivariatePolynomialFactorization
         var check = prod.Equals(F);
         Console.WriteLine(new { check });
         GlobalStopWatch.Show();
+    }
+
+    public static void Example15_FullFactorisation()
+    {
+        IntExt.RngSeed(812665);
+        GlobalStopWatch.Restart();
+        for(int m = 2; m <= 4; ++m)
+        {
+            var ct = 0;
+            GlobalStopWatch.AddLap();
+            while (ct < 5)
+            {
+                var (F, facts) = GenerateRandomPolynomialFxy(nbFactors: 2, maxDegree: m, scalarLT: false, multiplicity: true);
+                var (y, x) = F.Indeterminates.Deconstruct();
+                if (F.DegreeOf(y) == 0
+                    || facts.Any(f => f.ExtractAllIndeterminates.Length != 2)
+                    || F.Coefs.Max(e => e.Value.Absolute.Num) > 1000)
+                    continue;
+                
+                var sff = IntFactorisation.MusserSFF(ToArrayPoly(F)).Where(e => e.g.Degree > 0)
+                    .Select(e => (g: ToMapPoly(e.g, F.X(x), F.X(y)), e.i)).OrderBy(e => e.i).ToArray();
+                
+                var factorsWithMultiplicity = new List<(Polynomial<Rational, Xi>, int)>();
+                var tmpSff = new List<(Polynomial<Rational, Xi>, int)>();
+                foreach (var (g, i) in sff)
+                {
+                    if (g.DegreeOf(y) == 1)
+                        factorsWithMultiplicity.Add((g, i));
+                    else
+                        tmpSff.Add((g, i));
+                }
+
+                foreach (var (F0, i) in tmpSff)
+                {
+                    var factsF0 = FactorsFxy(F0, true);
+                    foreach (var g in factsF0)
+                    {
+                        if (g.Degree != 0)
+                            factorsWithMultiplicity.Add((g, i));
+                    }
+                }
+
+                var factsF = factorsWithMultiplicity.Order().ToArray();
+                var prod = factsF.Aggregate(F.One, (acc, e) => e.Item1.Pow(e.Item2) * acc);
+                var lc = F.Div(prod).quo;
+                if (!lc.Equals(lc.One))
+                    factsF = factsF.Prepend((lc, 1)).ToArray();
+                
+                facts.Println($"F = {F}");
+                factsF.Println($"Factors in Q[{x},{y}]");
+                var nbfacts = facts.Count(f => f.Degree != 0);
+                var nbFacts = factsF.Count(f => f.Item1.Degree != 0);
+                if (nbfacts > nbFacts)
+                    Console.WriteLine("######## Problem new factors");
+                else if (nbfacts < nbFacts)
+                    Console.WriteLine("######## Problem missing factors");
+
+                prod = factsF.Aggregate(F.One, (acc, e) => e.Item1.Pow(e.Item2) * acc);
+                Console.WriteLine($"Check2:{prod.Equals(F)}");
+
+                Console.WriteLine();
+                ++ct;
+            }
+
+            GlobalStopWatch.Show($"MaxDegree:{m}");
+        }
+
+        GlobalStopWatch.Show("End");
+        Console.Beep();
     }
 }
