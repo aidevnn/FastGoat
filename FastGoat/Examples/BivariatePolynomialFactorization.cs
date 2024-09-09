@@ -13,6 +13,7 @@ public static class BivariatePolynomialFactorization
     static BivariatePolynomialFactorization()
     {
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+        GlobalStopWatch.Restart();
     }
 
     /// <summary>
@@ -743,7 +744,7 @@ public static class BivariatePolynomialFactorization
     {
         IntExt.RngSeed(25413);
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
-        GlobalStopWatch.Restart();
+        GlobalStopWatch.AddLap();
 
         foreach (var (n, m) in 4.Range(1).SelectMany(m => (5 - m).Range(2).Select(n => (n, m))))
             FactorisationRandPolFxy(nbPoly: 10, nbFactors: n, maxDegreeByFactor: m);
@@ -831,7 +832,7 @@ public static class BivariatePolynomialFactorization
     public static void Example7_SubstitutionBatch()
     {
         // IntExt.RngSeed(2519);
-        GlobalStopWatch.Restart();
+        GlobalStopWatch.AddLap();
         for (int m = 2; m <= 4; ++m)
         {
             var ct = 0;
@@ -1057,7 +1058,7 @@ public static class BivariatePolynomialFactorization
     public static void Example12_FullSubstitutions()
     {
         // IntExt.RngSeed(812665);
-        GlobalStopWatch.Restart();
+        GlobalStopWatch.AddLap();
         foreach (var (n, m) in 4.Range(1).SelectMany(m => (5 - m).Range(2).Select(n => (n, m))))
         {
             var ct = 0;
@@ -1106,7 +1107,7 @@ public static class BivariatePolynomialFactorization
 
     public static void Example14_NonSeparable()
     {
-        GlobalStopWatch.Restart();
+        GlobalStopWatch.AddLap();
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
         var (X2, X1) = Ring.Polynomial(Rational.KZero(), MonomOrder.Lex, "X2", "X1").Deconstruct();
         var F = X2.Pow(6) - 9 * X1 * X2.Pow(5) + 25 * X1.Pow(2) * X2.Pow(4) - 3 * X1 * X2.Pow(4) -
@@ -1135,8 +1136,8 @@ public static class BivariatePolynomialFactorization
 
     public static void Example15_FullFactorisation()
     {
-        IntExt.RngSeed(812665);
-        GlobalStopWatch.Restart();
+        // IntExt.RngSeed(812665);
+        GlobalStopWatch.AddLap();
         for(int m = 2; m <= 4; ++m)
         {
             var ct = 0;
