@@ -617,8 +617,9 @@ public static class BivariatePolynomialFactorization
     /// <returns>A tuple containing the rewriting constant and the rewritten polynomial.</returns>
     static (int i, Polynomial<Rational, Xi> F2) RewritingPolynomial2(Polynomial<Rational, Xi> F)
     {
-        var (x, X) = F.IndeterminatesAndVariables.First();
-        var seq = 21.Range(-10).OrderBy(i => int.Abs(i)).ThenDescending().ToArray();
+        var ((x, X), (y, Y)) = F.IndeterminatesAndVariables.Deconstruct();
+        var degY = F.DegreeOf(y);
+        var seq = (2 * degY + 1).Range(-degY).OrderBy(i => int.Abs(i)).ThenDescending().ToArray();
         foreach (var i in seq)
         {
             var F1 = F.Substitute(X + i, x);
