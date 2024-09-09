@@ -484,7 +484,7 @@ public static class BivariatePolynomialFactorization
             return Primitive(new(g.Indeterminates, g.KZero, new(coefs)));
         }
 
-        var c = multiplicity ? 3 : 1;
+        var c = multiplicity ? (maxDegree == 2 ? 3 : 2) : 1;
         var facts = nbFactors.Range().Select(_ => Choose().Pow(IntExt.Rng.Next(1, 1 + c)))
             .DistinctBy(f => f.Monic()).Order().ToArray();
         var F = facts.Aggregate((a0, a1) => a0 * a1);
