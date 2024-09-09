@@ -48,7 +48,16 @@ public static class BivariatePolynomialFactorization
         return f * new Rational(f.LeadingDetails.lc.Sign * IntExt.LcmBigInt(arrLcm), IntExt.GcdBigInt(arrGcd));
     }
     
-    static KPoly<FracPoly<Rational>> ToArrayPoly(Polynomial<Rational, Xi> F)
+    /// <summary>
+    /// Converts a bivariate polynomial represented by a dictionary-based structure into 
+    /// a bivariate polynomial using a jagged array structure.
+    /// </summary>
+    /// <param name="F">The bivariate polynomial to be converted, represented by a dictionary-based structure.</param>
+    /// <returns>
+    /// A bivariate polynomial represented by a jagged array, where the coefficients are fractional polynomials
+    /// with rational coefficients.
+    /// </returns>
+    static KPoly<FracPoly<Rational>> ConvertToJaggedArrayPoly(Polynomial<Rational, Xi> F)
     {
         var Y = FG.KPoly('Y', FG.QFracPoly('X'));
         var X = Y.KOne.X * Y.One;
@@ -58,7 +67,16 @@ public static class BivariatePolynomialFactorization
             .Aggregate((acc, e) => e + acc);
     }
 
-    static Polynomial<Rational, Xi> ToMapPoly(KPoly<FracPoly<Rational>> F, Polynomial<Rational, Xi> X, Polynomial<Rational, Xi> Y)
+    /// <summary>
+    /// Converts a bivariate polynomial from a jagged array-based structure into a dictionary-based structure.
+    /// </summary>
+    /// <param name="F">The bivariate polynomial in a jagged array-based structure.</param>
+    /// <param name="X">The polynomial used as the first indeterminate.</param>
+    /// <param name="Y">The polynomial used as the second indeterminate.</param>
+    /// <returns>
+    /// A bivariate polynomial represented by a dictionary-based structure, where the coefficients are rational numbers.
+    /// </returns>
+    static Polynomial<Rational, Xi> ConvertToDictionaryPoly(KPoly<FracPoly<Rational>> F, Polynomial<Rational, Xi> X, Polynomial<Rational, Xi> Y)
     {
         var lcm = F.Coefs.Select(f => f.Denom).Aggregate(Ring.Lcm);
         var F0 = new FracPoly<Rational>(lcm) * F;
@@ -631,7 +649,14 @@ public static class BivariatePolynomialFactorization
 
         throw new("Non separable polynomial");
     }
-
+    
+    /// <summary>
+    /// Truncates a bivariate polynomial by restricting its degree between specified lower and upper bounds.
+    /// </summary>
+    /// <param name="P">The bivariate polynomial to be truncated.</param>
+    /// <param name="t">The degree lower bound.</param>
+    /// <param name="o">The degree upper bound.</param>
+    /// <returns>The truncated bivariate polynomial.</returns>
     static KPoly<ZnBInt> Truncate(KPoly<ZnBInt> P, int t, int o)
     {
         var mod = P.KZero.Details;
@@ -1082,8 +1107,8 @@ public static class BivariatePolynomialFactorization
 
         Console.WriteLine($"F = {F}");
         GlobalStopWatch.AddLap();
-        var sff = IntFactorisation.MusserSFF(ToArrayPoly(F)).Where(e => e.g.Degree > 0)
-            .Select(e => (g: ToMapPoly(e.g, X1, X2), e.i)).OrderBy(e => e.i).ToArray();
+        var sff = IntFactorisation.MusserSFF(ConvertToJaggedArrayPoly(F)).Where(e => e.g.Degree > 0)
+            .Select(e => (g: ConvertToDictionaryPoly(e.g, X1, X2), e.i)).OrderBy(e => e.i).ToArray();
         sff.Println("SFF");
         GlobalStopWatch.Show("SFF");
         
@@ -1117,8 +1142,8 @@ public static class BivariatePolynomialFactorization
                     || F.Coefs.Max(e => e.Value.Absolute.Num) > 1000)
                     continue;
                 
-                var sff = IntFactorisation.MusserSFF(ToArrayPoly(F)).Where(e => e.g.Degree > 0)
-                    .Select(e => (g: ToMapPoly(e.g, F.X(x), F.X(y)), e.i)).OrderBy(e => e.i).ToArray();
+                var sff = IntFactorisation.MusserSFF(ConvertToJaggedArrayPoly(F)).Where(e => e.g.Degree > 0)
+                    .Select(e => (g: ConvertToDictionaryPoly(e.g, F.X(x), F.X(y)), e.i)).OrderBy(e => e.i).ToArray();
                 
                 var factorsWithMultiplicity = new List<(Polynomial<Rational, Xi>, int)>();
                 var tmpSff = new List<(Polynomial<Rational, Xi>, int)>();
