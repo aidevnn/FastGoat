@@ -150,6 +150,13 @@ public static class BivariatePolynomialFactorization
         return all;
     }
 
+    /// <summary>
+    /// Performs one step of the Hensel Lifting method to lift the factorization of a bivariate polynomial 
+    /// from one modulus to a higher power of the modulus.
+    /// </summary>
+    /// <param name="F">The original bivariate polynomial to be factorized.</param>
+    /// <param name="firr">The array of current factors of the polynomial F.</param>
+    /// <returns>An array of polynomials representing the factors of the input polynomial after one lifting step.</returns>
     static Polynomial<ZnBInt, Xi>[] HenselLifting(Polynomial<ZnBInt, Xi> F, Polynomial<ZnBInt, Xi>[] firr)
     {
         var (_, x) = F.Indeterminates.Deconstruct();
@@ -605,7 +612,8 @@ public static class BivariatePolynomialFactorization
         if (F0coefsX1.Last().Value.Degree == 0)
             return (0, F);
 
-        var seq = 21.Range(-10).Where(i => i != 0).OrderBy(i => i * i).ThenDescending().ToArray();
+        var degY = F.DegreeOf(y);
+        var seq = (2 * degY + 1).Range(-degY).OrderBy(i => int.Abs(i)).ThenDescending().ToArray();
         foreach (var i in seq)
         {
             var subs1 = new List<(Xi, Polynomial<Rational, Xi>)>()
