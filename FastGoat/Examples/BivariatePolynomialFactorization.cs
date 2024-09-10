@@ -461,9 +461,11 @@ public static class BivariatePolynomialFactorization
     /// <param name="maxDegree">The maximum degree of the polynomial.</param>
     /// <param name="scalarLT">The leading term of the polynomial is scalar.</param>
     /// <returns>A tuple containing the generated polynomial F and an array of the polynomial factors.</returns>
+    /// <remarks>The result polynomial dont always respects the parameters specifications</remarks>
     static (Polynomial<Rational, Xi> F, Polynomial<Rational, Xi>[] facts)
         GenerateRandomPolynomialFxy(int nbFactors, int maxDegree, bool scalarLT = true, bool multiplicity = false)
     {
+        // TODO
         var (X2, X1) = Ring.Polynomial(Rational.KZero(), MonomOrder.Lex, "X2", "X1").Deconstruct();
         var x1s = (1 + maxDegree).Range().Select(X1.Pow).ToArray();
         var x2s = maxDegree.Range().Select(X2.Pow).ToArray();
@@ -476,8 +478,8 @@ public static class BivariatePolynomialFactorization
             var f = (1 + IntExt.Rng.Next(nb)).Range().Select(_ => x1x2s[IntExt.Rng.Next(nb)] * IntExt.Rng.Next(-5, 5))
                 .Where(e => !e.IsZero())
                 .Aggregate(X1.Zero, (acc, e) => acc + e);
-            var degLT = scalarLT ? f.DegreeOf(x2) + 1 : int.Min(maxDegree, f.Degree);
-            var i = scalarLT ? 0 : IntExt.Rng.Next(1 + degLT);
+            var degLT = int.Min(maxDegree, f.Degree + 1);
+            var i = scalarLT ? 0 : IntExt.Rng.Next(degLT);
             var j = degLT - i;
             var g = f + X2.Pow(j) * X1.Pow(i);
             var mn = g.Coefs.Keys.Aggregate(Monom<Xi>.Gcd);
@@ -546,8 +548,12 @@ public static class BivariatePolynomialFactorization
         while (ct < nbPoly)
         {
             var (F, facts) = GenerateRandomPolynomialFxy(nbFactors, maxDegreeByFactor);
+            var (y, x) = F.Indeterminates.Deconstruct();
             if (F.LeadingDetails.lm.ContentIndeterminates.Count() == 1 &&
-                facts.All(f => f.Degree <= maxDegreeByFactor && f.Degree > 0 && f.NbIndeterminates == 2))
+                facts.All(f => f.CoefMax(y).Degree == 0 &&
+                               f.Degree <= maxDegreeByFactor && 
+                               f.Degree > 0 && 
+                               f.NbIndeterminates == 2))
             {
                 var (i, F0) = RewritingPolynomial2(F);
                 if (F0.Degree == 0)
@@ -918,9 +924,9 @@ public static class BivariatePolynomialFactorization
         var ct = 0;
         while (ct < 50)
         {
-            var (F, facts) = GenerateRandomPolynomialFxy(nbFactors: 2, maxDegree: 3, scalarLT: true);
+            var (F, facts) = GenerateRandomPolynomialFxy(nbFactors: 2, maxDegree: 3, scalarLT: false);
             var (y, x) = F.Indeterminates.Deconstruct();
-            if (facts.Any(fi => fi.NbIndeterminates != 2))
+            if (facts.Any(fi => fi.NbIndeterminates != 2 || fi.CoefMax(y).Degree > 0))
                 continue;
 
             var line = Enumerable.Repeat('#', 30).Glue();
