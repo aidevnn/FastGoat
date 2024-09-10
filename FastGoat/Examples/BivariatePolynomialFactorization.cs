@@ -43,12 +43,12 @@ public static class BivariatePolynomialFactorization
     {
         if (f.IsZero())
             return f;
-        
+
         var arrGcd = f.Coefs.Values.Where(e => !e.IsZero()).Select(e => e.Absolute.Num).Distinct().Order().ToArray();
         var arrLcm = f.Coefs.Values.Select(e => e.Absolute.Denom).Distinct().Order().ToArray();
         return f * new Rational(f.LeadingDetails.lc.Sign * IntExt.LcmBigInt(arrLcm), IntExt.GcdBigInt(arrGcd));
     }
-    
+
     /// <summary>
     /// Converts a bivariate polynomial represented by a dictionary-based structure into 
     /// a bivariate polynomial using a jagged array structure.
@@ -77,7 +77,8 @@ public static class BivariatePolynomialFactorization
     /// <returns>
     /// A bivariate polynomial represented by a dictionary-based structure, where the coefficients are rational numbers.
     /// </returns>
-    static Polynomial<Rational, Xi> ConvertToDictionaryPoly(KPoly<FracPoly<Rational>> F, Polynomial<Rational, Xi> X, Polynomial<Rational, Xi> Y)
+    static Polynomial<Rational, Xi> ConvertToDictionaryPoly(KPoly<FracPoly<Rational>> F, Polynomial<Rational, Xi> X,
+        Polynomial<Rational, Xi> Y)
     {
         var lcm = F.Coefs.Select(f => f.Denom).Aggregate(Ring.Lcm);
         var F0 = new FracPoly<Rational>(lcm) * F;
@@ -85,7 +86,7 @@ public static class BivariatePolynomialFactorization
             throw new();
         return Primitive(F0.Coefs.Select((c0, i) => c0.Num.Substitute(X) * Y.Pow(i)).Aggregate((acc, e) => e + acc));
     }
-    
+
     /// <summary>
     /// Factorizes a bivariate polynomial with coefficients in Rational into Padic Integer polynomial factor.
     /// </summary>
@@ -471,7 +472,6 @@ public static class BivariatePolynomialFactorization
         var x2s = maxDegree.Range().Select(X2.Pow).ToArray();
         var x1x2s = x1s.Grid2D(x2s).Select(e => e.t1 * e.t2).Where(f => f.Degree <= maxDegree).Order().ToArray();
         var nb = x1x2s.Length;
-        var x2 = X2.ExtractIndeterminate;
 
         Polynomial<Rational, Xi> Choose()
         {
@@ -561,7 +561,6 @@ public static class BivariatePolynomialFactorization
 
                 ct++;
                 var factsF0 = FactorsFxy(F0);
-                var (y, x) = F.Indeterminates.Deconstruct();
                 var factsF = factsF0.Select(fi => fi.Substitute(F.X(x) - i, x))
                     .Select(f => Primitive(f)).Where(f => !(f - 1).IsZero()).Order().ToArray();
                 var lt = F / factsF.Aggregate((acc, e) => e * acc);
@@ -664,7 +663,7 @@ public static class BivariatePolynomialFactorization
 
         throw new("Non separable polynomial");
     }
-    
+
     /// <summary>
     /// Truncates a bivariate polynomial by restricting its degree between specified lower and upper bounds.
     /// </summary>
@@ -1126,9 +1125,9 @@ public static class BivariatePolynomialFactorization
             .Select(e => (g: ConvertToDictionaryPoly(e.g, X1, X2), e.i)).OrderBy(e => e.i).ToArray();
         sff.Println("SFF");
         GlobalStopWatch.Show("SFF");
-        
+
         var ((f0, _), (f1, i)) = sff.Deconstruct();
-        var facts = FactorsFxy(f0, rewrite: true).Select(f => (g:f, i: 1)).Prepend((g:f1, i)).ToArray();
+        var facts = FactorsFxy(f0, rewrite: true).Select(f => (g: f, i: 1)).Prepend((g: f1, i)).ToArray();
 
         Console.WriteLine();
         Console.WriteLine($"F = {F}");
@@ -1144,22 +1143,23 @@ public static class BivariatePolynomialFactorization
     {
         // IntExt.RngSeed(812665);
         GlobalStopWatch.AddLap();
-        for(int m = 2; m <= 4; ++m)
+        foreach (var (n, m) in 4.Range(1).SelectMany(m => (6 - m).Range(2).Select(n => (n, m))))
         {
             var ct = 0;
             GlobalStopWatch.AddLap();
             while (ct < 5)
             {
-                var (F, facts) = GenerateRandomPolynomialFxy(nbFactors: 2, maxDegree: m, scalarLT: false, multiplicity: true);
+                var (F, facts) =
+                    GenerateRandomPolynomialFxy(nbFactors: n, maxDegree: m, scalarLT: false, multiplicity: true);
                 var (y, x) = F.Indeterminates.Deconstruct();
                 if (F.DegreeOf(y) == 0
                     || facts.Any(f => f.ExtractAllIndeterminates.Length != 2)
-                    || F.Coefs.Max(e => e.Value.Absolute.Num) > 1000)
+                    || F.Coefs.Max(e => e.Value.Absolute.Num) > 5000)
                     continue;
-                
+
                 var sff = IntFactorisation.MusserSFF(ConvertToJaggedArrayPoly(F)).Where(e => e.g.Degree > 0)
                     .Select(e => (g: ConvertToDictionaryPoly(e.g, F.X(x), F.X(y)), e.i)).OrderBy(e => e.i).ToArray();
-                
+
                 var factorsWithMultiplicity = new List<(Polynomial<Rational, Xi>, int)>();
                 var tmpSff = new List<(Polynomial<Rational, Xi>, int)>();
                 foreach (var (g, i) in sff)
@@ -1185,8 +1185,9 @@ public static class BivariatePolynomialFactorization
                 var lc = F.Div(prod).quo;
                 if (!lc.Equals(lc.One))
                     factsF = factsF.Prepend((lc, 1)).ToArray();
-                
+
                 facts.Println($"F = {F}");
+                sff.Println("SFF");
                 factsF.Println($"Factors in Q[{x},{y}]");
                 var nbfacts = facts.Count(f => f.Degree != 0);
                 var nbFacts = factsF.Count(f => f.Item1.Degree != 0);
@@ -1194,6 +1195,9 @@ public static class BivariatePolynomialFactorization
                     Console.WriteLine("######## Problem new factors");
                 else if (nbfacts < nbFacts)
                     Console.WriteLine("######## Problem missing factors");
+                
+                if (nbFacts >= 2 * sff.Length + 1 && factsF.Count(f => f.Item1.CoefMax(y).Degree != 0) > 0)
+                    Console.WriteLine("Interesting case");
 
                 prod = factsF.Aggregate(F.One, (acc, e) => e.Item1.Pow(e.Item2) * acc);
                 Console.WriteLine($"Check2:{prod.Equals(F)}");
@@ -1202,7 +1206,7 @@ public static class BivariatePolynomialFactorization
                 ++ct;
             }
 
-            GlobalStopWatch.Show($"MaxDegree:{m}");
+            GlobalStopWatch.Show($"MaxDegree:{m} NbFactors:{n}");
         }
 
         GlobalStopWatch.Show("End");
