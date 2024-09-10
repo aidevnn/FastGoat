@@ -13,9 +13,9 @@ public static partial class IntFactorisation
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var L = new List<(KPoly<K>, int, int)>();
-        var c = Ring.FastGCD(f, f.Derivative);
+        var c = Ring.FastGCD(f, f.Derivative).Monic;
         var i = 1;
-        var g = f / c;
+        var g = (f / c).Monic;
         while (g.Degree >= 1)
         {
             var p = Ring.FastGCD(c, g);
@@ -23,7 +23,7 @@ public static partial class IntFactorisation
             if (g.Degree > p.Degree)
                 L.Add(((g / p).Monic, 1, i));
 
-            g = p;
+            g = p.Monic;
             ++i;
         }
 
