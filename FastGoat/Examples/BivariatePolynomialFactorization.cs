@@ -482,14 +482,15 @@ public static class BivariatePolynomialFactorization
             var i = scalarLT ? 0 : IntExt.Rng.Next(degLT);
             var j = degLT - i;
             var g = f + X2.Pow(j) * X1.Pow(i);
-            var mn = g.Coefs.Keys.Aggregate(Monom<Xi>.Gcd);
-            var coefs = g.Coefs.ToDictionary(e => e.Key.Div(mn).Item2, e => e.Value);
-            return Primitive(new(g.Indeterminates, g.KZero, new(coefs)));
+            if (!g.ConstTerm.IsZero() || g.Coefs.Keys.Aggregate(Monom<Xi>.Gcd).Degree == 0)
+                return Primitive(g);
+
+            return Primitive(g + IntExt.RngSign * IntExt.Rng.Next(1, 5));
         }
 
         var c = multiplicity ? (maxDegree == 2 ? 3 : 2) : 1;
-        var facts = nbFactors.Range().Select(_ => Choose().Pow(IntExt.Rng.Next(1, 1 + c)))
-            .DistinctBy(f => f.Monic()).Order().ToArray();
+        var facts = (10 * nbFactors).Range().Select(_ => Choose().Pow(IntExt.Rng.Next(1, 1 + c)))
+            .DistinctBy(f => f.Monic()).Take(nbFactors).Order().ToArray();
         var F = facts.Aggregate((a0, a1) => a0 * a1);
         var degX1 = Ring.Decompose(F, X1.ExtractIndeterminate).Item1.Max(e => e.Key.Degree);
         var degX2 = Ring.Decompose(F, X2.ExtractIndeterminate).Item1.Max(e => e.Key.Degree);
