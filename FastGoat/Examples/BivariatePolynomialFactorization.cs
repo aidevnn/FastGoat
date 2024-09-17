@@ -607,16 +607,8 @@ public static class BivariatePolynomialFactorization
     /// </remarks>
     static (int i, Polynomial<Rational, Xi> F2) RewritingPolynomial1(Polynomial<Rational, Xi> F)
     {
-        var (X3, X2, X1, X0) = Ring.Polynomial(Rational.KZero(), MonomOrder.Lex, "X3", "X2", "X1", "X0").Deconstruct();
-        var (x3, x2, x1, x0) = X0.Indeterminates.Deconstruct();
-
-        var (y, x) = F.Indeterminates.Deconstruct();
-        var Fcoefs = Ring.Decompose(F, y).Item1;
-        var F0 = Fcoefs.Select(e => (e.Key.ToKPoly(y).Substitute(X1), e.Value.ToKPoly(x).Substitute(X0)))
-            .Aggregate(X0.Zero, (acc, e) => acc + e.Item1 * e.Item2);
-        var F0coefsX1 = Ring.Decompose(F0, x1).Item1;
-
-        if (F0coefsX1.Last().Value.Degree == 0)
+        var ((x, X), (y, Y)) = F.IndeterminatesAndVariables.Deconstruct();
+        if (F.CoefMax(y).Degree == 0)
             return (0, F);
 
         var degY = F.DegreeOf(y);
@@ -625,19 +617,15 @@ public static class BivariatePolynomialFactorization
         {
             var subs1 = new List<(Xi, Polynomial<Rational, Xi>)>()
             {
-                (x0, X2 + i * X3),
-                (x1, X3)
+                (x, X + i * Y),
+                (y, Y)
             };
 
-            var F1 = F0.Substitute(subs1);
-            var F1coefs = Ring.Decompose(F1, x3).Item1;
-            if (F1coefs.Last().Value.Degree != 0)
+            var F1 = F.Substitute(subs1);
+            if (F1.CoefMax(y).Degree != 0)
                 continue;
 
-            var F2 = F1coefs.Select(e => (e.Key.ToKPoly(X3).Substitute(F.X(y)), e.Value.ToKPoly(X2).Substitute(F.X(x))))
-                .Aggregate(F.Zero, (acc, e) => acc + e.Item1 * e.Item2);
-
-            return (i, Primitive(F2));
+            return (i, Primitive(F1));
         }
 
         throw new();
