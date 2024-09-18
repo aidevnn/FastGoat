@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Diagnostics;
 using System.Numerics;
+using System.Reflection.Emit;
 using FastGoat.Commons;
 using FastGoat.Examples;
 using FastGoat.Structures;
@@ -35,99 +36,92 @@ using GroupRegX = System.Text.RegularExpressions;
 
 Console.WriteLine("Hello World");
 
-Polynomial<Rational, Xi> Primitive(Polynomial<Rational, Xi> f)
+// def binary_split(a, b):
+//     if b == a + 1:
+//         Pab = -(6*a - 5)*(2*a - 1)*(6*a - 1)
+//         Qab = 10939058860032000 * a**3
+//         Rab = Pab * (545140134*a + 13591409)
+//     else:
+//         m = (a + b) // 2
+//         Pam, Qam, Ram = binary_split(a, m)
+//         Pmb, Qmb, Rmb = binary_split(m, b)
+//         
+//         Pab = Pam * Pmb
+//         Qab = Qam * Qmb
+//         Rab = Qmb * Ram + Pam * Rmb
+//     return Pab, Qab, Rab
+// 
+// 
+// def chudnovsky(n):
+//     """Chudnovsky algorithm."""
+//     P1n, Q1n, R1n = binary_split(1, n)
+//     return (426880 * decimal.Decimal(10005).sqrt() * Q1n) / (13591409*Q1n + R1n)
+// 
+// 
+// print(f"1 = {chudnovsky(2)}")  # 3.141592653589793238462643384
+// 
+// decimal.getcontext().prec = 100 # number of digits of decimal precision
+// for n in range(2,10):
+//     print(f"{n} = {chudnovsky(n)}")  # 3.14159265358979323846264338...
+
+(BigReal Pab, BigReal Qab, BigReal Rab) BinarySplit(int a, int b, int O = 20)
 {
-    if (f.IsZero())
-        return f;
+    if (b == a + 1)
+    {
+        var ba = BigReal.BrOne(O) * a;
+        var Pab = -(6 * ba - 5) * (2 * ba - 1) * (6 * ba - 1);
+        var Qab = BigReal.FromBigInteger(new(10939058860032000), O) * ba.Pow(3);
+        var Rab = Pab * (545140134 * ba + 13591409);
+        return (Pab, Qab, Rab);
+    }
+    else
+    {
+        var m = (a + b) / 2;
+        var (Pam, Qam, Ram) = BinarySplit(a, m, O);
+        var (Pmb, Qmb, Rmb) = BinarySplit(m, b, O);
+
+        var Pab = Pam * Pmb;
+        var Qab = Qam * Qmb;
+        var Rab = Qmb * Ram + Pam * Rmb;
+        return (Pab, Qab, Rab);
+    }
+}
+
+BigReal Chudnovsky(int n, int O = 20)
+{
+    var (P1n, Q1n, R1n) = BinarySplit(1, n, O);
+    return (426880 * BigReal.FromBigInteger(10005, O).Sqrt() * Q1n) / (13591409 * Q1n + R1n);
+}
+
+BigReal Euler(int O)
+{
+    var fact = BigReal.BrOne(O + 3);
+    var n = fact.One;
+    var sum = fact.One;
+    while (!fact.IsZero())
+    {
+        sum += fact;
+        n += 1;
+        fact /= n;
+    }
     
-    var arrGcd = f.Coefs.Values.Where(e => !e.IsZero()).Select(e => e.Absolute.Num).Distinct().Order().ToArray();
-    var arrLcm = f.Coefs.Values.Select(e => e.Absolute.Denom).Distinct().Order().ToArray();
-    return f * new Rational(f.LeadingDetails.lc.Sign * IntExt.LcmBigInt(arrLcm), IntExt.GcdBigInt(arrGcd));
-}
-
-(Polynomial<Rational, Xi> F, Polynomial<Rational, Xi>[] facts)
-    GenerateRandomPolynomialFxy(int nbFactors, int maxDegree, bool scalarLT = true, bool multiplicity = false)
-{
-    // TODO
-    var (X2, X1) = Ring.Polynomial(Rational.KZero(), MonomOrder.Lex, "X2", "X1").Deconstruct();
-    var x1s = (1 + maxDegree).Range().Select(X1.Pow).ToArray();
-    var x2s = maxDegree.Range().Select(X2.Pow).ToArray();
-    var x1x2s = x1s.Grid2D(x2s).Select(e => e.t1 * e.t2).Where(f => f.Degree <= maxDegree).Order().ToArray();
-    var nbMonoms = x1x2s.Length;
-    var nbNonScalarLT = scalarLT ? 0 : Rng.Next(1, nbFactors);
-    var (x2, x1) = X1.Indeterminates.Deconstruct();
-
-    Polynomial<Rational, Xi> Choose()
-    {
-        var f = (1 + IntExt.Rng.Next(nbMonoms)).Range()
-            .Select(_ => x1x2s[IntExt.Rng.Next(nbMonoms)] * IntExt.Rng.Next(-5, 5))
-            .Where(e => !e.IsZero())
-            .Aggregate(X1.Zero, (acc, e) => acc + e);
-        
-        f = Primitive(f);
-        var degLT = int.Min(maxDegree, f.Degree + 1);
-        var i = IntExt.Rng.Next(degLT, maxDegree + 1);
-        var j = !scalarLT && nbNonScalarLT > 0 ? IntExt.Rng.Next(degLT, maxDegree + 1) : 0;
-        --nbNonScalarLT;
-        var g = f + X2.Pow(int.Max(i, j)) * X1.Pow(int.Min(i, j));
-        if (!g.ConstTerm.IsZero())
-            return Primitive(g);
-        
-        var mn1 = g.Coefs.Keys.Aggregate(Monom<Xi>.Gcd);
-        if (mn1.Degree == 0)
-            return Primitive(g);
-
-        return Primitive(g) + IntExt.RngSign * IntExt.Rng.Next(1, 5);
-    }
-
-    var c = multiplicity ? (maxDegree == 2 ? 3 : 2) : 1;
-    var facts = 1000.Range().Select(_ => Choose()).Distinct().Take(nbFactors)
-        .Select(f => f.Pow(IntExt.Rng.Next(1, 1 + c))).Order().ToArray();
-    var F = facts.Aggregate((a0, a1) => a0 * a1);
-    var degX1 = F.DegreeOf(x1);
-    var degX2 = F.DegreeOf(x2);
-    if (degX1 > degX2)
-        throw new UnreachableException(); 
-
-    return (F, facts);
-}
-
-bool BatchTest(int nbTest, int nbFactors, int maxDegree, bool scalarLT)
-{
-    for (int i = 0; i < nbTest; i++)
-    {
-        var (F, facts) = GenerateRandomPolynomialFxy(nbFactors, maxDegree, scalarLT, multiplicity: false);
-        var (y, x) = F.Indeterminates.Deconstruct();
-        var testLT = scalarLT ? F.CoefMax(y).Degree > 0 : F.CoefMax(y).Degree == 0;
-        if (testLT || facts.Length != nbFactors || facts.Any(fi => fi.DegreeOf(y) > maxDegree))
-        {
-            Console.WriteLine($"At i = {i} on {nbTest}");
-            Console.WriteLine($"F = {F}");
-            facts.Println();
-            Console.WriteLine();
-            return false;
-        }
-    }
-
-    return true;
+    return BigReal.Round(sum, O - 1).ToBigReal(O);
 }
 
 {
-    Ring.DisplayPolynomial = MonomDisplay.StarCaret;
-    RngSeed(678124);
-    var nbTest = 500;
-    foreach (var (n, m) in 4.Range(1).SelectMany(m => (5 - m).Range(2).Select(n => (n, m))))
-    {
-        var testName = $"NbFactors:{n} MaxDegree:{m} ScalarLT";
-        var result = BatchTest(nbTest, nbFactors: n, maxDegree: m, scalarLT: true);
-        Console.WriteLine($"Test {testName,-40} :{(result ? "Success" : "Failure")}");
-    }
-
-    Console.WriteLine();
-    foreach (var (n, m) in 4.Range(2).SelectMany(m => (6 - m).Range(2).Select(n => (n, m))))
-    {
-        var testName = $"NbFactors:{n} MaxDegree:{m} Non-ScalarLT";
-        var result = BatchTest(nbTest, nbFactors: n, maxDegree: m, scalarLT: false);
-        Console.WriteLine($"Test {testName,-40} :{(result ? "Success" : "Failure")}");
-    }
+    Console.WriteLine(Chudnovsky(2).ToFixForm());
+    Console.WriteLine(Chudnovsky(10, 100).ToFixForm());
+    Console.WriteLine(BigReal.Pi(100).ToFixForm());
+    var pi1000a = Chudnovsky(80, 1005);
+    var pi1000b = Chudnovsky(81, 1005);
+    Console.WriteLine((pi1000b - pi1000a).ToFixForm());
+    Console.WriteLine(pi1000a.ToFixForm());
+    Console.WriteLine(pi1000b.ToFixForm());
+    Console.WriteLine(BigReal.Round(pi1000a, 999).ToBigReal(1000).ToFixForm());
+    Console.WriteLine(BigReal.Round(pi1000b - pi1000a, 1000).ToFixForm());
+    
+    Console.WriteLine(Euler(20).ToFixForm());
+    Console.WriteLine(Euler(100).ToFixForm());
+    Console.WriteLine(Euler(200).ToFixForm());
+    Console.WriteLine(Euler(1000).ToFixForm());
 }
