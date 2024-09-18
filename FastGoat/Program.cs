@@ -36,6 +36,7 @@ using GroupRegX = System.Text.RegularExpressions;
 
 Console.WriteLine("Hello World");
 
+// wikipedia algorithme de chudnovski
 // def binary_split(a, b):
 //     if b == a + 1:
 //         Pab = -(6*a - 5)*(2*a - 1)*(6*a - 1)
@@ -89,39 +90,44 @@ Console.WriteLine("Hello World");
 
 BigReal Chudnovsky(int n, int O = 20)
 {
-    var (P1n, Q1n, R1n) = BinarySplit(1, n, O);
-    return (426880 * BigReal.FromBigInteger(10005, O).Sqrt() * Q1n) / (13591409 * Q1n + R1n);
+    var (P1n, Q1n, R1n) = BinarySplit(1, n, O + 3);
+    var pi = (426880 * BigReal.FromBigInteger(10005, O + 3).Sqrt() * Q1n) / (13591409 * Q1n + R1n);
+    return BigReal.Round(pi, O - 1).ToBigReal(O);
 }
 
-BigReal Euler(int O)
+BigReal EulerNumber(int O)
 {
     var fact = BigReal.BrOne(O + 3);
+    var facti = fact;
     var n = fact.One;
     var sum = fact.One;
-    while (!fact.IsZero())
+    while (!facti.IsZero())
     {
-        sum += fact;
+        sum += facti;
         n += 1;
-        fact /= n;
+        fact *= n;
+        facti = fact.Inv();
     }
-    
+
     return BigReal.Round(sum, O - 1).ToBigReal(O);
 }
 
 {
-    Console.WriteLine(Chudnovsky(2).ToFixForm());
-    Console.WriteLine(Chudnovsky(10, 100).ToFixForm());
-    Console.WriteLine(BigReal.Pi(100).ToFixForm());
-    var pi1000a = Chudnovsky(80, 1005);
-    var pi1000b = Chudnovsky(81, 1005);
-    Console.WriteLine((pi1000b - pi1000a).ToFixForm());
-    Console.WriteLine(pi1000a.ToFixForm());
-    Console.WriteLine(pi1000b.ToFixForm());
-    Console.WriteLine(BigReal.Round(pi1000a, 999).ToBigReal(1000).ToFixForm());
-    Console.WriteLine(BigReal.Round(pi1000b - pi1000a, 1000).ToFixForm());
-    
-    Console.WriteLine(Euler(20).ToFixForm());
-    Console.WriteLine(Euler(100).ToFixForm());
-    Console.WriteLine(Euler(200).ToFixForm());
-    Console.WriteLine(Euler(1000).ToFixForm());
+    foreach (var n in new[] { 2, 10, 20, 80 })
+    {
+        var O = 25 * n / 2;
+        var pi0 = Chudnovsky(n, O);
+        Console.WriteLine(pi0.ToFixForm());
+        Console.WriteLine((pi0 - BigReal.Pi(O)).ToFixForm());
+    }
+
+    Console.WriteLine();
+
+    foreach (var O in new[] { 25, 125, 250, 1000 })
+    {
+        var e0 = EulerNumber(O);
+        var e1 = BigReal.E(O);
+        Console.WriteLine(e0.ToFixForm());
+        Console.WriteLine((e0 - e1).ToFixForm());
+    }
 }

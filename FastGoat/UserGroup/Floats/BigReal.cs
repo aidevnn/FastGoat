@@ -25,11 +25,17 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
     public static BigReal BrOne(int o) => o > 0 ? new(1, 0, o) : throw new();
     public static BigReal BrPow10n(int n, int o) => o > 0 ? new(1, n, o) : throw new();
 
-    public static BigReal Pi(int O) =>
-        FromBigInteger(BigInteger.Parse(PiStr.Take(O).Glue()), O).Mul10PowN(-int.Min(O, 1000) + 1);
+    public static BigReal Pi(int O)
+    {
+        var pi = FromBigInteger(BigInteger.Parse(PiStr.Take(O + 2).Glue()), O + 2).Mul10PowN(-int.Min(O + 2, 1000) + 1);
+        return Round(pi, O - 1).ToBigReal(O);
+    }
 
-    public static BigReal E(int O) =>
-        FromBigInteger(BigInteger.Parse(EStr.Take(O).Glue()), O).Mul10PowN(-int.Min(O, 1000) + 1);
+    public static BigReal E(int O) 
+    {
+        var e = FromBigInteger(BigInteger.Parse(EStr.Take(O + 2).Glue()), O + 2).Mul10PowN(-int.Min(O + 2, 1000) + 1);
+        return Round(e, O - 1).ToBigReal(O);
+    }
     
     public BigInteger K { get; }
     public int NbDigits { get; }
