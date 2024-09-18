@@ -310,8 +310,8 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
         return aj;
     }
     public BigReal RoundEven => Round0;
-
-    // TODO Fix
+    
+    // TODO fix
     public static BigReal Round(BigReal br, int d = 0, MidpointRounding mid = MidpointRounding.ToEven,
         Rounding form = Rounding.FixForm)
     {
@@ -321,10 +321,10 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
         if (form == Rounding.SciForm && d > br.NbDigits)
             return br;
 
-        if (form == Rounding.FixForm && br.V - 1 >= br.NbDigits)
+        if (form == Rounding.FixForm && br.V + d + 1 >= br.NbDigits)
             return br;
 
-        if (form == Rounding.FixForm && -d > br.V + 1)
+        if (form == Rounding.FixForm && br.V + d + 1 <= 0)
             return br.Zero;
 
         var d0 = form == Rounding.SciForm ? d + 1 : d + 1 + br.V;
