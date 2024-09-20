@@ -61,7 +61,7 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
     public int CompareTo(BigReal other)
     {
         var sub = Sub(other);
-        return sub.IsZero() ? 0 : sub.K.Sign;
+        return sub.K.IsZero ? 0 : sub.K.Sign;
     }
 
     public int Hash { get; }
@@ -127,7 +127,7 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
 
     public BigReal Mul(BigReal e)
     {
-        if (IsZero() || e.IsZero())
+        if (K.IsZero || e.K.IsZero)
             return Zero;
 
         if (O < e.O)
@@ -142,7 +142,7 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
 
     public (BigReal quo, BigReal rem) Div(BigReal e)
     {
-        if (e.IsZero())
+        if (e.K.IsZero)
             throw new DivideByZeroException();
 
         if (O < e.O)
@@ -191,9 +191,9 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
 
     public BigReal Round0 => Round(this);
 
-    public double ToDouble => double.Parse(ToSciForm());
+    public double ToDouble => double.Parse(ToBigReal(17).ToSciForm());
     
-    public decimal ToDecimal => decimal.Parse(ToFixForm());
+    public decimal ToDecimal => decimal.Parse(ToBigReal(29).ToFixForm());
 
     public BigReal Absolute => new(BigInteger.Abs(K), V, O);
     public BigReal Sqrt() => Sqrt(this);
@@ -311,7 +311,6 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
     }
     public BigReal RoundEven => Round0;
     
-    // TODO fix
     public static BigReal Round(BigReal br, int d = 0, MidpointRounding mid = MidpointRounding.ToEven,
         Rounding form = Rounding.FixForm)
     {
@@ -324,7 +323,7 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
         if (form == Rounding.FixForm && br.V + d + 1 >= br.NbDigits)
             return br;
 
-        if (form == Rounding.FixForm && br.V + d + 1 <= 0)
+        if (form == Rounding.FixForm && br.V + d + 1 < 0)
             return br.Zero;
 
         var d0 = form == Rounding.SciForm ? d + 1 : d + 1 + br.V;
@@ -344,7 +343,7 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
             else
                 return br0 + new BigReal(rs, d1, br.O);
         }
-        else
+        else // last digit
         {
             if (mid == MidpointRounding.ToEven)
             {
@@ -369,7 +368,7 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
             }
             else if (mid == MidpointRounding.ToZero)
                 return br0;
-            else
+            else // MidpointRounding.AwayFromZero
                 return br0 + new BigReal(rs, d1, br.O);
         }
     }

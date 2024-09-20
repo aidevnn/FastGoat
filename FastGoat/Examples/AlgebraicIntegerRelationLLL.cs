@@ -266,7 +266,7 @@ public static class AlgebraicIntegerRelationLLL
         var roots = IntFactorisation.SplittingField(P); // D10
         var minPoly = roots[0].F.SubstituteChar('X');
 
-        var O1 = 40; // rounding digits
+        var O1 = 45; // rounding digits
         var O2 = 50; // maximum precision digits
         GlobalStopWatch.Restart();
         Logger.Level = LogLevel.Level1;
@@ -310,7 +310,7 @@ public static class AlgebraicIntegerRelationLLL
         var roots = IntFactorisation.SplittingField(P); // C5x:C4
         var minPoly = roots[0].F.SubstituteChar('X');
 
-        var O1 = 80; // rounding digits
+        var O1 = 90; // rounding digits
         var O2 = 100; // maximum precision digits
         GlobalStopWatch.Restart();
         Logger.Level = LogLevel.Level1;

@@ -165,4 +165,64 @@ public class BigRealUnitTest
             Assert.False(diff > err, $"{str1} ### {str2}");
         }
     }
+
+    [Fact]
+    public void TestRoundSciForm()
+    {
+        var form = Rounding.SciForm;
+        var a = BigReal.FromString("3.67849275e-5", 15);
+
+        Assert.Equal(BigReal.FromString("4e-5", 15), BigReal.Round(a, 0, MidpointRounding.ToEven, form));
+        Assert.Equal(BigReal.FromString("3.7e-5", 15), BigReal.Round(a, 1, MidpointRounding.ToEven, form));
+        Assert.Equal(BigReal.FromString("3.68e-5", 15), BigReal.Round(a, 2, MidpointRounding.ToEven, form));
+        Assert.Equal(BigReal.FromString("3.678e-5", 15), BigReal.Round(a, 3, MidpointRounding.ToEven, form));
+        Assert.Equal(BigReal.FromString("3.6785e-5", 15), BigReal.Round(a, 4, MidpointRounding.ToEven, form));
+        Assert.Equal(BigReal.FromString("3.67849e-5", 15), BigReal.Round(a, 5, MidpointRounding.ToEven, form));
+        Assert.Equal(BigReal.FromString("3.678493e-5", 15), BigReal.Round(a, 6, MidpointRounding.ToEven, form));
+        Assert.Equal(BigReal.FromString("3.67849275e-5", 15), BigReal.Round(a, 8, MidpointRounding.ToEven, form));
+        
+        // last digit
+        Assert.Equal(BigReal.FromString("3.6784928e-5", 15), BigReal.Round(a, 7, MidpointRounding.ToEven, form));
+        Assert.Equal(BigReal.FromString("3.6784927e-5", 15), BigReal.Round(a, 7, MidpointRounding.ToZero, form));
+        Assert.Equal(BigReal.FromString("3.6784928e-5", 15), BigReal.Round(a, 7, MidpointRounding.AwayFromZero, form));
+        Assert.Equal(BigReal.FromString("3.6784927e-5", 15), BigReal.Round(a, 7, MidpointRounding.ToNegativeInfinity, form));
+        Assert.Equal(BigReal.FromString("3.6784928e-5", 15), BigReal.Round(a, 7, MidpointRounding.ToPositiveInfinity, form));
+        
+        Assert.Equal(BigReal.FromString("-3.6784928e-5", 15), BigReal.Round(-a, 7, MidpointRounding.ToEven, form));
+        Assert.Equal(BigReal.FromString("-3.6784927e-5", 15), BigReal.Round(-a, 7, MidpointRounding.ToZero, form));
+        Assert.Equal(BigReal.FromString("-3.6784928e-5", 15), BigReal.Round(-a, 7, MidpointRounding.AwayFromZero, form));
+        Assert.Equal(BigReal.FromString("-3.6784928e-5", 15), BigReal.Round(-a, 7, MidpointRounding.ToNegativeInfinity, form));
+        Assert.Equal(BigReal.FromString("-3.6784927e-5", 15), BigReal.Round(-a, 7, MidpointRounding.ToPositiveInfinity, form));
+    }
+    
+    [Fact]
+    public void TestRoundFixForm()
+    {
+        var form = Rounding.FixForm;
+        var a = BigReal.FromString("3.67849275e-5", 15);
+
+        Assert.Equal(BigReal.BrZero(15), BigReal.Round(a, 0, MidpointRounding.ToEven, form));
+        Assert.Equal(BigReal.BrZero(15), BigReal.Round(a, 1, MidpointRounding.ToEven, form));
+        Assert.Equal(BigReal.FromString("4e-5", 15), BigReal.Round(a, 5, MidpointRounding.ToEven, form));
+        Assert.Equal(BigReal.FromString("3.7e-5", 15), BigReal.Round(a, 6, MidpointRounding.ToEven, form));
+        Assert.Equal(BigReal.FromString("3.68e-5", 15), BigReal.Round(a, 7, MidpointRounding.ToEven, form));
+        Assert.Equal(BigReal.FromString("3.678e-5", 15), BigReal.Round(a, 8, MidpointRounding.ToEven, form));
+        Assert.Equal(BigReal.FromString("3.6785e-5", 15), BigReal.Round(a, 9, MidpointRounding.ToEven, form));
+        Assert.Equal(BigReal.FromString("3.67849e-5", 15), BigReal.Round(a, 10, MidpointRounding.ToEven, form));
+        Assert.Equal(BigReal.FromString("3.678493e-5", 15), BigReal.Round(a, 11, MidpointRounding.ToEven, form));
+        Assert.Equal(BigReal.FromString("3.67849275e-5", 15), BigReal.Round(a, 13, MidpointRounding.ToEven, form));
+        
+        // last digit
+        Assert.Equal(BigReal.FromString("3.6784928e-5", 15), BigReal.Round(a, 12, MidpointRounding.ToEven, form));
+        Assert.Equal(BigReal.FromString("3.6784927e-5", 15), BigReal.Round(a, 12, MidpointRounding.ToZero, form));
+        Assert.Equal(BigReal.FromString("3.6784928e-5", 15), BigReal.Round(a, 12, MidpointRounding.AwayFromZero, form));
+        Assert.Equal(BigReal.FromString("3.6784927e-5", 15), BigReal.Round(a, 12, MidpointRounding.ToNegativeInfinity, form));
+        Assert.Equal(BigReal.FromString("3.6784928e-5", 15), BigReal.Round(a, 12, MidpointRounding.ToPositiveInfinity, form));
+        
+        Assert.Equal(BigReal.FromString("-3.6784928e-5", 15), BigReal.Round(-a, 12, MidpointRounding.ToEven, form));
+        Assert.Equal(BigReal.FromString("-3.6784927e-5", 15), BigReal.Round(-a, 12, MidpointRounding.ToZero, form));
+        Assert.Equal(BigReal.FromString("-3.6784928e-5", 15), BigReal.Round(-a, 12, MidpointRounding.AwayFromZero, form));
+        Assert.Equal(BigReal.FromString("-3.6784928e-5", 15), BigReal.Round(-a, 12, MidpointRounding.ToNegativeInfinity, form));
+        Assert.Equal(BigReal.FromString("-3.6784927e-5", 15), BigReal.Round(-a, 12, MidpointRounding.ToPositiveInfinity, form));
+    }
 }
