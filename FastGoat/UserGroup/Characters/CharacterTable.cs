@@ -169,14 +169,16 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
         var e = Gr.Neutral();
         var doneChis = DoneChis;
         var idx = AllCharacters.ToList().FindIndex(chi => !chi.HasAllValues);
+        var c0 = AllCharacters[idx][e];
+        if (!c0.HasValue)
+            return ChiE;
 
         Cnf? Starting(T e0) => e0.Equals(e) ? Cnf.CnfOne * Gr.Count() : Cnf.CnfZero;
         var map = Classes.ToDictionary(
             cl => cl,
             cl => doneChis.Aggregate(Starting(cl), (sum, chi) => sum - chi[e] * chi[cl])
         );
-
-        var c0 = AllCharacters[idx][e];
+        
         foreach (var (k, v) in map.ToArray())
             map[k] = v / c0;
 
