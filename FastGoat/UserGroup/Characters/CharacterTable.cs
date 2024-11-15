@@ -191,7 +191,7 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
             return;
 
         SolveSumSquare();
-        AllCharacters = AllCharacters.Order().ToArray();
+        OrderCharacters();
         if (TableComplete)
             return;
 
@@ -211,7 +211,7 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
             return;
 
         SolveSumSquare();
-        AllCharacters = AllCharacters.Order().ToArray();
+        OrderCharacters();
         if (TableComplete)
             return;
 
@@ -236,7 +236,7 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
         if (!Gr.SubSetOf(superGr))
             return;
 
-        AllCharacters = AllCharacters.Order().ToArray();
+        OrderCharacters();
         if (TableComplete)
             return;
 
@@ -262,7 +262,7 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
         if (!Gr.SubSetOf(ctSuperGr.Gr))
             return;
 
-        AllCharacters = AllCharacters.Order().ToArray();
+        OrderCharacters();
         if (TableComplete)
             return;
 
@@ -417,9 +417,15 @@ public partial class CharacterTable<T> where T : struct, IElt<T>
         return cellStrs;
     }
 
-    public void DisplayCells(bool tableOnly = false, char Chi = 'Ꭓ')
+    public void OrderCharacters()
     {
         AllCharacters = AllCharacters.Order().ToArray();
+    }
+
+    public void DisplayCells(bool tableOnly = false, char Chi = 'Ꭓ')
+    {
+        OrderCharacters();
+        
         var form = Ring.MatrixDisplayForm;
         var digits = $"{NbClasses}".Length;
         var fmtChi = $"{Chi}.{{0,-{digits}}}";
