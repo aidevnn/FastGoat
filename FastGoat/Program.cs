@@ -35,10 +35,3 @@ using GroupRegX = System.Text.RegularExpressions;
 //////////////////////////////////
 
 Console.WriteLine("Hello World");
-
-{
-    foreach (var p in Primes10000.Skip(1).Take(7))
-        FG.CharacterTable(Group.SemiDirectProd(new Cn(p), new Cn(p - 1))).DisplayCells();
-
-    Console.Beep();
-}

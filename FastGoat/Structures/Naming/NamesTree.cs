@@ -116,9 +116,9 @@ public static class NamesTree
 
         var normals = subgroups.ProperNonTrivialNormalSubgroups();
         var allProds = subgroups.DecomposeProducts(normals)
-            .Select(e => (e.Item1, e.Item2,
-                e.Item3 ? ANameElt.DecompType.DirectProduct : ANameElt.DecompType.SemiDirectProduct))
-            .Select(e => (subgroups.Restriction(e.Item1.Representative), subgroups.Restriction(e.Item2.Representative),
+            .Select(e => (e.lhs, e.rhs,
+                e.isDirectProduct ? ANameElt.DecompType.DirectProduct : ANameElt.DecompType.SemiDirectProduct))
+            .Select(e => (subgroups.Restriction(e.lhs.Representative), subgroups.Restriction(e.rhs.Representative),
                 e.Item3))
             .ToArray();
 

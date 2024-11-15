@@ -126,7 +126,8 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
         return AllSubgroupConjugates.Where(cj => cj.IsProperNormal && !cj.IsTrivial).ToArray();
     }
     
-    public List<(SubgroupConjugates<T>, SubgroupConjugates<T>, bool)> DecomposeProducts(SubgroupConjugates<T>[] subgnormals)
+    public List<(SubgroupConjugates<T> lhs, SubgroupConjugates<T> rhs, bool isDirectProduct)> 
+        DecomposeProducts(SubgroupConjugates<T>[] subgnormals)
     {
         var normals = new Queue<SubgroupConjugates<T>>(subgnormals);
         var og = Parent.Count();
