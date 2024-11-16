@@ -890,7 +890,7 @@ public static partial class FG
             var sn = new Sn(dim);
             var m1s = IntExt.Partitions32[dim].OrderBy(l => l.Count)
                 .Select(t => IntExt.PermAndCyclesFromType(t.Order().ToArray()))
-                .Select(e =>
+                .Select<(int[] perm, int[][] cycles), IEnumerable<(int[] perm, int[][] cycles, Mat mat)>>(e =>
                 {
                     var e0 = gl.Neutral().Table.Chunk(dim).ToArray();
                     var perm = sn.CreateElement(e.perm.Select(i => i + 1).ToArray());
@@ -900,8 +900,7 @@ public static partial class FG
                         .Where(mat => mat.IsOrder(n))
                         .Select(mat => (e.perm, e.cycles, mat));
                 })
-                .SelectMany(e => e)
-                .AsParallel();
+                .SelectMany(e => e);
 
             foreach (var (perm, cycles, m1) in m1s)
             {
