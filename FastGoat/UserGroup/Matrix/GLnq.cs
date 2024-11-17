@@ -15,7 +15,7 @@ public class GLnq : IGroup<MatFq>
 
     public GLnq(int n, int q)
     {
-        if (n < 1 || n > 4)
+        if (n < 1 || n > 5)
             throw new GroupException(GroupExceptionType.GroupDef);
 
         N = n;

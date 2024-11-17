@@ -38,6 +38,12 @@ public static class PolynomExt
     /// <returns>A tuple containing the prime and multiplicity of the polynomial, as well as an array of coefficients.</returns>
     public static ((int p, int m) pm, int[] coefs) GetConwayPoly(int q)
     {
+        if (IntExt.Primes10000.Contains(q))
+        {
+            var k = IntExt.Solve_k_pow_m_equal_one_mod_n_strict(q, q - 1);
+            return ((q, 1), [k, 1]);
+        }
+        
         var pm = IntExt.PrimesDecomposition(q).ToArray();
         if (pm.Distinct().Count() != 1)
             throw new();

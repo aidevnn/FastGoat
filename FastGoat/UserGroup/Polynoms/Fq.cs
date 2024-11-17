@@ -24,7 +24,8 @@ public struct Fq : IGroup<EPoly<ZnInt>>
         Hash = (Q, "fq").GetHashCode();
         Name = $"F{Q}";
         FullName = Q == P ? Name : $"{Name} = F{P}({x}) = F{P}[{x}]/({F})";
-        X = new(F, F.X.Div(F).rem);
+        var gen = p != q ? F.X.Div(F).rem : F.One * (IntExt.Solve_k_pow_m_equal_one_mod_n_strict(p, p - 1));
+        X = new(F, gen);
     }
 
     public IEnumerator<EPoly<ZnInt>> GetEnumerator() => GetElements().GetEnumerator();

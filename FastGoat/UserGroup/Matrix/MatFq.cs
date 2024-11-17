@@ -27,6 +27,11 @@ public struct MatFq : IElt<MatFq>
 
     public EPoly<ZnInt> Det => GLnq.Determinant(this);
     
+    public bool IsOrder(int ord)
+    {
+        return Group.ElementIsOrder(GLnq, this, ord);
+    }
+
     public MatFq T
     {
         get
