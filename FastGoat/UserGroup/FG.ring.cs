@@ -808,6 +808,42 @@ public static partial class FG
         }).Prepend(diag).ToArray();
     }
 
+    public static MatFq[] DPGLnqGenerators(int n, int q)
+    {
+        var og = FG.DPGLnpOrder(n, q);
+        if (og > FG.MatrixGroupMaxOrder || IntExt.PrimesDecomposition(q).Distinct().Count() != 1)
+            throw new();
+
+        var gl = new GLnq(n, q);
+        Console.WriteLine(gl);
+        var x = gl.Fq.X;
+        var fq = Group.MulGroup("Fq", x);
+        var e0 = fq.First(e => fq.ElementsOrders[e] == q - 1);
+        var diag = gl.Neutral().Table.Select((c, i) => i == 0 ? e0 : c).ToArray();
+        return FG.SnGensMat(n).Select(e => gl.Create(e.Table.Select(k => k * x.One).ToArray()))
+            .Prepend(gl.Create(diag)).ToArray();
+    }
+
+    public static MatFq[] DPSLnqGenerators(int n, int q)
+    {
+        var og = FG.DPSLnpOrder(n, q);
+        if (og > FG.MatrixGroupMaxOrder)
+            throw new();
+
+        var gl = new GLnq(n, q);
+        var x = gl.Fq.X;
+        var fq = Group.MulGroup("Fq", x);
+        var e0 = fq.First(e => fq.ElementsOrders[e] == q - 1);
+        var e1 = e0.Inv();
+        var diag = gl.Neutral().Table.Select((c, i) => i == 0 ? e0 : (i == n + 1 ? e1 : c)).ToArray();
+        return FG.SnGensMat(n).Select(e => gl.Create(e.Table.Select(k => k * x.One).ToArray())).Select(m =>
+        {
+            var deti = m.Det.Inv();
+            var m0 = gl.Create(gl.Neutral().Table.Select((c, i) => i == 0 ? deti : c).ToArray());
+            return gl.Op(m0, m);
+        }).Prepend(gl.Create(diag)).ToArray();
+    }
+
     public static ConcreteGroup<Mat> DPGLnp(int n, int p)
     {
         var gens = DPGLnpGenerators(n, p);
@@ -820,6 +856,20 @@ public static partial class FG
         var gens = DPSLnpGenerators(n, p);
         var gl = gens[0].GL;
         return Group.Generate($"DPSL({n},{p})", gl, gens);
+    }
+
+    public static ConcreteGroup<MatFq> DPGLnq(int n, int q)
+    {
+        var gens = DPGLnqGenerators(n, q);
+        var gl = gens[0].GLnq;
+        return Group.Generate($"DPGL({n},F{q})", gl, gens);
+    }
+
+    public static ConcreteGroup<MatFq> DPSLnq(int n, int q)
+    {
+        var gens = DPSLnqGenerators(n, q);
+        var gl = gens[0].GLnq;
+        return Group.Generate($"DPSL({n},F{q})", gl, gens);
     }
 
     public static ConcreteGroup<Mat> AbelianMat(params int[] seq)
