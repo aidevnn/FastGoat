@@ -183,6 +183,11 @@ public readonly struct <#= epk #> : IElt<<#= epk #>> <#= whereTn #>
         {
             (<#= Glue(ei, ", ") #>) = (<#= Glue(Ei, ", ") #>);
         }
+
+        public static implicit operator <#= epk #>((<#= Glue(Tiei, ", ") #>) a)
+        {
+                return new(<#= Glue(ei.Select(e=> $"a.{e}"), ", ") #>);
+        }
 }
 
 public static partial class Product

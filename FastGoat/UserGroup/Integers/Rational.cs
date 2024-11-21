@@ -180,6 +180,7 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
         throw new NotImplementedException();
     }
     public static implicit operator double(Rational e) => e.ToDouble;
+    public static implicit operator Rational(string e) => Rational.Parse(e);
     public static Rational operator +(Rational a, Rational b) => a.Add(b);
     public static Rational operator +(int a, Rational b) => b.Add(b.One.Mul(a));
     public static Rational operator +(Rational a, int b) => a.Add(a.One.Mul(b));
