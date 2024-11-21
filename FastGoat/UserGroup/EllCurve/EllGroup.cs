@@ -14,7 +14,12 @@ public struct EllGroup<T> : IGroup<EllPt<T>> where T : struct, IElt<T>, IRingElt
             throw new GroupException(GroupExceptionType.GroupDef);
         
         (A, B) = (a, b);
-        var field = A.P == 0 ? $"{typeof(T)}" : $"Z/{A.P}Z";
+        var field = typeof(T).Name;
+        if (a is Rational a0)
+            field = "Q";
+        else if (a is ZnInt a1)
+            field = $"Z/{A.P}Z";
+        
         Name = $"Ell[{a},{b}]({field})";
         Hash = (a, b).GetHashCode();
     }
