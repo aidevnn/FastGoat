@@ -99,7 +99,10 @@ public static partial class FG
         do
         {
             ai = aj;
-            aj = ai - (P.Substitute(ai) / dP.Substitute(ai)); // Newton iteration
+            var dpai = dP.Substitute(ai);
+            if (dpai.IsZero())
+                break;
+            aj = ai - (P.Substitute(ai) / dpai); // Newton iteration
         } while (!(ai - aj).IsZero() && i++ < maxLoop);
 
         return aj;
