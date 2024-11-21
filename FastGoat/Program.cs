@@ -86,7 +86,7 @@ int[] EllFp(int a, int b, int p, bool show = false)
     var gEll = Group.Generate(E, ell);
     if (show)
         DisplayGroup.HeadElements(gEll);
-    
+
     var abType = Group.AbelianGroupType(gEll);
     Console.WriteLine($"{gEll} ~ {abType.Glue(" x ", "C{0}")}");
     if (gEll.Any(e => !e.IsO && !E.Contains(e.X, e.Y)))
@@ -112,20 +112,109 @@ void Ellmorph(int a, int b, int nbPrimes = 10, bool show = false)
             set = sub;
             continue;
         }
-        
+
         set.IntersectWith(sub);
     }
 
     allTypes.Println(e => e.Glue(" x ", "C{0}"), $"E[{a},{b}](Rational) ->");
     set.Select(l => l.ToArray()).Println(e => e.Glue(" x ", "C{0}"), "Intersection");
     var tor = set.MaxBy(l => l.Aggregate(1, (acc, i) => acc * i));
-    Console.WriteLine($"E[{a},{b}](Q) Torsion = {tor!.Glue(" x ", "C{0}")}");
+    Console.WriteLine($"Ell[{a},{b}](Q) Torsion = {tor!.Glue(" x ", "C{0}")}");
     Console.WriteLine();
 }
 
+(int disc, int[]) CandidatsY(int a, int b)
 {
-    Ellmorph(-36, 0, show: true); // E[-36,0](Q) Torsion = C2 x C2
-    Ellmorph(0, 3); // E[0,3](Q) Torsion = C1
-    Ellmorph(1, 0); // E[1,0](Q) Torsion = C2
-    Ellmorph(-43, 166, nbPrimes: 20); // E[-43,166](Q) Torsion = C7
+    var disc = 4 * a.Pow(3) + 27 * b.Pow(2);
+    var r = PrimesDec(int.Abs(disc)).Aggregate(1, (acc, e) => acc * e.Key.Pow(e.Value / 2));
+    return (disc, Dividors(r).Append(r).ToArray());
 }
+
+IEnumerable<EllPt<Rational>> SolveX(int a, int b, int[] Ys, bool show = false)
+{
+    var x = FG.BCplxPoly();
+    foreach (var y in Ys.Prepend(0))
+    {
+        var P = x.Pow(3) + a * x + b - y.Pow(2);
+        var sols = FG.NRoots(P);
+        if (show)
+            sols.Println($"Y = {y} P = {P}");
+
+        var ellpts = sols.Where(xi => xi.IsInteger())
+            .Select(xi => new EllPt<Rational>($"{(int)double.Round(xi.RealPart.ToDouble)}", $"{y}"));
+
+        foreach (var pt in ellpts)
+            yield return pt;
+    }
+}
+
+void NagellLutz(int a, int b, bool show = false)
+{
+    var (disc, Ys) = CandidatsY(a, b);
+    var ellpts = SolveX(a, b, Ys, show).ToArray();
+    var E = new EllGroup<Rational>($"{a}", $"{b}");
+    var set = new List<EllPt<Rational>>() { E.O };
+    foreach (var pt in ellpts)
+    {
+        var acc = E.O;
+        for (int i = 1; i <= 12; i++)
+        {
+            acc = E.Op(acc, pt);
+            if (acc.IsO)
+                break;
+        }
+
+        if (acc.IsO)
+            set.Add(pt);
+    }
+    
+    if (show)
+        set.Println("Elements");
+    
+    var gEll = Group.Generate(E, set.ToArray());
+    DisplayGroup.HeadElements(gEll);
+    var abType = Group.AbelianGroupType(gEll);
+    Console.WriteLine($"{gEll} Torsion = {abType.Glue(" x ", "C{0}")}");
+    Console.WriteLine();
+}
+
+// [-36,0]
+// https://www.lmfdb.org/EllipticCurve/Q/576/c/3
+// 
+// [1,0]
+// https://www.lmfdb.org/EllipticCurve/Q/64/a/4
+// 
+// [0,3]
+// https://www.lmfdb.org/EllipticCurve/Q/3888/i/2
+// 
+// [-43,166]
+// https://www.lmfdb.org/EllipticCurve/Q/26/b/2
+void exampleFp()
+{
+    Ellmorph(-36, 0, show: true); // Ell[-36,0](Q) Torsion = C2 x C2
+    Ellmorph(0, 3); // Ell[0,3](Q) Torsion = C1
+    Ellmorph(1, 0); // Ell[1,0](Q) Torsion = C2
+    Ellmorph(-43, 166, nbPrimes: 20); // Ell[-43,166](Q) Torsion = C7
+}
+
+{
+    NagellLutz(-36, 0, show: true); // Ell[-36,0](Q) Torsion = C2 x C2
+    NagellLutz(0, 3); // Ell[0,3](Q) Torsion = C1
+    NagellLutz(1, 0); // Ell[1,0](Q) Torsion = C2
+    NagellLutz(-43, 166); // Ell[-43,166](Q) Torsion = C7
+}
+// |Ell[-43,166](Q)| = 7
+// Type        AbelianGroup
+// BaseGroup   Ell[-43,166](Q)
+// 
+// Elements
+// (1)[1] = O
+// (2)[7] = (-5,-16)
+// (3)[7] = (-5,16)
+// (4)[7] = (3,-8)
+// (5)[7] = (3,8)
+// (6)[7] = (11,-32)
+// (7)[7] = (11,32)
+// 
+// Ell[-43,166](Q) Torsion = C7
+// 
