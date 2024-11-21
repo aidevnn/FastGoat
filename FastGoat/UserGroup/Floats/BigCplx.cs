@@ -58,6 +58,14 @@ public readonly struct BigCplx : IElt<BigCplx>, IRingElt<BigCplx>, IFieldElt<Big
 
     public Rational KZero => Rational.KZero();
     public Rational KOne => Rational.KOne();
+    public bool IsReal() => ImaginaryPart.ToBigReal(O / 2).IsZero();
+    public bool IsImaginary() => RealPart.ToBigReal(O / 2).IsZero();
+    public bool IsInteger()
+    {
+        var re = RealPart.ToBigReal(O / 2);
+        var im = ImaginaryPart.ToBigReal(O / 2);
+        return im.IsZero() && (re - re.Round0).Absolute.IsZero();
+    }
 
     public Complex ToComplex => new(RealPart.ToDouble, ImaginaryPart.ToDouble);
 
