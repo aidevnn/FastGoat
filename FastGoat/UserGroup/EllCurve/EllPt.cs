@@ -25,6 +25,9 @@ public readonly struct EllPt<T> : IElt<EllPt<T>> where T : struct, IElt<T>, IRin
 
     public bool Equals(EllPt<T> other)
     {
+        if ((IsO && !other.IsO) || (!IsO && other.IsO))
+            return false;
+        
         return (IsO && other.IsO) || (X.Equals(other.X) && Y.Equals(other.Y));
     }
 
