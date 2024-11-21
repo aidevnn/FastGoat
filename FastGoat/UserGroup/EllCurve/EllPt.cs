@@ -12,15 +12,15 @@ public readonly struct EllPt<T> : IElt<EllPt<T>> where T : struct, IElt<T>, IRin
 
     public EllPt()
     {
-        Hash = 0;
         IsO = true;
+        Hash = (IsO, X, Y).GetHashCode();
     }
 
     public EllPt(T x, T y)
     {
         IsO = false;
         (X, Y) = (x, y);
-        Hash = (IsO, X0: X, Y0: Y).GetHashCode();
+        Hash = (IsO, X, Y).GetHashCode();
     }
 
     public bool Equals(EllPt<T> other)

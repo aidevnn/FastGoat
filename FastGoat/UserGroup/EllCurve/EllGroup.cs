@@ -9,8 +9,13 @@ public struct EllGroup<T> : IGroup<EllPt<T>> where T : struct, IElt<T>, IRingElt
 {
     public EllGroup(T a, T b)
     {
+        var disc = 4 * a.Pow(3) + 27 * b.Pow(2);
+        if (disc.IsZero())
+            throw new GroupException(GroupExceptionType.GroupDef);
+        
         (A, B) = (a, b);
-        Name = $"Ell({a},{b})";
+        var field = A.P == 0 ? $"{typeof(T)}" : $"Z/{A.P}Z";
+        Name = $"Ell[{a},{b}]({field})";
         Hash = (a, b).GetHashCode();
     }
     public IEnumerator<EllPt<T>> GetEnumerator() => GetElements().GetEnumerator();
@@ -78,7 +83,10 @@ public struct EllGroup<T> : IGroup<EllPt<T>> where T : struct, IElt<T>, IRingElt
 
         var (x1, y1, x2, y2) = (e1.X, e1.Y, e2.X, e2.Y);
         if (!Contains(x1, y1) || !Contains(x2, y2))
+        {
+            Console.WriteLine(new { e1, e2 });
             throw new GroupException(GroupExceptionType.GroupDef);
+        }
         
         if (!x1.Equals(x2))
         {
@@ -92,7 +100,7 @@ public struct EllGroup<T> : IGroup<EllPt<T>> where T : struct, IElt<T>, IRingElt
             if (!y1.Equals(y2.Opp()))
             {
                 var alpha = (3 * x1.Pow(2) + A) / (2 * y1);
-                var x3 = alpha.Pow(2) - x1 - x2;
+                var x3 = alpha.Pow(2) - 2 * x1;
                 var y3 = -y1 + alpha * (x1 - x3);
                 return new(x3, y3);
             }
