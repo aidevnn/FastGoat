@@ -239,8 +239,9 @@ public static class EllipticCurves
         if ((meth & TorsionMeth.NagellLutz) == TorsionMeth.NagellLutz)
         {
             var sols = NagellLutz(A.Num, B.Num, revTrans);
-            sols.Where(pt => pt.X.IsInteger() && pt.Y.IsInteger()).Order()
-                .Println($"Integral Points of {e.lhs} = {e.rhs}");
+            // TODO: fix integral points
+            // sols.Where(pt => pt.X.IsInteger() && pt.Y.IsInteger()).Order()
+            //     .Println($"Integral Points of {e.lhs} = {e.rhs}"); 
         }
 
         Console.WriteLine();
@@ -400,23 +401,6 @@ public static class EllipticCurves
        (16)[8] = (8787,816480)
 
        Ell[-1386747,368636886](Q) Torsion = C8 x C2
-
-       Integral Points of x*y + y^2 = x^3 - 1070*x + 7812
-           (-36,18)
-           (-26,-122)
-           (-26,148)
-           (-8,-122)
-           (-8,130)
-           (4,-62)
-           (4,58)
-           (28,-14)
-           (34,-122)
-           (34,88)
-           (64,-482)
-           (64,418)
-           (244,-3902)
-           (244,3658)
-
      */
 
     public static void ExampleFromLMFDB()
