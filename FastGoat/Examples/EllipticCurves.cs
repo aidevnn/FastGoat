@@ -4,8 +4,8 @@ using FastGoat.Structures;
 using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup;
 using FastGoat.UserGroup.EllCurve;
-using FastGoat.UserGroup.Floats;
 using FastGoat.UserGroup.Integers;
+using FastGoat.UserGroup.Polynoms;
 
 namespace FastGoat.Examples;
 
@@ -25,26 +25,6 @@ public static class EllipticCurves
             .ToArray();
 
         return all;
-    }
-
-    static BigCplx[] NRoots(KPoly<BigCplx> P, int maxLoop = 200)
-    {
-        var O1 = P.KZero.O;
-        var O2 = O1 / 2;
-        var P0 = P;
-        var roots = new List<BigCplx>();
-        var (pi, e) = (BigReal.Pi(O2), BigReal.E(O2));
-        var a0 = new BigCplx(pi, e);
-
-        while (P0.Degree > 0)
-        {
-            a0 = new BigCplx(pi, e);
-            var a1 = FG.NSolve(P0, a0.ToBigCplx(O1), maxLoop);
-            roots.Add(a1);
-            P0 /= P0.X - a1;
-        }
-
-        return roots.ToArray();
     }
 
     static int[] EllFp(BigInteger a, BigInteger b, int p, bool show = false)
@@ -117,20 +97,16 @@ public static class EllipticCurves
 
     static IEnumerable<EllPt<Rational>> SolveX(BigInteger a, BigInteger b, BigInteger[] Ys, bool show = false)
     {
-        var x = FG.BCplxPoly();
-        var O = x.KZero.O;
-        var (A, B) = (BigCplx.FromRational(new(a), O), BigCplx.FromRational(new(b), O));
-        foreach (var y0 in Ys.Prepend(0))
+        var X = FG.QPoly();
+        var (A, B) = (new Rational(a), new Rational(b));
+        foreach (var y in Ys.Prepend(0).Select(y => new Rational(y)))
         {
-            var y = BigCplx.FromRational(new(y0), O);
-            var P = x.Pow(3) + A * x + B - y.Pow(2);
-            var sols = NRoots(P);
+            var P = X.Pow(3) + A * X + B;
+            var sols = IntFactorisation.FactorsQ(P - y.Pow(2));
             if (show)
-                sols.Println($"Y = {y} P = {P}");
+                sols.Println($"Y = {y}, solve {y.Pow(2)} = {P}");
 
-            var ellpts = sols.Where(xi => xi.IsInteger())
-                .Select(xi => new EllPt<Rational>(xi.RealPart.Round0.ToRational, y.RealPart.ToRational));
-
+            var ellpts = sols.Where(e => e.Item1.Degree == 1).Select(e => new EllPt<Rational>(-e.Item1[0], y));
             foreach (var pt in ellpts)
                 yield return pt;
         }
