@@ -721,6 +721,20 @@ public static class IntExt
     public static IEnumerable<int> Dividors(int n) => Enumerable.Range(1, n / 2).Where(i => i != n && n % i == 0);
 
     /// <summary>
+    /// Calculates the dividors of a given integer.
+    /// </summary>
+    /// <param name="n">The integer to calculate dividors for.</param>
+    /// <returns>An enumerable containing the dividors of the given integer.</returns>
+    public static IEnumerable<BigInteger> DividorsBigInt(BigInteger n)
+    {
+        var decomp = PrimesDecompositionBigInt(BigInteger.Abs(n)).GroupBy(e => e)
+            .ToDictionary(e => e.Key, e => e.Count());
+        
+        var set = decomp.Select(e => (e.Value + 1).Range().Select(k => BigInteger.Pow(e.Key, k))).MultiLoop();
+        return set.Select(l => l.Aggregate(BigInteger.One, (acc, e) => acc * e));
+    }
+
+    /// <summary>
     /// Calculates the Carmichael numbers up to the given value. 
     /// </summary>
     /// <param name="n">The maximum value of the Carmichael numbers.</param>
