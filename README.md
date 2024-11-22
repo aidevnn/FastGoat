@@ -551,3 +551,8 @@ May 2, 2024
 (2017) SymPy:symbolic computing in Python.
 PeerJ Computer Science 3:e103
 <i>Version 1.12; 2023.</i>
+
+[LMFDB](https://www.lmfdb.org)
+<b>The LMFDB Collaboration.</b>
+The L-functions and modular forms database.
+<i>2024.</i>
