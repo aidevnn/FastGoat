@@ -112,7 +112,7 @@ public static class EllipticCurves
         }
     }
 
-    static void NagellLutz(BigInteger a, BigInteger b, bool show = false)
+    static EllPt<Rational>[] NagellLutz(BigInteger a, BigInteger b, List<Func<EllPt<Rational>, EllPt<Rational>>> revTrans, bool show = false)
     {
         var (disc, Ys) = CandidatsY(a, b);
         var ellpts = SolveX(a, b, Ys, show).ToArray();
@@ -140,6 +140,13 @@ public static class EllipticCurves
         var abType = Group.AbelianGroupType(gEll);
         Console.WriteLine($"{gEll} Torsion = {abType.Glue(" x ", "C{0}")}");
         Console.WriteLine();
+        revTrans.Reverse();
+        return gEll.Where(pt => !pt.IsO).Select(pt => revTrans.Aggregate(pt, (acc, trans) => trans(acc))).ToArray();
+    }
+
+    static EllPt<Rational>[] NagellLutz(BigInteger a, BigInteger b, bool show = false)
+    {
+        return NagellLutz(a, b, new(), show);
     }
 
     public static void Transform((Polynomial<Rational, Xi> lhs, Polynomial<Rational, Xi> rhs) e, bool nagellLutz = true)
@@ -150,10 +157,13 @@ public static class EllipticCurves
 
         var a = Ring.Decompose(F, y).Item1[Y].ConstTerm;
         Console.WriteLine($"{F} = 0");
+        var revTrans = new List<Func<EllPt<Rational>, EllPt<Rational>>>();
+        
         if (!a.IsZero())
         {
             Console.WriteLine($"{Y} <- {Y + a / 2}");
             F = F.Substitute(Y + a / 2, y);
+            revTrans.Add(pt => new(pt.X, pt.Y + a / 2));
             Console.WriteLine($"{F} = 0");
         }
 
@@ -163,6 +173,7 @@ public static class EllipticCurves
         {
             Console.WriteLine($"{Y} <- {Y + b * X / 2}");
             F = F.Substitute(Y + b * X / 2, y);
+            revTrans.Add(pt => new(pt.X, pt.Y + b.ConstTerm * pt.X / 2));
             Console.WriteLine($"{F} = 0");
         }
 
@@ -171,6 +182,7 @@ public static class EllipticCurves
         {
             Console.WriteLine($"{X} <- {X - c / 3}");
             F = F.Substitute(X - c / 3, x);
+            revTrans.Add(pt => new(pt.X - c.ConstTerm / 3, pt.Y));
             Console.WriteLine($"{F} = 0");
         }
 
@@ -201,6 +213,7 @@ public static class EllipticCurves
         {
             Console.WriteLine($"{X} <- {X / d1}");
             Console.WriteLine($"{Y} <- {Y / d2}");
+            revTrans.Add(pt => new(pt.X / d1, pt.Y / d2));
             F = (d1.Pow(3) * F.Substitute(X / d1, x)).Substitute(Y / d2, y);
             Console.WriteLine($"{F} = 0");
             Console.WriteLine();
@@ -210,7 +223,12 @@ public static class EllipticCurves
         var (A, B) = (P1[1], P1[0]);
         EllTors(A.Num, B.Num);
         if (nagellLutz)
-            NagellLutz(A.Num, B.Num);
+        {
+            var sols = NagellLutz(A.Num, B.Num, revTrans);
+            sols.Where(pt => pt.X.IsInteger() && pt.Y.IsInteger()).Order()
+                .Println($"Integral Points of {e.lhs} = {e.rhs}");
+        }
+        
         Console.WriteLine();
     }
 
@@ -245,6 +263,7 @@ public static class EllipticCurves
         EllTors(-36, 0, show: true); // Ell[-36,0](Q) Torsion = C2 x C2
         EllTors(0, 3); // Ell[0,3](Q) Torsion = C1
         EllTors(1, 0); // Ell[1,0](Q) Torsion = C2
+        EllTors(0, 1); // Ell[0,1](Q) Torsion = C6
         EllTors(-43, 166, nbPrimes: 20); // Ell[-43,166](Q) Torsion = C7
     }
 
@@ -253,6 +272,7 @@ public static class EllipticCurves
         NagellLutz(-36, 0, show: true); // Ell[-36,0](Q) Torsion = C2 x C2
         NagellLutz(0, 3); // Ell[0,3](Q) Torsion = C1
         NagellLutz(1, 0); // Ell[1,0](Q) Torsion = C2
+        NagellLutz(0, 1); // Ell[0,1](Q) Torsion = C6
         NagellLutz(-43, 166); // Ell[-43,166](Q) Torsion = C7
     }
     // |Ell[-43,166](Q)| = 7
@@ -291,6 +311,8 @@ public static class EllipticCurves
         var e7 = (y.Pow(2) + 5 * x * y - 6 * y, x.Pow(3) - 3 * x.Pow(2));
         // – E8 : y 2 + 17xy − 120y = x3 − 60x2 .
         var e8 = (y.Pow(2) + 17 * x * y - 120 * y, x.Pow(3) - 60 * x.Pow(2));
+        // – E9 : y 2 + xy = x3 − 1070x + 7812 .
+        var e9 = (y.Pow(2) + x * y, x.Pow(3) - 1070 * x + 7812);
 
         Transform(e1);
         Transform(e2);
@@ -300,5 +322,86 @@ public static class EllipticCurves
         Transform(e6);
         Transform(e7);
         Transform(e8);
+        Transform(e9);
     }
+    
+    /* x*y + y^2 = x^3 - 1070*x + 7812
+       x^3 - x*y - y^2 - 1070*x + 7812 = 0
+       y <- -1/2*x + y
+       x^3 + 1/4*x^2 - y^2 - 1070*x + 7812 = 0
+       x <- x - 1/12
+       x^3 - y^2 - 51361/48*x + 6826609/864 = 0
+       y^2 = x^3 - 51361/48*x + 6826609/864
+       x <- 1/36*x
+       y <- 1/216*y
+       x^3 - y^2 - 1386747*x + 368636886 = 0
+       
+       #### Start Ell[-1386747,368636886](Q)
+       Ell[ 1, 2](Z/11Z) ~ C8 x C2
+       Ell[ 2, 7](Z/13Z) ~ C8 x C2
+       Ell[11,12](Z/17Z) ~ C8 x C2
+       Ell[ 6, 7](Z/19Z) ~ C8 x C2
+       Ell[15,16](Z/23Z) ~ C16 x C2
+       Ell[ 4,22](Z/29Z) ~ C8 x C4
+       Ell[ 7,14](Z/31Z) ~ C16 x C2
+       Ell[13, 3](Z/37Z) ~ C8 x C4
+       Ell[37,23](Z/41Z) ~ C24 x C2
+       Ell[ 3,36](Z/43Z) ~ C24 x C2
+       Morphism Ell[-1386747,368636886](Q) ->
+           C8 x C2
+           C16 x C2
+           C8 x C4
+           C24 x C2
+       Intersections subgroups
+           C1
+           C2
+           C4
+           C8
+           C2 x C2
+           C2 x C4
+           C2 x C8
+       Ell[-1386747,368636886](Q) Torsion = C8 x C2
+       
+       { disc = -6998115764183040000 }
+       |Ell[-1386747,368636886](Q)| = 16
+       Type        AbelianGroup
+       BaseGroup   Ell[-1386747,368636886](Q)
+       
+       Elements
+       ( 1)[1] = O
+       ( 2)[2] = (-1293,0)
+       ( 3)[2] = (282,0)
+       ( 4)[2] = (1011,0)
+       ( 5)[4] = (-285,-27216)
+       ( 6)[4] = (-285,27216)
+       ( 7)[4] = (2307,-97200)
+       ( 8)[4] = (2307,97200)
+       ( 9)[8] = (-933,-29160)
+       (10)[8] = (-933,29160)
+       (11)[8] = (147,-12960)
+       (12)[8] = (147,12960)
+       (13)[8] = (1227,-22680)
+       (14)[8] = (1227,22680)
+       (15)[8] = (8787,-816480)
+       (16)[8] = (8787,816480)
+       
+       Ell[-1386747,368636886](Q) Torsion = C8 x C2
+       
+       Integral Points of x*y + y^2 = x^3 - 1070*x + 7812
+           (-36,18)
+           (-26,-122)
+           (-26,148)
+           (-8,-122)
+           (-8,130)
+           (4,-62)
+           (4,58)
+           (28,-14)
+           (34,-122)
+           (34,88)
+           (64,-482)
+           (64,418)
+           (244,-3902)
+           (244,3658)
+       
+     */
 }
