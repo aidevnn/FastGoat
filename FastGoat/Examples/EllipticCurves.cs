@@ -95,12 +95,12 @@ public static class EllipticCurves
 
     static (BigInteger disc, BigInteger[]) CandidatsY(BigInteger a, BigInteger b)
     {
-        var disc = 4 * BigInteger.Pow(a, 3) + 27 * BigInteger.Pow(b, 2);
+        var disc = 16 * (4 * BigInteger.Pow(a, 3) + 27 * BigInteger.Pow(b, 2));
         Console.WriteLine(new { disc });
-        var r = IntExt.PrimesDec(BigInteger.Abs(disc)).Where(e => e.Value >= 2)
-            .Aggregate(BigInteger.One, (acc, e) => acc * BigInteger.Pow(e.Key, e.Value / 2));
-
-        var divs = IntExt.DividorsBigInt(r).Order().ToArray();
+        var divs = IntExt.DividorsBigInt(BigInteger.Abs(disc))
+            .Where(y => BigInteger.Remainder(disc, y * y).IsZero)
+            .Order()
+            .ToArray();
         return (disc, divs);
     }
 
@@ -121,11 +121,12 @@ public static class EllipticCurves
         }
     }
 
-    static EllPt<Rational>[] NagellLutz(BigInteger a, BigInteger b,
+    static (int[] abType, HashSet<EllPt<Rational>> intPts) NagellLutz(BigInteger a, BigInteger b,
         List<Func<EllPt<Rational>, EllPt<Rational>>> revTrans, bool show = false)
     {
         var (disc, Ys) = CandidatsY(a, b);
         var ellpts = SolveX(a, b, Ys, show).ToArray();
+        var intPts = ellpts.Concat(ellpts.Select(e => new EllPt<Rational>(e.X, -e.Y))).ToHashSet();
         var E = new EllGroup<Rational>($"{a}", $"{b}");
         var set = new List<EllPt<Rational>>() { E.O };
         foreach (var pt in ellpts)
@@ -136,6 +137,9 @@ public static class EllipticCurves
                 acc = E.Op(acc, pt);
                 if (acc.IsO || !acc.X.IsInteger() || !acc.Y.IsInteger())
                     break;
+
+                intPts.Add(acc);
+                intPts.Add(new(acc.X, -acc.Y));
             }
 
             if (acc.IsO)
@@ -151,10 +155,15 @@ public static class EllipticCurves
         Console.WriteLine($"{gEll} Torsion = {abType.Glue(" x ", "C{0}")}");
         Console.WriteLine();
         revTrans.Reverse();
-        return gEll.Where(pt => !pt.IsO).Select(pt => revTrans.Aggregate(pt, (acc, trans) => trans(acc))).ToArray();
+        var intPtsF = gEll.Where(pt => !pt.IsO).Select(pt => revTrans.Aggregate(pt, (acc, trans) => trans(acc)))
+            .Concat(intPts)
+            .Distinct()
+            .ToArray();
+
+        return (abType, intPts);
     }
 
-    static EllPt<Rational>[] NagellLutz(BigInteger a, BigInteger b, bool show = false)
+    static (int[] abType, HashSet<EllPt<Rational>> intPts) NagellLutz(BigInteger a, BigInteger b, bool show = false)
     {
         return NagellLutz(a, b, new(), show);
     }
@@ -472,5 +481,46 @@ public static class EllipticCurves
         Transform((y.Pow(2) + x * y, x.Pow(3) - 8696090 * x + "9838496100"), TorsionMeth.NagellLutz);
         
         GlobalStopWatch.Show("END"); // Time:29.143s
+    }
+
+    public static void ExampleMordellCurve()
+    {
+        // Discovered thanks to the OEIS-A081119
+        int[] nbSols =
+        [
+            0, 5, 2, 2, 2, 2, 0, 0, 7, 10, 2, 0, 4, 0, 0, 4, 2, 16, 2, 2, 0, 0, 2, 0, 8, 2, 2, 1, 4, 0, 2, 2, 0, 2, 0,
+            2, 8, 6, 2, 0, 2, 2, 0, 2, 4, 0, 0, 0, 2, 2, 2, 0, 2, 0, 2, 2, 2, 6, 0, 0, 0, 0, 0, 4, 5, 8, 0, 0, 4, 0, 0,
+            2, 2, 12, 0, 0, 2, 0, 0, 2, 8, 2, 2, 0, 0, 0, 0, 0, 0, 8, 0, 2, 2, 0, 2, 0, 0, 2, 2, 2, 12
+        ];
+
+        for (int n = 1; n <= 100; n++)
+        {
+            var (abType, ellpts) = NagellLutz(0, n);
+            
+            var E = new EllGroup<Rational>("0", $"{n}");
+            var intPts = ellpts.ToHashSet();
+            var sz = -1;
+            while (sz != intPts.Count)
+            {
+                sz = intPts.Count;
+                intPts.UnionWith(intPts.Prepend(E.O).ToArray().Grid2D()
+                    .SelectMany(e => new[] { E.Op(e.t1, e.t2), E.Invert(E.Op(e.t1, e.t2)) })
+                    .Where(pt => !pt.IsO && pt.X.IsInteger() && pt.Y.IsInteger()).ToArray());
+            }
+
+            var missing = nbSols[n] - intPts.Count;
+            if (missing != 0)
+            {
+                Console.WriteLine($"## y^2 = x^3 + {n}");
+                if (abType.Length == 1 && abType[0] == 1)
+                    Console.WriteLine("Trivial Torsion. TODO Integer Points"); // TODO: Trivial torsion
+                
+                Console.WriteLine($"Sols {{ {intPts.Glue(", ")} }} A081119 missing {missing}");
+            }
+            else if (intPts.Count != 0)
+                intPts.Println($"{intPts.Count} Integer Points of y^2 = x^3 + {n}");
+            
+            Console.WriteLine();
+        }
     }
 }
