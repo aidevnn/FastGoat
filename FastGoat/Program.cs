@@ -49,7 +49,7 @@ Console.WriteLine("Hello World");
         if (ya * ya == y2)
             return ((int)ya, true);
 
-        ya = (ya + y2 + 1) / 2;
+        ya++;
     }
 
     return (0, false);
@@ -122,6 +122,9 @@ Console.WriteLine("Hello World");
         var pts = sols.Select(e => (e.Item1, e.Item2)).Order().ToArray();
         var missing = B081119[n] - nb;
         Console.WriteLine($"n = {n,4}, Integral Points {nb,-3}/{B081119[n],3} => {{ {pts.Glue(", ")} }}");
+        if (pts.Any(e => BigInteger.Pow(e.Item2, 2) != BigInteger.Pow(e.Item1, 3) + n))
+            throw new();
+        
         if (missing != 0)
             missingSet.Add(n);
     }
@@ -130,5 +133,5 @@ Console.WriteLine("Hello World");
         Console.WriteLine($"{missingSet.Count} Missing {{ {missingSet.Glue(", ")} }}");
     
     Console.WriteLine();
-    GlobalStopWatch.Show(); // Time:6.191s
+    GlobalStopWatch.Show(); // Time:4.560s
 }
