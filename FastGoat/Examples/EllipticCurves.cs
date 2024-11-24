@@ -97,10 +97,9 @@ public static class EllipticCurves
     {
         var disc = 16 * (4 * BigInteger.Pow(a, 3) + 27 * BigInteger.Pow(b, 2));
         Console.WriteLine(new { disc });
-        var divs = IntExt.DividorsBigInt(BigInteger.Abs(disc))
-            .Where(y => BigInteger.Remainder(disc, y * y).IsZero)
-            .Order()
-            .ToArray();
+        var r = IntExt.PrimesDec(BigInteger.Abs(disc))
+            .Aggregate(BigInteger.One, (acc, r) => acc * BigInteger.Pow(r.Key, r.Value / 2 + r.Value % 2));
+        var divs = IntExt.DividorsBigInt(r).Order().ToArray();
         return (disc, divs);
     }
 
@@ -157,10 +156,9 @@ public static class EllipticCurves
         revTrans.Reverse();
         var intPtsF = gEll.Where(pt => !pt.IsO).Select(pt => revTrans.Aggregate(pt, (acc, trans) => trans(acc)))
             .Concat(intPts)
-            .Distinct()
-            .ToArray();
+            .ToHashSet();
 
-        return (abType, intPts);
+        return (abType, intPtsF);
     }
 
     static (int[] abType, HashSet<EllPt<Rational>> intPts) NagellLutz(BigInteger a, BigInteger b, bool show = false)
