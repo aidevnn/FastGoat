@@ -264,6 +264,24 @@ public static class EllipticCurves
         Console.WriteLine();
     }
 
+    static (int y, bool sol) ApproxSolver(int x, int n)
+    {
+        var y2 = BigInteger.Pow(x, 3) + n;
+        if (y2 < 0)
+            return (0, false);
+
+        var ya = BigInteger.Parse($"{double.Ceiling(double.Sqrt((double)y2))}");
+        while (ya * ya < y2 + 1)
+        {
+            if (ya * ya == y2)
+                return ((int)ya, true);
+
+            ya++;
+        }
+
+        return (0, false);
+    }
+
     public static void Example1()
     {
         var E = new EllGroup<Rational>("-36", "0");
@@ -521,4 +539,59 @@ public static class EllipticCurves
             Console.WriteLine();
         }
     }
+
+    public static void ExampleMordellsEquation()
+    {
+        GlobalStopWatch.Restart();
+        var mordell = new Dictionary<int, (BigInteger x, BigInteger y)[]>();
+        int[][] xmax10e4 =
+            [[10000], [17, 24, 100, 141, 217, 388, 414, 513, 516, 521, 568, 649, 659, 740, 757, 836, 960, 985]];
+        int[][] xmax10e5 = [[100000], [297, 377, 427, 885, 899]];
+        int[][] xmax10e6 = [[1000000], [225, 353, 618]];
+        var list = new List<int[][]>() { xmax10e4, xmax10e5, xmax10e6 };
+        var nmax = 1000;
+        var tors = new Dictionary<int, int[]>();
+        foreach (int n in nmax.Range(1))
+        {
+            var xmin = (int)double.Ceiling(double.Pow(n, 1.0 / 3.0));
+            var idx = list.FindIndex(e => e[1].Contains(n));
+            var xmax = idx != -1 ? list[idx][0][0] : 1000;
+            var set = new HashSet<(BigInteger, BigInteger)>();
+            for (var x = -xmin - 1; x < xmax; x++)
+            {
+                var (y, info) = ApproxSolver(x, n);
+                if (!info)
+                    continue;
+
+                set.UnionWith([(x, y), (x, -y)]);
+            }
+
+            var pts = mordell[n] = set.Order().ToArray();
+            var abType = NagellLutz(0, n, pts.Select(e => new EllPt<Rational>($"{e.x}", $"{e.y}")).ToArray()).abType;
+            tors[n] = abType;
+            Console.WriteLine($"n = {n} ");
+            Console.CursorTop--;
+        }
+
+        var missingSet = new List<int>();
+        foreach (var (n, pts) in mordell)
+        {
+            var nb = pts.Length;
+            var missing = GroupExt.B081119[n] - nb;
+            Console.WriteLine($"n = {n,4}, Torsion {tors[n].Glue(" x ", "C{0}")}," +
+                              $" Integral Points {nb,-3}/{GroupExt.B081119[n],3} => {{ {pts.Glue(", ")} }}");
+            if (pts.Any(e => BigInteger.Pow(e.y, 2) != BigInteger.Pow(e.x, 3) + n))
+                throw new();
+
+            if (missing != 0)
+                missingSet.Add(n);
+        }
+
+        if (missingSet.Count != 0)
+            Console.WriteLine($"{missingSet.Count} Missing {{ {missingSet.Glue(", ")} }}");
+
+        Console.WriteLine();
+        GlobalStopWatch.Show(); // Time:5.009s
+    }
+
 }
