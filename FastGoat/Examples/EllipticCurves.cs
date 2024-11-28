@@ -1,6 +1,7 @@
 using System.Numerics;
 using FastGoat.Commons;
 using FastGoat.Structures;
+using FastGoat.Structures.GenericGroup;
 using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup;
 using FastGoat.UserGroup.EllCurve;
@@ -120,11 +121,9 @@ public static class EllipticCurves
         }
     }
 
-    static (int[] abType, HashSet<EllPt<Rational>> intPts) NagellLutz(BigInteger a, BigInteger b,
-        List<Func<EllPt<Rational>, EllPt<Rational>>> revTrans, bool show = false)
+    static (EllGroup<Rational> E, ConcreteGroup<EllPt<Rational>> gEll, int[] abType, HashSet<EllPt<Rational>> intPts) 
+        NagellLutz(BigInteger a, BigInteger b, EllPt<Rational>[] ellpts)
     {
-        var (disc, Ys) = CandidatsY(a, b);
-        var ellpts = SolveX(a, b, Ys, show).ToArray();
         var intPts = ellpts.Concat(ellpts.Select(e => new EllPt<Rational>(e.X, -e.Y))).ToHashSet();
         var E = new EllGroup<Rational>($"{a}", $"{b}");
         var set = new List<EllPt<Rational>>() { E.O };
@@ -145,12 +144,22 @@ public static class EllipticCurves
                 set.Add(pt);
         }
 
-        if (show)
-            set.Println("Elements");
-
         var gEll = Group.Generate(E, set.ToArray());
-        DisplayGroup.HeadElements(gEll);
         var abType = Group.AbelianGroupType(gEll);
+        return (E, gEll, abType, intPts);
+    }
+
+    static (int[] abType, HashSet<EllPt<Rational>> intPtsF, EllGroup<Rational> E) NagellLutz(BigInteger a, BigInteger b,
+        List<Func<EllPt<Rational>, EllPt<Rational>>> revTrans, bool show = false)
+    {
+        var (disc, Ys) = CandidatsY(a, b);
+        var ellpts = SolveX(a, b, Ys, show).ToArray();
+        var (E, gEll, abType, intPts) = NagellLutz(a, b, ellpts);
+
+        if (show)
+            intPts.Println("Elements");
+
+        DisplayGroup.HeadElements(gEll);
         Console.WriteLine($"{gEll} Torsion = {abType.Glue(" x ", "C{0}")}");
         Console.WriteLine();
         revTrans.Reverse();
@@ -158,15 +167,16 @@ public static class EllipticCurves
             .Concat(intPts)
             .ToHashSet();
 
-        return (abType, intPtsF);
+        return (abType, intPtsF, E);
     }
 
-    static (int[] abType, HashSet<EllPt<Rational>> intPts) NagellLutz(BigInteger a, BigInteger b, bool show = false)
+    static (int[] abType, HashSet<EllPt<Rational>> intPtsF, EllGroup<Rational> E) 
+        NagellLutz(BigInteger a, BigInteger b, bool show = false)
     {
         return NagellLutz(a, b, new(), show);
     }
 
-    public static void Transform((Polynomial<Rational, Xi> lhs, Polynomial<Rational, Xi> rhs) e,
+    static void Transform((Polynomial<Rational, Xi> lhs, Polynomial<Rational, Xi> rhs) e,
         TorsionMeth meth = TorsionMeth.Both)
     {
         Console.WriteLine($"Initial   form {e.lhs} = {e.rhs}");
@@ -483,19 +493,9 @@ public static class EllipticCurves
 
     public static void ExampleMordellCurve()
     {
-        // Discovered thanks to the OEIS-A081119
-        int[] nbSols =
-        [
-            0, 5, 2, 2, 2, 2, 0, 0, 7, 10, 2, 0, 4, 0, 0, 4, 2, 16, 2, 2, 0, 0, 2, 0, 8, 2, 2, 1, 4, 0, 2, 2, 0, 2, 0,
-            2, 8, 6, 2, 0, 2, 2, 0, 2, 4, 0, 0, 0, 2, 2, 2, 0, 2, 0, 2, 2, 2, 6, 0, 0, 0, 0, 0, 4, 5, 8, 0, 0, 4, 0, 0,
-            2, 2, 12, 0, 0, 2, 0, 0, 2, 8, 2, 2, 0, 0, 0, 0, 0, 0, 8, 0, 2, 2, 0, 2, 0, 0, 2, 2, 2, 12
-        ];
-
         for (int n = 1; n <= 100; n++)
         {
-            var (abType, ellpts) = NagellLutz(0, n);
-            
-            var E = new EllGroup<Rational>("0", $"{n}");
+            var (abType, ellpts, E) = NagellLutz(0, n);
             var intPts = ellpts.ToHashSet();
             var sz = -1;
             while (sz != intPts.Count)
@@ -506,7 +506,7 @@ public static class EllipticCurves
                     .Where(pt => !pt.IsO && pt.X.IsInteger() && pt.Y.IsInteger()).ToArray());
             }
 
-            var missing = nbSols[n] - intPts.Count;
+            var missing = GroupExt.B081119[n] - intPts.Count;
             if (missing != 0)
             {
                 Console.WriteLine($"## y^2 = x^3 + {n}");
