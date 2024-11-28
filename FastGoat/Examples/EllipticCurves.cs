@@ -121,7 +121,7 @@ public static class EllipticCurves
         }
     }
 
-    static (EllGroup<Rational> E, ConcreteGroup<EllPt<Rational>> gEll, int[] abType, HashSet<EllPt<Rational>> intPts) 
+    static (EllGroup<Rational> E, ConcreteGroup<EllPt<Rational>> gEll, int[] abType, HashSet<EllPt<Rational>> intPts)
         NagellLutz(BigInteger a, BigInteger b, EllPt<Rational>[] ellpts)
     {
         var intPts = ellpts.Concat(ellpts.Select(e => new EllPt<Rational>(e.X, -e.Y))).ToHashSet();
@@ -170,7 +170,7 @@ public static class EllipticCurves
         return (abType, intPtsF, E);
     }
 
-    static (int[] abType, HashSet<EllPt<Rational>> intPtsF, EllGroup<Rational> E) 
+    static (int[] abType, HashSet<EllPt<Rational>> intPtsF, EllGroup<Rational> E)
         NagellLutz(BigInteger a, BigInteger b, bool show = false)
     {
         return NagellLutz(a, b, new(), show);
@@ -443,69 +443,69 @@ public static class EllipticCurves
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
         var (x, y) = Ring.Polynomial(Rational.KZero(), "x", "y").Deconstruct();
         GlobalStopWatch.Restart();
-        
+
         // Torsion C1
         Transform((y.Pow(2), x.Pow(3) - 4 * x - 4), TorsionMeth.NagellLutz);
         Transform((y.Pow(2) + y, x.Pow(3) + x), TorsionMeth.NagellLutz);
         Transform((y.Pow(2) + x * y + y, x.Pow(3) - x.Pow(2) - 29 * x - 53), TorsionMeth.NagellLutz);
-        
+
         // Torsion C2
         Transform((y.Pow(2), x.Pow(3) - 11 * x - 14), TorsionMeth.NagellLutz);
         Transform((y.Pow(2) + x * y, x.Pow(3) + x.Pow(2) + x), TorsionMeth.NagellLutz);
         Transform((y.Pow(2) + x * y + y, x.Pow(3) - 14 * x - 64), TorsionMeth.NagellLutz);
-        
+
         // Torsion C3
         Transform((y.Pow(2), x.Pow(3) + 4), TorsionMeth.NagellLutz);
         Transform((y.Pow(2) + y, x.Pow(3) + x.Pow(2) + x - 1), TorsionMeth.NagellLutz);
         Transform((y.Pow(2) + x * y, x.Pow(3) + 6 * x - 28), TorsionMeth.NagellLutz);
-        
+
         // Torsion C4, C2 x C2
         Transform((y.Pow(2), x.Pow(3) - 7 * x - 6), TorsionMeth.NagellLutz);
         Transform((y.Pow(2), x.Pow(3) - 2 * x + 1), TorsionMeth.NagellLutz);
         Transform((y.Pow(2) + x * y + y, x.Pow(3) + x.Pow(2)), TorsionMeth.NagellLutz);
         Transform((y.Pow(2) + x * y + y, x.Pow(3) - x.Pow(2) - 6 * x - 4), TorsionMeth.NagellLutz);
-        
+
         // Torsion C5
         Transform((y.Pow(2) + y, x.Pow(3) - x.Pow(2)), TorsionMeth.NagellLutz);
         Transform((y.Pow(2) + x * y, x.Pow(3) + 15 * x + 9), TorsionMeth.NagellLutz);
         Transform((y.Pow(2) + x * y + y, x.Pow(3) + x.Pow(2) + 1), TorsionMeth.NagellLutz);
-        
+
         // Torsion C6
         Transform((y.Pow(2), x.Pow(3) + 1), TorsionMeth.NagellLutz);
         Transform((y.Pow(2) + x * y, x.Pow(3) - x.Pow(2) + 6 * x), TorsionMeth.NagellLutz);
         Transform((y.Pow(2) + x * y + y, x.Pow(3) - 6 * x + 4), TorsionMeth.NagellLutz);
-        
+
         // Torsion C7
         Transform((y.Pow(2) + x * y, x.Pow(3) + 159 * x + 1737), TorsionMeth.NagellLutz);
         Transform((y.Pow(2) + x * y, x.Pow(3) - x + 137), TorsionMeth.NagellLutz);
         Transform((y.Pow(2) + x * y + y, x.Pow(3) - x.Pow(2) - 3 * x + 3), TorsionMeth.NagellLutz);
-        
+
         // Torsion C8, C4 x C2
         Transform((y.Pow(2), x.Pow(3) + x.Pow(2) + 16 * x + 180), TorsionMeth.NagellLutz);
         Transform((y.Pow(2), x.Pow(3) - x.Pow(2) - 4 * x + 4), TorsionMeth.NagellLutz);
         Transform((y.Pow(2) + x * y, x.Pow(3) - 34 * x + 68), TorsionMeth.NagellLutz);
         Transform((y.Pow(2) + x * y, x.Pow(3) - 4 * x - 1), TorsionMeth.NagellLutz);
-        
+
         // Torsion C9
         Transform((y.Pow(2) + x * y + y, x.Pow(3) - x.Pow(2) - 14 * x + 29), TorsionMeth.NagellLutz);
         Transform((y.Pow(2) + x * y, x.Pow(3) + 108 * x + 11664), TorsionMeth.NagellLutz);
         Transform((y.Pow(2) + x * y, x.Pow(3) - 4767 * x + 127449), TorsionMeth.NagellLutz);
-        
+
         // Torsion C10
         Transform((y.Pow(2) + x * y, x.Pow(3) - 45 * x + 81), TorsionMeth.NagellLutz);
         Transform((y.Pow(2) + x * y, x.Pow(3) + 115 * x + 561), TorsionMeth.NagellLutz);
         Transform((y.Pow(2) + x * y, x.Pow(3) - 828 * x + 9072), TorsionMeth.NagellLutz);
-        
+
         // Torsion C12, C6 x C2
         Transform((y.Pow(2) + x * y + y, x.Pow(3) - 19 * x + 26), TorsionMeth.NagellLutz);
         Transform((y.Pow(2) + x * y + y, x.Pow(3) - x.Pow(2) - 122 * x + 1721), TorsionMeth.NagellLutz);
         Transform((y.Pow(2) + x * y, x.Pow(3) - 361 * x + 2585), TorsionMeth.NagellLutz);
         Transform((y.Pow(2) + x * y + y, x.Pow(3) + 1922 * x + 20756), TorsionMeth.NagellLutz);
-        
+
         // Torsion C8 x C2
         Transform((y.Pow(2) + x * y, x.Pow(3) - 1070 * x + 7812), TorsionMeth.NagellLutz);
         Transform((y.Pow(2) + x * y, x.Pow(3) - 8696090 * x + "9838496100"), TorsionMeth.NagellLutz);
-        
+
         GlobalStopWatch.Show("END"); // Time:29.143s
     }
 
@@ -530,12 +530,12 @@ public static class EllipticCurves
                 Console.WriteLine($"## y^2 = x^3 + {n}");
                 if (abType.Length == 1 && abType[0] == 1)
                     Console.WriteLine("Trivial Torsion. TODO Integer Points"); // TODO: Trivial torsion
-                
+
                 Console.WriteLine($"Sols {{ {intPts.Glue(", ")} }} A081119 missing {missing}");
             }
             else if (intPts.Count != 0)
                 intPts.Println($"{intPts.Count} Integer Points of y^2 = x^3 + {n}");
-            
+
             Console.WriteLine();
         }
     }
@@ -594,4 +594,51 @@ public static class EllipticCurves
         GlobalStopWatch.Show(); // Time:5.009s
     }
 
+    // Daniel Guin - Thomas Hausberger, Algebre Tome 1, page 174
+    public static void ExampleConguentNumbers()
+    {
+        var primXYZ = 10.Range(1).Grid2D().Select(e => (a: e.t1, b: e.t2))
+            .Where(e => e.a < e.b && (e.a * e.b) % 2 == 0 && IntExt.Gcd(e.a, e.b) == 1)
+            .Select(e => (x0: e.b * e.b - e.a * e.a, y0: 2 * e.a * e.b, z: e.a * e.a + e.b * e.b))
+            .Select(e => (x: int.Min(e.x0, e.y0), y: int.Max(e.x0, e.y0), e.z))
+            .Order()
+            .ToArray();
+
+        primXYZ.Println(e => $"{e.z}^2 = {e.x}^2 + {e.y}^2", $"Z^2 = X^2 + Y^2, Count:{primXYZ.Length}");
+        Console.WriteLine();
+
+        foreach (var (x, y, z) in primXYZ)
+        {
+            var n = (x * y) / 2;
+            Console.WriteLine($"{z}^2 = {x}^2 + {y}^2 and n = {x * y / 2}");
+            
+            var (a, b) = (-n * n, 0);
+            var (disc, Ys) = CandidatsY(a, b);
+            var ellpts = SolveX(a, b, Ys).ToArray();
+            var (E, gEll, abType, intPts) = NagellLutz(a, b, ellpts);
+            
+            Console.WriteLine($"n = {n} y^2 = x^2 - {n * n}x");
+            var pts = intPts.Where(e => !e.IsO && !e.Y.IsZero()).Select(e => (pt: e,
+                X: (n.Pow(2) - e.X.Pow(2)) / e.Y, Y: -2 * n * e.X / e.Y, Z: (n.Pow(2) + e.X.Pow(2)) / e.Y)).ToArray();
+
+            pts.Println(e => $"{e.pt,-20} X:{e.X} Y:{e.Y} Z:{e.Z}", "Pts");
+            Console.WriteLine($"Check points X^2+Y^2=Z^2:{pts.All(e => (e.X.Pow(2) + e.Y.Pow(2)).Equals(e.Z.Pow(2)))}");
+            Console.WriteLine();
+        }
+
+        {
+            Rational x = "1681/49";
+            Rational y = "29520/343";
+            var n = 31; // TODO: find primitve Pythagorean triple X,Y,Z with n=s^2 XY/ 2 where s in Rational
+            var (X, Y, Z) = ((n.Pow(2) - x.Pow(2)) / y, -2 * n * x / y, (n.Pow(2) + x.Pow(2)) / y);
+            var (a, b) = (-31 * 31, 0);
+            var (disc, Ys) = CandidatsY(a, b);
+            var ellpts = SolveX(a, b, Ys).ToArray();
+            var (E31, gEll, abType, intPts) = NagellLutz(a, b, ellpts);
+            intPts.Println("Pts");
+            Console.WriteLine($"({x}, {y}) is in E31 {E31.Contains(x, y)}");
+            Console.WriteLine($"X:{X} Y:{Y} Z:{Z}");
+            Console.WriteLine($"({Z})^2 = ({X})^2 + ({Y})^2 {(X * X + Y * Y).Equals(Z * Z)}");
+        }
+    }
 }
