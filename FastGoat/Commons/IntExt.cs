@@ -232,7 +232,8 @@ public static class IntExt
                 e => e.Key,
                 e => e.OrderBy(f => f.sum).GroupBy(f => f.sum).ToDictionary(
                     f => f.Key,
-                    f => f.Select(g => g.l.ToArray()).OrderBy(l => l, Comparer<int[]>.Create((la, lb) => la.SequenceCompareTo(lb)))
+                    f => f.Select(g => g.l.ToArray())
+                        .OrderBy(l => l, Comparer<int[]>.Create((la, lb) => la.SequenceCompareTo(lb)))
                         .ToArray()));
 
         return squareSums;
@@ -729,7 +730,7 @@ public static class IntExt
     {
         var decomp = PrimesDecompositionBigInt(BigInteger.Abs(n)).GroupBy(e => e)
             .ToDictionary(e => e.Key, e => e.Count());
-        
+
         var set = decomp.Select(e => (e.Value + 1).Range().Select(k => BigInteger.Pow(e.Key, k))).MultiLoop();
         return set.Select(l => l.Aggregate(BigInteger.One, (acc, e) => acc * e));
     }
@@ -984,4 +985,44 @@ public static class IntExt
 
         return (perm, lt.ToArray());
     }
+
+    /// <summary>
+    /// Calculates the nth root of a given number.
+    /// </summary>
+    /// <param name="y">The number for which the nth root is to be calculated.</param>
+    /// <param name="n">The degree of the root to be calculated.</param>
+    /// <returns>The nth root of the given number.</returns>
+    public static BigInteger NthRootBigint(BigInteger y, int n)
+    {
+        if (n <= 0)
+            return 1;
+        
+        if (n % 2 == 0 && y.Sign == -1)
+            throw new("Even NthRoot must has positive argument");
+
+        if (n == 1)
+            return y;
+
+        BigInteger ai;
+        var approx = 10;
+        var ya = y * BigInteger.Pow(approx, n);
+        var aj = 1 + ya / n;
+        do
+        {
+            ai = aj;
+            var aiPow = BigInteger.Pow(ai, n - 1);
+            var num = aiPow * ai - ya;
+            var denom = n * aiPow;
+            aj = ai - num / denom; // Newton iteration
+        } while (BigInteger.Abs(ai - aj) > approx / 3);
+
+        return aj / approx;
+    }
+
+    /// <summary>
+    /// Calculates the square root of a given number.
+    /// </summary>
+    /// <param name="y">The number for which the square root is to be calculated.</param>
+    /// <returns>The square root of the given number.</returns>
+    public static BigInteger SqrtBigInt(BigInteger y) => NthRootBigint(y, 2);
 }

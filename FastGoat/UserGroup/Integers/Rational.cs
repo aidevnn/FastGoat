@@ -170,14 +170,17 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
         throw new NotImplementedException();
     }
 
-    public static Rational Sqrt(Rational r)
-    {
-        throw new NotImplementedException();
-    }
+    public static Rational Sqrt(Rational r) => NthRoot(r, 2);
+    
 
     public static Rational NthRoot(Rational r, int n)
     {
-        throw new NotImplementedException();
+        if (n < 0)
+            return NthRoot(r.Inv(), -n);
+        
+        var num = IntExt.NthRootBigint(r.Num, n);
+        var denom = IntExt.NthRootBigint(r.Denom, n);
+        return new(num, denom);
     }
     public static implicit operator double(Rational e) => e.ToDouble;
     public static implicit operator Rational(string e) => Rational.Parse(e);
