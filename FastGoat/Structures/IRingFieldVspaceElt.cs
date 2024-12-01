@@ -58,6 +58,8 @@ public interface IFloatElt<K> : IEquatable<K>, IComparable<K> where K : IElt<K>,
 {
     public K RoundEven { get; }
     public K Absolute { get; }
+    public K Absolute2 { get; }
+    public K Conj { get; }
     public int Sign { get; }
     public double ToDouble { get; }
     public static abstract K Pi(int o = 50);

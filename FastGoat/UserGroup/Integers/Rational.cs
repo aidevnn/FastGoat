@@ -150,6 +150,8 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
     }
 
     public Rational Absolute => new(BigInteger.Abs(Num), Denom);
+    public Rational Absolute2 => this * this;
+    public Rational Conj => this;
 
     public static Rational Parse(string r)
     {
@@ -165,10 +167,7 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
         return new(num, denom);
     }
 
-    public static Rational Pi(int o)
-    {
-        throw new NotImplementedException();
-    }
+    public static Rational Pi(int o) => BigReal.Pi(o).ToRational;
 
     public static Rational Sqrt(Rational r) => NthRoot(r, 2);
     

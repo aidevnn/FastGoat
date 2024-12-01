@@ -5,7 +5,7 @@ using FastGoat.UserGroup.Integers;
 
 namespace FastGoat.UserGroup.Floats;
 
-public readonly struct BigCplx : IElt<BigCplx>, IRingElt<BigCplx>, IFieldElt<BigCplx>, IVsElt<Rational, BigCplx>
+public readonly struct BigCplx : IElt<BigCplx>, IRingElt<BigCplx>, IFieldElt<BigCplx>, IVsElt<Rational, BigCplx>, IFloatElt<BigCplx>
 {
     public static bool IsValuedField => true;
 
@@ -85,6 +85,18 @@ public readonly struct BigCplx : IElt<BigCplx>, IRingElt<BigCplx>, IFieldElt<Big
     public BigCplx I => new(BigReal.BrZero(O), BigReal.BrOne(O));
     public BigCplx Round0 => new(RealPart.Round0, ImaginaryPart.Round0);
     public BigCplx RoundEven => new(RealPart.RoundEven, ImaginaryPart.RoundEven);
+
+    public BigCplx Absolute => FromBigReal(MagnitudeBigReal(this));
+    public BigCplx Absolute2 => FromBigReal(Magnitude2);
+
+    public int Sign 
+    {
+        get =>  throw new NotImplementedException();
+    }
+    public double ToDouble 
+    {
+        get =>  throw new NotImplementedException();
+    }
     public BigCplx Add(BigCplx e) => new(RealPart + e.RealPart, ImaginaryPart + e.ImaginaryPart);
 
     public BigCplx Sub(BigCplx e) => new(RealPart - e.RealPart, ImaginaryPart - e.ImaginaryPart);
@@ -189,6 +201,11 @@ public readonly struct BigCplx : IElt<BigCplx>, IRingElt<BigCplx>, IFieldElt<Big
 
     public static BigReal MagnitudeBigReal(BigCplx r) => BigReal.Sqrt(r.Magnitude2);
 
+    public static BigCplx Pi(int o = 50)
+    {
+        throw new NotImplementedException();
+    }
+
     public static BigCplx Sqrt(BigCplx r) => NthRoot(r, 2);
 
     public static BigCplx NthRoot(BigCplx r, int n)
@@ -208,7 +225,7 @@ public readonly struct BigCplx : IElt<BigCplx>, IRingElt<BigCplx>, IFieldElt<Big
             var num = aiPow * ai - r;
             var denom = n * aiPow;
             aj = ai - num / denom; // Newton iteration
-        } while (!(ai - aj).IsZero());
+        } while (!(ai - aj).Magnitude2.IsZero());
 
         return aj;
     }

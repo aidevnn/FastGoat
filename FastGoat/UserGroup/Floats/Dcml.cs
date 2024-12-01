@@ -89,6 +89,8 @@ public readonly struct Dcml : IElt<Dcml>, IRingElt<Dcml>, IFieldElt<Dcml>, IVsEl
     public Rational KZero => Rational.KZero();
     public Rational KOne => Rational.KOne();
     public Dcml Absolute => new(Sign * K);
+    public Dcml Absolute2 => this * this;
+    public Dcml Conj => this;
     public static Dcml From<T>(T e) where T : IElt<T>, IRingElt<T>, IFieldElt<T>, IFloatElt<T>
     {
         if (e is BigReal e0)

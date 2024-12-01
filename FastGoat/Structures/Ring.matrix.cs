@@ -962,4 +962,11 @@ public static partial class Ring
 
         return mat;
     }
+    
+    public static KMatrix<K> Conj<K>(this KMatrix<K> A)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>, IFloatElt<K>
+    {
+        return A.Select(e => e.Conj).ToKMatrix(A.M).T;
+    }
+
 }

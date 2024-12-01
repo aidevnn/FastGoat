@@ -87,6 +87,8 @@ public readonly struct Dble : IElt<Dble>, IRingElt<Dble>, IFieldElt<Dble>, IVsEl
     public Rational KZero => Rational.KZero();
     public Rational KOne => Rational.KOne();
     public Dble Absolute => new(Sign * K);
+    public Dble Absolute2 => this * this;
+    public Dble Conj => this;
     public Dble Sqrt() => new(double.Sqrt(K));
     public static Dble From<T>(T e) where T : IElt<T>, IRingElt<T>, IFieldElt<T>, IFloatElt<T>
     {

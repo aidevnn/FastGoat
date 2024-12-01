@@ -196,6 +196,8 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
     public decimal ToDecimal => decimal.Parse(ToBigReal(29).ToFixForm());
 
     public BigReal Absolute => new(BigInteger.Abs(K), V, O);
+    public BigReal Absolute2 => this * this;
+    public BigReal Conj => this;
     public BigReal Sqrt() => Sqrt(this);
 
     public Rational ToRational
