@@ -64,7 +64,14 @@ public readonly struct BigCplx : IElt<BigCplx>, IRingElt<BigCplx>, IFieldElt<Big
     {
         var re = RealPart.ToBigReal(O / 2);
         var im = ImaginaryPart.ToBigReal(O / 2);
-        return im.IsZero() && (re - re.Round0).Absolute.IsZero();
+        return im.IsZero() && (re - re.Round0).Absolute2.IsZero4d();
+    }
+
+    public bool IsGaussian()
+    {
+        var re = RealPart.ToBigReal(O / 2);
+        var im = ImaginaryPart.ToBigReal(O / 2);
+        return (re - re.Round0).Absolute2.IsZero4d() && (im - im.Round0).Absolute2.IsZero4d();
     }
 
     public Complex ToComplex => new(RealPart.ToDouble, ImaginaryPart.ToDouble);
@@ -87,7 +94,7 @@ public readonly struct BigCplx : IElt<BigCplx>, IRingElt<BigCplx>, IFieldElt<Big
     public BigCplx RoundEven => new(RealPart.RoundEven, ImaginaryPart.RoundEven);
 
     public BigCplx Absolute => FromBigReal(MagnitudeBigReal(this));
-    public BigCplx Absolute2 => FromBigReal(Magnitude2);
+    public BigCplx Absolute2 => new(Magnitude2, Zero.ImaginaryPart);
 
     public int Sign 
     {
