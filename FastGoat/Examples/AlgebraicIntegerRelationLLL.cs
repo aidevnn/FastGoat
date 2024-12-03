@@ -243,7 +243,7 @@ public static class AlgebraicIntegerRelationLLL
     public static void Example4()
     {
         var x = FG.QPoly();
-        var (minPoly, _, _, _) = IntFactorisation.PrimitiveElt(x.Pow(4) - 2, x.Pow(2) + 1).First(); // Gal(Q(i, √2)/Q) = D8
+        var (minPoly, _, _, _) = IntFactorisation.PrimitiveElt(x.Pow(4) - 2, x.Pow(2) + 1).First(); // Gal(Q(i,⁴√2)/Q) = D8
 
         var O1 = 20; // rounding digits
         var O2 = 30; // maximum precision digits
