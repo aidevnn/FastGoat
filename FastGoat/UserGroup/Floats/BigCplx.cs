@@ -17,6 +17,8 @@ public readonly struct BigCplx : IElt<BigCplx>, IRingElt<BigCplx>, IFieldElt<Big
     public BigReal RealPart { get; }
     public BigReal ImaginaryPart { get; }
     public int O => RealPart.O;
+    public int MaxV => int.Max(RealPart.V, ImaginaryPart.V);
+    public int MinV => int.Min(RealPart.V, ImaginaryPart.V);
 
     public BigCplx(int o)
     {
@@ -208,10 +210,7 @@ public readonly struct BigCplx : IElt<BigCplx>, IRingElt<BigCplx>, IFieldElt<Big
 
     public static BigReal MagnitudeBigReal(BigCplx r) => BigReal.Sqrt(r.Magnitude2);
 
-    public static BigCplx Pi(int o = 50)
-    {
-        throw new NotImplementedException();
-    }
+    public static BigCplx Pi(int o = 50) => FromBigReal(BigReal.Pi(o));
 
     public static BigCplx Sqrt(BigCplx r) => NthRoot(r, 2);
 
