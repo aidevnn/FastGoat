@@ -290,6 +290,7 @@ void TestLLL()
 
 void ExamplePol(KPoly<Rational> P, int O)
 {
+    GlobalStopWatch.AddLap();
     Ring.DisplayPolynomial = MonomDisplay.StarCaret;
     Console.WriteLine(P);
     var (X, a) = FG.EPolyXc(P, 'a');
@@ -361,21 +362,36 @@ void ExamplePol(KPoly<Rational> P, int O)
         throw new();
     
     DisplayGroup.HeadElementsNames(Group.KAut(set.ToArray()));
+    GlobalStopWatch.Show($"P = {P}");
     Console.WriteLine();
 }
 
 {
+    GlobalStopWatch.Restart();
     // TestGramSchimdt();
     // TestLLL();
 
     var x = FG.QPoly();
     ExamplePol(x.Pow(4) - 2 * x.Pow(2) + 9, 20); // C2 x C2
     ExamplePol(x.Pow(4) + x.Pow(3) + x.Pow(2) + x + 1, 20); // C4
-    ExamplePol(x.Pow(6) + 108, 20); // S3
-    ExamplePol(x.Pow(8) + 4 * x.Pow(6) + 2 * x.Pow(4) + 28 * x.Pow(2) + 1, 30); // D8
     
+    ExamplePol(x.Pow(6) + 2 * x.Pow(5) - 2 * x.Pow(3) + 7 * x.Pow(2) + 8 * x + 13, 20); // C6
+    ExamplePol(x.Pow(6) + 108, 20); // S3
+    
+    ExamplePol(x.Pow(4) - 8 * x.Pow(3) + 20 * x.Pow(2) - 16 * x + 2, 30); // C4
+    ExamplePol(x.Pow(8) - 8 * x.Pow(6) + 20 * x.Pow(4) - 16 * x.Pow(2) + 2, 30); // C8
+    ExamplePol(x.Pow(8) - x.Pow(4) + 1, 30); // C2 x C2 x C2
+    ExamplePol(x.Pow(8) + 1, 30); // C2 x C4
+    ExamplePol(x.Pow(8) + 4 * x.Pow(6) + 2 * x.Pow(4) + 28 * x.Pow(2) + 1, 30); // D8
+    ExamplePol(x.Pow(8) - 12 * x.Pow(6) + 36 * x.Pow(4) - 36 * x.Pow(2) + 9, 30); // Q8;
+    
+    ExamplePol(x.Pow(10) - 2 * x.Pow(9) - 2 * x.Pow(8) + 6 * x.Pow(7) + 14 * x.Pow(6) - 26 * x.Pow(5) + 15 * x.Pow(4) -
+        4 * x.Pow(3) + 58 * x.Pow(2) - 40 * x + 89, 60); // C10
     ExamplePol(x.Pow(10) + 10 * x.Pow(8) + 125 * x.Pow(6) + 500 * x.Pow(4) + 2500 * x.Pow(2) + 4000, 60); // D10
+    
     ExamplePol(x.Pow(12) + 6 * x.Pow(8) + 26 * x.Pow(6) - 63 * x.Pow(4) + 162 * x.Pow(2) + 81, 100); // A4
+    
     ExamplePol(x.Pow(18) + 171 * x.Pow(12) + 5130 * x.Pow(6) + 27, 120); // C3 x: C6
+    
     ExamplePol(x.Pow(20) + 2500 * x.Pow(10) + 50000, 120); // C5 x: C4
 }
