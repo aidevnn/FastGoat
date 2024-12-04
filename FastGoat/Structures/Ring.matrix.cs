@@ -268,6 +268,33 @@ public static partial class Ring
         throw new("SquareNorm2");
     }
 
+    public static K SquareNorm2f<K>(KMatrix<K> mat) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>, IFloatElt<K>
+    {
+        if (mat.M == 1)
+        {
+            var sq = mat.KZero;
+            for (int i = 0; i < mat.N; i++)
+                sq += mat.Coefs[0, i].Absolute2;
+
+            return sq;
+        }
+
+        if (mat.N == 1)
+        {
+            var sq = mat.KZero;
+            for (int i = 0; i < mat.M; i++)
+                sq += mat.Coefs[i, 0].Absolute2;
+
+            return sq;
+        }
+
+        throw new("SquareNorm2");
+    }
+
+    public static K Norm2f<K>(KMatrix<K> mat) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>, IFloatElt<K>
+    {
+        return K.Sqrt(SquareNorm2f(mat));
+    }
 
     public static (K[,] P, K[,] A0) ReducedRowsEchelonForm<K>(K[,] A)
         where K : IElt<K>, IRingElt<K>, IFieldElt<K>
