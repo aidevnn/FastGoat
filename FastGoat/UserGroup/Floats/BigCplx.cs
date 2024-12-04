@@ -7,6 +7,8 @@ namespace FastGoat.UserGroup.Floats;
 
 public readonly struct BigCplx : IElt<BigCplx>, IRingElt<BigCplx>, IFieldElt<BigCplx>, IVsElt<Rational, BigCplx>, IFloatElt<BigCplx>
 {
+
+    public static bool IsComplex => true;
     public static bool IsValuedField => true;
 
     public static double Abs(BigCplx t) => t.ToComplex.Magnitude;
@@ -98,10 +100,7 @@ public readonly struct BigCplx : IElt<BigCplx>, IRingElt<BigCplx>, IFieldElt<Big
     public BigCplx Absolute => FromBigReal(MagnitudeBigReal(this));
     public BigCplx Absolute2 => new(Magnitude2, Zero.ImaginaryPart);
 
-    public int Sign 
-    {
-        get =>  throw new NotImplementedException();
-    }
+    public int Sign => RealPart.IsZero() ? 1 : RealPart.Sign;
     public double ToDouble 
     {
         get =>  throw new NotImplementedException();

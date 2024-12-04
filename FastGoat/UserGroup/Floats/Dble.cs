@@ -11,6 +11,7 @@ public readonly struct Dble : IElt<Dble>, IRingElt<Dble>, IFieldElt<Dble>, IVsEl
         return obj is Dble other && Equals(other);
     }
 
+    public static bool IsComplex => false;
     public static double Eps => double.Pow(10, -Digits);
     public static Dble DbleZero() => new(0.0);
     public static Dble DbleOne() => new(1.0);
@@ -81,7 +82,7 @@ public readonly struct Dble : IElt<Dble>, IRingElt<Dble>, IFieldElt<Dble>, IVsEl
 
     public int P => 0;
     public Dble Inv() => new(1.0 / K);
-    public int Sign => double.Sign(K);
+    public int Sign => K == 0 ? 1 : double.Sign(K);
 
     public bool Invertible() => !IsZero();
     public Rational KZero => Rational.KZero();

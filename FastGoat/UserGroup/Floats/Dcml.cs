@@ -11,6 +11,8 @@ public readonly struct Dcml : IElt<Dcml>, IRingElt<Dcml>, IFieldElt<Dcml>, IVsEl
         return obj is Dcml other && Equals(other);
     }
 
+    public static bool IsComplex => false;
+
     public static double Eps => 1.0e-26;
     public static Dcml Pi(int o = 50) => 3.14159265358979323846264338327m;
 
@@ -83,7 +85,7 @@ public readonly struct Dcml : IElt<Dcml>, IRingElt<Dcml>, IFieldElt<Dcml>, IVsEl
 
     public int P => 0;
     public Dcml Inv() => new(1.0m / K);
-    public int Sign => decimal.Sign(K);
+    public int Sign => K == 0 ? 1 : decimal.Sign(K);
 
     public bool Invertible() => !IsZero();
     public Rational KZero => Rational.KZero();

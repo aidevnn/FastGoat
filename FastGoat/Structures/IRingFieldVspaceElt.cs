@@ -62,6 +62,7 @@ public interface IFloatElt<K> : IEquatable<K>, IComparable<K> where K : IElt<K>,
     public K Conj { get; }
     public int Sign { get; }
     public double ToDouble { get; }
+    public static abstract bool IsComplex { get; }
     public static abstract K Pi(int o = 50);
     public static abstract K Sqrt(K r);
     public static abstract K NthRoot(K r, int n);

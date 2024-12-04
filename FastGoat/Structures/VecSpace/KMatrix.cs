@@ -45,6 +45,9 @@ public struct KMatrix<K> : IVsElt<K, KMatrix<K>>, IElt<KMatrix<K>>, IRingElt<KMa
             }
         }
 
+        if (M == 0 || N == 0)
+            return;
+
         KZero = Coefs[0, 0].Zero;
         P = Coefs[0, 0].P;
         Hash = (M, N, P).GetHashCode();

@@ -8,6 +8,7 @@ namespace FastGoat.UserGroup.Integers;
 
 public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<Rational>, IFloatElt<Rational>
 {
+    public static bool IsComplex => false;
     public int P => 0;
     public BigInteger Num { get; }
     public BigInteger Denom { get; }

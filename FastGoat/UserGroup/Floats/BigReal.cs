@@ -21,6 +21,7 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
         SciForm
     }
 
+    public static bool IsComplex => false;
     public static BigReal BrZero(int o) => o > 0 ? new(0, 0, o) : throw new();
     public static BigReal BrOne(int o) => o > 0 ? new(1, 0, o) : throw new();
     public static BigReal BrPow10n(int n, int o) => o > 0 ? new(1, n, o) : throw new();

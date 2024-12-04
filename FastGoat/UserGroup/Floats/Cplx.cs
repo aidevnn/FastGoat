@@ -8,6 +8,8 @@ namespace FastGoat.UserGroup.Floats;
 public readonly struct Cplx : IElt<Cplx>, IRingElt<Cplx>, IFieldElt<Cplx>, IVsElt<Rational, Cplx>, 
     IFloatElt<Cplx>, IFixedPrecisionElt<Cplx>
 {
+
+    public static bool IsComplex => true;
     public Complex K { get; }
     public double RealPart => K.Real;
     public double ImaginaryPart => K.Imaginary;
@@ -67,7 +69,7 @@ public readonly struct Cplx : IElt<Cplx>, IRingElt<Cplx>, IFieldElt<Cplx>, IVsEl
     public Cplx Absolute2 => new(RealPart * RealPart + ImaginaryPart * ImaginaryPart);
     public Cplx Conj => new(Complex.Conjugate(K));
 
-    public int Sign =>  throw new NotImplementedException();
+    public int Sign => K.Real == 0.0 ? 1 : double.Sign(K.Real);
     public double ToDouble =>  throw new NotImplementedException();
     public static Cplx Pi(int o = 50) => new(Double.Pi);
 
