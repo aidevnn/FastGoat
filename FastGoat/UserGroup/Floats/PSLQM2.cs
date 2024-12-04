@@ -154,13 +154,13 @@ public class PSLQM2<F> where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFl
             if (l == m - 1)
                 continue;
 
-            var N2 = (m - l).Range().Select(i => H[l, l + i]).Aggregate(A.KZero, (acc, a) => acc + a * a);
+            var N2 = (m - l).Range().Select(i => H[l, l + i]).Aggregate(A.KZero, (acc, a) => acc + a.Absolute2);
             var N = K.Sqrt(N2);
             if (N.IsZero())
                 continue;
 
             if (!H[l, l].IsZero())
-                N *= H[l, l].Sign;
+                N *= H[l, l] / H[l, l].Absolute;
 
             var Ni = N.Inv();
             for (int i = 0; i < m - l; ++i)
@@ -169,7 +169,7 @@ public class PSLQM2<F> where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFl
             H.Coefs[l, l] += 1;
             for (int j = l + 1; j < n; ++j)
             {
-                var t = -((m - l).Range().Select(i => H[l, l + i] * H[j, l + i])
+                var t = -((m - l).Range().Select(i => H[l, l + i].Conj * H[j, l + i])
                             .Aggregate(A.KZero, (acc, a) => acc + a))
                         / H[l, l];
 
