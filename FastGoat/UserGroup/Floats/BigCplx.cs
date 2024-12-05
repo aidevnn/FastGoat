@@ -19,8 +19,6 @@ public readonly struct BigCplx : IElt<BigCplx>, IRingElt<BigCplx>, IFieldElt<Big
     public BigReal RealPart { get; }
     public BigReal ImaginaryPart { get; }
     public int O => RealPart.O;
-    public int MaxV => int.Max(RealPart.V, ImaginaryPart.V);
-    public int MinV => int.Min(RealPart.V, ImaginaryPart.V);
 
     public BigCplx(int o)
     {
@@ -51,7 +49,7 @@ public readonly struct BigCplx : IElt<BigCplx>, IRingElt<BigCplx>, IFieldElt<Big
 
     public int CompareTo(BigCplx other)
     {
-        var mag = Magnitude2.CompareTo(other.Magnitude2);
+        var mag = NormInf.CompareTo(other.NormInf);
         if (mag != 0)
             return mag;
 
@@ -118,11 +116,15 @@ public readonly struct BigCplx : IElt<BigCplx>, IRingElt<BigCplx>, IFieldElt<Big
 
     public BigCplx Inv()
     {
-        if (IsZero())
-            throw new DivideByZeroException();
-
-        var abs = Magnitude2;
-        return new(RealPart / abs, -ImaginaryPart / abs);
+        var k = -NormInf.V > O / 2 ? O : 1;
+        var p = BigReal.Pow10(k, O);
+        var abs = (p * RealPart).Pow(2) + (p * ImaginaryPart).Pow(2);
+        var p2 = p * p;
+        
+        if (abs.IsZero())
+            throw new DivideByZeroException($"NormInf:{NormInf.V} k:{k} p:{p}\nthis:{ToSciForm()}\nabs:{abs.ToSciForm()}");
+        
+        return new(p2 * RealPart / abs, -p2 * ImaginaryPart / abs);
     }
 
     public BigCplx Mul(int k) => new(RealPart * k, ImaginaryPart * k);
