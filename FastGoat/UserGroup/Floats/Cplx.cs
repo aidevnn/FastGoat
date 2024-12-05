@@ -198,7 +198,7 @@ public readonly struct Cplx : IElt<Cplx>, IRingElt<Cplx>, IFieldElt<Cplx>, IVsEl
     }
 
     public static int Digits => 17;
-    public static double Eps => double.Pow(10, -Digits);
+    public static double Eps => 1e-17;
     public static bool operator ==(Cplx a, Cplx b) => a.Equals(b);
 
     public static bool operator !=(Cplx a, Cplx b) => !a.Equals(b);
