@@ -27,9 +27,6 @@ public static class PSLQ
         KMatrix<K> T, KMatrix<K> y, (int i, K yi)[] gamma_pow, bool imq = false)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>, IFloatElt<K>
     {
-        // var O = 1;
-        // if (H.KOne is BigReal || H.KOne is BigCplx)
-        //     O = GetO(H.KOne);
         // 1. Sort the entries of the (n − 1)-long vector {γ^i |Hii |} in decreasing order,
         // producing the sort indices.
         // 2. Beginning at the sort index m1 corresponding to the largest γ^i |Hii |, select
@@ -109,9 +106,7 @@ public static class PSLQ
                 var l = i + j;
                 for (int k = j + 1; k < l; k++)
                     H.Coefs[l, j] -= T[l, k] * H[k, j];
-
-                // var hjj = H[j, j];
-                // var p = (10 * hjj.One).Pow(O);
+                
                 T.Coefs[l, j] = (H[l, j] / H[j, j]).RoundEven;
                 H.Coefs[l, j] -= T[l, j] * H[j, j];
             }
@@ -654,19 +649,7 @@ public class PSLQM2test<F, G>
             IZM = 0;
             var lt = Y.Select((yk, k) => (yk, k))
                 .Where(e => e.yk.CompareTo(EPS * TwoPowNMP * maxB) == -1 && !B[e.k, CheckPos].IsZero())
-                .OrderBy(e => B.N.Range().Max(i => G.Abs(B[e.k, i])))
-                .ThenBy(e => G.Abs(e.yk))
                 .ToArray();
-            // Console.WriteLine($"#6 lt:{lt.Length} step:{st.IT} check:{CheckPos}");
-            // Console.WriteLine($"Ymin:{PSLQ.ToLongString(minY)}");
-            // Console.WriteLine($"bound EPS * maxB:{minY.CompareTo(EPS * maxB)} {PSLQ.ToLongString(EPS * maxB)}");
-            // Console.WriteLine($"bound EPS * TwoPowNMP * maxB:{minY.CompareTo(EPS * TwoPowNMP * maxB)} {PSLQ.ToLongString(EPS * TwoPowNMP * maxB)}");
-            // Console.WriteLine("H");
-            // Console.WriteLine(H);
-            // Console.WriteLine("B");
-            // Console.WriteLine(B);
-            // Console.WriteLine("Y");
-            // Y.Select(e => PSLQ.ToLongString(e)).Println();
             if (minY.CompareTo(EPS * TwoPowNMP * maxB) == -1 && lt.Length != 0)
             {
                 if (minY.CompareTo(EPS * maxB) == -1)
@@ -683,14 +666,7 @@ public class PSLQM2test<F, G>
                     return new(st.IT, ITS, IZD, IZM, st.IMQ, 2);
             }
             else
-            {
-                // Console.WriteLine("B");
-                // Console.WriteLine(B);
-                // Console.WriteLine("Y");
-                // Console.WriteLine(Y);
-                // lt.Println("#Step6");
                 return new(st.IT, ITS, IZD, IZM, st.IMQ, 9);
-            }
         }
     }
 
@@ -740,18 +716,7 @@ public class PSLQM2test<F, G>
         IZM = 0;
         var lt = Y.Select((yk, k) => (yk, k))
             .Where(e => e.yk.CompareTo(EPS * TwoPowNMP * maxB) == -1 && !B[e.k, CheckPos].IsZero())
-            .OrderBy(e => B.N.Range().Max(i => B[e.k, i].Absolute))
-            .ThenBy(e => e.yk.Absolute)
             .ToArray();
-        // Console.WriteLine($"#8 lt:{lt.Length} step:{st.IT} check:{CheckPos}");
-        // Console.WriteLine($"Ymin:{PSLQ.ToLongString(minY)}");
-        // Console.WriteLine($"bound EPS * maxB:{minY.CompareTo(EPS * maxB)} {PSLQ.ToLongString(EPS * maxB)}");
-        // Console.WriteLine($"bound EPS * TwoPowNMP * maxB:{minY.CompareTo(EPS * TwoPowNMP * maxB)} {PSLQ.ToLongString(EPS * TwoPowNMP * maxB)}");
-        // Console.WriteLine("H");
-        // Console.WriteLine(H);
-        // Console.WriteLine("B");
-        // Console.WriteLine(B);
-        // Console.WriteLine("Y");
         if (minY.CompareTo(EPS * TwoPowNMP * maxB) == -1 && lt.Length != 0)
         {
             if (minY.CompareTo(EPS * maxB) == -1)
@@ -768,14 +733,7 @@ public class PSLQM2test<F, G>
                 return new(IT, st.ITS, st.IZD, IZM, IMQ, 3);
         }
         else
-        {
-            // Console.WriteLine("B");
-            // Console.WriteLine(B);
-            // Console.WriteLine("Y");
-            // Console.WriteLine(Y);
-            // lt.Println("#Step8");
             return new(IT, st.ITS, st.IZD, IZM, IMQ, 9);
-        }
     }
 
     // 9. Exit:
@@ -800,13 +758,7 @@ public class PSLQM2test<F, G>
                 B.N.Range().Where(i => i != CheckPos).Select(i => B[e.k, i].Absolute).Aggregate((a0, a1) => a0 + a1))
             .ThenBy(e => e.yk.Absolute)
             .ToArray();
-
-        // Console.WriteLine("B");
-        // Console.WriteLine(B);
-        // Console.WriteLine("Y");
-        // Console.WriteLine(Y);
-        // lt.Println("#Step9");
-
+        
         var idx = lt[0].k;
         var R = B.GetRow(idx);
         var normR = Ring.Norm2f(R);
@@ -824,9 +776,7 @@ public class PSLQM2test<F, G>
             Relations = R.Select(c => c.RoundEven).ToArray();
         }
         else
-        {
             Console.WriteLine($"Failure normR or (minY / maxY) IT:{st.IT}");
-        }
     }
 
     private void Run()
