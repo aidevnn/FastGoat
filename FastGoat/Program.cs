@@ -413,12 +413,49 @@ void ExamplesGaloisPolynomial()
     // ExamplePol(x.Pow(20) + 2500 * x.Pow(10) + 50000, 120); // C5 x: C4
 }
 
+void LQtest()
+{
+    var I = Cplx.I;
+    for (int k = 0; k < 1000; ++k)
+        foreach (var n in 5.Range(2))
+        {
+            var A = (n * n).Range().Select(_ => Rng.Next(-9, 10) + I * Rng.Next(-9, 10)).ToKMatrix(n);
+            var detA = A.Det;
+            if (detA.IsZero())
+                continue;
+            
+            var L = PSLQM2<Cplx>.LQpslq(A);
+            var Q = L.Inv() * A;
+            Console.WriteLine("A");
+            Console.WriteLine(A);
+            Console.WriteLine("L");
+            Console.WriteLine(L);
+            Console.WriteLine("Q");
+            Console.WriteLine(Q);
+            var QQc = Q * Q.Conj();
+            var QQc0 = QQc.Select(e => e.RoundEven).ToKMatrix(n);
+            var check1 = QQc0.Equals(QQc0.One);
+            var detL = L.Det;
+            var c = detA / detL;
+            var check2 = (c * c.Conj - 1).Absolute2.IsZero();
+            var check3 = (c + (-1).Pow(n)).Absolute2.IsZero();
+            Console.WriteLine($"Q x Qconj = I{n} {QQc0.Equals(QQc0.One)}");
+            Console.WriteLine(QQc);
+            Console.WriteLine($"Det A = {detA}");
+            Console.WriteLine($"Det L = {detL} = {c} * Det A");
+            Console.WriteLine();
+            if (!check1 || !check2)
+                throw new($"check1:{check1} check2:{check2} check3:{check3}");
+        }
+}
+
 {
     GlobalStopWatch.Restart();
     Ring.DisplayPolynomial = MonomDisplay.StarCaret;
-
-    StartingTest();
-    ExamplesGaloisPolynomial();
     
+    LQtest();
+    // StartingTest();
+    // ExamplesGaloisPolynomial();
+
     Console.Beep();
 }
