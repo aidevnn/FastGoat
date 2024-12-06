@@ -60,10 +60,13 @@ void PSLQminPoly(int r, int s, int O)
     Console.WriteLine($"P = {P}");
     Console.WriteLine($"P(a) = {P.Substitute(alpha).ToBigReal(O / 2)}");
     Console.WriteLine();
-    // GlobalStopWatch.AddLap();
-    // AlgebraicIntegerRelationLLL.AlphaBetaPolynomial(alpha, alpha.Pow(n - 1), n, O);
-    // GlobalStopWatch.Show("LLL");
-    // Console.ReadLine();
+    
+    GlobalStopWatch.AddLap();
+    var x = P.X;
+    Console.WriteLine("From algebraic method");
+    Console.WriteLine($"P = {IntFactorisation.PrimitiveElt(x.Pow(r) - 3, x.Pow(s) - 2)[0].F.SubstituteChar('X')}");
+    GlobalStopWatch.Show();
+    Console.WriteLine();
 }
 
 (BigCplx[], BigCplx sum) AlphaBetaPolynomial(BigCplx alpha, BigCplx beta, int d)
