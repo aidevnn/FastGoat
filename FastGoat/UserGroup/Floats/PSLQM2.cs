@@ -18,12 +18,12 @@ tpslqm2.f90
 mpfun20-mpfr-v32.tar.gz
 https://www.davidhbailey.com/dhbsoftware/
  */
-public class PSLQM2<F> where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFloatElt<F>, IFixedPrecisionElt<F>
+public static class PSLQ
 {
     /// <summary>
     /// Step Iteration of one level multipair PSLQ
     /// </summary>
-    static void IterOneLevelMultipair<K>(KMatrix<K> H, KMatrix<K> A, KMatrix<K> B,
+    public static void IterOneLevelMultipair<K>(KMatrix<K> H, KMatrix<K> A, KMatrix<K> B,
         KMatrix<K> T, KMatrix<K> y, (int i, K yi)[] gamma_pow, bool imq = false)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>, IFloatElt<K>
     {
@@ -42,6 +42,9 @@ public class PSLQM2<F> where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFl
         var n = H.M;
         var list = new List<(int, int)>(n);
         var selected = new HashSet<int>(n);
+        foreach (var (i, j) in T.M.Range().Grid2D(T.N.Range()))
+            T.Coefs[i, j] = i == j ? T.KOne : T.KZero;
+
         for (int i = 0; i < n - 1; i++)
         {
             var (b, c) = (m[i].i, m[i].i + 1);
@@ -66,29 +69,32 @@ public class PSLQM2<F> where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFl
                     (H.Coefs[mi, k], H.Coefs[mi + 1, k]) = (H.Coefs[mi + 1, k], H.Coefs[mi, k]);
             }
         }
-        
+
         // 4. Remove corners on H diagonal: For j := 1 to p: if mj ≤ n − 2 then set
         // t0 := Sqrt(H2mj_mj + H2mj_mj1), t1 := Hmj_mj /t0 and t2 := Hmj_mj1 /t0 ; for 
-        // i := mj to n: set t3 := Hi_mj ; t4 := Hi_mj1 ; Hi_mj := t1t3 + t2t4 ; and
+        // i := mj to n: set t3 := Hi_mj ; t4 := Hi_mj1 ; Hi_mj := t*1t3 + t*2t4 ; and
         // Hi_mj1 := −t2t3 + t1t4 ; endfor; endif; endfor.
         for (int j = 0; j < list.Count; j++)
         {
             var mj = list[j].Item1;
             if (mj < n - 2)
             {
-                var t0 = K.Sqrt(H[mj, mj].Pow(2) + H[mj, mj + 1].Pow(2));
-                var t1 = H[mj, mj] / t0;
-                var t2 = H[mj, mj + 1] / t0;
+                var (b, c) = (H[mj, mj], H[mj, mj + 1]);
+                var t0 = K.Sqrt(b.Absolute2 + c.Absolute2);
+                var t1 = b / t0;
+                var t2 = c / t0;
+                var t1c = t1.Conj;
+                var t2c = t2.Conj;
                 for (int i = mj; i < n; i++)
                 {
                     var t3 = H[i, mj];
                     var t4 = H[i, mj + 1];
-                    H.Coefs[i, mj] = t1 * t3 + t2 * t4;
+                    H.Coefs[i, mj] = t1c * t3 + t2c * t4;
                     H.Coefs[i, mj + 1] = -t2 * t3 + t1 * t4;
                 }
             }
         }
-        
+
         // 5. Reduce H: For i := 2 to n: for j := 1 to n − i + 1: set l := i + j − 1; for
         // k := j +1 to l −1: set Hlj := Hlj −Tlk Hkj ; endfor; set Tlj := nint(Hlj /Hjj )
         // and Hlj := Hlj − Tlj Hjj ; endfor; endfor. [Note that the n x (n − 1) integer
@@ -100,7 +106,7 @@ public class PSLQM2<F> where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFl
                 var l = i + j;
                 for (int k = j + 1; k < l; k++)
                     H.Coefs[l, j] -= T[l, k] * H[k, j];
-
+                
                 T.Coefs[l, j] = (H[l, j] / H[j, j]).RoundEven;
                 H.Coefs[l, j] -= T[l, j] * H[j, j];
             }
@@ -115,7 +121,7 @@ public class PSLQM2<F> where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFl
             for (int i = j + 1; i < n; i++)
                 y.Coefs[j, 0] += T[i, j] * y[i, 0];
         }
-        
+
         for (int k = 0; k < n; k++)
         {
             for (int j = 0; j < n - 1; j++)
@@ -128,20 +134,105 @@ public class PSLQM2<F> where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFl
             }
         }
     }
-    
-    static void SaveRestore<T>(KMatrix<T> H0, KMatrix<T> A0, KMatrix<T> B0, KMatrix<T> T0, KMatrix<T> y0,
-        KMatrix<T> H1, KMatrix<T> A1, KMatrix<T> B1, KMatrix<T> T1, KMatrix<T> y1)
-        where T : struct, IElt<T>, IRingElt<T>, IFieldElt<T>
+
+    public static string ToLongString<K>(K e)
     {
-        var N = H0.M;
-        Array.Copy(H0.Coefs, H1.Coefs, N * (N - 1));
-        Array.Copy(A0.Coefs, A1.Coefs, N * N);
-        Array.Copy(B0.Coefs, B1.Coefs, N * N);
-        Array.Copy(T0.Coefs, T1.Coefs, N * (N - 1));
-        Array.Copy(y0.Coefs, y1.Coefs, N);
+        if (e is BigCplx c)
+            return c.ToSciForm();
+        if (e is BigReal r)
+            return r.ToSciForm();
+        if (e is Cplx c1)
+            return $"{c1.RealPart:E18} + {c1.ImaginaryPart:E18}*I";
+        if (e is Dble dp)
+            return $"{dp.K:E18}";
+        if (e is Dcml dc)
+            return $"{dc.K:G27}";
+
+        throw new();
     }
 
-    public static KMatrix<K> LQpslq<K>(KMatrix<K> A) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>, IFloatElt<K>
+    /// <summary>
+    /// One-level multipair PSLQ algorithm
+    /// PSLQM1
+    /// </summary>
+    /// <param name="x">Row Vector</param>
+    /// <param name="gamma">PSLQ gamma</param>
+    /// <param name="checkPos">Index of control term</param>
+    /// <returns>Integer Relation coefficients</returns>
+    /// <exception cref="Exception">Precision exhausted</exception>
+    public static K[] OnelevelMultipair<K>(KMatrix<K> x, K gamma, int checkPos)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>, IFloatElt<K>
+    {
+        // Initialize:
+        // 1. For j := 1 to n: for i := 1 to n: if i = j then set Aij := 1 and Bij := 1
+        // else set Aij := 0 and Bij := 0; endfor; endfor.
+        var n = x.N;
+        var z = x.KZero;
+        var A = new KMatrix<K>(z, n, n).One;
+        var B = new KMatrix<K>(z, n, n).One;
+        var T = new KMatrix<K>(z, n, n - 1);
+
+        // 2. For k := 1 to n: set sk :=Sqrt(Sum[j=k to n] xj x*j) ; endfor; set t = 1/s1 ; for k := 1 to
+        // n: set yk := txk ; sk := tsk ; endfor.
+        var s = n.Range().Select(j => (n - j).Range(j).Aggregate(x.KZero, (acc, k) => acc + x[0, k].Absolute2))
+            .Select(e => K.Sqrt(e)).ToArray();
+        var t = s[0].Inv();
+        var y = x.Select(xi => xi * t).ToKMatrix(n);
+        s = s.Select(si => si * t).ToArray();
+
+        // 3. Initial H: For j := 1 to n − 1: for i := 1 to j − 1: set Hij := 0; endfor;
+        // set Hjj := sj+1 /sj ; for i := j + 1 to n: set Hij := −y*i yj /(sj sj+1 ); endfor;
+        // endfor.
+        var H = new KMatrix<K>(z, n, n - 1);
+        for (int j = 0; j < n - 1; j++)
+        {
+            for (int i = 0; i < j - 1; i++)
+                H.Coefs[i, j] = z;
+
+            H.Coefs[j, j] = s[j + 1] / s[j];
+            for (int i = j + 1; i < n; i++)
+                H.Coefs[i, j] = (-y[i, 0].Conj * y[j, 0]) / (s[j] * s[j + 1]);
+        }
+
+        var step = 0;
+        var O1 = GetO(z);
+        var gamma_pow = (n - 1).Range().Select(i => (i, yi: ToNbDigits(gamma.Pow(i + 1), O1))).ToArray();
+
+        // Iteration: Repeat the following steps until precision has been exhausted or a
+        // relation has been detected.
+        while (true)
+        {
+            ++step;
+            IterOneLevelMultipair(H, A, B, T, y, gamma_pow);
+
+            // 8. Norm bound: Compute M := 1/ maxj |Hjj |. Then there can exist no
+            // relation vector whose Euclidean norm is less than M .
+            // 9. Termination test: If the largest entry of A exceeds the level of numeric
+            // precision used, then precision is exhausted. If the smallest entry of the y
+            // vector is less than the detection epsilon, a relation has been detected and
+            // is given in the corresponding row of B.
+            if (A.Any(e => !e.IsZero() && GetMantissa(e) >= O1 + 2))
+                throw new("Precision is exhausted");
+
+            if (y.Select((yk, k) => (yk, k))
+                .Any(e => ToNbDigits(e.yk, O1 - n / 2).IsZero() && !B[e.k, checkPos].IsZero()))
+            {
+                if (Logger.Level != LogLevel.Off)
+                    Console.WriteLine($"Possible Solution step:{step}");
+
+                var (_, idx) = y.Select((yk, k) => (yk, k))
+                    .First(e => ToNbDigits(e.yk, O1 - n / 2).IsZero() && !B[e.k, checkPos].IsZero());
+
+                Console.WriteLine("End PSLQ algorithm");
+                Console.WriteLine($"Step {step}");
+                return B.GetRow(idx).Select(c => c.RoundEven).ToArray();
+            }
+        }
+
+        throw new("#1 Problem");
+    }
+
+    public static KMatrix<K> LQ<K>(KMatrix<K> A) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>, IFloatElt<K>
     {
         var H = new KMatrix<K>(A.Coefs);
         var (n, m) = A.Dim;
@@ -186,7 +277,75 @@ public class PSLQM2<F> where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFl
 
         return new(H.Coefs);
     }
-    
+
+    public static void SaveRestore<T>(KMatrix<T> H0, KMatrix<T> A0, KMatrix<T> B0, KMatrix<T> T0, KMatrix<T> y0,
+        KMatrix<T> H1, KMatrix<T> A1, KMatrix<T> B1, KMatrix<T> T1, KMatrix<T> y1)
+        where T : struct, IElt<T>, IRingElt<T>, IFieldElt<T>
+    {
+        var N = H0.M;
+        Array.Copy(H0.Coefs, H1.Coefs, N * (N - 1));
+        Array.Copy(A0.Coefs, A1.Coefs, N * N);
+        Array.Copy(B0.Coefs, B1.Coefs, N * N);
+        Array.Copy(T0.Coefs, T1.Coefs, N * (N - 1));
+        Array.Copy(y0.Coefs, y1.Coefs, N);
+    }
+
+    public static K ToNbDigits<K>(K e, int o) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>, IFloatElt<K>
+    {
+        if (e is BigReal r)
+            return (dynamic)r.ToBigReal(o);
+        if (e is BigCplx c)
+            return (dynamic)c.ToBigCplx(o);
+
+        return e;
+    }
+
+    public static int GetO<K>(K e) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>, IFloatElt<K>
+    {
+        if (e is BigReal r)
+            return r.O;
+        if (e is BigCplx c)
+            return c.O;
+        if (e is Dcml d)
+            return 28;
+        else
+            return 17;
+
+        throw new();
+    }
+
+    public static int GetMantissa<K>(K e) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>, IFloatElt<K>
+    {
+        if (e is BigReal r)
+            return r.V;
+        if (e is BigCplx c)
+            return c.NormInf.V;
+
+        throw new();
+    }
+
+    public static K FromFixedPrecision<K, F>(F e, int o)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>, IFloatElt<K>
+        where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFloatElt<F>, IFixedPrecisionElt<F>
+    {
+        if (e is Dble dp)
+            return (dynamic)BigReal.FromFixedPrecision(dp, o);
+        if (e is Dcml dc)
+            return (dynamic)BigReal.FromFixedPrecision(dc, o);
+        if (e is Cplx c)
+        {
+            return (dynamic)BigCplx.FromBigReal(BigReal.FromDouble(c.RealPart, o),
+                BigReal.FromDouble(c.ImaginaryPart, o));
+        }
+
+        throw new();
+    }
+}
+
+public class PSLQM2<F, G>
+    where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFloatElt<F>, IFixedPrecisionElt<F>
+    where G : struct, IElt<G>, IRingElt<G>, IFieldElt<G>, IFloatElt<G>
+{
     private readonly struct PslqState(int it, int its, int izd, int izm, int imq, int step)
     {
         // return new(IT, ITS, IZD, IZM, IMQ, STEP);
@@ -202,21 +361,23 @@ public class PSLQM2<F> where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFl
             return $"State IT:{IT,-4} ITS:{ITS,-4} IZD:{IZD,-4} IZM:{IZM,-4} IMQ:{IMQ,-4} STEP:{STEP,-4}";
         }
     }
+
     private int N { get; }
+    private int CheckPos { get; }
     private int NMP { get; }
     private int NDR { get; }
     private int NRB { get; }
     private int NDP { get; }
     private int NEP { get; }
     private int NSQ { get; }
-    private Rational[] Relations { get; set; }
-    private KMatrix<BigReal> X { get; }
-    private KMatrix<BigReal> H { get; set; }
-    private KMatrix<BigReal> A { get; }
-    private KMatrix<BigReal> B { get; set; }
-    private KMatrix<BigReal> T { get; }
-    private KMatrix<BigReal> Y { get; set; }
-    private KMatrix<BigReal>[] Yseq { get; }
+    private G[] Relations { get; set; }
+    private KMatrix<G> X { get; }
+    private KMatrix<G> H { get; set; }
+    private KMatrix<G> A { get; }
+    private KMatrix<G> B { get; set; }
+    private KMatrix<G> T { get; }
+    private KMatrix<G> Y { get; set; }
+    private KMatrix<G>[] Yseq { get; }
     private KMatrix<F> DH { get; }
     private KMatrix<F> DA { get; }
     private KMatrix<F> DB { get; }
@@ -228,14 +389,14 @@ public class PSLQM2<F> where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFl
     private KMatrix<F> _DB { get; }
     private KMatrix<F> _DT { get; }
     private KMatrix<F> _DY { get; }
-    private (int i, BigReal yi)[] gamma_pow { get; }
+    private (int i, G yi)[] gamma_pow { get; }
     private (int i, F yi)[] gamma_pow_dcml { get; }
-    private BigReal EPS { get; }
+    private G EPS { get; }
     private F DEPS { get; }
-    private BigReal DREP { get; }
-    private BigReal TwoPowNMP { get; }
+    private G DREP { get; }
+    private G TwoPowNMP { get; }
 
-    // PSLQM2 (two-level multipair PSLQ):
+    // PSLQM2test (two-level multipair PSLQ):
     // Input arguments and parameters:
     // N            Int     Length of input vector X and output relation vector R.
     // NDP          Int     Double Precision level in digits.
@@ -258,35 +419,34 @@ public class PSLQM2<F> where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFl
     // DA(N, N), DB(N, N), DH(N, N), DYSQ(N, NSQ), DY(N)
     // Multiprecision real arrays and variables (with dimensions):
     // B(N, N), H(N, N), SYQ(N, NSQ), Y(N), EPS, T
-    private PSLQM2(KMatrix<BigReal> X, BigReal gamma)
+    private PSLQM2(KMatrix<G> X, G gamma, int checkPos)
     {
         N = X.N;
-        this.X = new KMatrix<BigReal>(X.Coefs);
+        this.X = new KMatrix<G>(X.Coefs);
         var o = X.KOne;
-        NMP = gamma.O;
+        CheckPos = checkPos;
+        NMP = PSLQ.GetO(o);
         NDP = F.Digits;
-        if (NMP != X.KOne.O || NMP < NDP + 3)
+        if (NMP < NDP + 3)
             throw new ArgumentException($"{NMP}-digits must be >= {NDP}");
-        if (NMP != X.KOne.O)
-            throw new ArgumentException($"y has {NMP}-digits and X has {X.KOne.O}-digits");
-        
+
         NDR = NMP / 20;
         NRB = NMP / 3;
         NEP = -(9 * NMP / 10);
         NSQ = 8;
-        DEPS = F.From(BigReal.BrPow10n(3 - NDP, NMP));
-        DREP = BigReal.BrPow10n(6 - NDP, NMP);
+        DEPS = F.From((10 * o).Pow(3 - NDP));
+        DREP = (10 * o).Pow(7 - NDP);
 
-        EPS = BigReal.FromBigIntegerAndExponent(1, NEP, NMP);
-        TwoPowNMP = BigReal.FromBigInteger(BigInteger.Pow(2, NMP / 5), NMP);
-        A = new KMatrix<BigReal>(Ring.Diagonal(o, N));
-        B = new KMatrix<BigReal>(Ring.Diagonal(o, N));
-        T = new KMatrix<BigReal>(o, N, N - 1);
-        Y = new KMatrix<BigReal>(o, N, 1);
-        H = new KMatrix<BigReal>(o.Zero, N, N - 1);
-        Yseq = NSQ.Range().Select(_ => new KMatrix<BigReal>(o, N, 1)).ToArray();
-        gamma_pow = (N - 1).Range().Select(i => (i, yi: gamma.Pow(i + 1))).ToArray();
-        gamma_pow_dcml = (N - 1).Range().Select(i => (i, yi: F.From(gamma.Pow(i + 1)))).ToArray();
+        EPS = (10 * o).Pow(NEP);
+        TwoPowNMP = (2 * o).Pow(NMP / 5);
+        A = new KMatrix<G>(Ring.Diagonal(o, N));
+        B = new KMatrix<G>(Ring.Diagonal(o, N));
+        T = new KMatrix<G>(o, N, N - 1);
+        Y = new KMatrix<G>(o, N, 1);
+        H = new KMatrix<G>(o.Zero, N, N - 1);
+        Yseq = NSQ.Range().Select(_ => new KMatrix<G>(o, N, 1)).ToArray();
+        gamma_pow = (N - 1).Range().Select(i => (i, yi: PSLQ.ToNbDigits(gamma.Pow(i + 1), NMP))).ToArray();
+        gamma_pow_dcml = gamma_pow.Select(e => (e.i, yi: F.From(e.yi))).ToArray();
         var z1 = F.From(o);
         DYseq = NSQ.Range().Select(_ => new KMatrix<F>(z1, N, 1)).ToArray();
         DH = new KMatrix<F>(z1, N, N - 1);
@@ -295,7 +455,7 @@ public class PSLQM2<F> where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFl
         DY = new KMatrix<F>(z1, N, 1);
         DT = new KMatrix<F>(z1, N, N - 1);
         (_DH, _DA, _DB, _DT, _DY) = (DH.Clone, DA.Clone, DB.Clone, DT.Clone, DY.Clone);
-        Relations = Array.Empty<Rational>();
+        Relations = Array.Empty<G>();
     }
 
     // 1. Initialize MPR arrays:
@@ -306,12 +466,12 @@ public class PSLQM2<F> where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFl
     // e. Set IZD, IZM, IMQ, IT and ITS to zero.
     private PslqState Step1()
     {
-        var s = new BigReal[N];
-        var t = BigReal.BrZero(NMP);
+        var s = new G[N];
+        var t = X.KZero;
         for (int i = N - 1; i >= 0; i--)
         {
-            t += X[0, i].Pow(2);
-            s[i] = BigReal.Sqrt(t);
+            t += X[0, i].Absolute2;
+            s[i] = G.Sqrt(t);
         }
 
         t = s[0].Inv();
@@ -326,7 +486,7 @@ public class PSLQM2<F> where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFl
             H.Coefs[j, j] = s[j + 1] / s[j];
             var tj = Y[j, 0] / (s[j] * s[j + 1]);
             for (int i = j + 1; i < N; i++)
-                H.Coefs[i, j] = -Y[i, 0] * tj;
+                H.Coefs[i, j] = -Y[i, 0].Conj * tj;
         }
 
         return new(0, 0, 0, 0, 0, 2);
@@ -339,7 +499,7 @@ public class PSLQM2<F> where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFl
         var minY = Y.Min(e => e.Absolute);
         var maxY = Y.Max(e => e.Absolute);
 
-        if ((minY / maxY) < DREP)
+        if (minY.CompareTo(DREP * maxY) == -1)
             return new(st.IT, st.ITS, st.IZD, st.IZM, st.IMQ, 7);
         else
             return new(st.IT, st.ITS, st.IZD, st.IZM, st.IMQ, 3);
@@ -361,7 +521,7 @@ public class PSLQM2<F> where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFl
             for (int j = 0; j < N - 1; j++)
                 DH.Coefs[i, j] = F.From(mhi * H.Coefs[i, j]);
         }
-        
+
         foreach (var (i, j) in N.Range().Grid2D())
         {
             if (i == j)
@@ -373,17 +533,17 @@ public class PSLQM2<F> where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFl
         var tmp0 = DY.Zero;
         for (int i = 0; i < NSQ; i++)
             Array.Copy(tmp0.Coefs, DYseq[i].Coefs, N);
-        
+
         return new(st.IT, st.ITS, st.IZD, st.IZM, st.IMQ, 4);
     }
 
     // 4. Perform an LQ decomposition on DH using DP arithmetic.
     private PslqState Step4(PslqState st)
     {
-        var tmp1 = LQpslq(DH);
+        var tmp1 = PSLQ.LQ(DH);
         foreach (var (i, j) in N.Range().Grid2D((N - 1).Range()))
             DH.Coefs[i, j] = tmp1[i, j];
-        
+
         return new(st.IT, st.ITS, st.IZD, st.IZM, st.IMQ, 5);
     }
 
@@ -409,11 +569,11 @@ public class PSLQM2<F> where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFl
     private PslqState Step5(PslqState st)
     {
         var IT = st.IT + 1;
-        SaveRestore(DH, DA, DB, DT, DY, _DH, _DA, _DB, _DT, _DY);
-        IterOneLevelMultipair(DH, DA, DB, DT, DY, gamma_pow_dcml, st.IMQ == 1);
+        PSLQ.SaveRestore(DH, DA, DB, DT, DY, _DH, _DA, _DB, _DT, _DY);
+        PSLQ.IterOneLevelMultipair(DH, DA, DB, DT, DY, gamma_pow_dcml, st.IMQ == 1);
 
         var minDY = DY.Min(e => e.Absolute);
-        var IZD = minDY.CompareTo(DEPS) == -1 ? 1 : 0;
+        var IZD = minDY < DEPS ? 1 : 0;
         var maxDADB = DA.Concat(DB).Max(e => F.Abs(e));
         var log2MaxDADB = double.Log2(maxDADB);
         var log10MaxDADB = double.Log10(maxDADB);
@@ -423,10 +583,10 @@ public class PSLQM2<F> where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFl
         if (log2MaxDADB >= 52)
         {
             IZD = 2;
-            SaveRestore(_DH, _DA, _DB, _DT, _DY, DH, DA, DB, DT, DY);
+            PSLQ.SaveRestore(_DH, _DA, _DB, _DT, _DY, DH, DA, DB, DT, DY);
         }
 
-        var testDY = DYseq.Any(dy => (DY - dy).Max(e => e) < DEPS);
+        var testDY = DYseq.Any(dy => (DY - dy).Max(e => e.Absolute) < DEPS);
         var IMQ = testDY ? 1 : 0;
 
         Array.Copy(DY.Coefs, DYseq[IT % NSQ].Coefs, N);
@@ -464,8 +624,10 @@ public class PSLQM2<F> where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFl
             if (IZD == 2 && st.IT > st.ITS + 1)
                 IZD = 1;
 
-            var B0 = DB.Select(c => BigReal.FromFixedPrecision(c, NMP)).ToKMatrix(N);
-            var A0 = DA.Select(c => BigReal.FromFixedPrecision(c, NMP)).ToKMatrix(N);
+            var B0 = DB.Select(e => double.IsNaN(F.Abs(e)) ? e.One : e)
+                .Select(c => PSLQ.FromFixedPrecision<G, F>(c, NMP)).ToKMatrix(N);
+            var A0 = DA.Select(e => double.IsNaN(F.Abs(e)) ? e.One : e)
+                .Select(c => PSLQ.FromFixedPrecision<G, F>(c, NMP)).ToKMatrix(N);
             var tmpY = B0 * Y;
             var tmpB = B0 * B;
             var tmpH = A0 * H;
@@ -479,15 +641,18 @@ public class PSLQM2<F> where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFl
                         H.Coefs[i, j] = tmpH[i, j];
                 }
             }
-            
+
             var ITS = st.IT;
             var IZM = 0;
             var maxB = B.Max(e => e.Absolute);
             var minY = Y.Min(e => e.Absolute);
             IZM = 0;
-            if (minY < EPS * TwoPowNMP * maxB)
+            var lt = Y.Select((yk, k) => (yk, k))
+                .Where(e => e.yk.CompareTo(EPS * TwoPowNMP * maxB) == -1 && !B[e.k, CheckPos].IsZero())
+                .ToArray();
+            if (minY.CompareTo(EPS * TwoPowNMP * maxB) == -1 && lt.Length != 0)
             {
-                if (minY < EPS * maxB)
+                if (minY.CompareTo(EPS * maxB) == -1)
                     IZM = 1;
                 else
                     IZM = 2;
@@ -508,7 +673,7 @@ public class PSLQM2<F> where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFl
     // 7. Perform an LQ decomposition on H using MPR arithmetic.
     private PslqState Step7(PslqState st)
     {
-        var tmpH = LQpslq(H);
+        var tmpH = PSLQ.LQ(H);
         for (int i = 0; i < N; i++)
         for (int j = 0; j < N - 1; j++)
             H.Coefs[i, j] = tmpH[i, j];
@@ -535,11 +700,12 @@ public class PSLQM2<F> where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFl
     // else if IZM = 2, go to Step 9 (exit).
     private PslqState Step8(PslqState st)
     {
-        var IT = st.IT + 1;
-        var IZM = 0;
         var IMQ = st.IMQ;
-        IterOneLevelMultipair(H, A, B, T, Y, gamma_pow, IMQ == 1);
-        var testY = Yseq.Any(y => (Y - y).Max(e => e.Absolute) < EPS * TwoPowNMP);
+        var IZM = 0;
+        
+        var IT = st.IT + 1;
+        PSLQ.IterOneLevelMultipair(H, A, B, T, Y, gamma_pow, IMQ == 1);
+        var testY = Yseq.Any(y => (Y - y).Max(e => e.Absolute).CompareTo(EPS * TwoPowNMP) == -1);
         IMQ = testY ? 1 : 0;
 
         Array.Copy(Y.Coefs, Yseq[IT % NSQ].Coefs, N);
@@ -548,9 +714,12 @@ public class PSLQM2<F> where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFl
         var minY = Y.Min(e => e.Absolute);
         var maxY = Y.Max(e => e.Absolute);
         IZM = 0;
-        if (minY < EPS * TwoPowNMP * maxB)
+        var lt = Y.Select((yk, k) => (yk, k))
+            .Where(e => e.yk.CompareTo(EPS * TwoPowNMP * maxB) == -1 && !B[e.k, CheckPos].IsZero())
+            .ToArray();
+        if (minY.CompareTo(EPS * TwoPowNMP * maxB) == -1 && lt.Length != 0)
         {
-            if (minY < EPS * maxB)
+            if (minY.CompareTo(EPS * maxB) == -1)
                 IZM = 1;
             else
                 IZM = 2;
@@ -558,7 +727,7 @@ public class PSLQM2<F> where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFl
 
         if (IZM == 0)
         {
-            if ((minY / maxY) < DREP)
+            if ((minY / maxY).CompareTo(DREP) == -1)
                 return new(IT, st.ITS, st.IZD, IZM, IMQ, 8);
             else
                 return new(IT, st.ITS, st.IZD, IZM, IMQ, 3);
@@ -582,23 +751,32 @@ public class PSLQM2<F> where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFl
             return;
         }
 
-        var (idx, _) = Y.Select((yi, i) => (i, yi)).MinBy(e => e.yi.Absolute);
+        var maxB = B.Max(e => e.Absolute);
+        var lt = Y.Select((yk, k) => (yk, k))
+            .Where(e => e.yk.CompareTo(EPS * TwoPowNMP * maxB) == -1 && !B[e.k, CheckPos].IsZero())
+            .OrderBy(e =>
+                B.N.Range().Where(i => i != CheckPos).Select(i => B[e.k, i].Absolute).Aggregate((a0, a1) => a0 + a1))
+            .ThenBy(e => e.yk.Absolute)
+            .ToArray();
+        
+        var idx = lt[0].k;
         var R = B.GetRow(idx);
-        var normR = BigReal.Sqrt(Ring.SquareNorm2(R));
-        var minY = Y.Min(e => e.Absolute);
-        var maxY = Y.Max(e => e.Absolute);
+        var normR = Ring.Norm2f(R);
+        var minY = Y.Min(e => G.Abs(e));
+        var maxY = Y.Max(e => G.Abs(e));
 
-        if (double.Log10(normR.ToDouble) < NRB && double.Log10((minY / maxY).ToDouble) < NDR)
+        if (double.Log10(G.Abs(normR)) < NRB && (minY == 0 || double.Log10(minY / maxY) < NDR))
         {
             if (Logger.Level != LogLevel.Off)
+            {
+                Console.WriteLine("End PSLQ algorithm");
                 Console.WriteLine($"Possible Solution step:{st.IT}");
-            
-            Relations = R.Select(c => c.RoundEven.ToRational).ToArray();
+            }
+
+            Relations = R.Select(c => c.RoundEven).ToArray();
         }
         else
-        {
             Console.WriteLine($"Failure normR or (minY / maxY) IT:{st.IT}");
-        }
     }
 
     private void Run()
@@ -623,99 +801,26 @@ public class PSLQM2<F> where F : struct, IElt<F>, IRingElt<F>, IFieldElt<F>, IFl
                 st = Step8(st);
             else
                 throw new("");
-
         }
 
         Step9(st);
     }
 
     /// <summary>
-    /// One-level multipair PSLQ algorithm
-    /// PSLQM1
-    /// </summary>
-    /// <param name="x">Row Vector</param>
-    /// <param name="gamma">PSLQ gamma</param>
-    /// <returns>Integer Relation coefficients</returns>
-    /// <exception cref="Exception">Precision exhausted</exception>
-    public static Rational[] OnelevelMultipair(KMatrix<BigReal> x, BigReal gamma)
-    {
-        // Initialize:
-        // 1. For j := 1 to n: for i := 1 to n: if i = j then set Aij := 1 and Bij := 1
-        // else set Aij := 0 and Bij := 0; endfor; endfor.
-        var n = x.N;
-        var z = BigReal.BrZero(x.KOne.O);
-        var A = new KMatrix<BigReal>(z, n, n).One;
-        var B = new KMatrix<BigReal>(z, n, n).One;
-        var T = new KMatrix<BigReal>(z, n, n - 1);
-
-        // 2. For k := 1 to n: set sk :=Sqrt(Sum[j=k to n] xj^2) ; endfor; set t = 1/s1 ; for k := 1 to
-        // n: set yk := txk ; sk := tsk ; endfor.
-        var s = n.Range().Select(j => (n - j).Range(j).Aggregate(x.KZero, (acc, k) => acc + x[0, k].Pow(2)))
-            .Select(e => BigReal.Sqrt(e)).ToArray();
-        var t = s[0].Inv();
-        var y = x.Select(xi => xi * t).ToKMatrix(n);
-        s = s.Select(si => si * t).ToArray();
-
-        // 3. Initial H: For j := 1 to n − 1: for i := 1 to j − 1: set Hij := 0; endfor;
-        // set Hjj := sj+1 /sj ; for i := j + 1 to n: set Hij := −yi yj /(sj sj+1 ); endfor;
-        // endfor.
-        var H = new KMatrix<BigReal>(z, n, n - 1);
-        for (int j = 0; j < n - 1; j++)
-        {
-            for (int i = 0; i < j - 1; i++)
-                H.Coefs[i, j] = z;
-
-            H.Coefs[j, j] = s[j + 1] / s[j];
-            for (int i = j + 1; i < n; i++)
-                H.Coefs[i, j] = (-y[i, 0] * y[j, 0]) / (s[j] * s[j + 1]);
-        }
-
-        var step = 0;
-        var O1 = z.O;
-        var O2 = gamma.O;
-        var gamma_pow = (n - 1).Range().Select(i => (i, yi: gamma.Pow(i + 1))).ToArray();
-
-        // Iteration: Repeat the following steps until precision has been exhausted or a
-        // relation has been detected.
-        while (true)
-        {
-            ++step;
-            IterOneLevelMultipair(H, A, B, T, y, gamma_pow);
-
-            // 8. Norm bound: Compute M := 1/ maxj |Hjj |. Then there can exist no
-            // relation vector whose Euclidean norm is less than M .
-            // 9. Termination test: If the largest entry of A exceeds the level of numeric
-            // precision used, then precision is exhausted. If the smallest entry of the y
-            // vector is less than the detection epsilon, a relation has been detected and
-            // is given in the corresponding row of B.
-            var M = (n - 1).Range().Max(j => H[j, j]).Inv();
-            if (A.Any(e => e.V >= O1 + 2))
-                throw new("Precision is exhausted");
-
-            if (y.Any(e => e.ToBigReal(O1 - 4).IsZero()))
-            {
-                var ym = y.Select((yi, i) => (e: yi, i)).OrderBy(c => c.e.Absolute).First();
-                if (Logger.Level != LogLevel.Off)
-                    Console.WriteLine($"Possible Solution step:{step}");
-
-                return B.GetRow(ym.i).Select(c => c.RoundEven.ToRational).ToArray();
-            }
-        }
-
-        throw new();
-    }
-
-    /// <summary>
     /// Two-level multipair PSLQ algorithm
-    /// PSLQM2
+    /// PSLQM2test
     /// </summary>
     /// <param name="X">Row Vector</param>
     /// <param name="gamma">PSLQ gamma</param>
+    /// <param name="checkPos">Index not null value</param>
     /// <returns>Integer Relation coefficients</returns>
     /// <exception cref="Exception">Precision exhausted</exception>
-    public static Rational[] TwoLevelMultipair(KMatrix<BigReal> X, BigReal gamma)
+    public static G[] TwoLevelMultipair(KMatrix<G> X, G gamma, int checkPos)
     {
-        var algo = new PSLQM2<F>(X, gamma);
+        if (F.IsComplex != G.IsComplex)
+            throw new();
+
+        var algo = new PSLQM2<F, G>(X, gamma, checkPos);
         algo.Run();
         return algo.Relations.ToArray();
     }

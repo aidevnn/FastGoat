@@ -1,29 +1,12 @@
 ﻿using System.Numerics;
 using FastGoat.Commons;
-using FastGoat.Examples;
 using FastGoat.Structures;
-using FastGoat.Structures.CartesianProduct;
-using FastGoat.Structures.GenericGroup;
-using FastGoat.Structures.Naming;
-using FastGoat.Structures.Subgroups;
 using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup;
-using FastGoat.UserGroup.Characters;
-using FastGoat.UserGroup.DatabaseSmallGroups;
-using FastGoat.UserGroup.EllCurve;
 using FastGoat.UserGroup.Floats;
-using FastGoat.UserGroup.GModuleN;
 using FastGoat.UserGroup.Integers;
-using FastGoat.UserGroup.Matrix;
-using FastGoat.UserGroup.GModuleN;
-using FastGoat.UserGroup.Perms;
 using FastGoat.UserGroup.Polynoms;
-using FastGoat.UserGroup.Words;
 using static FastGoat.Commons.IntExt;
-using static FastGoat.Commons.EnumerableExt;
-using FastGoat.UserGroup.Padic;
-using FastGoat.UserGroup.Words.Tools;
-using GroupRegX = System.Text.RegularExpressions;
 
 //////////////////////////////////
 //                              //
@@ -50,7 +33,7 @@ void testPSQL1()
     Console.WriteLine(ai);
     Console.WriteLine(y);
     GlobalStopWatch.AddLap();
-    var coefs = PSLQM2test<Dble, BigReal>.TwoLevelMultipair(ai, y, n - 1).Select(e => e.ToRational).ToArray();
+    var coefs = PSLQM2<Dble, BigReal>.TwoLevelMultipair(ai, y, n - 1).Select(e => e.ToRational).ToArray();
     GlobalStopWatch.Show($"PSLQ");
     var P = -FG.KPoly('π', coefs.SkipLast(1).ToArray()) / coefs.Last();
     Console.WriteLine($"beta = {P}");
@@ -71,7 +54,7 @@ void PSLQminPoly(int r, int s, int O)
     // var y = BigReal.FromBigInteger(2, O2);
 
     GlobalStopWatch.AddLap();
-    var coefs = PSLQM2test<Dble, BigReal>.TwoLevelMultipair(ai, y, n - 1).Select(e => e.ToRational).ToArray();
+    var coefs = PSLQM2<Dble, BigReal>.TwoLevelMultipair(ai, y, n - 1).Select(e => e.ToRational).ToArray();
     GlobalStopWatch.Show($"PSLQ min poly a = 3^(1/{r}) - 2^(1/{s})");
     var P = FG.KPoly('X', coefs).Monic;
     Console.WriteLine($"P = {P}");
@@ -106,7 +89,7 @@ void PSLQminPoly(int r, int s, int O)
     // var y = 2 / BigCplx.Sqrt(3 * BigCplx.BcOne(O2));
     // var y = 3 * BigCplx.BcOne(O2) / 2;
     var y = BigCplx.Sqrt(2 * BigCplx.BcOne(O2));
-    var rel = PSLQM2test<Cplx, BigCplx>.TwoLevelMultipair(mat, y, d - 1);
+    var rel = PSLQM2<Cplx, BigCplx>.TwoLevelMultipair(mat, y, d - 1);
     var sum = rel.SkipLast(1).Zip(aipow).Aggregate(z.Zero, (acc, v) => acc + v.First * v.Second) / beta;
     return (rel.SkipLast(1).Select(c => c.RoundEven).ToArray(), sum.RoundEven);
 }
@@ -206,18 +189,18 @@ void StartingTest()
 void ExamplesGaloisPolynomial()
 {
     var x = FG.QPoly();
-    ExamplePol(x.Pow(4) - 2 * x.Pow(2) + 9, 40); // C2 x C2
-    ExamplePol(x.Pow(4) + x.Pow(3) + x.Pow(2) + x + 1, 40); // C4
+    ExamplePol(x.Pow(4) - 2 * x.Pow(2) + 9, 20); // C2 x C2
+    ExamplePol(x.Pow(4) + x.Pow(3) + x.Pow(2) + x + 1, 20); // C4
     
-    ExamplePol(x.Pow(6) + 2 * x.Pow(5) - 2 * x.Pow(3) + 7 * x.Pow(2) + 8 * x + 13, 40); // C6
-    ExamplePol(x.Pow(6) + 108, 40); // S3
+    ExamplePol(x.Pow(6) + 2 * x.Pow(5) - 2 * x.Pow(3) + 7 * x.Pow(2) + 8 * x + 13, 20); // C6
+    ExamplePol(x.Pow(6) + 108, 30); // S3
     
-    ExamplePol(x.Pow(4) - 8 * x.Pow(3) + 20 * x.Pow(2) - 16 * x + 2, 60); // C4
-    ExamplePol(x.Pow(8) - 8 * x.Pow(6) + 20 * x.Pow(4) - 16 * x.Pow(2) + 2, 40); // C8
-    ExamplePol(x.Pow(8) - x.Pow(4) + 1, 40); // C2 x C2 x C2
-    ExamplePol(x.Pow(8) + 1, 40); // C2 x C4
-    ExamplePol(x.Pow(8) + 4 * x.Pow(6) + 2 * x.Pow(4) + 28 * x.Pow(2) + 1, 40); // D8
-    ExamplePol(x.Pow(8) - 12 * x.Pow(6) + 36 * x.Pow(4) - 36 * x.Pow(2) + 9, 40); // Q8;
+    ExamplePol(x.Pow(4) - 8 * x.Pow(3) + 20 * x.Pow(2) - 16 * x + 2, 30); // C4
+    ExamplePol(x.Pow(8) - 8 * x.Pow(6) + 20 * x.Pow(4) - 16 * x.Pow(2) + 2, 30); // C8
+    ExamplePol(x.Pow(8) - x.Pow(4) + 1, 30); // C2 x C2 x C2
+    ExamplePol(x.Pow(8) + 1, 30); // C2 x C4
+    ExamplePol(x.Pow(8) + 4 * x.Pow(6) + 2 * x.Pow(4) + 28 * x.Pow(2) + 1, 30); // D8
+    ExamplePol(x.Pow(8) - 12 * x.Pow(6) + 36 * x.Pow(4) - 36 * x.Pow(2) + 9, 30); // Q8;
     
     ExamplePol(x.Pow(10) - 2 * x.Pow(9) - 2 * x.Pow(8) + 6 * x.Pow(7) + 14 * x.Pow(6) - 26 * x.Pow(5) + 15 * x.Pow(4) -
         4 * x.Pow(3) + 58 * x.Pow(2) - 40 * x + 89, 60); // C10
@@ -234,7 +217,7 @@ void ExamplesGaloisPolynomial()
 void LQtest()
 {
     var I = Cplx.I;
-    for (int k = 0; k < 1000; ++k)
+    for (int k = 0; k < 100; ++k)
         foreach (var n in 5.Range(2))
         {
             var A = (n * n).Range().Select(_ => Rng.Next(-9, 10) + I * Rng.Next(-9, 10)).ToKMatrix(n);
@@ -242,7 +225,7 @@ void LQtest()
             if (detA.IsZero())
                 continue;
             
-            var L = PSLQM2<Cplx>.LQpslq(A);
+            var L = PSLQ.LQ(A);
             var Q = L.Inv() * A;
             Console.WriteLine("A");
             Console.WriteLine(A);
@@ -271,9 +254,9 @@ void LQtest()
     GlobalStopWatch.Restart();
     Ring.DisplayPolynomial = MonomDisplay.StarCaret;
     
-    // LQtest();
+    LQtest();
     StartingTest();
     ExamplesGaloisPolynomial();
-
+    
     Console.Beep();
 }

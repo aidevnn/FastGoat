@@ -42,7 +42,10 @@ public static class AlgebraicIntegerRelationPSLQ
         }
 
         var gamma = 2 / BigReal.Sqrt(BigReal.FromBigInteger(3, O));
-        var rel = PSLQM2<Dble>.TwoLevelMultipair(mat, gamma);
+        // var rel = PSLQM2<Dble>.TwoLevelMultipair(mat, gamma);
+        var rel = PSLQM2<Dble, BigReal>.TwoLevelMultipair(mat, gamma, d - 1)
+            .Select(e => e.ToRational)
+            .ToArray();
 
         if (Logger.Level != LogLevel.Off)
         {
@@ -70,7 +73,7 @@ public static class AlgebraicIntegerRelationPSLQ
         var gamma = 2 / BigReal.Sqrt(BigReal.FromBigInteger(3, O));
 
         GlobalStopWatch.AddLap();
-        var coefs = PSLQM2<T>.TwoLevelMultipair(ai, gamma);
+        var coefs = PSLQM2<T, BigReal>.TwoLevelMultipair(ai, gamma, n - 1).Select(e => e.ToRational).ToArray();
         Console.WriteLine(coefs.ToKMatrix());
         var P = FG.KPoly('X', coefs).Monic;
         GlobalStopWatch.Show($"Two level Multipair PSLQ<{typeof(T).Name}> min poly a = 3^(1/{r}) - 2^(1/{s})");
@@ -115,7 +118,6 @@ public static class AlgebraicIntegerRelationPSLQ
         Console.WriteLine(coefs.Glue("; "));
 
         var poly = new KPoly<Rational>('x', Rational.KZero(), coefs.SkipLast(1).ToArray());
-        var sum = poly.Substitute(alpha);
         var fact = -coefs.Last();
         Console.WriteLine("factor : {0}", fact.ToDouble);
         var P = poly.X.Pow(16) - poly / fact;
