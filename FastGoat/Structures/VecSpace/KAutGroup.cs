@@ -78,7 +78,7 @@ public readonly struct KAutGroup<K> : IGroup<KAut<K>> where K : struct, IElt<K>,
         return new(this, tmp1);
     }
 
-    public KAut<K> Op(KAut<K> e1, KAut<K> e2) => new(this, e1.E.Substitute(e2.E));
+    public KAut<K> Op(KAut<K> e1, KAut<K> e2) => new(this, e1.Op(e2.E));
     public override int GetHashCode() => Hash;
     public override string ToString() => Name;
 }
