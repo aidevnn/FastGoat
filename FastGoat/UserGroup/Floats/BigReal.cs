@@ -192,7 +192,16 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
 
     public BigReal Round0 => Round(this);
 
-    public double ToDouble => double.Parse(ToBigReal(17).ToSciForm());
+    public double ToDouble
+    {
+        get
+        {
+            var sp = ToSciForm().Split("E");
+            var m = double.Parse(sp[0]);
+            var n = int.Parse(sp[1]);
+            return double.Exp10(n) * m;
+        }
+    }
     
     public decimal ToDecimal => decimal.Parse(ToBigReal(29).ToFixForm());
 
