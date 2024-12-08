@@ -86,7 +86,7 @@ public static class AlgebraicIntegerRelationPSLQ
 
     public static void Example1()
     {
-        Logger.Level = LogLevel.Level2;
+        Logger.Level = LogLevel.Level1;
         var d = 8; // Expected polynomial degree plus one
         var O = 30; // maximum precision digits
         var pi = BigReal.Pi(O + 2 * d);
@@ -103,6 +103,8 @@ public static class AlgebraicIntegerRelationPSLQ
         Console.WriteLine("Expected beta : {0:F24}", betaExpected.ToDcml.K);
         Console.WriteLine("Actual   beta : {0:F24}", P.Substitute(pi).ToDcml.K);
         Console.WriteLine("Are Equals {0}", betaExpected.ToBigReal(O).Equals(P.Substitute(pi).ToBigReal(O)));
+        
+        Logger.Level = LogLevel.Off;
     }
 
     public static void Example2()
@@ -124,7 +126,9 @@ public static class AlgebraicIntegerRelationPSLQ
         Console.WriteLine($"P = {P.SubstituteChar('X')}");
 
         var x = FG.QPoly();
-        IntFactorisation.PrimitiveElt(x.Pow(4) - 2, x.Pow(4) - 3).Println(); // more faster
+        IntFactorisation.PrimitiveElt(x.Pow(4) - 2, x.Pow(4) - 3).Println(); // faster
+        
+        Logger.Level = LogLevel.Off;
     }
 
     static ConcreteGroup<KAut<Rational>> ConjugatesOfBeta(KAutGroup<Rational> bsKAutGroup, BigCplx alpha, BigCplx beta,
@@ -144,8 +148,8 @@ public static class AlgebraicIntegerRelationPSLQ
             Console.WriteLine();
         }
 
-        if (!beta.ToBigCplx(O).Equals(P.Substitute(alpha).ToBigCplx(O)))
-            throw new();
+        if (!(beta - P.Substitute(alpha)).Absolute2.IsZero4d())
+            throw new($"P(a) = {P.Substitute(alpha).ToBigCplx(O).ToSciForm()} beta:{beta.ToSciForm()}");
 
         var fy = P.Substitute(bsKAutGroup.Neutral().E);
         var subGr = Group.Generate("Conjugates", bsKAutGroup, fy);
@@ -174,43 +178,23 @@ public static class AlgebraicIntegerRelationPSLQ
         {
             Console.WriteLine(new { alpha, O });
             DisplayGroup.HeadElements(subGrGal);
-            cplxRoots.Println("All Complex Roots");
-            GlobalStopWatch.Show();
         }
-
-        while (subGrGal.Count() < cplxRoots.Length)
+        
+        var dictRoots = cplxRoots.ToDictionary(e => e, e => e,
+            EqualityComparer<BigCplx>.Create((a0, a1) => (a0 - a1).Absolute2.IsZero(), a0 => a0.O)
+        );
+        do
         {
-            var remains = cplxRoots.ToHashSet();
-            var sz = 0;
-            while (sz != remains.Count)
-            {
-                sz = remains.Count;
-                var tmp0 = subGrGal.Select(fy => fy.E.Poly.Substitute(alpha).ToBigCplx(O)).ToHashSet();
-                var tmp1 = new HashSet<BigCplx>();
-                foreach (var e in remains)
-                {
-                    var res0 = subGrGal.Select(fy => fy.E.Poly.Substitute(e).ToBigCplx(O)).ToHashSet();
-                    if (res0.All(e1 => !tmp0.Contains(e1)))
-                    {
-                        tmp0.UnionWith(res0);
-                        tmp1.Add(e);
-                    }
-                }
-
-                remains = tmp1.ToHashSet();
-            }
-
+            var remains = Group.AllOrbits(subGrGal, cplxRoots.ToArray(), (aut, cplx) => dictRoots[aut.Op(cplx)])
+                .Keys.Where(e => !e.Equals(alpha)).Order().ToArray();
+            
             if (Logger.Level != LogLevel.Off)
-                remains.Println($"Remaining roots {remains.Count}");
-
-            if (remains.Count == 0)
-                break;
-
-            var beta2 = remains.First(b => (alpha - b).Magnitude > 1e-12);
-            var gr = ConjugatesOfBeta(kAut, alpha, beta2, P.Degree + 1, O);
+                remains.Println($"Remaining roots {remains.Length}");
+            
+            var gr = ConjugatesOfBeta(kAut, alpha, remains.First(), P.Degree + 1, O);
             subGrGal = Group.DirectProduct("SubGr(Gal(P))", gr, subGrGal);
-        }
-
+        } while (subGrGal.Count() < cplxRoots.Length);
+        
         subGrGal.Name = "Gal( Q(y)/Q )";
         return subGrGal;
     }

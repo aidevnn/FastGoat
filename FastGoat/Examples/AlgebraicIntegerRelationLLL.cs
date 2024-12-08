@@ -133,8 +133,8 @@ public static class AlgebraicIntegerRelationLLL
             Console.WriteLine();
         }
 
-        if (!beta.ToBigCplx(O).Equals(P.Substitute(alpha).ToBigCplx(O)))
-            throw new();
+        if (!(beta - P.Substitute(alpha)).Absolute2.IsZero4d())
+            throw new($"P(a) = {P.Substitute(alpha).ToBigCplx(O).ToSciForm()} beta:{beta.ToSciForm()}");
 
         var fy = P.Substitute(bsKAutGroup.Neutral().E);
         var subGr = Group.Generate("Conjugates", bsKAutGroup, fy);
@@ -148,7 +148,8 @@ public static class AlgebraicIntegerRelationLLL
         return subGr;
     }
 
-    public static ConcreteGroup<KAut<Rational>> GaloisGroupNumericRoots(BigCplx alpha, BigCplx[] cplxRoots, KPoly<Rational> P, int O)
+    public static ConcreteGroup<KAut<Rational>> GaloisGroupNumericRoots(BigCplx alpha, BigCplx[] cplxRoots, 
+        KPoly<Rational> P, int O)
     {
         P = P.SubstituteChar('y');
         var y = FG.EPoly(P, 'y');
@@ -162,42 +163,23 @@ public static class AlgebraicIntegerRelationLLL
         {
             Console.WriteLine(new { alpha, O });
             DisplayGroup.HeadElements(subGrGal);
-            cplxRoots.Println("All Complex Roots");
         }
-
-        while (subGrGal.Count() < cplxRoots.Length)
+        
+        var dictRoots = cplxRoots.ToDictionary(e => e, e => e,
+            EqualityComparer<BigCplx>.Create((a0, a1) => (a0 - a1).Absolute2.IsZero(), a0 => a0.O)
+        );
+        do
         {
-            var remains = cplxRoots.ToHashSet();
-            var sz = 0;
-            while (sz != remains.Count)
-            {
-                sz = remains.Count;
-                var tmp0 = subGrGal.Select(fy => fy.E.Poly.Substitute(alpha).ToBigCplx(O)).ToHashSet();
-                var tmp1 = new HashSet<BigCplx>();
-                foreach (var e in remains)
-                {
-                    var res0 = subGrGal.Select(fy => fy.E.Poly.Substitute(e).ToBigCplx(O)).ToHashSet();
-                    if (res0.All(e1 => !tmp0.Contains(e1)))
-                    {
-                        tmp0.UnionWith(res0);
-                        tmp1.Add(e);
-                    }
-                }
-
-                remains = tmp1.ToHashSet();
-            }
-
+            var remains = Group.AllOrbits(subGrGal, cplxRoots.ToArray(), (aut, cplx) => dictRoots[aut.Op(cplx)])
+                .Keys.Where(e => !e.Equals(alpha)).Order().ToArray();
+            
             if (Logger.Level != LogLevel.Off)
-                remains.Println($"Remaining roots {remains.Count}");
-
-            if (remains.Count == 0)
-                break;
-
-            var beta2 = remains.First(b => (alpha - b).Magnitude > 1e-12);
-            var gr = ConjugatesOfBeta(kAut, alpha, beta2, P.Degree + 1, O);
+                remains.Println($"Remaining roots {remains.Length}");
+            
+            var gr = ConjugatesOfBeta(kAut, alpha, remains.First(), P.Degree + 1, O);
             subGrGal = Group.DirectProduct("SubGr(Gal(P))", gr, subGrGal);
-        }
-
+        } while (subGrGal.Count() < cplxRoots.Length);
+        
         subGrGal.Name = "Gal( Q(y)/Q )";
         return subGrGal;
     }
@@ -220,7 +202,7 @@ public static class AlgebraicIntegerRelationLLL
 
     public static void Example3()
     {
-        Logger.Level = LogLevel.Level1;
+        // Logger.Level = LogLevel.Level1;
         var x = FG.QPoly();
         var P = x.Pow(3) + 2;
         var roots = IntFactorisation.SplittingField(P); // S3
@@ -233,11 +215,11 @@ public static class AlgebraicIntegerRelationLLL
         DisplayGroup.HeadElements(galGr);
         var X = FG.KPoly('X', galGr.Neutral().E);
         Console.WriteLine("Prod[X - ri] = {0}", galGr.Aggregate(X.One, (acc, r) => acc * (X - r)));
-        GlobalStopWatch.Show("END"); // Time:136 ms
+        GlobalStopWatch.Show("END"); // Time:100ms
         GlobalStopWatch.AddLap();
         GaloisApplications.GaloisCorrespondence(galGr.ToList());
-        GlobalStopWatch.Show("END GaloisCorrespondence"); // Time:39 ms
-        GlobalStopWatch.Show("END S3"); // Time:175 ms
+        GlobalStopWatch.Show("END GaloisCorrespondence"); // Time:30ms
+        GlobalStopWatch.Show("END S3"); // Time:130ms
     }
 
     public static void Example4()
@@ -252,11 +234,11 @@ public static class AlgebraicIntegerRelationLLL
         DisplayGroup.HeadElements(galGr);
         var X = FG.KPoly('X', galGr.Neutral().E);
         Console.WriteLine("Prod[X - ri] = {0}", galGr.Aggregate(X.One, (acc, r) => acc * (X - r)));
-        GlobalStopWatch.Show("END"); // Time:266 ms
+        GlobalStopWatch.Show("END"); // Time:120ms
         GlobalStopWatch.AddLap();
         GaloisApplications.GaloisCorrespondence(galGr.ToList());
-        GlobalStopWatch.Show("END GaloisCorrespondence"); // Time:166 ms
-        GlobalStopWatch.Show("END D8"); // Time:432 ms
+        GlobalStopWatch.Show("END GaloisCorrespondence"); // Time:133ms
+        GlobalStopWatch.Show("END D8"); // Time:253ms
     }
 
     public static void Example5()
@@ -269,16 +251,16 @@ public static class AlgebraicIntegerRelationLLL
         var O1 = 45; // rounding digits
         var O2 = 50; // maximum precision digits
         GlobalStopWatch.Restart();
-        Logger.Level = LogLevel.Level1;
+        // Logger.Level = LogLevel.Level1;
         var galGr = GaloisGroupLLL(minPoly, O1, O2);
         DisplayGroup.HeadElements(galGr);
         var X = FG.KPoly('X', galGr.Neutral().E);
         Console.WriteLine("Prod[X - ri] = {0}", galGr.Aggregate(X.One, (acc, r) => acc * (X - r)));
-        GlobalStopWatch.Show("END"); // Time:814 ms
+        GlobalStopWatch.Show("END"); // Time:463ms
         GlobalStopWatch.AddLap();
         GaloisApplications.GaloisCorrespondence(galGr.ToList());
-        GlobalStopWatch.Show("END GaloisCorrespondence"); // Time:449 ms
-        GlobalStopWatch.Show("END D10"); // Time:1263 ms
+        GlobalStopWatch.Show("END GaloisCorrespondence"); // Time:421ms
+        GlobalStopWatch.Show("END D10"); // Time:884ms
     }
 
     public static void Example6()
@@ -291,16 +273,16 @@ public static class AlgebraicIntegerRelationLLL
         var O1 = 110; // rounding digits
         var O2 = 130; // maximum precision digits
         GlobalStopWatch.Restart();
-        Logger.Level = LogLevel.Level1;
+        // Logger.Level = LogLevel.Level1;
         var galGr = GaloisGroupLLL(minPoly, O1, O2);
         DisplayGroup.HeadElements(galGr);
         var X = FG.KPoly('X', galGr.Neutral().E);
         Console.WriteLine("Prod[X - ri] = {0}", galGr.Aggregate(X.One, (acc, r) => acc * (X - r)));
-        GlobalStopWatch.Show("END Roots"); // Time:4956 ms
+        GlobalStopWatch.Show("END Roots"); // Time:3.716s
         GlobalStopWatch.AddLap();
         GaloisApplications.GaloisCorrespondence(galGr.ToList());
-        GlobalStopWatch.Show("END GaloisCorrespondence"); // Time:2302 ms
-        GlobalStopWatch.Show("END A4"); // Time:7258 ms
+        GlobalStopWatch.Show("END GaloisCorrespondence"); // Time:2.067s
+        GlobalStopWatch.Show("END A4"); // Time:5.783s
     }
 
     public static void Example7()
@@ -318,11 +300,11 @@ public static class AlgebraicIntegerRelationLLL
         DisplayGroup.HeadElements(galGr);
         var X = FG.KPoly('X', galGr.Neutral().E);
         Console.WriteLine("Prod[X - ri] = {0}", galGr.Aggregate(X.One, (acc, r) => acc * (X - r)));
-        GlobalStopWatch.Show("END Roots"); // Time:18342 ms
+        GlobalStopWatch.Show("END Roots"); // Time:15.921s
         GlobalStopWatch.AddLap();
         GaloisApplications.GaloisCorrespondence(galGr.ToList());
-        GlobalStopWatch.Show("END GaloisCorrespondence"); // Time:5462 ms
-        GlobalStopWatch.Show("END C5x:C4"); // Time:23804 ms
+        GlobalStopWatch.Show("END GaloisCorrespondence"); // Time:3.891s
+        GlobalStopWatch.Show("END C5x:C4"); // Time:19.812s
     }
 
     public static void Example8()
@@ -342,11 +324,11 @@ public static class AlgebraicIntegerRelationLLL
         DisplayGroup.HeadElements(galGr);
         var X = FG.KPoly('X', galGr.Neutral().E);
         Console.WriteLine("Prod[X - ri] = {0}", galGr.Aggregate(X.One, (acc, r) => acc * (X - r)));
-        GlobalStopWatch.Show("END Roots"); // Time:29501 ms
+        GlobalStopWatch.Show("END Roots"); // Time:21.642s
         GlobalStopWatch.AddLap();
         GaloisApplications.GaloisCorrespondence(galGr.ToList());
-        GlobalStopWatch.Show("END GaloisCorrespondence"); // Time:5758 ms
-        GlobalStopWatch.Show("END C3x:C6"); // Time:35259 ms
+        GlobalStopWatch.Show("END GaloisCorrespondence"); // Time:4.133s
+        GlobalStopWatch.Show("END C3x:C6"); // Time:25.775s
     }
 
     public static void Example9()
