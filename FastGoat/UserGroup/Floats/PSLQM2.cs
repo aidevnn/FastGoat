@@ -430,8 +430,8 @@ public class PSLQM2<F, G>
         if (NMP < NDP + 3)
             throw new ArgumentException($"{NMP}-digits must be >= {NDP}");
 
-        NDR = NMP / 20;
-        NRB = NMP / 3;
+        NDR = F.Digits * 2;
+        NRB = NMP;
         NEP = -(9 * NMP / 10);
         NSQ = 8;
         DEPS = F.From((10 * o).Pow(3 - NDP));
@@ -762,23 +762,33 @@ public class PSLQM2<F, G>
         var idx = lt[0].k;
         var R = B.GetRow(idx);
         var normR = Ring.Norm2f(R);
-        var minY = Y.Min(e => G.Abs(e));
-        var maxY = Y.Max(e => G.Abs(e));
-
-        if (double.Log10(G.Abs(normR)) < NRB && (minY == 0 || double.Log10(minY / maxY) < NDR))
+        var minY = Y.Min(e => e.Absolute);
+        var maxY = Y.Max(e => e.Absolute);
+        
+        if (double.Log10(G.Abs(normR)) < NRB && double.Log10(G.Abs(minY / maxY)) < NDR)
         {
             if (Logger.Level != LogLevel.Off)
             {
                 Console.WriteLine("End PSLQ algorithm");
                 Console.WriteLine($"Possible Solution step:{st.IT}");
             }
-
+            
             Relations = R.Select(c => c.RoundEven).ToArray();
         }
         else
+        {
+            Console.WriteLine("B");
+            Console.WriteLine(B);
+            Console.WriteLine("Y");
+            Y.Select(e => G.Abs(e)).Println();
             Console.WriteLine($"Failure normR or (minY / maxY) IT:{st.IT}");
+            Console.WriteLine($"log(normR):{double.Log10(G.Abs(normR))} ? {NRB}");
+            Console.WriteLine($"log(minY / maxY):{double.Log10(G.Abs(minY / maxY) )} ? {NDR}");
+            Console.WriteLine(double.Log10(G.Abs(normR)) < NRB);
+            Console.WriteLine(double.Log10(G.Abs(minY / maxY)) - 1 < NDR);
+        }
     }
-
+    
     private void Run()
     {
         var st = Step1();
