@@ -196,4 +196,18 @@ public static class DistributionExt
     /// <param name="size">The number of random numbers to generate.</param>
     /// <returns>An IEnumerable of random numbers based on the standard normal distribution.</returns>
     public static IEnumerable<double> StdNormalSample(int size) => NormalSample(size, 0.0, 1.0);
+
+    public static int DiscreteGaussian(double mu, double sigma, double tau)
+    {
+        var (n0, n1) = NormalBoxMuller(mu, sigma);
+        if (double.Abs(n0 - mu) < tau * sigma)
+            return (int)double.Round(n0);
+        if (double.Abs(n1 - mu) < tau * sigma)
+            return (int)double.Round(n1);
+
+        return 0;
+    }
+
+    public static IEnumerable<int> DiscreteGaussianSample(int size, double mu, double sigma, double tau)
+        => size.SeqLazy().Select(_ => DiscreteGaussian(mu, sigma, tau));
 }

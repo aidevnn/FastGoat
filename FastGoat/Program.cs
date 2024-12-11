@@ -1,4 +1,6 @@
 ﻿using FastGoat.Commons;
+using FastGoat.Structures;
+using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup.Lattice;
 using static FastGoat.Commons.IntExt;
 
@@ -10,7 +12,7 @@ using static FastGoat.Commons.IntExt;
 
 Console.WriteLine("Hello World");
 // 16-bit default C#-char
-const int charBit = 8;
+int charBit = 8;
 
 IEnumerable<int> String2Bin(string s)
 {
@@ -32,7 +34,7 @@ string Bin2String(IEnumerable<int> bin)
     foreach (var l in bin.Chunk(charBit))
     {
         var sum = l.Select((c, i) => (c, i)).Sum(e => e.c << e.i);
-        s += (char)sum;
+        s += Convert.ToChar(sum);
     }
 
     return s;
@@ -77,38 +79,61 @@ string RandString(int length)
     return length.Range().Select(_ => s[Rng.Next(s.Length)]).Glue();
 }
 
-void TestLWE()
+void RunRLWE(RLWE rlwe, string text, bool showCypher = false, bool showBinary = true)
 {
-    for (int N = 2; N < 21; ++N)
+    Console.WriteLine(text);
+    var seq0 = String2Bin(text).ToArray();
+    var rem = seq0.Length % rlwe.N;
+    var seq1 = rem == 0 ? seq0 : seq0.Concat(Enumerable.Repeat(0, rlwe.N - rem)).ToArray();
+    var diff = seq1.Length - seq0.Length;
+    var seq = seq1.Chunk(rlwe.N).ToArray();
+    var seqCyphers = seq.Select(b => (b, encode: rlwe.Encode(b)))
+        .Select(e => (e.b, e.encode, cypher: rlwe.Encrypt(e.encode)))
+        .ToArray();
+
+    if (showCypher)
+        seqCyphers.Println(
+            l => $"{l.b.Glue()} => [[{l.encode}], {l.cypher}]",
+            $"Cyphers text:{text}"
+        );
+
+    var seqDecrypt = seqCyphers.Select(e => rlwe.Decode(rlwe.Decrypt(e.cypher))).ToArray();
+    var text2 = Bin2String(seqDecrypt.SelectMany(l => l).SkipLast(diff));
+    if (showBinary)
     {
-        var lwe = new LWE(N);
-        lwe.Show();
-
-        RunLWE(lwe, "hello world lwe");
-        RunLWE(lwe, "Hello World LWE");
-        RunLWE(lwe, "AAA+", showCypher: true);
-
-        for (int i = 0; i < 100; i++)
-            RunLWE(lwe, RandString(Rng.Next(20, 50)));
-
-        // long text
-        RunLWE(lwe, RandString(10000), showBinary: false);
+        Console.WriteLine($"seqInput  :[{seq.SelectMany(e => e).SkipLast(diff).Glue()}]");
+        Console.WriteLine($"seqDecrypt:[{seqDecrypt.SelectMany(e => e).SkipLast(diff).Glue()}]");
+        Console.WriteLine(text2);
     }
+
+    if (string.Equals(text, text2))
+        Console.WriteLine("    SUCCESS");
+    else
+    {
+        Console.WriteLine("    FAIL");
+        Console.Beep();
+    }
+
+    Console.WriteLine();
 }
 
 {
-    TestLWE();
+    Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+    for (var k = 3; k < 7; ++k)
+    {
+        var N = 1 << k; // 2^3, 2^4, 2^5, 2^6
+        var Q = Primes10000.First(p => p > N * N & p % (2 * N) == 1);
+        var rlwe = new RLWE(N, Q, sigma: double.Sqrt(N) / k);
+        rlwe.Show();
 
-    var lwe = new LWE(m: 5, n: 20); // PK sample size 5 and dimension 20
-    lwe.Show();
-    
-    RunLWE(lwe, "hello world lwe");
-    RunLWE(lwe, "Hello World LWE");
-    RunLWE(lwe, "AAA+", showCypher: true);
-    
-    for (int i = 0; i < 100; i++)
-        RunLWE(lwe, RandString(Rng.Next(20, 50)));
-    
-    // long text
-    RunLWE(lwe, RandString(10000), showBinary: false);
+        RunRLWE(rlwe, "hello world lwe");
+        RunRLWE(rlwe, "Hello World LWE");
+        RunRLWE(rlwe, "AAA+", showCypher: true);
+
+        for (int i = 0; i < 100; i++)
+            RunRLWE(rlwe, RandString(Rng.Next(20, 50)));
+
+        // long text
+        RunRLWE(rlwe, RandString(10000), showBinary: false);
+    }
 }
