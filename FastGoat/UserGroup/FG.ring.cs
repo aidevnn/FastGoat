@@ -49,6 +49,7 @@ public static partial class FG
     public static KPoly<ZnInt> ZPoly(int p, char x = 'x') => new KPoly<ZnInt>(x, ZnInt.ZnZero(p)).X;
     public static KPoly<ZnBInt> ZbPoly(int p, char x = 'x') => new KPoly<ZnBInt>(x, ZnBInt.ZnZero(p)).X;
     public static KPoly<ZnBInt> ZbPoly(int p, int o, char x = 'x') => new KPoly<ZnBInt>(x, new ZnBInt(new(p, o), 0)).X;
+    public static KPoly<ZnInt64> ZlPoly(int p, char x = 'x') => new KPoly<ZnInt64>(x, ZnInt64.ZnZero(p)).X;
     public static KPoly<Rational> QPoly(char x = 'x') => new(x);
     public static KPoly<Cplx> CplxPoly(char x = 'x') => new(x);
     public static KPoly<BigCplx> BCplxPoly(int o = 40, char x = 'x') => new KPoly<BigCplx>(x, BigCplx.BcZero(o)).X;
