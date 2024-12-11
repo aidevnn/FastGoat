@@ -1,5 +1,5 @@
-﻿using System.Numerics;
-using FastGoat.Commons;
+﻿using FastGoat.Commons;
+using FastGoat.UserGroup.Lattice;
 using static FastGoat.Commons.IntExt;
 
 //////////////////////////////////
@@ -46,7 +46,7 @@ void RunLWE(LWE lwe, string text, bool showCypher = false, bool showBinary = tru
 
     if (showCypher)
         seqCyphers.Println(
-            l => $"{l.b} => [[{l.cypher.Ai.Glue(",", lwe.Fmt)}], {string.Format(lwe.Fmt, l.cypher.Bi)}]",
+            l => $"{l.b} => [[{l.cypher.Ai.Glue(",", lwe.Fmt)}], {string.Format(lwe.Fmt, l.cypher.B)}]",
             $"Cyphers text:{text}"
         );
 
@@ -77,9 +77,8 @@ string RandString(int length)
     return length.Range().Select(_ => s[Rng.Next(s.Length)]).Glue();
 }
 
+void TestLWE()
 {
-    // RngSeed(95782);
-    
     for (int N = 2; N < 21; ++N)
     {
         var lwe = new LWE(N);
@@ -97,80 +96,19 @@ string RandString(int length)
     }
 }
 
-/// <summary>
-/// On Lattices, Learning with Errors,
-/// Random Linear Codes, and Cryptography
-/// Oded Regev
-/// January 9, 2024
-/// https://arxiv.org/abs/2401.03703
-/// 
-/// #5 Public Key Cryptosystem
-/// </summary>
-public class LWE
 {
-    public (int[] Ai, int Bi)[] PK { get; }
-    private int[] SK { get; }
-    public int P { get; }
-    public int M { get; }
-    public int N { get; }
-    public int Err { get; }
-    public double A { get; }
-    public string Fmt { get; }
+    TestLWE();
 
-    static int MulModP(long a, long b, int p) => (int)((a * b) % p);
-
-    static int AModP(int a, int p)
-    {
-        int r = a % p;
-        return r < 0 ? r + p : r;
-    }
-
-    public LWE(int n)
-    {
-        if (n < 2 || n > 20)
-            throw new($"N = {n} must be > 1 and < 21");
-
-        M = (int)(2 * n * double.Log2(n));
-        Err = (int)(M - M / (2 * double.Sqrt(n)));
-        var p = Primes10000.First(p => p > 4 * Err * Err); // Magik prime
-        var a = 1 / (double.Log2(n) * double.Sqrt(n));
-        (P, N, A) = (p, n, a);
-        SK = N.Range().Select(_ => Rng.Next(1, p)).ToArray();
-        var PKai = M.Range().Select(_ => n.Range().Select(_ => Rng.Next(1, p)).ToArray()).ToArray();
-        PK = PKai.Select(
-                Ai => (Ai, Bi: AModP(Ai.Zip(SK).Sum(f => MulModP(f.First, f.Second, p)) + Rng.Next(1, Err), p)))
-            .ToArray();
-
-        var nbDigits = $"{P + 1}".Length;
-        Fmt = $"{{0,{nbDigits}}}";
-    }
-
-    public int DecryptBit((int[] Ai, int Bi) cypher)
-    {
-        var c = AModP(cypher.Bi - AModP(cypher.Ai.Zip(SK).Sum(e => MulModP(e.First, e.Second, P)), P), P);
-        return c < P / 2 ? 0 : 1;
-    }
-
-    public (int[] Ai, int Bi) EncryptBit(int b)
-    {
-        var m = PK.Length;
-        var n = PK[0].Ai.Length;
-        var r = Rng.Next(2, m);
-        var set = r.Range().Select(_ => PK[Rng.Next(m)]).ToArray();
-        var sumBi = AModP(set.Sum(e => e.Bi), P);
-        var sumAi = n.Range().Select(i => AModP(set.Sum(e => e.Ai[i]), P)).ToArray();
-        if (b != 0)
-            sumBi = AModP(sumBi + P / 2, P);
-
-        return (sumAi, sumBi);
-    }
-
-    public void Show()
-    {
-        Console.WriteLine($"P:{P} N:{N} M:{M} Err:{Err} A:{A:G6}");
-        Console.WriteLine("Private Key");
-        Console.WriteLine($"[{SK.Glue(", ", Fmt)}]");
-        PK.Println(e => $"[[{e.Ai.Glue(", ", Fmt)}], {string.Format(Fmt, e.Bi)}]", "Public Key");
-        Console.WriteLine();
-    }
+    var lwe = new LWE(m: 5, n: 20); // PK sample size 5 and dimension 20
+    lwe.Show();
+    
+    RunLWE(lwe, "hello world lwe");
+    RunLWE(lwe, "Hello World LWE");
+    RunLWE(lwe, "AAA+", showCypher: true);
+    
+    for (int i = 0; i < 100; i++)
+        RunLWE(lwe, RandString(Rng.Next(20, 50)));
+    
+    // long text
+    RunLWE(lwe, RandString(10000), showBinary: false);
 }
