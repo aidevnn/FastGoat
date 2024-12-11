@@ -208,13 +208,13 @@ public static class MatrixExt
     {
         int n = (int)Math.Sqrt(mat.Length);
         var det = ComputeDeterminant(mat);
-        var invDet = IntExt.InvModP(det, p);
-        var diag = MatrixExt.Diagonal(n, invDet);
+        var invDet = IntExt.InvModPbez(det, p);
+        var diag = Diagonal(n, invDet);
 
-        var com = MatrixExt.Comatrix(mat);
-        var tcom = MatrixExt.Transpose(com);
-        var inv = MatrixExt.Dot(diag, tcom);
-        var invP = MatrixExt.ModP(p, inv);
+        var com = Comatrix(mat);
+        var tcom = Transpose(com);
+        var inv = Dot(diag, tcom);
+        var invP = ModP(p, inv);
 
         return invP;
     }

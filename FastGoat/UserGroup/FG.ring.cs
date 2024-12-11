@@ -801,12 +801,12 @@ public static partial class FG
         
         var gl = new GL(n, p);
         var e0 = IntExt.Solve_k_pow_m_equal_one_mod_n_strict(gl.P, p - 1);
-        var e1 = IntExt.InvModP(e0, p);
+        var e1 = IntExt.InvModPbez(e0, p);
         var diag = gl.At(gl.Neutral().Table, (0, n + 1), (e0, e1));
         return SnGensMat(n).Select(e => gl.Create(e.Table)).Select(m =>
         {
             var det = m.Det;
-            var m0 = gl.At(gl.Neutral().Table, 0, IntExt.InvModP(det, p));
+            var m0 = gl.At(gl.Neutral().Table, 0, IntExt.InvModPbez(det, p));
             return gl.Op(m0, m);
         }).Prepend(diag).ToArray();
     }

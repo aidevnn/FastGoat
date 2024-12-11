@@ -396,6 +396,25 @@ public static class IntExt
     }
 
     /// <summary>
+    /// Calculates the greatest common divisor of two integers. 
+    /// </summary>
+    /// <param name="a">The first integer.</param>
+    /// <param name="b">The second integer.</param>
+    /// <returns>The greatest common divisor of the two integers.</returns>
+    public static long GcdLong(long a, long b)
+    {
+        if (a == 0 && b == 0)
+            throw new($"Gcd(0,0) dont exists");
+
+        if (a * b == 0)
+            return (a + b) < 0 ? -(a + b) : a + b;
+
+        var q = a / b;
+        var r = a - b * q;
+        return GcdLong(b, r);
+    }
+
+    /// <summary>
     /// Calculates the greatest common divisor of a given array of integers.
     /// </summary>
     /// <param name="arr">The array of integers to calculate the GCD for.</param>
@@ -484,6 +503,25 @@ public static class IntExt
     /// <param name="a">The first integer.</param>
     /// <param name="b">The second integer.</param>
     /// <returns>A tuple containing the Bezout coefficients for a and b.</returns>
+    public static (long x, long y) BezoutLong(long a, long b)
+    {
+        if (b == 0)
+        {
+            var x = a < 0 ? -1 : 1;
+            return (x, 0);
+        }
+
+        var q = a / b;
+        var (x0, y0) = BezoutLong(b, a - b * q);
+        return (y0, x0 - y0 * q);
+    }
+
+    /// <summary>
+    /// Calculates the Bezout coefficients for two integers a and b. 
+    /// </summary>
+    /// <param name="a">The first integer.</param>
+    /// <param name="b">The second integer.</param>
+    /// <returns>A tuple containing the Bezout coefficients for a and b.</returns>
     public static (int x, int y) Bezout(int a, int b)
     {
         if (b == 0)
@@ -538,6 +576,23 @@ public static class IntExt
             a0 = a0 * a % mod;
 
         return AmodP(a0, mod);
+    }
+
+    /// <summary>
+    /// Calculates the result of raising a number to a power and then modulo it with a given number. 
+    /// </summary>
+    /// <param name="a">The base number.</param>
+    /// <param name="exp">The exponent.</param>
+    /// <param name="mod">The modulus.</param>
+    /// <returns>The result of the calculation.</returns>
+    public static long PowModLong(long a, int exp, int mod)
+    {
+        long a0 = 1;
+        for (var k = 0; k < exp; ++k)
+            a0 = a0 * a % mod;
+
+        long r = a0 % mod;
+        return r < 0 ? r + mod : r;
     }
 
 
@@ -633,12 +688,16 @@ public static class IntExt
     }
 
     /// <summary>
-    /// Calculates the inverse modulo of a number a modulo p. 
+    /// Calculates the remainder of a divided by p.
     /// </summary>
-    /// <param name="a">The number to calculate the inverse modulo of.</param>
-    /// <param name="p">The modulo.</param>
-    /// <returns>The inverse modulo of a modulo p.</returns>
-    public static int InvModP(int a, int p) => Enumerable.Range(1, p - 1).First(e => AmodP(e * a, p) == 1);
+    /// <param name="a">The dividend.</param>
+    /// <param name="p">The divisor.</param>
+    /// <returns>The remainder of a divided by p.</returns>
+    public static long AmodPlong(long a, int p)
+    {
+        long r = a % p;
+        return r < 0 ? r + p : r;
+    }
 
     /// <summary>
     /// Calculates the inverse modulo of a number a modulo p.
@@ -650,16 +709,22 @@ public static class IntExt
     public static int InvModPbez(int a, int p) => AmodP(Bezout(a, p).x, p);
 
     /// <summary>
+    /// Calculates the inverse modulo of a number a modulo p.
+    /// Using Bezout method
+    /// </summary>
+    /// <param name="a">The number to calculate the inverse modulo of.</param>
+    /// <param name="p">The modulo.</param>
+    /// <returns>The inverse modulo of a modulo p.</returns>
+    public static long InvModPbezlong(long a, int p) => AmodPlong(BezoutLong(a, p).x, p);
+
+    /// <summary>
     /// Creates a dictionary with keys from 1 to n, and values are the invert mod n of the keys. 
     /// </summary>
     /// <param name="n">The upper limit of the range of numbers.</param>
     /// <returns>A Dictionary with keys from 1 to n, and values are the invert mod n of the keys.</returns>
     public static Dictionary<int, int> UnInvertible(int n)
     {
-        var seq = from a in Enumerable.Range(1, n)
-            from b in Enumerable.Range(1, n)
-            select (a, b);
-        return seq.Where(i => (i.a * i.b) % n == 1).ToDictionary(i => i.a, i => i.b);
+        return (n - 1).SeqLazy(1).Where(i => Gcd(i, n) == 1).ToDictionary(i => i, i => InvModPbez(i, n));
     }
 
     /// <summary>
