@@ -289,7 +289,8 @@ public static class BCHcodes
             var I = err0.Coefs.Select((ei, i) => (ei, i)).Where(ei => !ei.ei.IsZero()).Select(ei => ei.i).ToArray();
             var u0 = I.Select(i => 1 - b.Pow(i) * x).Aggregate(x.One, (acc, xi) => acc * xi);
             var v0 = I.Select(i =>
-                    b.Pow(i) * x * I.Except(new[] { i }).Select(j => 1 - b.Pow(j) * x).Aggregate(x.One, (acc, xj) => acc * xj))
+                    b.Pow(i) * x * I.Where(i0 => i0 != i).ToArray()
+                        .Select(j => 1 - b.Pow(j) * x).Aggregate(x.One, (acc, xj) => acc * xj))
                 .Aggregate(x.Zero, (acc, xi) => acc + xi);
 
             var x2t = S.X.Pow(2 * t);
