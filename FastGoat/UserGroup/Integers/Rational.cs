@@ -116,6 +116,39 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
     public double ToDouble => (double)Num / (double)Denom;
     public bool Invertible() => !IsZero();
     public bool IsInteger() => Denom.IsOne;
+
+    public Rational Floor
+    {
+        get
+        {
+            if (Denom.IsOne)
+                return this;
+            
+            var div = BigInteger.Divide(Num, Denom);
+            var shift = Sign == 1 ? 0 : -1;
+            return new(div + shift);
+        }
+    }
+
+    public (Rational quo, Rational rem) QuoPlusFrac
+    {
+        get
+        {
+            var div = BigInteger.Divide(Num, Denom);
+            var f = new Rational(Num - div * Denom, Denom);
+            return (new(div), f);
+        }
+    }
+
+    public (Rational quo, Rational rem) FloorPlusFrac
+    {
+        get
+        {
+            var i = Floor.Num;
+            var f = new Rational(Num - i * Denom, Denom);
+            return (new(i), f);
+        }
+    }
     public override int GetHashCode() => Hash;
 
     public override string ToString()
@@ -147,6 +180,15 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
                 return new(q, 1);
 
             return new(q + rs, 1);
+        }
+    }
+
+    public Rational Trunc
+    {
+        get
+        {
+            var (q, _) = BigInteger.DivRem(Num.Sign * Num, Denom);
+            return new(Num.Sign * q);
         }
     }
 
