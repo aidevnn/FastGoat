@@ -23,12 +23,18 @@ public struct CypherLWE(ZnInt64[] ai, ZnInt64 b)
     }
 }
 
-public struct CypherRLWE(EPoly<ZnInt> a, EPoly<ZnInt> b)
+public struct CypherRLWE
 {
-    public EPoly<ZnInt> A => a;
-    public EPoly<ZnInt> B => b;
+    public CypherRLWE(EPoly<ZnInt> a0, EPoly<ZnInt> p0)
+    {
+        (a, p) = (a0, p0);
+    }
+    public EPoly<ZnInt> a { get; }
+    public EPoly<ZnInt> p { get; }
 
-    public static CypherRLWE Not(CypherRLWE C) => new(-C.A, -C.B);
+    public void Deconstruct(out EPoly<ZnInt> a0, out EPoly<ZnInt> p0) => (a0, p0) = (a, p);
 
-    public static CypherRLWE Xor(CypherRLWE C0, CypherRLWE C1) => new(C0.A + C1.A, C0.B + C1.B);
+    public static CypherRLWE Not(CypherRLWE C) => new(-C.a, -C.p);
+
+    public static CypherRLWE Xor(CypherRLWE C0, CypherRLWE C1) => new(C0.a + C1.a, C0.p + C1.p);
 }

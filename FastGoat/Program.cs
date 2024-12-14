@@ -1,8 +1,8 @@
 ﻿using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.VecSpace;
-using FastGoat.UserGroup.Lattice;
-using static FastGoat.Commons.IntExt;
+using FastGoat.UserGroup;
+using FastGoat.UserGroup.Integers;
 
 //////////////////////////////////
 //                              //
@@ -11,129 +11,203 @@ using static FastGoat.Commons.IntExt;
 //////////////////////////////////
 
 Console.WriteLine("Hello World");
-// 16-bit default C#-char
-int charBit = 8;
 
-IEnumerable<int> String2Bin(string s)
+void firstBFV()
 {
-    foreach (var c in s)
-    {
-        var c0 = Convert.ToInt32(c);
-        for (int i = 0; i < charBit; ++i)
-        {
-            var k = c0 & 1;
-            yield return k;
-            c0 = c0 >> 1;
-        }
-    }
-}
-
-string Bin2String(IEnumerable<int> bin)
-{
-    var s = "";
-    foreach (var l in bin.Chunk(charBit))
-    {
-        var sum = l.Select((c, i) => (c, i)).Sum(e => e.c << e.i);
-        s += Convert.ToChar(sum);
-    }
-
-    return s;
-}
-
-void RunLWE(LWE lwe, string text, bool showCypher = false, bool showBinary = true)
-{
-    Console.WriteLine(text);
-    var seq = String2Bin(text).ToArray();
-    var seqCyphers = seq.Select(b => (b, cypher: lwe.EncryptBit(b))).ToArray();
-
-    if (showCypher)
-        seqCyphers.Println(
-            l => $"{l.b} => [[{l.cypher.Ai.Glue(",", lwe.Fmt)}], {string.Format(lwe.Fmt, l.cypher.B)}]",
-            $"Cyphers text:{text}"
-        );
-
-    var seqDecrypt = seqCyphers.Select(e => lwe.DecryptBit(e.cypher)).ToArray();
-    var text2 = Bin2String(seqDecrypt);
-    if (showBinary)
-    {
-        Console.WriteLine($"seqInput  :[{seq.Glue()}]");
-        Console.WriteLine($"seqDecrypt:[{seqDecrypt.Glue()}]");
-        Console.WriteLine(text2);
-    }
-
-    if (string.Equals(text, text2))
-        Console.WriteLine("    SUCCESS");
-    else
-    {
-        Console.WriteLine("    FAIL");
-        Console.Beep();
-    }
-
-    Console.WriteLine();
-}
-
-string RandString(int length)
-{
-    var s = "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz" +
-            @"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+-*/!@#$%^&*()_+:<>?|\                   ";
-    return length.Range().Select(_ => s[Rng.Next(s.Length)]).Glue();
-}
-
-void RunRLWE(RLWE rlwe, string text, bool showCypher = false, bool showBinary = true)
-{
-    Console.WriteLine(text);
-    var seq0 = String2Bin(text).ToArray();
-    var rem = seq0.Length % rlwe.N;
-    var seq1 = rem == 0 ? seq0 : seq0.Concat(Enumerable.Repeat(0, rlwe.N - rem)).ToArray();
-    var diff = seq1.Length - seq0.Length;
-    var seq = seq1.Chunk(rlwe.N).ToArray();
-    var seqCyphers = seq.Select(b => (b, encode: rlwe.Encode(b)))
-        .Select(e => (e.b, e.encode, cypher: rlwe.Encrypt(e.encode)))
-        .ToArray();
-
-    if (showCypher)
-        seqCyphers.Println(
-            l => $"{l.b.Glue()} => [[{l.encode}], {l.cypher}]",
-            $"Cyphers text:{text}"
-        );
-
-    var seqDecrypt = seqCyphers.Select(e => rlwe.Decode(rlwe.Decrypt(e.cypher))).ToArray();
-    var text2 = Bin2String(seqDecrypt.SelectMany(l => l).SkipLast(diff));
-    if (showBinary)
-    {
-        Console.WriteLine($"seqInput  :[{seq.SelectMany(e => e).SkipLast(diff).Glue()}]");
-        Console.WriteLine($"seqDecrypt:[{seqDecrypt.SelectMany(e => e).SkipLast(diff).Glue()}]");
-        Console.WriteLine(text2);
-    }
-
-    if (string.Equals(text, text2))
-        Console.WriteLine("    SUCCESS");
-    else
-    {
-        Console.WriteLine("    FAIL");
-        Console.Beep();
-    }
-
-    Console.WriteLine();
-}
-
-{
+    // RngSeed(87456);
     Ring.DisplayPolynomial = MonomDisplay.StarCaret;
-    for (var k = 3; k < 7; ++k)
+    var (n, q) = (34, 424242);
+    var bfv = new BFV(n, q);
+    bfv.Show();
+    for (int i = 0; i < 5000; i++)
     {
-        var N = 1 << k; // 2^3, 2^4, 2^5, 2^6
-        var Q = Primes10000.First(p => p > N * N & p % (2 * N) == 1);
-        var rlwe = new RLWE(N, Q, sigma: double.Sqrt(N) / k);
-        rlwe.Show();
+        var mi = BFV.GenUnif(n, bfv.P);
+        var ct = bfv.Encrypt(mi);
+        var mf = bfv.Decrypt(ct);
+        Console.WriteLine(mi);
+        Console.WriteLine(mf);
+        Console.WriteLine();
+        if (!(mf - mi).IsZero())
+            throw new($"step[{i}] {mf - mi}");
+    }
+}
 
-        RunRLWE(rlwe, "hello world lwe");
-        RunRLWE(rlwe, "Hello World LWE");
-        RunRLWE(rlwe, "AAA+", showCypher: true);
+void secondBFV()
+{
+    // RngSeed(87456);
+    Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+    var (n, q) = (16, 424242);
+    var bfv = new BFV(n, q);
+    bfv.Show();
 
-        for (int i = 0; i < 100; i++)
-            RunRLWE(rlwe, RandString(Rng.Next(20, 50)));
+    for (int k = 0; k < 1000; ++k)
+    {
+        var m1 = BFV.GenUnif(n, bfv.P);
+        var m2 = BFV.GenUnif(n, bfv.P);
+        var m1m2 = bfv.ModP((m1 + m2).Div(bfv.PM).rem);
+        var ct1 = bfv.Encrypt(m1);
+        var ct2 = bfv.Encrypt(m2);
 
-        // long text
-        RunRLWE(rlwe, RandString(10000), showBinary: false);
+        var decrypt = bfv.Decrypt(bfv.Add(ct1, ct2));
+        Console.WriteLine($"m1 + m2:{m1m2}");
+        Console.WriteLine($"decrypt:{decrypt}");
+        Console.WriteLine();
+        if (!(decrypt - m1m2).IsZero())
+            throw new();
+    }
+}
+
+// void thirdBFV()
+{
+    // RngSeed(87456);
+    Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+    var (n, q) = (16, 424242);
+    var p = n / 2 - 1;
+    var bfv = new BFV(n, q);
+    bfv.Show();
+
+    for (int k = 0; k < 1000; ++k)
+    {
+        var m1 = BFV.GenUnif(n, bfv.P);
+        var m2 = BFV.GenUnif(n, bfv.P);
+        var m1m2 = bfv.ModP((m1 * m2).Div(bfv.PM).rem);
+        var (ct1, ct2) = bfv.Encrypt(m1, m2);
+        
+        var multi_ct0 = bfv.ModQ((ct1.ct0 * ct2.ct0 * new Rational(p, q)).Div(bfv.PM).rem).RoundPoly();
+        var multi_ct1 = bfv.ModQ(((ct1.ct0 * ct2.ct1 + ct1.ct1 * ct2.ct0) * new Rational(p, q)).Div(bfv.PM).rem)
+            .RoundPoly();
+        var multi_ct2 = bfv.ModQ((ct1.ct1 * ct2.ct1 * new Rational(p, q)).Div(bfv.PM).rem).RoundPoly();
+
+        var s = bfv.SK;
+        var decrypt = (multi_ct2 * s.Pow(2)) + multi_ct1 * s + multi_ct0;
+        decrypt = bfv.ModQ(decrypt.Div(bfv.PM).rem);
+        decrypt = bfv.ModP((new Rational(p, q) * decrypt).RoundPoly());
+        Console.WriteLine($"m1 * m2:{m1m2}");
+        Console.WriteLine($"decrypt:{decrypt}");
+        Console.WriteLine();
+        if (!(decrypt - m1m2).IsZero())
+            throw new();
+    }
+}
+
+// HomomorphicEncryption
+// from
+// https://CRAN.R-project.org/package=HomomorphicEncryption
+// https://github.com/bquast/HomomorphicEncryption/
+public class BFV
+{
+    public int N { get; }
+    public int P { get; }
+    public int Q { get; }
+    public KPoly<Rational> PM { get; }
+    public KPoly<Rational> SK { get; }
+    public (KPoly<Rational> pk0, KPoly<Rational> pk1) PK { get; }
+    
+    public (KPoly<Rational> ek0, KPoly<Rational> ek1) GenEvalKey { get; }
+    public Rational FloorQoverP { get; }
+    public Rational PoverQ => new(P, Q);
+
+    public BFV(int n, int q) : this(n, n / 2 - 1, q)
+    {
+    }
+    
+    public BFV(int n, int p, int q)
+    {
+        (N, Q, P) = (n, q, p);
+        var x = FG.QPoly();
+        PM = x.Pow(n) + 1;
+        SK = DistributionExt.DiceSample(N, [-1, 0, 1]).ToKPoly(Rational.KZero());
+        var a = DistributionExt.DiceSample(N, 0, Q - 1).ToKPoly(Rational.KZero());
+        var e = DistributionExt.DiscreteGaussianSample(N, 0, 3.0).ToKPoly(Rational.KZero());
+        Console.WriteLine(new { e });
+        var pk = ModQ(-(a * SK + e).Div(PM).rem);
+        var ek = ModQ(-(a * SK + e) + SK.Pow(2)).Div(PM).rem;
+        PK = (pk, a);
+        GenEvalKey = (ek, a);
+        FloorQoverP = new Rational(Q, P).Floor;
+    }
+
+    public (KPoly<Rational>ct0, KPoly<Rational>ct1) Encrypt(KPoly<Rational> m1)
+    {
+        var e0 = GenDiscrGauss(N, 3.0);
+        var u = GenTernary(N - 1);
+        var tmp0 = (PK.pk0 * u + e0 + FloorQoverP * m1).Div(PM).rem;
+        // var ct0 = tmp0.Coefs.Select(c => new Rational(AmodPbig(c.Num % Q, Q))).ToKPoly();
+        var ct0 = ModQ(tmp0).RoundPoly();
+
+        var e1 = GenDiscrGauss(N, 3.0);
+        var tmp1 = (PK.pk1 * u + e1).Div(PM).rem;
+        // var ct1 = tmp1.Coefs.Select(c => new Rational(AmodPbig(c.Num % Q, Q))).ToKPoly();
+        var ct1 = ModQ(tmp1);
+        return (ct0, ct1);
+    }
+
+    public ((KPoly<Rational>ct0, KPoly<Rational>ct1) c0, (KPoly<Rational>ct0, KPoly<Rational>ct1) c1) 
+        Encrypt(KPoly<Rational> m1, KPoly<Rational> m2)
+    {
+        var e0 = GenDiscrGauss(N, 3.0);
+        var e1 = GenDiscrGauss(N, 3.0);
+        var u = GenTernary(N - 1);
+        
+        var tmp00 = (PK.pk0 * u + e0 + FloorQoverP * m1).Div(PM).rem;
+        var ct00 = ModQ(tmp00).RoundPoly();
+
+        var tmp01 = (PK.pk1 * u + e1).Div(PM).rem;
+        var ct01 = ModQ(tmp01);
+        
+        var tmp10 = (PK.pk0 * u + e0 + FloorQoverP * m2).Div(PM).rem;
+        var ct10 = ModQ(tmp10).RoundPoly();
+
+        var tmp11 = (PK.pk1 * u + e1).Div(PM).rem;
+        var ct11 = ModQ(tmp11);
+        return ((ct00, ct01), (ct10, ct11));
+    }
+
+    public KPoly<Rational> Decrypt((KPoly<Rational>ct0, KPoly<Rational>ct1) cypher)
+    {
+        var tmp = cypher.ct1 * SK + cypher.ct0;
+        return ModP((P * tmp.Div(PM).rem / Q).RoundPoly());
+        // tmp = tmp.Div(PM).rem.Coefs.Select(c => new Rational(P * AmodPbig(c.Num % Q, Q), Q)).ToKPoly().RoundPoly();
+        // return ModP(ModQ(tmp.Div(PM).rem * new Rational(P, Q)).RoundPoly());
+    }
+
+    public (KPoly<Rational>ct0, KPoly<Rational>ct1) Add((KPoly<Rational>ct0, KPoly<Rational>ct1) cipher0,
+        (KPoly<Rational>ct0, KPoly<Rational>ct1) cipher1)
+    {
+        var ct0 = ModQ((cipher0.ct0 + cipher1.ct0).Div(PM).rem);
+        var ct1 = ModQ((cipher0.ct1 + cipher1.ct1).Div(PM).rem);
+        return (ct0, ct1);
+    }
+
+    public KPoly<Rational> ModQ(KPoly<Rational> poly)
+        => poly.Coefs.Select(c => c - (c / Q).Floor * Q).ToKPoly();
+
+    public KPoly<Rational> ModP(KPoly<Rational> poly)
+        => poly.Coefs.Select(c => c - ((c / P).Floor * P)).ToKPoly();
+
+    public void Show()
+    {
+        Console.WriteLine($"N = {N} Q = {Q} P = {P}");
+        Console.WriteLine("Private Key");
+        Console.WriteLine(SK);
+        Console.WriteLine("Public Key");
+        Console.WriteLine(PK.pk0);
+        Console.WriteLine(PK.pk1);
+        Console.WriteLine();
+    }
+
+    public static KPoly<Rational> GenDiscrGauss(int n, double s)
+    {
+        return DistributionExt.DiscreteGaussianSample(n, 0, s, n / s).ToKPoly(Rational.KZero());
+    }
+
+    public static KPoly<Rational> GenTernary(int n)
+    {
+        return DistributionExt.DiceSample(n, [-1, 0, 1]).ToKPoly(Rational.KZero());
+    }
+
+    public static KPoly<Rational> GenUnif(int n, int q)
+    {
+        return DistributionExt.DiceSample(n, 0, q - 1).ToKPoly(Rational.KZero());
     }
 }
