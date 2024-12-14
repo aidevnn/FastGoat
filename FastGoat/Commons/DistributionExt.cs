@@ -13,7 +13,7 @@ public static class DistributionExt
     /// <param name="min">The minimum value.</param>
     /// <param name="max">The maximum value.</param>
     /// <returns>A random integer between min and max.</returns>
-    public static int Dice(int min, int max) => Rng.Next(min, max + 1);
+    public static long Dice(long min, long max) => (long)double.Round((max - min) * Rng.NextDouble() + min);
     
     /// <summary>
     /// Generates a sequence of random integers between the specified minimum and maximum values.
@@ -22,7 +22,7 @@ public static class DistributionExt
     /// <param name="min">The minimum value.</param>
     /// <param name="max">The maximum value.</param>
     /// <returns>An IEnumerable of random integers.</returns>
-    public static IEnumerable<int> DiceSample(int size, int min, int max) => size.SeqLazy().Select(_ => Dice(min, max));
+    public static IEnumerable<long> DiceSample(int size, long min, long max) => size.SeqLazy().Select(_ => Dice(min, max));
     
     /// <summary>
     /// Selects a random element from the specified array.
