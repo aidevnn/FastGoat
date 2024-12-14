@@ -210,4 +210,7 @@ public static class DistributionExt
 
     public static IEnumerable<int> DiscreteGaussianSample(int size, double mu, double sigma, double tau)
         => size.SeqLazy().Select(_ => DiscreteGaussian(mu, sigma, tau));
+
+    public static IEnumerable<int> DiscreteGaussianSample(int size, double mu, double sigma) =>
+        DiscreteGaussianSample(size, mu, sigma, size / sigma);
 }
