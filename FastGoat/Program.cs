@@ -19,75 +19,75 @@ void firstBFV()
     var (n, q) = (34, 424242);
     var bfv = new BFV(n, q);
     bfv.Show();
-    for (int i = 0; i < 5000; i++)
+    for (int i = 0; i < 100; i++)
     {
-        var mi = BFV.GenUnif(n, bfv.P);
-        var ct = bfv.Encrypt(mi);
+        var mi = BFVPublic.GenUnif(n, bfv.P);
+        var ct = bfv.BFVpublic.Encrypt(mi);
         var mf = bfv.Decrypt(ct);
         Console.WriteLine(mi);
         Console.WriteLine(mf);
         Console.WriteLine();
         if (!(mf - mi).IsZero())
-            throw new($"step[{i}] {mf - mi}");
+            throw new($"step[{i}]");
     }
 }
 
-void secondBFV()
+void HEAddBFV()
 {
     // RngSeed(87456);
     Ring.DisplayPolynomial = MonomDisplay.StarCaret;
     var (n, q) = (16, 424242);
     var bfv = new BFV(n, q);
     bfv.Show();
+    var bfvPub = bfv.BFVpublic;
 
-    for (int k = 0; k < 1000; ++k)
+    for (int i = 0; i < 100; ++i)
     {
-        var m1 = BFV.GenUnif(n, bfv.P);
-        var m2 = BFV.GenUnif(n, bfv.P);
-        var m1m2 = bfv.ModP((m1 + m2).Div(bfv.PM).rem);
-        var ct1 = bfv.Encrypt(m1);
-        var ct2 = bfv.Encrypt(m2);
+        var m1 = BFVPublic.GenUnif(n, bfv.P);
+        var m2 = BFVPublic.GenUnif(n, bfv.P);
+        var m1m2 = BFVPublic.CoefsMod((m1 + m2).Div(bfvPub.PM).rem, bfv.P);
+        var ct1 = bfvPub.Encrypt(m1);
+        var ct2 = bfvPub.Encrypt(m2);
 
-        var decrypt = bfv.Decrypt(bfv.Add(ct1, ct2));
+        var decrypt = bfv.Decrypt(bfvPub.Add(ct1, ct2));
         Console.WriteLine($"m1 + m2:{m1m2}");
         Console.WriteLine($"decrypt:{decrypt}");
         Console.WriteLine();
         if (!(decrypt - m1m2).IsZero())
-            throw new();
+            throw new($"step[{i}]");
     }
 }
 
-// void thirdBFV()
+void HEMulBFV()
 {
-    // RngSeed(87456);
+    IntExt.RngSeed(87456);
     Ring.DisplayPolynomial = MonomDisplay.StarCaret;
-    var (n, q) = (16, 424242);
-    var p = n / 2 - 1;
-    var bfv = new BFV(n, q);
+    var (n, p, q) = (16, 7, 165000);
+    var bfv = new BFV(n, p, q);
     bfv.Show();
+    var bfvPub = bfv.BFVpublic;
 
-    for (int k = 0; k < 1000; ++k)
+    for (int i = 0; i < 1000; i++)
     {
-        var m1 = BFV.GenUnif(n, bfv.P);
-        var m2 = BFV.GenUnif(n, bfv.P);
-        var m1m2 = bfv.ModP((m1 * m2).Div(bfv.PM).rem);
-        var (ct1, ct2) = bfv.Encrypt(m1, m2);
-        
-        var multi_ct0 = bfv.ModQ((ct1.ct0 * ct2.ct0 * new Rational(p, q)).Div(bfv.PM).rem).RoundPoly();
-        var multi_ct1 = bfv.ModQ(((ct1.ct0 * ct2.ct1 + ct1.ct1 * ct2.ct0) * new Rational(p, q)).Div(bfv.PM).rem)
-            .RoundPoly();
-        var multi_ct2 = bfv.ModQ((ct1.ct1 * ct2.ct1 * new Rational(p, q)).Div(bfv.PM).rem).RoundPoly();
+        var m1 = BFVPublic.GenUnif(n, bfv.P);
+        var m2 = BFVPublic.GenUnif(n, bfv.P);
+        var m1m2 = BFVPublic.CoefsMod((m1 * m2).Div(bfvPub.PM).rem, bfv.P);
+        var ct1 = bfvPub.Encrypt(m1);
+        var ct2 = bfvPub.Encrypt(m2);
 
-        var s = bfv.SK;
-        var decrypt = (multi_ct2 * s.Pow(2)) + multi_ct1 * s + multi_ct0;
-        decrypt = bfv.ModQ(decrypt.Div(bfv.PM).rem);
-        decrypt = bfv.ModP((new Rational(p, q) * decrypt).RoundPoly());
+        var decrypt = bfv.Decrypt(bfvPub.Mul(ct1, ct2));
         Console.WriteLine($"m1 * m2:{m1m2}");
         Console.WriteLine($"decrypt:{decrypt}");
         Console.WriteLine();
         if (!(decrypt - m1m2).IsZero())
-            throw new();
+            throw new($"step[{i}]");
     }
+}
+
+{
+    firstBFV();
+    HEAddBFV();
+    HEMulBFV();
 }
 
 // HomomorphicEncryption
@@ -96,79 +96,89 @@ void secondBFV()
 // https://github.com/bquast/HomomorphicEncryption/
 public class BFV
 {
+    public KPoly<Rational> SK { get; }
     public int N { get; }
     public int P { get; }
+    public int T { get; }
     public int Q { get; }
-    public KPoly<Rational> PM { get; }
-    public KPoly<Rational> SK { get; }
-    public (KPoly<Rational> pk0, KPoly<Rational> pk1) PK { get; }
-    
-    public (KPoly<Rational> ek0, KPoly<Rational> ek1) GenEvalKey { get; }
-    public Rational FloorQoverP { get; }
-    public Rational PoverQ => new(P, Q);
+    public BFVPublic BFVpublic { get; }
 
     public BFV(int n, int q) : this(n, n / 2 - 1, q)
     {
     }
-    
+
     public BFV(int n, int p, int q)
     {
         (N, Q, P) = (n, q, p);
-        var x = FG.QPoly();
-        PM = x.Pow(n) + 1;
         SK = DistributionExt.DiceSample(N, [-1, 0, 1]).ToKPoly(Rational.KZero());
-        var a = DistributionExt.DiceSample(N, 0, Q - 1).ToKPoly(Rational.KZero());
-        var e = DistributionExt.DiscreteGaussianSample(N, 0, 3.0).ToKPoly(Rational.KZero());
-        Console.WriteLine(new { e });
-        var pk = ModQ(-(a * SK + e).Div(PM).rem);
-        var ek = ModQ(-(a * SK + e) + SK.Pow(2)).Div(PM).rem;
-        PK = (pk, a);
-        GenEvalKey = (ek, a);
-        FloorQoverP = new Rational(Q, P).Floor;
-    }
 
-    public (KPoly<Rational>ct0, KPoly<Rational>ct1) Encrypt(KPoly<Rational> m1)
-    {
-        var e0 = GenDiscrGauss(N, 3.0);
-        var u = GenTernary(N - 1);
-        var tmp0 = (PK.pk0 * u + e0 + FloorQoverP * m1).Div(PM).rem;
-        // var ct0 = tmp0.Coefs.Select(c => new Rational(AmodPbig(c.Num % Q, Q))).ToKPoly();
-        var ct0 = ModQ(tmp0).RoundPoly();
-
-        var e1 = GenDiscrGauss(N, 3.0);
-        var tmp1 = (PK.pk1 * u + e1).Div(PM).rem;
-        // var ct1 = tmp1.Coefs.Select(c => new Rational(AmodPbig(c.Num % Q, Q))).ToKPoly();
-        var ct1 = ModQ(tmp1);
-        return (ct0, ct1);
-    }
-
-    public ((KPoly<Rational>ct0, KPoly<Rational>ct1) c0, (KPoly<Rational>ct0, KPoly<Rational>ct1) c1) 
-        Encrypt(KPoly<Rational> m1, KPoly<Rational> m2)
-    {
-        var e0 = GenDiscrGauss(N, 3.0);
-        var e1 = GenDiscrGauss(N, 3.0);
-        var u = GenTernary(N - 1);
-        
-        var tmp00 = (PK.pk0 * u + e0 + FloorQoverP * m1).Div(PM).rem;
-        var ct00 = ModQ(tmp00).RoundPoly();
-
-        var tmp01 = (PK.pk1 * u + e1).Div(PM).rem;
-        var ct01 = ModQ(tmp01);
-        
-        var tmp10 = (PK.pk0 * u + e0 + FloorQoverP * m2).Div(PM).rem;
-        var ct10 = ModQ(tmp10).RoundPoly();
-
-        var tmp11 = (PK.pk1 * u + e1).Div(PM).rem;
-        var ct11 = ModQ(tmp11);
-        return ((ct00, ct01), (ct10, ct11));
+        var t = T = (int)double.Sqrt(n * p * q); // magik T
+        var x = FG.QPoly();
+        var pm = x.Pow(n) + 1;
+        var e0 = DistributionExt.DiscreteGaussianSample(N, 0, 3.0).ToKPoly(Rational.KZero());
+        var pk1 = DistributionExt.DiceSample(N, 0, Q - 1).Select(e => new Rational(e)).ToKPoly();
+        var pk0 = BFVPublic.CoefsMod(-(pk1 * SK + e0).Div(pm).rem, Q);
+        var e1 = DistributionExt.DiscreteGaussianSample(N, 0, 3.0).ToKPoly(Rational.KZero());
+        var ek1 = DistributionExt.DiceSample(N, 0, T * Q - 1).Select(e => new Rational(e)).ToKPoly();
+        var ek0 = BFVPublic.CoefsMod(-(ek1 * SK + e1) + T * SK.Pow(2), T * Q);
+        BFVpublic = new(n, p, q, t, pm, (pk0, pk1), (ek0, ek1));
     }
 
     public KPoly<Rational> Decrypt((KPoly<Rational>ct0, KPoly<Rational>ct1) cypher)
     {
         var tmp = cypher.ct1 * SK + cypher.ct0;
-        return ModP((P * tmp.Div(PM).rem / Q).RoundPoly());
-        // tmp = tmp.Div(PM).rem.Coefs.Select(c => new Rational(P * AmodPbig(c.Num % Q, Q), Q)).ToKPoly().RoundPoly();
-        // return ModP(ModQ(tmp.Div(PM).rem * new Rational(P, Q)).RoundPoly());
+        return BFVPublic.CoefsMod((P * tmp.Div(BFVpublic.PM).rem / Q).RoundPoly(), P);
+    }
+
+    public void Show()
+    {
+        Console.WriteLine($"N = {N} Q = {Q} T = {T} P = {P}");
+        Console.WriteLine("Private Key");
+        Console.WriteLine(SK);
+        Console.WriteLine("Public Key");
+        Console.WriteLine(BFVpublic.PK.pk0);
+        Console.WriteLine(BFVpublic.PK.pk1);
+        Console.WriteLine();
+        Console.WriteLine("Evaluation Key");
+        Console.WriteLine(BFVpublic.EK.ek0);
+        Console.WriteLine(BFVpublic.EK.ek1);
+        Console.WriteLine();
+    }
+}
+
+public class BFVPublic
+{
+    public int N { get; }
+    public int P { get; }
+    public int T { get; }
+    public int Q { get; }
+    public KPoly<Rational> PM { get; }
+    public (KPoly<Rational> pk0, KPoly<Rational> pk1) PK { get; }
+
+    public (KPoly<Rational> ek0, KPoly<Rational> ek1) EK { get; }
+
+    public Rational FloorQoverP { get; }
+    public Rational PoverQ => new(P, Q);
+
+    public BFVPublic(int n, int p, int q, int t, KPoly<Rational> pm, (KPoly<Rational> pk0, KPoly<Rational> pk1) pk,
+        (KPoly<Rational> ek0, KPoly<Rational> ek1) ek)
+    {
+        (N, P, Q, T) = (n, p, q, t);
+        (PM, PK, EK) = (pm, pk, ek);
+        FloorQoverP = new Rational(Q, P).Floor;
+    }
+    
+    public (KPoly<Rational>ct0, KPoly<Rational>ct1) Encrypt(KPoly<Rational> m1)
+    {
+        var e0 = GenDiscrGauss(N, 3.0);
+        var u = GenTernary(N - 1);
+        var tmp0 = (PK.pk0 * u + e0 + FloorQoverP * m1).Div(PM).rem;
+        var ct0 = ModQ(tmp0).RoundPoly();
+
+        var e1 = GenDiscrGauss(N, 3.0);
+        var tmp1 = (PK.pk1 * u + e1).Div(PM).rem;
+        var ct1 = ModQ(tmp1);
+        return (ct0, ct1);
     }
 
     public (KPoly<Rational>ct0, KPoly<Rational>ct1) Add((KPoly<Rational>ct0, KPoly<Rational>ct1) cipher0,
@@ -179,22 +189,27 @@ public class BFV
         return (ct0, ct1);
     }
 
-    public KPoly<Rational> ModQ(KPoly<Rational> poly)
-        => poly.Coefs.Select(c => c - (c / Q).Floor * Q).ToKPoly();
-
-    public KPoly<Rational> ModP(KPoly<Rational> poly)
-        => poly.Coefs.Select(c => c - ((c / P).Floor * P)).ToKPoly();
-
-    public void Show()
+    public (KPoly<Rational>ct0, KPoly<Rational>ct1) Mul((KPoly<Rational>ct0, KPoly<Rational>ct1) cipher0,
+        (KPoly<Rational>ct0, KPoly<Rational>ct1) cipher1)
     {
-        Console.WriteLine($"N = {N} Q = {Q} P = {P}");
-        Console.WriteLine("Private Key");
-        Console.WriteLine(SK);
-        Console.WriteLine("Public Key");
-        Console.WriteLine(PK.pk0);
-        Console.WriteLine(PK.pk1);
-        Console.WriteLine();
+        var (m1_ct0, m1_ct1) = cipher0;
+        var (m2_ct0, m2_ct1) = cipher1;
+
+        var fact = new Rational(P, Q);
+        var multi_ct0 = ModQ((fact * m1_ct0 * m2_ct0).Div(PM).rem).RoundPoly();
+        var multi_ct1 = ModQ((fact * (m1_ct0 * m2_ct1 + m1_ct1 * m2_ct0)).Div(PM).rem).RoundPoly();
+        var multi_ct2 = ModQ((fact * m1_ct1 * m2_ct1).Div(PM).rem).RoundPoly();
+
+        var (ek0, ek1) = EK;
+        var multi_ct20 = ModQ((multi_ct2 * ek0 / T).RoundPoly());
+        var multi_ct21 = ModQ((multi_ct2 * ek1 / T).RoundPoly());
+        return (multi_ct0 + multi_ct20, multi_ct1 + multi_ct21);
     }
+
+    KPoly<Rational> ModQ(KPoly<Rational> poly)=> CoefsMod(poly, Q);
+    
+    public static KPoly<Rational> CoefsMod(KPoly<Rational> poly, int q)
+        => poly.Coefs.Select(c => c - (c / q).Floor * q).ToKPoly();
 
     public static KPoly<Rational> GenDiscrGauss(int n, double s)
     {
@@ -208,6 +223,6 @@ public class BFV
 
     public static KPoly<Rational> GenUnif(int n, int q)
     {
-        return DistributionExt.DiceSample(n, 0, q - 1).ToKPoly(Rational.KZero());
+        return DistributionExt.DiceSample(n, 0, q - 1).Select(e => new Rational(e)).ToKPoly();
     }
 }
