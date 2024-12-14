@@ -139,6 +139,15 @@ public static partial class FG
     public static KPoly<ZnInt> ToZnPoly(this KPoly<Rational> P, int p) =>
         new(P.x, ZnInt.ZnZero(p), P.Coefs.Select(c => c.ToZnInt(p)).ToArray());
 
+    public static KPoly<Rational> ToRationalPoly(this KPoly<ZnInt> P) =>
+        new(P.x, Rational.KOne(), P.Coefs.Select(c => c.K * Rational.KOne()).ToArray());
+
+    public static KPoly<Rational> RoundPoly(this KPoly<Rational> P) =>
+        new(P.x, Rational.KOne(), P.Coefs.Select(c => c.RoundEven).ToArray());
+
+    public static KPoly<Rational> TruncPoly(this KPoly<Rational> P) =>
+        new(P.x, Rational.KOne(), P.Coefs.Select(c => c.Trunc).ToArray());
+
     public static KPoly<Cplx> ToCPoly(this KPoly<Rational> P) =>
         new(P.x, Cplx.CZero, P.Coefs.Select(c => c * Cplx.COne).ToArray());
 
@@ -308,45 +317,11 @@ public static partial class FG
     public static KPoly<K> KPoly<K>(char x, params K[] coefs)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
-        var coefs0 = coefs.Reverse().SkipWhile(i => i.IsZero()).Reverse().ToArray();
+        var coefs0 = coefs.TrimSeq().ToArray();
         if (coefs0.Length < 2)
             throw new GroupException(GroupExceptionType.GroupDef);
 
         return new KPoly<K>(x, coefs[0].Zero, coefs0);
-    }
-
-    private static KPoly<K> KPoly<K>(char x, K scalar, dynamic[] coefs)
-        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
-    {
-        var coefs0 = new List<K>();
-        var cs = coefs[0] is Array a ? a : coefs;
-        foreach (var c in cs)
-        {
-            if (c is int c0)
-                coefs0.Add(c0 * scalar.One);
-            else if (c is K c1)
-                coefs0.Add(c1);
-            else
-                throw new ArgumentException();
-        }
-
-        var coefs1 = coefs0.Reverse<K>().SkipWhile(i => i.IsZero()).Reverse().ToArray();
-        if (coefs1.Length < 2)
-            throw new GroupException(GroupExceptionType.GroupDef);
-
-        return new KPoly<K>(x, scalar.Zero, coefs1);
-    }
-
-    public static KPoly<K> KPoly<K>(K scalar, char x, params dynamic[] coefs)
-        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
-    {
-        return KPoly(x, scalar, coefs);
-    }
-
-    public static EPoly<K> EPoly<K>(K scalar, char x, params dynamic[] coefs)
-        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
-    {
-        return new EPoly<K>(KPoly(x, scalar, coefs));
     }
 
     public static (KPoly<EPoly<K>> X, KPoly<EPoly<K>> c) EPolyXC<K>(KPoly<K> f, char c, char x = 'X')
@@ -370,32 +345,31 @@ public static partial class FG
     {
         return EPolyXC(f, f.x);
     }
-
-    public static (KPoly<EPoly<K>> X, KPoly<EPoly<K>> c) EPolyXC<K>(char x, params K[] coefs)
-        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
-    {
-        return EPolyXC(KPoly(x, coefs), x);
-    }
-
-    public static (KPoly<EPoly<K>> X, KPoly<EPoly<K>> c) EPolyXC<K>(K scalar, char x, params int[] coefs)
-        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
-    {
-        return EPolyXC(KPoly(scalar, x, coefs), x);
-    }
-
+    
     public static (KPoly<EPoly<K>> X, KPoly<EPoly<K>> c) EPolyXC<K>(K scalar, char a, char b, params int[] coefs)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
-        return EPolyXC(KPoly(scalar, a, coefs), a, b);
+        return EPolyXC(coefs.ToKPoly(scalar, a), a, b);
     }
-
-    public static (KPoly<ZnInt>, ZnInt c) ZPolyXc(int p, char x = 'x') => (ZPoly(p, x), Un.FirstGen(p));
-
+    
     public static EPoly<K> EPoly<K>(K scalar, char x, params int[] coefs)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
-        return EPoly(KPoly(scalar, x, coefs));
+        return EPoly(coefs.ToKPoly(scalar, x));
     }
+
+    public static KPoly<K> ToKPoly<K>(this IEnumerable<K> coefs, char x = 'x')
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var arr = coefs.ToArray();
+        if (arr.Length == 0)
+            throw new GroupException(GroupExceptionType.GroupDef);
+        return new(x, arr[0], arr);
+    }
+
+    public static KPoly<K> ToKPoly<K>(this IEnumerable<int> coefs, K scalar, char x = 'x')
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+        => coefs.Select(i => i * scalar.One).ToKPoly(x);
 
     public static EPoly<Rational> EQPoly(char x, params int[] coefs) => EPoly(Rational.KZero(), x, coefs);
 

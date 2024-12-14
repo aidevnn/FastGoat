@@ -60,7 +60,7 @@ public class RLWE
             throw new();
 
         var x = A.Poly.x;
-        var coefs = seq.Reverse().Select(e => e == 0 ? A.KZero : A.KOne * (Q - 1) / 2).ToArray();
+        var coefs = seq.Take(N).Reverse().Select(e => e == 0 ? A.KZero : A.KOne * (Q - 1) / 2).ToArray();
         return new(A.F, new KPoly<ZnInt>(x, A.KOne, coefs));
     }
 
