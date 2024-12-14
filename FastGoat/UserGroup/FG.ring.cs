@@ -361,10 +361,11 @@ public static partial class FG
     public static KPoly<K> ToKPoly<K>(this IEnumerable<K> coefs, char x = 'x')
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
-        var arr = coefs.ToArray();
-        if (arr.Length == 0)
+        var arr0 = coefs.ToArray();
+        if (arr0.Length == 0)
             throw new GroupException(GroupExceptionType.GroupDef);
-        return new(x, arr[0], arr);
+        var arr = arr0.TrimSeq().ToArray();
+        return new(x, arr0[0], arr.ToArray());
     }
 
     public static KPoly<K> ToKPoly<K>(this IEnumerable<int> coefs, K scalar, char x = 'x')
