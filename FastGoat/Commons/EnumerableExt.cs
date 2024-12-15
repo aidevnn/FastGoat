@@ -420,6 +420,8 @@ public static class EnumerableExt
     /// <returns>A sequence of tuples.</returns>
     public static IEnumerable<(T t1, T t2, T t3)> Grid3D<T>(this T[] seq) => Grid3D(seq, seq, seq);
 
+    public static T[] SingleOrEmpty<T>(this IEnumerable<T> ts) => ts.Take(1).ToArray();
+
     public static Array2Tuple<T> Deconstruct<T>(this IEnumerable<T> ts) => new(ts);
 
     public static IEnumerable<T> IntersectList<T>(this IEnumerable<T> a, IEnumerable<T> b) where T : IEquatable<T>
