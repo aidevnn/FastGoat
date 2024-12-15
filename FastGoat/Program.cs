@@ -60,7 +60,7 @@ void HEAddBFV()
 
 void HEMulBFV()
 {
-    IntExt.RngSeed(87456);
+    // IntExt.RngSeed(87456);
     Ring.DisplayPolynomial = MonomDisplay.StarCaret;
     var (n, p, q) = (16, 7, 165000);
     var bfv = new BFV(n, p, q);
@@ -84,11 +84,69 @@ void HEMulBFV()
     }
 }
 
+void TrackingErrors(int n, int p, int q, int size = 100)
 {
-    firstBFV();
-    HEAddBFV();
-    HEMulBFV();
+    var bfv = new BFV(n, p, q);
+    bfv.Show(showKeys: false);
+    var bfvPub = bfv.BFVpublic;
+
+    Console.WriteLine($"Size {size}");
+    var seqMsg = size.SeqLazy().Select(_ => BFVPublic.GenUnif(n, bfv.P)).ToArray();
+    var seqCipher = seqMsg.Select(bfvPub.Encrypt).ToArray();
+    var seqAddMsg = new List<KPoly<Rational>>();
+    var seqMulMsg = new List<KPoly<Rational>>();
+    var seqAddCipher = new List<(KPoly<Rational> ct0, KPoly<Rational> ct1)>();
+    var seqMulCipher = new List<(KPoly<Rational> ct0, KPoly<Rational> ct1)>();
+    for (int i = 0; i < size; i++)
+    {
+        if (i == 0)
+        {
+            seqAddMsg.Add(seqMsg[0]);
+            seqMulMsg.Add(seqMsg[0]);
+            seqAddCipher.Add(seqCipher[0]);
+            seqMulCipher.Add(seqCipher[0]);
+            continue;
+        }
+
+        seqAddMsg.Add(BFVPublic.CoefsMod(seqAddMsg.Last() + seqMsg[i], p));
+        seqMulMsg.Add(BFVPublic.CoefsMod((seqAddMsg.Last() * seqMsg[i]).Div(bfvPub.PM).rem, p));
+        seqAddCipher.Add(bfvPub.Add(seqAddCipher.Last(), seqCipher[i]));
+        seqMulCipher.Add(bfvPub.Mul(seqAddCipher.Last(), seqCipher[i]));
+    }
+
+    var seqAddDecrypt = seqAddCipher.Select(bfv.Decrypt).ToArray();
+    var setAdd = seqAddDecrypt.Select((c, i) => (c, i)).Where(e => !e.c.Equals(seqAddMsg[e.i])).SingleOrEmpty();
+    var idxAdd = setAdd.Length == 0 ? "Empty" : $"At idx:{setAdd[0].i}";
+    Console.WriteLine($"Add Cumulative first Error: {idxAdd}");
+    
+    var seqMulDecrypt = seqMulCipher.Select(bfv.Decrypt).ToArray();
+    var setMul = seqMulDecrypt.Select((c, i) => (c, i)).Where(e => !e.c.Equals(seqMulMsg[e.i])).SingleOrEmpty();
+    var idxMul = setMul.Length == 0 ? "Empty" : $"At idx:{setMul[0].i}";
+    Console.WriteLine($"Mul Cumulative first Error: {idxMul}");
+
+    Console.WriteLine();
 }
+
+{
+    // firstBFV();
+    // HEAddBFV();
+    // HEMulBFV();
+    Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+    TrackingErrors(4, 2, 2.Pow(10));
+    TrackingErrors(4, 2, 2.Pow(12));
+}
+// N = 4 Q = 1024 T = 90 P = 2
+// 
+// Size 100
+// Add Cumulative first Error: Empty
+// Mul Cumulative first Error: At idx:68
+// 
+// N = 4 Q = 4096 T = 181 P = 2
+// 
+// Size 100
+// Add Cumulative first Error: Empty
+// Mul Cumulative first Error: Empty
+// 
 
 // HomomorphicEncryption
 // from
@@ -130,18 +188,21 @@ public class BFV
         return BFVPublic.CoefsMod((P * tmp.Div(BFVpublic.PM).rem / Q).RoundPoly(), P);
     }
 
-    public void Show()
+    public void Show(bool showKeys = true)
     {
         Console.WriteLine($"N = {N} Q = {Q} T = {T} P = {P}");
-        Console.WriteLine("Private Key");
-        Console.WriteLine(SK);
-        Console.WriteLine("Public Key");
-        Console.WriteLine(BFVpublic.PK.pk0);
-        Console.WriteLine(BFVpublic.PK.pk1);
-        Console.WriteLine();
-        Console.WriteLine("Evaluation Key");
-        Console.WriteLine(BFVpublic.EK.ek0);
-        Console.WriteLine(BFVpublic.EK.ek1);
+        if (showKeys)
+        {
+            Console.WriteLine("Private Key");
+            Console.WriteLine(SK);
+            Console.WriteLine("Public Key");
+            Console.WriteLine(BFVpublic.PK.pk0);
+            Console.WriteLine(BFVpublic.PK.pk1);
+            Console.WriteLine();
+            Console.WriteLine("Evaluation Key");
+            Console.WriteLine(BFVpublic.EK.ek0);
+            Console.WriteLine(BFVpublic.EK.ek1);
+        }
         Console.WriteLine();
     }
 }
