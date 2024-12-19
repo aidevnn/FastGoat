@@ -207,6 +207,49 @@ public static class BGVtests
                 throw new();
         }
     }
+    
+    public static void TestKeysExchange()
+    {
+        var (n, p, q) = (16, 7, 35);
+        var bgv1 = new BGV(n, p, p * q);
+        var pub1 = bgv1.BGVpublic;
+        bgv1.Show();
+
+        var bgv2 = new BGV(n, p, p * q);
+        var pub2 = bgv2.BGVpublic;
+        bgv2.Show();
+        var s2s1 = bgv1.SwitchKeyGen(pub2);
+        var s1s2 = bgv2.SwitchKeyGen(pub1);
+
+        for (int i = 0; i < 50; ++i)
+        {
+            {
+                var m = BGVPublic.GenUnif(n, p);
+                Console.WriteLine($"m :{m}");
+                var cm = pub1.Encrypt(m);
+
+                var dm = bgv2.Decrypt(pub2.SwitchKey(cm, s2s1));
+                Console.WriteLine($"  :{dm}");
+
+                if (!dm.Equals(m))
+                    throw new($"step[{i}]");
+            }
+
+            {
+                var m = BGVPublic.GenUnif(n, p);
+                Console.WriteLine($"m :{m}");
+                var cm = pub2.Encrypt(m);
+
+                var dm = bgv1.Decrypt(pub1.SwitchKey(cm, s1s2));
+                Console.WriteLine($"  :{dm}");
+
+                if (!dm.Equals(m))
+                    throw new($"step[{i}]");
+            }
+
+            Console.WriteLine();
+        }
+    }
 
     public static void TestAll()
     {
@@ -216,5 +259,6 @@ public static class BGVtests
         TestTrackingErrors();
         HEEvalAuto();
         TestRGSW();
+        TestKeysExchange();
     }
 }
