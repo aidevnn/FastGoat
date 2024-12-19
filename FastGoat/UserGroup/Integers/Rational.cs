@@ -149,6 +149,8 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
             return (new(i), f);
         }
     }
+
+    public Rational Mod(Rational Q) => Sub(Mul(Q.Inv()).Floor * Q);
     public override int GetHashCode() => Hash;
 
     public override string ToString()
@@ -213,6 +215,13 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
     public static Rational Pi(int o) => BigReal.Pi(o).ToRational;
 
     public static Rational Sqrt(Rational r) => NthRoot(r, 2);
+
+    public static Rational Sqrt(Rational r, int nbDigits)
+    {
+        var nb = new Rational(BigInteger.Pow(10, nbDigits));
+        var nb2 = nb * nb;
+        return Sqrt(r * nb2) / nb;
+    }
     
 
     public static Rational NthRoot(Rational r, int n)

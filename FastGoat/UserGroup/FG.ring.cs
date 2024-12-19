@@ -148,6 +148,9 @@ public static partial class FG
     public static KPoly<Rational> TruncPoly(this KPoly<Rational> P) =>
         new(P.x, Rational.KOne(), P.Coefs.Select(c => c.Trunc).ToArray());
 
+    public static KPoly<Rational> FloorPoly(this KPoly<Rational> P) =>
+        new(P.x, Rational.KOne(), P.Coefs.Select(c => c.Floor).ToArray());
+
     public static KPoly<Cplx> ToCPoly(this KPoly<Rational> P) =>
         new(P.x, Cplx.CZero, P.Coefs.Select(c => c * Cplx.COne).ToArray());
 
@@ -357,6 +360,9 @@ public static partial class FG
     {
         return EPoly(coefs.ToKPoly(scalar, x));
     }
+    
+    public static KPoly<K> ResMod<K>(this KPoly<K> P, KPoly<K> F) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+        => P.Div(F).rem;
 
     public static KPoly<K> ToKPoly<K>(this IEnumerable<K> coefs, char x = 'x')
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
@@ -372,6 +378,9 @@ public static partial class FG
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
         => coefs.Select(i => i * scalar.One).ToKPoly(x);
 
+    public static KPoly<Rational> CoefsMod(this KPoly<Rational> P, Rational Q)
+        => P.Coefs.Select(c => c.Mod(Q)).ToKPoly();
+    
     public static EPoly<Rational> EQPoly(char x, params int[] coefs) => EPoly(Rational.KZero(), x, coefs);
 
     public static FracPoly<Rational> QFracPoly(char x = 'x') => KFracPoly(x, Rational.KZero());

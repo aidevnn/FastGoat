@@ -1,3 +1,4 @@
+using System.Numerics;
 using static FastGoat.Commons.IntExt;
 
 namespace FastGoat.Commons;
@@ -14,7 +15,20 @@ public static class DistributionExt
     /// <param name="max">The maximum value.</param>
     /// <returns>A random integer between min and max.</returns>
     public static long Dice(long min, long max) => (long)double.Round((max - min) * Rng.NextDouble() + min);
-    
+
+    /// <summary>
+    /// Generates a random integer between the specified minimum and maximum values, inclusive.
+    /// </summary>
+    /// <param name="min">The minimum value.</param>
+    /// <param name="max">The maximum value.</param>
+    /// <returns>A random integer between min and max.</returns>
+    public static BigInteger Dice(BigInteger min, BigInteger max)
+    {
+        var v = (int)BigInteger.Log2(max - min) + 1;
+        var rnd = v.SeqLazy().Select(_ => Rng.Next(2)).Aggregate(BigInteger.Zero, (acc, i) => 2 * acc + i);
+        return BigInteger.Remainder(rnd, max - min) + min;
+    }
+
     /// <summary>
     /// Generates a sequence of random integers between the specified minimum and maximum values.
     /// </summary>
@@ -23,7 +37,17 @@ public static class DistributionExt
     /// <param name="max">The maximum value.</param>
     /// <returns>An IEnumerable of random integers.</returns>
     public static IEnumerable<long> DiceSample(int size, long min, long max) => size.SeqLazy().Select(_ => Dice(min, max));
-    
+
+    /// <summary>
+    /// Generates a sequence of random integers between the specified minimum and maximum values.
+    /// </summary>
+    /// <param name="size">The number of random integers to generate.</param>
+    /// <param name="min">The minimum value.</param>
+    /// <param name="max">The maximum value.</param>
+    /// <returns>An IEnumerable of random integers.</returns>
+    public static IEnumerable<BigInteger> DiceSampleBigInt(int size, BigInteger min, BigInteger max) 
+        => size.SeqLazy().Select(_ => Dice(min, max));
+
     /// <summary>
     /// Selects a random element from the specified array.
     /// </summary>
