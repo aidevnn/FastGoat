@@ -8,10 +8,9 @@ public class RLWE
 {
     static EPoly<ZnInt> RandRq(EPoly<ZnInt> e0, int degree, int bound)
     {
-        var N = e0.F.Degree;
         var o = e0.KOne;
         var x = e0.Poly.x;
-        var coefs = N.Range().Select(_ => IntExt.Rng.Next(bound) * o).ToArray();
+        var coefs = degree.Range().Select(_ => IntExt.Rng.Next(bound) * o).ToArray();
         var r = new KPoly<ZnInt>(x, o, coefs);
         return new(e0.F, r);
     }
@@ -30,9 +29,9 @@ public class RLWE
     public int Err { get; }
     public double Sigma { get; }
     public (EPoly<ZnInt> a, EPoly<ZnInt> p) PK { get; }
+    public (EPoly<ZnInt> a, EPoly<ZnInt> e) EK { get; }
     private EPoly<ZnInt> SK { get; }
     private EPoly<ZnInt> A { get; }
-
     public RLWE(int n, int q, double sigma = 1.0)
     {
         if (!int.IsPow2(n))
@@ -47,11 +46,15 @@ public class RLWE
         var x = FG.ZPoly(q);
         A = FG.EPoly(x.Pow(n) + 1, 'A').X;
 
-        var a = RandRq(A, N, Q);
         SK = RandNormRq(A, N, Err, Sigma);
-        var r = RandNormRq(A, N, Err, Sigma);
-        var p = r - a * SK;
-        PK = (a, p);
+        var a = RandRq(A, N, Q);
+        var ra = RandNormRq(A, N, Err, Sigma);
+        var pa = ra - a * SK;
+        PK = (a, pa);
+        var e = RandRq(A, N, Q);
+        var re = RandNormRq(A, N, Err, Sigma);
+        var pe = re - e * SK + SK.Pow(2);
+        EK = (e, pe);
     }
 
     public EPoly<ZnInt> Encode(int[] seq)

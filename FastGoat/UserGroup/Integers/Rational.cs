@@ -250,4 +250,7 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
     public static Rational operator /(Rational a, int b) => a.Div(a.One.Mul(b)).quo;
     public static Rational operator /(Rational a, BigInteger b) => a.Div(a.One.Mul(new Rational(b))).quo;
     public static Rational operator /(int a, Rational b) => b.Inv().Mul(a);
+
+    public static Rational Min(Rational a, Rational b) => a > b ? b : a;
+    public static Rational Max(Rational a, Rational b) => a > b ? a : b;
 }
