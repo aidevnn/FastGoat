@@ -20,13 +20,14 @@ Ring.DisplayPolynomial = MonomDisplay.StarCaret;
 Rq Signed(Rq poly, Rational Q) => poly.Coefs.Select(c => 2 * c > Q ? c - Q : c).ToKPoly();
 
 {
-    var (n, p) = (16, 8);
-    var q = n * p * p;
+    var (n, p) = (32, 8); // n = 16, 32, 64
+    var q = n * n * p;
     var bgv = new BGV(n, p, q);
+    bgv.Show();
     var pub = bgv.BGVpublic;
     var (N, Q, P, PM) = (new Rational(n), bgv.Q, bgv.P, pub.PM);
 
-    var nbWarning = 0;
+    var nbFails = 0;
     var nbTests = 100;
     var nbTry = 100;
     var Q1 = P;
@@ -42,15 +43,15 @@ Rq Signed(Rq poly, Rational Q) => poly.Coefs.Select(c => 2 * c > Q ? c - Q : c).
         var ct = pub.Mul(ct1, ct2);
 
         var ctmin = ct;
-        var max = 100.0 * q;
+        var min = 100.0 * q;
         for (int k = 0; k < nbTry; ++k)
         {
             ctmin = pub.CoefsMod(ctmin, Q1);
             var c0 = pub.Add(ctmin, pub.Encrypt(m1.Zero));
             var norm = BGVPublic.NormCan(c0, pub.Roots, Q);
-            if (norm < max)
+            if (norm < min)
             {
-                max = norm;
+                min = norm;
                 ctmin = c0;
             }
         }
@@ -65,8 +66,10 @@ Rq Signed(Rq poly, Rational Q) => poly.Coefs.Select(c => 2 * c > Q ? c - Q : c).
         var norm_diff_init = pub.NormCan(diff_init);
         var diff_rand = (ctmin.ct0 - bgv.SK * ctmin.ct1 - m3).ResMod(PM).CoefsMod(Q);
         var norm_diff_rand = pub.NormCan(diff_rand);
-        Console.WriteLine($"init          :{diff_init}");
-        Console.WriteLine($"rand          :{diff_rand}");
+        Console.WriteLine($"err init      :{pub.Signed(diff_init)}");
+        Console.WriteLine($"err end       :{pub.Signed(diff_rand)}");
+        Console.WriteLine($"Q1      :{Q1}");
+        Console.WriteLine($"Q/2     :{Q / 2}");
         Console.WriteLine($"norm canonic");
         Console.WriteLine($"||err ct||    :{norm_diff_init}");
         Console.WriteLine($"||err ctmin|| :{norm_diff_rand}");
@@ -75,9 +78,9 @@ Rq Signed(Rq poly, Rational Q) => poly.Coefs.Select(c => 2 * c > Q ? c - Q : c).
         Console.WriteLine($"||err ctmin|| :{pub.NormInf(diff_rand)}");
         if (norm_diff_rand > 0.5 * q)
         {
-            Console.WriteLine($"Q/2     :{Q / 2}");
-            Console.WriteLine("Warning");
-            ++nbWarning;
+            Console.WriteLine($"Q/2       :{Q / 2}");
+            Console.WriteLine("Fail");
+            ++nbFails;
         }
 
         errNormCan = (double.Min(errNormCan.min, pub.NormCan(diff_rand)), double.Max(errNormCan.max, pub.NormCan(diff_rand)));
@@ -85,9 +88,7 @@ Rq Signed(Rq poly, Rational Q) => poly.Coefs.Select(c => 2 * c > Q ? c - Q : c).
         Console.WriteLine();
     }
     
-    Console.WriteLine($"Nb Warning:{nbWarning}/{nbTests}");
-    Console.WriteLine($"Q1      :{Q1}");
-    Console.WriteLine($"Q/2     :{Q / 2}");
+    Console.WriteLine($"Nb Fails:{nbFails}/{nbTests}");
     Console.WriteLine($"norm canonic");
     Console.WriteLine($"diff min:{errNormCan.min}");
     Console.WriteLine($"diff max:{errNormCan.max}");
@@ -95,3 +96,12 @@ Rq Signed(Rq poly, Rational Q) => poly.Coefs.Select(c => 2 * c > Q ? c - Q : c).
     Console.WriteLine($"diff min:{errNormInfty.min}");
     Console.WriteLine($"diff max:{errNormInfty.max}");
 }
+
+// N = 32 Q = 8192 P = 8
+// 
+// Q/2     :4096
+// norm canonic
+// ||err ct||    :29316.00947965181
+// ||err ctmin|| :293.07944187411
+// 
+// Nb Fails:0/100
