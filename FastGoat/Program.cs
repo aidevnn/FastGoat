@@ -66,16 +66,16 @@ Rq Signed(Rq poly, Rational Q) => poly.Coefs.Select(c => 2 * c > Q ? c - Q : c).
         var norm_diff_init = pub.NormCan(diff_init);
         var diff_rand = (ctmin.ct0 - bgv.SK * ctmin.ct1 - m3).ResMod(PM).CoefsMod(Q);
         var norm_diff_rand = pub.NormCan(diff_rand);
-        Console.WriteLine($"err init      :{pub.Signed(diff_init)}");
-        Console.WriteLine($"err end       :{pub.Signed(diff_rand)}");
-        Console.WriteLine($"Q1      :{Q1}");
-        Console.WriteLine($"Q/2     :{Q / 2}");
+        Console.WriteLine($"Q1              :{Q1}");
+        Console.WriteLine($"err init        :{pub.Signed(diff_init)}");
+        Console.WriteLine($"err end         :{pub.Signed(diff_rand)}");
+        Console.WriteLine($"Q/2             :{Q / 2}");
         Console.WriteLine($"norm canonic");
-        Console.WriteLine($"||err ct||    :{norm_diff_init}");
-        Console.WriteLine($"||err ctmin|| :{norm_diff_rand}");
+        Console.WriteLine($"||err ct init|| :{norm_diff_init}");
+        Console.WriteLine($"||err ct end || :{norm_diff_rand}");
         Console.WriteLine($"norm infty");
-        Console.WriteLine($"||err ct||    :{pub.NormInf(diff_rand)}");
-        Console.WriteLine($"||err ctmin|| :{pub.NormInf(diff_rand)}");
+        Console.WriteLine($"||err ct init|| :{pub.NormInf(diff_init)}");
+        Console.WriteLine($"||err ct end || :{pub.NormInf(diff_rand)}");
         if (norm_diff_rand > 0.5 * q)
         {
             Console.WriteLine($"Q/2       :{Q / 2}");
@@ -99,9 +99,13 @@ Rq Signed(Rq poly, Rational Q) => poly.Coefs.Select(c => 2 * c > Q ? c - Q : c).
 
 // N = 32 Q = 8192 P = 8
 // 
-// Q/2     :4096
+// Q/2             :4096
 // norm canonic
-// ||err ct||    :29316.00947965181
-// ||err ctmin|| :293.07944187411
+// ||err ct init|| :25845.553097846776
+// ||err ct end || :250.77770007839217
+// norm infty
+// ||err ct init|| :4088
+// ||err ct end || :40
 // 
 // Nb Fails:0/100
+// 
