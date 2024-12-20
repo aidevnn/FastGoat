@@ -170,7 +170,7 @@ public struct BGVPublic
     public static KPoly<Rational> Signed(KPoly<Rational> poly, Rational Q) =>
         poly.Coefs.Select(c => 2 * c > Q ? c - Q : c).ToKPoly();
 
-    public (KPoly<Rational>ct0, KPoly<Rational>ct1) Signed((KPoly<Rational>ct0, KPoly<Rational>ct1) cipher,
+    public static (KPoly<Rational>ct0, KPoly<Rational>ct1) Signed((KPoly<Rational>ct0, KPoly<Rational>ct1) cipher,
         Rational q) => (Signed(cipher.ct0, q), Signed(cipher.ct1, q));
     public static Rational NormInf(KPoly<Rational> poly, Rational Q) =>
         poly.Coefs.Select(c => 2 * c > Q ? Q - c : c).Max();
