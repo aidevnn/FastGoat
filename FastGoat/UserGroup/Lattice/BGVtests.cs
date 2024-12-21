@@ -158,55 +158,6 @@ public static class BGVtests
             }
         }
     }
-
-    public static void TestRGSW()
-    {
-        var (n, p, q) = (16, 8, 2.Pow(10));
-        var bgv = new BGV(n, p, q);
-        bgv.Show();
-
-        var pub = bgv.BGVpublic;
-        var expected = bgv.SK.CoefsMod(pub.P);
-        var actual = bgv.Decrypt((pub.PM.Zero, -pub.PM.One)); // BGV.Enc(s) = (0, -1) = RGSW0
-        Console.WriteLine($"ct0:{pub.PM.Zero}");
-        Console.WriteLine($"ct1:{pub.PM.One}");
-        Console.WriteLine($"s      :{expected}");
-        Console.WriteLine($"decrypt:{actual}");
-        Console.WriteLine();
-        if (!expected.Equals(actual))
-            throw new();
-
-        for (int k = 0; k < 10; ++k)
-        {
-            var r0 = pub.RGSW(pub.PM.One);
-            actual = bgv.Decrypt(r0);
-
-            Console.WriteLine($"ct0:{r0.ct0}");
-            Console.WriteLine($"ct1:{r0.ct1}");
-            Console.WriteLine($"s      :{expected}");
-            Console.WriteLine($"decrypt:{actual}");
-            Console.WriteLine();
-            if (!expected.Equals(actual))
-                throw new();
-        }
-
-        for (int k = 0; k < 10; ++k)
-        {
-            var m = BGVPublic.GenUnif(n, p);
-            expected = (bgv.SK * m).ResMod(pub.PM).CoefsMod(pub.P);
-
-            var m0 = pub.RGSW(m);
-            actual = bgv.Decrypt(m0); // BGV.Enc(s * m) = BGV.Enc(0) + (0, -m)
-
-            Console.WriteLine($"ct0:{m0.ct0}");
-            Console.WriteLine($"ct1:{m0.ct1}");
-            Console.WriteLine($"s * m  :{expected}");
-            Console.WriteLine($"decrypt:{actual}");
-            Console.WriteLine();
-            if (!expected.Equals(actual))
-                throw new();
-        }
-    }
     
     public static void TestKeysExchange()
     {
@@ -258,7 +209,6 @@ public static class BGVtests
         HEMulBGV();
         TestTrackingErrors();
         HEEvalAuto();
-        TestRGSW();
         TestKeysExchange();
     }
 }

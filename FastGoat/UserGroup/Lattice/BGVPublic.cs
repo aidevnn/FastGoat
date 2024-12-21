@@ -51,12 +51,6 @@ public struct BGVPublic
 
     public (KPoly<Rational> ct0, KPoly<Rational> ct1) Encrypt(KPoly<Rational> m) => Encrypt(m, N, P, Q, PM, PK);
 
-    public (KPoly<Rational> ct0, KPoly<Rational> ct1) RGSW(KPoly<Rational> m)
-    {
-        var (ct0, ct1) = Encrypt(m.Zero);
-        return (ct0, (-m + ct1).CoefsMod(Q));
-    }
-
     public (KPoly<Rational> ct0, KPoly<Rational> ct1) SwitchKey((KPoly<Rational> ct0, KPoly<Rational> ct1) cipher,
         (KPoly<Rational> ct0, KPoly<Rational> ct1) swk)
     {
