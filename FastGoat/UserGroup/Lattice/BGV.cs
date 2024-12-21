@@ -37,6 +37,9 @@ public class BGV
         
         var e0 = DistributionExt.DiscreteGaussianSample(N, 0, 3.0).ToKPoly(Rational.KZero());
         var e1 = DistributionExt.DiscreteGaussianSample(N, 0, 3.0).ToKPoly(Rational.KZero());
+        if (BGVPublic.SafeMode)
+            e0 = e1 = e0.Zero;
+
         var pk1 = DistributionExt.DiceSampleBigInt(N, 0, Q.Num - 1).Select(e => new Rational(e)).ToKPoly();
         var ek1 = DistributionExt.DiceSampleBigInt(N, 0, Q.Num - 1).Select(e => new Rational(e)).ToKPoly();
         

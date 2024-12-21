@@ -6,18 +6,6 @@ using FastGoat.UserGroup.Integers;
 
 namespace FastGoat.UserGroup.Lattice;
 
-public record BGVParams(
-    int N,
-    Rational P,
-    Rational Q,
-    KPoly<Rational> PM,
-    (KPoly<Rational> pk0, KPoly<Rational> pk1) PK,
-    (KPoly<Rational> ek0, KPoly<Rational> ek1) EK,
-    Dictionary<int, (KPoly<Rational> ek0, KPoly<Rational> ek1)> AK)
-{
-    public (int N, Rational P, Rational Q, KPoly<Rational> PM) Params_NPQ_PM => (N, P, Q, PM);
-}
-
 public struct BGVPublic
 {
     public int N { get; }
@@ -31,6 +19,7 @@ public struct BGVPublic
 
     public (int N, Rational P, Rational Q, KPoly<Rational> PM) Params_NPQ_PM => (N, P, Q, PM);
     public Cplx[] Roots { get; }
+    public static bool SafeMode { get; set; } = false;
 
     public BGVPublic(
         int n,
@@ -167,7 +156,7 @@ public struct BGVPublic
     public static (KPoly<Rational>ct0, KPoly<Rational>ct1) Signed((KPoly<Rational>ct0, KPoly<Rational>ct1) cipher,
         Rational q) => (Signed(cipher.ct0, q), Signed(cipher.ct1, q));
     public static Rational NormInf(KPoly<Rational> poly, Rational Q) =>
-        poly.Coefs.Select(c => 2 * c > Q ? Q - c : c).Max();
+        poly.Coefs.Select(c => c.Mod(Q)).Select(c => 2 * c > Q ? Q - c : c).Max();
     public static Rational NormInf((KPoly<Rational>ct0, KPoly<Rational>ct1) cipher, Rational q) 
         => Rational.Max(NormInf(cipher.ct0, q), NormInf(cipher.ct1, q));
 
@@ -177,6 +166,11 @@ public struct BGVPublic
         var e0 = GenDiscrGauss(N);
         var e1 = GenDiscrGauss(N);
         var u = GenTernary(N);
+        if (SafeMode)
+        {
+            e0 = e1 = e1.Zero;
+            u = u.One;
+        }
 
         var ct0 = (PK.pk0 * u + P * e0 + m).ResMod(PM).CoefsMod(Q);
         var ct1 = (PK.pk1 * u + P * e1).ResMod(PM).CoefsMod(Q);
