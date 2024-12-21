@@ -15,11 +15,10 @@ public class BGV
     public Rational P { get; }
     public Rational Q { get; }
     public BGVPublic BGVpublic { get; }
-    
     public (KPoly<Rational> ek0, KPoly<Rational> ek1) EK { get; }
     public Dictionary<int, (KPoly<Rational> ct0, KPoly<Rational> ct1)> AK { get; }
 
-    public ((KPoly<Rational> ct1, KPoly<Rational> ct2) plus, (KPoly<Rational> ct1, KPoly<Rational> ct2) minus)[] BRK
+    public ((KPoly<Rational> ct0, KPoly<Rational> ct1) plus, (KPoly<Rational> ct0, KPoly<Rational> ct1) minus)[] BRK
     {
         get;
     }
@@ -27,13 +26,12 @@ public class BGV
     public BGV(int n, int p, BigInteger q) :
         this(n, p, q, DistributionExt.DiceSample(n, [-1, 0, 1]).ToKPoly(Rational.KZero()))
     {
-        
     }
 
     private BGV(int n, int p, BigInteger q, KPoly<Rational> sk)
     {
         (N, Q, P) = (n, new(q), new(p));
-        SK = sk;;
+        SK = sk;
         
         var e0 = DistributionExt.DiscreteGaussianSample(N, 0, 3.0).ToKPoly(Rational.KZero());
         var e1 = DistributionExt.DiscreteGaussianSample(N, 0, 3.0).ToKPoly(Rational.KZero());
@@ -53,13 +51,14 @@ public class BGV
         AK = FG.UnInt(2 * N).Order()
             .Select(i => (i.K, BGVPublic.Encrypt(SK.Substitute(x.Pow(i.K)).ResMod(PM).CoefsMod(P), N, P, Q, PM, PK)))
             .ToDictionary(e => e.K, e => e.Item2);
-        
-        BGVpublic = new(N, P, Q, PM, PK, EK, AK);
-        var (z, o) = (SK.Zero, SK.One);
+
+        var enc0 = () => BGVPublic.Encrypt(PM.Zero, N, P, Q, PM, PK); // encrypt zero
+        var enc1 = () => BGVPublic.Encrypt(PM.One, N, P, Q, PM, PK); // encrypt one
         BRK = N.SeqLazy().Select(i => SK[i])
-            .Select(c => (plus: ((c - 1).IsZero() ? o : z), minus: ((c + 1).IsZero() ? o : z)))
-            .Select(si => (BGVpublic.RGSW(si.plus), BGVpublic.RGSW(si.minus)))
+            .Select(c => (plus: ((c - 1).IsZero() ? enc1() : enc0()), minus: ((c + 1).IsZero() ? enc1() : enc0())))
             .ToArray();
+        
+        BGVpublic = new(N, P, Q, PM, PK, EK, AK, BRK);
     }
 
     public (KPoly<Rational> ct0, KPoly<Rational> ct1) SwitchKeyGen(BGVPublic bgvPublic) => bgvPublic.Encrypt(SK);

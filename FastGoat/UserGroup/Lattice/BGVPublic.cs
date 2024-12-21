@@ -17,21 +17,25 @@ public struct BGVPublic
     public (KPoly<Rational> ek0, KPoly<Rational> ek1) EK { get; }
     public Dictionary<int, (KPoly<Rational> ct0, KPoly<Rational> ct1)> AK { get; }
 
+    public ((KPoly<Rational> ct0, KPoly<Rational> ct1) plus, (KPoly<Rational> ct0, KPoly<Rational> ct1) minus)[] BRK
+    {
+        get;
+    }
     public (int N, Rational P, Rational Q, KPoly<Rational> PM) Params_NPQ_PM => (N, P, Q, PM);
     public Cplx[] Roots { get; }
     public static bool SafeMode { get; set; } = false;
 
-    public BGVPublic(
-        int n,
+    public BGVPublic(int n,
         Rational p,
         Rational q,
         KPoly<Rational> pm,
         (KPoly<Rational> pk0, KPoly<Rational> pk1) pk,
         (KPoly<Rational> ek0, KPoly<Rational> ek1) ek,
-        Dictionary<int, (KPoly<Rational> ek0, KPoly<Rational> ek1)> ak)
+        Dictionary<int, (KPoly<Rational> ek0, KPoly<Rational> ek1)> ak,
+        ((KPoly<Rational> ct0, KPoly<Rational> ct1) plus, (KPoly<Rational> ct0, KPoly<Rational> ct1) minus)[] brk)
     {
         (N, P, Q, PM) = (n, p, q, pm);
-        (PK, EK, AK) = (pk, ek, ak);
+        (PK, EK, AK, BRK) = (pk, ek, ak, brk);
         Roots = (2 * N).SeqLazy().Select(i => Complex.FromPolarCoordinates(1.0, i * double.Pi / n))
             .Where(e => (Complex.Pow(e, n) + 1).Magnitude < 1e-3)
             .Select(e => new Cplx(e))
