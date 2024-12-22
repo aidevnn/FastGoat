@@ -18,11 +18,6 @@ public class BGV
     public (KPoly<Rational> ek0, KPoly<Rational> ek1) EK { get; }
     public Dictionary<int, (KPoly<Rational> ct0, KPoly<Rational> ct1)> AK { get; }
 
-    public ((KPoly<Rational> ct0, KPoly<Rational> ct1) plus, (KPoly<Rational> ct0, KPoly<Rational> ct1) minus)[] BRK
-    {
-        get;
-    }
-
     public BGV(int n, int p, BigInteger q) :
         this(n, p, q, DistributionExt.DiceSample(n, [-1, 0, 1]).ToKPoly(Rational.KZero()))
     {
@@ -49,25 +44,32 @@ public class BGV
         EK = (ek0, ek1);
 
         AK = FG.UnInt(2 * N).Order()
-            .Select(i => (i.K, BGVPublic.Encrypt(SK.Substitute(x.Pow(i.K)).ResMod(PM).CoefsMod(P), N, P, Q, PM, PK)))
+            .Select(i => (i.K, BGVPublic.Encrypt(SK.Substitute(x.Pow(i.K)).ResMod(PM).CoefsMod(P), P, Q, PM, PK)))
             .ToDictionary(e => e.K, e => e.Item2);
-
-        var enc0 = () => BGVPublic.Encrypt(PM.Zero, N, P, Q, PM, PK); // encrypt zero
-        var enc1 = () => BGVPublic.Encrypt(PM.One, N, P, Q, PM, PK); // encrypt one
-        BRK = N.SeqLazy().Select(i => SK[i])
-            .Select(c => (plus: ((c - 1).IsZero() ? enc1() : enc0()), minus: ((c + 1).IsZero() ? enc1() : enc0())))
-            .ToArray();
         
-        BGVpublic = new(N, P, Q, PM, PK, EK, AK, BRK);
+        BGVpublic = new(N, P, Q, PM, PK, EK, AK);
     }
 
     public (KPoly<Rational> ct0, KPoly<Rational> ct1) SwitchKeyGen(BGVPublic bgvPublic) => bgvPublic.Encrypt(SK);
 
-    public KPoly<Rational> Decrypt((KPoly<Rational> ct0, KPoly<Rational> ct1) cypher)
+    public ((KPoly<Rational> ct0, KPoly<Rational> ct1) plus, (KPoly<Rational> ct0, KPoly<Rational> ct1) minus)[] 
+        BlindRotateKeyGen(Rational Qi, Rational Qf)
     {
-        return (cypher.ct0 - cypher.ct1 * SK).ResMod(PM).CoefsMod(P);
+        var enc0 = () => BGVPublic.Encrypt(PM.Zero, Qi, Qf, PM, PK); // encrypt zero
+        var enc1 = () => BGVPublic.Encrypt(PM.One, Qi, Qf, PM, PK); // encrypt one
+        var n = PM.Degree;
+        return n.SeqLazy().Select(i => SK[i])
+            .Select(c => (plus: ((c - 1).IsZero() ? enc1() : enc0()), minus: ((c + 1).IsZero() ? enc1() : enc0())))
+            .ToArray();
     }
-    
+
+    public KPoly<Rational> Decrypt((KPoly<Rational> ct0, KPoly<Rational> ct1) cypher) => Decrypt(cypher, P);
+
+    public KPoly<Rational> Decrypt((KPoly<Rational> ct0, KPoly<Rational> ct1) cypher, Rational mod)
+    {
+        return (cypher.ct0 - cypher.ct1 * SK).ResMod(PM).CoefsMod(mod);
+    }
+
     public void Show(bool showKeys = true)
     {
         Console.WriteLine($"N = {N} Q = {Q} P = {P}");

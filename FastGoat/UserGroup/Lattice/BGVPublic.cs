@@ -16,11 +16,6 @@ public struct BGVPublic
 
     public (KPoly<Rational> ek0, KPoly<Rational> ek1) EK { get; }
     public Dictionary<int, (KPoly<Rational> ct0, KPoly<Rational> ct1)> AK { get; }
-
-    public ((KPoly<Rational> ct0, KPoly<Rational> ct1) plus, (KPoly<Rational> ct0, KPoly<Rational> ct1) minus)[] BRK
-    {
-        get;
-    }
     public (int N, Rational P, Rational Q, KPoly<Rational> PM) Params_NPQ_PM => (N, P, Q, PM);
     public Cplx[] Roots { get; }
     public static bool SafeMode { get; set; } = false;
@@ -31,18 +26,17 @@ public struct BGVPublic
         KPoly<Rational> pm,
         (KPoly<Rational> pk0, KPoly<Rational> pk1) pk,
         (KPoly<Rational> ek0, KPoly<Rational> ek1) ek,
-        Dictionary<int, (KPoly<Rational> ek0, KPoly<Rational> ek1)> ak,
-        ((KPoly<Rational> ct0, KPoly<Rational> ct1) plus, (KPoly<Rational> ct0, KPoly<Rational> ct1) minus)[] brk)
+        Dictionary<int, (KPoly<Rational> ek0, KPoly<Rational> ek1)> ak)
     {
         (N, P, Q, PM) = (n, p, q, pm);
-        (PK, EK, AK, BRK) = (pk, ek, ak, brk);
+        (PK, EK, AK) = (pk, ek, ak);
         Roots = (2 * N).SeqLazy().Select(i => Complex.FromPolarCoordinates(1.0, i * double.Pi / n))
             .Where(e => (Complex.Pow(e, n) + 1).Magnitude < 1e-3)
             .Select(e => new Cplx(e))
             .ToArray();
     }
 
-    public (KPoly<Rational> ct0, KPoly<Rational> ct1) Encrypt(KPoly<Rational> m) => Encrypt(m, N, P, Q, PM, PK);
+    public (KPoly<Rational> ct0, KPoly<Rational> ct1) Encrypt(KPoly<Rational> m) => Encrypt(m, P, Q, PM, PK);
 
     public (KPoly<Rational> ct0, KPoly<Rational> ct1) SwitchKey((KPoly<Rational> ct0, KPoly<Rational> ct1) cipher,
         (KPoly<Rational> ct0, KPoly<Rational> ct1) swk)
@@ -86,6 +80,18 @@ public struct BGVPublic
         (KPoly<Rational>ct0, KPoly<Rational>ct1) cipher1)
         => Mul(cipher0, cipher1, EK);
 
+    public (KPoly<Rational>ct0, KPoly<Rational>ct1) Mul((KPoly<Rational>ct0, KPoly<Rational>ct1) cipher0,
+        (KPoly<Rational>ct0, KPoly<Rational>ct1) cipher1, (KPoly<Rational>ek0, KPoly<Rational>ek1) ek)
+    {
+        return Mul(cipher0, cipher1, Q, PM, ek);
+    }
+
+    public (KPoly<Rational> d0, KPoly<Rational> d1, KPoly<Rational> d2)
+        Tensor((KPoly<Rational>ct0, KPoly<Rational>ct1) cipher0, (KPoly<Rational>ct0, KPoly<Rational>ct1) cipher1)
+    {
+        return Tensor(cipher0, cipher1, Q, PM);
+    }
+
     public (KPoly<Rational> ct0, KPoly<Rational> ct1) Pow((KPoly<Rational>ct0, KPoly<Rational>ct1) cipher, int k)
     {
         if (k < 1)
@@ -95,28 +101,6 @@ public struct BGVPublic
             return cipher;
 
         return Mul(cipher, Pow(cipher, k - 1));
-    }
-
-    public (KPoly<Rational>ct0, KPoly<Rational>ct1) Mul((KPoly<Rational>ct0, KPoly<Rational>ct1) cipher0,
-        (KPoly<Rational>ct0, KPoly<Rational>ct1) cipher1, (KPoly<Rational>ek0, KPoly<Rational>ek1) ek)
-    {
-        var (multi_ct0, multi_ct1, multi_ct2) = Tensor(cipher0, cipher1);
-        var (ek0, ek1) = ek;
-        var multi_ct20 = (multi_ct0 + multi_ct2 * ek0).ResMod(PM).CoefsMod(Q);
-        var multi_ct21 = (multi_ct1 + multi_ct2 * ek1).ResMod(PM).CoefsMod(Q);
-        return (multi_ct20, multi_ct21);
-    }
-
-    public (KPoly<Rational> d0, KPoly<Rational> d1, KPoly<Rational> d2)
-        Tensor((KPoly<Rational>ct0, KPoly<Rational>ct1) cipher0, (KPoly<Rational>ct0, KPoly<Rational>ct1) cipher1)
-    {
-        var (m1_ct0, m1_ct1) = cipher0;
-        var (m2_ct0, m2_ct1) = cipher1;
-
-        var multi_ct0 = (m1_ct0 * m2_ct0).ResMod(PM).CoefsMod(Q);
-        var multi_ct1 = (m1_ct0 * m2_ct1 + m1_ct1 * m2_ct0).ResMod(PM).CoefsMod(Q);
-        var multi_ct2 = (m1_ct1 * m2_ct1).ResMod(PM).CoefsMod(Q);
-        return (multi_ct0, multi_ct1, multi_ct2);
     }
 
     public KPoly<Rational> Scale(KPoly<Rational> poly, Rational q)
@@ -145,6 +129,30 @@ public struct BGVPublic
     public double NormCan((KPoly<Rational>ct0, KPoly<Rational>ct1) cipher) =>
         double.Max(NormCan(cipher.ct0), NormCan(cipher.ct1));
 
+    public static (KPoly<Rational>ct0, KPoly<Rational>ct1) Mul((KPoly<Rational>ct0, KPoly<Rational>ct1) cipher0,
+        (KPoly<Rational>ct0, KPoly<Rational>ct1) cipher1, Rational Q, KPoly<Rational> PM, 
+        (KPoly<Rational>ek0, KPoly<Rational>ek1) EK)
+    {
+        var (multi_ct0, multi_ct1, multi_ct2) = Tensor(cipher0, cipher1, Q, PM);
+        var (ek0, ek1) = EK;
+        var multi_ct20 = (multi_ct0 + multi_ct2 * ek0).ResMod(PM).CoefsMod(Q);
+        var multi_ct21 = (multi_ct1 + multi_ct2 * ek1).ResMod(PM).CoefsMod(Q);
+        return (multi_ct20, multi_ct21);
+    }
+
+    public static (KPoly<Rational> d0, KPoly<Rational> d1, KPoly<Rational> d2)
+        Tensor((KPoly<Rational>ct0, KPoly<Rational>ct1) cipher0, (KPoly<Rational>ct0, KPoly<Rational>ct1) cipher1,
+            Rational Q, KPoly<Rational> PM)
+    {
+        var (m1_ct0, m1_ct1) = cipher0;
+        var (m2_ct0, m2_ct1) = cipher1;
+
+        var multi_ct0 = (m1_ct0 * m2_ct0).ResMod(PM).CoefsMod(Q);
+        var multi_ct1 = (m1_ct0 * m2_ct1 + m1_ct1 * m2_ct0).ResMod(PM).CoefsMod(Q);
+        var multi_ct2 = (m1_ct1 * m2_ct1).ResMod(PM).CoefsMod(Q);
+        return (multi_ct0, multi_ct1, multi_ct2);
+    }
+
     public static double NormCan((KPoly<Rational>ct0, KPoly<Rational>ct1) cipher, Cplx[] roots, Rational Q)
         => double.Max(NormCan(cipher.ct0, roots, Q), NormCan(cipher.ct1, roots, Q));
 
@@ -164,12 +172,13 @@ public struct BGVPublic
     public static Rational NormInf((KPoly<Rational>ct0, KPoly<Rational>ct1) cipher, Rational q) 
         => Rational.Max(NormInf(cipher.ct0, q), NormInf(cipher.ct1, q));
 
-    public static (KPoly<Rational> ct0, KPoly<Rational> ct1) Encrypt(KPoly<Rational> m, int N, Rational P, Rational Q,
+    public static (KPoly<Rational> ct0, KPoly<Rational> ct1) Encrypt(KPoly<Rational> m, Rational P, Rational Q,
         KPoly<Rational> PM, (KPoly<Rational> pk0, KPoly<Rational> pk1) PK)
     {
-        var e0 = GenDiscrGauss(N);
-        var e1 = GenDiscrGauss(N);
-        var u = GenTernary(N);
+        var n = PM.Degree;
+        var e0 = GenDiscrGauss(n);
+        var e1 = GenDiscrGauss(n);
+        var u = GenTernary(n);
         if (SafeMode)
         {
             e0 = e1 = e1.Zero;

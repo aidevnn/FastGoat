@@ -87,7 +87,12 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
     public bool IsZero() => Degree == 0 && Coefs[0].IsZero();
 
     public KPoly<K> Zero => new(x, KZero, new[] { KZero });
-    public KPoly<K> ZeroExtended(int degree) => new(x, KZero, Enumerable.Repeat(KZero, degree + 1).ToArray());
+
+    public K[] CoefsExtended(int degree)
+    {
+        var poly = this;
+        return (degree + 1).SeqLazy().Select(i => poly[i]).ToArray();
+    }
     public KPoly<K> One => new(x, KZero, new[] { KOne });
     public KPoly<K> X => new(x, KZero, new[] { KZero, KOne });
 
