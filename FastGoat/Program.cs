@@ -151,15 +151,11 @@ BGVCipher RepackingBGV(BGVCipher[] accs, int n, Rq pm, Rational t, Rational q, B
     FHE.Show(pm, sk, t, q, pk, rlk);
     Rational N = new(n);
 
-    var e = FHE.GenDiscrGauss(n).CoefsMod(t);
-    var b = FHE.GenUnif(n, q);
-    var a = (t * e + b * sk).ResMod(pm).CoefsMod(q);
-    pk = (a, b);
     var Q = t * q;
     for (int k = 0; k < 10; ++k)
     {
         var m1 = FHE.GenUnif(n, t);
-        BGVCipher cm1 = ((a + m1).CoefsMod(q), b);
+        var cm1 = FHE.EncryptBGV(m1, pm, t, q, pk);
         Console.WriteLine($"m1 :{m1}");
         cm1.Show("RLWE(m1)");
         Console.WriteLine(FHE.DecryptBGV(cm1, pm, sk, t));
@@ -168,23 +164,14 @@ BGVCipher RepackingBGV(BGVCipher[] accs, int n, Rq pm, Rational t, Rational q, B
         Console.WriteLine(new { q1 });
         ct1.Show("ct1");
         ctprep.Show("ct prep");
-        Console.WriteLine($"decrypt:{FHE.DecryptBGV(ctprep, pm, sk, t)}");
-        Console.WriteLine($"     e :{e}");
-        Console.WriteLine($"     m1:{m1}");
         Console.WriteLine();
-
-        var qu = (ct1.A - sk * ct1.B - m1 - t * e).ResMod(pm).CoefsMod(q);
+        
         var u = (-(ctprep.A - sk * ctprep.B)).ResMod(pm).CoefsMod(2 * N);
-        Console.WriteLine($"qu:{qu}");
-        Console.WriteLine($"u :{u}");
-        Console.WriteLine($"  :{(q1 * u).CoefsMod(q)}");
-        Console.WriteLine();
-        if (!(q1 * u).CoefsMod(q).Equals(qu))
-            throw new("qu");
 
         var delta = double.Sqrt(n * 4.0);
         var gamma = q / 4 - q1 / 2 * delta;
         var c = (int)(0.5 * (delta + 1) + gamma * q1.Inv());
+        c = n / 4;
         Console.WriteLine(new { n, t, q, q1, delta, gamma, c });
         var f = (2 * c + 1).SeqLazy(-c).Where(j => j != 0).Select(j => -q1 * j * FHE.XpowA(j, pm, q))
             .Aggregate((v0, v1) => v0 + v1).ResMod(pm).CoefsMod(q);
@@ -203,11 +190,13 @@ BGVCipher RepackingBGV(BGVCipher[] accs, int n, Rq pm, Rational t, Rational q, B
             var Xu = FHE.XpowA((int)-u[i].Num, pm, q);
             var fXu = (f * Xu).ResMod(pm).CoefsMod(q);
             var tmp1 = (cipher.A - sk * cipher.B).ResMod(pm).CoefsMod(q);
-            // cipher.Show($"i={i} u[i]={u[i]} | {(-extract[i].ai + InnerProd(s, extract[i].bi, 2 * N)).Mod(2 * N)}");
-            // Console.WriteLine($" :{fXu}");
-            // Console.WriteLine($" :{tmp1}");
             if (!fXu.Equals(tmp1))
+            {
+                cipher.Show($"i={i} u[i]={u[i]} | {(-extract[i].ai + InnerProd(s, extract[i].bi, 2 * N)).Mod(2 * N)}");
+                Console.WriteLine($" :{fXu}");
+                Console.WriteLine($" :{tmp1}");
                 throw new("fXu");
+            }
         }
 
         Console.WriteLine();
@@ -254,5 +243,4 @@ BGVCipher RepackingBGV(BGVCipher[] accs, int n, Rq pm, Rational t, Rational q, B
 // B:8697*x^15 + 13364*x^14 + 13423*x^13 + 40184*x^12 + 1226*x^11 + 52291*x^10 + 61538*x^9 + 36100*x^8 + 32819*x^7 + 19133*x^6 + 2964*x^5 + 24546*x^4 + 61422*x^3 + 28165*x^2 + 36061*x + 22776
 // decrypt ctboot:28*x^15 + 8*x^14 + 30*x^13 + 12*x^11 + 9*x^10 + 10*x^9 + x^8 + x^7 + 6*x^6 + 19*x^5 + 17*x^4 + 17*x^3 + 7*x^2 + 29*x + 9
 // m1            :28*x^15 + 8*x^14 + 30*x^13 + 12*x^11 + 9*x^10 + 10*x^9 + x^8 + x^7 + 6*x^6 + 19*x^5 + 17*x^4 + 17*x^3 + 7*x^2 + 29*x + 9
-// 
 // 

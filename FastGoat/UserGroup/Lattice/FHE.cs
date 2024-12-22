@@ -187,7 +187,7 @@ public static class FHE
 
         var beta = ab.bi.Select(c => c.Opp().Mod(q)).ToArray();
         var alpha = (int)ab.ai.Num;
-        var xalpha = XpowA(alpha, pm, q);
+        var xalpha = XpowA(alpha, pm, t);
         BGVCipher encOne = (x.One,x.Zero);
         BGVCipher acc = ((f * xalpha).ResMod(pm).CoefsMod(q), x.Zero);
 
