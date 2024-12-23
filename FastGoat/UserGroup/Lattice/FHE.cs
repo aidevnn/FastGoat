@@ -88,6 +88,13 @@ public static class FHE
         return (a, b);
     }
 
+    public static BGVCipher KAddBGV(BGVCipher cipher, Rq poly, Rational q)
+    {
+        var a = (cipher.A + poly).CoefsMod(q);
+        var b = (cipher.B).CoefsMod(q);
+        return (a, b);
+    }
+
     public static BGVCipher SubBGV(BGVCipher cipher0, BGVCipher cipher1, Rational q)
     {
         var a = (cipher0.A - cipher1.A).CoefsMod(q);
@@ -209,6 +216,19 @@ public static class FHE
 
         return acc;
     }
+
+    public static Rq Scale(Rq poly, Rq pm, Rational fact, Rational Q)
+    {
+        var q = Q / fact;
+        if (!q.IsInteger())
+            throw new($"q = Q/fact = {q} is not integer");
+        
+        var delta = poly.CoefsMod(fact);
+        return (delta + (poly - delta) / fact).CoefsMod(q);
+    }
+
+    public static BGVCipher Scale(BGVCipher cipher, Rq pm, Rational fact, Rational Q)
+        => (Scale(cipher.A, pm, fact, Q), Scale(cipher.B, pm, fact, Q));
 
     static Rational[] ExtractArr(int i, Rq poly, int n)
     {

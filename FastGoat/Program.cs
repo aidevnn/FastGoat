@@ -28,16 +28,6 @@ IEnumerable<int> DecompBase(BigInteger a, int b)
     } while (!a0.IsZero);
 }
 
-Rational[] ExtractArr(int i, Rq P, int N)
-{
-    return N.SeqLazy(start: i, step: -1).Select(j => j >= 0 ? P[j] : -P[N + j]).ToArray();
-}
-
-(Rational ai, Rational[] bi)[] Extract(Rq a, Rq b, int N)
-{
-    return N.SeqLazy().Select(i => (ai: a[i], bi: ExtractArr(i, b, N).ToArray())).ToArray();
-}
-
 Rational InnerProd(Rational[] m0, Rational[] m1, Rational mod)
     => m0.Zip(m1).Aggregate(Rational.KZero(), (acc, e) => (acc + e.First * e.Second).Mod(mod));
 
@@ -94,18 +84,6 @@ void testBR()
     Console.WriteLine($"Factors:{set.Order().Glue(", ", fmt)}");
 }
 
-(Rational q1, BGVCipher ct1, BGVCipher ctprep) BootstrappingPrep(BGVCipher cipher, Rq pm, Rational q, int fact = 2)
-{
-    var n = new Rational(pm.Degree);
-    var q1 = q / (fact * n);
-    if (!q1.IsInteger())
-        throw new();
-
-    var ct1 = cipher.CoefsMod(q1);
-    var ctprep = new BGVCipher((cipher.A - ct1.A) / q1, (cipher.B - ct1.B) / q1).CoefsMod(2 * n);
-    return (q1, ct1, ctprep);
-}
-
 BGVCipher RepackingBGV(BGVCipher[] accs, int n, Rq pm, Rational t, Rational q, BGVCipher pk, BGVCipher rlk,
     Dictionary<int, BGVCipher> ak)
 {
@@ -142,85 +120,61 @@ BGVCipher RepackingBGV(BGVCipher[] accs, int n, Rq pm, Rational t, Rational q, B
     return CT[0, 1];
 }
 
+BGVCipher Bootstrapping(BGVCipher ct, Rq pm, Rational t, Rational q, Rational Q, BGVCipher pk, BGVCipher rlk,
+    (BGVCipher plus, BGVCipher minus)[] brk, Dictionary<int, BGVCipher> ak, int fact = 2)
+{
+    var n = pm.Degree;
+    var q1 = q / (fact * n);
+    if (!q1.IsInteger())
+        throw new();
+    
+    var ct1 = ct.CoefsMod(q1);
+    var ctprep = new BGVCipher((ct.A - ct1.A) / q1, (ct.B - ct1.B) / q1).CoefsMod(new(fact * n));
+    
+    // Step 1. Extraction
+    var extract = FHE.Extract(ctprep, n);
+
+    var delta = double.Sqrt(n * 4.0);
+    var gamma = q / 4 - q1 / 2 * delta;
+    var c = (int)(0.5 * (delta + 1) + gamma * q1.Inv());
+    var f = (2 * c + 1).SeqLazy(-c).Where(j => j != 0).Select(j => -q1 * j * FHE.XpowA(j, pm, q))
+        .Aggregate((v0, v1) => v0 + v1).ResMod(pm).CoefsMod(q);
+    
+    // Step 2. Blind Rotate
+    var seqBR = new List<BGVCipher>();
+    foreach (var (ab, i) in extract.Select((ab, i) => (ab, i)))
+        seqBR.Add(FHE.BlindRotateBGV(ab, f, pm, t, Q, pk, rlk, brk));
+
+    // Step 3. Repacking
+    seqBR = seqBR.Select(cipher => new BGVCipher(cipher.A * pm.One, cipher.B * pm.One)).ToList();
+    var ctsm = RepackingBGV(seqBR.ToArray(), n, pm, q1, Q, pk, rlk, ak);
+    ctsm.Show("ctsm");
+    
+    return FHE.AddBGV(ctsm, ct1, Q);
+}
+
 {
     var l = 4;
     var n = 1 << l;
-    var t0 = 2 * n;
+    var t0 = n;
     var q0 = 8 * n * n;
     var (pm, sk, t, q, pk, rlk) = FHE.KeyGenBGV(n, t0, q0);
     FHE.Show(pm, sk, t, q, pk, rlk);
-    Rational N = new(n);
 
     var Q = t * q;
+    var brk = FHE.BRKBGV(pm, sk, t, Q, pk);
+    var ak = FHE.AKBGV(pm, sk, t, Q, pk);
+    
     for (int k = 0; k < 10; ++k)
     {
         var m1 = FHE.GenUnif(n, t);
         var cm1 = FHE.EncryptBGV(m1, pm, t, q, pk);
-        Console.WriteLine($"m1 :{m1}");
-        cm1.Show("RLWE(m1)");
-        Console.WriteLine(FHE.DecryptBGV(cm1, pm, sk, t));
-
-        var (q1, ct1, ctprep) = BootstrappingPrep(cm1, pm, q);
-        Console.WriteLine(new { q1 });
-        ct1.Show("ct1");
-        ctprep.Show("ct prep");
-        Console.WriteLine();
+        cm1.Show($"ct m1:{m1}");
         
-        var u = (-(ctprep.A - sk * ctprep.B)).ResMod(pm).CoefsMod(2 * N);
-
-        var delta = double.Sqrt(n * 4.0);
-        var gamma = q / 4 - q1 / 2 * delta;
-        var c = (int)(0.5 * (delta + 1) + gamma * q1.Inv());
-        c = n / 4;
-        Console.WriteLine(new { n, t, q, q1, delta, gamma, c });
-        var f = (2 * c + 1).SeqLazy(-c).Where(j => j != 0).Select(j => -q1 * j * FHE.XpowA(j, pm, q))
-            .Aggregate((v0, v1) => v0 + v1).ResMod(pm).CoefsMod(q);
-
-        var extract = FHE.Extract(ctprep, n);
-        var seqBR = new List<BGVCipher>();
-        var brk = FHE.BRKBGV(pm, sk, t, Q, pk);
-        foreach (var (ab, i) in extract.Select((ab, i) => (ab, i)))
-            seqBR.Add(FHE.BlindRotateBGV(ab, f, pm, t, Q, pk, rlk, brk));
-
-        Console.WriteLine();
-        Console.WriteLine(new { Q, f });
-        var s = n.SeqLazy().Select(i => sk[i]).ToArray();
-        foreach (var (cipher, i) in seqBR.Select((cipher, i) => (cipher, i)))
-        {
-            var Xu = FHE.XpowA((int)-u[i].Num, pm, q);
-            var fXu = (f * Xu).ResMod(pm).CoefsMod(q);
-            var tmp1 = (cipher.A - sk * cipher.B).ResMod(pm).CoefsMod(q);
-            if (!fXu.Equals(tmp1))
-            {
-                cipher.Show($"i={i} u[i]={u[i]} | {(-extract[i].ai + InnerProd(s, extract[i].bi, 2 * N)).Mod(2 * N)}");
-                Console.WriteLine($" :{fXu}");
-                Console.WriteLine($" :{tmp1}");
-                throw new("fXu");
-            }
-        }
-
-        Console.WriteLine();
-
-        seqBR = seqBR.Select(cipher => new BGVCipher(cipher.A * pm.One, cipher.B * pm.One)).ToList();
-        var ak = FHE.AKBGV(pm, sk, t, Q, pk);
-        
-        var ctsm = RepackingBGV(seqBR.ToArray(), n, pm, q1, Q, pk, rlk, ak);
-        var diff = (ctsm.A - sk * ctsm.B - q1 * u).ResMod(pm).CoefsMod(t);
-        Console.WriteLine($"diff:{diff}");
-        Console.WriteLine();
-        if (!diff.IsZero())
-            throw new("repack");
-
-        Console.WriteLine($"m:{m1}");
-        cm1.Show($"ct N:{N} t:{t} q:{q}");
-        Console.WriteLine();
-        
-        ctsm.Show("ctsm");
-        Console.WriteLine();
-        
-        var ctboot = FHE.AddBGV(ctsm, ct1, Q);
-        ctboot.Show($"ctboot Q={Q}");
+        var ctboot = Bootstrapping(cm1, pm, t, q, Q, pk, rlk, brk, ak);
         var dec = FHE.DecryptBGV(ctboot, pm, sk, t);
+        
+        ctboot.Show("ctboot");
         Console.WriteLine($"decrypt ctboot:{dec}");
         Console.WriteLine($"m1            :{m1}");
         Console.WriteLine();
