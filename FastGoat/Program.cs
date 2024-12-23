@@ -59,7 +59,7 @@ void testBR()
     {
         var ai = new Rational(IntExt.Rng.Next(1, t0));
         var bi = n.SeqLazy().Select(_ => IntExt.Rng.Next(t0) * ai.One).ToArray();
-        var acc = FHE.BlindRotateBGV((ai, bi), f, pm, t, q, pk, rlk, brk);
+        var acc = FHE.BlindRotateBGV((ai, bi), f, pm, t, q, pk, brk);
         var actual = FHE.DecryptBGV(acc, pm, sk, t);
 
         Console.WriteLine($"f           :{f}");
@@ -142,14 +142,13 @@ BGVCipher Bootstrapping(BGVCipher ct, Rq pm, Rational t, Rational q, Rational Q,
     
     // Step 2. Blind Rotate
     var seqBR = new List<BGVCipher>();
-    foreach (var (ab, i) in extract.Select((ab, i) => (ab, i)))
-        seqBR.Add(FHE.BlindRotateBGV(ab, f, pm, t, Q, pk, rlk, brk));
+    foreach (var ab in extract)
+        seqBR.Add(FHE.BlindRotateBGV(ab, f, pm, t, Q, pk, brk));
 
     // Step 3. Repacking
-    seqBR = seqBR.Select(cipher => new BGVCipher(cipher.A * pm.One, cipher.B * pm.One)).ToList();
-    var ctsm = RepackingBGV(seqBR.ToArray(), n, pm, q1, Q, pk, rlk, ak);
+    var seqBR0 = seqBR.Select(cipher => new BGVCipher(cipher.A[0] * pm.One, cipher.B[0] * pm.One)).ToArray();
+    var ctsm = RepackingBGV(seqBR0, n, pm, q1, Q, pk, rlk, ak);
     ctsm.Show("ctsm");
-    
     return FHE.AddBGV(ctsm, ct1, Q);
 }
 
@@ -161,7 +160,7 @@ BGVCipher Bootstrapping(BGVCipher ct, Rq pm, Rational t, Rational q, Rational Q,
     var (pm, sk, t, q, pk, rlk) = FHE.KeyGenBGV(n, t0, q0);
     FHE.Show(pm, sk, t, q, pk, rlk);
 
-    var Q = t * q;
+    var Q = 8 * q;
     var brk = FHE.BRKBGV(pm, sk, t, Q, pk);
     var ak = FHE.AKBGV(pm, sk, t, Q, pk);
     
@@ -172,9 +171,10 @@ BGVCipher Bootstrapping(BGVCipher ct, Rq pm, Rational t, Rational q, Rational Q,
         cm1.Show($"ct m1:{m1}");
         
         var ctboot = Bootstrapping(cm1, pm, t, q, Q, pk, rlk, brk, ak);
+        // var ctbootq = ctboot.CoefsMod(q);
         var dec = FHE.DecryptBGV(ctboot, pm, sk, t);
         
-        ctboot.Show("ctboot");
+        ctboot.Show($"ctboot Q = {Q}");
         Console.WriteLine($"decrypt ctboot:{dec}");
         Console.WriteLine($"m1            :{m1}");
         Console.WriteLine();
@@ -182,19 +182,3 @@ BGVCipher Bootstrapping(BGVCipher ct, Rq pm, Rational t, Rational q, Rational Q,
             throw new("decrypt");
     }
 }
-
-// m:28*x^15 + 8*x^14 + 30*x^13 + 12*x^11 + 9*x^10 + 10*x^9 + x^8 + x^7 + 6*x^6 + 19*x^5 + 17*x^4 + 17*x^3 + 7*x^2 + 29*x + 9
-// ct N:16 t:32 q:2048
-// A:1435*x^15 + 526*x^14 + 798*x^13 + 668*x^12 + 941*x^11 + 1790*x^10 + 1273*x^9 + 1178*x^8 + 1156*x^7 + 1789*x^6 + 1330*x^5 + 1899*x^4 + 1141*x^3 + 1186*x^2 + 1174*x + 1953
-// B:1282*x^15 + 441*x^14 + 1580*x^13 + 1993*x^12 + 1708*x^11 + 1068*x^10 + 617*x^9 + 933*x^8 + 748*x^7 + 1189*x^6 + 166*x^5 + 669*x^4 + 1165*x^3 + 1153*x^2 + 362*x + 127
-// 
-// ctsm
-// A:18713*x^15 + 14031*x^14 + 30948*x^13 + 15197*x^12 + 57846*x^11 + 45173*x^10 + 28700*x^9 + 13708*x^8 + 64966*x^7 + 54165*x^6 + 55504*x^5 + 46870*x^4 + 5075*x^3 + 39555*x^2 + 26418*x + 3277
-// B:8695*x^15 + 13307*x^14 + 13379*x^13 + 40175*x^12 + 1182*x^11 + 52247*x^10 + 61497*x^9 + 36063*x^8 + 32775*x^7 + 19096*x^6 + 2926*x^5 + 24517*x^4 + 61409*x^3 + 28164*x^2 + 36019*x + 22713
-// 
-// ctboot Q=65536
-// A:18740*x^15 + 14045*x^14 + 30978*x^13 + 15225*x^12 + 57891*x^11 + 45235*x^10 + 28757*x^9 + 13734*x^8 + 64970*x^7 + 54226*x^6 + 55554*x^5 + 46913*x^4 + 5128*x^3 + 39589*x^2 + 26440*x + 3310
-// B:8697*x^15 + 13364*x^14 + 13423*x^13 + 40184*x^12 + 1226*x^11 + 52291*x^10 + 61538*x^9 + 36100*x^8 + 32819*x^7 + 19133*x^6 + 2964*x^5 + 24546*x^4 + 61422*x^3 + 28165*x^2 + 36061*x + 22776
-// decrypt ctboot:28*x^15 + 8*x^14 + 30*x^13 + 12*x^11 + 9*x^10 + 10*x^9 + x^8 + x^7 + 6*x^6 + 19*x^5 + 17*x^4 + 17*x^3 + 7*x^2 + 29*x + 9
-// m1            :28*x^15 + 8*x^14 + 30*x^13 + 12*x^11 + 9*x^10 + 10*x^9 + x^8 + x^7 + 6*x^6 + 19*x^5 + 17*x^4 + 17*x^3 + 7*x^2 + 29*x + 9
-// 
