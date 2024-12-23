@@ -1,6 +1,5 @@
 using System.Numerics;
 using FastGoat.Commons;
-using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup.Floats;
 using FastGoat.UserGroup.Integers;
 using Rq = FastGoat.Structures.VecSpace.KPoly<FastGoat.UserGroup.Integers.Rational>;
@@ -88,13 +87,6 @@ public static class FHE
         return (a, b);
     }
 
-    public static BGVCipher KAddBGV(BGVCipher cipher, Rq poly, Rational q)
-    {
-        var a = (cipher.A + poly).CoefsMod(q);
-        var b = (cipher.B).CoefsMod(q);
-        return (a, b);
-    }
-
     public static BGVCipher SubBGV(BGVCipher cipher0, BGVCipher cipher1, Rational q)
     {
         var a = (cipher0.A - cipher1.A).CoefsMod(q);
@@ -116,6 +108,13 @@ public static class FHE
         return (a, b);
     }
 
+    public static BGVCipher MulNaiveBGV(BGVCipher cipher0, BGVCipher cipher1, Rq pm, Rational q)
+    {
+        var a = (cipher0.A * cipher1.A).ResMod(pm).CoefsMod(q);
+        var b = (cipher0.B * cipher1.B).ResMod(pm).CoefsMod(q);
+        return (a, b);
+    }
+
     public static BGVCipher RLKBGV(Rq pm, Rq sk, Rational t, Rational q)
     {
         var n = pm.Degree;
@@ -125,7 +124,7 @@ public static class FHE
         return (c0, c1);
     }
 
-    public static BGVCipher MulBGV(BGVCipher cipher0, BGVCipher cipher1, Rq pm, Rational t, Rational q, BGVCipher rlk)
+    public static BGVCipher MulRelinBGV(BGVCipher cipher0, BGVCipher cipher1, Rq pm, Rational q, BGVCipher rlk)
     {
         var d0 = (cipher0.A * cipher1.A).ResMod(pm).CoefsMod(q);
         var d1 = (cipher0.A * cipher1.B + cipher0.B * cipher1.A).ResMod(pm).CoefsMod(q);
@@ -144,7 +143,7 @@ public static class FHE
     public static BGVCipher SwitchKeysBGV(BGVCipher cipher, Rq pm, Rational t, Rational q, BGVCipher pk, BGVCipher rlk,
         BGVCipher swk)
     {
-        return SubBGV((cipher.A, cipher.A.Zero), MulBGV(EncryptBGV(cipher.B, pm, t, q, pk), swk, pm, t, q, rlk), q);
+        return SubBGV((cipher.A, cipher.A.Zero), MulRelinBGV(EncryptBGV(cipher.B, pm, t, q, pk), swk, pm, q, rlk), q);
     }
 
     public static Dictionary<int, BGVCipher> AKBGV(Rq pm, Rq sk, Rational t, Rational q, BGVCipher pk)
@@ -183,11 +182,10 @@ public static class FHE
         var n = pm.Degree;
         var sgn = a > 0 || a % n == 0 ? 0 : 1;
         return (x.Pow(IntExt.AmodP(a, n)) * (-1).Pow(a / n + sgn)).CoefsMod(q);
-
     }
 
     public static BGVCipher BlindRotateBGV((Rational ai, Rational[] bi) ab, Rq f, Rq pm, Rational t, Rational q,
-        BGVCipher pk, BGVCipher rlk, (BGVCipher plus, BGVCipher minus)[] brk)
+        BGVCipher pk, (BGVCipher plus, BGVCipher minus)[] brk)
     {
         var n = pm.Degree;
         var x = pm.X;
@@ -211,25 +209,12 @@ public static class FHE
 
             var c0 = (encOne.A + cxai.A + cx_ai.A).ResMod(pm).CoefsMod(q);
             var c1 = (encOne.B + cxai.B + cx_ai.B).ResMod(pm).CoefsMod(q);
-            acc = MulBGV(acc, (c0, c1), pm, t, q, rlk);
+            acc = MulNaiveBGV(acc, (c0, c1), pm, q);
         }
 
         return acc;
     }
-
-    public static Rq Scale(Rq poly, Rq pm, Rational fact, Rational Q)
-    {
-        var q = Q / fact;
-        if (!q.IsInteger())
-            throw new($"q = Q/fact = {q} is not integer");
-        
-        var delta = poly.CoefsMod(fact);
-        return (delta + (poly - delta) / fact).CoefsMod(q);
-    }
-
-    public static BGVCipher Scale(BGVCipher cipher, Rq pm, Rational fact, Rational Q)
-        => (Scale(cipher.A, pm, fact, Q), Scale(cipher.B, pm, fact, Q));
-
+    
     static Rational[] ExtractArr(int i, Rq poly, int n)
     {
         return n.SeqLazy(start: i, step: -1).Select(j => j >= 0 ? poly[j] : -poly[n + j]).ToArray();

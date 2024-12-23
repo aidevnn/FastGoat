@@ -1,7 +1,7 @@
 using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.VecSpace;
-using FastGoat.UserGroup.Integers;
+using Rq = FastGoat.Structures.VecSpace.KPoly<FastGoat.UserGroup.Integers.Rational>;
 
 namespace FastGoat.UserGroup.Lattice;
 
@@ -14,15 +14,16 @@ public static class BGVtests
 
     public static void FirstBGV()
     {
-        var (n, q) = (16, 424242);
-        var p = n / 2 - 1;
-        var bgv = new BGV(n, p, q);
-        bgv.Show();
+        var (n, q0) = (16, 424242);
+        var t0 = n / 2 - 1;
+        var (pm, sk, t, q, pk, rlk) = FHE.KeyGenBGV(n, t0, q0);
+        FHE.Show(pm, sk, t, q, pk, rlk);
+        
         for (int i = 0; i < 100; i++)
         {
-            var mi = BGVPublic.GenUnif(n, p);
-            var ct = bgv.BGVpublic.Encrypt(mi);
-            var mf = bgv.Decrypt(ct);
+            var mi = FHE.GenUnif(n, t0);
+            var ct = FHE.EncryptBGV(mi, pm, t, q, pk);
+            var mf = FHE.DecryptBGV(ct, pm, sk, t);
             Console.WriteLine(mi);
             Console.WriteLine(mf);
             Console.WriteLine();
@@ -33,20 +34,21 @@ public static class BGVtests
 
     public static void HEAddBGV()
     {
-        var (n, p, q) = (16, 8, 2.Pow(6));
-        var bgv = new BGV(n, p, q);
-        bgv.Show();
-        var pub = bgv.BGVpublic;
+        var (n, q0) = (16, 424242);
+        var t0 = n / 2 - 1;
+        var (pm, sk, t, q, pk, rlk) = FHE.KeyGenBGV(n, t0, q0);
+        FHE.Show(pm, sk, t, q, pk, rlk);
 
         for (int i = 0; i < 100; ++i)
         {
-            var m1 = BGVPublic.GenUnif(n, p);
-            var m2 = BGVPublic.GenUnif(n, p);
-            var m1m2 = (m1 + m2).ResMod(pub.PM).CoefsMod(bgv.P);
-            var ct1 = pub.Encrypt(m1);
-            var ct2 = pub.Encrypt(m2);
+            var m1 = FHE.GenUnif(n, t0);
+            var m2 = FHE.GenUnif(n, t0);
+            var m1m2 = (m1 + m2).CoefsMod(t);
+            var ct1 = FHE.EncryptBGV(m1, pm, t, q, pk);
+            var ct2 = FHE.EncryptBGV(m2, pm, t, q, pk);
+            var ct = FHE.AddBGV(ct1, ct2, q);
 
-            var decrypt = bgv.Decrypt(pub.Add(ct1, ct2));
+            var decrypt = FHE.DecryptBGV(ct, pm, sk, t);
             Console.WriteLine($"m1 + m2:{m1m2}");
             Console.WriteLine($"decrypt:{decrypt}");
             Console.WriteLine();
@@ -57,20 +59,20 @@ public static class BGVtests
 
     public static void HEMulBGV()
     {
-        var (n, p, q) = (16, 8, 2.Pow(6));
-        var bgv = new BGV(n, p, q);
-        bgv.Show();
-        var pub = bgv.BGVpublic;
+        var (n, t0, q0) = (16, 8, 2.Pow(6));
+        var (pm, sk, t, q, pk, rlk) = FHE.KeyGenBGV(n, t0, q0);
+        FHE.Show(pm, sk, t, q, pk, rlk);
 
         for (int i = 0; i < 100; ++i)
         {
-            var m1 = BGVPublic.GenUnif(n, p);
-            var m2 = BGVPublic.GenUnif(n, p);
-            var m1m2 = (m1 * m2).ResMod(pub.PM).CoefsMod(bgv.P);
-            var ct1 = pub.Encrypt(m1);
-            var ct2 = pub.Encrypt(m2);
+            var m1 = FHE.GenUnif(n, t0);
+            var m2 = FHE.GenUnif(n, t0);
+            var m1m2 = (m1 * m2).ResMod(pm).CoefsMod(t);
+            var ct1 = FHE.EncryptBGV(m1, pm, t, q, pk);
+            var ct2 = FHE.EncryptBGV(m2, pm, t, q, pk);
+            var ct = FHE.MulRelinBGV(ct1, ct2, pm, q, rlk);
 
-            var decrypt = bgv.Decrypt(pub.Mul(ct1, ct2));
+            var decrypt = FHE.DecryptBGV(ct, pm, sk, t);
             Console.WriteLine($"m1 * m2:{m1m2}");
             Console.WriteLine($"decrypt:{decrypt}");
             Console.WriteLine();
@@ -79,19 +81,18 @@ public static class BGVtests
         }
     }
 
-    static void TrackingErrors(int n, int p, int q, int size = 100)
+    static void TrackingErrors(int n, int t0, int q0, int size = 100)
     {
-        var bgv = new BGV(n, p, q);
-        bgv.Show(showKeys: false);
-        var pub = bgv.BGVpublic;
+        var (pm, sk, t, q, pk, rlk) = FHE.KeyGenBGV(n, t0, q0);
+        FHE.Show(pm, sk, t, q, pk, rlk);
 
         Console.WriteLine($"Size {size}");
-        var seqMsg = size.SeqLazy().Select(_ => BGVPublic.GenUnif(n, p)).ToArray();
-        var seqCipher = seqMsg.Select(pub.Encrypt).ToArray();
-        var seqAddMsg = new List<KPoly<Rational>>();
-        var seqMulMsg = new List<KPoly<Rational>>();
-        var seqAddCipher = new List<(KPoly<Rational> ct0, KPoly<Rational> ct1)>();
-        var seqMulCipher = new List<(KPoly<Rational> ct0, KPoly<Rational> ct1)>();
+        var seqMsg = size.SeqLazy().Select(_ => FHE.GenUnif(n, t0)).ToArray();
+        var seqCipher = seqMsg.Select(m => FHE.EncryptBGV(m, pm, t, q, pk)).ToArray();
+        var seqAddMsg = new List<Rq>();
+        var seqMulMsg = new List<Rq>();
+        var seqAddCipher = new List<BGVCipher>();
+        var seqMulCipher = new List<BGVCipher>();
         for (int i = 0; i < size; i++)
         {
             if (i == 0)
@@ -103,18 +104,18 @@ public static class BGVtests
                 continue;
             }
 
-            seqAddMsg.Add((seqAddMsg.Last() + seqMsg[i]).CoefsMod(bgv.P));
-            seqMulMsg.Add((seqMulMsg.Last() * seqMsg[i]).ResMod(pub.PM).CoefsMod(bgv.P));
-            seqAddCipher.Add(pub.Add(seqAddCipher.Last(), seqCipher[i]));
-            seqMulCipher.Add(pub.Mul(seqMulCipher.Last(), seqCipher[i]));
+            seqAddMsg.Add((seqAddMsg.Last() + seqMsg[i]).CoefsMod(t));
+            seqMulMsg.Add((seqMulMsg.Last() * seqMsg[i]).ResMod(pm).CoefsMod(t));
+            seqAddCipher.Add(FHE.AddBGV(seqAddCipher.Last(), seqCipher[i], q));
+            seqMulCipher.Add(FHE.MulRelinBGV(seqMulCipher.Last(), seqCipher[i], pm, q, rlk));
         }
 
-        var seqAddDecrypt = seqAddCipher.Select(bgv.Decrypt).ToArray();
+        var seqAddDecrypt = seqAddCipher.Select(ct => FHE.DecryptBGV(ct, pm, sk, t)).ToArray();
         var setAdd = seqAddDecrypt.Select((c, i) => (c, i)).Where(e => !e.c.Equals(seqAddMsg[e.i])).SingleOrEmpty();
         var idxAdd = setAdd.Length == 0 ? "Empty" : $"At idx:{setAdd[0].i}";
         Console.WriteLine($"Add Cumulative first Error: {idxAdd}");
 
-        var seqMulDecrypt = seqMulCipher.Select(bgv.Decrypt).ToArray();
+        var seqMulDecrypt = seqMulCipher.Select(ct => FHE.DecryptBGV(ct, pm, sk, t)).ToArray();
         var setMul = seqMulDecrypt.Select((c, i) => (c, i)).Where(e => !e.c.Equals(seqMulMsg[e.i])).SingleOrEmpty();
         var idxMul = setMul.Length == 0 ? "Empty" : $"At idx:{setMul[0].i}";
         Console.WriteLine($"Mul Cumulative first Error: {idxMul}");
@@ -124,32 +125,31 @@ public static class BGVtests
 
     public static void TestTrackingErrors()
     {
-        TrackingErrors(16, 7, 35, 50);
+        TrackingErrors(16, 7, 35, 500);
         // TrackingErrors(16, 8, 8, 50);
     }
 
     public static void HEEvalAuto()
     {
-        var (n, p, q) = (16, 8, 2.Pow(6));
-        var bgv = new BGV(n, p, q);
-        var pub = bgv.BGVpublic;
-        bgv.Show();
-        var (N, P, Q, PM) = pub.Params_NPQ_PM;
-        var x = PM.X;
+        var (n, t0, q0) = (16, 8, 2.Pow(6));
+        var (pm, sk, t, q, pk, rlk) = FHE.KeyGenBGV(n, t0, q0);
+        FHE.Show(pm, sk, t, q, pk, rlk);
+        var ak = FHE.AKBGV(pm, sk, t, q, pk);
+        var x = pm.X;
 
-        foreach (var k in IntExt.Coprimes(2 * N))
+        foreach (var k in IntExt.Coprimes(2 * n))
         {
             var xk = x.Pow(k);
             for (var i = 0; i < 50; ++i)
             {
-                var m = BGVPublic.GenUnif(n, p);
-                var mk = m.Substitute(xk).ResMod(PM).CoefsMod(P);
+                var m = FHE.GenUnif(n, t0);
+                var mk = m.Substitute(xk).ResMod(pm).CoefsMod(t);
                 Console.WriteLine($"m   :{m}");
                 Console.WriteLine($"m^{k,2}:{mk}");
 
-                var cm = pub.Encrypt(m);
-                var ck = pub.EvalAuto(cm, k);
-                var dk = bgv.Decrypt(ck);
+                var cm = FHE.EncryptBGV(m, pm, t, q, pk);
+                var ck = FHE.AutoMorphBGV(cm, k, pm, t, q, pk, rlk, ak);
+                var dk = FHE.DecryptBGV(ck, pm, sk, t);
                 Console.WriteLine($"    :{dk}");
                 if (!dk.Equals(mk))
                     throw new($"k:{k} step[{i}] {dk.Div(mk)}");
@@ -161,25 +161,23 @@ public static class BGVtests
     
     public static void TestKeysExchange()
     {
-        var (n, p, q) = (16, 7, 35);
-        var bgv1 = new BGV(n, p, p * q);
-        var pub1 = bgv1.BGVpublic;
-        bgv1.Show();
+        var (n, t0, q0) = (16, 8, 2.Pow(6));
+        var (pm, sk1, t, q, pk1, rlk1) = FHE.KeyGenBGV(n, t0, q0);
+        FHE.Show(pm, sk1, t, q, pk1, rlk1);
 
-        var bgv2 = new BGV(n, p, p * q);
-        var pub2 = bgv2.BGVpublic;
-        bgv2.Show();
-        var s2s1 = bgv1.SwitchKeyGen(pub2);
-        var s1s2 = bgv2.SwitchKeyGen(pub1);
+        var (_, sk2, _, _, pk2, rlk2) = FHE.KeyGenBGV(n, t0, q0);
+        FHE.Show(pm, sk2, t, q, pk2, rlk2);
+        var s2s1 = FHE.SWKBGV(pm, sk1, t, q, pk2);
+        var s1s2 = FHE.SWKBGV(pm, sk2, t, q, pk1);
 
         for (int i = 0; i < 50; ++i)
         {
             {
-                var m = BGVPublic.GenUnif(n, p);
+                var m = FHE.GenUnif(n, t0);
                 Console.WriteLine($"m :{m}");
-                var cm = pub1.Encrypt(m);
+                var cm = FHE.EncryptBGV(m, pm, t, q, pk1);
 
-                var dm = bgv2.Decrypt(pub2.SwitchKey(cm, s2s1));
+                var dm = FHE.DecryptBGV(FHE.SwitchKeysBGV(cm, pm, t, q, pk2, rlk2, s2s1), pm, sk2, t);
                 Console.WriteLine($"  :{dm}");
 
                 if (!dm.Equals(m))
@@ -187,11 +185,11 @@ public static class BGVtests
             }
 
             {
-                var m = BGVPublic.GenUnif(n, p);
+                var m = FHE.GenUnif(n, t0);
                 Console.WriteLine($"m :{m}");
-                var cm = pub2.Encrypt(m);
+                var cm = FHE.EncryptBGV(m, pm, t, q, pk2);
 
-                var dm = bgv1.Decrypt(pub1.SwitchKey(cm, s1s2));
+                var dm = FHE.DecryptBGV(FHE.SwitchKeysBGV(cm, pm, t, q, pk1, rlk1, s1s2), pm, sk1, t);
                 Console.WriteLine($"  :{dm}");
 
                 if (!dm.Equals(m))
