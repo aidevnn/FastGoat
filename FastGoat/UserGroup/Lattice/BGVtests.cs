@@ -1,6 +1,7 @@
 using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.VecSpace;
+using FastGoat.UserGroup.Integers;
 using Rq = FastGoat.Structures.VecSpace.KPoly<FastGoat.UserGroup.Integers.Rational>;
 
 namespace FastGoat.UserGroup.Lattice;
@@ -198,6 +199,59 @@ public static class BGVtests
 
             Console.WriteLine();
         }
+    }
+    
+    public static void TestBlindRotate()
+    {
+        var l = 4;
+        var n = 1 << l;
+        var t0 = 2 * n;
+        var q0 = t0 * 3.Pow(3);
+        var (pm, sk, t, q, pk, rlk) = FHE.KeyGenBGV(n, t0, q0);
+        FHE.Show(pm, sk, t, q, pk, rlk);
+
+        var Q = 25 * t;
+        var delta = q / t;
+        Console.WriteLine(new { t, Q, delta });
+
+        var brk = FHE.BRKBGV(pm, sk, t, q, pk);
+
+        var x = pm.X;
+        var c = n / 4;
+        var f = (2 * c + 1).SeqLazy(-c).Select(j => delta * j * FHE.XpowA(j, pm, t))
+            .Aggregate(x.Zero, (acc, v) => acc + v).ResMod(pm).CoefsMod(t);
+        var nbDigits = $"{Q}".Length;
+        var fmt = $"{{0,{nbDigits}}}";
+        var set = new HashSet<int>();
+        var s = n.SeqLazy().Select(i => sk[i]).ToArray();
+
+        for (int k = 0; k < 50; ++k)
+        {
+            var ai = new Rational(IntExt.Rng.Next(1, t0));
+            var bi = n.SeqLazy().Select(_ => IntExt.Rng.Next(t0) * ai.One).ToArray();
+            var acc = FHE.BlindRotateBGV((ai, bi), f, pm, t, q, pk, rlk, brk);
+            var actual = FHE.DecryptBGV(acc, pm, sk, t);
+
+            Console.WriteLine($"f           :{f}");
+            Console.WriteLine($"f           :[{f.CoefsExtended(n - 1).Glue(", ", fmt)}]");
+            Console.WriteLine($"ai          :{ai}");
+            Console.WriteLine($"bi          :[{bi.Glue(", ", fmt)}]");
+            Console.WriteLine($"blind rotate:{actual}");
+            Console.WriteLine($"            :[{actual.CoefsExtended(n - 1).Glue(", ", fmt)}]");
+
+            // Testing result
+            var u = (ai - FHE.InnerProd(bi, s, t)).Mod(t);
+            var expected = (x.Pow((int)u.Num) * f).ResMod(pm).CoefsMod(t);
+            Console.WriteLine($"u= a - <b,s>:{u}");
+            Console.WriteLine($"f*X^{u,-2}      :{expected}");
+            Console.WriteLine($"f*X^{u,-2}      :[{expected.CoefsExtended(n - 1).Glue(", ", fmt)}]");
+            var factor = t0.SeqLazy(1).First(k0 => (k0 * actual).CoefsMod(t).Equals(expected));
+            Console.WriteLine($"factor      :{factor}");
+            Console.WriteLine();
+            set.Add(factor);
+        }
+
+        Console.WriteLine($"Factors:{set.Order().Glue(", ", fmt)}");
     }
 
     public static void TestAll()
