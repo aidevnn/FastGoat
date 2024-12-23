@@ -28,130 +28,6 @@ IEnumerable<int> DecompBase(BigInteger a, int b)
     } while (!a0.IsZero);
 }
 
-Rational InnerProd(Rational[] m0, Rational[] m1, Rational mod)
-    => m0.Zip(m1).Aggregate(Rational.KZero(), (acc, e) => (acc + e.First * e.Second).Mod(mod));
-
-void testBR()
-{
-    var l = 4;
-    var n = 1 << l;
-    var t0 = 2 * n;
-    var q0 = t0 * 3.Pow(3);
-    var (pm, sk, t, q, pk, rlk) = FHE.KeyGenBGV(n, t0, q0);
-    FHE.Show(pm, sk, t, q, pk, rlk);
-
-    var Q = 25 * t;
-    var delta = q / t;
-    Console.WriteLine(new { t, Q, delta });
-
-    var brk = FHE.BRKBGV(pm, sk, t, q, pk);
-
-    var x = pm.X;
-    var c = n / 4;
-    var f = (2 * c + 1).SeqLazy(-c).Select(j => delta * j * FHE.XpowA(j, pm, t))
-        .Aggregate(x.Zero, (acc, v) => acc + v).ResMod(pm).CoefsMod(t);
-    var nbDigits = $"{Q}".Length;
-    var fmt = $"{{0,{nbDigits}}}";
-    var set = new HashSet<int>();
-    var s = n.SeqLazy().Select(i => sk[i]).ToArray();
-
-    for (int k = 0; k < 50; ++k)
-    {
-        var ai = new Rational(IntExt.Rng.Next(1, t0));
-        var bi = n.SeqLazy().Select(_ => IntExt.Rng.Next(t0) * ai.One).ToArray();
-        var acc = FHE.BlindRotateBGV((ai, bi), f, pm, t, q, pk, brk);
-        var actual = FHE.DecryptBGV(acc, pm, sk, t);
-
-        Console.WriteLine($"f           :{f}");
-        Console.WriteLine($"f           :[{f.CoefsExtended(n - 1).Glue(", ", fmt)}]");
-        Console.WriteLine($"ai          :{ai}");
-        Console.WriteLine($"bi          :[{bi.Glue(", ", fmt)}]");
-        Console.WriteLine($"blind rotate:{actual}");
-        Console.WriteLine($"            :[{actual.CoefsExtended(n - 1).Glue(", ", fmt)}]");
-
-        // Testing result
-        var u = (ai - InnerProd(bi, s, t)).Mod(t);
-        var expected = (x.Pow((int)u.Num) * f).ResMod(pm).CoefsMod(t);
-        Console.WriteLine($"u= a - <b,s>:{u}");
-        Console.WriteLine($"f*X^{u,-2}      :{expected}");
-        Console.WriteLine($"f*X^{u,-2}      :[{expected.CoefsExtended(n - 1).Glue(", ", fmt)}]");
-        var factor = t0.SeqLazy(1).First(k0 => (k0 * actual).CoefsMod(t).Equals(expected));
-        Console.WriteLine($"factor      :{factor}");
-        Console.WriteLine();
-        set.Add(factor);
-    }
-
-    Console.WriteLine($"Factors:{set.Order().Glue(", ", fmt)}");
-}
-
-BGVCipher RepackingBGV(BGVCipher[] accs, int n, Rq pm, Rational t, Rational q, BGVCipher pk, BGVCipher rlk,
-    Dictionary<int, BGVCipher> ak)
-{
-    var N = pm.Degree;
-    var x = pm.X;
-    var CT = Ring.Matrix((x.One, x.One), N, N + 1);
-    for (int i = 0; i < n; i++)
-    {
-        CT[i, n] = accs[i];
-        for (int j = 1; j < N / n; j++)
-        {
-            // Console.WriteLine($"[i, n - 1]{(i, n - 1)} [i, j * n]{(i, j * n)}");
-            var exnj = FHE.XpowA(n * j, pm, t);
-            var c = FHE.KMulBGV(CT[i, i + j * n], exnj, pm, q);
-            CT[i, n] = FHE.AddBGV(c, CT[i, n], q);
-        }
-    }
-
-    for (int k = n; k > 1; k /= 2)
-    {
-        for (int i = 0; i < k / 2; i++)
-        {
-            // Console.WriteLine($"[i, k]{(i, k)} [i + k / 2, k]{(i + k / 2, k)} [i, k / 2]{(i, k / 2)}");
-            var expowk2 = FHE.XpowA(k / 2, pm, t);
-            var c0 = FHE.KMulBGV(CT[i + k / 2, k], expowk2, pm, q);
-            CT[i, k / 2] = FHE.AddBGV(CT[i, k], c0, q);
-
-            var c1 = FHE.KMulBGV(CT[i + k / 2, k], expowk2, pm, q);
-            var crot = FHE.AutoMorphBGV(FHE.SubBGV(CT[i, k], c1, q), 1 + 2 * N / k, pm, t, q, pk, rlk, ak);
-            CT[i, k / 2] = FHE.AddBGV(CT[i, k / 2], crot, q);
-        }
-    }
-
-    return CT[0, 1];
-}
-
-BGVCipher Bootstrapping(BGVCipher ct, Rq pm, Rational t, Rational q, Rational Q, BGVCipher pk, BGVCipher rlk,
-    (BGVCipher plus, BGVCipher minus)[] brk, Dictionary<int, BGVCipher> ak, int fact = 2)
-{
-    var n = pm.Degree;
-    var q1 = q / (fact * n);
-    if (!q1.IsInteger())
-        throw new();
-    
-    var ct1 = ct.CoefsMod(q1);
-    var ctprep = new BGVCipher((ct.A - ct1.A) / q1, (ct.B - ct1.B) / q1).CoefsMod(new(fact * n));
-    
-    // Step 1. Extraction
-    var extract = FHE.Extract(ctprep, n);
-
-    var delta = double.Sqrt(n * 4.0);
-    var gamma = q / 4 - q1 / 2 * delta;
-    var c = (int)(0.5 * (delta + 1) + gamma * q1.Inv());
-    var f = (2 * c + 1).SeqLazy(-c).Where(j => j != 0).Select(j => -q1 * j * FHE.XpowA(j, pm, q))
-        .Aggregate((v0, v1) => v0 + v1).ResMod(pm).CoefsMod(q);
-    
-    // Step 2. Blind Rotate
-    var seqBR = new List<BGVCipher>();
-    foreach (var ab in extract)
-        seqBR.Add(FHE.BlindRotateBGV(ab, f, pm, t, Q, pk, brk));
-
-    // Step 3. Repacking
-    var seqBR0 = seqBR.Select(cipher => new BGVCipher(cipher.A[0] * pm.One, cipher.B[0] * pm.One)).ToArray();
-    var ctsm = RepackingBGV(seqBR0, n, pm, q1, Q, pk, rlk, ak);
-    ctsm.Show("ctsm");
-    return FHE.AddBGV(ctsm, ct1, Q);
-}
-
 {
     var l = 4;
     var n = 1 << l;
@@ -160,7 +36,7 @@ BGVCipher Bootstrapping(BGVCipher ct, Rq pm, Rational t, Rational q, Rational Q,
     var (pm, sk, t, q, pk, rlk) = FHE.KeyGenBGV(n, t0, q0);
     FHE.Show(pm, sk, t, q, pk, rlk);
 
-    var Q = 8 * q;
+    var Q = 2 * q;
     var brk = FHE.BRKBGV(pm, sk, t, Q, pk);
     var ak = FHE.AKBGV(pm, sk, t, Q, pk);
     
@@ -170,7 +46,7 @@ BGVCipher Bootstrapping(BGVCipher ct, Rq pm, Rational t, Rational q, Rational Q,
         var cm1 = FHE.EncryptBGV(m1, pm, t, q, pk);
         cm1.Show($"ct m1:{m1}");
         
-        var ctboot = Bootstrapping(cm1, pm, t, q, Q, pk, rlk, brk, ak);
+        var ctboot = FHE.Bootstrapping(cm1, pm, t, q, Q, pk, rlk, brk, ak);
         // var ctbootq = ctboot.CoefsMod(q);
         var dec = FHE.DecryptBGV(ctboot, pm, sk, t);
         
@@ -182,3 +58,26 @@ BGVCipher Bootstrapping(BGVCipher ct, Rq pm, Rational t, Rational q, Rational Q,
             throw new("decrypt");
     }
 }
+
+// N = 16 t = 16 q = 2048
+// Private Key
+// -x^15 + x^14 + x^12 + x^11 - x^9 + x^8 + x^6 - x^5 + x^4 - x^3 - x^2 + x - 1
+// Public Key
+// 754*x^15 + 1382*x^14 + 1461*x^13 + 1971*x^12 + 111*x^11 + 216*x^10 + 990*x^9 + 189*x^8 + 520*x^7 + 1130*x^6 + 89*x^5 + 1280*x^4 + 1879*x^3 + 1108*x^2 + 1329*x + 1282
+// 169*x^15 + 1850*x^14 + 167*x^13 + 1496*x^12 + 1354*x^11 + 979*x^10 + 220*x^9 + 732*x^8 + 205*x^7 + 1328*x^6 + 123*x^5 + 1572*x^4 + 1125*x^3 + 1934*x^2 + 590*x + 7
+// Relinearisation Key
+// 37*x^15 + 671*x^14 + 1389*x^13 + 651*x^12 + 1841*x^11 + 1543*x^10 + 610*x^9 + 961*x^8 + 674*x^7 + 1739*x^6 + 919*x^5 + 1357*x^4 + 583*x^3 + 1908*x^2 + 1796*x + 523
+// 9*x^15 + 497*x^14 + 1932*x^13 + 347*x^12 + 1002*x^11 + 711*x^10 + 330*x^9 + 569*x^8 + 454*x^7 + 527*x^6 + 816*x^5 + 1034*x^4 + 1027*x^3 + 1065*x^2 + 1091*x + 1906
+// 
+// ct m1:5*x^15 + 14*x^14 + 13*x^13 + 10*x^12 + 13*x^11 + 12*x^10 + 10*x^9 + 2*x^8 + 3*x^7 + 4*x^6 + 9*x^5 + 2*x^4 + x^3 + 14*x^2 + 8*x + 12
+// A:685*x^15 + 256*x^14 + 607*x^13 + 477*x^12 + 1047*x^11 + 757*x^10 + 1110*x^9 + 760*x^8 + 716*x^7 + 423*x^6 + 919*x^5 + 971*x^4 + 1374*x^3 + 786*x^2 + 1834*x + 537
+// B:570*x^15 + 1666*x^14 + 83*x^13 + 407*x^12 + 582*x^11 + 1885*x^10 + 1749*x^9 + 563*x^8 + 560*x^7 + 744*x^6 + 1364*x^5 + 1530*x^4 + 1321*x^3 + 1472*x^2 + 605*x + 1596
+// ctsm
+// A:1735*x^15 + 462*x^14 + 429*x^13 + 1504*x^12 + 1182*x^11 + 1713*x^10 + 753*x^9 + 994*x^8 + 3387*x^7 + 1647*x^6 + 473*x^5 + 1892*x^4 + 3162*x^3 + 133*x^2 + 1817*x + 2179
+// B:2677*x^15 + 3122*x^14 + 860*x^13 + 921*x^12 + 1673*x^11 + 526*x^10 + 2593*x^9 + 2048*x^8 + 3052*x^7 + 1884*x^6 + 3590*x^5 + 59*x^4 + 3298*x^3 + 617*x^2 + 2617*x + 1507
+// ctboot Q = 4096
+// A:1780*x^15 + 462*x^14 + 460*x^13 + 1533*x^12 + 1205*x^11 + 1766*x^10 + 775*x^9 + 1050*x^8 + 3399*x^7 + 1686*x^6 + 496*x^5 + 1903*x^4 + 3192*x^3 + 151*x^2 + 1859*x + 2204
+// B:2735*x^15 + 3124*x^14 + 879*x^13 + 944*x^12 + 1679*x^11 + 555*x^10 + 2614*x^9 + 2099*x^8 + 3100*x^7 + 1924*x^6 + 3610*x^5 + 117*x^4 + 3339*x^3 + 617*x^2 + 2646*x + 1567
+// decrypt ctboot:5*x^15 + 14*x^14 + 13*x^13 + 10*x^12 + 13*x^11 + 12*x^10 + 10*x^9 + 2*x^8 + 3*x^7 + 4*x^6 + 9*x^5 + 2*x^4 + x^3 + 14*x^2 + 8*x + 12
+// m1            :5*x^15 + 14*x^14 + 13*x^13 + 10*x^12 + 13*x^11 + 12*x^10 + 10*x^9 + 2*x^8 + 3*x^7 + 4*x^6 + 9*x^5 + 2*x^4 + x^3 + 14*x^2 + 8*x + 12
+// 
