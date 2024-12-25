@@ -285,6 +285,33 @@ public static class BGVtests
         }
     }
 
+    public static void TestRgswMul()
+    {
+        var (n, t0, q0) = (16, 8, 2.Pow(6));
+        var (pm, sk, t, q, pk, rlk) = FHE.KeyGenBGV(n, t0, q0);
+        FHE.Show(pm, sk, t, q, pk, rlk);
+    
+        for (int l = 0; l < 50; ++l)
+        {
+            var m1 = FHE.GenUnif(n, t);
+            var cm1 = FHE.EncryptBGV(m1, pm, t, q, pk);
+        
+            var m2 = FHE.GenUnif(n, t);
+            var (csm2, cm2) = FHE.EncryptRgswBGV(m2, pm, t, q, pk);
+            var cm1m2 = FHE.SubBGV(FHE.KMulBGV(cm2, cm1.A, pm, q), FHE.KMulBGV(csm2, cm1.B, pm, q), q);
+
+            var m1m2 = (m1 * m2).ResMod(pm, t);
+            var dm1m2 = FHE.DecryptBGV(cm1m2, pm, sk, t);
+            Console.WriteLine($"m1  :{m1}");
+            Console.WriteLine($"m2  :{m2}");
+            Console.WriteLine($"m1m2:{m1m2}");
+            Console.WriteLine($"    :{dm1m2}");
+            Console.WriteLine();
+            if (!dm1m2.Equals(m1m2))
+                throw new($"diff:{(m1m2 - dm1m2).CoefsMod(q)}");
+        }
+    }
+
     public static void TestAll()
     {
         FirstBGV();
