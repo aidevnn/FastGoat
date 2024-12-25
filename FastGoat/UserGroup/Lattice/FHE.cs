@@ -92,7 +92,7 @@ public static class FHE
     {
         var cm = EncryptBGV(m, pm, t, q, pk);
         var ct = EncryptBGV(pm.Zero, pm, t, q, pk, noise);
-        var csm = (ct.A.CoefsMod(q), (ct.B - cm.A).CoefsMod(q));
+        var csm = (ct.A, (ct.B - m).CoefsMod(q));
         return (csm, cm);
     }
 
