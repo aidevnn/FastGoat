@@ -184,6 +184,16 @@ public static class FHE
             .ToArray();
     }
 
+    public static ((BGVCipher sp, BGVCipher p) plus, (BGVCipher sm, BGVCipher m) minus)[] 
+        BRKgswBGV(Rq pm, Rq sk, Rational t, Rational q, BGVCipher pk)
+    {
+        var enc = (int k) => EncryptRgswBGV(pm.One * k, pm, t, q, pk);
+        var n = pm.Degree;
+        return n.SeqLazy().Select(i => sk[i])
+            .Select(c => (plus: ((c - 1).IsZero() ? enc(1) : enc(0)), minus: ((c + 1).IsZero() ? enc(1) : enc(0))))
+            .ToArray();
+    }
+
     public static Rq XpowA(int a, Rq pm, Rational q)
     {
         var x = pm.X;
@@ -227,6 +237,45 @@ public static class FHE
         return acc;
     }
 
+    public static BGVCipher BlindRotateRgswBGV((Rational ai, Rational[] bi) ab, Rq f, Rq pm, Rational q, BGVCipher pk,
+         ((BGVCipher sp, BGVCipher p) plus, (BGVCipher sm, BGVCipher m) minus)[] brk)
+    {
+        var n = pm.Degree;
+        var x = pm.X;
+
+        var beta = ab.bi;
+        var alpha = (int)ab.ai.Num;
+        var xalpha = XpowA(alpha, pm, q);
+        (BGVCipher s, BGVCipher o) encOne = ((pm.Zero, -pm.One), (pm.One, pm.Zero));
+        BGVCipher acc = ((f * xalpha).ResMod(pm, q), x.Zero);
+
+        for (int i = 0; i < n; i++)
+        {
+            var ((encSi_sp, encSi_p), (encSi_sm, encSi_m)) = brk[i];
+
+            var ai = (int)beta[i].Opp().Mod(q).Num;
+            
+            var exai = (XpowA(ai, pm, q) - 1).CoefsMod(q);
+            var cxai_sp = KMulBGV(encSi_sp, exai, pm, q);
+            var cxai_p = KMulBGV(encSi_p, exai, pm, q);
+            
+            var ex_ai = (XpowA(-ai, pm, q) - 1).CoefsMod(q);
+            var cx_ai_sm = KMulBGV(encSi_sm, ex_ai, pm, q);
+            var cx_ai_m = KMulBGV(encSi_m, ex_ai, pm, q);
+            
+            var sa = (encOne.s.A + cxai_sp.A + cx_ai_sm.A).ResMod(pm, q);
+            var sb = (encOne.s.B + cxai_sp.B + cx_ai_sm.B).ResMod(pm, q);
+            var a = (encOne.o.A + cxai_p.A + cx_ai_m.A).ResMod(pm, q);
+            var b = (encOne.o.B + cxai_p.B + cx_ai_m.B).ResMod(pm, q);
+            
+            // acc = MulRelinBGV(acc, (c0, c1), pm, q, rlk);
+            acc = SubBGV(KMulBGV((a, b), acc.A, pm, q), KMulBGV((sa, sb), acc.B, pm, q), q);
+            
+        }
+
+        return acc;
+    }
+    
     static Rational[] ExtractArr(int i, Rq poly, int n)
     {
         return n.SeqLazy(start: i, step: -1).Select(j => j >= 0 ? poly[j] : -poly[n + j]).ToArray();
@@ -302,6 +351,41 @@ public static class FHE
         // Step 3. Repacking
         var seqBR0 = seqBR.Select(cipher => new BGVCipher(cipher.A[0] * pm.One, cipher.B[0] * pm.One)).ToArray();
         var ctsm = RepackingBGV(seqBR0, n, pm, q1, Q, pk, ak);
+        
+        return AddBGV(ctsm, ct1, Q);
+    }
+
+    public static BGVCipher BootstrappingRgsw(BGVCipher ct, Rq pm, Rational q, Rational Q, BGVCipher pk,
+        ((BGVCipher sp, BGVCipher p) plus, (BGVCipher sm, BGVCipher m) minus)[] brk, Dictionary<int, BGVCipher> ak, 
+        int fact = 2)
+    {
+        var n = pm.Degree;
+        var q1 = q / fact;
+        if (!q1.IsInteger())
+            throw new();
+    
+        var ct1 = ct.CoefsMod(q1);
+        var ctprep = new BGVCipher((ct.A - ct1.A) / q1, (ct.B - ct1.B) / q1).CoefsMod(new(fact));
+    
+        // Step 1. Extraction
+        var extract = Extract(ctprep, n);
+
+        var delta = double.Sqrt(n * 4.0);
+        var gamma = q / 4 - q1 / 2 * delta;
+        var c = (int)(0.5 * (delta + 1) + gamma * q1.Inv());
+        var f = (2 * c + 1).SeqLazy(-c).Where(j => j != 0).Select(j => -q1 * j * XpowA(j, pm, q))
+            .Aggregate((v0, v1) => v0 + v1).ResMod(pm, q);
+    
+        // Step 2. Blind Rotate
+        var seqBR = new List<BGVCipher>();
+        foreach (var ab in extract)
+            seqBR.Add(BlindRotateRgswBGV(ab, f, pm, Q, pk, brk));
+
+        // Step 3. Repacking
+        var seqBR0 = seqBR.Select(cipher => new BGVCipher(cipher.A[0] * pm.One, cipher.B[0] * pm.One)).ToArray();
+        var ctsm = RepackingBGV(seqBR0, n, pm, q1, Q, pk, ak);
+        ct1.Show("ct1");
+        ctsm.Show("ctsm");
         
         return AddBGV(ctsm, ct1, Q);
     }

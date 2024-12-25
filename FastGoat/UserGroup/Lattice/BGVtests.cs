@@ -228,7 +228,7 @@ public static class BGVtests
             var ai = new Rational(DistributionExt.Dice(1, t0));
             var bi = FHE.GenUnif(n, t0).CoefsExtended(n - 1);
             // var acc = FHE.BlindRotateBGV((ai, bi), f, pm, q, pk, rlk, brk);
-            var acc = FHE.BlindRotateRgswBGV((ai, bi), f, pm, q, pk, rlk, brk);
+            var acc = FHE.BlindRotateRgswBGV((ai, bi), f, pm, q, pk, brk);
             var actual = FHE.DecryptBGV(acc, pm, sk, t);
 
             Console.WriteLine($"f           :{f}");
@@ -265,7 +265,8 @@ public static class BGVtests
 
         var Q = 32 * q;
         var fact = 2 * n;
-        var brk = FHE.BRKBGV(pm, sk, t, Q, pk);
+        // var brk = FHE.BRKBGV(pm, sk, t, Q, pk);
+        var brk = FHE.BRKgswBGV(pm, sk, t, Q, pk);
         var ak = FHE.AKBGV(pm, sk, t, Q, pk);
 
         var nbTrial = 50;
@@ -275,7 +276,8 @@ public static class BGVtests
             var cm1 = FHE.EncryptBGV(m1, pm, t, q, pk);
             cm1.Show($"ct m1:{m1}");
 
-            var ctboot = FHE.Bootstrapping(cm1, pm, q, Q, pk, rlk, brk, ak, fact);
+            // var ctboot = FHE.Bootstrapping(cm1, pm, q, Q, pk, rlk, brk, ak, fact);
+            var ctboot = FHE.BootstrappingRgsw(cm1, pm, q, Q, pk, brk, ak, fact);
             ctboot.Show($"ctboot Q = {Q}");
             var decBoot = FHE.DecryptBGV(ctboot, pm, sk, t);
             
