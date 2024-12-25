@@ -26,7 +26,7 @@ public static class DistributionExt
     {
         var v = (int)BigInteger.Log2(max - min) + 1;
         var rnd = v.SeqLazy().Select(_ => Rng.Next(2)).Aggregate(BigInteger.Zero, (acc, i) => 2 * acc + i);
-        return BigInteger.Remainder(rnd, max - min) + min;
+        return BigInteger.Remainder(rnd, max - min + 1) + min;
     }
 
     /// <summary>
