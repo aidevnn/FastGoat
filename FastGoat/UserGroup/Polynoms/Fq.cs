@@ -45,7 +45,7 @@ public struct Fq : IGroup<EPoly<ZnInt>>
         get
         {
             if (us[0] is char x && F.x.Equals(x))
-                return new(F, F.X.Div(F).rem);
+                return X;
             if (us[0] is ValueTuple<char, int> e && F.x.Equals(e.Item1))
                 return X.Pow(e.Item2);
             if (us[0] is int k)
