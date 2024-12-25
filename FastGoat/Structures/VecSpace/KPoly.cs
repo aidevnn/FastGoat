@@ -3,7 +3,8 @@ using FastGoat.Commons;
 
 namespace FastGoat.Structures.VecSpace;
 
-public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<KPoly<K>>, IFieldElt<KPoly<K>>
+public readonly struct KPoly<K> : IElt<KPoly<K>>, IRingElt<KPoly<K>>, IFieldElt<KPoly<K>>, IModuleElt<K, KPoly<K>>,
+    IVsElt<K, KPoly<K>>
     where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
 {
     public static double Abs(KPoly<K> t)
@@ -113,7 +114,7 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
 
     public K Substitute(int k) => Substitute(k * KOne);
 
-    public T Substitute<T>(T f) where T : IVsElt<K, T>, IElt<T>, IRingElt<T>
+    public T Substitute<T>(T f) where T : IModuleElt<K, T>, IElt<T>, IRingElt<T>, IVsElt<K, T>
     {
         var g0 = f.One;
         var acc = f.Zero;
@@ -126,7 +127,8 @@ public readonly struct KPoly<K> : IVsElt<K, KPoly<K>>, IElt<KPoly<K>>, IRingElt<
         return acc;
     }
 
-    public KPoly<T> Substitute<T>(KPoly<T> f) where T : struct, IVsElt<K, T>, IElt<T>, IRingElt<T>, IFieldElt<T>
+    public KPoly<T> Substitute<T>(KPoly<T> f) 
+        where T : struct, IModuleElt<K, T>, IElt<T>, IRingElt<T>, IFieldElt<T>, IVsElt<K, T>
     {
         var poly = new KPoly<T>(f.x, f.KZero, Coefs.Select(k => k * f.KOne).ToArray());
         return poly.Substitute(f);

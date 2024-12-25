@@ -3,8 +3,8 @@ using FastGoat.UserGroup.Polynoms;
 
 namespace FastGoat.Structures.VecSpace;
 
-public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Polynomial<K, T>>,
-    IRingElt<Polynomial<K, T>>, IFieldElt<Polynomial<K, T>>
+public readonly struct Polynomial<K, T> : IElt<Polynomial<K, T>>, IRingElt<Polynomial<K, T>>, 
+    IFieldElt<Polynomial<K, T>>, IModuleElt<K, Polynomial<K, T>>, IVsElt<K, Polynomial<K, T>>
     where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     where T : struct, IElt<T>
 {
@@ -198,7 +198,8 @@ public readonly struct Polynomial<K, T> : IVsElt<K, Polynomial<K, T>>, IElt<Poly
         return poly;
     }
 
-    public Polynomial<U, T> Substitute<U>(U f, T xi) where U : struct, IElt<U>, IRingElt<U>, IFieldElt<U>, IVsElt<K, U>
+    public Polynomial<U, T> Substitute<U>(U f, T xi) 
+        where U : struct, IElt<U>, IRingElt<U>, IFieldElt<U>, IModuleElt<K, U>, IVsElt<K, U>
     {
         var poly = new Polynomial<U, T>(Indeterminates, f.Zero);
         foreach (var (m, c) in Coefs)

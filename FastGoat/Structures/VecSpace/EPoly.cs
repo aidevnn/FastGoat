@@ -1,6 +1,7 @@
 namespace FastGoat.Structures.VecSpace;
 
-public readonly struct EPoly<K> : IVsElt<K, EPoly<K>>, IElt<EPoly<K>>, IRingElt<EPoly<K>>, IFieldElt<EPoly<K>>
+public readonly struct EPoly<K> : IElt<EPoly<K>>, IRingElt<EPoly<K>>, IFieldElt<EPoly<K>>, IModuleElt<K, EPoly<K>>,
+    IVsElt<K, EPoly<K>>
     where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
 {
     public KPoly<K> F { get; }

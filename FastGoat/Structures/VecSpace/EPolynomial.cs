@@ -1,7 +1,7 @@
 namespace FastGoat.Structures.VecSpace;
 
-public readonly struct EPolynomial<K> : IVsElt<K, EPolynomial<K>>, IElt<EPolynomial<K>>,
-    IRingElt<EPolynomial<K>>, IFieldElt<EPolynomial<K>>
+public readonly struct EPolynomial<K> : IElt<EPolynomial<K>>, IRingElt<EPolynomial<K>>, IFieldElt<EPolynomial<K>>,
+    IModuleElt<K, EPolynomial<K>>, IVsElt<K, EPolynomial<K>>
     where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
 {
     public Polynomial<K, Xi> Num { get; }

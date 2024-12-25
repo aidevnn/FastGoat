@@ -1,7 +1,8 @@
 namespace FastGoat.Structures.VecSpace;
 
-public readonly struct FracPoly<K> : IVsElt<K, FracPoly<K>>, IElt<FracPoly<K>>, IRingElt<FracPoly<K>>,
-    IFieldElt<FracPoly<K>> where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+public readonly struct FracPoly<K> : IElt<FracPoly<K>>, IRingElt<FracPoly<K>>, IFieldElt<FracPoly<K>>,
+    IModuleElt<K, FracPoly<K>>, IVsElt<K, FracPoly<K>>
+    where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
 {
     public KPoly<K> Num { get; }
     public KPoly<K> Denom { get; }

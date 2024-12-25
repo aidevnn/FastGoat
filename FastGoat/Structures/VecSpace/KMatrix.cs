@@ -3,7 +3,8 @@ using FastGoat.Commons;
 
 namespace FastGoat.Structures.VecSpace;
 
-public struct KMatrix<K> : IVsElt<K, KMatrix<K>>, IElt<KMatrix<K>>, IRingElt<KMatrix<K>>, IFieldElt<KMatrix<K>>, IEnumerable<K>
+public struct KMatrix<K> : IElt<KMatrix<K>>, IRingElt<KMatrix<K>>, IFieldElt<KMatrix<K>>, IEnumerable<K>, 
+    IModuleElt<K, KMatrix<K>>, IVsElt<K, KMatrix<K>>
     where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
 {
     public K[,] Coefs { get; }

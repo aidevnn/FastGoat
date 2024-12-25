@@ -38,9 +38,9 @@ public interface IFieldElt<T> : IEquatable<T>, IComparable<T> where T : IElt<T>,
     static abstract bool IsValuedField { get; }
 }
 
-public interface IVsElt<K, T> : IEquatable<T>, IComparable<T>
-    where T : IElt<T>, IRingElt<T>, IVsElt<K, T>
-    where K : IElt<K>, IRingElt<K>, IFieldElt<K>
+public interface IModuleElt<K, T> : IEquatable<T>, IComparable<T>
+    where T : IElt<T>, IRingElt<T>, IModuleElt<K, T>
+    where K : IElt<K>, IRingElt<K>
 {
     K KZero { get; }
     K KOne { get; }
@@ -51,6 +51,12 @@ public interface IVsElt<K, T> : IEquatable<T>, IComparable<T>
     static abstract T operator -(K a, T b);
     static abstract T operator *(T a, K b);
     static abstract T operator *(K a, T b);
+}
+
+public interface IVsElt<K, T> : IEquatable<T>, IComparable<T>
+    where T : IElt<T>, IRingElt<T>, IModuleElt<K, T>, IVsElt<K, T>
+    where K : IElt<K>, IRingElt<K>, IFieldElt<K>
+{
     static abstract T operator /(T a, K b);
 }
 
@@ -68,7 +74,7 @@ public interface IFloatElt<K> : IEquatable<K>, IComparable<K> where K : IElt<K>,
     public static abstract K NthRoot(K r, int n);
 }
 
-public interface IFixedPrecisionElt<K> : IEquatable<K>, IComparable<K> 
+public interface IFixedPrecisionElt<K> : IEquatable<K>, IComparable<K>
     where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>, IFloatElt<K>, IFixedPrecisionElt<K>
 {
     static abstract K From<T>(T e) where T : IElt<T>, IRingElt<T>, IFieldElt<T>, IFloatElt<T>;

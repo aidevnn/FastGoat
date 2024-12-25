@@ -5,7 +5,8 @@ using FastGoat.UserGroup.Integers;
 
 namespace FastGoat.UserGroup.Floats;
 
-public readonly struct BigCplx : IElt<BigCplx>, IRingElt<BigCplx>, IFieldElt<BigCplx>, IVsElt<Rational, BigCplx>, IFloatElt<BigCplx>
+public readonly struct BigCplx : IElt<BigCplx>, IRingElt<BigCplx>, IFieldElt<BigCplx>, IModuleElt<Rational, BigCplx>,
+    IVsElt<Rational, BigCplx>, IFloatElt<BigCplx>
 {
 
     public static bool IsComplex => true;

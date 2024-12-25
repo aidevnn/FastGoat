@@ -13,7 +13,8 @@ public enum DisplayZnBInt
     Landau
 }
 
-public struct ZnBInt : IElt<ZnBInt>, IRingElt<ZnBInt>, IFieldElt<ZnBInt>, IVsElt<Rational, ZnBInt>
+public struct ZnBInt : IElt<ZnBInt>, IRingElt<ZnBInt>, IFieldElt<ZnBInt>, IModuleElt<Rational, ZnBInt>, 
+    IVsElt<Rational, ZnBInt>
 {
     public static DisplayZnBInt Display = DisplayZnBInt.Unsigned;
     public BigInteger Mod => Details.Mod;

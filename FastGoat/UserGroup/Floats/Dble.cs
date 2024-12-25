@@ -3,8 +3,8 @@ using FastGoat.UserGroup.Integers;
 
 namespace FastGoat.UserGroup.Floats;
 
-public readonly struct Dble : IElt<Dble>, IRingElt<Dble>, IFieldElt<Dble>, IVsElt<Rational, Dble>, 
-    IFloatElt<Dble>, IFixedPrecisionElt<Dble>
+public readonly struct Dble : IElt<Dble>, IRingElt<Dble>, IFieldElt<Dble>, IModuleElt<Rational, Dble>,
+    IVsElt<Rational, Dble>, IFloatElt<Dble>, IFixedPrecisionElt<Dble>
 {
     public override bool Equals(object? obj)
     {

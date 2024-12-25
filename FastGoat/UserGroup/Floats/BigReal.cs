@@ -11,7 +11,8 @@ public enum Rounding
     FixForm
 }
 
-public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<BigReal>, IVsElt<Rational, BigReal>, IFloatElt<BigReal>
+public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<BigReal>, IModuleElt<Rational, BigReal>, 
+    IVsElt<Rational, BigReal>, IFloatElt<BigReal>
 {
     public static DigitsForm Display = DigitsForm.Default;
 

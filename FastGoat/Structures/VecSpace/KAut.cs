@@ -6,7 +6,7 @@ public readonly struct KAut<K> : IElt<KAut<K>> where K : struct, IElt<K>, IRingE
     public EPoly<K> E { get; }
     public KAut<K> Clone => new(E.Clone);
 
-    public T Op<T>(T a) where T : struct, IElt<T>, IRingElt<T>, IVsElt<K, T> => E.Poly.Substitute(a);
+    public T Op<T>(T a) where T : struct, IElt<T>, IRingElt<T>, IModuleElt<K, T>, IVsElt<K, T> => E.Poly.Substitute(a);
 
     public KAut(KAutGroup<K> kaut, EPoly<K> e)
     {
