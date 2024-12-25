@@ -252,6 +252,39 @@ public static class BGVtests
         Console.WriteLine($"Factors:{set.Order().Glue(", ", fmt)}");
     }
 
+    public static void TestBootstrapping()
+    {
+        var l = 3;
+        var n = 1 << l;
+        var t0 = n / 2;
+        var q0 = 4 * n * n;
+        var (pm, sk, t, q, pk, rlk) = FHE.KeyGenBGV(n, t0, q0);
+        FHE.Show(pm, sk, t, q, pk, rlk);
+
+        var Q = 32 * q;
+        var fact = 2 * n;
+        var brk = FHE.BRKBGV(pm, sk, t, Q, pk);
+        var ak = FHE.AKBGV(pm, sk, t, Q, pk);
+
+        var nbTrial = 50;
+        for (int k = 0; k < nbTrial; ++k)
+        {
+            var m1 = FHE.GenUnif(n, t);
+            var cm1 = FHE.EncryptBGV(m1, pm, t, q, pk);
+            cm1.Show($"ct m1:{m1}");
+
+            var ctboot = FHE.Bootstrapping(cm1, pm, q, Q, pk, rlk, brk, ak, fact);
+            ctboot.Show($"ctboot Q = {Q}");
+            var decBoot = FHE.DecryptBGV(ctboot, pm, sk, t);
+            
+            Console.WriteLine($"decrypt ctboot:{decBoot}");
+            Console.WriteLine($"m1            :{m1}");
+            Console.WriteLine();
+            if (!decBoot.Equals(m1))
+                throw new("decrypt");
+        }
+    }
+
     public static void TestAll()
     {
         FirstBGV();
@@ -261,5 +294,6 @@ public static class BGVtests
         HEEvalAuto();
         TestKeysExchange();
         TestBlindRotate();
+        TestBootstrapping();
     }
 }
