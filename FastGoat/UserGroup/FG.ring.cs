@@ -380,6 +380,8 @@ public static partial class FG
 
     public static KPoly<Rational> CoefsMod(this KPoly<Rational> P, Rational Q)
         => P.Coefs.Select(c => c.Mod(Q)).ToKPoly();
+    public static KPoly<Rational> CoefsMod(this KPoly<Rational> P, int Q)
+        => P.Coefs.Select(c => c.Mod(Q)).ToKPoly();
     
     public static KPoly<Rational> ResMod(this KPoly<Rational> P, KPoly<Rational> F, Rational Q)
         => P.Div(F).rem.CoefsMod(Q);
