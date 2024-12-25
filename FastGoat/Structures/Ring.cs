@@ -258,6 +258,13 @@ public static partial class Ring
         return (G + (1 - F * G) * G).Div(F.X.Pow(N)).rem;
     }
 
+    public static Vec<T> ToVec<T>(this IEnumerable<T> ts) where T : IElt<T>, IRingElt<T> => new(ts.ToArray());
+    public static Vec<K> ToVec<K>(this KPoly<K> poly, int size) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        return new(poly.CoefsExtended(size));
+    }
+    public static Vec<K> ToVec<K>(this KPoly<K> poly) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+        => new(poly.Coefs.ToArray());
 
     public static MonomDisplay DisplayPolynomial { get; set; } = MonomDisplay.Default;
 }
