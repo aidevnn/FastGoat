@@ -381,6 +381,8 @@ public static partial class FG
     public static KPoly<Rational> CoefsMod(this KPoly<Rational> P, Rational Q)
         => P.Coefs.Select(c => c.Mod(Q)).ToKPoly();
     
+    public static KPoly<Rational> ResMod(this KPoly<Rational> P, KPoly<Rational> F, Rational Q)
+        => P.Div(F).rem.CoefsMod(Q);
     public static EPoly<Rational> EQPoly(char x, params int[] coefs) => EPoly(Rational.KZero(), x, coefs);
 
     public static FracPoly<Rational> QFracPoly(char x = 'x') => KFracPoly(x, Rational.KZero());

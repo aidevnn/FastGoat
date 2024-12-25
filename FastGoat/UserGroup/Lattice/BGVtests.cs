@@ -68,7 +68,7 @@ public static class BGVtests
         {
             var m1 = FHE.GenUnif(n, t0);
             var m2 = FHE.GenUnif(n, t0);
-            var m1m2 = (m1 * m2).ResMod(pm).CoefsMod(t);
+            var m1m2 = (m1 * m2).ResMod(pm, t);
             var ct1 = FHE.EncryptBGV(m1, pm, t, q, pk);
             var ct2 = FHE.EncryptBGV(m2, pm, t, q, pk);
             var ct = FHE.MulRelinBGV(ct1, ct2, pm, q, rlk);
@@ -106,7 +106,7 @@ public static class BGVtests
             }
 
             seqAddMsg.Add((seqAddMsg.Last() + seqMsg[i]).CoefsMod(t));
-            seqMulMsg.Add((seqMulMsg.Last() * seqMsg[i]).ResMod(pm).CoefsMod(t));
+            seqMulMsg.Add((seqMulMsg.Last() * seqMsg[i]).ResMod(pm, t));
             seqAddCipher.Add(FHE.AddBGV(seqAddCipher.Last(), seqCipher[i], q));
             seqMulCipher.Add(FHE.MulRelinBGV(seqMulCipher.Last(), seqCipher[i], pm, q, rlk));
         }
@@ -144,12 +144,12 @@ public static class BGVtests
             for (var i = 0; i < 50; ++i)
             {
                 var m = FHE.GenUnif(n, t0);
-                var mk = m.Substitute(xk).ResMod(pm).CoefsMod(t);
+                var mk = m.Substitute(xk).ResMod(pm, t);
                 Console.WriteLine($"m   :{m}");
                 Console.WriteLine($"m^{k,2}:{mk}");
 
                 var cm = FHE.EncryptBGV(m, pm, t, q, pk);
-                var ck = FHE.AutoMorphBGV(cm, k, pm, t, q, pk, rlk, ak);
+                var ck = FHE.AutoMorphBGV(cm, k, pm, t, q, pk, ak);
                 var dk = FHE.DecryptBGV(ck, pm, sk, t);
                 Console.WriteLine($"    :{dk}");
                 if (!dk.Equals(mk))
@@ -170,7 +170,7 @@ public static class BGVtests
         FHE.Show(pm, sk2, t, q, pk2, rlk2);
         var s2s1 = FHE.SWKBGV(pm, sk1, t, q, pk2);
         var s1s2 = FHE.SWKBGV(pm, sk2, t, q, pk1);
-
+        
         for (int i = 0; i < 50; ++i)
         {
             {
@@ -178,7 +178,7 @@ public static class BGVtests
                 Console.WriteLine($"m :{m}");
                 var cm = FHE.EncryptBGV(m, pm, t, q, pk1);
 
-                var dm = FHE.DecryptBGV(FHE.SwitchKeysBGV(cm, pm, t, q, pk2, rlk2, s2s1), pm, sk2, t);
+                var dm = FHE.DecryptBGV(FHE.SwitchKeysBGV(cm, pm, t, q, pk2, s2s1), pm, sk2, t);
                 Console.WriteLine($"  :{dm}");
 
                 if (!dm.Equals(m))
@@ -190,7 +190,7 @@ public static class BGVtests
                 Console.WriteLine($"m :{m}");
                 var cm = FHE.EncryptBGV(m, pm, t, q, pk2);
 
-                var dm = FHE.DecryptBGV(FHE.SwitchKeysBGV(cm, pm, t, q, pk1, rlk1, s1s2), pm, sk1, t);
+                var dm = FHE.DecryptBGV(FHE.SwitchKeysBGV(cm, pm, t, q, pk1, s1s2), pm, sk1, t);
                 Console.WriteLine($"  :{dm}");
 
                 if (!dm.Equals(m))
@@ -205,31 +205,28 @@ public static class BGVtests
     {
         var l = 4;
         var n = 1 << l;
-        var t0 = 2 * n;
-        var q0 = t0 * 3.Pow(3);
+        var t0 = 8;
+        var q0 = n * 8;
         var (pm, sk, t, q, pk, rlk) = FHE.KeyGenBGV(n, t0, q0);
         FHE.Show(pm, sk, t, q, pk, rlk);
-
-        var Q = 25 * t;
-        var delta = q / t;
-        Console.WriteLine(new { t, Q, delta });
 
         var brk = FHE.BRKBGV(pm, sk, t, q, pk);
 
         var x = pm.X;
         var c = n / 4;
-        var f = (2 * c + 1).SeqLazy(-c).Select(j => delta * j * FHE.XpowA(j, pm, t))
-            .Aggregate(x.Zero, (acc, v) => acc + v).ResMod(pm).CoefsMod(t);
-        var nbDigits = $"{Q}".Length;
+        var f = (2 * c + 1).SeqLazy(-c).Select(j => j * FHE.XpowA(j, pm, t))
+            .Aggregate(x.Zero, (acc, v) => acc + v).ResMod(pm, t);
+        // f = FHE.GenUnif(n, t);
+        var nbDigits = $"{q}".Length;
         var fmt = $"{{0,{nbDigits}}}";
         var set = new HashSet<int>();
-        var s = n.SeqLazy().Select(i => sk[i]).ToArray();
+        var s = n.SeqLazy().Select(i => sk[i].Mod(q)).ToArray();
 
         for (int k = 0; k < 50; ++k)
         {
-            var ai = new Rational(IntExt.Rng.Next(1, t0));
-            var bi = n.SeqLazy().Select(_ => IntExt.Rng.Next(t0) * ai.One).ToArray();
-            var acc = FHE.BlindRotateBGV((ai, bi), f, pm, t, q, pk, rlk, brk);
+            var ai = new Rational(DistributionExt.Dice(1, t0));
+            var bi = FHE.GenUnif(n, t0).CoefsExtended(n - 1);
+            var acc = FHE.BlindRotateBGV((ai, bi), f, pm, q, pk, rlk, brk);
             var actual = FHE.DecryptBGV(acc, pm, sk, t);
 
             Console.WriteLine($"f           :{f}");
@@ -240,12 +237,13 @@ public static class BGVtests
             Console.WriteLine($"            :[{actual.CoefsExtended(n - 1).Glue(", ", fmt)}]");
 
             // Testing result
-            var u = (ai - FHE.InnerProd(bi, s, t)).Mod(t);
-            var expected = (x.Pow((int)u.Num) * f).ResMod(pm).CoefsMod(t);
+            var u = (ai - FHE.InnerProd(bi, s, q)).Mod(q);
+            var u0 = (int)u.Num;
+            var expected = (FHE.XpowA(u0, pm, q) * f).ResMod(pm, t);
             Console.WriteLine($"u= a - <b,s>:{u}");
             Console.WriteLine($"f*X^{u,-2}      :{expected}");
             Console.WriteLine($"f*X^{u,-2}      :[{expected.CoefsExtended(n - 1).Glue(", ", fmt)}]");
-            var factor = t0.SeqLazy(1).First(k0 => (k0 * actual).CoefsMod(t).Equals(expected));
+            var factor = ((int)q.Num).SeqLazy(1).First(k0 => (k0 * actual).CoefsMod(q).Equals(expected));
             Console.WriteLine($"factor      :{factor}");
             Console.WriteLine();
             set.Add(factor);
@@ -262,5 +260,6 @@ public static class BGVtests
         TestTrackingErrors();
         HEEvalAuto();
         TestKeysExchange();
+        TestBlindRotate();
     }
 }
