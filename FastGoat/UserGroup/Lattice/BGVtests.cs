@@ -210,7 +210,8 @@ public static class BGVtests
         var (pm, sk, t, q, pk, rlk) = FHE.KeyGenBGV(n, t0, q0);
         FHE.Show(pm, sk, t, q, pk, rlk);
 
-        var brk = FHE.BRKBGV(pm, sk, t, q, pk);
+        // var brk = FHE.BRKBGV(pm, sk, t, q, pk);
+        var brk = FHE.BRKgswBGV(pm, sk, t, q, pk);
 
         var x = pm.X;
         var c = n / 4;
@@ -226,7 +227,8 @@ public static class BGVtests
         {
             var ai = new Rational(DistributionExt.Dice(1, t0));
             var bi = FHE.GenUnif(n, t0).CoefsExtended(n - 1);
-            var acc = FHE.BlindRotateBGV((ai, bi), f, pm, q, pk, rlk, brk);
+            // var acc = FHE.BlindRotateBGV((ai, bi), f, pm, q, pk, rlk, brk);
+            var acc = FHE.BlindRotateRgswBGV((ai, bi), f, pm, q, pk, rlk, brk);
             var actual = FHE.DecryptBGV(acc, pm, sk, t);
 
             Console.WriteLine($"f           :{f}");
