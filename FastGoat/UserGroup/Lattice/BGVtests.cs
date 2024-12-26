@@ -160,7 +160,7 @@ public static class BGVtests
         }
     }
     
-    public static void TestKeysExchange()
+    public static void TestSwitchKeys()
     {
         var (n, t0, q0) = (16, 8, 2.Pow(6));
         var (pm, sk1, t, q, pk1, rlk1) = FHE.KeyGenBGV(n, t0, q0);
@@ -323,7 +323,7 @@ public static class BGVtests
         HEMulBGV();
         TestTrackingErrors();
         HEEvalAuto();
-        TestKeysExchange();
+        TestSwitchKeys();
         TestRgswMul();
         TestBlindRotate();
         TestBootstrapping();
