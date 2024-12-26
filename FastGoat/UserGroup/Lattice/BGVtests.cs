@@ -82,6 +82,38 @@ public static class BGVtests
         }
     }
 
+    public static void HEMul2BGV()
+    {
+        var (n, t0, q0) = (16, 8, 2.Pow(6));
+        var (pm, sk, t, q, pk, rlk) = FHE.KeyGenBGV(n, t0, q0);
+        FHE.Show(pm, sk, t, q, pk, rlk);
+
+        // var (esk2, esk) = FHE.EncryptRgswBGV(sk, pm, t, q, pk);
+        var esk = FHE.EncryptBGV(sk, pm, t, q, pk);
+        var esk2 = FHE.EncryptBGV((sk * sk).ResMod(pm, t), pm, t, q, pk);
+
+        for (int i = 0; i < 100; ++i)
+        {
+            var m1 = FHE.GenUnif(n, t0);
+            var m2 = FHE.GenUnif(n, t0);
+            var m1m2 = (m1 * m2).ResMod(pm, t);
+            var cm1 = FHE.EncryptBGV(m1, pm, t, q, pk);
+            var cm2 = FHE.EncryptBGV(m2, pm, t, q, pk);
+            
+            var scm2 = FHE.SubBGV(FHE.KMulBGV(esk, cm2.A, pm, q), FHE.KMulBGV(esk2, cm2.B, pm, q), q);
+            var cm1m2 = FHE.SubBGV(FHE.KMulBGV(cm2, cm1.A, pm, q), FHE.KMulBGV(scm2, cm1.B, pm, q), q);
+            // var scm2 = cm2.A * esk - cm2.B * esk2;
+            // var cm1m2 = cm1.A * cm2 - cm1.B * scm2;
+
+            var decrypt = FHE.DecryptBGV(cm1m2, pm, sk, t);
+            Console.WriteLine($"m1 * m2:{m1m2}");
+            Console.WriteLine($"decrypt:{decrypt}");
+            Console.WriteLine();
+            if (!(decrypt - m1m2).IsZero())
+                throw new($"step[{i}]");
+        }
+    }
+
     static void TrackingErrors(int n, int t0, int q0, int size = 100)
     {
         var (pm, sk, t, q, pk, rlk) = FHE.KeyGenBGV(n, t0, q0);
