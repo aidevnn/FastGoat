@@ -45,4 +45,6 @@ public readonly struct Xi : IElt<Xi>
     public override int GetHashCode() => Hash;
     public override string ToString() => xi;
     public int Hash { get; }
+
+    public static implicit operator Xi(string s) => new(s);
 }
