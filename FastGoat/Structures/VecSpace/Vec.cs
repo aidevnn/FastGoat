@@ -116,6 +116,16 @@ public readonly struct Vec<A> : IEnumerable<A>, IElt<Vec<A>>, IRingElt<Vec<A>>, 
         return new(v);
     }
 
+    public Vec<U> MulA<T, U>(U u)
+        where U : IElt<U>, IRingElt<U>, IModuleElt<T, U>
+        where T : IElt<T>, IRingElt<T>, IModuleElt<A, T>
+    {
+        var t = V;
+        var o = u.KOne;
+        var v = Length.SeqLazy().Select(i => (t[i] * o) * u).ToArray();
+        return new(v);
+    }
+
     public Vec<U> Mul2A<U>(Vec<U> u, int size) where U : IElt<U>, IRingElt<U>, IModuleElt<A, U>
     {
         var idx = Length.SeqLazy().Grid2D(u.Length.SeqLazy()).Where(e => e.t1 + e.t2 <= size)
