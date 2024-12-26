@@ -49,7 +49,7 @@ public static class FHE
         var e = GenDiscrGauss(n);
         var c1 = GenUnif(n, q);
         var c0 = (t * e + c1 * sk).ResMod(pm, q);
-        return (c0, c1);
+        return (c0, c1, pm, q);
     }
 
     public static BGVCipher RLKBGV(Rq pm, Rq sk, Rational t, Rational q)
@@ -58,7 +58,7 @@ public static class FHE
         var e = GenDiscrGauss(n);
         var c1 = GenUnif(n, q.Num);
         var c0 = (t * e + c1 * sk + sk.Pow(2)).ResMod(pm, q);
-        return (c0, c1);
+        return (c0, c1, pm, q);
     }
 
     public static (Rq pm, Rq sk, Rational t, Rational q, BGVCipher pk, BGVCipher rlk) KeyGenBGV(int n, int t, int q)
@@ -84,7 +84,7 @@ public static class FHE
 
         var a = (u * pk.A + m + t * ea).ResMod(pm, q);
         var b = (u * pk.B + t * eb).ResMod(pm, q);
-        return (a, b);
+        return (a, b, pm, q);
     }
 
     public static (BGVCipher csm, BGVCipher cm) EncryptRgswBGV(Rq m, Rq pm, Rational t, Rational q, BGVCipher pk, 
@@ -92,7 +92,7 @@ public static class FHE
     {
         var cm = EncryptBGV(m, pm, t, q, pk);
         var ct = EncryptBGV(pm.Zero, pm, t, q, pk, noise);
-        var csm = (ct.A, (ct.B - m).CoefsMod(q));
+        var csm = (ct.A, (ct.B - m).CoefsMod(q), pm, q);
         return (csm, cm);
     }
 
@@ -105,35 +105,35 @@ public static class FHE
     {
         var a = (cipher0.A + cipher1.A).CoefsMod(q);
         var b = (cipher0.B + cipher1.B).CoefsMod(q);
-        return (a, b);
+        return (a, b, cipher0.PM, q);
     }
 
     public static BGVCipher SubBGV(BGVCipher cipher0, BGVCipher cipher1, Rational q)
     {
         var a = (cipher0.A - cipher1.A).CoefsMod(q);
         var b = (cipher0.B - cipher1.B).CoefsMod(q);
-        return (a, b);
+        return (a, b, cipher0.PM, q);
     }
 
     public static BGVCipher KMulBGV(BGVCipher cipher, Rational k, Rational q)
     {
         var a = (cipher.A * k).CoefsMod(q);
         var b = (cipher.B * k).CoefsMod(q);
-        return (a, b);
+        return (a, b, cipher.PM, q);
     }
 
     public static BGVCipher KMulBGV(BGVCipher cipher, Rq k, Rq pm, Rational q)
     {
         var a = (cipher.A * k).ResMod(pm, q);
         var b = (cipher.B * k).ResMod(pm, q);
-        return (a, b);
+        return (a, b, pm, q);
     }
 
     public static BGVCipher MulNaiveBGV(BGVCipher cipher0, BGVCipher cipher1, Rq pm, Rational q)
     {
         var a = (cipher0.A * cipher1.A).ResMod(pm, q);
         var b = (cipher0.B * cipher1.B).ResMod(pm, q);
-        return (a, b);
+        return (a, b, pm, q);
     }
 
     public static BGVCipher MulRelinBGV(BGVCipher cipher0, BGVCipher cipher1, Rq pm, Rational q, BGVCipher rlk)
@@ -144,7 +144,7 @@ public static class FHE
 
         var a = (d0 + d2 * rlk.A).ResMod(pm, q);
         var b = (d1 + d2 * rlk.B).ResMod(pm, q);
-        return (a, b);
+        return (a, b, pm, q);
     }
 
     public static BGVCipher SWKBGV(Rq pm, Rq sk, Rational t, Rational q, BGVCipher pk)
@@ -154,7 +154,7 @@ public static class FHE
 
     public static BGVCipher SwitchKeysBGV(BGVCipher cipher, Rq pm, Rational t, Rational q, BGVCipher pk, BGVCipher swk)
     {
-        return SubBGV((cipher.A, cipher.A.Zero), KMulBGV(swk, cipher.B, pm, q), q);
+        return SubBGV((cipher.A, cipher.A.Zero, pm, q), KMulBGV(swk, cipher.B, pm, q), q);
     }
 
     public static Dictionary<int, BGVCipher> AKBGV(Rq pm, Rq sk, Rational t, Rational q, BGVCipher pk)
@@ -172,7 +172,7 @@ public static class FHE
         var xk = pm.X.Pow(k);
         var a = cipher.A.Substitute(xk).ResMod(pm, q);
         var b = cipher.B.Substitute(xk).ResMod(pm, q);
-        return SwitchKeysBGV((a, b), pm, t, q, pk, ak[k]);
+        return SwitchKeysBGV((a, b, pm, q), pm, t, q, pk, ak[k]);
     }
 
     public static (BGVCipher plus, BGVCipher minus)[] BRKBGV(Rq pm, Rq sk, Rational t, Rational q, BGVCipher pk)
@@ -214,8 +214,8 @@ public static class FHE
         var beta = ab.bi;
         var alpha = (int)ab.ai.Num;
         var xalpha = XpowA(alpha, pm, q);
-        BGVCipher encOne = (x.One, x.Zero);
-        BGVCipher acc = ((f * xalpha).ResMod(pm, q), x.Zero);
+        BGVCipher encOne = (x.One, x.Zero, pm, q);
+        BGVCipher acc = ((f * xalpha).ResMod(pm, q), x.Zero, pm, q);
 
         for (int i = 0; i < n; i++)
         {
@@ -231,7 +231,7 @@ public static class FHE
             var c0 = (encOne.A + cxai.A + cx_ai.A).ResMod(pm, q);
             var c1 = (encOne.B + cxai.B + cx_ai.B).ResMod(pm, q);
             
-            acc = MulRelinBGV(acc, (c0, c1), pm, q, rlk);
+            acc = MulRelinBGV(acc, (c0, c1, pm, q), pm, q, rlk);
         }
 
         return acc;
@@ -246,8 +246,8 @@ public static class FHE
         var beta = ab.bi;
         var alpha = (int)ab.ai.Num;
         var xalpha = XpowA(alpha, pm, q);
-        (BGVCipher s, BGVCipher o) encOne = ((pm.Zero, -pm.One), (pm.One, pm.Zero));
-        BGVCipher acc = ((f * xalpha).ResMod(pm, q), x.Zero);
+        (BGVCipher s, BGVCipher o) encOne = ((pm.Zero, -pm.One, pm, q), (pm.One, pm.Zero, pm, q));
+        BGVCipher acc = ((f * xalpha).ResMod(pm, q), x.Zero, pm, q);
 
         for (int i = 0; i < n; i++)
         {
@@ -268,8 +268,7 @@ public static class FHE
             var a = (encOne.o.A + cxai_p.A + cx_ai_m.A).ResMod(pm, q);
             var b = (encOne.o.B + cxai_p.B + cx_ai_m.B).ResMod(pm, q);
             
-            // acc = MulRelinBGV(acc, (c0, c1), pm, q, rlk);
-            acc = SubBGV(KMulBGV((a, b), acc.A, pm, q), KMulBGV((sa, sb), acc.B, pm, q), q);
+            acc = SubBGV(KMulBGV((a, b, pm, q), acc.A, pm, q), KMulBGV((sa, sb, pm, q), acc.B, pm, q), q);
             
         }
 
@@ -291,7 +290,7 @@ public static class FHE
     {
         var N = pm.Degree;
         var x = pm.X;
-        var cOne = new BGVCipher(x.One, x.One);
+        var cOne = new BGVCipher(x.One, x.Zero, pm, q);
         var CT = Ring.Matrix(cOne, N, N + 1);
         for (int i = 0; i < n; i++)
         {
@@ -332,7 +331,7 @@ public static class FHE
             throw new();
     
         var ct1 = ct.CoefsMod(q1);
-        var ctprep = new BGVCipher((ct.A - ct1.A) / q1, (ct.B - ct1.B) / q1).CoefsMod(new(fact));
+        var ctprep = new BGVCipher((ct.A - ct1.A) / q1, (ct.B - ct1.B) / q1, pm, q).CoefsMod(new(fact));
     
         // Step 1. Extraction
         var extract = Extract(ctprep, n);
@@ -349,7 +348,7 @@ public static class FHE
             seqBR.Add(BlindRotateBGV(ab, f, pm, Q, pk, rlk, brk));
 
         // Step 3. Repacking
-        var seqBR0 = seqBR.Select(cipher => new BGVCipher(cipher.A[0] * pm.One, cipher.B[0] * pm.One)).ToArray();
+        var seqBR0 = seqBR.Select(cipher => new BGVCipher(cipher.A[0] * pm.One, cipher.B[0] * pm.One, pm, q)).ToArray();
         var ctsm = RepackingBGV(seqBR0, n, pm, q1, Q, pk, ak);
         
         return AddBGV(ctsm, ct1, Q);
@@ -365,7 +364,7 @@ public static class FHE
             throw new();
     
         var ct1 = ct.CoefsMod(q1);
-        var ctprep = new BGVCipher((ct.A - ct1.A) / q1, (ct.B - ct1.B) / q1).CoefsMod(new(fact));
+        var ctprep = new BGVCipher((ct.A - ct1.A) / q1, (ct.B - ct1.B) / q1, pm, q).CoefsMod(new(fact));
     
         // Step 1. Extraction
         var extract = Extract(ctprep, n);
@@ -382,7 +381,7 @@ public static class FHE
             seqBR.Add(BlindRotateRgswBGV(ab, f, pm, Q, pk, brk));
 
         // Step 3. Repacking
-        var seqBR0 = seqBR.Select(cipher => new BGVCipher(cipher.A[0] * pm.One, cipher.B[0] * pm.One)).ToArray();
+        var seqBR0 = seqBR.Select(cipher => new BGVCipher(cipher.A[0] * pm.One, cipher.B[0] * pm.One, pm, q)).ToArray();
         var ctsm = RepackingBGV(seqBR0, n, pm, q1, Q, pk, ak);
         ct1.Show("ct1");
         ctsm.Show("ctsm");
@@ -398,7 +397,7 @@ public static class FHE
 
     public static BGVCipher Rescale(BGVCipher cipher, Rational q)
     {
-        return ((cipher.A / q).RoundPoly(), (cipher.B / q).RoundPoly());
+        return ((cipher.A / q).RoundPoly(), (cipher.B / q).RoundPoly(), cipher.PM, q);
     }
     public static Rq Signed(Rq poly, Rational q) => poly.Coefs.Select(c => 2 * c > q ? c - q : c).ToKPoly();
 
@@ -426,12 +425,8 @@ public static class FHE
 
         Console.WriteLine("Private Key");
         Console.WriteLine(sk);
-        Console.WriteLine("Public Key");
-        Console.WriteLine(pk.A);
-        Console.WriteLine(pk.B);
-        Console.WriteLine("Relinearisation Key");
-        Console.WriteLine(rlk.A);
-        Console.WriteLine(rlk.B);
+        pk.Show("Public Key");
+        rlk.Show("Relinearisation Key");
         Console.WriteLine();
     }
 }

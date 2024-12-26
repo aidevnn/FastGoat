@@ -324,6 +324,7 @@ public static class BGVtests
         TestTrackingErrors();
         HEEvalAuto();
         TestKeysExchange();
+        TestRgswMul();
         TestBlindRotate();
         TestBootstrapping();
     }
