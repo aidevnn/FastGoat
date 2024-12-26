@@ -12,6 +12,7 @@ public readonly struct BGVCipher : IElt<BGVCipher>, IRingElt<BGVCipher>, IModule
     public Rq B { get; }
     public Rq PM { get; }
     public Rational Q { get; }
+    public (Rq pm, Rational q) PM_Q => (PM, Q);
 
     public BGVCipher(Rq a, Rq b, Rq pm, Rational q)
     {
@@ -45,7 +46,7 @@ public readonly struct BGVCipher : IElt<BGVCipher>, IRingElt<BGVCipher>, IModule
     public Rq KZero => PM.Zero;
     public Rq KOne => PM.One;
 
-    public BGVCipher KMul(Rq k) => new(k * A, k * B, PM, Q);
+    public BGVCipher KMul(Rq k) => new((k * A).ResMod(PM, Q), (k * B).ResMod(PM, Q), PM, Q);
 
     public BGVCipher Zero => new(PM.Zero, PM.Zero, PM, Q);
     public BGVCipher One => new(PM.One, PM.Zero, PM, Q);
