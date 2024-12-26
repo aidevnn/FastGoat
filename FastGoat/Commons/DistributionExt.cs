@@ -14,7 +14,7 @@ public static class DistributionExt
     /// <param name="min">The minimum value.</param>
     /// <param name="max">The maximum value.</param>
     /// <returns>A random integer between min and max.</returns>
-    public static long Dice(long min, long max) => (long)double.Round((max - min) * Rng.NextDouble() + min);
+    public static long Dice(long min, long max) => min + Rng.NextInt64(max - min + 1);
 
     /// <summary>
     /// Generates a random integer between the specified minimum and maximum values, inclusive.
@@ -36,7 +36,8 @@ public static class DistributionExt
     /// <param name="min">The minimum value.</param>
     /// <param name="max">The maximum value.</param>
     /// <returns>An IEnumerable of random integers.</returns>
-    public static IEnumerable<long> DiceSample(int size, long min, long max) => size.SeqLazy().Select(_ => Dice(min, max));
+    public static IEnumerable<long> DiceSample(int size, long min, long max) 
+        => size.SeqLazy().Select(_ => Dice(min, max));
 
     /// <summary>
     /// Generates a sequence of random integers between the specified minimum and maximum values.
