@@ -265,6 +265,13 @@ public static partial class Ring
     }
     public static Vec<K> ToVec<K>(this KPoly<K> poly) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
         => new(poly.Coefs.ToArray());
+    public static Vec<Vec<K>> Transpose<K>(this Vec<Vec<K>> vec) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        if (vec.Select(e => e.Length).Distinct().Count() != 1)
+            throw new("Cannot transpose");
 
+        var n = vec[0].Length;
+        return n.SeqLazy().Select(j => vec.Select(v => v[j]).ToVec()).ToVec();
+    }
     public static MonomDisplay DisplayPolynomial { get; set; } = MonomDisplay.Default;
 }
