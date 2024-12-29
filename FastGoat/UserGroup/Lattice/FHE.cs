@@ -146,7 +146,21 @@ public static class FHE
         var b = (d1 + d2 * rlk.B).ResMod(pm, q);
         return (a, b, pm, q);
     }
-
+    
+    public static (BGVCipher es2, BGVCipher es) ESKBGV(Rq pm, Rq sk, Rational t, Rational q, BGVCipher pk)
+    {
+        return (EncryptBGV(sk.Pow(2).ResMod(pm, t), pm, t, q, pk), EncryptBGV(sk, pm, t, q, pk));
+    }
+    
+    public static BGVCipher MulSwkBGV(BGVCipher cm1, BGVCipher cm2, Rq pm, Rational q, BGVCipher es, BGVCipher es2)
+    {
+        var csm2a = (es.A * cm2.A - es2.A * cm2.B).ResMod(pm, q);
+        var csm2b = (es.B * cm2.A - es2.B * cm2.B).ResMod(pm, q);
+        var cm1m2a = (cm2.A * cm1.A - csm2a * cm1.B).ResMod(pm, q);
+        var cm1m2b = (cm2.B * cm1.A - csm2b * cm1.B).ResMod(pm, q);
+        return (cm1m2a, cm1m2b, pm, q);
+    }
+    
     public static BGVCipher SWKBGV(Rq pm, Rq sk, Rational t, Rational q, BGVCipher pk)
     {
         return EncryptBGV(sk, pm, t, q, pk);

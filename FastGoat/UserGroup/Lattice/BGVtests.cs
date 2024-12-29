@@ -348,6 +348,45 @@ public static class BGVtests
         }
     }
 
+    public static void TestHEMul2()
+    {
+        var l = 4;
+        var n = 1 << l;
+        var t0 = n;
+        var q0 = n * n;
+        var (pm, sk, t, q, pk, rlk) = FHE.KeyGenBGV(n, t0, q0);
+        FHE.Show(pm, sk, t, q, pk, rlk);
+        
+        // Also avalaible in Automorphism Eval Keys
+        var es = FHE.EncryptBGV(sk, pm, t, q, pk);
+        var es2 = FHE.EncryptBGV((sk * sk).ResMod(pm, t), pm, t, q, pk);
+
+        es.Show("Enc(SK)");
+        es2.Show("Enc(SK^2)");
+        Console.WriteLine();
+    
+        for (int k = 0; k < 50; ++k)
+        {
+            var m1 = FHE.GenUnif(n, t);
+            var m2 = FHE.GenUnif(n, t);
+            var cm1 = FHE.EncryptBGV(m1, pm, t, q, pk);
+            var cm2 = FHE.EncryptBGV(m2, pm, t, q, pk);
+
+            var cm1m2 = FHE.MulSwkBGV(cm1, cm2, pm, q, es, es2);
+        
+            var dm1m2 = FHE.DecryptBGV(cm1m2, pm, sk, t);
+            var m1m2 = (m1 * m2).ResMod(pm, t);
+            Console.WriteLine($"m1     :{m1}");
+            Console.WriteLine($"m2     :{m2}");
+            Console.WriteLine($"m1 * m2:{m1m2}");
+            Console.WriteLine($"       :{dm1m2}");
+            Console.WriteLine();
+
+            if (!dm1m2.Equals(m1m2))
+                throw new($"step[{k}]");
+        }
+    }
+
     public static void TestAll()
     {
         FirstBGV();
