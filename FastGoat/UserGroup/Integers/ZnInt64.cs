@@ -139,14 +139,22 @@ public readonly struct ZnInt64 : IElt<ZnInt64>, IRingElt<ZnInt64>, IFieldElt<ZnI
     public static ZnInt64 operator +(ZnInt64 a, ZnInt64 b) => a.Add(b);
     public static ZnInt64 operator +(int a, ZnInt64 b) => b.Add(b.One.Mul(a));
     public static ZnInt64 operator +(ZnInt64 a, int b) => a.Add(a.One.Mul(b));
+    public static ZnInt64 operator +(ZnInt64 a, long b) => a.Add(new ZnInt64(a.P, b));
+    public static ZnInt64 operator +(long a, ZnInt64 b) => b + a;
     public static ZnInt64 operator -(ZnInt64 a) => a.Opp();
     public static ZnInt64 operator -(ZnInt64 a, ZnInt64 b) => a + (-b);
     public static ZnInt64 operator -(int a, ZnInt64 b) => a + (-b);
     public static ZnInt64 operator -(ZnInt64 a, int b) => a + (-b);
+    public static ZnInt64 operator -(ZnInt64 a, long b) => a + (-b);
+    public static ZnInt64 operator -(long a, ZnInt64 b) => (a) + b;
     public static ZnInt64 operator *(ZnInt64 a, ZnInt64 b) => a.Mul(b);
     public static ZnInt64 operator *(ZnInt64 a, int b) => a.Mul(b);
     public static ZnInt64 operator *(int a, ZnInt64 b) => b.Mul(a);
+    public static ZnInt64 operator *(ZnInt64 a, long b) => a.Mul(new ZnInt64(a.P, b));
+    public static ZnInt64 operator *(long a, ZnInt64 b) => b * a;
     public static ZnInt64 operator /(ZnInt64 a, ZnInt64 b) => a.Div(b).quo;
     public static ZnInt64 operator /(ZnInt64 a, int b) => a.Div(a.One.Mul(b)).quo;
-    public static ZnInt64 operator /(int a, ZnInt64 b) => b.Inv().Mul(a);
+    public static ZnInt64 operator /(int a, ZnInt64 b) => b.Inv() * a;
+    public static ZnInt64 operator /(ZnInt64 a, long b) => a.Div(new(a.P, b)).quo;
+    public static ZnInt64 operator /(long a, ZnInt64 b) => b.Inv() * a;
 }

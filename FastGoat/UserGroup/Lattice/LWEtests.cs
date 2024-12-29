@@ -129,7 +129,7 @@ public static class LWEtests
 
     public static void TestHELogicGates()
     {
-        for(int n = 2; n < 48; ++n) 
+        for(int n = 2; n < 49; ++n) 
         {
             var lwe = new LWE(n);
             lwe.Show();

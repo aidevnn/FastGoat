@@ -22,15 +22,15 @@ public struct LWE
 
     public LWE(int n, int m)
     {
-        var q = IntExt.Primes10000.First(q => q > n * n * 16 && q % (2 * n) == 1);
+        var q = IntExt.Primes10000.First(q => q > n * n * 16);
         (N, M, Q) = (n, m, q);
         One = new ZnInt64(q, 1);
 
         Err = (int)IntExt.SqrtBigInt(q);
-        var s1 = DistributionExt.DiceSample(1000, -Err, Err).Take(n - 1).Select(k => new ZnInt64(q, k)).ToKMatrix();
+        var s1 = DistributionExt.DiceSample(n - 1, -Err / 2, Err / 2).Select(k => new ZnInt64(q, k)).ToKMatrix();
         var e1 = DistributionExt.DiceSample(m, [-1, 1]).Select(k => new ZnInt64(q, k)).ToKMatrix(); // TODO: more noise
         var A = DistributionExt.DiceSample(m * (n - 1), 1, q - 1).Select(k => new ZnInt64(q, k)).ToKMatrix(n - 1);
-
+        Console.WriteLine($"e1:{e1}");
         var a = s1 * A + e1;
         var pk = KMatrix<ZnInt64>.MergeSameCols(A, a);
         var sk = KMatrix<ZnInt64>.MergeSameRows(s1, new[] { -s1.KOne }.ToKMatrix());
@@ -40,16 +40,16 @@ public struct LWE
         var o = new ZnInt64(q * q, 1);
         var sks = SK.Select(Signed).ToArray();
         var sksk = sks.Grid2D(sks).Select(t => -t.t1 * t.t2 * q * o).ToKMatrix(n * n);
-        var B = DistributionExt.DiceSample(n * n * (n - 1), [-1, 1]).Select(k => k * q * o).ToKMatrix(n * n);
+        var B = DistributionExt.DiceSample(n * n * (n - 1), -Err / 2, Err / 2).Select(k => k * q * o).ToKMatrix(n * n);
         
         var e2 = DistributionExt.DiceSample(n * n, [-1, 1]).Select(k => new ZnInt64(q * q, k)).ToKMatrix(n * n);
         var diff = B * s1.T + sksk; //  TODO: more noise
-        var noise = (N * N).SeqLazy().Select(_ => ScalarSKZero(n, q * q, sks)).ToArray();
+        var noise = (N * N).SeqLazy().Select(_ => BlankNoise(n, q * q, sks)).ToArray();
         var ek = KMatrix<ZnInt64>.MergeSameRows(B, diff) + KMatrix<ZnInt64>.MergeSameCols(noise);
         EK = ek.Cols.Select(c => c.ToVec()).ToVec();
     }
 
-    static KMatrix<ZnInt64> ScalarSKZero(int n, int q, int[] sks)
+    static KMatrix<ZnInt64> BlankNoise(int n, int q, long[] sks)
     {
         var o = new ZnInt64(q, 1);
         var l = 1000.SeqLazy().Select(_ => IntExt.Rng.Next(o.P / 10, o.P) * o).Where(k => !k.IsZero()).Take(n - 1)
@@ -71,7 +71,7 @@ public struct LWE
     public int DecryptBit(CipherLWE cipher)
     {
         var d = (SK * cipher.Vec).Sum();
-        var d0 = d.K > Q / 2 ? Q - d.K : d.K;
+        var d0 = d.K * 2 > Q ? Q - d.K : d.K;
         return d0 < Q / 4 ? 0 : 1;
     }
     
@@ -88,5 +88,5 @@ public struct LWE
         Console.WriteLine();
     }
 
-    public static int Signed(ZnInt64 a) => a.K * 2 > a.P ? (int)a.K - a.P : (int)a.K;
+    public static long Signed(ZnInt64 a) => a.K * 2 > a.P ? a.K - a.P : a.K;
 }
