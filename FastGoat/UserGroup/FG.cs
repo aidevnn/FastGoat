@@ -122,6 +122,24 @@ public static partial class FG
         return Product.GpGenerate(name, seq.Select(i => new Cn(i)).Cast<IGroup<ZnInt>>().ToArray());
     }
 
+    private static GroupAction<T, Perm> Action2Perm<T>(ConcreteGroup<T> g, Sn sn) where T : struct, IElt<T>
+    {
+        var mapEltIdx = g.Select((e, i) => (e, i: i + 1))
+            .OrderBy(e => g.ElementsOrders[e.e])
+            .ToDictionary(e => e.e, e => e.i);
+        var mapIdxElt = mapEltIdx.ToDictionary(e => e.Value, e => e.Key);
+        return (e, p) => sn.CreateElement(p.Table.Select(i => mapEltIdx[g.Op(e, mapIdxElt[i + 1])]).ToArray());
+    }
+
+    public static (ConcreteGroup<Perm>, Dictionary<T, Perm> mapGens) ToPermGroup<T>(this ConcreteGroup<T> g)
+        where T : struct, IElt<T>
+    {
+        var sn = new Sn(g.Count());
+        var act = Action2Perm(g, sn);
+        var mapGens = g.GetGenerators().ToDictionary(e => e, e => act(e, sn.Neutral()));
+        return (Group.Generate($"{g.Name}", sn, mapGens.Values.ToArray()), mapGens);
+    }
+
     public static ConcreteGroup<ZnInt> UnInt(int n) =>
         Group.MulGroup($"U{n}i", IntExt.Coprimes(n).Select(j => new ZnInt(n, j)).ToArray());
 
