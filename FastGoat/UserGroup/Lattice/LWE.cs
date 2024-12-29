@@ -74,26 +74,7 @@ public struct LWE
         var d0 = d.K > Q / 2 ? Q - d.K : d.K;
         return d0 < Q / 4 ? 0 : 1;
     }
-
-    public Vec<ZnInt64> Not(Vec<ZnInt64> a)
-    {
-        var n = N;
-        var qh = Q / 2 * One;
-        return a.Select((e, i) => i == n - 1 ? e + qh : e).ToVec();
-    }
     
-    public Vec<ZnInt64> Xor(Vec<ZnInt64> a, Vec<ZnInt64> b) => a + b;
-    
-    public Vec<ZnInt64> And(Vec<ZnInt64> a, Vec<ZnInt64> b)
-    {
-        var oq = a.KOne;
-        var oq2 = EK[0].KOne;
-        var q = Q;
-        var cstar = a.Grid2D(b).Select(e => Signed(e.t1) * Signed(e.t2) * oq2).ToVec();
-        return (cstar * EK).Select(e => (Signed(e.Sum()) * 2 / q) * oq).ToVec();
-    }
-    
-    public Vec<ZnInt64> Nand(Vec<ZnInt64> a, Vec<ZnInt64> b) => Not(And(a, b));
     public string Params => $"LWE Params N:{N} M:{M} Q:{Q} Q^2:{Q * Q} Err:{Err}";
 
     public void Show()
