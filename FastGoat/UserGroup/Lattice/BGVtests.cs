@@ -116,8 +116,48 @@ public static class BGVtests
 
     public static void TestTrackingErrors()
     {
-        TrackingErrors(16, 7, 35, 500);
-        // TrackingErrors(16, 8, 8, 50);
+        var l = 5;
+        var size = 1 << (l + 1);
+        var n = 1 << l;
+        var t0 = n;
+        var q0 = n * n;
+        var (pm, sk, t, q, pk, rlk) = FHE.KeyGenBGV(n, t0, q0);
+        FHE.Show(pm, sk, t, q, pk, rlk);
+        var (es2, es) = FHE.ESKBGV(pm, sk, t, q, pk);
+
+        for (int k = 0; k < 50; ++k)
+        {
+            Console.WriteLine($"Size {size} Depth:{l + 1}");
+            var seqMsg = size.SeqLazy().Select(_ => FHE.GenUnif(n, t0)).ToArray();
+            var seqCipher = seqMsg.Select(m => FHE.EncryptBGV(m, pm, t, q, pk)).ToArray();
+            
+            var sum = seqMsg.Aggregate((e0, e1) => (e0 + e1).ResMod(pm, t));
+            var mul = seqMsg.Aggregate((e0, e1) => (e0 * e1).ResMod(pm, t));
+
+            var qSum = new Queue<BGVCipher>(seqCipher);
+            while (qSum.Count > 1) qSum.Enqueue(FHE.AddBGV(qSum.Dequeue(), qSum.Dequeue(), q));
+            var dSum = FHE.DecryptBGV(qSum.Dequeue(), pm, sk, t);
+            
+            var qMul1 = new Queue<BGVCipher>(seqCipher);
+            while (qMul1.Count > 1) qMul1.Enqueue(FHE.MulRelinBGV(qMul1.Dequeue(), qMul1.Dequeue(), pm, q, rlk));
+            var dMul1 = FHE.DecryptBGV(qMul1.Dequeue(), pm, sk, t);
+            
+            var qMul2 = new Queue<BGVCipher>(seqCipher);
+            while (qMul2.Count > 1) qMul2.Enqueue(FHE.MulSwkBGV(qMul2.Dequeue(), qMul2.Dequeue(), pm, q, es, es2));
+            var dMul2 = FHE.DecryptBGV(qMul2.Dequeue(), pm, sk, t);
+            
+            Console.WriteLine($"Sum  Equal: {dSum.Equals(sum)}");
+            Console.WriteLine($"sum :{sum}");
+            Console.WriteLine($"    :{dSum}");
+            Console.WriteLine($"Mul1 Equal: {dMul1.Equals(mul)}");
+            Console.WriteLine($"Mul2 Equal: {dMul2.Equals(mul)}");
+            Console.WriteLine($"prod:{mul}");
+            Console.WriteLine($"    :{dMul1}");
+            Console.WriteLine($"    :{dMul2}");
+            Console.WriteLine();
+            if (!sum.Equals(dSum) || !mul.Equals(dMul1) || !mul.Equals(dMul2))
+                throw new($"step[{k}]");
+        }
     }
 
     public static void HEEvalAuto()
@@ -149,7 +189,7 @@ public static class BGVtests
             }
         }
     }
-    
+
     public static void TestSwitchKeys()
     {
         var (n, t0, q0) = (16, 8, 2.Pow(6));
@@ -160,7 +200,7 @@ public static class BGVtests
         FHE.Show(pm, sk2, t, q, pk2, rlk2);
         var s2s1 = FHE.SWKBGV(pm, sk1, t, q, pk2);
         var s1s2 = FHE.SWKBGV(pm, sk2, t, q, pk1);
-        
+
         for (int i = 0; i < 50; ++i)
         {
             {
@@ -190,7 +230,7 @@ public static class BGVtests
             Console.WriteLine();
         }
     }
-    
+
     public static void TestBlindRotate()
     {
         var l = 4;
@@ -270,7 +310,7 @@ public static class BGVtests
             var ctboot = FHE.BootstrappingRgsw(cm1, pm, q, Q, pk, brk, ak, fact);
             ctboot.Show($"ctboot Q = {Q}");
             var decBoot = FHE.DecryptBGV(ctboot, pm, sk, t);
-            
+
             Console.WriteLine($"decrypt ctboot:{decBoot}");
             Console.WriteLine($"m1            :{m1}");
             Console.WriteLine();
@@ -284,12 +324,12 @@ public static class BGVtests
         var (n, t0, q0) = (16, 8, 2.Pow(6));
         var (pm, sk, t, q, pk, rlk) = FHE.KeyGenBGV(n, t0, q0);
         FHE.Show(pm, sk, t, q, pk, rlk);
-    
+
         for (int l = 0; l < 50; ++l)
         {
             var m1 = FHE.GenUnif(n, t);
             var cm1 = FHE.EncryptBGV(m1, pm, t, q, pk);
-        
+
             var m2 = FHE.GenUnif(n, t);
             var (csm2, cm2) = FHE.EncryptRgswBGV(m2, pm, t, q, pk);
             var cm1m2 = FHE.SubBGV(FHE.KMulBGV(cm2, cm1.A, pm, q), FHE.KMulBGV(csm2, cm1.B, pm, q), q);
@@ -314,14 +354,12 @@ public static class BGVtests
         var q0 = n * n;
         var (pm, sk, t, q, pk, rlk) = FHE.KeyGenBGV(n, t0, q0);
         FHE.Show(pm, sk, t, q, pk, rlk);
-        
-        var es = FHE.EncryptBGV(sk, pm, t, q, pk);
-        var es2 = FHE.EncryptBGV((sk * sk).ResMod(pm, t), pm, t, q, pk);
 
-        es.Show("Enc(SK)");
-        es2.Show("Enc(SK^2)");
+        var (es2, es) = FHE.ESKBGV(pm, sk, t, q, pk);
+        es.Show("Encrypt(SK)");
+        es2.Show("Encrypt(SK^2)");
         Console.WriteLine();
-    
+
         for (int k = 0; k < 50; ++k)
         {
             var m1 = FHE.GenUnif(n, t);
@@ -330,7 +368,7 @@ public static class BGVtests
             var cm2 = FHE.EncryptBGV(m2, pm, t, q, pk);
 
             var cm1m2 = FHE.MulSwkBGV(cm1, cm2, pm, q, es, es2);
-        
+
             var dm1m2 = FHE.DecryptBGV(cm1m2, pm, sk, t);
             var m1m2 = (m1 * m2).ResMod(pm, t);
             Console.WriteLine($"m1     :{m1}");
