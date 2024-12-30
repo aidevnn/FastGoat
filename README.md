@@ -556,3 +556,15 @@ PeerJ Computer Science 3:e103
 <b>The LMFDB Collaboration.</b>
 The L-functions and modular forms database.
 <i>2024.</i>
+
+[Reg05](https://dl.acm.org/doi/10.1145/1060590.1060603)
+<b>Oded Regev.</b>
+On Lattices, Learning with Errors, Random Linear Codes, and Cryptography.
+May 22, 2005
+<i>LWE.</i>
+
+[BGV11](https://eprint.iacr.org/2011/277)
+<b>Zvika Brakerski, Craig Gentry, and Vinod Vaikuntanathan.</b>
+Fully Homomorphic Encryption without Bootstrapping.
+2011
+<i>BGV.</i>
