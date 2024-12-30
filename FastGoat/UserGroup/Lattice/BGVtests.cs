@@ -357,7 +357,6 @@ public static class BGVtests
         var (pm, sk, t, q, pk, rlk) = FHE.KeyGenBGV(n, t0, q0);
         FHE.Show(pm, sk, t, q, pk, rlk);
         
-        // Also avalaible in Automorphism Eval Keys
         var es = FHE.EncryptBGV(sk, pm, t, q, pk);
         var es2 = FHE.EncryptBGV((sk * sk).ResMod(pm, t), pm, t, q, pk);
 
