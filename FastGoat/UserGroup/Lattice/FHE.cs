@@ -38,8 +38,8 @@ public static class FHE
     public static (Rq pm, Rq sk) SKBGV(int n)
     {
         var pm = FG.QPoly().Pow(n) + 1;
-        var sk = 10000.SeqLazy().Select(_ => GenTernary(n)).First(s => !s[n - 1].IsZero() && 
-                                                                       s.Coefs.Count(e => e.IsZero()) <= n / 4);
+        var sk = 10000.SeqLazy().Select(_ => GenTernary(n))
+            .First(s => !s[n - 1].IsZero() && s.Coefs.Count(e => e.IsZero()) <= n / 4);
         return (pm, sk);
     }
 
