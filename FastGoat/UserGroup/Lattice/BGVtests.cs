@@ -114,48 +114,6 @@ public static class BGVtests
         }
     }
 
-    static void TrackingErrors(int n, int t0, int q0, int size = 100)
-    {
-        var (pm, sk, t, q, pk, rlk) = FHE.KeyGenBGV(n, t0, q0);
-        FHE.Show(pm, sk, t, q, pk, rlk);
-
-        Console.WriteLine($"Size {size}");
-        var seqMsg = size.SeqLazy().Select(_ => FHE.GenUnif(n, t0)).ToArray();
-        var seqCipher = seqMsg.Select(m => FHE.EncryptBGV(m, pm, t, q, pk)).ToArray();
-        var seqAddMsg = new List<Rq>();
-        var seqMulMsg = new List<Rq>();
-        var seqAddCipher = new List<BGVCipher>();
-        var seqMulCipher = new List<BGVCipher>();
-        for (int i = 0; i < size; i++)
-        {
-            if (i == 0)
-            {
-                seqAddMsg.Add(seqMsg[0]);
-                seqMulMsg.Add(seqMsg[0]);
-                seqAddCipher.Add(seqCipher[0]);
-                seqMulCipher.Add(seqCipher[0]);
-                continue;
-            }
-
-            seqAddMsg.Add((seqAddMsg.Last() + seqMsg[i]).CoefsMod(t));
-            seqMulMsg.Add((seqMulMsg.Last() * seqMsg[i]).ResMod(pm, t));
-            seqAddCipher.Add(FHE.AddBGV(seqAddCipher.Last(), seqCipher[i], q));
-            seqMulCipher.Add(FHE.MulRelinBGV(seqMulCipher.Last(), seqCipher[i], pm, q, rlk));
-        }
-
-        var seqAddDecrypt = seqAddCipher.Select(ct => FHE.DecryptBGV(ct, pm, sk, t)).ToArray();
-        var setAdd = seqAddDecrypt.Select((c, i) => (c, i)).Where(e => !e.c.Equals(seqAddMsg[e.i])).SingleOrEmpty();
-        var idxAdd = setAdd.Length == 0 ? "Empty" : $"At idx:{setAdd[0].i}";
-        Console.WriteLine($"Add Cumulative first Error: {idxAdd}");
-
-        var seqMulDecrypt = seqMulCipher.Select(ct => FHE.DecryptBGV(ct, pm, sk, t)).ToArray();
-        var setMul = seqMulDecrypt.Select((c, i) => (c, i)).Where(e => !e.c.Equals(seqMulMsg[e.i])).SingleOrEmpty();
-        var idxMul = setMul.Length == 0 ? "Empty" : $"At idx:{setMul[0].i}";
-        Console.WriteLine($"Mul Cumulative first Error: {idxMul}");
-
-        Console.WriteLine();
-    }
-
     public static void TestTrackingErrors()
     {
         TrackingErrors(16, 7, 35, 500);
