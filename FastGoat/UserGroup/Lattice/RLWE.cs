@@ -15,11 +15,11 @@ public class RLWE
         return new(e0.F, r);
     }
 
-    static EPoly<ZnInt> RandNormRq(EPoly<ZnInt> e0, int degree, int bound, double sigma)
+    static EPoly<ZnInt> RandNormRq(EPoly<ZnInt> e0, int degree, double sigma)
     {
         var o = e0.KOne;
         var x = e0.Poly.x;
-        var coefs = degree.Range().Select(_ => DistributionExt.DiscreteGaussian(0.0, sigma, bound) * o).ToArray();
+        var coefs = DistributionExt.DiscreteGaussianSample(degree, sigma).Select(e => e * o).ToArray();
         var r = new KPoly<ZnInt>(x, o, coefs);
         return new(e0.F, r);
     }
@@ -46,13 +46,13 @@ public class RLWE
         var x = FG.ZPoly(q);
         A = FG.EPoly(x.Pow(n) + 1, 'A').X;
 
-        SK = RandNormRq(A, N, Err, Sigma);
+        SK = RandNormRq(A, N, Sigma);
         var a = RandRq(A, N, Q);
-        var ra = RandNormRq(A, N, Err, Sigma);
+        var ra = RandNormRq(A, N, Sigma);
         var pa = ra - a * SK;
         PK = (a, pa);
         var e = RandRq(A, N, Q);
-        var re = RandNormRq(A, N, Err, Sigma);
+        var re = RandNormRq(A, N, Sigma);
         var pe = re - e * SK + SK.Pow(2);
         EK = (e, pe);
     }
@@ -75,7 +75,7 @@ public class RLWE
 
     public (EPoly<ZnInt> c1, EPoly<ZnInt> c2) Encrypt(EPoly<ZnInt> m)
     {
-        var e1 = RandNormRq(A, N, Err, Sigma);
+        var e1 = RandNormRq(A, N, Sigma);
         var c1 = PK.a * e1;
         var c2 = PK.p * e1 + m;
         return (c1, c2);
@@ -96,11 +96,6 @@ public class RLWE
             Console.WriteLine("Public Key (a,p)");
             Console.WriteLine($"    a = {RewritePolynomial(PK.a)}");
             Console.WriteLine($"    p = {RewritePolynomial(PK.p)}");
-            DistributionExt.DiscreteGaussianSample(1000, 0.0, Sigma, Err)
-                .GroupBy(e => e)
-                .ToDictionary(e => e.Key, e => e.Count())
-                .OrderBy(e => e.Key)
-                .Println($"DiscreteGaussianSample Size=1000, Sigma={Sigma}, Tau={Err}");
         }
         
         Console.WriteLine();

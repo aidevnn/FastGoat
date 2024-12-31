@@ -15,7 +15,7 @@ public static class FHE
 
     public static Rq GenDiscrGauss(int n, double s = 3.0)
     {
-        return DistributionExt.DiscreteGaussianSample(n, 0, s, n / s).ToKPoly(Rational.KZero());
+        return DistributionExt.DiscreteGaussianSample(n, s).ToKPoly(Rational.KZero());
     }
 
     public static Rq GenTernary(int n)
