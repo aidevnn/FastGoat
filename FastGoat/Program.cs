@@ -15,38 +15,53 @@ using static FastGoat.Commons.IntExt;
 //////////////////////////////////
 
 Console.WriteLine("Hello World");
-// IntExt.RngSeed(7532159);
-Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+
+Dictionary<int, double> DGS_CDF(double sigma, double tau)
+{
+    var bound = (int)double.Floor(sigma * tau);
+    var tlength = 2 * bound + 1;
+    var sigma2 = 2 * sigma * sigma;
+    var norm = tlength.SeqLazy(-bound).Sum(x => double.Exp(-x * x / sigma2));
+    var pdf = tlength.SeqLazy(-bound).ToDictionary(x => x, x => double.Exp(-x * x / sigma2) / norm);
+    return tlength.SeqLazy(1).ToDictionary(i => i, i => i.SeqLazy(-bound).Sum(e => pdf[e]));
+}
+
+void BatchTest(int sizeI, double sigma = 3.2, double tau = 1.0)
+{
+    var bound = (int)double.Floor(sigma * tau);
+    var tlength = 2 * bound + 1;
+    var digits = $"{4 * sizeI / (1 + bound)}".Length;
+    var fmt = $"[{{0,2}}]:{{1,{digits}}}";
+    var cdf = DGS_CDF(sigma, tau);
+    var size = 0;
+    var table = tlength.SeqLazy(-bound).ToDictionary(i => i, _ => 0);
+    double max, test;
+    var fix = false;
+    do
+    {
+        size += sizeI;
+        foreach (var i in DistributionExt.DiscreteGaussianSample(sizeI, sigma, tau))
+            table[i]++;
+
+        var cdfTest = tlength.SeqLazy(1).ToDictionary(i => i, i => i.SeqLazy(-bound).Sum(e => table[e]) / (1.0 * size));
+        max = cdfTest.Max(e => double.Abs(e.Value - cdf[e.Key]));
+        test = 1.358101 / double.Sqrt(size);
+
+        fix |= max > test;
+    } while (max > test);
+
+    var sizeInfo = fix ? $"size:{sizeI} => {size} (Fixed x{size / sizeI})" : $"size:{size}";
+    Console.WriteLine($"DiscreteGaussian Sample {sizeInfo} Sigma:{sigma} Tau:{tau} Bounds:[{-bound}, {bound}]");
+    Console.WriteLine(
+        $"results    : {{ {table.OrderBy(e => e.Key).Select(e => string.Format(fmt, e.Key, e.Value)).Glue(", ")} }}");
+    Console.WriteLine($"Discrete Kolmogorov-Smirnov:{max:F9} Test:{test:F6} => Accepted alpha=0.05");
+    Console.WriteLine();
+}
 
 {
-    var size = 1000000;
-    var sigma = 7.0;
-    var sample = DistributionExt.DiscreteGaussianSample(size, sigma);
-    var table = sample.GroupBy(e => e).ToDictionary(e => e.Key, e => e.Count());
-
-    // D = DiscreteGaussianDistributionIntegerSampler(sigma=7,tau=1)
-    // defaultdict(<class 'sage.rings.integer.Integer'>, {0: 79153, 7: 47886, 5: 61306, 4: 67843, -4: 67731, -1: 79087, 6: 55064, -3: 72199, -2: 76615, -5: 61623, 3: 73368, 2: 76455, -7: 47507, 1: 78678, -6: 55485})
-    var sageCounter =
-        "0: 79153, 7: 47886, 5: 61306, 4: 67843, -4: 67731, -1: 79087, 6: 55064, -3: 72199, -2: 76615, -5: 61623, 3: 73368, 2: 76455, -7: 47507, 1: 78678, -6: 55485";
-    var table2 = sageCounter.Split(',').Select(e => e.Split(":").Select(i => int.Parse(i)).ToArray())
-        .ToDictionary(e => e[0], e => e[1]);
-
-    var min = table.Keys.Min();
-    var tlength = table.Count;
-    var cdf1 = tlength.SeqLazy(1).ToDictionary(i => i, i => i.SeqLazy(min).Sum(e => table[e]) / (1.0 * size));
-    var cdf2 = tlength.SeqLazy(1).ToDictionary(i => i, i => i.SeqLazy(min).Sum(e => table2[e]) / (1.0 * size));
-    var max = cdf1.Max(e => double.Abs(e.Value - cdf2[e.Key]));
-    var test = 1.36 / double.Sqrt(size);
-
-    Console.WriteLine($"DiscreteGaussian Sample size:{size} Sigma:{sigma} Tau:1");
-    Console.WriteLine(
-        $"results    : {{ {table.OrderBy(e => e.Key).Select(e => $"{e.Key,2} =>{e.Value,6}").Glue(", ")} }}");
-    Console.WriteLine($"sage       :{sageCounter}");
-    Console.WriteLine($"max diff   :{max:E3} test:{test:E3}");
-    Console.WriteLine($"Accepted 5%:{test > max}");
-    // DiscreteGaussian Sample size:1000000 Sigma:7 Tau:1
-    // results    : { -7 => 48238, -6 => 55333, -5 => 61523, -4 => 67234, -3 => 72717, -2 => 76066, -1 => 78844,  0 => 79200,  1 => 78609,  2 => 76282,  3 => 72884,  4 => 67815,  5 => 61950,  6 => 54689,  7 => 48616 }
-    // sage       :0: 79153, 7: 47886, 5: 61306, 4: 67843, -4: 67731, -1: 79087, 6: 55064, -3: 72199, -2: 76615, -5: 61623, 3: 73368, 2: 76455, -7: 47507, 1: 78678, -6: 55485
-    // max diff   :9.990E-004 test:1.360E-003
-    // Accepted 5%:True
+    var size = 5000;
+    var sigmas = new[] { 0.4, 0.5, 1.0, 1.5, 2, 3, 5, 7 };
+    var taus = new[] { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 };
+    foreach (var (sigma, tau) in sigmas.Grid2D(taus))
+        BatchTest(size, sigma, tau);
 }
