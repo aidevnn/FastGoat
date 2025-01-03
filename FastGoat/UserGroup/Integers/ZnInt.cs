@@ -50,11 +50,13 @@ public readonly struct ZnInt : IElt<ZnInt>, IRingElt<ZnInt>, IFieldElt<ZnInt>
         return Hash;
     }
 
+    public long Signed => 2 * K > Mod ? K - Mod : K;
+
     public override string ToString()
     {
         var digits = $"{Mod}".Length;
         var fmt = $"{{0,{digits}}}";
-        var k0 = Display == ZnDisplay.Unsigned ? K : 2 * K > Mod ? K - Mod : K;
+        var k0 = Display == ZnDisplay.Unsigned ? K : Signed;
         return string.Format(fmt, k0);
     }
 
