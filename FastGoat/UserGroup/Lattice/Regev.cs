@@ -25,13 +25,22 @@ public class Regev
 
     public Regev(int n)
     {
+        // All conditions
+        
+        // 1) m = (1+ε)*n*log2(n) ε=1
         var m = (int)(2 * n * double.Log2(n));
-        var a = 1.0 / (double.Log10(n) * double.Log2(n) * double.Sqrt(n));
+        
+        // 2) lim a(n)*log2(n)*√n = lim 1 / (4*log10(n)) = 0
+        var a = 1.0 / (4 * double.Log10(n) * double.Log2(n) * double.Sqrt(n));
+        
+        // 3) a*q > 2*√n
         var q = Primes10000.First(q => a * q > 2 * double.Sqrt(n));
         (N, Q, M, A) = (n, q, m, a);
+        
+        // 4) Discrete gaussian sample with s = a*q
+        var err = Err = DiscGauss(m, q, s: a * q);
 
         var sk = SK = Unif(n, q);
-        var err = Err = DiscGauss(m, q, s: a * q); //  s ~ 2 * double.Sqrt(n)
         var ai = m.SeqLazy().Select(_ => Unif(n, q)).ToArray();
         var b = ai.Zip(err).Select(e => (e.First * sk).Sum() + e.Second).ToVec();
         PK = (ai, b);
@@ -39,8 +48,9 @@ public class Regev
 
     public RegevCipher EncryptBit(int m)
     {
-        var nb = Rng.Next(2, int.Min(Q / 8, M)); // Q < 4*M always true for actual parameters definition 
-        var r = nb.SeqLazy().Select(_ => Rng.Next(M)).ToArray();
+        // 5) Set S ⊂ [0..M-1] 
+        var r = DistributionExt.DiceSample(M, [true, false]).Zip(M.Range())
+            .Where(e => e.First).Select(e => e.Second).ToArray();
         var m1 = m == 0 ? 0 : 1;
         var acc0 = (a: PK.A[0].Zero, b: new ZnInt64(Q, m1 * (Q / 2)));
         return r.Select(e => (a: PK.A[e], b: PK.B[e])).Aggregate(acc0, (acc, e) => (acc.a + e.a, acc.b + e.b));
@@ -48,13 +58,13 @@ public class Regev
 
     public int DecryptBit(RegevCipher cipher)
     {
+        // 6) b - <s,a> distance to 0 and to Q/2
         var d = cipher.B - (cipher.A * SK).Sum();
-        var d2 = d - Q / 2;
-        return long.Abs(d.Signed) < long.Abs(d2.Signed) ? 0 : 1;
+        return long.Abs(d.Signed) < Q / 4 ? 0 : 1;
     }
 
     public string Params =>
-        $"Regev N:{N,-4} Q:{Q,-6} M:{M,-6} a:{A:F4} aq:{A * Q:F4}";
+        $"Regev N:{N,-4} Q:{Q,-6} M:{M,-6} a:{A:F4} aq:{A * Q:F4} Q/M:{Q / M}";
 
     public void Show()
     {
