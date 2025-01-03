@@ -78,7 +78,39 @@ public static class LWEtests
 
         Console.WriteLine();
     }
-    
+
+    static void RunLWERegev(Regev lwe, string text, bool showCipher = false, bool showBinary = true)
+    {
+        Console.WriteLine(text);
+        var seq = String2Bin(text).ToArray();
+        var seqCiphers = seq.Select(b => (b, cipher: lwe.EncryptBit(b))).ToArray();
+
+        if (showCipher)
+            seqCiphers.Println(
+                l => $"{l.b} => {l.cipher}",
+                $"Cyphers text:{text}"
+            );
+
+        var seqDecrypt = seqCiphers.Select(e => lwe.DecryptBit(e.cipher)).ToArray();
+        var text2 = Bin2String(seqDecrypt);
+        if (showBinary)
+        {
+            Console.WriteLine($"seqInput  :[{seq.Glue()}]");
+            Console.WriteLine($"seqDecrypt:[{seqDecrypt.Glue()}]");
+            Console.WriteLine(text2);
+        }
+
+        if (string.Equals(text, text2))
+            Console.WriteLine("    SUCCESS");
+        else
+        {
+            Console.WriteLine("    FAIL");
+            Console.Beep();
+        }
+
+        Console.WriteLine();
+    }
+
     public static void TestEncryptDecryptLWE()
     {
         for (int k = 2; k < 11; ++k)
@@ -207,6 +239,26 @@ public static class LWEtests
 
             Console.WriteLine("...");
             Console.WriteLine($"SUCCESS ALL {nbTrials} NAND gates {lwe.Params}");
+            Console.WriteLine();
+        }
+    }
+
+    public static void TestLWERegev()
+    {
+        for (int k = 2; k < 15; ++k)
+        {
+            var reg = new Regev(5 * k);
+            reg.Show();
+
+            RunLWERegev(reg, "hello world lwe");
+            RunLWERegev(reg, "Hello World LWE");
+            RunLWERegev(reg, "AAA+", showCipher: true);
+
+            for (int i = 0; i < 10; i++)
+                RunLWERegev(reg, RandString(Rng.Next(20, 50)));
+        
+            // long text
+            RunLWERegev(reg, RandString(1000), showBinary: false);
             Console.WriteLine();
         }
     }
