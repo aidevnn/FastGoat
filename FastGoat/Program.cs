@@ -17,7 +17,7 @@ using static FastGoat.Commons.IntExt;
 Console.WriteLine("Hello World");
 
 {
-    var lweRegev = new Regev(10);
+    var lweRegev = new Regev(128);
     Console.WriteLine(lweRegev.Params);
     var bits = DistributionExt.BernouilliSample(100, 0.5).ToArray();
     var encrypted = bits.Select(e => lweRegev.EncryptBit(e)).ToArray();

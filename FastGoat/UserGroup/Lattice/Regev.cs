@@ -33,13 +33,25 @@ public class Regev
         // 2) a*p > 2*√n
         var p = Primes10000.First(p => a * p > 2 * double.Sqrt(n));
         
-        // 3) m = (1+ε)*n*log2(p) ε=1
-        var m = (int)(2 * n * double.Log2(p));
+        // 3) m = (1+ε)*(n+1)*log2(p) ε=0.1
+        var m = (int)(1.1 * (n + 1) * double.Log2(p));
         (N, P, M, A) = (n, p, m, a);
         
         // 4) Discrete gaussian sample with s = a*p
         var err = Err = DiscGauss(m, p, s: a * p);
 
+        var sk = SK = Unif(n, p);
+        var ai = m.SeqLazy().Select(_ => Unif(n, p)).ToArray();
+        var b = ai.Zip(err).Select(e => (e.First * sk).Sum() + e.Second).ToVec();
+        PK = (ai, b);
+    }
+
+    public Regev(int n, int m, int p, double sigma)
+    {
+        var s = double.Sqrt(2 * double.Pi) * sigma;
+        (N, P, M, A) = (n, p, m, s / p);
+        
+        var err = Err = DiscGauss(m, p, s);
         var sk = SK = Unif(n, p);
         var ai = m.SeqLazy().Select(_ => Unif(n, p)).ToArray();
         var b = ai.Zip(err).Select(e => (e.First * sk).Sum() + e.Second).ToVec();
@@ -65,7 +77,7 @@ public class Regev
         return long.Abs(d.Signed) < P / 4 ? 0 : 1;
     }
 
-    public string Params => $"Regev N:{N,-4} P:{P,-6} M:{M,-6} A:{A:F4} A*P:{A * P:F4}";
+    public string Params => $"Regev N:{N,-4} P:{P,-6} M:{M,-6} A:{A:F4} A*P:{A * P:F4} P/M:{P / (1.0 * M):F4}";
 
     public void Show()
     {
@@ -83,19 +95,4 @@ public class Regev
         var sigma = s / double.Sqrt(2 * double.Pi);
         return DistributionExt.DiscreteGaussianSample(n, sigma, tau: 1.0).Select(i => new ZnInt64(q, i)).ToVec();
     }
-}
-
-public readonly struct RegevCipher
-{
-    public Vec<ZnInt64> A { get; }
-    public ZnInt64 B { get; }
-
-    public RegevCipher(Vec<ZnInt64> a, ZnInt64 b)
-    {
-        (A, B) = (a, b);
-    }
-
-    public override string ToString() => $"[{A}, {B}]";
-
-    public static implicit operator RegevCipher((Vec<ZnInt64> a, ZnInt64 b) e) => new(e.a, e.b);
 }
