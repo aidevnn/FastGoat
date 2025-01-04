@@ -8,6 +8,15 @@ namespace FastGoat.UserGroup.Lattice;
 
 public static class LWEtests
 {
+    static LWEtests()
+    {
+        LipsumSentences = Lipsum.BySentences;
+        LipsumParagraphes = Lipsum.ByParagraphes;
+    }
+
+    private static string[] LipsumSentences { get; }
+    private static string[] LipsumParagraphes { get; }
+    
     #region Char to Bit
     // 16-bit default C#-char
     const int charBit = 8;
@@ -36,13 +45,6 @@ public static class LWEtests
         }
 
         return s;
-    }
-
-    static string RandString(int length)
-    {
-        var s = "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz" +
-                @"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+-*/!@#$%^&*()_+:<>?|\                   ";
-        return length.Range().Select(_ => s[Rng.Next(s.Length)]).Glue();
     }
     
     #endregion
@@ -113,9 +115,9 @@ public static class LWEtests
 
     public static void TestEncryptDecryptLWE()
     {
-        for (int k = 2; k < 11; ++k)
+        for (int n = 4; n < 31; ++n)
         {
-            var lwe = new LWE(k);
+            var lwe = new LWE(n);
             lwe.Show();
 
             RunLWE(lwe, "hello world lwe");
@@ -123,10 +125,10 @@ public static class LWEtests
             RunLWE(lwe, "AAA+", showCipher: true);
 
             for (int i = 0; i < 10; i++)
-                RunLWE(lwe, RandString(Rng.Next(20, 50)));
+                RunLWE(lwe, DistributionExt.Dice(LipsumSentences));
         
             // long text
-            RunLWE(lwe, RandString(1000), showBinary: false);
+            RunLWE(lwe, DistributionExt.Dice(LipsumParagraphes), showBinary: false);
             Console.WriteLine();
         }
     }
@@ -161,7 +163,7 @@ public static class LWEtests
 
     public static void TestHELogicGates()
     {
-        for(int n = 2; n < 49; ++n) 
+        for(int n = 4; n < 31; n += 1)
         {
             var lwe = new LWE(n);
             lwe.Show();
@@ -240,6 +242,24 @@ public static class LWEtests
             Console.WriteLine("...");
             Console.WriteLine($"SUCCESS ALL {nbTrials} NAND gates {lwe.Params}");
             Console.WriteLine();
+            
+            for (int l = 0; l < nbTrials; ++l)
+            {
+                var table = 2.Range().Grid2D().ToDictionary(e => e, e => (lwe.EncryptBit(e.t1), lwe.EncryptBit(e.t2)));
+                var tableAnd = table
+                    .Select(e => (e.Key, e.Key.t1 | e.Key.t2,
+                        lwe.DecryptBit(CipherLWE.Or(e.Value.Item1, e.Value.Item2, lwe.EK))))
+                    .ToArray();
+                if (l < 10)
+                    tableAnd.Println($"Test[{l}] OR {(tableAnd.All(e => e.Item2 == e.Item3) ? "SUCCESS" : "FAIL")}");
+
+                if (tableAnd.Any(e => e.Item2 != e.Item3))
+                    throw new($"step[{l}] N:{n} Q:{lwe.Q}");
+            }
+
+            Console.WriteLine("...");
+            Console.WriteLine($"SUCCESS ALL {nbTrials} OR gates {lwe.Params}");
+            Console.WriteLine();
         }
     }
 
@@ -255,10 +275,10 @@ public static class LWEtests
             RunLWERegev(reg, "AAA+", showCipher: true);
 
             for (int i = 0; i < 10; i++)
-                RunLWERegev(reg, RandString(Rng.Next(20, 50)));
+                RunLWERegev(reg, DistributionExt.Dice(LipsumSentences));
         
             // long text
-            RunLWERegev(reg, RandString(1000), showBinary: false);
+            RunLWERegev(reg, DistributionExt.Dice(LipsumParagraphes), showBinary: false);
             Console.WriteLine();
         }
     }

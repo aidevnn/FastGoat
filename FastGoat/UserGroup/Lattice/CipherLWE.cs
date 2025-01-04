@@ -30,12 +30,13 @@ public struct CipherLWE
         var oq = A.Vec.KOne;
         var oq2 = ek[0].KOne;
         var q = oq.P;
-        var TensAB = A.Vec.Grid2D(B.Vec).Select(e => LWE.Signed(e.t1) * LWE.Signed(e.t2) * oq2).ToVec();
-        return new((TensAB * ek).Select(e => (LWE.Signed(e.Sum()) * 2 / q) * oq).ToVec());
+        var TensAB = A.Vec.Grid2D(B.Vec).Select(e => e.t1.Signed * e.t2.Signed * 2 / q * oq2).ToVec();
+        return new((TensAB * ek).Select(e => (LWE.Signed(e.Sum()) * 1 / q) * oq).ToVec());
     }
 
     public static CipherLWE Nand(CipherLWE A, CipherLWE B, Vec<Vec<ZnInt64>> ek) => Not(And(A, B, ek));
-    
+    public static CipherLWE Nor(CipherLWE A, CipherLWE B, Vec<Vec<ZnInt64>> ek) => And(Not(A), Not(B), ek);
+    public static CipherLWE Or(CipherLWE A, CipherLWE B, Vec<Vec<ZnInt64>> ek) => Not(Nor(A, B, ek));
     public override string ToString() => $"{Vec}";
 }
 

@@ -90,6 +90,9 @@ public class Regev
     public static Vec<ZnInt64> Unif(int n, int q) =>
         DistributionExt.DiceSample(n, 0, q - 1).Select(i => new ZnInt64(q, i)).ToVec();
 
+    public static Vec<ZnInt64> Ternary(int n, int q) =>
+        DistributionExt.DiceSample(n, [-1, 0, 1]).Select(i => new ZnInt64(q, i)).ToVec();
+
     public static Vec<ZnInt64> DiscGauss(int n, int q, double s)
     {
         var sigma = s / double.Sqrt(2 * double.Pi);
