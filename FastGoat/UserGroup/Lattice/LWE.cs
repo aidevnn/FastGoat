@@ -45,7 +45,7 @@ public struct LWE
 
         var o = new ZnInt64(q * q, 1);
         var s1q2 = s1.Select(e => e.Signed * o).ToKMatrix();
-        var sks = SK.Select(Signed).ToArray();
+        var sks = SK.Select(e => e.Signed).ToArray();
         var sksk = sks.Grid2D(sks).Select(t => -t.t1 * t.t2 * o).ToKMatrix(n * n);
         var B = Regev.Unif(n * n * (n - 1), q).Select(k => k.K * q * o).ToKMatrix(n * n);
 
@@ -92,6 +92,4 @@ public struct LWE
 
         Console.WriteLine();
     }
-
-    public static long Signed(ZnInt64 a) => a.K * 2 > a.P ? a.K - a.P : a.K;
 }
