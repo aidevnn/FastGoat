@@ -78,11 +78,11 @@ CipherLWE[] BinarySumLWE(LWE lwe, CipherLWE[] a, CipherLWE[] b)
     return sum.ToArray();
 }
 
-int Bin2Int(int[] l) => l.Reverse().Aggregate(0, (acc, i) => acc * 2 + i);
+long Bin2Int(int[] l) => l.Reverse().Aggregate((long)0, (acc, i) => acc * 2 + i);
 
-void TestAddition(int n, int bits, int nbTrials = 100, bool noiseMode = true)
+void TestAddition(int n, long q, int m, int bits, int nbTrials = 100, bool noiseMode = true)
 {
-    var lwe = new LWE(n, q: bits * n.Pow(3), m: n, noiseMode);
+    var lwe = new LWE(n, q, m, noiseMode);
     lwe.Show();
 
     var set = new List<int>();
@@ -99,7 +99,7 @@ void TestAddition(int n, int bits, int nbTrials = 100, bool noiseMode = true)
         var an = Bin2Int(a);
         var bn = Bin2Int(b);
         var sn = Bin2Int(s);
-        var anbn = (an + bn) % (1 << bits);
+        var anbn = (an + bn) % ((long)1 << bits);
 
         var la = a.Select(ai => lwe.EncryptBit(ai)).ToArray();
         var lb = b.Select(bi => lwe.EncryptBit(bi)).ToArray();
@@ -130,21 +130,23 @@ void TestAddition(int n, int bits, int nbTrials = 100, bool noiseMode = true)
 }
 
 {
-    // TestAddition(n: 8, bits: 8, nbTrials: 1000, noiseMode: false);
-    // TestAddition(n: 8, bits: 16, nbTrials: 1000, noiseMode: false);
-    // TestAddition(n: 8, bits: 8, nbTrials: 1000);
-    TestAddition(n: 8, bits: 16, nbTrials: 1000);
+    var n = 8;
+    var bits = 32;
+    var q = 8192;
+    var m = n;
+    var nbTrials = 1000;
+    TestAddition(n, q, m, bits, nbTrials);
     
     // Step:1000
-    // c: 1001101110111110
-    // a:1011101010111010
-    // b:1001101110110100
-    // +:0110110011010001
-    // c: 1001101110111110 lwe carry
-    // Err:  4,  -1,   4,  -2,   4,  -1,  -3,   6,  14, -28,  13,  -3,  -2,   2,   4,   0
-    // a:23901 + b:11737 = 35638 s:35638 ds:35638
+    // c: 01100011110001111100001111111111
+    // a:01101010010101011100101011110101
+    // b:11000011110001100000001110111010
+    // +:10011000011100000010100010110000
+    // c: 01100011110001111100001111111111 lwe carry
+    // Err:  1,  -8,   3,  -1,  -2,   4,  11,  -9,  10, -18,  41,  35,  -6,  19, -21,  21, -19,  13, -27,  -5,  -8,   3, -12, -19,   8,  -6, -11,  21,  23,  25, -22,  22
+    // a:2941495894 + b:1572889539 = 219418137 s:219418137 ds:219418137
     // 
-    // Success 999/1000 additions with carry and LWE Params N:8 M:8 Q:8192
-    // Errors at Steps:481
+    // Success 1000/1000 additions with carry and LWE Params N:8 M:8 Q:8192
     // 
+    
 }
