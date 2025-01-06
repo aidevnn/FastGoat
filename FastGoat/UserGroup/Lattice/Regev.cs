@@ -93,9 +93,9 @@ public class Regev
     public static Vec<ZnInt64> Ternary(int n, int q) =>
         DistributionExt.DiceSample(n, [-1, 0, 1]).Select(i => new ZnInt64(q, i)).ToVec();
 
-    public static Vec<ZnInt64> DiscGauss(int n, int q, double s)
+    public static Vec<ZnInt64> DiscGauss(int n, int q, double s, double tau= 1.0)
     {
         var sigma = s / double.Sqrt(2 * double.Pi);
-        return DistributionExt.DiscreteGaussianSample(n, sigma, tau: 1.0).Select(i => new ZnInt64(q, i)).ToVec();
+        return DistributionExt.DiscreteGaussianSample(n, sigma, tau).Select(i => new ZnInt64(q, i)).ToVec();
     }
 }
