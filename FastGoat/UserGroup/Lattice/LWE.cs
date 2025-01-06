@@ -20,7 +20,7 @@ public struct LWE
     public static int S { get; set; } = 3;
     public int N { get; }
     public int M { get; }
-    public int Q { get; }
+    public long Q { get; }
     public ZnInt64 KOne { get; }
     public Vec<Vec<ZnInt64>> PK { get; }
     public Vec<ZnInt64> SK { get; }
@@ -29,7 +29,7 @@ public struct LWE
     public CipherLWE Zero { get; }
     public CipherLWE One { get; }
 
-    public LWE(int n, int q, int m, bool noiseMode = true)
+    public LWE(int n, long q, int m, bool noiseMode = true)
     {
         (N, M, Q) = (n, m, q);
         KOne = new ZnInt64(q, 1);
@@ -46,18 +46,19 @@ public struct LWE
         PK = pk.Rows.Select(r => r.ToVec()).ToVec();
         SK = sk.ToVec();
 
-        var o = new ZnInt64(q * q, 1);
+        long lq = q;
+        var o = new ZnInt64(lq * lq, 1);
         var s1q2 = s1.Select(e => e.Signed * o).ToKMatrix();
         var sks = SK.Select(e => e.Signed).ToArray();
-        var sksk = sks.Grid2D(sks).Select(t => -t.t1 * t.t2 * o).ToKMatrix(n * n);
+        var sksk = sks.Grid2D(sks).Select(t => -t.t1 * t.t2 * q * o).ToKMatrix(n * n);
         var B = Regev.Unif(n * n * (n - 1), q).Select(k => k.K * q * o).ToKMatrix(n * n);
 
         var e2 = Regev.DiscGauss(n * n, o.P, S).ToKMatrix(n * n); // e2 ~ -1, 0, 1
         if (!noiseMode)
             e2 = e2.Zero;
 
-        var b = B * s1q2.T + sksk * q + e2;
-        var noise = (N * N).SeqLazy().Select(_ => BlankNoise(n, o.P, sks)).ToArray();
+        var b = B * s1q2.T + sksk + e2;
+        var noise = (N * N).SeqLazy().Select(_ => BlankNoise(n, o.Mod, sks)).ToArray();
         var ek = KMatrix<ZnInt64>.MergeSameRows(B, b) + KMatrix<ZnInt64>.MergeSameCols(noise);
         EK = ek.Cols.Select(c => c.ToVec()).ToVec();
 
@@ -65,10 +66,10 @@ public struct LWE
         One = CipherLWE.Not(Zero);
     }
 
-    static KMatrix<ZnInt64> BlankNoise(int n, int q, long[] sks)
+    static KMatrix<ZnInt64> BlankNoise(int n, long q, long[] sks)
     {
         var o = new ZnInt64(q, 1);
-        var l = 10000.SeqLazy().Select(_ => IntExt.Rng.Next(q / 10, q) * o).Where(k => !k.IsZero()).Take(n - 1)
+        var l = 10000.SeqLazy().Select(_ => IntExt.Rng.NextInt64(q / 10, q) * o).Where(k => !k.IsZero()).Take(n - 1)
             .ToArray();
         var prod = sks.Zip(l).Select(t => t.First * t.Second).Aggregate((a0, a1) => a0 + a1);
         return l.Append(prod).ToKMatrix();
@@ -88,7 +89,7 @@ public struct LWE
     public int DecryptBit(CipherLWE cipher)
     {
         var d = (SK * cipher.Vec).Sum();
-        return long.Abs(d.Signed) < Q / 4 ? 0 : 1;
+        return long.Abs(d.Signed) * 4 < Q ? 0 : 1;
     }
 
     public CipherLWE BrutalRefresh(CipherLWE cipher)
@@ -99,7 +100,7 @@ public struct LWE
     public int Error(CipherLWE cipher)
     {
         var d = (SK * cipher.Vec).Sum();
-        var m = long.Abs(d.Signed) < Q / 4 ? 0 : 1;
+        var m = long.Abs(d.Signed) * 4 < Q ? 0 : 1;
         return (int)(d - m * Q / 2).Signed;
     }
 

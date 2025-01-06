@@ -30,8 +30,8 @@ public struct CipherLWE
         var oq = A.Vec.KOne;
         var oq2 = ek[0].KOne;
         var q = oq.P;
-        var TensAB = A.Vec.Grid2D(B.Vec).Select(e => (int)double.Round(e.t1.Signed * e.t2.Signed * 2.0 / q) * oq2).ToVec();
-        return new((TensAB * ek).Select(e => (int)double.Round(e.Sum().Signed * 1.0 / q) * oq).ToVec());
+        var TensAB = A.Vec.Grid2D(B.Vec).Select(e => (long)double.Round(e.t1.Signed * e.t2.Signed * 2.0 / q) * oq2).ToVec();
+        return new((TensAB * ek).Select(e => (long)double.Round(e.Sum().Signed * 1.0 / q) * oq).ToVec());
     }
     
     public static CipherLWE Nand(CipherLWE A, CipherLWE B, Vec<Vec<ZnInt64>> ek) => Not(And(A, B, ek));

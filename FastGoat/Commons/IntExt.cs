@@ -585,7 +585,7 @@ public static class IntExt
     /// <param name="exp">The exponent.</param>
     /// <param name="mod">The modulus.</param>
     /// <returns>The result of the calculation.</returns>
-    public static long PowModLong(long a, int exp, int mod)
+    public static long PowModLong(long a, int exp, long mod)
     {
         long a0 = 1;
         for (var k = 0; k < exp; ++k)
@@ -693,7 +693,7 @@ public static class IntExt
     /// <param name="a">The dividend.</param>
     /// <param name="p">The divisor.</param>
     /// <returns>The remainder of a divided by p.</returns>
-    public static long AmodPlong(long a, int p)
+    public static long AmodPlong(long a, long p)
     {
         long r = a % p;
         return r < 0 ? r + p : r;

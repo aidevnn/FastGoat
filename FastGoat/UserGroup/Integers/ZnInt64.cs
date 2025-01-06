@@ -6,9 +6,9 @@ namespace FastGoat.UserGroup.Integers;
 public readonly struct ZnInt64 : IElt<ZnInt64>, IRingElt<ZnInt64>, IFieldElt<ZnInt64>
 {
     public static ZnDisplay Display = ZnDisplay.Unsigned;
-    public int Mod { get; }
+    public long Mod { get; }
     public long K { get; }
-    public int P => Mod;
+    public int P => (int)Mod; // TODO: field characteristic
 
     public static double Abs(ZnInt64 z) => throw new(); // z.P == 0 ? double.Abs(z.K) : z.K;
     public static bool IsValuedField => false;
@@ -17,7 +17,7 @@ public readonly struct ZnInt64 : IElt<ZnInt64>, IRingElt<ZnInt64>, IFieldElt<ZnI
     public static ZnInt64 ZpZero(int p = 2) =>
         IntExt.Primes10000.Contains(p) ? new(p, 0) : throw new GroupException(GroupExceptionType.GroupDef);
 
-    public ZnInt64(int mod, long k)
+    public ZnInt64(long mod, long k)
     {
         Mod = mod;
         K = Mod == 0 ? k : IntExt.AmodPlong(k, Mod);

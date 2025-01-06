@@ -87,13 +87,13 @@ public class Regev
         Console.WriteLine();
     }
 
-    public static Vec<ZnInt64> Unif(int n, int q) =>
+    public static Vec<ZnInt64> Unif(int n, long q) =>
         DistributionExt.DiceSample(n, 0, q - 1).Select(i => new ZnInt64(q, i)).ToVec();
 
-    public static Vec<ZnInt64> Ternary(int n, int q) =>
+    public static Vec<ZnInt64> Ternary(int n, long q) =>
         DistributionExt.DiceSample(n, [-1, 0, 1]).Select(i => new ZnInt64(q, i)).ToVec();
 
-    public static Vec<ZnInt64> DiscGauss(int n, int q, double s, double tau= 1.0)
+    public static Vec<ZnInt64> DiscGauss(int n, long q, double s, double tau= 1.0)
     {
         var sigma = s / double.Sqrt(2 * double.Pi);
         return DistributionExt.DiscreteGaussianSample(n, sigma, tau).Select(i => new ZnInt64(q, i)).ToVec();
