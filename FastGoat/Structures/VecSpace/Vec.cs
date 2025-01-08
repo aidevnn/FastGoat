@@ -175,7 +175,7 @@ public readonly struct Vec<A> : IEnumerable<A>, IElt<Vec<A>>, IRingElt<Vec<A>>, 
 
     public static Vec<A> operator -(Vec<A> a, Vec<A> b) => a.Sub(b);
 
-    public static Vec<A> operator -(int a, Vec<A> b) => (-a) + b;
+    public static Vec<A> operator -(int a, Vec<A> b) => a + (-b);
 
     public static Vec<A> operator -(Vec<A> a, int b) => a + (-b);
 
