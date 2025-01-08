@@ -47,20 +47,19 @@ public struct LWE
         SK = sk.ToVec();
 
         long lq = q;
-        var o = new ZnInt64(lq * lq, 1);
-        var s1q2 = s1.Select(e => e.Signed * o).ToKMatrix();
+        var s1q2 = s1.Select(e => new ZnInt64(0, e.Signed)).ToKMatrix();
         var sks = SK.Select(e => e.Signed).ToArray();
-        var sksk = sks.Grid2D(sks).Select(t => -t.t1 * t.t2 * q * o).ToKMatrix(n * n);
-        var B = Regev.Unif(n * n * (n - 1), q).Select(k => k.K * q * o).ToKMatrix(n * n);
+        var sksk = sks.Grid2D(sks).Select(t => new ZnInt64(0, -t.t1 * t.t2 * q)).ToKMatrix(n * n);
+        var B = Regev.Unif(n * n * (n - 1), q).Select(k => new ZnInt64(0,k.Signed * q)).ToKMatrix(n * n);
 
-        var e2 = Regev.DiscGauss(n * n, o.P, S).ToKMatrix(n * n); // e2 ~ -1, 0, 1
+        var e2 = Regev.DiscGauss(n * n, lq * lq, S).Select(e => new ZnInt64(0, e.K)).ToKMatrix(n * n); // e2 ~ -1, 0, 1
         if (!noiseMode)
             e2 = e2.Zero;
 
         var b = B * s1q2.T + sksk + e2;
-        var noise = (N * N).SeqLazy().Select(_ => BlankNoise(n, o.Mod, sks)).ToArray();
+        var noise = (N * N).SeqLazy().Select(_ => BlankNoise(n, lq * lq, sks)).ToArray();
         var ek = KMatrix<ZnInt64>.MergeSameRows(B, b) + KMatrix<ZnInt64>.MergeSameCols(noise);
-        EK = ek.Cols.Select(c => c.ToVec()).ToVec();
+        EK = ek.Cols.Select(c => c.Select(e => new ZnInt64(lq * lq, e.K)).ToVec()).ToVec();
 
         Zero = new(N.SeqLazy().Select(_ => new ZnInt64(q, 0)).ToVec());
         One = CipherLWE.Not(Zero);
@@ -68,8 +67,8 @@ public struct LWE
 
     static KMatrix<ZnInt64> BlankNoise(int n, long q, long[] sks)
     {
-        var o = new ZnInt64(q, 1);
-        var l = 10000.SeqLazy().Select(_ => IntExt.Rng.NextInt64(q / 10, q) * o).Where(k => !k.IsZero()).Take(n - 1)
+        var o = new ZnInt64(0, 1);
+        var l = 10000.SeqLazy().Select(_ => IntExt.Rng.NextInt64(q / 10, q) * o).Where(k => k.K % q != 0).Take(n - 1)
             .ToArray();
         var prod = sks.Zip(l).Select(t => t.First * t.Second).Aggregate((a0, a1) => a0 + a1);
         return l.Append(prod).ToKMatrix();
@@ -89,7 +88,7 @@ public struct LWE
     public int DecryptBit(CipherLWE cipher)
     {
         var d = (SK * cipher.Vec).Sum();
-        return long.Abs(d.Signed) * 4 < Q ? 0 : 1;
+        return long.Abs(d.Signed) < Q / 4 ? 0 : 1;
     }
 
     public CipherLWE BrutalRefresh(CipherLWE cipher)
@@ -100,7 +99,7 @@ public struct LWE
     public int Error(CipherLWE cipher)
     {
         var d = (SK * cipher.Vec).Sum();
-        var m = long.Abs(d.Signed) * 4 < Q ? 0 : 1;
+        var m = long.Abs(d.Signed) < Q / 4 ? 0 : 1;
         return (int)(d - m * Q / 2).Signed;
     }
 
