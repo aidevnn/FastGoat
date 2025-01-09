@@ -29,8 +29,8 @@ public struct CipherLWE
     {
         var oq = A.Vec.KOne;
         var q = oq.Mod;
-        var TensAB = A.Vec.Grid2D(B.Vec).Select(e => (long)double.Round(e.t1.Signed * e.t2.Signed * 2.0 / q)).ToArray();
-        return new(ek.Select(e => (long)double.Round(e.Zip(TensAB).Sum(f => f.First.Signed * f.Second) * 1.0 / q) * oq)
+        var TensAB = A.Vec.Grid2D(B.Vec).Select(e => double.Round(e.t1.Signed * e.t2.Signed * 2.0 / q)).ToArray();
+        return new(ek.Select(e => (long)double.Round(e.Zip(TensAB).Sum(f => f.First.Signed * f.Second * 1.0 / q)) * oq)
             .ToVec());
     }
     
@@ -38,21 +38,4 @@ public struct CipherLWE
     public static CipherLWE Nor(CipherLWE A, CipherLWE B, Vec<Vec<ZnInt64>> ek) => And(Not(A), Not(B), ek);
     public static CipherLWE Or(CipherLWE A, CipherLWE B, Vec<Vec<ZnInt64>> ek) => Not(Nor(A, B, ek));
     public override string ToString() => $"{Vec}";
-}
-
-public struct CypherRLWE
-{
-    public CypherRLWE(EPoly<ZnInt> a0, EPoly<ZnInt> p0)
-    {
-        (a, p) = (a0, p0);
-    }
-
-    public EPoly<ZnInt> a { get; }
-    public EPoly<ZnInt> p { get; }
-
-    public void Deconstruct(out EPoly<ZnInt> a0, out EPoly<ZnInt> p0) => (a0, p0) = (a, p);
-
-    public static CypherRLWE Not(CypherRLWE C) => new(-C.a, -C.p);
-
-    public static CypherRLWE Xor(CypherRLWE C0, CypherRLWE C1) => new(C0.a + C1.a, C0.p + C1.p);
 }

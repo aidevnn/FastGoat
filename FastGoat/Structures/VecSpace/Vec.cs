@@ -71,7 +71,7 @@ public readonly struct Vec<A> : IEnumerable<A>, IElt<Vec<A>>, IRingElt<Vec<A>>, 
 
     public Vec<A> Mul(int k) => KMul(k * KOne);
 
-    public A InnerProd(Vec<A> b) => Mul(b).Aggregate((ei, ej) => ei + ej);
+    public A InnerProd(Vec<A> b) => Mul(b).Sum();
 
     public Vec<A> Pow(int k) => new(V.Ei.Select(ei => ei.Pow(k)).ToArray());
     

@@ -137,15 +137,15 @@ public static class BGVtests
             var sum = seqMsg.Aggregate((e0, e1) => (e0 + e1).ResMod(pm, t));
             var mul = seqMsg.Aggregate((e0, e1) => (e0 * e1).ResMod(pm, t));
 
-            var qSum = new Queue<BGVCipher>(seqCipher);
+            var qSum = new Queue<RLWECipher>(seqCipher);
             while (qSum.Count > 1) qSum.Enqueue(FHE.AddBGV(qSum.Dequeue(), qSum.Dequeue(), q));
             var dSum = FHE.DecryptBGV(qSum.Dequeue(), pm, sk, t);
             
-            var qMul1 = new Queue<BGVCipher>(seqCipher);
+            var qMul1 = new Queue<RLWECipher>(seqCipher);
             while (qMul1.Count > 1) qMul1.Enqueue(FHE.MulRelinBGV(qMul1.Dequeue(), qMul1.Dequeue(), pm, q, rlk));
             var dMul1 = FHE.DecryptBGV(qMul1.Dequeue(), pm, sk, t);
             
-            var qMul2 = new Queue<BGVCipher>(seqCipher);
+            var qMul2 = new Queue<RLWECipher>(seqCipher);
             while (qMul2.Count > 1) qMul2.Enqueue(FHE.MulSwkBGV(qMul2.Dequeue(), qMul2.Dequeue(), pm, q, es, es2));
             var dMul2 = FHE.DecryptBGV(qMul2.Dequeue(), pm, sk, t);
             
