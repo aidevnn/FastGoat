@@ -57,7 +57,7 @@ public static class IntExt
     /// <summary>
     /// All Primes less than 10000
     /// </summary>
-    public static List<int> Primes10000 { get; }
+    public static List<int> Primes10000 { get; private set; }
 
     /// <summary>
     ///  Partitions of an integers until 32. 
@@ -90,6 +90,15 @@ public static class IntExt
         }
 
         return primes;
+    }
+
+    /// <summary>
+    /// Recomputing AllPrimes less than a given bound
+    /// </summary>
+    /// <param name="n">The maximum number to be included in the sequence.</param>
+    public static void RecomputeAllPrimesUpTo(int n)
+    {
+        Primes10000 = new(AllPrimes(n));
     }
 
     /// <summary>
