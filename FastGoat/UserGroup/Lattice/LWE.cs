@@ -115,12 +115,11 @@ public struct LWE
         Console.WriteLine();
     }
 
-    public static LWE CreateFrom(int n, bool noiseMode = true, bool pow2 = false)
+    public static LWE Setup(int n, int k, bool noiseMode = true, bool pow2 = false)
     {
-        var alpha = 1.0 / (4 * double.Log2(n) * double.Log2(n) * double.Sqrt(n));
-        var seq = pow2 ? 16.SeqLazy(1).Select(i => 1 << i) : IntExt.Primes10000;
-        var q = seq.First(q0 => alpha * q0 > 2 * double.Sqrt(n));
-        var m = (int)(1.1 * n * double.Log2(q));
+        var (q, m) = Regev.Setup(n, k, pow2);
         return new LWE(n, q, m, noiseMode);
     }
+
+    public static LWE Setup(int n, bool noiseMode = true, bool pow2 = false) => Setup(n, 2, noiseMode, pow2);
 }

@@ -98,4 +98,14 @@ public class Regev
         var sigma = s / double.Sqrt(2 * double.Pi);
         return DistributionExt.DiscreteGaussianSample(n, sigma, tau).Select(i => new ZnInt64(q, i)).ToVec();
     }
+
+    public static (int q, int m) Setup(int n, int k, bool pow2 = false)
+    {
+        var l = 1 << k;
+        var alpha = 1.0 / (l * double.Log2(n) * double.Log2(n) * double.Sqrt(n));
+        var seq = pow2 ? 16.SeqLazy(1).Select(i => 1 << i) : IntExt.Primes10000;
+        var q = seq.First(q0 => alpha * q0 > 2 * double.Sqrt(n));
+        var m = (int)(1.1 * (n + 1) * double.Log2(q));
+        return (q, m);
+    }
 }

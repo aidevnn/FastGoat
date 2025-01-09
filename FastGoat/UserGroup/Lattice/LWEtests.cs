@@ -117,7 +117,7 @@ public static class LWEtests
     {
         for (int n = 4; n < 31; ++n)
         {
-            var lwe = LWE.CreateFrom(n);
+            var lwe = LWE.Setup(n);
             lwe.Show();
 
             RunLWE(lwe, "hello world lwe");
@@ -165,7 +165,7 @@ public static class LWEtests
     {
         for(int n = 4; n < 31; n += 1)
         {
-            var lwe = LWE.CreateFrom(n);
+            var lwe = LWE.Setup(n);
             lwe.Show();
 
             var nbTrials = 100;
