@@ -13,7 +13,7 @@ public static class FHE
     public static void NoiseOn() => NoiseMode = true;
     public static void NoiseOff() => NoiseMode = false;
 
-    public static Rq GenDiscrGauss(int n, double s = 3.0)
+    public static Rq GenDiscrGauss(int n, double s = 3.2)
     {
         return DistributionExt.DiscreteGaussianSample(n, s).ToKPoly(Rational.KZero());
     }
@@ -166,7 +166,8 @@ public static class FHE
         return EncryptBGV(sk, pm, t, q, pk);
     }
 
-    public static RLWECipher SwitchKeysBGV(RLWECipher cipher, Rq pm, Rational t, Rational q, RLWECipher pk, RLWECipher swk)
+    public static RLWECipher SwitchKeysBGV(RLWECipher cipher, Rq pm, Rational t, Rational q, RLWECipher pk,
+        RLWECipher swk)
     {
         return SubBGV((cipher.A, cipher.A.Zero, pm, q), KMulBGV(swk, cipher.B, pm, q), q);
     }
@@ -181,12 +182,29 @@ public static class FHE
     }
 
     public static RLWECipher AutoMorphBGV(RLWECipher cipher, int k, Rq pm, Rational t, Rational q, RLWECipher pk,
-         Dictionary<int, RLWECipher> ak)
+        Dictionary<int, RLWECipher> ak)
     {
         var xk = pm.X.Pow(k);
         var a = cipher.A.Substitute(xk).ResMod(pm, q);
         var b = cipher.B.Substitute(xk).ResMod(pm, q);
         return SwitchKeysBGV((a, b, pm, q), pm, t, q, pk, ak[k]);
+    }
+
+    public static (RLWECipher[] encXpow, RLWECipher[] exsk) EXSK(Rq pm, Rq sk, Rational t, Rational q, RLWECipher pk)
+    {
+        var n = pm.Degree;
+        var encXpow = n.SeqLazy().Select(i => EncryptBGV(pm.X.Pow(i), pm, t, q, pk)).ToArray();
+        var exsk = n.SeqLazy().Select(i => EncryptBGV(sk[i] * pm.One, pm, t, q, pk)).ToArray();
+        return (encXpow, exsk);
+    }
+
+    public static RLWECipher[] ExtractCoefs(RLWECipher cipher, Rq pm, RLWECipher[] exsk)
+    {
+        var extr = Extract(cipher, pm.Degree);
+        return extr.Select(e =>
+        {
+            return e.ai - e.bi.Zip(exsk).Select(bisi => bisi.First * bisi.Second).Aggregate((e0, e1) => e0 + e1);
+        }).ToArray();
     }
 
     public static (RLWECipher plus, RLWECipher minus)[] BRKBGV(Rq pm, Rq sk, Rational t, Rational q, RLWECipher pk)
@@ -198,7 +216,7 @@ public static class FHE
             .ToArray();
     }
 
-    public static ((RLWECipher sp, RLWECipher p) plus, (RLWECipher sm, RLWECipher m) minus)[] 
+    public static ((RLWECipher sp, RLWECipher p) plus, (RLWECipher sm, RLWECipher m) minus)[]
         BRKgswBGV(Rq pm, Rq sk, Rational t, Rational q, RLWECipher pk)
     {
         var enc = (int k) => EncryptRgswBGV(pm.One * k, pm, t, q, pk);
@@ -213,7 +231,7 @@ public static class FHE
         var x = pm.X;
         if (a == 0)
             return x.One;
-        
+
         var n = pm.Degree;
         var sgn = a > 0 || a % n == 0 ? 0 : 1;
         return (x.Pow(IntExt.AmodP(a, n)) * (-1).Pow(a / n + sgn)).CoefsMod(q);
@@ -236,7 +254,7 @@ public static class FHE
             var (encSi_plus, encSi_minus) = brk[i];
 
             var ai = (int)beta[i].Opp().Mod(q).Num;
-            
+
             var exai = (XpowA(ai, pm, q) - 1).CoefsMod(q);
             var cxai = KMulBGV(encSi_plus, exai, pm, q);
             var ex_ai = (XpowA(-ai, pm, q) - 1).CoefsMod(q);
@@ -244,7 +262,7 @@ public static class FHE
 
             var c0 = (encOne.A + cxai.A + cx_ai.A).ResMod(pm, q);
             var c1 = (encOne.B + cxai.B + cx_ai.B).ResMod(pm, q);
-            
+
             acc = MulRelinBGV(acc, (c0, c1, pm, q), pm, q, rlk);
         }
 
@@ -252,7 +270,7 @@ public static class FHE
     }
 
     public static RLWECipher BlindRotateRgswBGV((Rational ai, Rational[] bi) ab, Rq f, Rq pm, Rational q, RLWECipher pk,
-         ((RLWECipher sp, RLWECipher p) plus, (RLWECipher sm, RLWECipher m) minus)[] brk)
+        ((RLWECipher sp, RLWECipher p) plus, (RLWECipher sm, RLWECipher m) minus)[] brk)
     {
         var n = pm.Degree;
         var x = pm.X;
@@ -268,27 +286,26 @@ public static class FHE
             var ((encSi_sp, encSi_p), (encSi_sm, encSi_m)) = brk[i];
 
             var ai = (int)beta[i].Opp().Mod(q).Num;
-            
+
             var exai = (XpowA(ai, pm, q) - 1).CoefsMod(q);
             var cxai_sp = KMulBGV(encSi_sp, exai, pm, q);
             var cxai_p = KMulBGV(encSi_p, exai, pm, q);
-            
+
             var ex_ai = (XpowA(-ai, pm, q) - 1).CoefsMod(q);
             var cx_ai_sm = KMulBGV(encSi_sm, ex_ai, pm, q);
             var cx_ai_m = KMulBGV(encSi_m, ex_ai, pm, q);
-            
+
             var sa = (encOne.s.A + cxai_sp.A + cx_ai_sm.A).ResMod(pm, q);
             var sb = (encOne.s.B + cxai_sp.B + cx_ai_sm.B).ResMod(pm, q);
             var a = (encOne.o.A + cxai_p.A + cx_ai_m.A).ResMod(pm, q);
             var b = (encOne.o.B + cxai_p.B + cx_ai_m.B).ResMod(pm, q);
-            
+
             acc = SubBGV(KMulBGV((a, b, pm, q), acc.A, pm, q), KMulBGV((sa, sb, pm, q), acc.B, pm, q), q);
-            
         }
 
         return acc;
     }
-    
+
     static Rational[] ExtractArr(int i, Rq poly, int n)
     {
         return n.SeqLazy(start: i, step: -1).Select(j => j >= 0 ? poly[j] : -poly[n + j]).ToArray();
@@ -298,7 +315,7 @@ public static class FHE
     {
         return n.SeqLazy().Select(i => (ai: e.A[i], bi: ExtractArr(i, e.B, n).ToArray())).ToArray();
     }
-    
+
     public static RLWECipher RepackingBGV(RLWECipher[] accs, int n, Rq pm, Rational t, Rational q, RLWECipher pk,
         Dictionary<int, RLWECipher> ak)
     {
@@ -335,7 +352,7 @@ public static class FHE
 
         return CT[0, 1];
     }
-    
+
     public static RLWECipher Bootstrapping(RLWECipher ct, Rq pm, Rational q, Rational Q, RLWECipher pk, RLWECipher rlk,
         (RLWECipher plus, RLWECipher minus)[] brk, Dictionary<int, RLWECipher> ak, int fact = 2)
     {
@@ -343,10 +360,10 @@ public static class FHE
         var q1 = q / fact;
         if (!q1.IsInteger())
             throw new();
-    
+
         var ct1 = ct.CoefsMod(q1);
         var ctprep = new RLWECipher((ct.A - ct1.A) / q1, (ct.B - ct1.B) / q1, pm, q).CoefsMod(new(fact));
-    
+
         // Step 1. Extraction
         var extract = Extract(ctprep, n);
 
@@ -355,31 +372,32 @@ public static class FHE
         var c = (int)(0.5 * (delta + 1) + gamma * q1.Inv());
         var f = (2 * c + 1).SeqLazy(-c).Where(j => j != 0).Select(j => -q1 * j * XpowA(j, pm, q))
             .Aggregate((v0, v1) => v0 + v1).ResMod(pm, q);
-    
+
         // Step 2. Blind Rotate
         var seqBR = new List<RLWECipher>();
         foreach (var ab in extract)
             seqBR.Add(BlindRotateBGV(ab, f, pm, Q, pk, rlk, brk));
 
         // Step 3. Repacking
-        var seqBR0 = seqBR.Select(cipher => new RLWECipher(cipher.A[0] * pm.One, cipher.B[0] * pm.One, pm, q)).ToArray();
+        var seqBR0 = seqBR.Select(cipher => new RLWECipher(cipher.A[0] * pm.One, cipher.B[0] * pm.One, pm, q))
+            .ToArray();
         var ctsm = RepackingBGV(seqBR0, n, pm, q1, Q, pk, ak);
-        
+
         return AddBGV(ctsm, ct1, Q);
     }
 
     public static RLWECipher BootstrappingRgsw(RLWECipher ct, Rq pm, Rational q, Rational Q, RLWECipher pk,
-        ((RLWECipher sp, RLWECipher p) plus, (RLWECipher sm, RLWECipher m) minus)[] brk, Dictionary<int, RLWECipher> ak, 
+        ((RLWECipher sp, RLWECipher p) plus, (RLWECipher sm, RLWECipher m) minus)[] brk, Dictionary<int, RLWECipher> ak,
         int fact = 2)
     {
         var n = pm.Degree;
         var q1 = q / fact;
         if (!q1.IsInteger())
             throw new();
-    
+
         var ct1 = ct.CoefsMod(q1);
         var ctprep = new RLWECipher((ct.A - ct1.A) / q1, (ct.B - ct1.B) / q1, pm, q).CoefsMod(new(fact));
-    
+
         // Step 1. Extraction
         var extract = Extract(ctprep, n);
 
@@ -388,18 +406,19 @@ public static class FHE
         var c = (int)(0.5 * (delta + 1) + gamma * q1.Inv());
         var f = (2 * c + 1).SeqLazy(-c).Where(j => j != 0).Select(j => -q1 * j * XpowA(j, pm, q))
             .Aggregate((v0, v1) => v0 + v1).ResMod(pm, q);
-    
+
         // Step 2. Blind Rotate
         var seqBR = new List<RLWECipher>();
         foreach (var ab in extract)
             seqBR.Add(BlindRotateRgswBGV(ab, f, pm, Q, pk, brk));
 
         // Step 3. Repacking
-        var seqBR0 = seqBR.Select(cipher => new RLWECipher(cipher.A[0] * pm.One, cipher.B[0] * pm.One, pm, q)).ToArray();
+        var seqBR0 = seqBR.Select(cipher => new RLWECipher(cipher.A[0] * pm.One, cipher.B[0] * pm.One, pm, q))
+            .ToArray();
         var ctsm = RepackingBGV(seqBR0, n, pm, q1, Q, pk, ak);
         ct1.Show("ct1");
         ctsm.Show("ctsm");
-        
+
         return AddBGV(ctsm, ct1, Q);
     }
 
@@ -413,6 +432,7 @@ public static class FHE
     {
         return ((cipher.A / q).RoundPoly(), (cipher.B / q).RoundPoly(), cipher.PM, q);
     }
+
     public static Rq Signed(Rq poly, Rational q) => poly.Coefs.Select(c => 2 * c > q ? c - q : c).ToKPoly();
 
     public static double NormCan(Rq poly, Cplx[] roots, Rational q)
@@ -433,6 +453,7 @@ public static class FHE
 
     public static double NormInf(Rq poly, Rational q) => poly.Coefs.Select(c => 2 * c > q ? q - c : c).Max();
     public static double NormInf(RLWECipher e, Rational q) => double.Max(NormInf(e.A, q), NormInf(e.B, q));
+
     public static void Show(Rq pm, Rq sk, Rational t, Rational q, RLWECipher pk, RLWECipher rlk)
     {
         Console.WriteLine($"N = {pm.Degree} t = {t} q = {q}");
