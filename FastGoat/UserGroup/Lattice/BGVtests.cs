@@ -120,17 +120,17 @@ public static class BGVtests
 
     public static void TrackingErrors()
     {
-        var l = 5;
-        var size = 1 << (l + 1);
-        var n = 1 << l;
-        var t0 = 4 * n;
-        var (pm, sk, t, q, pk, rlk) = FHE.KeyGenBGV(n, t0, t0);
+        var depth = 8;
+        var size = 1 << depth;
+        var n = 7;
+        var (t0, q0) = (59, 7 * 59);
+        var (pm, sk, t, q, pk, rlk) = FHE.KeyGenBGV(n, t0, q0);
         FHE.Show(pm, sk, t, q, pk, rlk);
         var (es2, es) = FHE.ESKBGV(pm, sk, t, q, pk);
 
         for (int k = 0; k < 50; ++k)
         {
-            Console.WriteLine($"Size {size} Depth:{l + 1}");
+            Console.WriteLine($"Size {size} Depth:{depth}");
             var seqMsg = size.SeqLazy().Select(_ => FHE.GenUnif(n, t0)).ToArray();
             var seqCipher = seqMsg.Select(m => FHE.EncryptBGV(m, pm, t, q, pk)).ToArray();
             
@@ -276,8 +276,8 @@ public static class BGVtests
             var u0 = (int)u.Num;
             var expected = (FHE.XpowA(u0, pm, q) * f).ResMod(pm, t);
             Console.WriteLine($"u= a - <b,s>:{u}");
-            Console.WriteLine($"f*X^{u,-2}      :{expected}");
-            Console.WriteLine($"f*X^{u,-2}      :[{expected.CoefsExtended(n - 1).Glue(", ", fmt)}]");
+            Console.WriteLine($"f*X^{u,-4}    :{expected}");
+            Console.WriteLine($"f*X^{u,-4}    :[{expected.CoefsExtended(n - 1).Glue(", ", fmt)}]");
             var factor = ((int)q.Num).SeqLazy(1).First(k0 => (k0 * actual).CoefsMod(q).Equals(expected));
             Console.WriteLine($"factor      :{factor}");
             Console.WriteLine();
