@@ -10,7 +10,17 @@ public class RLWE
     public int N { get; }
     public int Q { get; }
     public double Sigma { get; }
-    public RLWE(int n, int q, double sigma = 1.0)
+
+    public RLWE(int n)
+    {
+        if (!int.IsPow2(n))
+            throw new($"N = {n} must be 2^k");
+
+        var q = IntExt.Primes10000.First(q => q % (2 * n) == 1);
+        (N, Q, Sigma) = (n, q, 3.0);
+    }
+    
+    public RLWE(int n, int q, double sigma = 3.0)
     {
         if (!int.IsPow2(n))
             throw new($"N = {n} must be 2^k");
@@ -26,12 +36,15 @@ public class RLWE
         if (seq.Length != N)
             throw new();
 
-        return seq.Take(N).Select(e => IntExt.AmodP(e, 2)).ToKPoly(Rational.KOne());
+        var qh = Q / 2;
+        return seq.Select(e => qh * IntExt.AmodP(e, 2)).ToKPoly(Rational.KOne());
     }
+
+    public Rq Mask() => Encode(Enumerable.Repeat(1, N).ToArray());
 
     public int[] Decode(Rq a)
     {
-        return N.Range().Reverse().Select(i => a[i]).Select(k => k * 2 > Q ? Q - k : k)
+        return N.Range().Select(i => a[i]).Select(k => k * 2 > Q ? Q - k : k)
             .Select(i => i.Num * 4 < Q ? 0 : 1).ToArray();
     }
 
