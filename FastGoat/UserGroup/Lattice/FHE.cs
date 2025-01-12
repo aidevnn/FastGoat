@@ -201,10 +201,7 @@ public static class FHE
     public static RLWECipher[] ExtractCoefs(RLWECipher cipher, Rq pm, RLWECipher[] exsk)
     {
         var extr = Extract(cipher, pm.Degree);
-        return extr.Select(e =>
-        {
-            return e.ai - e.bi.Zip(exsk).Select(bisi => bisi.First * bisi.Second).Aggregate((e0, e1) => e0 + e1);
-        }).ToArray();
+        return extr.Select(e => e.ai - e.bi.ToVec().MulA(exsk.ToVec()).Sum()).ToArray();
     }
 
     public static (RLWECipher plus, RLWECipher minus)[] BRKBGV(Rq pm, Rq sk, Rational t, Rational q, RLWECipher pk)
