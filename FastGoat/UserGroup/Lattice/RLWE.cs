@@ -6,6 +6,7 @@ namespace FastGoat.UserGroup.Lattice;
 
 public class RLWE
 {
+    public int n { get; }
     public int N { get; }
     public double Sigma { get; }
 
@@ -21,35 +22,50 @@ public class RLWE
 
     public RLWECipher RLK { get; }
 
-    public RLWE(int n)
-    {
-        if (!int.IsPow2(n))
-            throw new($"N = {n} must be 2^k");
+    public Rational Thalf { get; }
 
-        var t0 = IntExt.Primes10000.First(t0 => t0 % (2 * n) == 1);
+    public Rational OppThalf { get; }
+    public Rational Fnot { get; }
+    public Rational Fand { get; }
+
+    public RLWE(int N)
+    {
+        if (!int.IsPow2(N))
+            throw new($"N = {N} must be 2^k");
+
+        var t0 = IntExt.Primes10000.First(t0 => t0 % (2 * N) == 1);
         var t1 = IntExt.Primes10000.First(t1 => t1 > t0);
-        (N, Sigma) = (n, 3.0);
-        (PM, SK, T, Q, PK, RLK) = FHE.KeyGenBGV(N, t0, t0 * t1);
+        (this.N, n, Sigma) = (N, IntExt.Phi(N), 3.0);
+        
+        (PM, SK, T, Q, PK, RLK) = FHE.KeyGenBGV(n, t0, t0 * t1);
+        Thalf = (T / 2).Floor;
+        OppThalf = T - Thalf;
+        var th = t0 / 2;
+        var oppth = t0 - th;
+        var th2 = th * th % t0;
+        Fnot = new Rational(IntExt.InvModPbez(oppth, t0) * th % t0);
+        Fand = new Rational(IntExt.InvModPbez(th2, t0) * th % t0);
     }
 
-    public RLWECipher[] Encrypt(int[] seq)
+    public RLWECipher EncryptBit(int m)
     {
-        var qh = (T * PM.One / 2).FloorPoly();
-        return seq.Select(e => FHE.EncryptBGV(qh * IntExt.AmodP(e, 2), PM, T, Q, PK)).ToArray();
+        return FHE.EncryptBGV(Thalf * PM.One * IntExt.AmodP(m, 2), PM, T, Q, PK);
     }
 
-    public int[] Decrypt(RLWECipher[] cipher)
+    public RLWECipher[] Encrypt(int[] seq) => seq.Select(EncryptBit).ToArray();
+
+    public int DecryptBit(RLWECipher cipher)
     {
-        return cipher.Select(e => (FHE.DecryptBGV(e, PM, SK, T) * 2 / T).RoundPoly().IsZero() ? 0 : 1).ToArray();
+        return (FHE.DecryptBGV(cipher, PM, SK, T) * 2 / T).RoundPoly().IsZero() ? 0 : 1;
     }
+
+    public int[] Decrypt(RLWECipher[] ciphers) => ciphers.Select(DecryptBit).ToArray();
+
+    public string Params => $"RLWE N={N}=2^{int.Log2(N)}, Φ(N)={n} t={T} q={Q}";
 
     public void Show()
     {
-        var k = int.Log2(N);
-        Console.WriteLine($"RLWE N = {N} = 2^{k}");
-        FHE.Show(PM, SK, T, Q, PK, RLK);
-        Console.WriteLine($"RLWE N = {N} = 2^{k} t = {T} q = {Q}");
-
+        Console.WriteLine(Params);
         Console.WriteLine("Private Key");
         Console.WriteLine(SK);
         PK.Show("Public Key");
@@ -57,37 +73,22 @@ public class RLWE
         Console.WriteLine();
     }
 
-    public RLWECipher[] NOT(RLWECipher[] cipher)
+    public RLWECipher NOT(RLWECipher cipher) => (Fnot * (cipher + OppThalf)).CoefsMod(Q);
+
+    public RLWECipher[] NOT(RLWECipher[] ciphers) => ciphers.Select(NOT).ToArray();
+
+    public RLWECipher AND(RLWECipher cipher1, RLWECipher cipher2)
     {
-        var t0 = (int)T.Num;
-        var th = t0 / 2;
-        var thi = t0 - th;
-        var z = IntExt.InvModPbez(thi, t0);
-        var f = z * th % t0;
-        return cipher.Select(c => (f * (c + thi)).CoefsMod(Q)).ToArray();
+        return (Fand * FHE.MulRelinBGV(cipher1, cipher2, PM, Q, RLK)).CoefsMod(Q);
     }
 
-    public RLWECipher[] AND(RLWECipher[] cipher1, RLWECipher[] cipher2)
-    {
-        var t0 = (int)T.Num;
-        var th = t0 / 2;
-        var err = th * th % t0;
-        var z = IntExt.InvModPbez(err, t0);
-        var f = z * th % t0;
-        return cipher1.Zip(cipher2).Select(e => f * FHE.MulRelinBGV(e.First, e.Second, PM, Q, RLK)).ToArray();
-    }
+    public RLWECipher NAND(RLWECipher cipher1, RLWECipher cipher2) => NOT(AND(cipher1, cipher2));
+    public RLWECipher NOR(RLWECipher cipher1, RLWECipher cipher2) => AND(NOT(cipher1), NOT(cipher2));
+    public RLWECipher OR(RLWECipher cipher1, RLWECipher cipher2) => NOT(NOR(cipher1, cipher2));
+    public RLWECipher XOR(RLWECipher cipher1, RLWECipher cipher2) =>
+        OR(AND(cipher1, NOT(cipher2)), AND(NOT(cipher1), cipher2));
 
-    public RLWECipher[] NAND(RLWECipher[] cipher1, RLWECipher[] cipher2) => NOT(AND(cipher1, cipher2));
-    public RLWECipher[] NOR(RLWECipher[] cipher1, RLWECipher[] cipher2) => AND(NOT(cipher1), NOT(cipher2));
-    public RLWECipher[] OR(RLWECipher[] cipher1, RLWECipher[] cipher2) => NOT(NOR(cipher1, cipher2));
-    public RLWECipher[] XOR(RLWECipher[] cipher1, RLWECipher[] cipher2)
-    {
-        var c1_and_nc2 = AND(cipher1, NOT(cipher2));
-        var nc1_and_c2 = AND(NOT(cipher1), cipher2);
-        return OR(c1_and_nc2, nc1_and_c2);
-    }
-
-    public RLWECipher[] OP(string name, RLWECipher[] cipher1, RLWECipher[] cipher2)
+    public RLWECipher OP(string name, RLWECipher cipher1, RLWECipher cipher2)
     {
         name = name.ToLower();
         if (name == "and")
@@ -104,6 +105,26 @@ public class RLWE
             throw new($"op:{name} not found");
     }
     
+    public RLWECipher[] AND(RLWECipher[] ciphers1, RLWECipher[] ciphers2)
+    {
+        return ciphers1.Zip(ciphers2).Select(e => AND(e.First, e.Second)).ToArray();
+    }
+
+    public RLWECipher[] NAND(RLWECipher[] cipher1, RLWECipher[] cipher2) => NOT(AND(cipher1, cipher2));
+    public RLWECipher[] NOR(RLWECipher[] cipher1, RLWECipher[] cipher2) => AND(NOT(cipher1), NOT(cipher2));
+    public RLWECipher[] OR(RLWECipher[] cipher1, RLWECipher[] cipher2) => NOT(NOR(cipher1, cipher2));
+    public RLWECipher[] XOR(RLWECipher[] cipher1, RLWECipher[] cipher2)
+    {
+        var c1_and_nc2 = AND(cipher1, NOT(cipher2));
+        var nc1_and_c2 = AND(NOT(cipher1), cipher2);
+        return OR(c1_and_nc2, nc1_and_c2);
+    }
+
+    public RLWECipher[] OP(string name, RLWECipher[] cipher1, RLWECipher[] cipher2)
+    {
+        return cipher1.Zip(cipher2).Select(e => OP(name, e.First, e.Second)).ToArray();
+    }
+
     public RLWECipher[] ADD(RLWECipher[] c1, RLWECipher[] c2)
     {
         var (g1, g2) = (c1.ToArray(), c2.ToArray());
