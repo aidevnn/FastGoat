@@ -55,7 +55,7 @@ public static class LearningWithErrors
 
         return s;
     }
-    
+
     #endregion
 
     static void RunLWERegev(Regev lwe, string text, bool showCipher = false, bool showBinary = true)
@@ -90,13 +90,13 @@ public static class LearningWithErrors
     static void RunRLWE(RLWE rlwe, string text, bool showBinary = true)
     {
         Console.WriteLine(text);
-        
+
         var seq = String2Bin(text).ToArray();
         var seqCiphers = rlwe.Encrypt(seq);
 
         var seqDecrypt = rlwe.Decrypt(seqCiphers);
         var text2 = Bin2String(seqDecrypt);
-        
+
         if (showBinary)
         {
             Console.WriteLine($"seqInput  :[{seq.Glue()}]");
@@ -128,7 +128,7 @@ public static class LearningWithErrors
 
         for (int i = 0; i < 10; i++)
             RunLWERegev(reg, DistributionExt.Dice(LipsumSentences));
-        
+
         // long text
         RunLWERegev(reg, DistributionExt.Dice(LipsumParagraphes), showBinary: false);
         GlobalStopWatch.Show();
@@ -147,7 +147,7 @@ public static class LearningWithErrors
 
         for (int i = 0; i < 10; i++)
             RunRLWE(rlwe, DistributionExt.Dice(LipsumSentences));
-        
+
         // long text
         RunRLWE(rlwe, DistributionExt.Dice(LipsumParagraphes), showBinary: false);
         GlobalStopWatch.Show();
@@ -173,12 +173,12 @@ public static class LearningWithErrors
         var add_m1m2 = (m1 + m2).CoefsMod(t);
         var add_e1e2 = (e1 + e2).CoefsMod(q);
         var d_add = FHE.DecryptBGV(add_e1e2, pm, sk, t);
-        
+
         add_e1e2.Show("e1 + e2");
         Console.WriteLine($"m1 + m2          = {add_m1m2}");
         Console.WriteLine($"Decrypt(e1 + e2) = {d_add}");
         Console.WriteLine();
-        
+
         var mul_m1m2 = (m1 * m2).ResMod(pm, t);
         var mul_e1e2 = FHE.MulRelinBGV(e1, e2, pm, q, rlk);
         var d_mul = FHE.DecryptBGV(mul_e1e2, pm, sk, t);
@@ -206,13 +206,13 @@ public static class LearningWithErrors
         Console.WriteLine($"   [{m0.Glue()}]");
         Console.WriteLine($" = [{rlwe.Decrypt(rlwe.NOT(e0)).Glue()}]");
         Console.WriteLine();
-        
+
         Console.WriteLine("AND");
         Console.WriteLine($"   [{m1.Glue()}]");
         Console.WriteLine($"   [{m2.Glue()}]");
         Console.WriteLine($" = [{rlwe.Decrypt(rlwe.AND(e1, e2)).Glue()}]");
         Console.WriteLine();
-        
+
         Console.WriteLine("OR");
         Console.WriteLine($"   [{m1.Glue()}]");
         Console.WriteLine($"   [{m2.Glue()}]");
@@ -230,7 +230,7 @@ public static class LearningWithErrors
         var bits = 32;
         var fmt = $"{{0,{(int)(bits * double.Log10(2)) + 1}}}";
         string FMT(long a) => string.Format(fmt, a);
-        
+
         var m1 = DistributionExt.DiceSample(bits - 1, [0, 1]).Append(0).ToArray();
         var m2 = DistributionExt.DiceSample(bits - 1, [0, 1]).Append(0).ToArray();
         var a1 = Convert.ToInt64(m1.Reverse().Glue(), 2);
@@ -238,12 +238,12 @@ public static class LearningWithErrors
         var e1 = rlwe.Encrypt(m1);
         var e2 = rlwe.Encrypt(m2);
 
-        var sum = a1 + a2;
-        var add_m1m2 = Convert.ToString(sum, 2).PadLeft(bits, '0');
-        
+        var sumi = a1 + a2;
+        var add_m1m2 = Convert.ToString(sumi, 2).PadLeft(bits, '0');
+
         var add_e1e2 = rlwe.ADD(e1, e2);
         var d_add = rlwe.Decrypt(add_e1e2);
-        
+
         m1.Zip(e1).Take(6).Println($"Encrypt(m1 = 0b{m1.Reverse().Glue()})");
         Console.WriteLine("...");
         m2.Zip(e2).Take(6).Println($"Encrypt(m2 = 0b{m2.Reverse().Glue()})");
@@ -253,8 +253,12 @@ public static class LearningWithErrors
 
         Console.WriteLine($"   0b{m1.Reverse().Glue()} = {FMT(a1)}");
         Console.WriteLine($" + 0b{m2.Reverse().Glue()} = {FMT(a2)}");
-        Console.WriteLine($" = 0b{d_add.Reverse().Glue()} = {FMT(sum)}");
+        Console.WriteLine($" = 0b{d_add.Reverse().Glue()} = {FMT(sumi)}");
         Console.WriteLine($"   0b{add_m1m2}");
+
+        var sumf = Convert.ToInt64(d_add.Reverse().Glue(), 2);
+        if (sumi != sumf)
+            throw new();
     }
     // RLWE N=16=2^4, Φ(N)=8 PM=x^8 + 1 t=97 q=9797=97*101
     // Private Key
@@ -297,5 +301,47 @@ public static class LearningWithErrors
     //  = 0b11000010000011110000011010010100 = 3255764628
     //    0b11000010000011110000011010010100
     // 
-    // 
+
+    public static void Example6HomomorphicMultiplicationWithCarry()
+    {
+        // Warning : Weak parameters
+        // RLWE N=8=2^3, Φ(N)=4 PM=x^4 + 1 t=17 q=323=17*19
+        var rlwe = new RLWE(8);
+        rlwe.Show();
+
+        var bits = 32;
+        var fmt = $"{{0,{(int)(2 * bits * double.Log10(2)) + 1}}}";
+        string FMT(long a) => string.Format(fmt, a);
+
+        var m1 = DistributionExt.DiceSample(bits - 1, [0, 1]).Append(0).ToArray();
+        var m2 = DistributionExt.DiceSample(bits - 1, [0, 1]).Append(0).ToArray();
+        var a1 = Convert.ToInt64(m1.Reverse().Glue(), 2);
+        var a2 = Convert.ToInt64(m2.Reverse().Glue(), 2);
+        var e1 = rlwe.Encrypt(m1);
+        var e2 = rlwe.Encrypt(m2);
+
+        var prodi = a1 * a2;
+        var mult_m1m2 = Convert.ToString(prodi, 2).PadLeft(bits * 2, '0');
+
+        var mult_e1e2 = rlwe.MULT(e1, e2);
+        var d_mult = rlwe.Decrypt(mult_e1e2);
+
+        m1.Zip(e1).Take(6).Println($"Encrypt(m1 = 0b{m1.Reverse().Glue()})");
+        Console.WriteLine("...");
+        m2.Zip(e2).Take(6).Println($"Encrypt(m2 = 0b{m2.Reverse().Glue()})");
+        Console.WriteLine("...");
+        d_mult.Zip(mult_e1e2).Take(6).Println($"Decrypt(e1 * e2) = 0b{d_mult.Reverse().Glue()}");
+        Console.WriteLine("...");
+
+        var zeros = Enumerable.Repeat(0, bits).ToArray();
+        Console.WriteLine($"   0b{m1.Concat(zeros).Reverse().Glue()} = {FMT(a1)}");
+        Console.WriteLine($" * 0b{m2.Concat(zeros).Reverse().Glue()} = {FMT(a2)}");
+        Console.WriteLine($" = 0b{d_mult.Reverse().Glue()} = {FMT(prodi)}");
+        Console.WriteLine($"   0b{mult_m1m2}");
+        Console.WriteLine();
+
+        var prodf = Convert.ToInt64(d_mult.Reverse().Glue(), 2);
+        if (prodi != prodf)
+            throw new();
+    }
 }

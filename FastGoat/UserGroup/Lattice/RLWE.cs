@@ -24,6 +24,7 @@ public class RLWE
 
     public Rational Thalf { get; }
     public Rational InvThalf { get; }
+    public RLWECipher Zero => PK.Zero;
 
     public RLWE(int N)
     {
@@ -125,14 +126,32 @@ public class RLWE
     public RLWECipher[] ADD(RLWECipher[] c1, RLWECipher[] c2)
     {
         var (g1, g2) = (c1.ToArray(), c2.ToArray());
-        var z = c1[0].Zero;
         for (int i = 0; i < c1.Length; i++)
         {
             var xor_g1g2 = XOR(g1, g2);
-            var and_g1g2 = AND(g1, g2).SkipLast(1).Prepend(z).ToArray();
+            var and_g1g2 = AND(g1, g2).SkipLast(1).Prepend(Zero).ToArray();
             (g1, g2) = (xor_g1g2, and_g1g2);
         }
 
         return g1;
+    }
+    
+    public RLWECipher[] MULT(RLWECipher[] ciphers1, RLWECipher[] ciphers2)
+    {
+        var list = new List<RLWECipher[]>();
+        var length = ciphers1.Length + ciphers2.Length;
+        foreach (var (cipher, pos) in ciphers1.Select((c,i)=>(c,i)))
+        {
+            var prepend = Enumerable.Repeat(Zero, pos).ToArray();
+            var append = Enumerable.Repeat(Zero, length - pos).ToArray();
+            var tmpMult = ciphers2.Select(c => AND(c, cipher));
+            list.Add(prepend.Concat(tmpMult).Concat(append).ToArray());
+        }
+    
+        var sum = Enumerable.Repeat(Zero, length).ToArray();
+        foreach (var ciphers in list)
+            sum = ADD(sum, ciphers);
+
+        return sum;
     }
 }

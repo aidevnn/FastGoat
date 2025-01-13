@@ -16,8 +16,9 @@ public static class LWEtests
 
     private static string[] LipsumSentences { get; }
     private static string[] LipsumParagraphes { get; }
-    
+
     #region Char to Bit
+
     // 16-bit default C#-char
     const int charBit = 8;
 
@@ -46,7 +47,7 @@ public static class LWEtests
 
         return s;
     }
-    
+
     #endregion
 
     static void RunLWE(LWE lwe, string text, bool showCipher = false, bool showBinary = true)
@@ -80,6 +81,7 @@ public static class LWEtests
 
         Console.WriteLine();
     }
+
     public static void TestEncryptDecryptLWE()
     {
         for (int n = 4; n < 31; ++n)
@@ -93,7 +95,7 @@ public static class LWEtests
 
             for (int i = 0; i < 10; i++)
                 RunLWE(lwe, DistributionExt.Dice(LipsumSentences));
-        
+
             // long text
             RunLWE(lwe, DistributionExt.Dice(LipsumParagraphes), showBinary: false);
             Console.WriteLine();
@@ -130,7 +132,7 @@ public static class LWEtests
 
     public static void TestHELogicGatesLWE()
     {
-        for(int n = 4; n < 31; n += 1)
+        for (int n = 4; n < 31; n += 1)
         {
             var lwe = LWE.Setup(n);
             lwe.Show();
@@ -178,7 +180,7 @@ public static class LWEtests
             {
                 var table = 2.Range().Grid2D().ToDictionary(e => e, e => (lwe.EncryptBit(e.t1), lwe.EncryptBit(e.t2)));
                 var tableAnd = table
-                    .Select(e => (e.Key, e.Key.t1 & e.Key.t2, 
+                    .Select(e => (e.Key, e.Key.t1 & e.Key.t2,
                         lwe.DecryptBit(LWECipher.And(e.Value.Item1, e.Value.Item2, lwe.EK))))
                     .ToArray();
                 if (l < 10)
@@ -200,7 +202,8 @@ public static class LWEtests
                         lwe.DecryptBit(LWECipher.Nand(e.Value.Item1, e.Value.Item2, lwe.EK))))
                     .ToArray();
                 if (l < 10)
-                    tableNand.Println($"Test[{l}] NAND {(tableNand.All(e => e.Item2 == e.Item3) ? "SUCCESS" : "FAIL")}");
+                    tableNand.Println(
+                        $"Test[{l}] NAND {(tableNand.All(e => e.Item2 == e.Item3) ? "SUCCESS" : "FAIL")}");
 
                 if (tableNand.Any(e => e.Item2 != e.Item3))
                     throw new($"step[{l}] N:{n} Q:{lwe.Q}");
@@ -209,7 +212,7 @@ public static class LWEtests
             Console.WriteLine("...");
             Console.WriteLine($"SUCCESS ALL {nbTrials} NAND gates {lwe.Params}");
             Console.WriteLine();
-            
+
             for (int l = 0; l < nbTrials; ++l)
             {
                 var table = 2.Range().Grid2D().ToDictionary(e => e, e => (lwe.EncryptBit(e.t1), lwe.EncryptBit(e.t2)));
@@ -229,10 +232,11 @@ public static class LWEtests
             Console.WriteLine();
         }
     }
+
     public static void TestHELogicGatesRLWE()
     {
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
-        for(int k = 2; k < 6; k += 1)
+        for (int k = 2; k < 6; k += 1)
         {
             var n = 1 << k;
             var rlwe = new RLWE(n);
@@ -269,7 +273,8 @@ public static class LWEtests
 
             for (int l = 0; l < nbTrials; ++l)
             {
-                var table = 2.Range().Grid2D().ToDictionary(e => e, e => (rlwe.EncryptBit(e.t1), rlwe.EncryptBit(e.t2)));
+                var table = 2.Range().Grid2D()
+                    .ToDictionary(e => e, e => (rlwe.EncryptBit(e.t1), rlwe.EncryptBit(e.t2)));
                 var tableAnd = table
                     .Select(e => (e.Key, e.Key.t1 & e.Key.t2, rlwe.DecryptBit(rlwe.AND(e.Value.Item1, e.Value.Item2))))
                     .ToArray();
@@ -286,13 +291,15 @@ public static class LWEtests
 
             for (int l = 0; l < nbTrials; ++l)
             {
-                var table = 2.Range().Grid2D().ToDictionary(e => e, e => (rlwe.EncryptBit(e.t1), rlwe.EncryptBit(e.t2)));
+                var table = 2.Range().Grid2D()
+                    .ToDictionary(e => e, e => (rlwe.EncryptBit(e.t1), rlwe.EncryptBit(e.t2)));
                 var tableNand = table
                     .Select(e => (e.Key, 1 - (e.Key.t1 & e.Key.t2),
                         rlwe.DecryptBit(rlwe.NAND(e.Value.Item1, e.Value.Item2))))
                     .ToArray();
                 if (l < 10)
-                    tableNand.Println($"Test[{l}] NAND {(tableNand.All(e => e.Item2 == e.Item3) ? "SUCCESS" : "FAIL")}");
+                    tableNand.Println(
+                        $"Test[{l}] NAND {(tableNand.All(e => e.Item2 == e.Item3) ? "SUCCESS" : "FAIL")}");
 
                 if (tableNand.Any(e => e.Item2 != e.Item3))
                     throw new($"step[{l}] N:{n} Q:{rlwe.Q}");
@@ -301,10 +308,11 @@ public static class LWEtests
             Console.WriteLine("...");
             Console.WriteLine($"SUCCESS ALL {nbTrials} NAND gates {rlwe.Params}");
             Console.WriteLine();
-            
+
             for (int l = 0; l < nbTrials; ++l)
             {
-                var table = 2.Range().Grid2D().ToDictionary(e => e, e => (rlwe.EncryptBit(e.t1), rlwe.EncryptBit(e.t2)));
+                var table = 2.Range().Grid2D()
+                    .ToDictionary(e => e, e => (rlwe.EncryptBit(e.t1), rlwe.EncryptBit(e.t2)));
                 var tableOr = table
                     .Select(e => (e.Key, e.Key.t1 | e.Key.t2, rlwe.DecryptBit(rlwe.OR(e.Value.Item1, e.Value.Item2))))
                     .ToArray();
@@ -318,10 +326,11 @@ public static class LWEtests
             Console.WriteLine("...");
             Console.WriteLine($"SUCCESS ALL {nbTrials} OR gates {rlwe.Params}");
             Console.WriteLine();
-            
+
             for (int l = 0; l < nbTrials; ++l)
             {
-                var table = 2.Range().Grid2D().ToDictionary(e => e, e => (rlwe.EncryptBit(e.t1), rlwe.EncryptBit(e.t2)));
+                var table = 2.Range().Grid2D()
+                    .ToDictionary(e => e, e => (rlwe.EncryptBit(e.t1), rlwe.EncryptBit(e.t2)));
                 var tableXor = table
                     .Select(e => (e.Key, e.Key.t1 ^ e.Key.t2, rlwe.DecryptBit(rlwe.XOR(e.Value.Item1, e.Value.Item2))))
                     .ToArray();
@@ -339,7 +348,7 @@ public static class LWEtests
     }
 
     #region Boolean arithmetic
-    
+
     static int OpBool(string name, int c1, int c2)
     {
         return name switch
@@ -365,12 +374,13 @@ public static class LWEtests
             var (e1, e2) = (f1[i], f2[i]);
             (f1[i], f2[i]) = (e1 ^ e2, e1 & e2);
         }
-    
+
         f2[l - 1] = a0;
         f2[0] = 0;
     }
+
     #endregion
-    
+
     static void RunAddWithCarryRLWE(int N, int bits, int nbTrials = 50)
     {
         var rlwe = new RLWE(N);
@@ -407,11 +417,52 @@ public static class LWEtests
             if (sumi != sumf || !dc.SequenceEqual(f1))
                 throw new();
         }
-        
+
         GlobalStopWatch.Show($"END {nbTrials} tests of {bits}-bits Addition with carry");
         Console.WriteLine();
     }
 
+    public static void RunMultWithCarryRLWE(int N, int bits, int nbTrials)
+    {
+        var rlwe = new RLWE(N);
+        rlwe.Show();
+        
+        var fmt = $"{{0,{(int)(2 * bits * double.Log10(2)) + 1}}}";
+        string FMT(long a) => string.Format(fmt, a);
+
+        GlobalStopWatch.Restart();
+        for (int k = 0; k < nbTrials; ++k)
+        {
+            var m1 = DistributionExt.DiceSample(bits - 1, [0, 1]).Append(0).ToArray();
+            var m2 = DistributionExt.DiceSample(bits - 1, [0, 1]).Append(0).ToArray();
+            var a1 = Convert.ToInt64(m1.Reverse().Glue(), 2);
+            var a2 = Convert.ToInt64(m2.Reverse().Glue(), 2);
+            var e1 = rlwe.Encrypt(m1);
+            var e2 = rlwe.Encrypt(m2);
+
+            var mult = a1 * a2;
+            var mult_m1m2 = Convert.ToString(mult, 2).PadLeft(bits * 2, '0');
+
+            var mult_e1e2 = rlwe.MULT(e1, e2);
+            var d_mult = rlwe.Decrypt(mult_e1e2);
+
+            var zeros = Enumerable.Repeat(0, bits).ToArray();
+            Console.WriteLine($"Multiplication No{k + 1} {rlwe.Params}");
+            Console.WriteLine($"   0b{m1.Concat(zeros).Reverse().Glue()} = {FMT(a1)}");
+            Console.WriteLine($" * 0b{m2.Concat(zeros).Reverse().Glue()} = {FMT(a2)}");
+            Console.WriteLine($" = 0b{d_mult.Reverse().Glue()} = {FMT(mult)}");
+            Console.WriteLine($"   0b{mult_m1m2}");
+            Console.WriteLine();
+
+            var multf = Convert.ToInt64(d_mult.Reverse().Glue(), 2);
+            if (mult != multf)
+                throw new();
+        }
+
+        GlobalStopWatch.Show($"END {nbTrials} tests of {bits}-bits Multiplication with carry");
+        Console.WriteLine();
+    }
+    
     public static void TestAddWithCarryRLWE()
     {
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
@@ -420,7 +471,7 @@ public static class LWEtests
         RunAddWithCarryRLWE(N: 8, bits, nbTrials);
         RunAddWithCarryRLWE(N: 16, bits, nbTrials);
         RunAddWithCarryRLWE(N: 32, bits, nbTrials);
-        
+
         RunAddWithCarryRLWE(N: 128, bits, nbTrials);
         // # END 10 tests of 32-bits Addition with carry Time:3m56s
     }
@@ -436,4 +487,21 @@ public static class LWEtests
     // 
     // # END 10 tests of 32-bits Addition with carry Time:16.973s
     // 
+
+    public static void TestMultWithCarryRLWE()
+    {
+        Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+        var (bits, nbTrials) = (16, 10);
+        RunMultWithCarryRLWE(N: 4, bits, nbTrials);
+        RunMultWithCarryRLWE(N: 8, bits, nbTrials);
+        
+        RunMultWithCarryRLWE(N: 4, bits: 32, nbTrials);
+    }
+    // Multiplication No10 RLWE N=4=2^2, Φ(N)=2 PM=x^2 + 1 t=17 q=323=17*19
+    //    0b0000000000000000000000000000000000111011010110010011010101001010 =            995702090
+    //  * 0b0000000000000000000000000000000001101000010101111110100111110010 =           1750591986
+    //  = 0b0001100000110000100111110011001101110111111110101011100111110100 =  1743068099197450740
+    //    0b0001100000110000100111110011001101110111111110101011100111110100
+    // 
+    // # END 10 tests of 32-bits Multiplication with carry Time:2m48s
 }
