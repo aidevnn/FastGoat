@@ -1,6 +1,6 @@
 using FastGoat.Commons;
-using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup.Integers;
+using Rq = FastGoat.Structures.VecSpace.KPoly<FastGoat.UserGroup.Integers.Rational>;
 
 namespace FastGoat.UserGroup.Lattice;
 
@@ -10,9 +10,9 @@ public class RLWE
     public int N { get; }
     public double Sigma { get; }
 
-    public KPoly<Rational> PM { get; }
+    public Rq PM { get; }
 
-    public KPoly<Rational> SK { get; }
+    public Rq SK { get; }
 
     public Rational T { get; }
 
@@ -54,6 +54,11 @@ public class RLWE
     public int[] Decrypt(RLWECipher[] ciphers) => ciphers.Select(DecryptBit).ToArray();
 
     public string Params => $"RLWE N={N}=2^{int.Log2(N)}, Φ(N)={n} PM={PM} t={T} q={Q}={T}*{Q/T}";
+
+    public void Deconstruct(out int _n, out Rq pm, out Rq sk, out Rational t, out Rational q, out RLWECipher pk, out RLWECipher rlk)
+    {
+        (_n, pm, sk, t, q, pk, rlk) = (n, PM, SK, T, Q, PK, RLK);
+    }
 
     public void Show()
     {
