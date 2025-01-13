@@ -23,10 +23,7 @@ public class RLWE
     public RLWECipher RLK { get; }
 
     public Rational Thalf { get; }
-
-    public Rational OppThalf { get; }
-    public Rational Fnot { get; }
-    public Rational Fand { get; }
+    public Rational InvThalf { get; }
 
     public RLWE(int N)
     {
@@ -38,13 +35,8 @@ public class RLWE
         (this.N, n, Sigma) = (N, IntExt.Phi(N), 3.0);
         
         (PM, SK, T, Q, PK, RLK) = FHE.KeyGenBGV(n, t0, t0 * t1);
-        Thalf = (T / 2).Floor;
-        OppThalf = T - Thalf;
-        var th = t0 / 2;
-        var oppth = t0 - th;
-        var th2 = th * th % t0;
-        Fnot = new Rational(IntExt.InvModPbez(oppth, t0) * th % t0);
-        Fand = new Rational(IntExt.InvModPbez(th2, t0) * th % t0);
+        Thalf = new(t0 / 2);
+        InvThalf = new Rational(IntExt.InvModPbez(t0 / 2, t0));
     }
 
     public RLWECipher EncryptBit(int m)
@@ -56,12 +48,12 @@ public class RLWE
 
     public int DecryptBit(RLWECipher cipher)
     {
-        return (FHE.DecryptBGV(cipher, PM, SK, T) * 2 / T).RoundPoly().IsZero() ? 0 : 1;
+        return (FHE.DecryptBGV(cipher, PM, SK, T) * InvThalf).CoefsMod(T).IsZero() ? 0 : 1;
     }
 
     public int[] Decrypt(RLWECipher[] ciphers) => ciphers.Select(DecryptBit).ToArray();
 
-    public string Params => $"RLWE N={N}=2^{int.Log2(N)}, Φ(N)={n} t={T} q={Q}";
+    public string Params => $"RLWE N={N}=2^{int.Log2(N)}, Φ(N)={n} PM={PM} t={T} q={Q}={T}*{Q/T}";
 
     public void Show()
     {
@@ -73,13 +65,13 @@ public class RLWE
         Console.WriteLine();
     }
 
-    public RLWECipher NOT(RLWECipher cipher) => (Fnot * (cipher + OppThalf)).CoefsMod(Q);
+    public RLWECipher NOT(RLWECipher cipher) => (Thalf - cipher).CoefsMod(Q);
 
     public RLWECipher[] NOT(RLWECipher[] ciphers) => ciphers.Select(NOT).ToArray();
 
     public RLWECipher AND(RLWECipher cipher1, RLWECipher cipher2)
     {
-        return (Fand * FHE.MulRelinBGV(cipher1, cipher2, PM, Q, RLK)).CoefsMod(Q);
+        return (InvThalf * FHE.MulRelinBGV(cipher1, cipher2, PM, Q, RLK)).CoefsMod(Q);
     }
 
     public RLWECipher NAND(RLWECipher cipher1, RLWECipher cipher2) => NOT(AND(cipher1, cipher2));
@@ -138,5 +130,4 @@ public class RLWE
 
         return g1;
     }
-
 }
