@@ -26,8 +26,8 @@ public struct LWE
     public Vec<ZnInt64> SK { get; }
     public Vec<Vec<ZnInt64>> EK { get; }
 
-    public CipherLWE Zero { get; }
-    public CipherLWE One { get; }
+    public LWECipher Zero { get; }
+    public LWECipher One { get; }
 
     public LWE(int n, long q, int m, bool noiseMode = true)
     {
@@ -62,7 +62,7 @@ public struct LWE
         EK = ek.Cols.Select(c => c.Select(e => new ZnInt64(lq * lq, e.K)).ToVec()).ToVec();
 
         Zero = new(N.SeqLazy().Select(_ => new ZnInt64(q, 0)).ToVec());
-        One = CipherLWE.Not(Zero);
+        One = LWECipher.Not(Zero);
     }
 
     static KMatrix<ZnInt64> BlankNoise(int n, long q, long[] sks)
@@ -74,7 +74,7 @@ public struct LWE
         return l.Append(prod).ToKMatrix();
     }
 
-    public CipherLWE EncryptBit(int bit)
+    public LWECipher EncryptBit(int bit)
     {
         var n = N;
         var qh = Q / 2 * KOne;
@@ -85,20 +85,20 @@ public struct LWE
         return new((PK * r).Select(e => e.Sum()).ToVec() + b);
     }
 
-    public int DecryptBit(CipherLWE cipher)
+    public int DecryptBit(LWECipher lweCipher)
     {
-        var d = (SK * cipher.Vec).Sum();
+        var d = (SK * lweCipher.Vec).Sum();
         return long.Abs(d.Signed) < Q / 4 ? 0 : 1;
     }
 
-    public CipherLWE BrutalRefresh(CipherLWE cipher)
+    public LWECipher BrutalRefresh(LWECipher lweCipher)
     {
-        return EncryptBit(DecryptBit(cipher));
+        return EncryptBit(DecryptBit(lweCipher));
     }
 
-    public int Error(CipherLWE cipher)
+    public int Error(LWECipher lweCipher)
     {
-        var d = (SK * cipher.Vec).Sum();
+        var d = (SK * lweCipher.Vec).Sum();
         var m = long.Abs(d.Signed) < Q / 4 ? 0 : 1;
         return (int)(d - m * Q / 2).Signed;
     }

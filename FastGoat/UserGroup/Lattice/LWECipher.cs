@@ -6,16 +6,16 @@ using Rq = FastGoat.Structures.VecSpace.KPoly<FastGoat.UserGroup.Integers.Ration
 
 namespace FastGoat.UserGroup.Lattice;
 
-public struct CipherLWE
+public struct LWECipher
 {
     public Vec<ZnInt64> Vec { get; }
 
-    public CipherLWE(Vec<ZnInt64> vec)
+    public LWECipher(Vec<ZnInt64> vec)
     {
         Vec = vec;
     }
 
-    public static CipherLWE Not(CipherLWE A)
+    public static LWECipher Not(LWECipher A)
     {
         var n = A.Vec.Length;
         var o = A.Vec.KOne;
@@ -23,9 +23,9 @@ public struct CipherLWE
         return new(A.Vec.Select((e, i) => i == n - 1 ? e + qh : e).ToVec());
     }
 
-    public static CipherLWE Xor(CipherLWE A, CipherLWE B) => new(A.Vec + B.Vec);
+    public static LWECipher Xor(LWECipher A, LWECipher B) => new(A.Vec + B.Vec);
 
-    public static CipherLWE And(CipherLWE A, CipherLWE B, Vec<Vec<ZnInt64>> ek)
+    public static LWECipher And(LWECipher A, LWECipher B, Vec<Vec<ZnInt64>> ek)
     {
         var oq = A.Vec.KOne;
         var q = oq.Mod;
@@ -34,8 +34,8 @@ public struct CipherLWE
             .ToVec());
     }
     
-    public static CipherLWE Nand(CipherLWE A, CipherLWE B, Vec<Vec<ZnInt64>> ek) => Not(And(A, B, ek));
-    public static CipherLWE Nor(CipherLWE A, CipherLWE B, Vec<Vec<ZnInt64>> ek) => And(Not(A), Not(B), ek);
-    public static CipherLWE Or(CipherLWE A, CipherLWE B, Vec<Vec<ZnInt64>> ek) => Not(Nor(A, B, ek));
+    public static LWECipher Nand(LWECipher A, LWECipher B, Vec<Vec<ZnInt64>> ek) => Not(And(A, B, ek));
+    public static LWECipher Nor(LWECipher A, LWECipher B, Vec<Vec<ZnInt64>> ek) => And(Not(A), Not(B), ek);
+    public static LWECipher Or(LWECipher A, LWECipher B, Vec<Vec<ZnInt64>> ek) => Not(Nor(A, B, ek));
     public override string ToString() => $"{Vec}";
 }

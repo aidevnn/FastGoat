@@ -213,9 +213,9 @@ public static class LWEtests
             {
                 var table = 2.Range().Grid2D().ToDictionary(e => e, e => (lwe.EncryptBit(e.t1), lwe.EncryptBit(e.t2)));
                 var tableNot = 2.Range()
-                    .Select(e => (e, 1 - e, lwe.DecryptBit(CipherLWE.Not(lwe.EncryptBit(e))))).ToArray();
+                    .Select(e => (e, 1 - e, lwe.DecryptBit(LWECipher.Not(lwe.EncryptBit(e))))).ToArray();
                 var tableXor = table.Select(e =>
-                        (e.Key, e.Key.t1 ^ e.Key.t2, lwe.DecryptBit(CipherLWE.Xor(e.Value.Item1, e.Value.Item2))))
+                        (e.Key, e.Key.t1 ^ e.Key.t2, lwe.DecryptBit(LWECipher.Xor(e.Value.Item1, e.Value.Item2))))
                     .ToArray();
 
                 if (l < 10)
@@ -240,7 +240,7 @@ public static class LWEtests
                 var table = 2.Range().Grid2D().ToDictionary(e => e, e => (lwe.EncryptBit(e.t1), lwe.EncryptBit(e.t2)));
                 var tableAnd = table
                     .Select(e => (e.Key, e.Key.t1 & e.Key.t2, 
-                        lwe.DecryptBit(CipherLWE.And(e.Value.Item1, e.Value.Item2, lwe.EK))))
+                        lwe.DecryptBit(LWECipher.And(e.Value.Item1, e.Value.Item2, lwe.EK))))
                     .ToArray();
                 if (l < 10)
                     tableAnd.Println($"Test[{l}] AND {(tableAnd.All(e => e.Item2 == e.Item3) ? "SUCCESS" : "FAIL")}");
@@ -258,7 +258,7 @@ public static class LWEtests
                 var table = 2.Range().Grid2D().ToDictionary(e => e, e => (lwe.EncryptBit(e.t1), lwe.EncryptBit(e.t2)));
                 var tableNand = table
                     .Select(e => (e.Key, 1 - (e.Key.t1 & e.Key.t2),
-                        lwe.DecryptBit(CipherLWE.Nand(e.Value.Item1, e.Value.Item2, lwe.EK))))
+                        lwe.DecryptBit(LWECipher.Nand(e.Value.Item1, e.Value.Item2, lwe.EK))))
                     .ToArray();
                 if (l < 10)
                     tableNand.Println($"Test[{l}] NAND {(tableNand.All(e => e.Item2 == e.Item3) ? "SUCCESS" : "FAIL")}");
@@ -276,7 +276,7 @@ public static class LWEtests
                 var table = 2.Range().Grid2D().ToDictionary(e => e, e => (lwe.EncryptBit(e.t1), lwe.EncryptBit(e.t2)));
                 var tableOr = table
                     .Select(e => (e.Key, e.Key.t1 | e.Key.t2,
-                        lwe.DecryptBit(CipherLWE.Or(e.Value.Item1, e.Value.Item2, lwe.EK))))
+                        lwe.DecryptBit(LWECipher.Or(e.Value.Item1, e.Value.Item2, lwe.EK))))
                     .ToArray();
                 if (l < 10)
                     tableOr.Println($"Test[{l}] OR {(tableOr.All(e => e.Item2 == e.Item3) ? "SUCCESS" : "FAIL")}");
@@ -518,13 +518,13 @@ public static class LWEtests
     public static void TestAddWithCarryRLWE()
     {
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
-        var nbTrials = 10;
-        RunAddWithCarryRLWE(N: 4, bits: 32, nbTrials);
-        RunAddWithCarryRLWE(N: 8, bits: 32, nbTrials);
-        RunAddWithCarryRLWE(N: 16, bits: 32, nbTrials);
-        RunAddWithCarryRLWE(N: 32, bits: 32, nbTrials);
+        var (bits, nbTrials) = (32, 10);
+        RunAddWithCarryRLWE(N: 4, bits, nbTrials);
+        RunAddWithCarryRLWE(N: 8, bits, nbTrials);
+        RunAddWithCarryRLWE(N: 16, bits, nbTrials);
+        RunAddWithCarryRLWE(N: 32, bits, nbTrials);
         
-        RunAddWithCarryRLWE(N: 128, bits: 32, nbTrials);
+        RunAddWithCarryRLWE(N: 128, bits, nbTrials);
         // # END 10 tests of 32-bits Addition with carry Time:3m56s
     }
     // Addition No9 RLWE N=32=2^5, Φ(N)=16 t=193 q=38021
