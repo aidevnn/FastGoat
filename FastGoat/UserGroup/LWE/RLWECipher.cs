@@ -1,9 +1,8 @@
 using FastGoat.Structures;
-using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup.Integers;
 using Rq = FastGoat.Structures.VecSpace.KPoly<FastGoat.UserGroup.Integers.Rational>;
 
-namespace FastGoat.UserGroup.Lattice;
+namespace FastGoat.UserGroup.LWE;
 
 public struct RLWECipher : IModuleElt<Rational, RLWECipher>, IElt<RLWECipher>, IRingElt<RLWECipher>
 {

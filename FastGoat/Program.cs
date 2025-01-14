@@ -4,7 +4,7 @@ using FastGoat.Structures;
 using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup;
 using FastGoat.UserGroup.Integers;
-using FastGoat.UserGroup.Lattice;
+using FastGoat.UserGroup.LWE;
 using Rq = FastGoat.Structures.VecSpace.KPoly<FastGoat.UserGroup.Integers.Rational>;
 using static FastGoat.Commons.IntExt;
 

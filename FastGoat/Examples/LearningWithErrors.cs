@@ -2,7 +2,7 @@ using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup;
-using FastGoat.UserGroup.Lattice;
+using FastGoat.UserGroup.LWE;
 
 namespace FastGoat.Examples;
 
@@ -161,10 +161,10 @@ public static class LearningWithErrors
         var (n, pm, sk, t, q, pk, rlk) = rlwe;
         rlwe.Show();
 
-        var m1 = FHE.GenUnif(n, t);
-        var e1 = FHE.EncryptBGV(m1, pm, t, q, pk);
-        var m2 = FHE.GenUnif(n, rlwe.T);
-        var e2 = FHE.EncryptBGV(m2, pm, t, q, pk);
+        var m1 = RLWE.GenUnif(n, t);
+        var e1 = RLWE.EncryptBGV(m1, pm, t, q, pk);
+        var m2 = RLWE.GenUnif(n, rlwe.T);
+        var e2 = RLWE.EncryptBGV(m2, pm, t, q, pk);
 
         e1.Show($"e1 = Encrypt(m1 = {m1})");
         e2.Show($"e2 = Encrypt(m2 = {m2})");
@@ -172,7 +172,7 @@ public static class LearningWithErrors
 
         var add_m1m2 = (m1 + m2).CoefsMod(t);
         var add_e1e2 = (e1 + e2).CoefsMod(q);
-        var d_add = FHE.DecryptBGV(add_e1e2, pm, sk, t);
+        var d_add = RLWE.DecryptBGV(add_e1e2, pm, sk, t);
 
         add_e1e2.Show("e1 + e2");
         Console.WriteLine($"m1 + m2          = {add_m1m2}");
@@ -180,8 +180,8 @@ public static class LearningWithErrors
         Console.WriteLine();
 
         var mul_m1m2 = (m1 * m2).ResMod(pm, t);
-        var mul_e1e2 = FHE.MulRelinBGV(e1, e2, pm, q, rlk);
-        var d_mul = FHE.DecryptBGV(mul_e1e2, pm, sk, t);
+        var mul_e1e2 = RLWE.MulRelinBGV(e1, e2, pm, q, rlk);
+        var d_mul = RLWE.DecryptBGV(mul_e1e2, pm, sk, t);
 
         mul_e1e2.Show("e1 * e2");
         Console.WriteLine($"m1 * m2          = {mul_m1m2}");

@@ -1,7 +1,7 @@
 using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup.Integers;
 
-namespace FastGoat.UserGroup.Lattice;
+namespace FastGoat.UserGroup.LWE;
 
 public readonly struct RegevCipher
 {

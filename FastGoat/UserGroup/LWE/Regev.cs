@@ -4,7 +4,7 @@ using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup.Integers;
 using static FastGoat.Commons.IntExt;
 
-namespace FastGoat.UserGroup.Lattice;
+namespace FastGoat.UserGroup.LWE;
 
 /// <summary>
 /// On Lattices, Learning with Errors,

@@ -1,8 +1,9 @@
+using System.Numerics;
 using FastGoat.Commons;
 using FastGoat.UserGroup.Integers;
 using Rq = FastGoat.Structures.VecSpace.KPoly<FastGoat.UserGroup.Integers.Rational>;
 
-namespace FastGoat.UserGroup.Lattice;
+namespace FastGoat.UserGroup.LWE;
 
 public class RLWE
 {
@@ -35,21 +36,21 @@ public class RLWE
         var t1 = IntExt.Primes10000.First(t1 => t1 > t0);
         (this.N, n, Sigma) = (N, IntExt.Phi(N), 3.0);
         
-        (PM, SK, T, Q, PK, RLK) = FHE.KeyGenBGV(n, t0, t0 * t1);
+        (PM, SK, T, Q, PK, RLK) = KeyGenBGV(n, t0, t0 * t1);
         Thalf = new(t0 / 2);
         InvThalf = new Rational(IntExt.InvModPbez(t0 / 2, t0));
     }
 
     public RLWECipher EncryptBit(int m)
     {
-        return FHE.EncryptBGV(Thalf * PM.One * IntExt.AmodP(m, 2), PM, T, Q, PK);
+        return EncryptBGV(Thalf * PM.One * IntExt.AmodP(m, 2), PM, T, Q, PK);
     }
 
     public RLWECipher[] Encrypt(int[] seq) => seq.Select(EncryptBit).ToArray();
 
     public int DecryptBit(RLWECipher cipher)
     {
-        return (FHE.DecryptBGV(cipher, PM, SK, T) * InvThalf).CoefsMod(T).IsZero() ? 0 : 1;
+        return (DecryptBGV(cipher, PM, SK, T) * InvThalf).CoefsMod(T).IsZero() ? 0 : 1;
     }
 
     public int[] Decrypt(RLWECipher[] ciphers) => ciphers.Select(DecryptBit).ToArray();
@@ -77,7 +78,7 @@ public class RLWE
 
     public RLWECipher AND(RLWECipher cipher1, RLWECipher cipher2)
     {
-        return (InvThalf * FHE.MulRelinBGV(cipher1, cipher2, PM, Q, RLK)).CoefsMod(Q);
+        return (InvThalf * MulRelinBGV(cipher1, cipher2, PM, Q, RLK)).CoefsMod(Q);
     }
 
     public RLWECipher NAND(RLWECipher cipher1, RLWECipher cipher2) => NOT(AND(cipher1, cipher2));
@@ -102,12 +103,10 @@ public class RLWE
         else
             throw new($"op:{name} not found");
     }
-    
     public RLWECipher[] AND(RLWECipher[] ciphers1, RLWECipher[] ciphers2)
     {
         return ciphers1.Zip(ciphers2).Select(e => AND(e.First, e.Second)).ToArray();
     }
-
     public RLWECipher[] NAND(RLWECipher[] cipher1, RLWECipher[] cipher2) => NOT(AND(cipher1, cipher2));
     public RLWECipher[] NOR(RLWECipher[] cipher1, RLWECipher[] cipher2) => AND(NOT(cipher1), NOT(cipher2));
     public RLWECipher[] OR(RLWECipher[] cipher1, RLWECipher[] cipher2) => NOT(NOR(cipher1, cipher2));
@@ -117,12 +116,10 @@ public class RLWE
         var nc1_and_c2 = AND(NOT(cipher1), cipher2);
         return OR(c1_and_nc2, nc1_and_c2);
     }
-
     public RLWECipher[] OP(string name, RLWECipher[] cipher1, RLWECipher[] cipher2)
     {
         return cipher1.Zip(cipher2).Select(e => OP(name, e.First, e.Second)).ToArray();
     }
-
     public RLWECipher[] ADD(RLWECipher[] c1, RLWECipher[] c2)
     {
         var (g1, g2) = (c1.ToArray(), c2.ToArray());
@@ -135,7 +132,6 @@ public class RLWE
 
         return g1;
     }
-    
     public RLWECipher[] MULT(RLWECipher[] ciphers1, RLWECipher[] ciphers2)
     {
         var list = new List<RLWECipher[]>();
@@ -153,5 +149,85 @@ public class RLWE
             sum = ADD(sum, ciphers);
 
         return sum;
+    }
+    
+    public static bool NoiseMode { get; set; } = true;
+    public static void NoiseOn() => NoiseMode = true;
+    public static void NoiseOff() => NoiseMode = false;
+    
+    public static Rq GenDiscrGauss(int n, double s = 3.2)
+    {
+        return DistributionExt.DiscreteGaussianSample(n, s).ToKPoly(Rational.KZero());
+    }
+
+    public static Rq GenTernary(int n)
+    {
+        return DistributionExt.DiceSample(n, [-1, 0, 1]).ToKPoly(Rational.KZero());
+    }
+
+    public static Rq GenUnif(int n, int q)
+    {
+        return DistributionExt.DiceSample(n, 0, q - 1).Select(e => new Rational(e)).ToKPoly();
+    }
+
+    public static Rq GenUnif(int n, BigInteger q)
+    {
+        return DistributionExt.DiceSampleBigInt(n, 0, q - 1).Select(e => new Rational(e)).ToKPoly();
+    }
+
+    public static Rq GenUnif(int n, Rational q) => GenUnif(n, q.Num);
+
+    public static (Rq pm, Rq sk, Rational t, Rational q, RLWECipher pk, RLWECipher rlk) KeyGenBGV(int n, int t, int q)
+    {
+        var pm = FG.QPoly().Pow(n) + 1;
+        var sk = 10000.SeqLazy().Select(_ => GenTernary(n))
+            .First(s => !s[n - 1].IsZero() && s.Coefs.Count(e => e.IsZero()) <= n / 4);
+        
+        var (T, Q) = (new Rational(t), new Rational(q));
+        
+        var epk = GenDiscrGauss(n);
+        var c1pk = GenUnif(n, q);
+        var c0pk = (t * epk + c1pk * sk).ResMod(pm, Q);
+        var pk = new RLWECipher(c0pk, c1pk, pm, Q);
+        
+        var erlk = GenDiscrGauss(n);
+        var c1rlk = GenUnif(n, q);
+        var c0rlk = (t * erlk + c1rlk * sk + sk.Pow(2)).ResMod(pm, Q);
+        var rlk = new RLWECipher(c0rlk, c1rlk, pm, Q);
+        
+        return (pm, sk, T, Q, pk, rlk);
+    }
+
+    public static RLWECipher EncryptBGV(Rq m, Rq pm, Rational t, Rational q, RLWECipher pk, bool noise = true)
+    {
+        var n = pm.Degree;
+        var ea = GenDiscrGauss(n);
+        var eb = GenDiscrGauss(n);
+        var u = GenTernary(n);
+        if (!NoiseMode || !noise)
+        {
+            ea = eb = eb.Zero;
+            u = u.One;
+        }
+
+        var a = (u * pk.A + m + t * ea).ResMod(pm, q);
+        var b = (u * pk.B + t * eb).ResMod(pm, q);
+        return (a, b, pm, q);
+    }
+
+    public static Rq DecryptBGV(RLWECipher cipher, Rq pm, Rq sk, Rational t)
+    {
+        return (cipher.A - sk * cipher.B).ResMod(pm, t);
+    }
+
+    public static RLWECipher MulRelinBGV(RLWECipher cipher0, RLWECipher cipher1, Rq pm, Rational q, RLWECipher rlk)
+    {
+        var d0 = (cipher0.A * cipher1.A).ResMod(pm, q);
+        var d1 = (cipher0.A * cipher1.B + cipher0.B * cipher1.A).ResMod(pm, q);
+        var d2 = (cipher0.B * cipher1.B).ResMod(pm, q);
+
+        var a = (d0 + d2 * rlk.A).ResMod(pm, q);
+        var b = (d1 + d2 * rlk.B).ResMod(pm, q);
+        return (a, b, pm, q);
     }
 }
