@@ -77,6 +77,9 @@ public class Regev
         return long.Abs(d.Signed) < P / 4 ? 0 : 1;
     }
 
+    public RegevCipher[] Encrypt(int[] m) => m.Select(EncryptBit).ToArray();
+    public int[] Decrypt(RegevCipher[] ciphers) => ciphers.Select(DecryptBit).ToArray();
+
     public string Params => $"Regev N:{N,-4} P:{P,-6} M:{M,-6} A:{A:F4} A*P:{A * P:F4} P/M:{P / (1.0 * M):F4}";
 
     public void Show()
@@ -86,6 +89,14 @@ public class Regev
         // M.SeqLazy().Select(i => (PK.A[i], PK.B[i])).Println("Public Key");
         Console.WriteLine();
     }
+
+    public ZnInt64 Errors(RegevCipher cipher)
+    {
+        var m = DecryptBit(cipher);
+        return cipher.B - (cipher.A * SK).Sum() - m * P / 2;
+    }
+
+    public ZnInt64[] Errors(RegevCipher[] ciphers) => ciphers.Select(Errors).ToArray();
 
     public static Vec<ZnInt64> Unif(int n, long q) =>
         DistributionExt.DiceSample(n, 0, q - 1).Select(i => new ZnInt64(q, i)).ToVec();
@@ -107,5 +118,16 @@ public class Regev
         var q = seq.First(q0 => alpha * q0 > 2 * double.Sqrt(n));
         var m = (int)(1.1 * (n + 1) * double.Log2(q));
         return (q, m);
+    }
+
+    public static (Regev regev, RLWE rlwe) SetupRLWE(int n)
+    {
+        var alpha = 1.0 / (double.Log2(n) * double.Log2(n) * double.Sqrt(n));
+        var q = Primes10000.First(q0 => alpha * q0 > 2 * double.Sqrt(n) && q0 % (2 * n) == 1);
+        var m = (int)(1.1 * (n + 1) * double.Log2(q));
+        var sigma = alpha * q / double.Sqrt(2 * double.Pi);
+        var regev = new Regev(n, m, q, sigma);
+        var rlwe = new RLWE(2 * n, q, regev.SK);
+        return (regev, rlwe);
     }
 }

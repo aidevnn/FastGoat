@@ -1,5 +1,7 @@
 using System.Numerics;
 using FastGoat.Commons;
+using FastGoat.Structures;
+using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup.Integers;
 using Rq = FastGoat.Structures.VecSpace.KPoly<FastGoat.UserGroup.Integers.Rational>;
 
@@ -41,6 +43,19 @@ public class RLWE
         InvThalf = new Rational(IntExt.InvModPbez(t0 / 2, t0));
     }
 
+    public RLWE(int N, int t, Vec<ZnInt64> sk)
+    {
+        if (!int.IsPow2(N))
+            throw new($"N = {N} must be 2^k");
+
+        var t1 = IntExt.Primes10000.First(t1 => t1 > t);
+        (this.N, n, Sigma) = (N, IntExt.Phi(N), 3.0);
+        
+        (PM, SK, T, Q, PK, RLK) = KeyGenBGV(n, t, t * t1, sk);
+        Thalf = new(t / 2);
+        InvThalf = new Rational(IntExt.InvModPbez(t / 2, t));
+    }
+
     public RLWECipher EncryptBit(int m)
     {
         return EncryptBGV(Thalf * PM.One * IntExt.AmodP(m, 2), PM, T, Q, PK);
@@ -50,10 +65,37 @@ public class RLWE
 
     public int DecryptBit(RLWECipher cipher)
     {
-        return (DecryptBGV(cipher, PM, SK, T) * InvThalf).CoefsMod(T).IsZero() ? 0 : 1;
+        var d = DecryptBGV(cipher, PM, SK, T)[0].Signed(T).Absolute;
+        return d * 4 < T ? 0 : 1;
     }
 
     public int[] Decrypt(RLWECipher[] ciphers) => ciphers.Select(DecryptBit).ToArray();
+
+    public Rational Errors(RLWECipher cipher)
+    {
+        var m = DecryptBit(cipher);
+        return (cipher.A - cipher.B * SK).ResMod(PM, T)[0] - m * Thalf;
+    }
+
+    public Rational[] Errors(RLWECipher[] ciphers) => ciphers.Select(Errors).ToArray();
+
+    public RLWECipher FromRegevCipher(RegevCipher cipher)
+    {
+        var b = new Rational(cipher.B.K) * PM.One;
+        var a = ExtractVec(cipher.A).CoefsMod(T);
+        return new(b, a, PM, Q);
+    }
+
+    public RLWECipher[] FromRegevCipher(RegevCipher[] ciphers) => ciphers.Select(FromRegevCipher).ToArray();
+
+    public RegevCipher ToRegevCipher(RLWECipher cipher)
+    {
+        var a = ExtractArr(cipher.B, n).Select(e => new ZnInt64((long)T.Num, (long)e.Num)).ToVec();
+        var b = new ZnInt64((long)T.Num, (long)cipher.A[0].Num);
+        return new(a, b);
+    }
+
+    public RegevCipher[] ToRegevCipher(RLWECipher[] ciphers) => ciphers.Select(ToRegevCipher).ToArray();
 
     public string Params => $"RLWE N={N}=2^{int.Log2(N)}, Φ(N)={n} PM={PM} t={T} q={Q}={T}*{Q/T}";
 
@@ -198,6 +240,27 @@ public class RLWE
         return (pm, sk, T, Q, pk, rlk);
     }
 
+
+    public static (Rq pm, Rq sk, Rational t, Rational q, RLWECipher pk, RLWECipher rlk) KeyGenBGV(int n, int t, int q, Vec<ZnInt64> _sk)
+    {
+        var pm = FG.QPoly().Pow(n) + 1;
+        var sk = _sk.Select(e => new Rational(e.Signed)).ToKPoly();
+        
+        var (T, Q) = (new Rational(t), new Rational(q));
+        
+        var epk = GenDiscrGauss(n);
+        var c1pk = GenUnif(n, q);
+        var c0pk = (t * epk + c1pk * sk).ResMod(pm, Q);
+        var pk = new RLWECipher(c0pk, c1pk, pm, Q);
+        
+        var erlk = GenDiscrGauss(n);
+        var c1rlk = GenUnif(n, q);
+        var c0rlk = (t * erlk + c1rlk * sk + sk.Pow(2)).ResMod(pm, Q);
+        var rlk = new RLWECipher(c0rlk, c1rlk, pm, Q);
+        
+        return (pm, sk, T, Q, pk, rlk);
+    }
+
     public static RLWECipher EncryptBGV(Rq m, Rq pm, Rational t, Rational q, RLWECipher pk, bool noise = true)
     {
         var n = pm.Degree;
@@ -229,5 +292,19 @@ public class RLWE
         var a = (d0 + d2 * rlk.A).ResMod(pm, q);
         var b = (d1 + d2 * rlk.B).ResMod(pm, q);
         return (a, b, pm, q);
+    }
+    
+    public static Rational[] ExtractArr(Rq poly, int n, int i = 0)
+    {
+        return n.SeqLazy(start: i, step: -1).Select(j => j >= 0 ? poly[j] : -poly[n + j]).ToArray();
+    }
+
+    public static Rq ExtractVec(Vec<ZnInt64> v, int i = 0)
+    {
+        var x = FG.QPoly();
+        var n = v.Length;
+        return v.Select(e => new Rational(e.Signed))
+            .Select((e, j) => i - j >= 0 ? e * x.Pow(i - j) : -e * x.Pow(n + i - j))
+            .Aggregate((xi, xj) => xi + xj);
     }
 }

@@ -151,7 +151,12 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
     }
 
     public Rational Mod(Rational Q) => Sub(Mul(Q.Inv()).Floor * Q);
-    public Rational Mod(int q) => Mod(new Rational(q)); 
+    public Rational Mod(int q) => Mod(new Rational(q));
+    public Rational Signed(Rational Q)
+    {
+        var e = Mod(Q);
+        return e * 2 > Q ? e - Q : e;
+    }
     public override int GetHashCode() => Hash;
 
     public override string ToString()

@@ -27,6 +27,7 @@ public static class LearningWithErrors
     private static string[] LipsumParagraphes { get; }
 
     #region Char to Bit
+
     // 16-bit default C#-char
     const int charBit = 8;
 
@@ -343,5 +344,73 @@ public static class LearningWithErrors
         var prodf = Convert.ToInt64(d_mult.Reverse().Glue(), 2);
         if (prodi != prodf)
             throw new();
+    }
+
+    public static void Example7Regev2RLWE()
+    {
+        var (reg, rlwe) = Regev.SetupRLWE(16);
+        reg.Show();
+        rlwe.Show();
+
+        for (int k = 0; k < 10; ++k)
+        {
+            var m = DistributionExt.DiceSample(reg.N, [0, 1]).ToArray();
+            
+            var c11 = reg.Encrypt(m);
+            var c21 = rlwe.FromRegevCipher(c11);
+            var d1 = rlwe.Decrypt(c21);
+            
+            var c12 = rlwe.Encrypt(m);
+            var c22 = rlwe.ToRegevCipher(c12);
+            var d2 = reg.Decrypt(c22);
+            
+            Console.WriteLine($"m :[0b{m.Reverse().Glue()}]");
+            Console.WriteLine($"d1:[0b{d1.Reverse().Glue()}] Regev to RLWE");
+            Console.WriteLine($"d2:[0b{d2.Reverse().Glue()}] RLWE  to Regev");
+            Console.WriteLine();
+            
+            if (!m.SequenceEqual(d1) || !m.SequenceEqual(d2))
+                throw new($"step[{k}]");
+        }
+    }
+
+    public static void Example8TrackingErrors()
+    {
+        // Warning : Weak parameters
+        // RLWE N=16=2^4, Φ(N)=8 PM=x^8 + 1 t=97 q=9797=97*101
+        var (reg, rlwe) = Regev.SetupRLWE(16);
+        var t = rlwe.T;
+        
+        var m1 = DistributionExt.DiceSample(reg.N, [0, 1]).ToArray();
+        var m2 = DistributionExt.DiceSample(reg.N, [0, 1]).ToArray();
+        var c1a = rlwe.Encrypt(m1);
+        var c2a = rlwe.Encrypt(m2);
+        var xa = rlwe.XOR(
+            rlwe.XOR(c1a.Take(rlwe.n / 2).ToArray(), c1a.Skip(rlwe.n / 2).ToArray()),
+            rlwe.XOR(c2a.Take(rlwe.n / 2).ToArray(), c2a.Skip(rlwe.n / 2).ToArray())
+        );
+        var eia = rlwe.Errors(c1a).Concat(rlwe.Errors(c2a)).Select(e => e.Signed(t).Absolute).Max();
+        var efa = xa.Select(e => rlwe.Errors(e).Signed(t).Absolute).Max();
+        
+        var c1b = rlwe.FromRegevCipher(reg.Encrypt(m1));
+        var c2b = rlwe.FromRegevCipher(reg.Encrypt(m2));
+        var xb = rlwe.XOR(
+            rlwe.XOR(c1b.Take(rlwe.n / 2).ToArray(), c1b.Skip(rlwe.n / 2).ToArray()),
+            rlwe.XOR(c2b.Take(rlwe.n / 2).ToArray(), c2b.Skip(rlwe.n / 2).ToArray())
+        );
+        var eib = rlwe.Errors(c1b).Concat(rlwe.Errors(c2b)).Select(e => e.Signed(t).Absolute).Max();
+        var efb = xb.Select(e => rlwe.Errors(e).Signed(t).Absolute).Max();
+
+        Console.WriteLine($"{reg.Params}");
+        Console.WriteLine($"{rlwe.Params}");
+        Console.WriteLine();
+        Console.WriteLine($"RLWE only             Errors: {eia,3} --> {efa,3}");
+        Console.WriteLine($"RLWE from RegevCipher Errors: {eib,3} --> {efb,3}");
+        // Regev N:16   P:577    M:171    A:0.0156 A*P:9.0156 P/M:3.3743
+        // RLWE N=32=2^5, Φ(N)=16 PM=x^16 + 1 t=577 q=338699=577*587
+        // 
+        // RLWE only             Errors:   0 -->   0
+        // RLWE from RegevCipher Errors:  17 --> 135
+        // 
     }
 }
