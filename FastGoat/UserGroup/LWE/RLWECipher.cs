@@ -18,7 +18,11 @@ public struct RLWECipher : IModuleElt<Rational, RLWECipher>, IElt<RLWECipher>, I
         Hash = HashCode.Combine("rlwe", A, B);
     }
 
-    public RLWECipher CoefsMod(Rational p) => new(A.CoefsMod(p), B.CoefsMod(p), PM, p);
+    public RLWECipher CoefsMod(Rational p) => new(A.ResMod(PM, p), B.ResMod(PM, p), PM, p);
+    public RLWECipher CoefsModSigned(Rational t) => new(A.CoefsModSigned(t), B.CoefsModSigned(t), PM, t);
+    public RLWECipher CoefsModSigned() => CoefsModSigned(Q);
+    public RLWECipher Trunc() => new(A.TruncPoly(), B.TruncPoly(), PM, Q);
+    public RLWECipher Round() => new(A.RoundPoly(), B.RoundPoly(), PM, Q);
 
     public bool Equals(RLWECipher other) =>
         Q.Equals(other.Q) && PM.Equals(other.PM) && A.Equals(other.A) && B.Equals(other.B);
@@ -117,6 +121,20 @@ public struct RLWECipher : IModuleElt<Rational, RLWECipher>, IElt<RLWECipher>, I
     public static RLWECipher operator *(RLWECipher a, Rational b) => a.KMul(b);
 
     public static RLWECipher operator *(Rational a, RLWECipher b) => b * a;
+
+    public static RLWECipher operator +(RLWECipher a, Rq b) =>
+        new((a.A + b).CoefsMod(a.Q), a.B.CoefsMod(a.Q), a.PM, a.Q);
+
+    public static RLWECipher operator +(Rq a, RLWECipher b) => b + a;
+
+    public static RLWECipher operator -(RLWECipher a, Rq b) => a + (-b);
+
+    public static RLWECipher operator -(Rq a, RLWECipher b) => (-b) + a;
+
+    public static RLWECipher operator *(RLWECipher a, Rq b) =>
+        new((a.A * b).CoefsMod(a.Q), (a.B * b).CoefsMod(a.Q), a.PM, a.Q);
+
+    public static RLWECipher operator *(Rq a, RLWECipher b) => b * a;
 
     public static implicit operator RLWECipher((Rq a, Rq b, Rq pm, Rational q) e) => new(e.a, e.b, e.pm, e.q);
 }
