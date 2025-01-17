@@ -157,6 +157,18 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
         var e = Mod(Q);
         return e * 2 > Q ? e - Q : e;
     }
+
+    public Rational Signed(int q) => Signed(new Rational(q));
+    public Rational ClosestModulusTo(Rational r, Rational mod)
+    {
+        var t = RoundEven;
+        var d = (r - t).Mod(mod);
+        var t0 = t + d;
+        var t1 = t - mod + d;
+        return t0 - this < this - t1 ? t0 : t1;
+    }
+
+    public Rational ClosestModulusTo(Rational r, int mod) => ClosestModulusTo(r, new Rational(mod));
     public override int GetHashCode() => Hash;
 
     public override string ToString()

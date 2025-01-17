@@ -389,8 +389,8 @@ public static class LearningWithErrors
             rlwe.XOR(c1a.Take(rlwe.n / 2).ToArray(), c1a.Skip(rlwe.n / 2).ToArray()),
             rlwe.XOR(c2a.Take(rlwe.n / 2).ToArray(), c2a.Skip(rlwe.n / 2).ToArray())
         );
-        var eia = rlwe.Errors(c1a).Concat(rlwe.Errors(c2a)).Select(e => e.Signed(t).Absolute).Max();
-        var efa = xa.Select(e => rlwe.Errors(e).Signed(t).Absolute).Max();
+        var eia = rlwe.Errors(c1a).Concat(rlwe.Errors(c2a)).Select(e => e[0].Signed(t).Absolute).Max();
+        var efa = xa.Select(e => rlwe.Errors(e)[0].Signed(t).Absolute).Max();
         
         var c1b = rlwe.FromRegevCipher(reg.Encrypt(m1));
         var c2b = rlwe.FromRegevCipher(reg.Encrypt(m2));
@@ -398,8 +398,8 @@ public static class LearningWithErrors
             rlwe.XOR(c1b.Take(rlwe.n / 2).ToArray(), c1b.Skip(rlwe.n / 2).ToArray()),
             rlwe.XOR(c2b.Take(rlwe.n / 2).ToArray(), c2b.Skip(rlwe.n / 2).ToArray())
         );
-        var eib = rlwe.Errors(c1b).Concat(rlwe.Errors(c2b)).Select(e => e.Signed(t).Absolute).Max();
-        var efb = xb.Select(e => rlwe.Errors(e).Signed(t).Absolute).Max();
+        var eib = rlwe.Errors(c1b).Concat(rlwe.Errors(c2b)).Select(e => e[0].Signed(t).Absolute).Max();
+        var efb = xb.Select(e => rlwe.Errors(e)[0].Signed(t).Absolute).Max();
 
         Console.WriteLine($"{reg.Params}");
         Console.WriteLine($"{rlwe.Params}");

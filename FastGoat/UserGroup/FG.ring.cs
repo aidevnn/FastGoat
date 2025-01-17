@@ -383,8 +383,34 @@ public static partial class FG
     public static KPoly<Rational> CoefsMod(this KPoly<Rational> P, int Q)
         => P.Coefs.Select(c => c.Mod(Q)).ToKPoly();
     
+    public static KPoly<Rational> ClosestModulusTo(this KPoly<Rational> source, KPoly<Rational> destination, Rational mod)
+    {
+        var deg = int.Max(source.Degree, destination.Degree);
+        return (deg + 1).SeqLazy().Select(i => source[i].ClosestModulusTo(destination[i], mod)).ToKPoly();
+    }
+
+    public static KPoly<Rational> ClosestModulusTo(this KPoly<Rational> source, KPoly<Rational> destination, int mod)
+    {
+        var deg = int.Max(source.Degree, destination.Degree);
+        return (deg + 1).SeqLazy().Select(i => source[i].ClosestModulusTo(destination[i], mod)).ToKPoly();
+    }
+
+    public static KPoly<Rational> CoefsModSigned(this KPoly<Rational> P, Rational Q)
+        => P.Coefs.Select(c => c.Signed(Q)).ToKPoly();
+    public static KPoly<Rational> CoefsModSigned(this KPoly<Rational> P, int Q)
+        => P.Coefs.Select(c => c.Signed(Q)).ToKPoly();
+    
     public static KPoly<Rational> ResMod(this KPoly<Rational> P, KPoly<Rational> F, Rational Q)
         => P.Div(F).rem.CoefsMod(Q);
+    
+    public static KPoly<Rational> ResMod(this KPoly<Rational> P, KPoly<Rational> F, int Q)
+        => P.Div(F).rem.CoefsMod(Q);
+    
+    public static KPoly<Rational> ResModSigned(this KPoly<Rational> P, KPoly<Rational> F, Rational Q)
+        => P.Div(F).rem.CoefsModSigned(Q);
+    
+    public static KPoly<Rational> ResModSigned(this KPoly<Rational> P, KPoly<Rational> F, int Q)
+        => P.Div(F).rem.CoefsModSigned(Q);
     public static EPoly<Rational> EQPoly(char x, params int[] coefs) => EPoly(Rational.KZero(), x, coefs);
 
     public static FracPoly<Rational> QFracPoly(char x = 'x') => KFracPoly(x, Rational.KZero());
