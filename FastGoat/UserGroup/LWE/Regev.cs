@@ -73,8 +73,8 @@ public class Regev
     public int DecryptBit(RegevCipher cipher)
     {
         // 6) b - <s,a> distance to 0 and to P/2
-        var d = cipher.B - (cipher.A * SK).Sum();
-        return long.Abs(d.Signed) < P / 4 ? 0 : 1;
+        var d = cipher.B - cipher.A.InnerProd(SK);
+        return long.Abs(d.Signed) * 4 < P ? 0 : 1;
     }
 
     public RegevCipher[] Encrypt(int[] m) => m.Select(EncryptBit).ToArray();
