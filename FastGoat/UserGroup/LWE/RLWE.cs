@@ -28,6 +28,8 @@ public partial class RLWE
     public Rational Thalf { get; }
     public Rational InvThalf { get; }
     public RLWECipher Zero => PK.Zero;
+    public RLWECipher[] EncXPow { get; }
+    public RLWECipher[] ExSK { get; }
 
     public RLWE(int N)
     {
@@ -41,6 +43,7 @@ public partial class RLWE
         (PM, SK, T, Q, PK, RLK) = KeyGenBGV(n, t0, t0 * t1);
         Thalf = new(t0 / 2);
         InvThalf = new Rational(IntExt.InvModPbez(t0 / 2, t0));
+        (EncXPow, ExSK) = ([], []);
     }
 
     public RLWE(int N, int t, Vec<ZnInt64> sk)
@@ -54,6 +57,7 @@ public partial class RLWE
         (PM, SK, T, Q, PK, RLK) = KeyGenBGV(n, t, t * t1, sk);
         Thalf = new(t / 2);
         InvThalf = new Rational(IntExt.InvModPbez(t / 2, t));
+        (EncXPow, ExSK) = EXSK(PM, SK, T, Q, PK);
     }
 
     public RLWECipher EncryptBit(int m)
@@ -80,6 +84,9 @@ public partial class RLWE
 
     public RLWECipher FromRegevCipher(RegevCipher cipher)
     {
+        return new Rational(cipher.B.K) - cipher.A.Zip(ExSK)
+            .Select(e => new Rational(e.First.K) * e.Second)
+            .Aggregate((ci, cj) => ci + cj);
         var b = new Rational(cipher.B.K) * PM.One;
         var a = ExtractVec(cipher.A).CoefsMod(T);
         var nc = new RLWECipher(b, a, PM, Q);
