@@ -16,4 +16,6 @@ public readonly struct RegevCipher
     public override string ToString() => $"[{A}, {B}]";
 
     public static implicit operator RegevCipher((Vec<ZnInt64> a, ZnInt64 b) e) => new(e.a, e.b);
+    public static RegevCipher operator +(RegevCipher a, RegevCipher b) => new(a.A + b.A, a.B + b.B);
+    public static RegevCipher operator +(RegevCipher a, int b) => new(a.A, a.B + b);
 }

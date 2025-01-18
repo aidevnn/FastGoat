@@ -21,7 +21,7 @@ public class Regev
     public double A { get; }
     private Vec<ZnInt64> SK { get; }
     public Vec<ZnInt64> Err { get; }
-    public (Vec<ZnInt64>[] A, Vec<ZnInt64> B) PK { get; }
+    public RegevCipher[] PK { get; }
 
     public Regev(int n)
     {
@@ -41,9 +41,8 @@ public class Regev
         var err = Err = DiscGauss(m, p, s: a * p);
 
         var sk = SK = Unif(n, p);
-        var ai = m.SeqLazy().Select(_ => Unif(n, p)).ToArray();
-        var b = ai.Zip(err).Select(e => (e.First * sk).Sum() + e.Second).ToVec();
-        PK = (ai, b);
+        PK = err.Select(e => (e, Unif(n, p))).Select(e => new RegevCipher(e.Item2, e.e + e.Item2.InnerProd(sk)))
+            .ToArray();
     }
 
     public Regev(int n, int m, int p, double sigma)
@@ -53,28 +52,24 @@ public class Regev
         
         var err = Err = DiscGauss(m, p, s);
         var sk = SK = Unif(n, p);
-        var ai = m.SeqLazy().Select(_ => Unif(n, p)).ToArray();
-        var b = ai.Zip(err).Select(e => (e.First * sk).Sum() + e.Second).ToVec();
-        PK = (ai, b);
+        PK = err.Select(e => (e, v:Unif(n, p)))
+            .Select(ev => new RegevCipher(ev.v, ev.e + ev.v.InnerProd(sk)))
+            .ToArray();
     }
 
     public RegevCipher EncryptBit(int m)
     {
-        var _m = m == 0 ? 0 : 1;
-        var acc0 = (a: PK.A[0].Zero, b: new ZnInt64(P, _m * (P / 2)));
+        var _m = m == 0 ? 0 : P / 2;
         
         // 5) Set S ⊂ [0..M-1] 
-        return DistributionExt.DiceSample(M, [true, false]).Zip(M.Range())
-            .Where(e => e.First)
-            .Select(e => (a: PK.A[e.Second], b: PK.B[e.Second]))
-            .Aggregate(acc0, (acc, e) => (acc.a + e.a, acc.b + e.b));
+        return PK.Where(_ => Rng.Next(2) == 1).Aggregate((ci, cj) => ci + cj) + _m;
     }
 
     public int DecryptBit(RegevCipher cipher)
     {
         // 6) b - <s,a> distance to 0 and to P/2
         var d = cipher.B - cipher.A.InnerProd(SK);
-        return long.Abs(d.Signed) * 4 < P ? 0 : 1;
+        return long.Abs(d.Signed) <= P / 4 ? 0 : 1;
     }
 
     public RegevCipher[] Encrypt(int[] m) => m.Select(EncryptBit).ToArray();
@@ -86,7 +81,7 @@ public class Regev
     {
         Console.WriteLine(Params);
         Console.WriteLine($"Private key:{SK}");
-        // M.SeqLazy().Select(i => (PK.A[i], PK.B[i])).Println("Public Key");
+        // PK.Println("Public Key");
         Console.WriteLine();
     }
 
@@ -97,6 +92,11 @@ public class Regev
     }
 
     public ZnInt64[] Errors(RegevCipher[] ciphers) => ciphers.Select(Errors).ToArray();
+
+    public void Deconstruct(out int n, out int p, out RegevCipher[] pk, out Vec<ZnInt64> sk, out Vec<ZnInt64> err)
+    {
+        (n, p, pk, sk, err) = (N, P, PK, SK, Err);
+    }
 
     public static Vec<ZnInt64> Unif(int n, long q) =>
         DistributionExt.DiceSample(n, 0, q - 1).Select(i => new ZnInt64(q, i)).ToVec();

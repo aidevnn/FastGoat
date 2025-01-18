@@ -69,7 +69,8 @@ public partial class RLWE
 
     public int DecryptBit(RLWECipher cipher)
     {
-        return (int)(DecryptBGV(cipher, PM, SK, T)[0].Signed(T) * 4 / T).Trunc.Mod(2);
+        var d = DecryptBGV(cipher, PM, SK, T)[0].Signed(T).Absolute;
+        return d <= (T / 4).Trunc ? 0 : 1;
     }
 
     public int[] Decrypt(RLWECipher[] ciphers) => ciphers.Select(DecryptBit).ToArray();
