@@ -26,18 +26,24 @@ public struct RLWECipher : IModuleElt<Rational, RLWECipher>, IElt<RLWECipher>, I
     public RLWECipher Trunc() => new(A.TruncPoly(), B.TruncPoly(), PM, Q);
     public RLWECipher Round() => new(A.RoundPoly(), B.RoundPoly(), PM, Q);
 
-    public RLWECipher ClosestModulusTo(RLWECipher cipher, Rational r)
+    public RLWECipher ClosestModulusTo(RLWECipher cipher, Rational P, Rational r)
     {
-        var a = A.ClosestModulusTo(cipher.A, r).CoefsMod(Q);
-        var b = B.ClosestModulusTo(cipher.B, r).CoefsMod(Q);
-        return new(a, b, PM, Q);
+        var a = A.ClosestModulusTo(cipher.A, r).CoefsMod(P);
+        var b = B.ClosestModulusTo(cipher.B, r).CoefsMod(P);
+        return new(a, b, PM, P);
     }
 
     public RLWECipher ModSwitch(Rational f, Rational P, Rational r) =>
-        (CoefsModSigned(Q) * f).ClosestModulusTo(this, r).CoefsMod(P);
+        (CoefsMod(Q) * f).ClosestModulusTo(this, P, r);
+
+    public RLWECipher ModSwitch(int f, int P, int r) => ModSwitch(new Rational(f), new(P), new(r));
     public RLWECipher ModSwitch(Rational P, Rational r) => ModSwitch(P / Q, P, r);
 
     public RLWECipher ModSwitch(Rational P, int r) => ModSwitch(P, new Rational(r));
+
+    public RLWECipher ModSwitch(int P, Rational r) => ModSwitch(new Rational(P), r);
+
+    public RLWECipher ModSwitch(int P, int r) => ModSwitch(new Rational(P), new Rational(r));
     public bool Equals(RLWECipher other) =>
         Q.Equals(other.Q) && PM.Equals(other.PM) && A.Equals(other.A) && B.Equals(other.B);
 
