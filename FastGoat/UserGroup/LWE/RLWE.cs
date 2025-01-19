@@ -41,31 +41,33 @@ public partial class RLWE
         (this.N, n, Sigma) = (N, IntExt.Phi(N), 3.0);
         
         (PM, SK, T, Q, PK, RLK) = KeyGenBGV(n, t0, t0 * t1);
+        // when prime T=2k+1, Thalf=k and InvThalf=-2
         Thalf = new(t0 / 2);
-        InvThalf = new Rational(IntExt.InvModPbez(t0 / 2, t0));
+        InvThalf = new(-2);
         (EncXPow, ExSK) = ([], []);
     }
 
-    public RLWE(int N, int t, Vec<ZnInt64> sk)
+    public RLWE(int N, int t0, Vec<ZnInt64> sk)
     {
         if (!int.IsPow2(N))
             throw new($"N = {N} must be 2^k");
 
-        var t1 = IntExt.Primes10000.First(t1 => t1 > t);
+        var t1 = IntExt.Primes10000.First(t1 => t1 > t0);
         (this.N, n, Sigma) = (N, IntExt.Phi(N), 3.0);
         
-        (PM, SK, T, Q, PK, RLK) = KeyGenBGV(n, t, t * t1, sk);
-        Thalf = new(t / 2);
-        InvThalf = new Rational(IntExt.InvModPbez(t / 2, t));
+        (PM, SK, T, Q, PK, RLK) = KeyGenBGV(n, t0, t0 * t1, IntVecToRq(sk));
+        // when prime T=2k+1, Thalf=k and InvThalf=-2
+        Thalf = new(t0 / 2);
+        InvThalf = new(-2);
         (EncXPow, ExSK) = EXSK(PM, SK, T, Q, PK);
     }
 
-    public RLWECipher EncryptBit(int m)
+    public RLWECipher EncryptBit(int bit)
     {
-        return EncryptBGV(Thalf * PM.One * IntExt.AmodP(m, 2), PM, T, Q, PK);
+        return EncryptBGV(Thalf * PM.One * IntExt.AmodP(bit, 2), PM, T, Q, PK);
     }
 
-    public RLWECipher[] Encrypt(int[] seq) => seq.Select(EncryptBit).ToArray();
+    public RLWECipher[] Encrypt(int[] bits) => bits.Select(EncryptBit).ToArray();
 
     public int DecryptBit(RLWECipher cipher)
     {
@@ -85,13 +87,9 @@ public partial class RLWE
 
     public RLWECipher FromRegevCipher(RegevCipher cipher)
     {
-        return new Rational(cipher.B.K) - cipher.A.Zip(ExSK)
-            .Select(e => new Rational(e.First.K) * e.Second)
-            .Aggregate((ci, cj) => ci + cj);
-        var b = new Rational(cipher.B.K) * PM.One;
-        var a = ExtractVec(cipher.A).CoefsMod(T);
-        var nc = new RLWECipher(b, a, PM, Q);
-        return nc;
+        var a = new Rational(cipher.B.Signed);
+        var bs = cipher.A.Zip(ExSK).Select(e => new Rational(e.First.Signed) * e.Second).Aggregate((ci, cj) => ci + cj);
+        return (a - bs).CoefsMod(Q);
     }
 
     public RLWECipher[] FromRegevCipher(RegevCipher[] ciphers) => ciphers.Select(FromRegevCipher).ToArray();

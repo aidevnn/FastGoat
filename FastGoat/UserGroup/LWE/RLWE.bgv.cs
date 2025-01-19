@@ -34,13 +34,12 @@ public partial class RLWE
     }
 
     public static Rq GenUnif(int n, Rational q) => GenUnif(n, q.Num);
+    public static Rq IntVecToRq(Vec<ZnInt64> v) => v.Select(e => new Rational(e.Signed)).ToKPoly();
 
-    public static (Rq pm, Rq sk, Rational t, Rational q, RLWECipher pk, RLWECipher rlk) KeyGenBGV(int n, int t, int q)
+    public static (Rq pm, Rq sk, Rational t, Rational q, RLWECipher pk, RLWECipher rlk) 
+        KeyGenBGV(int n, int t, int q, Rq sk)
     {
         var pm = FG.QPoly().Pow(n) + 1;
-        var sk = 10000.SeqLazy().Select(_ => GenTernary(n))
-            .First(s => !s[n - 1].IsZero() && s.Coefs.Count(e => e.IsZero()) <= n / 4);
-        
         var (T, Q) = (new Rational(t), new Rational(q));
         
         var epk = GenDiscrGauss(n);
@@ -56,24 +55,12 @@ public partial class RLWE
         return (pm, sk, T, Q, pk, rlk);
     }
 
-    public static (Rq pm, Rq sk, Rational t, Rational q, RLWECipher pk, RLWECipher rlk) KeyGenBGV(int n, int t, int q, Vec<ZnInt64> _sk)
+    public static (Rq pm, Rq sk, Rational t, Rational q, RLWECipher pk, RLWECipher rlk) KeyGenBGV(int n, int t, int q)
     {
-        var pm = FG.QPoly().Pow(n) + 1;
-        var sk = _sk.Select(e => new Rational(e.Signed)).ToKPoly();
-        
-        var (T, Q) = (new Rational(t), new Rational(q));
-        
-        var epk = GenDiscrGauss(n);
-        var c1pk = GenUnif(n, q);
-        var c0pk = (t * epk + c1pk * sk).ResMod(pm, Q);
-        var pk = new RLWECipher(c0pk, c1pk, pm, Q);
-        
-        var erlk = GenDiscrGauss(n);
-        var c1rlk = GenUnif(n, q);
-        var c0rlk = (t * erlk + c1rlk * sk + sk.Pow(2)).ResMod(pm, Q);
-        var rlk = new RLWECipher(c0rlk, c1rlk, pm, Q);
-        
-        return (pm, sk, T, Q, pk, rlk);
+        var sk = 10000.SeqLazy().Select(_ => GenTernary(n))
+            .First(s => !s[n - 1].IsZero() && s.Coefs.Count(e => e.IsZero()) <= n / 4);
+
+        return KeyGenBGV(n, t, q, sk);
     }
 
     public static RLWECipher EncryptBGV(Rq m, Rq pm, Rational t, Rational q, RLWECipher pk, bool noise = true)

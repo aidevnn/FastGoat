@@ -41,7 +41,8 @@ public class Regev
         var err = Err = DiscGauss(m, p, s: a * p);
 
         var sk = SK = Unif(n, p);
-        PK = err.Select(e => (e, Unif(n, p))).Select(e => new RegevCipher(e.Item2, e.e + e.Item2.InnerProd(sk)))
+        PK = err.Select(e => (a:Unif(n, p), b:e))
+            .Select(e => new RegevCipher(e.a, e.b + e.a.InnerProd(sk)))
             .ToArray();
     }
 
@@ -52,17 +53,17 @@ public class Regev
         
         var err = Err = DiscGauss(m, p, s);
         var sk = SK = Unif(n, p);
-        PK = err.Select(e => (e, v:Unif(n, p)))
-            .Select(ev => new RegevCipher(ev.v, ev.e + ev.v.InnerProd(sk)))
+        PK = err.Select(e => (a:Unif(n, p), b:e))
+            .Select(e => new RegevCipher(e.a, e.b + e.a.InnerProd(sk)))
             .ToArray();
     }
 
-    public RegevCipher EncryptBit(int m)
+    public RegevCipher EncryptBit(int bit)
     {
-        var _m = m == 0 ? 0 : P / 2;
+        var m = bit == 0 ? 0 : P / 2;
         
         // 5) Set S ⊂ [0..M-1] 
-        return PK.Where(_ => Rng.Next(2) == 1).Aggregate((ci, cj) => ci + cj) + _m;
+        return PK.Where(_ => Rng.Next(2) == 1).Aggregate((ci, cj) => ci + cj) + m;
     }
 
     public int DecryptBit(RegevCipher cipher)
@@ -72,7 +73,7 @@ public class Regev
         return long.Abs(d.Signed) <= P / 4 ? 0 : 1;
     }
 
-    public RegevCipher[] Encrypt(int[] m) => m.Select(EncryptBit).ToArray();
+    public RegevCipher[] Encrypt(int[] bits) => bits.Select(EncryptBit).ToArray();
     public int[] Decrypt(RegevCipher[] ciphers) => ciphers.Select(DecryptBit).ToArray();
 
     public string Params => $"Regev N:{N,-4} P:{P,-6} M:{M,-6} A:{A:F4} A*P:{A * P:F4} P/M:{P / (1.0 * M):F4}";
