@@ -119,7 +119,7 @@ public static class LearningWithErrors
     public static void Example1Regev()
     {
         GlobalStopWatch.Restart();
-        // Warning : Weak parameters
+        // Weak and invalid parameters
         var reg = new Regev(32);
         reg.Show();
 
@@ -138,7 +138,7 @@ public static class LearningWithErrors
     public static void Example2RLWE()
     {
         GlobalStopWatch.Restart();
-        // Warning : Weak parameters
+        // Weak and invalid parameters
         var rlwe = new RLWE(32);
         rlwe.Show();
 
@@ -156,7 +156,7 @@ public static class LearningWithErrors
 
     public static void Example3AdditionMultiplication()
     {
-        // Warning : Weak parameters
+        // Weak and invalid parameters
         // RLWE N=16=2^4, Φ(N)=8 PM=x^8 + 1 t=97 q=9797=97*101
         var rlwe = new RLWE(16);
         var (n, pm, sk, t, q, pk, rlk) = rlwe;
@@ -191,7 +191,7 @@ public static class LearningWithErrors
 
     public static void Example4LogicGates()
     {
-        // Warning : Weak parameters
+        // Weak and invalid parameters
         // RLWE N=16=2^4, Φ(N)=8 PM=x^8 + 1 t=97 q=9797=97*101
         var rlwe = new RLWE(16);
         rlwe.Show();
@@ -223,7 +223,7 @@ public static class LearningWithErrors
 
     public static void Example5HomomorphicAdditionWithCarry()
     {
-        // Warning : Weak parameters
+        // Weak and invalid parameters
         // RLWE N=16=2^4, Φ(N)=8 PM=x^8 + 1 t=97 q=9797=97*101
         var rlwe = new RLWE(16);
         rlwe.Show();
@@ -264,7 +264,7 @@ public static class LearningWithErrors
 
     public static void Example6HomomorphicMultiplicationWithCarry()
     {
-        // Warning : Weak parameters
+        // Weak and invalid parameters
         // RLWE N=8=2^3, Φ(N)=4 PM=x^4 + 1 t=17 q=323=17*19
         var rlwe = new RLWE(8);
         rlwe.Show();
@@ -314,20 +314,20 @@ public static class LearningWithErrors
         for (int k = 0; k < 10; ++k)
         {
             var m = DistributionExt.DiceSample(reg.N, [0, 1]).ToArray();
-            
+
             var c11 = reg.Encrypt(m);
             var c21 = rlwe.FromRegevCipher(c11);
             var d1 = rlwe.Decrypt(c21);
-            
+
             var c12 = rlwe.Encrypt(m);
             var c22 = rlwe.ToRegevCipher(c12);
             var d2 = reg.Decrypt(c22);
-            
+
             Console.WriteLine($"m :[0b{m.Reverse().Glue()}]");
             Console.WriteLine($"d1:[0b{d1.Reverse().Glue()}] Regev to RLWE");
             Console.WriteLine($"d2:[0b{d2.Reverse().Glue()}] RLWE  to Regev");
             Console.WriteLine();
-            
+
             if (!m.SequenceEqual(d1) || !m.SequenceEqual(d2))
                 throw new($"step[{k}]");
         }
@@ -335,11 +335,11 @@ public static class LearningWithErrors
 
     public static void Example8TrackingErrors()
     {
-        // Warning : Weak parameters
+        // Weak and invalid parameters
         // RLWE N=16=2^4, Φ(N)=8 PM=x^8 + 1 t=97 q=9797=97*101
         var (reg, rlwe) = Regev.SetupRLWE(16);
         var t = rlwe.T;
-        
+
         var m1 = DistributionExt.DiceSample(reg.N, [0, 1]).ToArray();
         var m2 = DistributionExt.DiceSample(reg.N, [0, 1]).ToArray();
         var c1a = rlwe.Encrypt(m1);
@@ -350,7 +350,7 @@ public static class LearningWithErrors
         );
         var eia = rlwe.Errors(c1a).Concat(rlwe.Errors(c2a)).Select(e => e[0].Signed(t).Absolute).Max();
         var efa = xa.Select(e => rlwe.Errors(e)[0].Signed(t).Absolute).Max();
-        
+
         var c1b = rlwe.FromRegevCipher(reg.Encrypt(m1));
         var c2b = rlwe.FromRegevCipher(reg.Encrypt(m2));
         var xb = rlwe.XOR(
@@ -372,4 +372,31 @@ public static class LearningWithErrors
         // RLWE from RegevCipher Errors:  17 --> 135
         // 
     }
+
+    public static void Example9WrongParameters()
+    {
+        // Warning : Weak and invalid parameters
+        // RLWE N=16=2^4, Φ(N)=8 PM=x^8 + 1 t=97 q=9797=97*101
+        for (int k = 2; k < 8; k++)
+        {
+            var rlwe = new RLWE(1 << k); // ciphertext modulus q is multiple of plaintext modulus t
+            var (n, pm, sk, t, q, pk, rlk) = rlwe;
+            var t0 = (int)t.Num;
+    
+            var pka = pk.A.ToZnPoly(t0);
+            var pkb = pk.B.ToZnPoly(t0);
+    
+            var a = FG.EPoly(pka.X.Pow(n) + 1, 'a');
+            Console.WriteLine(rlwe.Params);
+            pk.CoefsMod(t).Show($"pk mod {t}");
+            var sk1 = sk.ToZnPoly(t0).Substitute(a);
+            var sk2 = pka.Substitute(a) / pkb.Substitute(a);
+            Console.WriteLine($"sk = {sk}");
+            Console.WriteLine($"   = {sk1}");
+            Console.WriteLine($"   = {sk2}");
+            Console.WriteLine($"Invalid:{sk1.Equals(sk2)}"); // always true
+            Console.WriteLine();
+        }
+    }
+
 }
