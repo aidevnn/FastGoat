@@ -2,6 +2,7 @@ using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup;
+using FastGoat.UserGroup.Integers;
 using FastGoat.UserGroup.LWE;
 
 namespace FastGoat.Examples;
@@ -156,42 +157,68 @@ public static class LearningWithErrors
 
     public static void Example3AdditionMultiplication()
     {
-        // Weak and invalid parameters
+        // Weak parameters
         // RLWE N=16=2^4, Φ(N)=8 PM=x^8 + 1 t=97 q=9797=97*101
         var rlwe = new RLWE(16);
-        var (n, pm, sk, t, q, pk, rlk) = rlwe;
+        var (n, pm, sk, t, q0, q1, q2, pk, rlk) = rlwe;
         rlwe.Show();
 
         var m1 = RLWE.GenUnif(n, t);
-        var e1 = RLWE.EncryptBGV(m1, pm, t, q, pk);
-        var m2 = RLWE.GenUnif(n, rlwe.T);
-        var e2 = RLWE.EncryptBGV(m2, pm, t, q, pk);
+        var e1 = RLWE.EncryptBGV(m1, pk);
+        var m2 = RLWE.GenUnif(n, t);
+        var e2 = RLWE.EncryptBGV(m2, pk);
+        var k = RLWE.GenUnif(n, t);
 
         e1.Show($"e1 = Encrypt(m1 = {m1})");
         e2.Show($"e2 = Encrypt(m2 = {m2})");
+        var d1 = RLWE.DecryptBGV(e1, sk);
+        var d2 = RLWE.DecryptBGV(e2, sk);
+        Console.WriteLine($"m1          = {e1}");
+        Console.WriteLine($"Decrypt(e1) = {d1}");
+        Console.WriteLine($"m2          = {e2}");
+        Console.WriteLine($"Decrypt(e2) = {d2}");
         Console.WriteLine();
+        if (!d1.Equals(m1) || !d2.Equals(m2))
+            throw new("encrypt decrypt");
 
         var add_m1m2 = (m1 + m2).CoefsMod(t);
-        var add_e1e2 = (e1 + e2).CoefsMod(q);
-        var d_add = RLWE.DecryptBGV(add_e1e2, pm, sk, t);
+        var add_e1e2 = e1 + e2;
+        var d_add = RLWE.DecryptBGV(add_e1e2, sk);
 
         add_e1e2.Show("e1 + e2");
         Console.WriteLine($"m1 + m2          = {add_m1m2}");
         Console.WriteLine($"Decrypt(e1 + e2) = {d_add}");
         Console.WriteLine();
+        if (!d_add.Equals(add_m1m2))
+            throw new("m1 + m2");
+        
+        var km1 = (k * m1).ResMod(pm, t);
+        var ke1 = k * e1;
+        var d_k1 = RLWE.DecryptBGV(ke1, sk);
+        
+        ke1.Show("k * e1");
+        Console.WriteLine($"k               = {k}");
+        Console.WriteLine($"k * m1          = {km1}");
+        Console.WriteLine($"Decrypt(k * e1) = {d_k1}");
+        Console.WriteLine();
+        if (!d_k1.Equals(km1))
+            throw new("k * m1");
 
         var mul_m1m2 = (m1 * m2).ResMod(pm, t);
-        var mul_e1e2 = RLWE.MulRelinBGV(e1, e2, pm, q, rlk);
-        var d_mul = RLWE.DecryptBGV(mul_e1e2, pm, sk, t);
+        var mul_e1e2 = RLWE.MulRelinBGV(e1, e2, rlk);
+        var d_mul = RLWE.DecryptBGV(mul_e1e2, sk);
 
         mul_e1e2.Show("e1 * e2");
         Console.WriteLine($"m1 * m2          = {mul_m1m2}");
         Console.WriteLine($"Decrypt(e1 * e2) = {d_mul}");
+        Console.WriteLine();
+        if (!d_mul.Equals(mul_m1m2))
+            throw new("m1 + m2");
     }
 
     public static void Example4LogicGates()
     {
-        // Weak and invalid parameters
+        // Weak parameters
         // RLWE N=16=2^4, Φ(N)=8 PM=x^8 + 1 t=97 q=9797=97*101
         var rlwe = new RLWE(16);
         rlwe.Show();
@@ -221,9 +248,11 @@ public static class LearningWithErrors
         Console.WriteLine();
     }
 
+    #region Fail
+
     public static void Example5HomomorphicAdditionWithCarry()
     {
-        // Weak and invalid parameters
+        // Weak parameters
         // RLWE N=16=2^4, Φ(N)=8 PM=x^8 + 1 t=97 q=9797=97*101
         var rlwe = new RLWE(16);
         rlwe.Show();
@@ -264,7 +293,7 @@ public static class LearningWithErrors
 
     public static void Example6HomomorphicMultiplicationWithCarry()
     {
-        // Weak and invalid parameters
+        // Weak parameters
         // RLWE N=8=2^3, Φ(N)=4 PM=x^4 + 1 t=17 q=323=17*19
         var rlwe = new RLWE(8);
         rlwe.Show();
@@ -335,7 +364,7 @@ public static class LearningWithErrors
 
     public static void Example8TrackingErrors()
     {
-        // Weak and invalid parameters
+        // Weak parameters
         // RLWE N=16=2^4, Φ(N)=8 PM=x^8 + 1 t=97 q=9797=97*101
         var (reg, rlwe) = Regev.SetupRLWE(16);
         var t = rlwe.T;
@@ -372,29 +401,37 @@ public static class LearningWithErrors
         // RLWE from RegevCipher Errors:  17 --> 135
         // 
     }
-
+    
+    #endregion
+    
     public static void Example9WrongParameters()
     {
-        // Warning : Weak and invalid parameters
-        // RLWE N=16=2^4, Φ(N)=8 PM=x^8 + 1 t=97 q=9797=97*101
         for (int k = 2; k < 8; k++)
         {
-            var rlwe = new RLWE(1 << k); // ciphertext modulus q is multiple of plaintext modulus t
-            var (n, pm, sk, t, q, pk, rlk) = rlwe;
-            var t0 = (int)t.Num;
+            var n = 1 << (k - 1);
+            var t0 = IntExt.Primes10000.First(t0 => t0 % (2 * n) == 1);
+            var q0 = new Rational(IntExt.Primes10000.First(t1 => t1 > t0)) * t0; // ciphertext and plaintext not coprimes
+            var pm = FG.QPoly().Pow(n) + 1;
+            var t = new Rational(t0);
+            var sk = 10000.SeqLazy().Select(_ => RLWE.GenTernary(n))
+                .First(s => !s[n - 1].IsZero() && s.Coefs.Count(e => e.IsZero()) <= n / 4);
+        
+            var epk = RLWE.GenDiscrGauss(n);
+            var c1pk = RLWE.GenUnif(n, q0);
+            var c0pk = (t * epk + c1pk * sk).ResModSigned(pm, q0);
+            var pk = new RLWECipher(c0pk, c1pk, pm, t, q0, q0, q0);
     
             var pka = pk.A.ToZnPoly(t0);
             var pkb = pk.B.ToZnPoly(t0);
     
             var a = FG.EPoly(pka.X.Pow(n) + 1, 'a');
-            Console.WriteLine(rlwe.Params);
-            pk.CoefsMod(t).Show($"pk mod {t}");
+            Console.WriteLine(new { n, t, q0, pm });
             var sk1 = sk.ToZnPoly(t0).Substitute(a);
             var sk2 = pka.Substitute(a) / pkb.Substitute(a);
             Console.WriteLine($"sk = {sk}");
             Console.WriteLine($"   = {sk1}");
             Console.WriteLine($"   = {sk2}");
-            Console.WriteLine($"Invalid:{sk1.Equals(sk2)}"); // always true
+            Console.WriteLine($"Invalid:{sk1.Equals(sk2)}");
             Console.WriteLine();
         }
     }

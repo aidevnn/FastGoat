@@ -36,35 +36,38 @@ public partial class RLWE
     public static Rq GenUnif(int n, Rational q) => GenUnif(n, q.Num);
     public static Rq IntVecToRq(Vec<ZnInt64> v) => v.Select(e => new Rational(e.Signed)).ToKPoly();
 
-    public static (Rq pm, Rq sk, Rational t, Rational q, RLWECipher pk, RLWECipher rlk) 
-        KeyGenBGV(int n, int t, int q, Rq sk)
+    public static (Rq pm, Rq sk, Rational t, Rational q0, Rational q1, Rational q2, RLWECipher pk, RLWECipher rlk) 
+        KeyGenBGV(int n, int t0, Rational q0, Rational q1, Rational q2, Rq sk)
     {
         var pm = FG.QPoly().Pow(n) + 1;
-        var (T, Q) = (new Rational(t), new Rational(q));
+        var t = new Rational(t0);
         
         var epk = GenDiscrGauss(n);
-        var c1pk = GenUnif(n, q);
-        var c0pk = (t * epk + c1pk * sk).ResMod(pm, Q);
-        var pk = new RLWECipher(c0pk, c1pk, pm, Q);
-        
+        var c1pk = GenUnif(n, q1);
+        var c0pk = (t * epk + c1pk * sk).ResModSigned(pm, q1);
+        var pk = new RLWECipher(c0pk, c1pk, pm, t, q0, q1, q2);
+
+        var p2 = q2 / q1;
         var erlk = GenDiscrGauss(n);
-        var c1rlk = GenUnif(n, q);
-        var c0rlk = (t * erlk + c1rlk * sk + sk.Pow(2)).ResMod(pm, Q);
-        var rlk = new RLWECipher(c0rlk, c1rlk, pm, Q);
+        var c1rlk = GenUnif(n, q1);
+        var c0rlk = (t * erlk + c1rlk * sk + p2 * sk.Pow(2)).ResModSigned(pm, q2);
+        var rlk = new RLWECipher(c0rlk, c1rlk, pm, t, q0, q1, q2);
         
-        return (pm, sk, T, Q, pk, rlk);
+        return (pm, sk, t, q0, q1, q2, pk, rlk);
     }
 
-    public static (Rq pm, Rq sk, Rational t, Rational q, RLWECipher pk, RLWECipher rlk) KeyGenBGV(int n, int t, int q)
+    public static (Rq pm, Rq sk, Rational t, Rational q0, Rational q1, Rational q2, RLWECipher pk, RLWECipher rlk) 
+        KeyGenBGV(int n, int t, Rational q0, Rational q1, Rational q2)
     {
         var sk = 10000.SeqLazy().Select(_ => GenTernary(n))
             .First(s => !s[n - 1].IsZero() && s.Coefs.Count(e => e.IsZero()) <= n / 4);
 
-        return KeyGenBGV(n, t, q, sk);
+        return KeyGenBGV(n, t, q0, q1, q2, sk);
     }
 
-    public static RLWECipher EncryptBGV(Rq m, Rq pm, Rational t, Rational q, RLWECipher pk, bool noise = true)
+    public static RLWECipher EncryptBGV(Rq m, RLWECipher pk, bool noise = true)
     {
+        var (pm, t, q0, q1, q2) = pk.PM_T_Q;
         var n = pm.Degree;
         var ea = GenDiscrGauss(n);
         var eb = GenDiscrGauss(n);
@@ -75,32 +78,35 @@ public partial class RLWE
             u = u.One;
         }
 
-        var a = (u * pk.A + m + t * ea).ResMod(pm, q);
-        var b = (u * pk.B + t * eb).ResMod(pm, q);
-        return (a, b, pm, q);
+        var m0 = m.ResModSigned(pm, t);
+        var a = (u * pk.A + m0 + t * ea).ResModSigned(pm, q1);
+        var b = (u * pk.B + t * eb).ResModSigned(pm, q1);
+        return new RLWECipher(a, b, pm, t, q0, q1, q2);
     }
 
-    public static Rq DecryptBGV(RLWECipher cipher, Rq pm, Rq sk, Rational t)
+    public static Rq DecryptBGV(RLWECipher cipher, Rq sk)
     {
-        return (cipher.A - sk * cipher.B).ResMod(pm, t);
+        var (pm, t, q0, q1, _) = cipher.PM_T_Q;
+        return (cipher.A - sk * cipher.B).ResModSigned(pm, q1).CoefsMod(t);
     }
 
-    public static Rq ErrorsBGV(RLWECipher cipher, Rq pm, Rq sk, Rational t)
+    public static Rq ErrorsBGV(RLWECipher cipher, Rq sk)
     {
-        var diff = cipher.A - sk * cipher.B;
-        var d = diff.ResMod(pm, t);
-        return (diff - d).ResMod(pm, t);
+        var (pm, t, q0, q1, _) = cipher.PM_T_Q;
+        return (cipher.A - sk * cipher.B).ResModSigned(pm, q1) - DecryptBGV(cipher, sk);
     }
 
-    public static RLWECipher MulRelinBGV(RLWECipher cipher0, RLWECipher cipher1, Rq pm, Rational q, RLWECipher rlk)
+    public static RLWECipher MulRelinBGV(RLWECipher cipher0, RLWECipher cipher1, RLWECipher rlk)
     {
-        var d0 = (cipher0.A * cipher1.A).ResMod(pm, q);
-        var d1 = (cipher0.A * cipher1.B + cipher0.B * cipher1.A).ResMod(pm, q);
-        var d2 = (cipher0.B * cipher1.B).ResMod(pm, q);
+        var (pm, t, q0, q1, q2) = cipher0.PM_T_Q;
+        var p2 = q2 / q1;
+        var d0 = (cipher0.A * cipher1.A).ResModSigned(pm, q1);
+        var d1 = (cipher0.A * cipher1.B + cipher0.B * cipher1.A).ResModSigned(pm, q1);
+        var d2 = (cipher0.B * cipher1.B).ResModSigned(pm, q1);
 
-        var a = (d0 + d2 * rlk.A).ResMod(pm, q);
-        var b = (d1 + d2 * rlk.B).ResMod(pm, q);
-        return (a, b, pm, q);
+        var a = (p2 * d0 + d2 * rlk.A).ResModSigned(pm, q2);
+        var b = (p2 * d1 + d2 * rlk.B).ResModSigned(pm, q2);
+        return new RLWECipher(a, b, pm, t, q0, q1, q2).ModSwitch(q2, q1);
     }
 
     public static Rq ExtractVec(Vec<ZnInt64> v, int i = 0)
@@ -125,14 +131,14 @@ public partial class RLWE
     public static (RLWECipher[] encXpow, RLWECipher[] exsk) EXSK(Rq pm, Rq sk, Rational t, Rational q, RLWECipher pk)
     {
         var n = pm.Degree;
-        var encXpow = n.SeqLazy().Select(i => EncryptBGV(pm.X.Pow(i), pm, t, q, pk)).ToArray();
-        var exsk = n.SeqLazy().Select(i => EncryptBGV(sk[i].Signed(t) * pm.One, pm, t, q, pk)).ToArray();
+        var encXpow = n.SeqLazy().Select(i => EncryptBGV(pm.X.Pow(i), pk)).ToArray();
+        var exsk = n.SeqLazy().Select(i => EncryptBGV(sk[i].Signed(t) * pm.One, pk)).ToArray();
         return (encXpow, exsk);
     }
 
     public static RLWECipher[] ExtractCoefs(RLWECipher cipher, Rq pm, RLWECipher[] exsk)
     {
         var extr = Extract(cipher, pm.Degree);
-        return extr.Select(e => (e.ai - e.bi.ToVec().MulA(exsk.ToVec()).Sum()).CoefsMod(cipher.Q)).ToArray();
+        return extr.Select(e => e.ai - e.bi.ToVec().MulA(exsk.ToVec()).Sum()).ToArray();
     }
 }
