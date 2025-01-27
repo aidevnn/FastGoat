@@ -16,14 +16,16 @@ public readonly struct EPoly<K> : IElt<EPoly<K>>, IRingElt<EPoly<K>>, IFieldElt<
 
         F = f;
         Poly = f.X;
-        Hash = (Poly.Hash, f.Hash).GetHashCode();
+        // Hash = (Poly.Hash, f.Hash).GetHashCode();
+        Hash = (Poly.Degree, f.Degree).GetHashCode();
     }
 
     public EPoly(KPoly<K> f, KPoly<K> poly)
     {
         F = f;
         Poly = poly;
-        Hash = (Poly.Hash, f.Hash).GetHashCode();
+        // Hash = (Poly.Hash, f.Hash).GetHashCode();
+        Hash = (Poly.Degree, f.Degree).GetHashCode();
     }
 
     public int GetHashCodeSlow() => (F.GetHashCodeSlow(), Poly.GetHashCodeSlow()).GetHashCode();
@@ -54,7 +56,7 @@ public readonly struct EPoly<K> : IElt<EPoly<K>>, IRingElt<EPoly<K>>, IFieldElt<
     public K KOne => F.KOne;
     public EPoly<K> Zero => new(F, F.Zero);
     public EPoly<K> One => new(F, F.One);
-    public EPoly<K> X => new(F, F.X);
+    public EPoly<K> X => new(F, F.X.Div(F).rem);
     public EPoly<K> Derivative => new(F, Poly.Derivative.Div(F).rem);
     public EPoly<K> Substitute(KPoly<K> f) => new(F, Poly.Substitute(f).Div(F).rem);
     public EPoly<K> Substitute(EPoly<K> f) => Poly.Substitute(f);
@@ -77,17 +79,17 @@ public readonly struct EPoly<K> : IElt<EPoly<K>>, IRingElt<EPoly<K>>, IFieldElt<
 
     public EPoly<K> Add(EPoly<K> e)
     {
-        return new(F, Poly.Add(e.Poly));
+        return new(F, Poly.Add(e.Poly).Div(F).rem);
     }
 
     public EPoly<K> Sub(EPoly<K> e)
     {
-        return new(F, Poly.Sub(e.Poly));
+        return new(F, Poly.Sub(e.Poly).Div(F).rem);
     }
 
     public EPoly<K> Opp() => new(F, Poly.Opp());
 
-    public EPoly<K> Mul(EPoly<K> e) => new(F, (Poly.Mul(e.Poly)).Div(F).rem);
+    public EPoly<K> Mul(EPoly<K> e) => new(F, Poly.Mul(e.Poly).Div(F).rem);
 
     public (EPoly<K> quo, EPoly<K> rem) Div(EPoly<K> e)
     {
