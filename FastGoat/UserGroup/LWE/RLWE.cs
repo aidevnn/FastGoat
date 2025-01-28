@@ -39,16 +39,9 @@ public partial class RLWE
         if (!int.IsPow2(N))
             throw new($"N = {N} must be 2^k");
 
-        var t = IntExt.Primes10000.First(t => t % N == 1);
-        var seqPrimes = IntExt.Primes10000.Where(t1 => t1 % t == 1).Take(NbPrimes).ToArray();
-        var q0 = new Rational(seqPrimes.First());
-        var q1 = seqPrimes.Aggregate(Rational.KOne(), (acc, pi) => pi * acc);
-        var P = IntExt.Primes10000.Select(e => new Rational(e))
-            .Where(t1 => !q1.Mod(t1).IsZero() && t1.Mod(t).Equals(t1.One))
-            .First();
-        var q2 = P * q1;
         (this.N, n, Sigma) = (N, IntExt.Phi(N), 3.0);
 
+        var (t, q0, q1, q2) = SetupBGV(N);
         (PM, SK, T, Q0, Q1, Q2, PK, RLK) = KeyGenBGV(n, t, q0, q1, q2);
         // when prime T=2k+1, Thalf=k and InvThalf=-2
         Thalf = new(t / 2);
@@ -56,23 +49,52 @@ public partial class RLWE
         (EncXPow, ExSK) = ([], []);
     }
 
-    public RLWE(int N, int t0, Vec<ZnInt64> sk)
+    public RLWE(int N, int t)
     {
         if (!int.IsPow2(N))
             throw new($"N = {N} must be 2^k");
 
-        var seqPrimes = IntExt.Primes10000.Where(t1 => t1 % t0 == 1).Take(NbPrimes).ToArray();
-        var q0 = new Rational(seqPrimes.First());
-        var q1 = seqPrimes.Aggregate(Rational.KOne(), (acc, pi) => pi * acc);
-        var P = IntExt.Primes10000.Select(e => new Rational(e))
-            .Where(t1 => !q1.Mod(t1).IsZero() && t1.Mod(t0).Equals(t1.One))
-            .First();
-        var q2 = P * q1;
         (this.N, n, Sigma) = (N, IntExt.Phi(N), 3.0);
 
+        var (_, q0, q1, q2) = SetupBGV(N, t, level: 1);
+        (PM, SK, T, Q0, Q1, Q2, PK, RLK) = KeyGenBGV(n, t, q0, q1, q2);
+        // when prime T=2k+1, Thalf=k and InvThalf=-2
+        Thalf = new(t / 2);
+        InvThalf = new(-2);
+        (EncXPow, ExSK) = ([], []);
+    }
+
+    public RLWE(int N, int t, Vec<ZnInt64> sk)
+    {
+        if (!int.IsPow2(N))
+            throw new($"N = {N} must be 2^k");
+        
+        (this.N, n, Sigma) = (N, IntExt.Phi(N), 3.0);
+
+        var (t0, q0, q1, q2) = SetupBGV(N);
         (PM, SK, T, Q0, Q1, Q2, PK, RLK) = KeyGenBGV(n, t0, q0, q1, q2, IntVecToRq(sk));
         // when prime T=2k+1, Thalf=k and InvThalf=-2
-        Thalf = new(t0 / 2);
+        Thalf = new(t / 2);
+        InvThalf = new(-2);
+        (EncXPow, ExSK) = EXSK(PM, SK, T, Q1, PK);
+    }
+
+    public RLWE(int N, int t, Rational q0, Rational q1, Rational q2)
+    {
+        if (!int.IsPow2(N))
+            throw new($"N = {N} must be 2^k");
+        
+        (this.N, n, Sigma) = (N, IntExt.Phi(N), 3.0);
+
+        var sk = 10000.SeqLazy()
+            .Select(_ => GenTernary(n))
+            .First(s => !s[n - 1].IsZero()
+                        && s.Coefs.Count(e => e.IsZero()) > double.Sqrt(n)
+                        && s.Coefs.Count(e => !e.IsZero()) > double.Sqrt(n));
+        
+        (PM, SK, T, Q0, Q1, Q2, PK, RLK) = KeyGenBGV(n, t, q0, q1, q2, sk);
+        // when prime T=2k+1, Thalf=k and InvThalf=-2
+        Thalf = new(t / 2);
         InvThalf = new(-2);
         (EncXPow, ExSK) = EXSK(PM, SK, T, Q1, PK);
     }

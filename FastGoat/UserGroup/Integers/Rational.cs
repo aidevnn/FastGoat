@@ -161,11 +161,13 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
     public Rational Signed(int q) => Signed(new Rational(q));
     public Rational ClosestModulusTo(Rational r, Rational mod)
     {
+        var rmod = r.Mod(mod);
         var t = RoundEven;
-        var d = (r - t).Mod(mod);
-        var t0 = t + d;
-        var t1 = t - mod + d;
-        return t0 - this < this - t1 ? t0 : t1;
+        var tmod = t.Mod(mod);
+        var d = tmod - rmod;
+        var t0 = d.Sign == -1 ? t - d - mod  : t - d;
+        var t1 = t0 + mod;
+        return this - t0 < t1 - this ? t0 : t1;
     }
 
     public Rational ClosestModulusTo(Rational r, int mod) => ClosestModulusTo(r, new Rational(mod));

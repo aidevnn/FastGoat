@@ -25,20 +25,91 @@ public partial class RLWE
 
     public static Rq GenUnif(int n, int q)
     {
-        return DistributionExt.DiceSample(n, 0, q - 1).Select(e => new Rational(e)).ToKPoly();
+        return DistributionExt.DiceSample(n, -q / 2 + 1, q / 2).Select(e => new Rational(e)).ToKPoly();
     }
 
     public static Rq GenUnif(int n, BigInteger q)
     {
-        return DistributionExt.DiceSampleBigInt(n, 0, q - 1).Select(e => new Rational(e)).ToKPoly();
+        return DistributionExt.DiceSampleBigInt(n, -q / 2 + 1, q / 2).Select(e => new Rational(e)).ToKPoly();
     }
 
     public static Rq GenUnif(int n, Rational q) => GenUnif(n, q.Num);
     public static Rq IntVecToRq(Vec<ZnInt64> v) => v.Select(e => new Rational(e.Signed)).ToKPoly();
 
+    public static (int t, Rational q0, Rational q1, Rational q2) SetupBGV(int N, int t, int level)
+    {
+        var tmp1 = IntExt.Primes10000.Where(t1 => t1 % N == 1 && t1 % t == 1).Take(1).ToArray();
+        if (tmp1.Length == 0)
+            throw new($"T = {t} and T^2 = {t * t}");
+        
+        var p2 = tmp1[0];
+        var tmp2 = IntExt.Primes10000.Where(t1 => t1 % t == 1 && t1 > p2).Take(level + 1).ToArray();
+        if (tmp2.Length <= level)
+            throw new($"T = {t} and T^2 = {t * t}");
+        
+        var (q0, p1) = tmp2.Select(e => new Rational(e)).Deconstruct();
+
+        return (t, q0, q0 * p1, q0 * p1 * p2);
+    }
+
+    public static (int t, Rational q0, Rational q1, Rational q2) SetupBGV(int N, int level = 1)
+    {
+        var t = IntExt.Primes10000.First(t1 => t1 % N == 1);
+        return SetupBGV(N, t, level);
+    }
+
+    public static int CheckParametersBGV(int N, int t, Rational q0, Rational q1, Rational q2)
+    {
+        // limit of precomputed primes
+        var plast = IntExt.Primes10000.Last();
+        if (q0 > new Rational(plast).Pow(2))
+            return 1;
+
+        // ciphertext modulus level are integers
+        var (p0, p1, p2) = (q0, q1 / q0, q2 / q1);
+        if (!p1.IsInteger() || !p2.IsInteger())
+            return 2;
+        
+        // ciphertext modulus level0 is prime
+        var dp0 = IntExt.PrimesDec(p0.Num);
+        if (dp0.Count > 1 || dp0.Any(e => e.Value > 1))
+            return 3;
+
+        // ciphertext modulus level1 factor is prime
+        var dp1 = IntExt.PrimesDec(p1.Num);
+        if (dp1.Count > 1 || dp1.Any(e => e.Value > 1))
+            return 4;
+
+        // ciphertext modulus level2 factor is prime
+        var dp2 = IntExt.PrimesDec(p2.Num);
+        if (dp2.Count > 1 || dp2.Any(e => e.Value > 1))
+            return 5;
+
+        // ciphertext modulus factors equal one modulus plaintext modulus
+        var one = Rational.KOne();
+        // if (!p0.Mod(t).Equals(one) || !p0.Mod(N).Equals(one) || !p1.Mod(N).Equals(one) || !p2.Mod(N).Equals(one))
+        if (!p0.Mod(t).Equals(one) || !p1.Mod(t).Equals(one) || !p2.Mod(t).Equals(one))
+            return 6;
+
+        // homomorphic multiplication
+        // var u = BigInteger.Log2(p2.Num * t);
+        var u = BigInteger.Log2(p2.Num);
+        if (u > BigInteger.Log2(p0.Num) || u > BigInteger.Log2(p1.Num))
+            return 7;
+
+        return 0;
+    }
+
     public static (Rq pm, Rq sk, Rational t, Rational q0, Rational q1, Rational q2, RLWECipher pk, RLWECipher rlk) 
         KeyGenBGV(int n, int t0, Rational q0, Rational q1, Rational q2, Rq sk)
     {
+        if (!IntExt.Primes10000.Contains(t0))
+            throw new($"T = {t0} must be prime");
+
+        var check = CheckParametersBGV(2 * n, t0, q0, q1, q2);
+        if (check != 0)
+            throw new($"Invalid parameters [{check}] {new { N = 2 * n, t0, q0, q1, q2 }}");
+
         var pm = FG.QPoly().Pow(n) + 1;
         var t = new Rational(t0);
         
@@ -47,10 +118,10 @@ public partial class RLWE
         var c0pk = (t * epk + c1pk * sk).ResModSigned(pm, q1);
         var pk = new RLWECipher(c0pk, c1pk, pm, t, q0, q1, q2);
 
-        var p2 = q2 / q1;
+        var p1 = q2 / q1;
         var erlk = GenDiscrGauss(n);
-        var c1rlk = GenUnif(n, q1);
-        var c0rlk = (t * erlk + c1rlk * sk + p2 * sk.Pow(2)).ResModSigned(pm, q2);
+        var c1rlk = GenUnif(n, q2);
+        var c0rlk = (t * erlk + c1rlk * sk + p1 * sk.Pow(2)).ResModSigned(pm, q2);
         var rlk = new RLWECipher(c0rlk, c1rlk, pm, t, q0, q1, q2);
         
         return (pm, sk, t, q0, q1, q2, pk, rlk);
@@ -59,8 +130,11 @@ public partial class RLWE
     public static (Rq pm, Rq sk, Rational t, Rational q0, Rational q1, Rational q2, RLWECipher pk, RLWECipher rlk) 
         KeyGenBGV(int n, int t, Rational q0, Rational q1, Rational q2)
     {
-        var sk = 10000.SeqLazy().Select(_ => GenTernary(n))
-            .First(s => !s[n - 1].IsZero() && s.Coefs.Count(e => e.IsZero()) <= n / 4);
+        var sk = 10000.SeqLazy()
+            .Select(_ => GenTernary(n))
+            .First(s => !s[n - 1].IsZero()
+                        && s.Coefs.Count(e => e.IsZero()) > double.Sqrt(n)
+                        && s.Coefs.Count(e => !e.IsZero()) > double.Sqrt(n));
 
         return KeyGenBGV(n, t, q0, q1, q2, sk);
     }
@@ -86,8 +160,8 @@ public partial class RLWE
 
     public static Rq DecryptBGV(RLWECipher cipher, Rq sk)
     {
-        var (pm, t, q0, q1, _) = cipher.PM_T_Q;
-        return (cipher.A - sk * cipher.B).ResModSigned(pm, q1).CoefsMod(t);
+        var (pm, t, _, q1, _) = cipher.PM_T_Q;
+        return (cipher.A - sk * cipher.B).ResModSigned(pm, q1).CoefsModSigned(t);
     }
 
     public static Rq ErrorsBGV(RLWECipher cipher, Rq sk)
