@@ -14,6 +14,7 @@ public struct RLWECipher : IModuleElt<Rational, RLWECipher>, IElt<RLWECipher>, I
     public Rational Q1 { get; }
     public Rational Q2 { get; }
     public (Rq pm, Rational t, Rational q0, Rational q1, Rational q2) PM_T_Q => (PM, T, Q0, Q1, Q2);
+    public string Params => $"RLWECipher Q2:{Q2}    Q1:{Q1}    Q0:{Q0}    T:{T}    PM:{PM}";
 
     public RLWECipher(Rq a, Rq b, Rq pm, Rational t, Rational q0, Rational q1, Rational q2)
     {
@@ -46,7 +47,7 @@ public struct RLWECipher : IModuleElt<Rational, RLWECipher>, IElt<RLWECipher>, I
     {
         if (!string.IsNullOrEmpty(name))
             Console.WriteLine(name);
-        Console.WriteLine($"Q2:{Q2}    Q1:{Q1}    Q0:{Q0}    T:{T}    PM:{PM}");
+        Console.WriteLine(Params);
         Console.WriteLine($"A:{A}");
         Console.WriteLine($"B:{B}");
     }

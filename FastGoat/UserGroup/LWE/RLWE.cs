@@ -42,7 +42,7 @@ public partial class RLWE
         (this.N, n, Sigma) = (N, IntExt.Phi(N), 3.0);
 
         var (t, q0, q1, q2) = SetupBGV(N);
-        (PM, SK, T, Q0, Q1, Q2, PK, RLK) = KeyGenBGV(n, t, q0, q1, q2);
+        (PM, SK, T, Q0, Q1, Q2, PK, RLK) = KeyGenBGV(n, t, q0, q1, q2, SKBGV(n));
         // when prime T=2k+1, Thalf=k and InvThalf=-2
         Thalf = new(t / 2);
         InvThalf = new(-2);
@@ -57,7 +57,7 @@ public partial class RLWE
         (this.N, n, Sigma) = (N, IntExt.Phi(N), 3.0);
 
         var (_, q0, q1, q2) = SetupBGV(N, t, level: 1);
-        (PM, SK, T, Q0, Q1, Q2, PK, RLK) = KeyGenBGV(n, t, q0, q1, q2);
+        (PM, SK, T, Q0, Q1, Q2, PK, RLK) = KeyGenBGV(n, t, q0, q1, q2, SKBGV(n));
         // when prime T=2k+1, Thalf=k and InvThalf=-2
         Thalf = new(t / 2);
         InvThalf = new(-2);
@@ -85,14 +85,8 @@ public partial class RLWE
             throw new($"N = {N} must be 2^k");
         
         (this.N, n, Sigma) = (N, IntExt.Phi(N), 3.0);
-
-        var sk = 10000.SeqLazy()
-            .Select(_ => GenTernary(n))
-            .First(s => !s[n - 1].IsZero()
-                        && s.Coefs.Count(e => e.IsZero()) > double.Sqrt(n)
-                        && s.Coefs.Count(e => !e.IsZero()) > double.Sqrt(n));
         
-        (PM, SK, T, Q0, Q1, Q2, PK, RLK) = KeyGenBGV(n, t, q0, q1, q2, sk);
+        (PM, SK, T, Q0, Q1, Q2, PK, RLK) = KeyGenBGV(n, t, q0, q1, q2, SKBGV(n));
         // when prime T=2k+1, Thalf=k and InvThalf=-2
         Thalf = new(t / 2);
         InvThalf = new(-2);
