@@ -160,7 +160,7 @@ public static class LearningWithErrors
         // Weak parameters
         // RLWE N=16=2^4, Φ(N)=8 PM=x^8 + 1 t=97 q=9797=97*101
         var rlwe = new RLWE(16);
-        var (n, pm, sk, t, q0, q1, q2, pk, rlk) = rlwe;
+        var (n, pm, sk, t, q, pk, rlk) = rlwe;
         rlwe.Show();
 
         var m1 = RLWE.GenUnif(n, t);
@@ -181,7 +181,7 @@ public static class LearningWithErrors
         if (!d1.Equals(m1) || !d2.Equals(m2))
             throw new("encrypt decrypt");
 
-        var add_m1m2 = (m1 + m2).CoefsMod(t);
+        var add_m1m2 = (m1 + m2).CoefsModSigned(t);
         var add_e1e2 = e1 + e2;
         var d_add = RLWE.DecryptBGV(add_e1e2, sk);
 
@@ -192,7 +192,7 @@ public static class LearningWithErrors
         if (!d_add.Equals(add_m1m2))
             throw new("m1 + m2");
         
-        var km1 = (k * m1).ResMod(pm, t);
+        var km1 = (k * m1).ResModSigned(pm, t);
         var ke1 = k * e1;
         var d_k1 = RLWE.DecryptBGV(ke1, sk);
         
@@ -204,8 +204,8 @@ public static class LearningWithErrors
         if (!d_k1.Equals(km1))
             throw new("k * m1");
 
-        var mul_m1m2 = (m1 * m2).ResMod(pm, t);
-        var mul_e1e2 = RLWE.MulRelinBGV(e1, e2, rlk);
+        var mul_m1m2 = (m1 * m2).ResModSigned(pm, t);
+        var mul_e1e2 = RLWE.MulRelinBGV(e1, e2, rlk).ModSwitch(q);
         var d_mul = RLWE.DecryptBGV(mul_e1e2, sk);
 
         mul_e1e2.Show("e1 * e2");
@@ -213,7 +213,7 @@ public static class LearningWithErrors
         Console.WriteLine($"Decrypt(e1 * e2) = {d_mul}");
         Console.WriteLine();
         if (!d_mul.Equals(mul_m1m2))
-            throw new("m1 + m2");
+            throw new("m1 * m2");
     }
 
     public static void Example4LogicGates()
@@ -410,7 +410,8 @@ public static class LearningWithErrors
         {
             var n = 1 << (k - 1);
             var t0 = IntExt.Primes10000.First(t0 => t0 % (2 * n) == 1);
-            var q0 = new Rational(IntExt.Primes10000.First(t1 => t1 > t0)) * t0; // ciphertext and plaintext not coprimes
+            var _q0 = IntExt.Primes10000.First(t1 => t1 % (2 * n) == 1 && t1 > t0);
+            var q0 = new Rational(_q0) * t0; // ciphertext and plaintext not coprimes
             var pm = FG.QPoly().Pow(n) + 1;
             var t = new Rational(t0);
             var sk = 10000.SeqLazy().Select(_ => RLWE.GenTernary(n))
@@ -419,7 +420,7 @@ public static class LearningWithErrors
             var epk = RLWE.GenDiscrGauss(n);
             var c1pk = RLWE.GenUnif(n, q0);
             var c0pk = (t * epk + c1pk * sk).ResModSigned(pm, q0);
-            var pk = new RLWECipher(c0pk, c1pk, pm, t, q0, q0, q0);
+            var pk = new RLWECipher(c0pk, c1pk, pm, t, q0);
     
             var pka = pk.A.ToZnPoly(t0);
             var pkb = pk.B.ToZnPoly(t0);
@@ -435,5 +436,4 @@ public static class LearningWithErrors
             Console.WriteLine();
         }
     }
-
 }

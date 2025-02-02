@@ -20,9 +20,7 @@ public partial class RLWE
 
     public Rational T { get; }
 
-    public Rational Q0 { get; }
-    public Rational Q1 { get; }
-    public Rational Q2 { get; }
+    public Rational Q { get; }
 
     public RLWECipher PK { get; }
 
@@ -41,8 +39,8 @@ public partial class RLWE
 
         (this.N, n, Sigma) = (N, IntExt.Phi(N), 3.0);
 
-        var (t, q0, q1, q2) = SetupBGV(N);
-        (PM, SK, T, Q0, Q1, Q2, PK, RLK) = KeyGenBGV(n, t, q0, q1, q2, SKBGV(n));
+        var t = IntExt.Primes10000.First(t1 => t1 % N == 1);
+        (PM, SK, T, Q, PK, RLK) = KeyGenBGV(n, t, SKBGV(n));
         // when prime T=2k+1, Thalf=k and InvThalf=-2
         Thalf = new(t / 2);
         InvThalf = new(-2);
@@ -55,9 +53,8 @@ public partial class RLWE
             throw new($"N = {N} must be 2^k");
 
         (this.N, n, Sigma) = (N, IntExt.Phi(N), 3.0);
-
-        var (_, q0, q1, q2) = SetupBGV(N, t, level: 1);
-        (PM, SK, T, Q0, Q1, Q2, PK, RLK) = KeyGenBGV(n, t, q0, q1, q2, SKBGV(n));
+        
+        (PM, SK, T, Q, PK, RLK) = KeyGenBGV(n, t, SKBGV(n));
         // when prime T=2k+1, Thalf=k and InvThalf=-2
         Thalf = new(t / 2);
         InvThalf = new(-2);
@@ -70,27 +67,12 @@ public partial class RLWE
             throw new($"N = {N} must be 2^k");
         
         (this.N, n, Sigma) = (N, IntExt.Phi(N), 3.0);
-
-        var (t0, q0, q1, q2) = SetupBGV(N);
-        (PM, SK, T, Q0, Q1, Q2, PK, RLK) = KeyGenBGV(n, t0, q0, q1, q2, IntVecToRq(sk));
+        
+        (PM, SK, T, Q, PK, RLK) = KeyGenBGV(n, t, IntVecToRq(sk));
         // when prime T=2k+1, Thalf=k and InvThalf=-2
         Thalf = new(t / 2);
         InvThalf = new(-2);
-        (EncXPow, ExSK) = EXSK(PM, SK, T, Q1, PK);
-    }
-
-    public RLWE(int N, int t, Rational q0, Rational q1, Rational q2)
-    {
-        if (!int.IsPow2(N))
-            throw new($"N = {N} must be 2^k");
-        
-        (this.N, n, Sigma) = (N, IntExt.Phi(N), 3.0);
-        
-        (PM, SK, T, Q0, Q1, Q2, PK, RLK) = KeyGenBGV(n, t, q0, q1, q2, SKBGV(n));
-        // when prime T=2k+1, Thalf=k and InvThalf=-2
-        Thalf = new(t / 2);
-        InvThalf = new(-2);
-        (EncXPow, ExSK) = EXSK(PM, SK, T, Q1, PK);
+        (EncXPow, ExSK) = EXSK(PM, SK, T, Q, PK);
     }
 
     public RLWECipher EncryptBit(int bit)
@@ -111,7 +93,7 @@ public partial class RLWE
     public Rq Errors(RLWECipher cipher)
     {
         var m = DecryptBit(cipher);
-        return (cipher.A - cipher.B * SK).ResMod(PM, Q1) - m * Thalf;
+        return (cipher.A - cipher.B * SK).ResMod(PM, cipher.Q) - m * Thalf;
     }
 
     public Rq[] Errors(RLWECipher[] ciphers) => ciphers.Select(Errors).ToArray();
@@ -135,12 +117,12 @@ public partial class RLWE
     public RegevCipher[] ToRegevCipher(RLWECipher[] ciphers) => ciphers.Select(ToRegevCipher).ToArray();
 
     public string Params =>
-        $"RLWE N={N}=2^{int.Log2(N)}, Φ(N)={n} PM={PM} t={T} q=[{Q0}, {Q1}={Q0}*{Q1 / Q0}, {Q2}={Q2 / Q1}*{Q1}]";
+        $"RLWE N={N}=2^{int.Log2(N)}, Φ(N)={n} PM={PM} t={T} q={Q}";
 
-    public void Deconstruct(out int _n, out Rq pm, out Rq sk, out Rational t, out Rational q0, out Rational q1, 
-        out Rational q2, out RLWECipher pk, out RLWECipher rlk)
+    public void Deconstruct(out int _n, out Rq pm, out Rq sk, out Rational t, out Rational q, out RLWECipher pk, 
+        out RLWECipher rlk)
     {
-        (_n, pm, sk, t, q0, q1, q2, pk, rlk) = (n, PM, SK, T, Q0, Q1, Q2, PK, RLK);
+        (_n, pm, sk, t, q, pk, rlk) = (n, PM, SK, T, Q, PK, RLK);
     }
 
     public void Show()
@@ -159,7 +141,7 @@ public partial class RLWE
 
     public RLWECipher AND(RLWECipher cipher1, RLWECipher cipher2)
     {
-        return InvThalf * MulRelinBGV(cipher1, cipher2, RLK);
+        return InvThalf * MulRelinBGV(cipher1, cipher2, RLK).ModSwitch(Q);
     }
 
     public RLWECipher NAND(RLWECipher cipher1, RLWECipher cipher2) => NOT(AND(cipher1, cipher2));
