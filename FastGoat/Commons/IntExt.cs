@@ -624,6 +624,90 @@ public static class IntExt
 
         return set;
     }
+    
+    /// <summary>
+    /// Solves the system of congruences using the Chinese Remainder Theorem (CRT).
+    /// </summary>
+    /// <param name="a">Array of remainders.</param>
+    /// <param name="m">Array of moduli.</param>
+    /// <returns>A tuple containing the solution x and the product of all moduli mod.</returns>
+    /// <exception cref="ArgumentException">Thrown when the arrays have different lengths or the moduli are not pairwise coprime.</exception>
+    public static (int x, int mod) CRTint(int[] a, int[] m)
+    {
+        if (m.Length < 0 || m.Length != a.Length)
+            throw new ArgumentException("Array dimension");
+
+        if (m.Any(mi => mi < 2) || m.Grid2D().Where(e => e.t1 != e.t2).Any(e => Gcd(e.t1, e.t2) != 1))
+            throw new ArgumentException("Modulus");
+
+        var A = a.Zip(m).Select(e => AmodP(e.First, e.Second)).ToArray();
+        var mod = m.Aggregate((mi, mj) => mi * mj);
+        var x = 0;
+        foreach (var (mi, ai) in m.Zip(A))
+        {
+            var quo = mod / mi;
+            var inv = InvModPbez(quo, mi);
+            x = (x + ai * quo * inv) % mod;
+        }
+
+        return (x % mod, mod);
+    }
+
+    /// <summary>
+    /// Solves the system of congruences using the Chinese Remainder Theorem (CRT).
+    /// </summary>
+    /// <param name="a">Array of remainders.</param>
+    /// <param name="m">Array of moduli.</param>
+    /// <returns>A tuple containing the solution x and the product of all moduli mod.</returns>
+    /// <exception cref="ArgumentException">Thrown when the arrays have different lengths or the moduli are not pairwise coprime.</exception>
+    public static (long x, long mod) CRTlong(long[] a, long[] m)
+    {
+        if (m.Length < 0 || m.Length != a.Length)
+            throw new("array dimension");
+    
+        if (m.Any(mi => mi < 2) || m.Grid2D().Where(e => e.t1 != e.t2).Any(e => GcdLong(e.t1, e.t2) != 1))
+            throw new("modulus");
+    
+        var A = a.Zip(m).Select(e => AmodPlong(e.First, e.Second)).ToArray();
+        var mod = m.Aggregate((mi, mj) => mi * mj);
+        long x = 0;
+        foreach (var (mi, ai) in m.Zip(A))
+        {
+            var quo = mod / mi;
+            var inv = InvModPbezlong(quo, mi);
+            x = (x + ai * quo * inv) % mod;
+        }
+    
+        return (x, mod);
+    }
+
+    /// <summary>
+    /// Solves the system of congruences using the Chinese Remainder Theorem (CRT).
+    /// </summary>
+    /// <param name="a">Array of remainders.</param>
+    /// <param name="m">Array of moduli.</param>
+    /// <returns>A tuple containing the solution x and the product of all moduli mod.</returns>
+    /// <exception cref="ArgumentException">Thrown when the arrays have different lengths or the moduli are not pairwise coprime.</exception>
+    public static (BigInteger x, BigInteger mod) CRTbigint(BigInteger[] a, BigInteger[] m)
+    {
+        if (m.Length < 0 || m.Length != a.Length)
+            throw new("array dimension");
+    
+        if (m.Any(mi => mi < 2) || m.Grid2D().Where(e => e.t1 != e.t2).Any(e => GcdBigInt(e.t1, e.t2) != 1))
+            throw new("modulus");
+    
+        var A = a.Zip(m).Select(e => AmodPbigint(e.First, e.Second)).ToArray();
+        var mod = m.Aggregate((mi, mj) => mi * mj);
+        BigInteger x = 0;
+        foreach (var (mi, ai) in m.Zip(A))
+        {
+            var quo = mod / mi;
+            var inv = InvModPbezbigint(quo, mi);
+            x = (x + ai * quo * inv) % mod;
+        }
+    
+        return (x % mod, mod);
+    }
 
     /// <summary>
     /// Solves the equation k^m = 1 (mod n) for a given n and m.
@@ -709,6 +793,18 @@ public static class IntExt
     }
 
     /// <summary>
+    /// Calculates the remainder of a divided by p.
+    /// </summary>
+    /// <param name="a">The dividend.</param>
+    /// <param name="p">The divisor.</param>
+    /// <returns>The remainder of a divided by p.</returns>
+    public static BigInteger AmodPbigint(BigInteger a, BigInteger p)
+    {
+        BigInteger r = a % p;
+        return r < 0 ? r + p : r;
+    }
+
+    /// <summary>
     /// Calculates the inverse modulo of a number a modulo p.
     /// Using Bezout method
     /// </summary>
@@ -724,7 +820,15 @@ public static class IntExt
     /// <param name="a">The number to calculate the inverse modulo of.</param>
     /// <param name="p">The modulo.</param>
     /// <returns>The inverse modulo of a modulo p.</returns>
-    public static long InvModPbezlong(long a, int p) => AmodPlong(BezoutLong(a, p).x, p);
+    public static long InvModPbezlong(long a, long p) => AmodPlong(BezoutLong(a, p).x, p);
+    /// <summary>
+    /// Calculates the inverse modulo of a number a modulo p.
+    /// Using Bezout method
+    /// </summary>
+    /// <param name="a">The number to calculate the inverse modulo of.</param>
+    /// <param name="p">The modulo.</param>
+    /// <returns>The inverse modulo of a modulo p.</returns>
+    public static BigInteger InvModPbezbigint(BigInteger a, BigInteger p) => AmodPbigint(BezoutBigInt(a, p).Xa, p);
 
     /// <summary>
     /// Creates a dictionary with keys from 1 to n, and values are the invert mod n of the keys. 
