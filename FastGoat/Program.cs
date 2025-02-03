@@ -1,4 +1,5 @@
-﻿using FastGoat.Commons;
+﻿using System.Numerics;
+using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup;
@@ -98,77 +99,75 @@ void Symb()
     Console.WriteLine();
 }
 
-(Rq pm, Rq sk, Rational t, Rational[] seqMods, Rational sp, RLWECipher pk, Dictionary<Rational, RLWECipher> rlks)
-    KeyGenBGV(int n, int t0, int level = 1)
+(Rq pm, Rq sk, Rational t, Rational[] primes, RLWECipher pk, Dictionary<Rational, (Rational nextMod, RLWECipher rlk )>
+    rlks)
+    KeyGenBGV(int N, int t0, int level = 1, bool differentPrimes = true)
 {
     if (!Primes10000.Contains(t0))
         throw new($"T = {t0} must be prime");
 
+    var n = N / 2;
     var pm = FG.QPoly().Pow(n) + 1;
     var t = new Rational(t0);
-    var arr = DistributionExt.DiceSample(n, [-t.One, t.One]).ToArray();
-    var nb = (int)double.Sqrt(n);
-    var zeros = DistributionExt.DiceSample(nb, (n - 1).Range()).ToArray();
-    foreach (var i in zeros)
-        arr[i] *= 0;
-    var sk = arr.ToKPoly();
+    var sk = RLWE.SKBGV(n);
 
-    var sp = new Rational(Primes10000.First(t1 => t1 % (2 * n) == 1 && t1 % t0 == 1));
-    var seqMods = level.SeqLazy(1).Select(i => sp.Pow(i)).ToArray();
-    var (qL_1, qL) = level == 1 ? (sp, sp) : (seqMods[level - 2], seqMods[level - 1]);
+    var primes = new Rational[0];
+    if (differentPrimes)
+        primes = Primes10000.Where(t1 => t1 % N == 1 && t1 % t0 == 1).Take(level + 1)
+            .Select(pi => new Rational(pi)).ToArray();
+    else
+        primes = Enumerable.Repeat(Primes10000.First(t1 => t1 % N == 1 && t1 % t0 == 1) * t.One, level + 1).ToArray();
 
+    if (primes.Length != level + 1)
+        throw new($"sequence moduli");
+
+    var qL = primes.Aggregate((pi, pj) => pi * pj);
     var epk = RLWE.GenDiscrGauss(n);
     var c1pk = RLWE.GenUnif(n, qL);
     var c0pk = (t * epk + c1pk * sk).ResModSigned(pm, qL);
-    var pk = new RLWECipher(c0pk, c1pk, pm, t, qL_1, qL, sp * qL);
+    var pk = new RLWECipher(c0pk, c1pk, pm, t, qL);
 
-    var seqRlks = new Dictionary<Rational, RLWECipher>();
-    for (int i = 0; i < level; i++)
+    var seqMods = (level + 1).SeqLazy(1).Select(i => primes.Take(i).Aggregate((pi, pj) => pi * pj)).ToArray();
+
+    var seqRlks = new Dictionary<Rational, (Rational nextMod, RLWECipher rlk )>();
+    var sp = new Rational(Primes10000.First(t1 => t1 > primes.Last() && t1 % N == 1 && t1 % t0 == 1));
+    for (int i = 0; i <= level; i++)
     {
         var qi = seqMods[i];
+        if (i == 0)
+        {
+            seqRlks[qi] = (t.One, new(pm.Zero, pm.Zero, pm, t, qi));
+            continue;
+        }
+
+        var spi = sp.Pow(i);
         var erlk = RLWE.GenDiscrGauss(n);
-        var c1rlk = RLWE.GenUnif(n, sp.Pow(i) * qi);
-        var c0rlk = (t * erlk + c1rlk * sk - sp.Pow(i) * sk.Pow(2)).ResModSigned(pm, sp.Pow(i) * qi);
-        var rlk = new RLWECipher(c0rlk, c1rlk, pm, t, qi / sp, sp.Pow(i) * qi, sp.Pow(i + 1) * qi);
-        seqRlks[qi] = rlk;
+        var c1rlk = RLWE.GenUnif(n, spi * qi);
+        var c0rlk = (t * erlk + c1rlk * sk - spi * sk.Pow(2)).ResModSigned(pm, spi * qi);
+        var rlk = new RLWECipher(c0rlk, c1rlk, pm, t, spi * qi);
+        seqRlks[qi] = (seqMods[i - 1], rlk);
     }
 
-    return (pm, sk, t, seqMods, sp, pk, seqRlks);
+    return (pm, sk, t, primes, pk, seqRlks);
 }
 
-RLWECipher MulRelinBGV(RLWECipher cipher0, RLWECipher cipher1, RLWECipher rlk)
-{
-    var (pm, t, q0, q1, q2) = cipher0.PM_T_Q;
-    var p1 = rlk.Q1 / q1;
-    var f = q1 / rlk.Q2;
-    var d0 = (cipher0.A * cipher1.A).ResMod(pm, q1);
-    var d1 = (cipher0.A * cipher1.B + cipher0.B * cipher1.A).ResMod(pm, q1);
-    var d2 = (cipher0.B * cipher1.B).ResMod(pm, q1);
-
-    var ai = (p1 * d0 - d2 * rlk.A).ResModSigned(pm, rlk.Q2);
-    var bi = (p1 * d1 - d2 * rlk.B).ResModSigned(pm, rlk.Q2);
-    var af = (ai * f).ClosestModulusTo(ai, t).CoefsModSigned(q0);
-    var bf = (bi * f).ClosestModulusTo(bi, t).CoefsModSigned(q0);
-    return new RLWECipher(af, bf, pm, t, q0 * q1 / q2, q0, q1);
-}
-
-void RunLeveledBGV(int N, int level, bool mod2 = false)
+void RunLeveledBGV(int N, int level, bool mod2 = false, bool differentPrimes = true)
 {
     var t0 = Primes10000.First(t1 => t1 % N == 1);
     if (mod2)
         t0 = 2;
-    
-    var (pm, sk, t, seqMods, sp, pk, rlks) = KeyGenBGV(N / 2, t0, level);
-    Console.WriteLine($"pm = {pm} T = {t}");
+
+    var (pm, sk, t, primes, pk, rlks) = KeyGenBGV(N, t0, level, differentPrimes);
+    Console.WriteLine($"pm = {pm} T = {t} Primes = [{primes.Glue(", ")}]");
     Console.WriteLine($"sk = {sk}");
-    Console.WriteLine($"seqMods:[{seqMods.Glue(" | ")}] [{sp}]");
     Console.WriteLine($"pk => {pk.Params}");
+
     foreach (var rlk in rlks)
-        Console.WriteLine($"rlk[{rlk.Key}] => {rlk.Value.Params}");
+        Console.WriteLine($"rlk[{rlk.Key}] => {rlk.Value.rlk.Params}");
 
     Console.WriteLine();
 
-    var size = 1 << level - 1;
+    var size = 1 << level;
     var n = pm.Degree;
 
     var seqMsg = size.SeqLazy().Select(_ => RLWE.GenUnif(n, t)).ToArray();
@@ -176,11 +175,26 @@ void RunLeveledBGV(int N, int level, bool mod2 = false)
     var mul = seqMsg.Aggregate((xi, xj) => (xi * xj).ResModSigned(pm, t));
 
     var qMul = new Queue<RLWECipher>(seqCipher);
-    while (qMul.Count > 1) qMul.Enqueue(MulRelinBGV(qMul.Dequeue(), qMul.Peek(), rlks[qMul.Dequeue().Q1]));
+    while (qMul.Count > 1)
+    {
+        var c1 = qMul.Dequeue();
+        var c2 = qMul.Dequeue();
+        var (nextMod, rlk) = rlks[c1.Q];
+        var c1c2 = RLWE.MulRelinBGV(c1, c2, rlk).ModSwitch(nextMod);
+        qMul.Enqueue(c1c2);
+    }
+
     var cMul = qMul.Dequeue();
     var d_mul = RLWE.DecryptBGV(cMul, sk);
-    
-    seqMsg.Println($"level:{level} Size:{size}");
+
+    if (size < 17)
+        seqMsg.Println($"level:{level} Size:{size}");
+    else
+    {
+        seqMsg.Take(8).Println($"level:{level} Size:{size}");
+        seqMsg.TakeLast(8).Println("    ...");
+    }
+
     Console.WriteLine(" *  {0}", Enumerable.Repeat('-', seqMsg.Max(l => $"{l}".Length)).Glue());
     Console.WriteLine($" =  {mul}");
     Console.WriteLine($"    {d_mul}");
@@ -188,70 +202,42 @@ void RunLeveledBGV(int N, int level, bool mod2 = false)
         throw new("fail");
 }
 
+void testLeveledBGV(int N, int level, bool mod2, bool differentPrimes, int nbTests = 500)
 {
-    var level = 4;
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < nbTests; i++)
     {
-        try
-        {
-            RunLeveledBGV(N: 32, level, mod2: true);
-            Console.WriteLine();
-            RunLeveledBGV(N: 32, level);
-            Console.WriteLine();
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e); // crash times to times
-        }
-        
+        Console.WriteLine($"Test[{i + 1}]");
+        RunLeveledBGV(N, level, mod2, differentPrimes);
         Console.WriteLine();
     }
-    
-    // Symb();
+
+    Console.WriteLine($"Pass {nbTests} tests N = {N} Level = {level}");
+    Console.WriteLine();
 }
 
-// pm = x^16 + 1 T = 2
-// sk = x^15 - x^14 + x^13 - x^12 + x^11 + x^9 - x^7 + x^6 + x^4 - x^2 - x - 1
-// seqMods:[97 | 9409 | 912673 | 88529281] [97]
-// pk => RLWECipher Q2:8587340257    Q1:88529281    Q0:912673    T:2    PM:x^16 + 1
-// rlk[97] => RLWECipher Q2:9409    Q1:97    Q0:1    T:2    PM:x^16 + 1
-// rlk[9409] => RLWECipher Q2:88529281    Q1:912673    Q0:97    T:2    PM:x^16 + 1
-// rlk[912673] => RLWECipher Q2:832972004929    Q1:8587340257    Q0:9409    T:2    PM:x^16 + 1
-// rlk[88529281] => RLWECipher Q2:7837433594376961    Q1:80798284478113    Q0:912673    T:2    PM:x^16 + 1
-// 
-// level:4 Size:8
-//     x^15 + x^13 + x^11 + x^9 + x^8 + x^5 + x^3 + x
-//     x^14 + x^13 + x^12 + x^10 + x^8 + x^6 + x^5 + x^4 + x^3 + x^2
-//     x^15 + x^12 + x^11 + x^10 + x^7 + x^6 + x^5 + x^4 + x^3 + x^2
-//     x^15 + x^12 + x^5 + x^4 + x^3 + x^2 + 1
-//     x^15 + x^14 + x^13 + x^12 + x^10 + x^9 + x^8 + x^7 + x^6 + x^5 + x^4 + x^3
-//     x^15 + x^11 + x^9 + x^8 + x^7 + x^6 + x^5 + x^4 + x^3 + x + 1
-//     x^12 + x^10 + x^9 + x^7 + x^6 + x^5 + x^3
-//     x^15 + x^13 + x^10 + x^8 + x^7 + x^4 + x^3 + x + 1
-//  *  --------------------------------------------------------------------------
-//  =  x^14 + x^13 + x^11 + x^5 + x^4 + x^3 + x^2 + 1
-//     x^14 + x^13 + x^11 + x^5 + x^4 + x^3 + x^2 + 1
-// 
-// pm = x^16 + 1 T = 97
-// sk = x^15 + x^13 - x^12 + x^11 - x^9 - x^8 + x^7 + x^5 - x^4 + x^3 - x^2 - x + 1
-// seqMods:[43457 | 1888510849 | 82069015964993 | 3566473226790700801] [43457]
-// pk => RLWECipher Q2:154988227016643484709057    Q1:3566473226790700801    Q0:82069015964993    T:97    PM:x^16 + 1
-// rlk[43457] => RLWECipher Q2:1888510849    Q1:43457    Q0:1    T:97    PM:x^16 + 1
-// rlk[1888510849] => RLWECipher Q2:3566473226790700801    Q1:82069015964993    Q0:43457    T:97    PM:x^16 + 1
-// rlk[82069015964993] => RLWECipher Q2:6735323381462275915001490049    Q1:154988227016643484709057    Q0:1888510849    T:97    PM:x^16 + 1
-// rlk[3566473226790700801] => RLWECipher Q2:12719731277414873549711715808702041601    Q1:292696948188206124438219753059393    Q0:82069015964993    T:97    PM:x^16 + 1
-// 
-// level:4 Size:8
-//     -45*x^15 + 34*x^14 + 19*x^13 + 34*x^12 - 30*x^11 - 39*x^10 - 43*x^9 + 7*x^8 - 27*x^7 - 22*x^6 - 23*x^4 - 38*x^3 - 8*x^2 - x - 21
-//     -36*x^15 + 44*x^14 - 21*x^13 + 39*x^12 - 43*x^11 - 35*x^10 - 22*x^9 - 23*x^8 - 5*x^7 - 29*x^6 + 2*x^5 - 36*x^4 - 40*x^3 + 14*x^2 - 20*x - 19
-//     -28*x^15 - 16*x^14 - 11*x^13 - 44*x^12 - 35*x^11 + 39*x^10 - 9*x^9 - 15*x^8 - 25*x^7 - 32*x^6 - 40*x^5 - 21*x^4 - 23*x^3 + 15*x^2 - 45*x + 9
-//     -41*x^15 + 41*x^14 + 11*x^13 - 46*x^12 - 14*x^11 - 33*x^10 - 25*x^9 + 42*x^8 - 41*x^7 + 17*x^6 - 34*x^5 - 5*x^4 - 40*x^3 - 44*x^2 - 27*x + 45
-//     -4*x^15 + 23*x^14 - 8*x^13 + 35*x^12 + 19*x^11 - 42*x^10 - 31*x^9 + 19*x^8 - 35*x^7 - 28*x^6 - 33*x^5 - 31*x^4 - 45*x^3 + 6*x^2 + 10*x + 21
-//     -29*x^15 - 17*x^14 + 8*x^13 - 35*x^12 + 45*x^11 - 47*x^10 + 16*x^9 - 41*x^8 + 19*x^7 + 41*x^6 + 11*x^5 - 42*x^4 - 15*x^3 + x^2 + 22*x + 38
-//     -40*x^15 - 16*x^14 - 27*x^13 - 42*x^12 - 13*x^11 + 20*x^10 - 44*x^9 + 11*x^8 + 10*x^7 - 14*x^6 - 34*x^5 + 27*x^4 - 10*x^3 + 31*x^2 - 30*x - 10
-//     -19*x^15 + 33*x^14 + 39*x^13 + 24*x^12 - 16*x^11 - 42*x^10 - 21*x^9 - 37*x^8 - 38*x^7 - 20*x^6 + 34*x^5 + 15*x^4 + 42*x^3 - 26*x^2 + 17*x - 26
-//  *  ----------------------------------------------------------------------------------------------------------------------------------------------
-//  =  8*x^15 - 23*x^14 + 26*x^13 - 14*x^12 + 30*x^11 - 34*x^10 + 34*x^9 + 47*x^8 - 35*x^7 + 29*x^6 + 22*x^5 - 41*x^4 - 38*x^3 - 44*x^2 + 22*x - 9
-//     8*x^15 - 23*x^14 + 26*x^13 - 14*x^12 + 30*x^11 - 34*x^10 + 34*x^9 + 47*x^8 - 35*x^7 + 29*x^6 + 22*x^5 - 41*x^4 - 38*x^3 - 44*x^2 + 22*x - 9
-// 
-// 
+{
+    RecomputeAllPrimesUpTo(1000000);
+
+    testLeveledBGV(N: 2048, level: 1, mod2: true, differentPrimes: true, nbTests: 5);
+    testLeveledBGV(N: 2048, level: 1, mod2: true, differentPrimes: false, nbTests: 5);
+
+    testLeveledBGV(N: 1024, level: 2, mod2: true, differentPrimes: true, nbTests: 5);
+    testLeveledBGV(N: 1024, level: 2, mod2: true, differentPrimes: false, nbTests: 5);
+
+    testLeveledBGV(N: 512, level: 3, mod2: true, differentPrimes: true, nbTests: 5);
+    testLeveledBGV(N: 512, level: 3, mod2: true, differentPrimes: false, nbTests: 5);
+
+    testLeveledBGV(N: 256, level: 5, mod2: true, differentPrimes: true, nbTests: 5);
+    testLeveledBGV(N: 256, level: 5, mod2: true, differentPrimes: true, nbTests: 5);
+
+    testLeveledBGV(N: 128, level: 5, mod2: true, differentPrimes: true, nbTests: 5);
+    testLeveledBGV(N: 128, level: 5, mod2: false, differentPrimes: false, nbTests: 5);
+
+    testLeveledBGV(N: 64, level: 5, mod2: false, differentPrimes: true, nbTests: 5);
+    testLeveledBGV(N: 64, level: 8, mod2: false, differentPrimes: true, nbTests: 5);
+
+    testLeveledBGV(N: 32, level: 4, mod2: true, differentPrimes: true, nbTests: 500);
+    testLeveledBGV(N: 32, level: 4, mod2: false, differentPrimes: true, nbTests: 500);
+
+    // Symb();
+}
