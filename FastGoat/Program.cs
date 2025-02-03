@@ -106,65 +106,14 @@ void SymbBGV()
     Console.WriteLine();
 }
 
-(Rq pm, Rq sk, Rational t, Rational[] primes, RLWECipher pk, Dictionary<Rational, (Rational nextMod, RLWECipher rlk )>
-    rlks)
-    KeyGenBGV(int N, int t0, int level = 1, bool differentPrimes = true)
-{
-    if (!Primes10000.Contains(t0))
-        throw new($"T = {t0} must be prime");
-
-    var n = N / 2;
-    var pm = FG.QPoly().Pow(n) + 1;
-    var t = new Rational(t0);
-    var sk = RLWE.SKBGV(n);
-
-    Rational[] primes;
-    if (differentPrimes)
-        primes = Primes10000.Where(t1 => t1 % N == 1 && t1 % t0 == 1).Take(level + 1)
-            .Select(pi => new Rational(pi)).ToArray();
-    else
-        primes = Enumerable.Repeat(Primes10000.First(t1 => t1 % N == 1 && t1 % t0 == 1) * t.One, level + 1).ToArray();
-
-    if (primes.Length != level + 1)
-        throw new($"sequence moduli");
-
-    var qL = primes.Aggregate((pi, pj) => pi * pj);
-    var epk = RLWE.GenDiscrGauss(n);
-    var c1pk = RLWE.GenUnif(n, qL);
-    var c0pk = (t * epk + c1pk * sk).ResModSigned(pm, qL);
-    var pk = new RLWECipher(c0pk, c1pk, pm, t, qL);
-
-    var seqMods = (level + 1).SeqLazy(1).Select(i => primes.Take(i).Aggregate((pi, pj) => pi * pj)).ToArray();
-
-    var seqRlks = new Dictionary<Rational, (Rational nextMod, RLWECipher rlk )>();
-    var sp = new Rational(Primes10000.First(t1 => t1 > primes.Last() && t1 % N == 1 && t1 % t0 == 1));
-    for (int i = 0; i <= level; i++)
-    {
-        var qi = seqMods[i];
-        if (i == 0)
-        {
-            seqRlks[qi] = (t.One, new(pm.Zero, pm.Zero, pm, t, qi));
-            continue;
-        }
-
-        var spi = sp.Pow(i);
-        var erlk = RLWE.GenDiscrGauss(n);
-        var c1rlk = RLWE.GenUnif(n, spi * qi);
-        var c0rlk = (t * erlk + c1rlk * sk - spi * sk.Pow(2)).ResModSigned(pm, spi * qi);
-        var rlk = new RLWECipher(c0rlk, c1rlk, pm, t, spi * qi);
-        seqRlks[qi] = (seqMods[i - 1], rlk);
-    }
-
-    return (pm, sk, t, primes, pk, seqRlks);
-}
-
 void RunLeveledBGV(int N, int level, bool mod2 = false, bool differentPrimes = true)
 {
     var t0 = Primes10000.First(t1 => t1 % N == 1);
     if (mod2)
         t0 = 2;
 
-    var (pm, sk, t, primes, pk, rlks) = KeyGenBGV(N, t0, level, differentPrimes);
+    var sk = RLWE.SKBGV(N / 2);
+    var (pm, _, t, primes, pk, rlks) = RLWE.SetupBGV(N, t0, level, sk, differentPrimes);
     Console.WriteLine($"pm = {pm} T = {t} Primes = [{primes.Glue(", ")}]");
     Console.WriteLine($"sk = {sk}");
     Console.WriteLine($"pk => {pk.Params}");
