@@ -158,7 +158,7 @@ public static class LearningWithErrors
     public static void Example3AdditionMultiplication()
     {
         // Weak parameters
-        // RLWE N=16=2^4, Φ(N)=8 PM=x^8 + 1 t=97 q=9797=97*101
+        // RLWE N=16=2^4, Φ(N)=8 PM=x^8 + 1 t=17 q=1361
         var rlwe = new RLWE(16);
         var (n, pm, sk, t, q, pk, rlk) = rlwe;
         rlwe.Show();
@@ -219,7 +219,7 @@ public static class LearningWithErrors
     public static void Example4LogicGates()
     {
         // Weak parameters
-        // RLWE N=16=2^4, Φ(N)=8 PM=x^8 + 1 t=97 q=9797=97*101
+        // RLWE N=16=2^4, Φ(N)=8 PM=x^8 + 1 t=17 q=1361
         var rlwe = new RLWE(16);
         rlwe.Show();
 
