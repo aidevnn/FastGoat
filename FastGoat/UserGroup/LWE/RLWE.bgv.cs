@@ -120,7 +120,7 @@ public partial class RLWE
         var (pm, t, q) = pk.PM_T_Q;
         var n = pm.Degree;
         var ea = GenDiscrGauss(n);
-        var eb = GenDiscrGauss(n).Zero;
+        var eb = GenDiscrGauss(n);
         var u = GenTernary(n);
         if (!NoiseMode || !noise)
         {
