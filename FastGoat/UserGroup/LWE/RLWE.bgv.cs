@@ -61,13 +61,15 @@ public partial class RLWE
             primes = IntExt.Primes10000.Where(t1 => t1 % N == 1 && t1 % t0 == 1).Take(level + 1)
                 .Select(pi => new Rational(pi)).ToArray();
         else
-            primes = Enumerable.Repeat(IntExt.Primes10000.First(t1 => t1 % N == 1 && t1 % t0 == 1) * t.One, level + 1).ToArray();
+            primes = Enumerable.Repeat(IntExt.Primes10000.First(t1 => t1 % N == 1 && t1 % t0 == 1) * t.One, level + 1)
+                .ToArray();
 
         if (primes.Length != level + 1)
             throw new($"sequence moduli");
 
+        var noiseMode = NoiseMode ? 1 : 0;
         var qL = primes.Aggregate((pi, pj) => pi * pj);
-        var epk = GenDiscrGauss(n);
+        var epk = GenDiscrGauss(n) * noiseMode;
         var c1pk = GenUnif(n, qL);
         var c0pk = (t * epk + c1pk * sk).ResModSigned(pm, qL);
         var pk = new RLWECipher(c0pk, c1pk, pm, t, qL);
@@ -86,7 +88,7 @@ public partial class RLWE
             }
 
             var spi = sp.Pow(i);
-            var erlk = GenDiscrGauss(n);
+            var erlk = GenDiscrGauss(n) * noiseMode;
             var c1rlk = GenUnif(n, spi * qi);
             var c0rlk = (t * erlk + c1rlk * sk - spi * sk.Pow(2)).ResModSigned(pm, spi * qi);
             var rlk = new RLWECipher(c0rlk, c1rlk, pm, t, spi * qi);
@@ -117,16 +119,12 @@ public partial class RLWE
 
     public static RLWECipher EncryptBGV(Rq m, RLWECipher pk, bool noise = true)
     {
+        var noiseMode = NoiseMode && noise ? 1 : 0;
         var (pm, t, q) = pk.PM_T_Q;
         var n = pm.Degree;
-        var ea = GenDiscrGauss(n);
-        var eb = GenDiscrGauss(n);
+        var ea = GenDiscrGauss(n) * noiseMode;
+        var eb = GenDiscrGauss(n) * noiseMode;
         var u = GenTernary(n);
-        if (!NoiseMode || !noise)
-        {
-            ea = eb = eb.Zero;
-            u = u.One;
-        }
 
         var m0 = m.ResModSigned(pm, t);
         var a = (u * pk.A + m0 + t * ea).ResModSigned(pm, q);
