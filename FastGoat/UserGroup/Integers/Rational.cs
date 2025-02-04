@@ -243,7 +243,6 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
         return Sqrt(r * nb2) / nb;
     }
     
-
     public static Rational NthRoot(Rational r, int n)
     {
         if (n < 0)
@@ -253,6 +252,14 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
         var denom = IntExt.NthRootBigint(r.Denom, n);
         return new(num, denom);
     }
+
+    public static Rational NthRoot(Rational r, int n, int nbDigits)
+    {
+        var nb = new Rational(BigInteger.Pow(10, nbDigits));
+        var nbpown = nb.Pow(n);
+        return NthRoot(r * nbpown, n) / nb;
+    }
+    
     public static implicit operator double(Rational e) => e.ToDouble;
     public static implicit operator Rational(string e) => Rational.Parse(e);
     public static Rational operator +(Rational a, Rational b) => a.Add(b);
