@@ -32,6 +32,16 @@ public struct RLWECipher : IModuleElt<Rational, RLWECipher>, IElt<RLWECipher>, I
         return new(a, b, PM, T, qf);
     }
     
+    public RLWECipher ModSwitchV2(Rational qf)
+    {
+        var invT = ((1 - Q) / T).Mod(Q);
+        var wa = (-qf * invT * A).CoefsModSigned(Q);
+        var wb = (-qf * invT * B).CoefsModSigned(Q);
+        var a = ((qf * A + T * wa) / Q).CoefsModSigned(qf);
+        var b = ((qf * B + T * wb) / Q).CoefsModSigned(qf);
+        return new(a, b, PM, T, qf);
+    }
+    
     public RLWECipher ClosestModulusTo(RLWECipher dest)
     {
         var a = A.ClosestModulusTo(dest.A, T).CoefsModSigned(Q);
