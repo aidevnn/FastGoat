@@ -169,22 +169,24 @@ public partial class RLWE
         return n.SeqLazy(start: i, step: -1).Select(j => j >= 0 ? poly[j] : -poly[n + j]).ToArray();
     }
 
-    public static (Rational ai, Rational[] bi)[] Extract(RLWECipher e, int n)
+    public static (Rational ai, Rational[] bi)[] Extract(RLWECipher e)
     {
+        var n = e.PM.Degree;
         return n.SeqLazy().Select(i => (ai: e.A[i], bi: ExtractArr(e.B, n, i).ToArray())).ToArray();
     }
 
-    public static (RLWECipher[] encXpow, RLWECipher[] exsk) EXSK(Rq pm, Rq sk, Rational t, Rational q, RLWECipher pk)
+    public static (RLWECipher[] encXpow, RLWECipher[] exsk) EXSK(Rq sk, RLWECipher pk)
     {
+        var (pm, t, q) = pk.PM_T_Q;
         var n = pm.Degree;
         var encXpow = n.SeqLazy().Select(i => EncryptBGV(pm.X.Pow(i), pk)).ToArray();
         var exsk = n.SeqLazy().Select(i => EncryptBGV(sk[i].Signed(t) * pm.One, pk)).ToArray();
         return (encXpow, exsk);
     }
 
-    public static RLWECipher[] ExtractCoefs(RLWECipher cipher, Rq pm, RLWECipher[] exsk)
+    public static RLWECipher[] ExtractCoefs(RLWECipher cipher, RLWECipher[] exsk)
     {
-        var extr = Extract(cipher, pm.Degree);
+        var extr = Extract(cipher);
         return extr.Select(e => e.ai - e.bi.ToVec().MulA(exsk.ToVec()).Sum()).ToArray();
     }
 }

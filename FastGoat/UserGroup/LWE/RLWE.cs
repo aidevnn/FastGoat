@@ -71,7 +71,7 @@ public partial class RLWE
         // when prime T=2k+1, Thalf=k and InvThalf=-2
         Thalf = new(t / 2);
         InvThalf = new(-2);
-        (EncXPow, ExSK) = EXSK(PM, SK, T, Q, PK);
+        (EncXPow, ExSK) = EXSK(SK, PK);
     }
 
     public RLWECipher EncryptBit(int bit)
