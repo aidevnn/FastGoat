@@ -62,6 +62,7 @@ Rq SolveCRTRq(Rq[] ais, Rq[] invs, Rq pm, Rational t)
 
 Rq[] InvCRTRq(Rq x, Rq[] mods, Rational t) => mods.Select(mod => x.ResModSigned(mod, t)).ToArray();
 
+void testCRT()
 {
     RecomputeAllPrimesUpTo(1000000);
     var x = FG.QPoly();
@@ -110,4 +111,103 @@ Rq[] InvCRTRq(Rq x, Rq[] mods, Rational t) => mods.Select(mod => x.ResModSigned(
                 throw new("Fail");
         }
     }
+}
+
+Rq XpowA(int a, Rq pm, Rational q)
+{
+    var x = pm.X;
+    if (a == 0)
+        return x.One;
+
+    var n = pm.Degree;
+    var sgn = a > 0 || a % n == 0 ? 0 : 1;
+    return (x.Pow(IntExt.AmodP(a, n)) * (-1).Pow(a / n + sgn)).CoefsModSigned(q);
+}
+
+RLWECipher AutoMorphBGV(RLWECipher cipher, int k, RLWECipher pk, RLWECipher[] ak)
+{
+    var (pm, t, q) = cipher.PM_T_Q;
+    var swk = ak[k];
+    var spi = swk.Q / q;
+    var xk = pm.X.Pow(k);
+    var a = cipher.A.Substitute(xk).ResMod(pm);
+    var b = cipher.B.Substitute(xk).ResMod(pm);
+    return spi * a - b * swk;
+}
+
+void testKeySwitch()
+{
+    var (N, level) = (32, 1);
+    var n = N / 2;
+    var (pm, sk, t, primes, pk, swks) = RLWE.SetupBGV(N, level);
+    var q = primes[0];
+    var qL = pk.Q;
+    var spqL = swks[pk.Q].skPow[0].Q;
+    var sp = Rational.NthRoot(spqL / qL, level);
+    Console.WriteLine($"pm = {pm} T = {t} Primes = [{primes.Glue(", ")}] q = {q} qL = {qL} sp = {sp}");
+    Console.WriteLine($"sk = {sk}");
+    Console.WriteLine($"pk => {pk.Params}");
+
+    var swk = swks[qL].skPow[1];
+    var nextMod = swks[qL].nextMod;
+
+    for (int i = 0; i < 50; ++i)
+    {
+        var m = RLWE.GenUnif(n, t);
+        var cm = RLWE.EncryptBGV(m, pk);
+        var cm1 = RLWE.SwitchKeyBGV(cm, swk).ModSwitch(nextMod);
+        var d_m1 = RLWE.DecryptBGV(cm1, sk);
+        Console.WriteLine($"m     = {m}");
+        Console.WriteLine($"      = {d_m1}");
+        Console.WriteLine($"em    = {RLWE.ErrorsBGV(cm, sk)} level {cm.Q}");
+        Console.WriteLine($"em1   = {RLWE.ErrorsBGV(cm1, sk)} level {cm1.Q}");
+        Console.WriteLine();
+        if (!m.Equals(d_m1))
+            throw new();
+    }
+}
+
+void testAutoMorph()
+{
+    var (N, level) = (32, 1);
+    var n = N / 2;
+    var (pm, sk, t, primes, pk, swks) = RLWE.SetupBGV(N, level);
+    var q = primes[0];
+    var qL = pk.Q;
+    var spqL = swks[pk.Q].skPow[0].Q;
+    var sp = Rational.NthRoot(spqL / qL, level);
+    Console.WriteLine($"pm = {pm} T = {t} Primes = [{primes.Glue(", ")}] q = {q} qL = {qL} sp = {sp}");
+    Console.WriteLine($"sk = {sk}");
+    Console.WriteLine($"pk => {pk.Params}");
+
+    var x = pm.X;
+    var seqMods = (level + 1).SeqLazy(1).Select(i => primes.Take(i).Aggregate((pi, pj) => pi * pj)).ToArray();
+    var ak = RLWE.LeveledAutMorphSwitchKeyGenBGV(level, pm, sk, t, seqMods, sp);
+    foreach (var k in IntExt.Coprimes(2 * n))
+    {
+        var xk = x.Pow(k);
+        for (var i = 0; i < 5; ++i)
+        {
+            var m = RLWE.GenUnif(n, t);
+            var mk = m.Substitute(xk).ResModSigned(pm, t);
+            Console.WriteLine($"m       :{m}");
+            Console.WriteLine($"{$"m(x^{k})",-8}:{mk}");
+
+            var cm = RLWE.EncryptBGV(m, pk);
+            var ck = AutoMorphBGV(cm, k, pk, ak[qL].autSk).ModSwitch(ak[qL].nextMod);
+            var dk = RLWE.DecryptBGV(ck, sk);
+            Console.WriteLine($"        :{dk}");
+            Console.WriteLine($"err     :{RLWE.ErrorsBGV(ck, sk)} level {ck.Q}");
+            if (!dk.Equals(mk))
+                throw new($"k:{k} step[{i}] {dk.Div(mk)}");
+
+            Console.WriteLine();
+        }
+    }
+}
+
+{
+    // testCRT();
+    testKeySwitch();
+    // testAutoMorph();
 }
