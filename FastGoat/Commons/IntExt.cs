@@ -756,18 +756,45 @@ public static class IntExt
     }
 
     /// <summary>
-    /// Calculates the result of K^M mod N, where K is a constant. 
+    /// Calculates if the result of a^e mod m is equal to 1.
     /// </summary>
-    /// <param name="n">The divisor.</param>
-    /// <param name="m">The exponent.</param>
-    /// <returns>The result of K^M mod N.</returns>
-    public static int KpowMmodN(int n, int m)
+    /// <param name="a">The base of the exponent.</param>
+    /// <param name="e">The exponent.</param>
+    /// <param name="m">The modulus.</param>
+    /// <returns>True if a^e mod m is equal to 1, false otherwise.</returns>
+    public static bool PowModEqualOnelong(long a, long e, long m)
     {
-        var seq = Enumerable.Range(2, n - 2);
-        var criteria = seq.Where(i => Gcd(i, n) == 1 && PowMod(i, m, n) == 1);
-        return criteria.FirstOrDefault(-1);
+        long a0 = 1;
+        for (var k = 0; k < e; ++k)
+        {
+            a0 = AmodPlong(a0 * a, m);
+            if (a0 == 1 && k < e - 1)
+                return false;
+        }
+
+        return a0 == 1;
     }
 
+    /// <summary>
+    /// Calculates if the result of a^e mod m is equal to 1.
+    /// </summary>
+    /// <param name="a">The base of the exponent.</param>
+    /// <param name="e">The exponent.</param>
+    /// <param name="m">The modulus.</param>
+    /// <returns>True if a^e mod m is equal to 1, false otherwise.</returns>
+    public static bool PowModEqualOnebigint(BigInteger a, BigInteger e, BigInteger m)
+    {
+        BigInteger a0 = 1;
+        for (var k = 0; k < e; ++k)
+        {
+            a0 = AmodPbigint(a0 * a, m);
+            if (a0 == 1 && k < e - 1)
+                return false;
+        }
+
+        return a0 == 1;
+    }
+    
     /// <summary>
     /// Calculates the remainder of a divided by p.
     /// </summary>
@@ -863,6 +890,19 @@ public static class IntExt
     {
         var seq = Enumerable.Range(2, n - 2);
         var criteria = seq.Where(i => Gcd(i, n) == 1 && PowModEqualOne(i, m, n));
+        return criteria;
+    }
+
+    /// <summary>
+    /// Solves the equation k^m = 1 (mod n) and gcd(k, n) = 1.
+    /// </summary>
+    /// <param name="n">The modulus.</param>
+    /// <param name="m">The exponent.</param>
+    /// <returns>A list of all solutions to the equation k^m = 1 (mod n).</returns>
+    public static IEnumerable<int> SolveAll_k_pow_m_equal_one_mod_n_strict_long(int n, int m)
+    {
+        var seq = Enumerable.Range(2, n - 2);
+        var criteria = seq.Where(i => GcdLong(i, n) == 1 && PowModEqualOnelong(i, m, n));
         return criteria;
     }
 
