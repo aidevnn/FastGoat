@@ -41,17 +41,33 @@ public struct RLWECipher : IModuleElt<Rational, RLWECipher>, IElt<RLWECipher>, I
         var b = ((qf * B + T * wb) / Q).CoefsModSigned(qf);
         return new(a, b, PM, T, qf);
     }
-    
+
+    public RLWECipher CoefsModSigned(Rational qf)
+    {
+        var a = A.CoefsModSigned(qf);
+        var b = B.CoefsModSigned(qf);
+        return new(a, b, PM, T, qf);
+    }
+
+    public RLWECipher CoefsModSigned(int qf)
+    {
+        var a = A.CoefsModSigned(qf);
+        var b = B.CoefsModSigned(qf);
+        return new(a, b, PM, T, new(qf));
+    }
+
     public RLWECipher ClosestModulusTo(RLWECipher dest)
     {
         var a = A.ClosestModulusTo(dest.A, T).CoefsModSigned(Q);
         var b = B.ClosestModulusTo(dest.B, T).CoefsModSigned(Q);
         return new(a, b, PM, T, Q);
     }
-    
-    public RLWECipher CoefsModSigned(Rational q0)
+
+    public RLWECipher ClosestModulusTo(RLWECipher dest, Rational t)
     {
-        return new RLWECipher(A.CoefsModSigned(q0), B.CoefsModSigned(q0), PM, T, q0);
+        var a = A.ClosestModulusTo(dest.A, t).CoefsModSigned(Q);
+        var b = B.ClosestModulusTo(dest.B, t).CoefsModSigned(Q);
+        return new(a, b, PM, T, Q);
     }
 
     public bool Equals(RLWECipher other) =>
@@ -86,14 +102,14 @@ public struct RLWECipher : IModuleElt<Rational, RLWECipher>, IElt<RLWECipher>, I
     public RLWECipher Opp() => new(-A, -B, PM, T, Q);
 
     public RLWECipher Mul(RLWECipher e) =>
-        new((A * e.A).ResModSigned(PM, Q), (B * e.B).ResModSigned(PM, Q), PM, T, Q);
+        new((A * e.A).ResModSigned(PM, Q), (B * e.A + A * e.B).ResModSigned(PM, Q), PM, T, Q);
 
     public (RLWECipher quo, RLWECipher rem) Div(RLWECipher e)
     {
         throw new NotImplementedException();
     }
 
-    public RLWECipher Mul(int k) => new((A * k).CoefsMod(Q), (B * k).CoefsMod(Q), PM, T, Q);
+    public RLWECipher Mul(int k) => new((A * k).CoefsModSigned(Q), (B * k).CoefsModSigned(Q), PM, T, Q);
 
     public RLWECipher Pow(int k)
     {
@@ -101,7 +117,7 @@ public struct RLWECipher : IModuleElt<Rational, RLWECipher>, IElt<RLWECipher>, I
     }
 
     public RLWECipher this[int index] => new(A[index] * PM.One, B[index] * PM.One, PM, T, Q);
-    public RLWECipher KMul(Rational k) => new((A * k).CoefsMod(Q), (B * k).CoefsMod(Q), PM, T, Q);
+    public RLWECipher KMul(Rational k) => new((A * k).CoefsModSigned(Q), (B * k).CoefsModSigned(Q), PM, T, Q);
     public override string ToString() => $"(A:{A}, B:{B}) mod {PM} mod {Q} T = {T}";
 
     public void Deconstruct(out Rq a, out Rq b, out Rq pm, out Rational t, out Rational q)
@@ -113,7 +129,7 @@ public struct RLWECipher : IModuleElt<Rational, RLWECipher>, IElt<RLWECipher>, I
 
     public static RLWECipher operator +(int a, RLWECipher b)
     {
-        return new RLWECipher((b.A + a).CoefsMod(b.Q), b.B, b.PM, b.T, b.Q);
+        return new RLWECipher((b.A + a).CoefsModSigned(b.Q), b.B, b.PM, b.T, b.Q);
     }
 
     public static RLWECipher operator +(RLWECipher a, int b) => b + a;
@@ -137,13 +153,10 @@ public struct RLWECipher : IModuleElt<Rational, RLWECipher>, IElt<RLWECipher>, I
         throw new NotImplementedException();
     }
 
-    public static RLWECipher operator /(RLWECipher a, int b)
-    {
-        throw new NotImplementedException();
-    }
+    public static RLWECipher operator /(RLWECipher a, int b) => a * new Rational(1, b);
 
     public static RLWECipher operator +(RLWECipher a, Rational b) =>
-        new((a.A + b).CoefsMod(a.Q), a.B, a.PM, a.T, a.Q);
+        new((a.A + b).CoefsModSigned(a.Q), a.B, a.PM, a.T, a.Q);
 
     public static RLWECipher operator +(Rational a, RLWECipher b) => b + a;
 
@@ -154,9 +167,10 @@ public struct RLWECipher : IModuleElt<Rational, RLWECipher>, IElt<RLWECipher>, I
     public static RLWECipher operator *(RLWECipher a, Rational b) => a.KMul(b);
 
     public static RLWECipher operator *(Rational a, RLWECipher b) => b * a;
+    public static RLWECipher operator /(RLWECipher a, Rational b) => a.KMul(1 / b);
 
     public static RLWECipher operator +(RLWECipher a, Rq b) =>
-        new((a.A + b).CoefsMod(a.Q), a.B, a.PM, a.T, a.Q);
+        new((a.A + b).CoefsModSigned(a.Q), a.B, a.PM, a.T, a.Q);
 
     public static RLWECipher operator +(Rq a, RLWECipher b) => b + a;
 
