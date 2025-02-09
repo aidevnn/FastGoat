@@ -50,7 +50,7 @@ public readonly struct ZnInt : IElt<ZnInt>, IRingElt<ZnInt>, IFieldElt<ZnInt>
         return Hash;
     }
 
-    public long Signed => 2 * K > Mod ? K - Mod : K;
+    public int Signed => 2 * K > Mod ? K - Mod : K;
 
     public override string ToString()
     {
