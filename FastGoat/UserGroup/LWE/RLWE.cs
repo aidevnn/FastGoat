@@ -28,7 +28,6 @@ public partial class RLWE
     public Rational Thalf { get; }
     public Rational InvThalf { get; }
     public RLWECipher Zero => PK.Zero;
-    public RLWECipher[] EncXPow { get; }
     public RLWECipher[] ExSK { get; }
 
     public RLWE(int N)
@@ -43,7 +42,7 @@ public partial class RLWE
         // when prime T=2k+1, Thalf=k and InvThalf=-2
         Thalf = new(t / 2);
         InvThalf = new(-2);
-        (EncXPow, ExSK) = ([], []);
+        ExSK = [];
     }
 
     public RLWE(int N, int t)
@@ -57,7 +56,7 @@ public partial class RLWE
         // when prime T=2k+1, Thalf=k and InvThalf=-2
         Thalf = new(t / 2);
         InvThalf = new(-2);
-        (EncXPow, ExSK) = ([], []);
+        ExSK = [];
     }
 
     public RLWE(int N, int t, Vec<ZnInt64> sk)
@@ -71,7 +70,7 @@ public partial class RLWE
         // when prime T=2k+1, Thalf=k and InvThalf=-2
         Thalf = new(t / 2);
         InvThalf = new(-2);
-        (EncXPow, ExSK) = EXSK(SK, PK);
+        ExSK = EXSK(SK, PK);
     }
 
     public RLWECipher EncryptBit(int bit)

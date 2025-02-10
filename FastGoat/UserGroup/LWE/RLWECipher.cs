@@ -94,6 +94,7 @@ public struct RLWECipher : IModuleElt<Rational, RLWECipher>, IElt<RLWECipher>, I
     public bool IsZero() => A.IsZero() && B.IsZero();
     public RLWECipher Zero => new(PM.Zero, PM.Zero, PM, T, Q);
     public RLWECipher One => new(PM.One, PM.Zero, PM, T, Q);
+    public RLWECipher SK0 => new(PM.Zero, -PM.One, PM, T, Q);
 
     public RLWECipher Add(RLWECipher e) =>
         new((A + e.A).CoefsModSigned(Q), (B + e.B).CoefsModSigned(Q), PM, T, Q);

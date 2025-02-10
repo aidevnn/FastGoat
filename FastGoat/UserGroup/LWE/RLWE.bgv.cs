@@ -236,6 +236,16 @@ public partial class RLWE
         return spi * c + d2 * rlk;
     }
 
+    public static RLWECipher AutoMorphBGV(RLWECipher cipher, int k, RLWECipher ak)
+    {
+        var (pm, t, q) = cipher.PM_T_Q;
+        var spi = ak.Q / q;
+        var xk = pm.X.Pow(k);
+        var a = cipher.A.Substitute(xk).ResMod(pm);
+        var b = cipher.B.Substitute(xk).ResMod(pm);
+        return spi * a - b * ak;
+    }
+
     public static Rq ExtractVec(Vec<ZnInt64> v, int i = 0)
     {
         var x = FG.QPoly();
@@ -256,26 +266,18 @@ public partial class RLWE
         return n.SeqLazy().Select(i => (ai: e.A[i], bi: ExtractArr(e.B, n, i).ToArray())).ToArray();
     }
 
-    public static (RLWECipher[] encXpow, RLWECipher[] exsk) EXSK(Rq sk, RLWECipher pk)
+    public static RLWECipher[] EXSK(Rq sk, RLWECipher pk)
     {
         var (pm, t, q) = pk.PM_T_Q;
         var n = pm.Degree;
-        var encXpow = n.SeqLazy().Select(i => EncryptBGV(pm.X.Pow(i), pk)).ToArray();
-        var exsk = n.SeqLazy().Select(i => EncryptBGV(sk[i] * pm.One, pk)).ToArray();
-        return (encXpow, exsk);
-    }
-
-    public static RLWECipher[] EXSK2(Rq sk, RLWECipher pk)
-    {
-        var (pm, t, q) = pk.PM_T_Q;
-        var n = pm.Degree;
-        var exsk = n.SeqLazy().Select(i => EncryptBGV(sk[i].Signed(t) * pm.X.Pow(i), pk)).ToArray();
-        return exsk;
+        return n.SeqLazy().Select(i => EncryptBGV(sk[i] * pm.One, pk)).ToArray();
     }
 
     public static RLWECipher[] ExtractCoefs(RLWECipher cipher, RLWECipher[] exsk)
     {
         var extr = Extract(cipher);
-        return extr.Select(e => e.ai - e.bi.Zip(exsk).Select(f => f.First * f.Second).ToVec().Sum()).ToArray();
+        var x = cipher.PM.X;
+        return extr.Select((e, i) => (e.ai - e.bi.Zip(exsk).Select(f => f.First * f.Second).ToVec().Sum()) * x.Pow(i))
+            .ToArray();
     }
 }

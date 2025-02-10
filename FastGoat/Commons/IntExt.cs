@@ -1220,6 +1220,9 @@ public static class IntExt
 
         if (n == 1)
             return y;
+        
+        if (y.IsOne)
+            return y;
 
         BigInteger ai;
         var approx = 10;
