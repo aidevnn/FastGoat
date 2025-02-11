@@ -568,3 +568,11 @@ May 22, 2005
 Fully Homomorphic Encryption without Bootstrapping.
 2011
 <i>BGV.</i>
+
+[KDE+21](https://eprint.iacr.org/2021/691)
+<b>Andrey Kim, Maxim Deryabin, Jieun Eom, Rakyong Choi, Yongwoo Lee, Whan Ghang, and Donghoon Yoo.</b>
+General Bootstrapping Approach for RLWE-based Homomorphic Encryption.
+September 27, 2021, Suwon.
+Republic of Korea
+Samsung Advanced Institute of Technology
+<i>KDE+21.</i>
