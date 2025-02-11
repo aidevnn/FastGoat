@@ -286,13 +286,12 @@ RLWECipher BlindRotateBGV((Rational ai, Rational[] bi) ab, Rq f, (RLWECipher plu
         var cxai = exai * encSi_plus;
         var ex_ai = (XpowA(-ai, pm, N) - 1).CoefsModSigned(N);
         var cx_ai = ex_ai * encSi_minus;
-        
+
         var acci = encOne + cxai + cx_ai;
         acc = RLWE.MulRelinBGV(acc, acci, rlk).ModSwitch(q);
     }
-    
-    var ni = new Rational(InvModPbezbigint(n, t.Num));
-    return (ni * acc);
+
+    return acc;
 }
 
 void RPShow(Rq sk, RLWECipher[,] mat, string header)
@@ -321,7 +320,7 @@ RLWECipher RepackingBGV(int n, RLWECipher[] accs, RLWECipher[] autSk)
         for (int j = 1; j < d / n; j++)
             CT[i, n] = CT[i, n] + XpowA(n * j, pm, new(d)) * CT[i + j * n, n];
     }
-    
+
     for (int k = n; k > 1; k /= 2)
     {
         for (int i = 0; i < k / 2; i++)
@@ -341,23 +340,24 @@ RLWECipher RepackingBGV(int n, RLWECipher[] accs, RLWECipher[] autSk)
 {
     var (pm, t, qL) = pk.PM_T_Q;
     var n = pm.Degree;
-    
+
     // 1. Extract
+    var ni = new Rational(InvModPbezbigint(n, qL.Num)).Signed(qL);
+    var h = (t / (2 * n)).Trunc;
     var (ct1, ctprep) = CtPrep(ct);
     var extract = RLWE.Extract(ctprep);
     var c = n / 2 - 1;
-    var ni = new Rational(InvModPbezbigint(n, qL.Num));
-    var f = (2 * c + 1).SeqLazy(-c).Where(j => j != 0).Select(j => ni * ct.Q * j * XpowA(j, pm, t))
+    var f = (2 * c + 1).SeqLazy(-c).Where(j => j != 0).Select(j => j * XpowA(j, pm, t))
         .Aggregate((v0, v1) => v0 + v1).ResModSigned(pm, t);
 
     var seqBR = new List<RLWECipher>();
     foreach (var ab in extract)
-        seqBR.Add(BlindRotateBGV(ab, f, brk, rlk));
+        seqBR.Add(ni * BlindRotateBGV(ab, f, brk, rlk));
 
     // Step 3. Repacking
     var ctsm = RepackingBGV(n, seqBR.ToArray(), skAut);
     var ctboot = ctsm - ct1;
-    return (ctboot, ctsm);
+    return (ctboot * h, ctsm);
 }
 
 void testBR()
@@ -397,7 +397,7 @@ void testBR()
         var ai = new Rational(Rng.Next(1, n + 1)).Signed(n);
         var bi = RLWE.GenUnif(n, n).CoefsExtended(n - 1);
 
-        var acc = n * BlindRotateBGV((ai, bi), f, brk, rlk);
+        var acc = BlindRotateBGV((ai, bi), f, brk, rlk);
         var actual = RLWE.DecryptBGV(acc, sk);
 
         var u = CheckBR(s.ToArray(), pm, (ai, bi), f, actual, n * t.One);
@@ -411,11 +411,12 @@ void testBR()
 
 void testBootstrapping()
 {
-    RecomputeAllPrimesUpTo(500000);
-    var N = 16;
+    // RLWE.NoiseOff();
+    RecomputeAllPrimesUpTo(5000000);
+    var N = 32;
     var n = N / 2;
-    var level = 8;
-    var (pm, sk, t, primes, pk, swks) = RLWE.SetupBGV(N, 17, level);
+    var level = 3 * n / 2;
+    var (pm, sk, t, primes, pk, swks) = RLWE.SetupBGV(N, level);
     var q = primes[0];
     var sp = Rational.NthRoot(swks[pk.Q].skPow[0].Q / pk.Q, level);
     var qL = pk.Q;
@@ -432,12 +433,13 @@ void testBootstrapping()
     var brk = BRKBGV(sk, pk);
     var seqMods = (level + 1).SeqLazy(1).Select(i => primes.Take(i).Aggregate((pi, pj) => pi * pj)).ToArray();
     var aks = RLWE.LeveledAutMorphSwitchKeyGenBGV(level, pm, sk, t, seqMods, sp);
-
-    for (int k = 0; k < 50; ++k)
+    
+    for (int k = 0; k < 5; ++k)
     {
         var m = RLWE.GenUnif(n, t);
+        var m2 = (m * m).ResModSigned(pm, t);
         var cm = RLWE.EncryptBGV(m, pk); // level qL
-        var ct = cm.ModSwitch(q); // level q0
+        var ct = RLWE.MulRelinBGV(cm, cm, rlk).ModSwitch(q); // level q0
 
         var (ctboot, ctsm) = Bootstrapping(ct, pk, rlk, aks[qL].autSk, brk);
         Console.WriteLine($"pm = {pm} T = {t} q = {q} sp = {sp} qL = {qL}");
@@ -445,39 +447,40 @@ void testBootstrapping()
         Console.WriteLine($"ct     {ct.Params}");
         Console.WriteLine($"ctboot {ctboot.Params}");
         
-        var mboot = RLWE.DecryptBGV(ctboot, sk);
+        var m2boot = RLWE.DecryptBGV(ctboot, sk);
         Console.WriteLine($"m       = {m}");
-        Console.WriteLine($"ctboot  = {mboot}");
+        Console.WriteLine($"m^2     = {m2}");
+        Console.WriteLine($"ctboot  = {m2boot}");
         Console.WriteLine($"eboot   = {RLWE.ErrorsBGV(ctboot, sk).NormInf()}");
         Console.WriteLine($"emodsw  = {RLWE.ErrorsBGV(ct.ModSwitch(qL), sk).NormInf()}");
         Console.WriteLine();
-        if (!m.Equals(mboot))
+        if (!m2.Equals(m2boot))
+            throw new();
+
+        var c2 = RLWE.MulRelinBGV(ctboot, ctboot, swks[qL].skPow[2]).ModSwitch(swks[qL].nextMod);
+        var d2 = RLWE.DecryptBGV(c2, sk);
+        var m4 = (m2 * m2).ResModSigned(pm, t);
+        Console.WriteLine($"m^4 = {m4}");
+        Console.WriteLine($"    = {d2}");
+        Console.WriteLine();
+        if (!d2.Equals(m4))
             throw new();
     }
 }
 
 {
-    // testBR();
-    // f           :x^15 + 2*x^14 + 3*x^13 + 4*x^12 + 5*x^11 + 6*x^10 + 7*x^9 + 7*x^7 + 6*x^6 + 5*x^5 + 4*x^4 + 3*x^3 + 2*x^2 + x
-    // f           :[   0,    1,    2,    3,    4,    5,    6,    7,    0,    7,    6,    5,    4,    3,    2,    1]
-    // ai          :-5
-    // bi          :[   4,   -2,    0,    3,    2,   -7,    1,    6,   -5,    6,    2,    3,   -1,   -1,   -1,    8]
-    // blind rotate:6*x^15 + 7*x^14 + 7*x^12 + 6*x^11 + 5*x^10 + 4*x^9 + 3*x^8 + 2*x^7 + x^6 - x^4 - 2*x^3 - 3*x^2 - 4*x - 5
-    //             :[  -5,   -4,   -3,   -2,   -1,    0,    1,    2,    3,    4,    5,    6,    7,    0,    7,    6]
-    // u= a - <b,s>:5
-    // f*X^5       :6*x^15 + 7*x^14 + 7*x^12 + 6*x^11 + 5*x^10 + 4*x^9 + 3*x^8 + 2*x^7 + x^6 - x^4 - 2*x^3 - 3*x^2 - 4*x - 5
-    // f*X^5       :[  -5,   -4,   -3,   -2,   -1,    0,    1,    2,    3,    4,    5,    6,    7,    0,    7,    6]
-    // success
+    testBootstrapping();
+    // pm = x^16 + 1 T = 97 q = 43457 sp = 562019 qL = 22507100418988372151828297490858576961978848072780633434001653033091601484441220009826178317314723551639331463205259170137694738719553
+    // pk     RLWECipher Q:22507100418988372151828297490858576961978848072780633434001653033091601484441220009826178317314723551639331463205259170137694738719553    T:97    PM:x^16 + 1
+    // ct     RLWECipher Q:43457    T:97    PM:x^16 + 1
+    // ctboot RLWECipher Q:22507100418988372151828297490858576961978848072780633434001653033091601484441220009826178317314723551639331463205259170137694738719553    T:97    PM:x^16 + 1
+    // m       = 47*x^15 + 2*x^14 - 35*x^13 - 40*x^12 - 24*x^11 + 42*x^10 - 31*x^9 - 24*x^8 + 31*x^7 - 28*x^6 - 24*x^5 + 15*x^4 + 32*x^3 + 5*x^2 - 7*x - 23
+    // m^2     = -22*x^15 + 45*x^14 + 6*x^13 - 48*x^12 - 6*x^11 + 9*x^10 - 11*x^9 - 18*x^7 + 12*x^6 + 26*x^5 - x^4 - 11*x^3 + 30*x^2 + 14*x - 25
+    // ctboot  = -22*x^15 + 45*x^14 + 6*x^13 - 48*x^12 - 6*x^11 + 9*x^10 - 11*x^9 - 18*x^7 + 12*x^6 + 26*x^5 - x^4 - 11*x^3 + 30*x^2 + 14*x - 25
+    // eboot   = 3505863643963710169910901783170990941816219907629288749936586720
+    // emodsw  = 49719990800627832721437663877451811868052774351357452416507321977513260061816442021844883872844730675319875289773911690480675033185
     // 
-    
-    testBootstrapping(); // lucky parameters
-    // pm = x^8 + 1 T = 17 q = 1361 sp = 12343 qL = 35599582020475615427283552359810689
-    // pk     RLWECipher Q:35599582020475615427283552359810689    T:17    PM:x^8 + 1
-    // ct     RLWECipher Q:1361    T:17    PM:x^8 + 1
-    // ctboot RLWECipher Q:35599582020475615427283552359810689    T:17    PM:x^8 + 1
-    // m       = -4*x^7 + 5*x^6 + 8*x^5 - 2*x^4 + 5*x^3 + 5*x^2 - 6*x + 3
-    // ctboot  = -4*x^7 + 5*x^6 + 8*x^5 - 2*x^4 + 5*x^3 + 5*x^2 - 6*x + 3
-    // eboot   = 5068021424691139538
-    // emodsw  = 575452464695417736517441698689073
+    // m^4 = 15*x^15 + 46*x^14 + 47*x^13 - 24*x^12 + 34*x^11 + 42*x^10 - 13*x^9 - x^8 + 20*x^7 - 31*x^6 - 12*x^5 + 30*x^4 + 48*x^3 - 31*x^2 + 27*x + 23
+    //     = 15*x^15 + 46*x^14 + 47*x^13 - 24*x^12 + 34*x^11 + 42*x^10 - 13*x^9 - x^8 + 20*x^7 - 31*x^6 - 12*x^5 + 30*x^4 + 48*x^3 - 31*x^2 + 27*x + 23
     // 
 }
