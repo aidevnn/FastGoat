@@ -119,7 +119,7 @@ public partial class RLWE
     {
         var (pm, t, qL) = brk[0].minus.cm[0].PM_T_Q;
         var n = pm.Degree;
-        var N = new Rational(n);
+        var N = new Rational(2 * n);
         var x = pm.X;
 
         var beta = ab.bi;
