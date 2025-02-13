@@ -117,9 +117,9 @@ public static class LearningWithErrors
         Console.WriteLine();
     }
 
-    static void SymbBGV()
+    public static void SymbBGV()
     {
-        var ind = new Indeterminates<Xi>(MonomOrder.GrLex, new Xi("k"), new Xi("T"), new Xi("X"), new Xi("sk"));
+        var ind = new Indeterminates<Xi>(MonomOrder.GrLex, new Xi("k"), new Xi("T"), new Xi("X"), new Xi("sk"), new Xi("sk2"));
         ind.ExtendAppend("epk", "pkb", "erlk", "rlkb");
         ind.ExtendAppend("m1", "u1", "e1a", "e1b");
         ind.ExtendAppend("m2", "u2", "e2a", "e2b");
@@ -127,8 +127,8 @@ public static class LearningWithErrors
 
         var z = new Polynomial<Rational, Xi>(ind, Rational.KZero());
         var Vars = z.Variables;
-        var (k, t, X, sk) = Vars.Take(4).Deconstruct();
-        var (epk, pkb, erlk, rlkb) = Vars.Skip(4).Take(4).Deconstruct();
+        var (k, t, X, sk, sk2) = Vars.Take(5).Deconstruct();
+        var (epk, pkb, erlk, rlkb) = Vars.Skip(5).Take(4).Deconstruct();
         var pka = (t * epk + pkb * sk);
         var b = Vars.Last();
         var p = b * t + 1;
@@ -144,7 +144,7 @@ public static class LearningWithErrors
         Console.WriteLine("                             sk^2   = {0}", sk.Pow(2));
         Console.WriteLine();
 
-        var (m1, u1, e1a, e1b) = Vars.Skip(8).Take(4).Deconstruct();
+        var (m1, u1, e1a, e1b) = Vars.Skip(9).Take(4).Deconstruct();
         var m1a = m1 + t * e1a + u1 * pka;
         var m1b = t * e1b + u1 * pkb;
         Console.WriteLine($"m1a = {m1a}");
@@ -153,7 +153,7 @@ public static class LearningWithErrors
         Console.WriteLine($"Decrypt m1: m1a - sk*m1b mod t = {(m1a - sk * m1b).Div(t).rem}");
         Console.WriteLine();
 
-        var (m2, u2, e2a, e2b) = Vars.Skip(12).Take(4).Deconstruct();
+        var (m2, u2, e2a, e2b) = Vars.Skip(13).Take(4).Deconstruct();
         var m2a = m2 + t * e2a + u2 * pka;
         var m2b = t * e2b + u2 * pkb;
         Console.WriteLine($"m2a = {m2a}");
@@ -206,7 +206,7 @@ public static class LearningWithErrors
         Console.WriteLine($"                                      mul_m1m2   = {mul_m1m2}");
         Console.WriteLine();
 
-        var ska = sk + t * e1a + u1 * pka;
+        var ska = sk2 + t * e1a + u1 * pka;
         var skb = t * e1b + u1 * pkb;
         var swk_m2a = m2a - m2b * ska;
         var swk_m2b = -m2b * skb;
@@ -222,13 +222,13 @@ public static class LearningWithErrors
     public static void RunLeveledBGV(int N, int t0, int level, bool differentPrimes = true)
     {
         var sk = RLWE.SKBGV(N / 2);
-        var (pm, _, t, primes, pk, swks) = RLWE.SetupBGV(N, t0, level, sk, differentPrimes);
+        var (pm, _, t, primes, sp, pk, rlks) = RLWE.SetupBGV(N, t0, level, sk, differentPrimes);
         Console.WriteLine($"pm = {pm} T = {t} Primes = [{primes.Glue(", ")}]");
         Console.WriteLine($"sk = {sk}");
         Console.WriteLine($"pk => {pk.Params}");
 
-        foreach (var swk in swks)
-            Console.WriteLine($"swk[{swk.Key}] => {swk.Value.skPow[0].Params}");
+        foreach (var rlk in rlks)
+            Console.WriteLine($"swk[{rlk.Key}] => {rlk.Value.rlk.Params}");
 
         Console.WriteLine();
 
@@ -244,8 +244,8 @@ public static class LearningWithErrors
         {
             var c1 = qMul.Dequeue();
             var c2 = qMul.Dequeue();
-            var (nextMod, swk) = swks[c1.Q];
-            var c1c2 = RLWE.MulRelinBGV(c1, c2, swk[2]).ModSwitch(nextMod);
+            var (nextMod, rlk) = rlks[c1.Q];
+            var c1c2 = RLWE.MulRelinBGV(c1, c2, rlk).ModSwitch(nextMod);
             qMul.Enqueue(c1c2);
         }
 
@@ -267,7 +267,7 @@ public static class LearningWithErrors
             throw new("fail");
     }
 
-    public static void RunLeveledBGV(int N, int t0, int level, bool differentPrimes = true, int nbTests = 500)
+    public static void RunLeveledBGV(int N, int t0, int level, bool differentPrimes, int nbTests)
     {
         GlobalStopWatch.AddLap();
         for (int i = 0; i < nbTests; i++)
@@ -279,6 +279,13 @@ public static class LearningWithErrors
 
         GlobalStopWatch.Show($"Pass {nbTests} tests. N={N} T={t0} Level={level}.");
         Console.WriteLine();
+    }
+
+    public static void RunLeveledBGV(int N, int level, bool differentPrimes, int nbTests)
+    {
+        var t0 = IntExt.Primes10000.First(t1 => t1 % N == 1);
+        Console.WriteLine(new { t0 });
+        RunLeveledBGV(N, t0, level, differentPrimes, nbTests);
     }
 
     public static void Example1Regev()
@@ -526,46 +533,6 @@ public static class LearningWithErrors
         }
     }
 
-    public static void Example8TrackingErrors()
-    {
-        // Weak parameters
-        // RLWE N=16=2^4, Φ(N)=8 PM=x^8 + 1 t=97 q=9797=97*101
-        var (reg, rlwe) = Regev.SetupRLWE(16);
-        var t = rlwe.T;
-
-        var m1 = DistributionExt.DiceSample(reg.N, [0, 1]).ToArray();
-        var m2 = DistributionExt.DiceSample(reg.N, [0, 1]).ToArray();
-        var c1a = rlwe.Encrypt(m1);
-        var c2a = rlwe.Encrypt(m2);
-        var xa = rlwe.XOR(
-            rlwe.XOR(c1a.Take(rlwe.n / 2).ToArray(), c1a.Skip(rlwe.n / 2).ToArray()),
-            rlwe.XOR(c2a.Take(rlwe.n / 2).ToArray(), c2a.Skip(rlwe.n / 2).ToArray())
-        );
-        var eia = rlwe.Errors(c1a).Concat(rlwe.Errors(c2a)).Select(e => e[0].Signed(t).Absolute).Max();
-        var efa = xa.Select(e => rlwe.Errors(e)[0].Signed(t).Absolute).Max();
-
-        var c1b = rlwe.FromRegevCipher(reg.Encrypt(m1));
-        var c2b = rlwe.FromRegevCipher(reg.Encrypt(m2));
-        var xb = rlwe.XOR(
-            rlwe.XOR(c1b.Take(rlwe.n / 2).ToArray(), c1b.Skip(rlwe.n / 2).ToArray()),
-            rlwe.XOR(c2b.Take(rlwe.n / 2).ToArray(), c2b.Skip(rlwe.n / 2).ToArray())
-        );
-        var eib = rlwe.Errors(c1b).Concat(rlwe.Errors(c2b)).Select(e => e[0].Signed(t).Absolute).Max();
-        var efb = xb.Select(e => rlwe.Errors(e)[0].Signed(t).Absolute).Max();
-
-        Console.WriteLine($"{reg.Params}");
-        Console.WriteLine($"{rlwe.Params}");
-        Console.WriteLine();
-        Console.WriteLine($"RLWE only             Errors: {eia,3} --> {efa,3}");
-        Console.WriteLine($"RLWE from RegevCipher Errors: {eib,3} --> {efb,3}");
-        // Regev N:16   P:577    M:171    A:0.0156 A*P:9.0156 P/M:3.3743
-        // RLWE N=32=2^5, Φ(N)=16 PM=x^16 + 1 t=577 q=338699=577*587
-        // 
-        // RLWE only             Errors:   0 -->   0
-        // RLWE from RegevCipher Errors:  17 --> 135
-        // 
-    }
-
     #endregion
 
     public static void Example9WrongParameters()
@@ -575,7 +542,7 @@ public static class LearningWithErrors
             var n = 1 << (k - 1);
             var t0 = IntExt.Primes10000.First(t0 => t0 % (2 * n) == 1);
             var _q0 = IntExt.Primes10000.First(t1 => t1 % (2 * n) == 1 && t1 > t0);
-            var q0 = new Rational(_q0) * t0; // ciphertext and plaintext not coprimes
+            var q0 = new Rational(_q0) * t0;
             var pm = FG.QPoly().Pow(n) + 1;
             var t = new Rational(t0);
             var sk = 10000.SeqLazy().Select(_ => RLWE.GenTernary(n))
@@ -603,8 +570,18 @@ public static class LearningWithErrors
 
     public static void Example10LeveledBGV()
     {
-        IntExt.RecomputeAllPrimesUpTo(1500000);
+        // Weak parameters
+        IntExt.RecomputeAllPrimesUpTo(5000000);
 
-        RunLeveledBGV(16, 769, 6, true, 5);
+        var nbTests = 5;
+        RunLeveledBGV(N: 16, t0: 521, level: 10, differentPrimes: true, nbTests);
+        RunLeveledBGV(N: 32, t0: 521, level: 8, differentPrimes: true, nbTests);
+        RunLeveledBGV(N: 64, t0: 521, level: 6, differentPrimes: true, nbTests);
+        RunLeveledBGV(N: 128, t0: 521, level: 4, differentPrimes: true, nbTests);
+        
+        RunLeveledBGV(N: 256, t0: 257, level: 4, differentPrimes: false, nbTests);
+        RunLeveledBGV(N: 512, t0: 257, level: 4, differentPrimes: false, nbTests);
+        RunLeveledBGV(N: 1024, t0: 257, level: 2, differentPrimes: false, nbTests);
+        RunLeveledBGV(N: 2048, t0: 257, level: 1, differentPrimes: false, nbTests);
     }
 }

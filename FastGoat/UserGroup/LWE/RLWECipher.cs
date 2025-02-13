@@ -96,14 +96,25 @@ public struct RLWECipher : IModuleElt<Rational, RLWECipher>, IElt<RLWECipher>, I
     public RLWECipher One => new(PM.One, PM.Zero, PM, T, Q);
     public RLWECipher SK0 => new(PM.Zero, -PM.One, PM, T, Q);
 
-    public RLWECipher Add(RLWECipher e) =>
-        new((A + e.A).CoefsModSigned(Q), (B + e.B).CoefsModSigned(Q), PM, T, Q);
-    public RLWECipher Sub(RLWECipher e) => 
-        new((A - e.A).CoefsModSigned(Q), (B - e.B).CoefsModSigned(Q), PM, T, Q);
+    public RLWECipher Add(RLWECipher e)
+    {
+        var (e0, e1) = AdjustLevel(this, e);
+        return new((e0.A + e1.A).CoefsModSigned(e0.Q), (e0.B + e1.B).CoefsModSigned(e0.Q), PM, T, e0.Q);
+    }
+    public RLWECipher Sub(RLWECipher e) 
+    {
+        var (e0, e1) = AdjustLevel(this, e);
+        return new((e0.A - e1.A).CoefsModSigned(e0.Q), (e0.B - e1.B).CoefsModSigned(e0.Q), PM, T, e0.Q);
+    }
     public RLWECipher Opp() => new(-A, -B, PM, T, Q);
 
-    public RLWECipher Mul(RLWECipher e) =>
-        new((A * e.A).ResModSigned(PM, Q), (B * e.A + A * e.B).ResModSigned(PM, Q), PM, T, Q);
+    public RLWECipher Mul(RLWECipher e)
+    {
+        var (e0, e1) = AdjustLevel(this, e);
+        var c0 = (e0.A * e1.A).ResModSigned(PM, e0.Q);
+        var c1 = (e0.B * e1.A + e0.A * e1.B).ResModSigned(PM, e0.Q);
+        return new(c0, c1, PM, T, e0.Q);
+    }
 
     public (RLWECipher quo, RLWECipher rem) Div(RLWECipher e)
     {
@@ -124,6 +135,16 @@ public struct RLWECipher : IModuleElt<Rational, RLWECipher>, IElt<RLWECipher>, I
     public void Deconstruct(out Rq a, out Rq b, out Rq pm, out Rational t, out Rational q)
     {
         (a, b, pm, t, q) = (A, B, PM, T, Q);
+    }
+
+    public static (RLWECipher cipher1, RLWECipher cipher2) AdjustLevel(RLWECipher cipher1, RLWECipher cipher2)
+    {
+        if (cipher1.Q.Equals(cipher2.Q))
+            return (cipher1, cipher2);
+        if (cipher1.Q > cipher2.Q)
+            return (cipher1.ModSwitch(cipher2.Q), cipher2);
+        
+        return (cipher1, cipher2.ModSwitch(cipher1.Q));
     }
 
     public static RLWECipher operator +(RLWECipher a, RLWECipher b) => a.Add(b);

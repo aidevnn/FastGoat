@@ -79,56 +79,30 @@ public partial class RLWE
         }
     }
 
-    public static Dictionary<Rational, (Rational nextMod, RLWECipher[] skPow)>
+    public static Dictionary<Rational, (Rational nextMod, RLWECipher rlk)> 
         LeveledSwitchKeyGenBGV(int level, Rq pm, Rq sk, Rational t, Rational[] seqMods, Rational sp)
     {
-        var n = pm.Degree;
-        var seqSwks = new Dictionary<Rational, (Rational nextMod, RLWECipher[] skPow)>();
+        var seqRlks = new Dictionary<Rational, (Rational nextMod, RLWECipher rlk)>();
         for (int i = 0; i <= level; i++)
         {
             var qi = seqMods[i];
             if (i == 0)
             {
                 var cz = new RLWECipher(pm.Zero, pm.Zero, pm, t, qi);
-                seqSwks[qi] = (t.One, n.SeqLazy().Select(_ => cz).ToArray());
+                seqRlks[qi] = (t.One, cz);
                 continue;
             }
 
             var spi = sp.Pow(i);
-            var swks = n.SeqLazy().Select(j => SWKBGV(pm, sk, sk.Pow(j), t, qi, spi)).ToArray();
-            seqSwks[qi] = (seqMods[i - 1], swks);
+            var rlk = SWKBGV(pm, sk, sk.Pow(2), t, qi, spi);
+            seqRlks[qi] = (seqMods[i - 1], rlk);
         }
 
-        return seqSwks;
+        return seqRlks;
     }
 
-    public static Dictionary<Rational, (Rational nextMod, RLWECipher[] autSk)>
-        LeveledAutMorphSwitchKeyGenBGV(int level, Rq pm, Rq sk, Rational t, Rational[] seqMods, Rational sp)
-    {
-        var n = pm.Degree;
-        var N = 2 * n;
-        var seqSwks = new Dictionary<Rational, (Rational nextMod, RLWECipher[] autSk)>();
-        for (int i = 0; i <= level; i++)
-        {
-            var qi = seqMods[i];
-            if (i == 0)
-            {
-                var cz = new RLWECipher(pm.Zero, pm.Zero, pm, t, qi);
-                seqSwks[qi] = (t.One, N.SeqLazy().Select(_ => cz).ToArray());
-                continue;
-            }
-
-            var spi = sp.Pow(i);
-            var swks = N.SeqLazy()
-                .Select(j => SWKBGV(pm, sk, sk.Substitute(pm.X.Pow(j)).ResModSigned(pm, t), t, qi, spi)).ToArray();
-            seqSwks[qi] = (seqMods[i - 1], swks);
-        }
-
-        return seqSwks;
-    }
-
-    public static (Rq pm, Rq sk, Rational t, Rational[] primes, RLWECipher pk,
-        Dictionary<Rational, (Rational nextMod, RLWECipher[] skPow)> swks)
+    public static (Rq pm, Rq sk, Rational t, Rational[] primes, Rational sp, RLWECipher pk, 
+        Dictionary<Rational, (Rational nextMod, RLWECipher rlk)> rlks)
         SetupBGV(int N, int t0, int level, Rq sk, bool differentPrimes = true)
     {
         if (IntExt.PrimesDecomposition(t0).Distinct().Count() != 1)
@@ -139,6 +113,7 @@ public partial class RLWE
         var t = new Rational(t0);
 
         Rational[] primes;
+        
         if (differentPrimes)
             primes = IntExt.Primes10000.Where(t1 => t1 % N == 1 && t1 % t0 == 1).Take(level + 1)
                 .Select(pi => new Rational(pi)).ToArray();
@@ -154,28 +129,28 @@ public partial class RLWE
 
         var seqMods = (level + 1).SeqLazy(1).Select(i => primes.Take(i).Aggregate((pi, pj) => pi * pj)).ToArray();
         var sp = new Rational(IntExt.Primes10000.FirstOrDefault(t1 => t1 > primes.Last() && t1 % t0 == 1, 1));
-        var seqSwks = LeveledSwitchKeyGenBGV(level, pm, sk, t, seqMods, sp);
+        var seqRlks = LeveledSwitchKeyGenBGV(level, pm, sk, t, seqMods, sp);
 
-        return (pm, sk, t, primes, pk, seqSwks);
+        return (pm, sk, t, primes, sp, pk, seqRlks);
     }
 
-    public static (Rq pm, Rq sk, Rational t, Rational[] primes, RLWECipher pk,
-        Dictionary<Rational, (Rational nextMod, RLWECipher[] skPow)> swks)
+    public static (Rq pm, Rq sk, Rational t, Rational[] primes, Rational sp, RLWECipher pk, 
+        Dictionary<Rational, (Rational nextMod, RLWECipher rlk)> rlks)
         SetupBGV(int N, int t0, int level, bool differentPrimes)
     {
         return SetupBGV(N, t0, level, SKBGV(N / 2), differentPrimes);
     }
 
-    public static (Rq pm, Rq sk, Rational t, Rational[] primes, RLWECipher pk,
-        Dictionary<Rational, (Rational nextMod, RLWECipher[] skPow)> swks) SetupBGV(int N, int level,
-            bool differentPrimes = true)
+    public static (Rq pm, Rq sk, Rational t, Rational[] primes, Rational sp, RLWECipher pk, 
+        Dictionary<Rational, (Rational nextMod, RLWECipher rlk)> rlks) 
+        SetupBGV(int N, int level, bool differentPrimes = true)
     {
         var t = IntExt.Primes10000.First(t1 => t1 % N == 1);
         return SetupBGV(N, t, level, SKBGV(N / 2), differentPrimes);
     }
 
-    public static (Rq pm, Rq sk, Rational t, Rational[] primes, RLWECipher pk,
-        Dictionary<Rational, (Rational nextMod, RLWECipher[] skPow)> swks) SetupBGV(int N, int t, int level)
+    public static (Rq pm, Rq sk, Rational t, Rational[] primes, Rational sp, RLWECipher pk, 
+        Dictionary<Rational, (Rational nextMod, RLWECipher rlk)> rlks) SetupBGV(int N, int t, int level)
     {
         return SetupBGV(N, t, level, SKBGV(N / 2));
     }
@@ -187,9 +162,9 @@ public partial class RLWE
             throw new($"T = {t0} must be prime");
 
         var N = 2 * n;
-        var (pm, _, t, primes, pk, swks) = SetupBGV(N, t0, level: 1, sk, differentPrimes: true);
+        var (pm, _, t, primes, _, pk, rlks) = SetupBGV(N, t0, level: 1, sk, differentPrimes: true);
         var q = primes[0];
-        return (pm, sk, t, q, pk, swks[pk.Q].skPow[2]);
+        return (pm, sk, t, q, pk, rlks[pk.Q].rlk);
     }
 
     public static RLWECipher EncryptBGV(Rq m, RLWECipher pk, bool noise = true)
@@ -228,56 +203,29 @@ public partial class RLWE
     public static RLWECipher MulRelinBGV(RLWECipher cipher0, RLWECipher cipher1, RLWECipher rlk)
     {
         var (pm, t, q) = cipher0.PM_T_Q;
-        var spi = rlk.Q / q;
-        var d0 = (cipher0.A * cipher1.A).ResModSigned(pm, q);
-        var d1 = (cipher0.A * cipher1.B + cipher0.B * cipher1.A).ResModSigned(pm, q);
-        var d2 = (cipher0.B * cipher1.B).ResModSigned(pm, q);
-        var c = new RLWECipher(d0, d1, pm, t, rlk.Q);
-        return spi * c + d2 * rlk;
+        var spi = rlk.Q / cipher0.Q;
+        var c0 = (cipher0.A * cipher1.A).ResModSigned(pm, q);
+        var c1 = (cipher0.B * cipher1.A + cipher0.A * cipher1.B).ResModSigned(pm, q);
+        var c2 = (cipher0.B * cipher1.B).ResModSigned(pm, q);
+        var c =  new RLWECipher(c0, c1, pm, t, rlk.Q);
+        return spi * c + c2 * rlk;
+    }
+
+    public static RLWECipher[] AKBGV(Rq sk, RLWECipher pk, Rational spi)
+    {
+        var (pm, t, q) = pk.PM_T_Q;
+        var N = 2 * pm.Degree;
+        return N.SeqLazy().Select(j => SWKBGV(pm, sk, sk.Substitute(pm.X.Pow(j)).ResModSigned(pm, t), t, q, spi))
+            .ToArray();
     }
 
     public static RLWECipher AutoMorphBGV(RLWECipher cipher, int k, RLWECipher ak)
     {
         var (pm, t, q) = cipher.PM_T_Q;
-        var spi = ak.Q / q;
         var xk = pm.X.Pow(k);
+        var spi = ak.Q / q;
         var a = cipher.A.Substitute(xk).ResMod(pm);
         var b = cipher.B.Substitute(xk).ResMod(pm);
         return spi * a - b * ak;
-    }
-
-    public static Rq ExtractVec(Vec<ZnInt64> v, int i = 0)
-    {
-        var x = FG.QPoly();
-        var n = v.Length;
-        return v.Select(e => new Rational(e.Signed))
-            .Select((e, j) => i - j >= 0 ? e * x.Pow(i - j) : -e * x.Pow(n + i - j))
-            .Aggregate((xi, xj) => xi + xj);
-    }
-
-    public static Rational[] ExtractArr(Rq poly, int n, int i = 0)
-    {
-        return n.SeqLazy(start: i, step: -1).Select(j => j >= 0 ? poly[j] : -poly[n + j]).ToArray();
-    }
-
-    public static (Rational ai, Rational[] bi)[] Extract(RLWECipher e)
-    {
-        var n = e.PM.Degree;
-        return n.SeqLazy().Select(i => (ai: e.A[i], bi: ExtractArr(e.B, n, i).ToArray())).ToArray();
-    }
-
-    public static RLWECipher[] EXSK(Rq sk, RLWECipher pk)
-    {
-        var (pm, t, q) = pk.PM_T_Q;
-        var n = pm.Degree;
-        return n.SeqLazy().Select(i => EncryptBGV(sk[i] * pm.One, pk)).ToArray();
-    }
-
-    public static RLWECipher[] ExtractCoefs(RLWECipher cipher, RLWECipher[] exsk)
-    {
-        var extr = Extract(cipher);
-        var x = cipher.PM.X;
-        return extr.Select((e, i) => (e.ai - e.bi.Zip(exsk).Select(f => f.First * f.Second).ToVec().Sum()) * x.Pow(i))
-            .ToArray();
     }
 }

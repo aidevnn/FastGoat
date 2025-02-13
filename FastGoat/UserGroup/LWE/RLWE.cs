@@ -8,7 +8,6 @@ namespace FastGoat.UserGroup.LWE;
 
 public partial class RLWE
 {
-    public const int NbPrimes = 3;
     public int n { get; }
     public int N { get; }
     public double Sigma { get; }
@@ -42,7 +41,7 @@ public partial class RLWE
         // when prime T=2k+1, Thalf=k and InvThalf=-2
         Thalf = new(t / 2);
         InvThalf = new(-2);
-        ExSK = [];
+        ExSK = EXSK(SK, PK);
     }
 
     public RLWE(int N, int t)
@@ -51,21 +50,20 @@ public partial class RLWE
             throw new($"N = {N} must be 2^k");
 
         (this.N, n, Sigma) = (N, IntExt.Phi(N), 3.0);
-        
         (PM, SK, T, Q, PK, RLK) = KeyGenBGV(n, t, SKBGV(n));
         // when prime T=2k+1, Thalf=k and InvThalf=-2
         Thalf = new(t / 2);
         InvThalf = new(-2);
-        ExSK = [];
+        ExSK = EXSK(SK, PK);
     }
 
     public RLWE(int N, int t, Vec<ZnInt64> sk)
     {
         if (!int.IsPow2(N))
             throw new($"N = {N} must be 2^k");
-        
+
         (this.N, n, Sigma) = (N, IntExt.Phi(N), 3.0);
-        
+
         (PM, SK, T, Q, PK, RLK) = KeyGenBGV(n, t, IntVecToRq(sk));
         // when prime T=2k+1, Thalf=k and InvThalf=-2
         Thalf = new(t / 2);
@@ -91,7 +89,7 @@ public partial class RLWE
     public Rq Errors(RLWECipher cipher)
     {
         var m = DecryptBit(cipher);
-        return (cipher.A - cipher.B * SK).ResMod(PM, cipher.Q) - m * Thalf;
+        return (cipher.A - cipher.B * SK).ResModSigned(PM, cipher.Q) - m * Thalf;
     }
 
     public Rq[] Errors(RLWECipher[] ciphers) => ciphers.Select(Errors).ToArray();
@@ -99,8 +97,7 @@ public partial class RLWE
     public RLWECipher FromRegevCipher(RegevCipher cipher)
     {
         var a = new Rational(cipher.B.Signed);
-        var bs = cipher.A.Zip(ExSK).Select(e => new Rational(e.First.Signed) * e.Second).Aggregate((ci, cj) => ci + cj);
-        return a - bs;
+        return a - cipher.A.Zip(ExSK).Select(e => new Rational(e.First.Signed) * e.Second).ToVec().Sum();
     }
 
     public RLWECipher[] FromRegevCipher(RegevCipher[] ciphers) => ciphers.Select(FromRegevCipher).ToArray();
@@ -114,10 +111,9 @@ public partial class RLWE
 
     public RegevCipher[] ToRegevCipher(RLWECipher[] ciphers) => ciphers.Select(ToRegevCipher).ToArray();
 
-    public string Params =>
-        $"RLWE N={N}=2^{int.Log2(N)}, Φ(N)={n} PM={PM} t={T} q={Q}";
+    public string Params => $"RLWE N={N}=2^{int.Log2(N)}, Φ(N)={n} PM={PM} t={T} q={Q}";
 
-    public void Deconstruct(out int _n, out Rq pm, out Rq sk, out Rational t, out Rational q, out RLWECipher pk, 
+    public void Deconstruct(out int _n, out Rq pm, out Rq sk, out Rational t, out Rational q, out RLWECipher pk,
         out RLWECipher rlk)
     {
         (_n, pm, sk, t, q, pk, rlk) = (n, PM, SK, T, Q, PK, RLK);
