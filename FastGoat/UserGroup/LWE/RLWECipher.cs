@@ -34,7 +34,7 @@ public struct RLWECipher : IModuleElt<Rational, RLWECipher>, IElt<RLWECipher>, I
     
     public RLWECipher ModSwitchV2(Rational qf)
     {
-        var invT = ((1 - Q) / T).Mod(Q);
+        var invT = (1 - Q) / T;
         var wa = (-qf * invT * A).CoefsModSigned(Q);
         var wb = (-qf * invT * B).CoefsModSigned(Q);
         var a = ((qf * A + T * wa) / Q).CoefsModSigned(qf);

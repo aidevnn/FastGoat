@@ -119,7 +119,6 @@ public partial class RLWE
     {
         var (pm, t, qL) = brk[0].minus.cm[0].PM_T_Q;
         var n = pm.Degree;
-        var N = new Rational(2 * n);
         var x = pm.X;
 
         var beta = ab.bi;
@@ -201,7 +200,7 @@ public partial class RLWE
 
         // 2. BlindRotate
         var rlwe0 = EncryptRgswBGV(pm.One, pk, B, noiseMode: false);
-        var ni = (-qL / n).Trunc;
+        var ni = (1 - qL) / n;
         var seqBR = new List<RLWECipher>();
         foreach (var ab in extract)
             seqBR.Add(ni * BlindRotategswBGV(ab, B, rlwe0, brk));
@@ -209,7 +208,7 @@ public partial class RLWE
         // Step 3. Repacking
         var ctsm = RepackingBGV(n, seqBR.ToArray(), skAut);
         var ctboot = -ctsm + ct1.CoefsModSigned(qL);
-        var Ni = (-t / (2 * n)).Trunc;
+        var Ni = (1 - t) / (2 * n);
         return (ctboot * Ni, ctsm);
     }
 }
