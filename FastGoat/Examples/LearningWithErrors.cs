@@ -228,7 +228,7 @@ public static class LearningWithErrors
         Console.WriteLine($"pk => {pk.Params}");
 
         foreach (var rlk in rlks)
-            Console.WriteLine($"swk[{rlk.Key}] => {rlk.Value.rlk.Params}");
+            Console.WriteLine($"rlk[{rlk.Key}] => {rlk.Value.rlk.Params}");
 
         Console.WriteLine();
 

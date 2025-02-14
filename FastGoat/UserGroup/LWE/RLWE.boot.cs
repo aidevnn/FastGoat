@@ -97,8 +97,8 @@ public partial class RLWE
         var N = new Rational(2 * pm.Degree);
         var a1 = (N * ct.A).CoefsModSigned(q);
         var b1 = (N * ct.B).CoefsModSigned(q);
-        var a2 = (N * ct.A - a1) / q;
-        var b2 = (N * ct.B - b1) / q;
+        var a2 = ((N * ct.A - a1) / q).CoefsModSigned(N);
+        var b2 = ((N * ct.B - b1) / q).CoefsModSigned(N);
         return ((a1, b1, pm, t, q), (a2, b2, pm, t, N));
     }
 
@@ -124,21 +124,21 @@ public partial class RLWE
 
         var beta = ab.bi;
         var alpha = (int)ab.ai.Num;
-        var xalpha = XpowA(alpha, pm, N);
+        var xalpha = XpowA(alpha, pm, qL);
 
         var (encSOne0, encOne0) = rlwe0;
-        RLWECipher acc = ((f * xalpha).ResModSigned(pm, N), x.Zero, pm, t, qL);
-
+        RLWECipher acc = ((f * xalpha).ResModSigned(pm, qL), x.Zero, pm, t, qL);
+        
         for (int i = 0; i < n; i++)
         {
             var (encSi_plus, encSi_minus) = brk[i];
             var ai = (int)beta[i].Opp().Num;
 
-            var exai = (XpowA(ai, pm, N) - 1);
+            var exai = (XpowA(ai, pm, qL) - 1);
             var cxai = encSi_plus.cm.Select(e => exai * e).ToVec();
             var csxai = encSi_plus.csm.Select(e => exai * e).ToVec();
 
-            var ex_ai = (XpowA(-ai, pm, N) - 1);
+            var ex_ai = (XpowA(-ai, pm, qL) - 1);
             var cx_ai = encSi_minus.cm.Select(e => ex_ai * e).ToVec();
             var csx_ai = encSi_minus.csm.Select(e => ex_ai * e).ToVec();
 
@@ -157,9 +157,9 @@ public partial class RLWE
     {
         var (pm, t, qL) = brk[0].minus.cm[0].PM_T_Q;
         var x = pm.X;
-        var c = pm.Degree / 4;
-        var f = (2 * c + 1).SeqLazy(-c).Select(j => j * XpowA(j, pm, t))
-            .Aggregate(x.Zero, (acc, v) => acc + v).ResModSigned(pm, t);
+        var c = pm.Degree / 2 - 1;
+        var f = (2 * c + 1).SeqLazy(-c).Select(j => j * XpowA(j, pm, qL))
+            .Aggregate(x.Zero, (acc, v) => acc + v).ResModSigned(pm, qL);
 
         return BlindRotategswBGV(ab, f, B, rlwe0, brk);
     }
@@ -172,11 +172,7 @@ public partial class RLWE
         var x = pm.X;
         var CT = Ring.Matrix(acc0.One, d, d + 1);
         for (int i = 0; i < n; i++)
-        {
             CT[i, n] = accs[i];
-            for (int j = 1; j < d / n; j++)
-                CT[i, n] = CT[i, n] + XpowA(n * j, pm, new(d)) * CT[i + j * n, n];
-        }
 
         for (int k = n; k > 1; k /= 2)
         {
@@ -205,15 +201,15 @@ public partial class RLWE
 
         // 2. BlindRotate
         var rlwe0 = EncryptRgswBGV(pm.One, pk, B, noiseMode: false);
-        var ni = new Rational(IntExt.InvModPbezbigint(n, qL.Num)).Signed(qL);
+        var ni = (-qL / n).Trunc;
         var seqBR = new List<RLWECipher>();
         foreach (var ab in extract)
             seqBR.Add(ni * BlindRotategswBGV(ab, B, rlwe0, brk));
-        
+
         // Step 3. Repacking
         var ctsm = RepackingBGV(n, seqBR.ToArray(), skAut);
-        var ctboot = ctsm - ct1.CoefsModSigned(qL);
-        var h = (t / (2 * n)).Trunc;
-        return (ctboot * h, ctsm);
+        var ctboot = -ctsm + ct1.CoefsModSigned(qL);
+        var Ni = (-t / (2 * n)).Trunc;
+        return (ctboot * Ni, ctsm);
     }
 }

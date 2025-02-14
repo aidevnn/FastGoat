@@ -54,12 +54,12 @@ public partial class RLWE
         var e = GenDiscrGauss(n) * noiseMode;
         while (true)
         {
-            var c1 = GenUnif(n, q);
-            var c0 = (t * e + c1 * sk).ResMod(pm);
-            if (c0.NormInf() * 2 < q)
+            var pkb = GenUnif(n, q);
+            var pka = (t * e + pkb * sk).ResMod(pm);
+            if (pka.NormInf() * 2 < q)
                 continue;
 
-            return new(c0.CoefsModSigned(q), c1, pm, t, q);
+            return new(pka.CoefsModSigned(q), pkb, pm, t, q);
         }
     }
 
@@ -79,7 +79,7 @@ public partial class RLWE
         }
     }
 
-    public static Dictionary<Rational, (Rational nextMod, RLWECipher rlk)> 
+    public static Dictionary<Rational, (Rational nextMod, RLWECipher rlk)>
         LeveledSwitchKeyGenBGV(int level, Rq pm, Rq sk, Rational t, Rational[] seqMods, Rational sp)
     {
         var seqRlks = new Dictionary<Rational, (Rational nextMod, RLWECipher rlk)>();
@@ -101,7 +101,7 @@ public partial class RLWE
         return seqRlks;
     }
 
-    public static (Rq pm, Rq sk, Rational t, Rational[] primes, Rational sp, RLWECipher pk, 
+    public static (Rq pm, Rq sk, Rational t, Rational[] primes, Rational sp, RLWECipher pk,
         Dictionary<Rational, (Rational nextMod, RLWECipher rlk)> rlks)
         SetupBGV(int N, int t0, int level, Rq sk, bool differentPrimes = true)
     {
@@ -113,15 +113,15 @@ public partial class RLWE
         var t = new Rational(t0);
 
         Rational[] primes;
-        
+
         if (differentPrimes)
             primes = IntExt.Primes10000.Where(t1 => t1 % N == 1 && t1 % t0 == 1).Take(level + 1)
                 .Select(pi => new Rational(pi)).ToArray();
         else
-            primes = Enumerable.Repeat(IntExt.Primes10000.First(t1 => t1 % N == 1 && t1 % t0 == 1) * t.One, level + 1)
+            primes = Enumerable.Repeat(IntExt.Primes10000.FirstOrDefault(t1 => t1 % N == 1 && t1 % t0 == 1, 1) * t.One, level + 1)
                 .ToArray();
 
-        if (primes.Length != level + 1)
+        if (primes.Length != level + 1 || primes[0].IsOne())
             throw new($"sequence moduli");
 
         var qL = primes.Aggregate((pi, pj) => pi * pj);
@@ -134,22 +134,22 @@ public partial class RLWE
         return (pm, sk, t, primes, sp, pk, seqRlks);
     }
 
-    public static (Rq pm, Rq sk, Rational t, Rational[] primes, Rational sp, RLWECipher pk, 
+    public static (Rq pm, Rq sk, Rational t, Rational[] primes, Rational sp, RLWECipher pk,
         Dictionary<Rational, (Rational nextMod, RLWECipher rlk)> rlks)
         SetupBGV(int N, int t0, int level, bool differentPrimes)
     {
         return SetupBGV(N, t0, level, SKBGV(N / 2), differentPrimes);
     }
 
-    public static (Rq pm, Rq sk, Rational t, Rational[] primes, Rational sp, RLWECipher pk, 
-        Dictionary<Rational, (Rational nextMod, RLWECipher rlk)> rlks) 
+    public static (Rq pm, Rq sk, Rational t, Rational[] primes, Rational sp, RLWECipher pk,
+        Dictionary<Rational, (Rational nextMod, RLWECipher rlk)> rlks)
         SetupBGV(int N, int level, bool differentPrimes = true)
     {
         var t = IntExt.Primes10000.First(t1 => t1 % N == 1);
         return SetupBGV(N, t, level, SKBGV(N / 2), differentPrimes);
     }
 
-    public static (Rq pm, Rq sk, Rational t, Rational[] primes, Rational sp, RLWECipher pk, 
+    public static (Rq pm, Rq sk, Rational t, Rational[] primes, Rational sp, RLWECipher pk,
         Dictionary<Rational, (Rational nextMod, RLWECipher rlk)> rlks) SetupBGV(int N, int t, int level)
     {
         return SetupBGV(N, t, level, SKBGV(N / 2));
@@ -207,7 +207,7 @@ public partial class RLWE
         var c0 = (cipher0.A * cipher1.A).ResModSigned(pm, q);
         var c1 = (cipher0.B * cipher1.A + cipher0.A * cipher1.B).ResModSigned(pm, q);
         var c2 = (cipher0.B * cipher1.B).ResModSigned(pm, q);
-        var c =  new RLWECipher(c0, c1, pm, t, rlk.Q);
+        var c = new RLWECipher(c0, c1, pm, t, rlk.Q);
         return spi * c + c2 * rlk;
     }
 
@@ -224,8 +224,8 @@ public partial class RLWE
         var (pm, t, q) = cipher.PM_T_Q;
         var xk = pm.X.Pow(k);
         var spi = ak.Q / q;
-        var a = cipher.A.Substitute(xk).ResMod(pm);
-        var b = cipher.B.Substitute(xk).ResMod(pm);
+        var a = cipher.A.Substitute(xk).ResModSigned(pm, q);
+        var b = cipher.B.Substitute(xk).ResModSigned(pm, q);
         return spi * a - b * ak;
     }
 }
