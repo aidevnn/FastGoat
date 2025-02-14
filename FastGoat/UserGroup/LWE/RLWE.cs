@@ -104,8 +104,8 @@ public partial class RLWE
 
     public RegevCipher ToRegevCipher(RLWECipher cipher)
     {
-        var a = ExtractArr(cipher.B, n).Select(e => new ZnInt64((long)T.Num, (long)e.Num)).ToVec();
-        var b = new ZnInt64((long)T.Num, (long)cipher.A[0].Num);
+        var a = ExtractArr(cipher.B, n).Select(e => new ZnInt64((long)T.Num, (long)e.Mod(T).Num)).ToVec();
+        var b = new ZnInt64((long)T.Num, (long)cipher.A[0].Mod(T).Num);
         return new(a, b);
     }
 

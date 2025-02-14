@@ -52,8 +52,8 @@ public class Regev
         (N, P, M, A) = (n, p, m, s / p);
         
         var err = Err = DiscGauss(m, p, s);
-        var sk = SK = Unif(n, p);
-        PK = err.Select(e => (a:Unif(n, p), b:e))
+        var sk = SK = Ternary(n, p); // TODO: Uniform sample
+        PK = err.Select(e => (a: Unif(n, p), b: e))
             .Select(e => new RegevCipher(e.a, e.b + e.a.InnerProd(sk)))
             .ToArray();
     }

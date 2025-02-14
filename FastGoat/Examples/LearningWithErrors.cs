@@ -287,7 +287,7 @@ public static class LearningWithErrors
         Console.WriteLine(new { t0 });
         RunLeveledBGV(N, t0, level, differentPrimes, nbTests);
     }
-
+    
     public static void Example1Regev()
     {
         GlobalStopWatch.Restart();
@@ -505,8 +505,13 @@ public static class LearningWithErrors
             throw new();
     }
 
+    #endregion
+
     public static void Example7Regev2RLWE()
     {
+        // Weak parameters
+        // RLWE N=32=2^5, Φ(N)=16 PM=x^16 + 1 t=577 q=36929
+        IntExt.RecomputeAllPrimesUpTo(500000);
         var (reg, rlwe) = Regev.SetupRLWE(16);
         reg.Show();
         rlwe.Show();
@@ -532,8 +537,6 @@ public static class LearningWithErrors
                 throw new($"step[{k}]");
         }
     }
-
-    #endregion
 
     public static void Example9WrongParameters()
     {
