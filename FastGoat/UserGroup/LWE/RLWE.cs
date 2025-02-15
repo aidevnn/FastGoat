@@ -36,6 +36,7 @@ public partial class RLWE
     public Rational InvThalf { get; }
     public RLWECipher Zero => PK.Zero;
     public RLWECipher[] ExSK { get; }
+    public bool BootstrappingMode { get; } = false;
 
     public RLWE(int N)
     {
@@ -56,7 +57,7 @@ public partial class RLWE
         ExSK = EXSK(SK, PK);
     }
 
-    public RLWE(int N, int t, int level)
+    public RLWE(int N, int t, int level, bool bootstrappingMode = false)
     {
         if (!int.IsPow2(N))
             throw new($"N = {N} must be 2^k");
@@ -64,6 +65,7 @@ public partial class RLWE
         (this.N, n, Sigma) = (N, IntExt.Phi(N), 3.0);
         (PM, SK, T, Primes, SP, PK, RLKS) = SetupBGV(N, t, level);
         Level = level;
+        BootstrappingMode = bootstrappingMode;
         // when prime T=2k+1, Thalf=k and InvThalf=-2
         Thalf = (T / 2).Trunc;
         InvThalf = new(-2);
@@ -147,6 +149,71 @@ public partial class RLWE
         Console.WriteLine();
     }
 
+    private Dictionary<Rational, int> idxModuli = [];
+
+    private Dictionary<Rational, int> IdxModuli
+    {
+        get
+        {
+            if (idxModuli.Count != 0)
+                return idxModuli;
+
+            idxModuli = (Level + 1).SeqLazy(1)
+                .ToDictionary(i => Primes.Take(i).Aggregate((pi, pj) => pi * pj), i => i);
+            return idxModuli;
+        }
+    }
+
+    private ((Vec<RLWECipher> csm, Vec<RLWECipher> cm) plus, (Vec<RLWECipher> csm, Vec<RLWECipher> cm) minus)[]
+        brk = [];
+
+    public ((Vec<RLWECipher> csm, Vec<RLWECipher> cm) plus, (Vec<RLWECipher> csm, Vec<RLWECipher> cm) minus)[]
+        BlindRotateKeys
+    {
+        get
+        {
+            if (brk.Length != 0)
+                return brk;
+
+            var u = (int)BigInteger.Log2(T.Num);
+            var B = new Rational(BigInteger.Pow(2, u));
+            if (!SK.NormInf().IsOne())
+                throw new("Only for ternary secret key");
+
+            brk = BRKgswBGV(SK, PK, B);
+            return brk;
+        }
+    }
+
+    private RLWECipher[] aks = [];
+
+    public RLWECipher[] AutoMorhKeys
+    {
+        get
+        {
+            if (aks.Length != 0)
+                return aks;
+
+            aks = N.SeqLazy()
+                .Select(j => SWKBGV(PM, SK, SK.Substitute(PM.X.Pow(j)).ResModSigned(PM, T), T, PK.Q, SP.Pow(Level)))
+                .ToArray();
+
+            return aks;
+        }
+    }
+
+    public RLWECipher Bootstrapping(RLWECipher cipher)
+    {
+        if (!BootstrappingMode || IdxModuli[cipher.Q] > 2)
+            return cipher;
+
+        var u = (int)BigInteger.Log2(T.Num);
+        var B = new Rational(BigInteger.Pow(2, u));
+        return Bootstrapping(cipher.ModSwitch(Q), B, PK, AutoMorhKeys, BlindRotateKeys).ctboot;
+    }
+
+    public RLWECipher[] Bootstrapping(RLWECipher[] ciphers) => ciphers.Select(Bootstrapping).ToArray();
+
     public RLWECipher NOT(RLWECipher cipher) => Thalf - cipher;
 
     public RLWECipher[] NOT(RLWECipher[] ciphers) => ciphers.Select(NOT).ToArray();
@@ -211,6 +278,7 @@ public partial class RLWE
         var (g1, g2) = (c1.ToArray(), c2.ToArray());
         for (int i = 0; i < c1.Length; i++)
         {
+            (g1, g2) = (Bootstrapping(g1), Bootstrapping(g2));
             var xor_g1g2 = XOR(g1, g2);
             var and_g1g2 = AND(g1, g2).SkipLast(1).Prepend(Zero).ToArray();
             (g1, g2) = (xor_g1g2, and_g1g2);

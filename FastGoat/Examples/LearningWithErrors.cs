@@ -423,9 +423,10 @@ public static class LearningWithErrors
     public static void Example5HomomorphicAdditionWithCarry()
     {
         // Weak parameters
-        IntExt.RecomputeAllPrimesUpTo(500000);
-        var bits = 8;
-        var rlwe = new RLWE(N: 16, t: 17, level: 2 * bits);
+        IntExt.RecomputeAllPrimesUpTo(1500000);
+        GlobalStopWatch.Restart();
+        var bits = 16;
+        var rlwe = new RLWE(N: 32, t: 97, level: 2 * bits);
         rlwe.Show();
 
         var fmt = $"{{0,{(int)(bits * double.Log10(2)) + 1}}}";
@@ -433,6 +434,7 @@ public static class LearningWithErrors
 
         for (int k = 0; k < 10; ++k)
         {
+            GlobalStopWatch.AddLap();
             var m1 = DistributionExt.DiceSample(bits - 1, [0, 1]).Append(0).ToArray();
             var m2 = DistributionExt.DiceSample(bits - 1, [0, 1]).Append(0).ToArray();
             var a1 = Convert.ToInt64(m1.Reverse().Glue(), 2);
@@ -450,6 +452,8 @@ public static class LearningWithErrors
             Console.WriteLine($" + 0b{m2.Reverse().Glue()} = {FMT(a2)}");
             Console.WriteLine($" = 0b{d_add.Reverse().Glue()} = {FMT(sumi)}");
             Console.WriteLine($"   0b{add_m1m2}");
+            
+            GlobalStopWatch.Show();
             Console.WriteLine();
 
             var sumf = Convert.ToInt64(d_add.Reverse().Glue(), 2);
