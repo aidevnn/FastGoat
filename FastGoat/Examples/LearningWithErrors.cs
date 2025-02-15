@@ -423,7 +423,6 @@ public static class LearningWithErrors
     public static void Example5HomomorphicAdditionWithCarry()
     {
         // Weak parameters
-        // RLWE N=16=2^4, Φ(N)=8 PM=x^8 + 1 t=97 q=9797=97*101
         IntExt.RecomputeAllPrimesUpTo(500000);
         var bits = 8;
         var rlwe = new RLWE(N: 16, t: 17, level: 2 * bits);
