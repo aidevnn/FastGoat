@@ -1,3 +1,4 @@
+using System.Numerics;
 using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.VecSpace;
@@ -11,6 +12,7 @@ public partial class RLWE
     public int n { get; }
     public int N { get; }
     public double Sigma { get; }
+    public int Level { get; }
 
     public Rq PM { get; }
 
@@ -18,11 +20,17 @@ public partial class RLWE
 
     public Rational T { get; }
 
-    public Rational Q { get; }
+    public Rational Q => Primes[0];
+
+    public Rational[] Primes { get; }
+
+    public Rational SP { get; }
 
     public RLWECipher PK { get; }
 
-    public RLWECipher RLK { get; }
+    public RLWECipher RLK => RLKS[PK.Q].rlk;
+
+    public Dictionary<Rational, (Rational nextMod, RLWECipher rlk)> RLKS { get; }
 
     public Rational Thalf { get; }
     public Rational InvThalf { get; }
@@ -37,22 +45,27 @@ public partial class RLWE
         (this.N, n, Sigma) = (N, IntExt.Phi(N), 3.0);
 
         var t = IntExt.Primes10000.First(t1 => t1 % N == 1);
-        (PM, SK, T, Q, PK, RLK) = KeyGenBGV(n, t, SKBGV(n));
+        (PM, SK, T, var q, PK, var rlk) = KeyGenBGV(n, t, SKBGV(n));
+        Level = 1;
+        Primes = [q, PK.Q / q];
+        RLKS = new() { [PK.Q] = (Q, rlk) };
+        SP = rlk.Q / PK.Q;
         // when prime T=2k+1, Thalf=k and InvThalf=-2
         Thalf = new(t / 2);
         InvThalf = new(-2);
         ExSK = EXSK(SK, PK);
     }
 
-    public RLWE(int N, int t)
+    public RLWE(int N, int t0, int level)
     {
         if (!int.IsPow2(N))
             throw new($"N = {N} must be 2^k");
 
         (this.N, n, Sigma) = (N, IntExt.Phi(N), 3.0);
-        (PM, SK, T, Q, PK, RLK) = KeyGenBGV(n, t, SKBGV(n));
+        (PM, SK, T, Primes, SP, PK, RLKS) = SetupBGV(N, t0, level);
+        Level = level;
         // when prime T=2k+1, Thalf=k and InvThalf=-2
-        Thalf = new(t / 2);
+        Thalf = (T / 2).Trunc;
         InvThalf = new(-2);
         ExSK = EXSK(SK, PK);
     }
@@ -64,7 +77,11 @@ public partial class RLWE
 
         (this.N, n, Sigma) = (N, IntExt.Phi(N), 3.0);
 
-        (PM, SK, T, Q, PK, RLK) = KeyGenBGV(n, t, IntVecToRq(sk));
+        (PM, SK, T, var q, PK, var rlk) = KeyGenBGV(n, t, IntVecToRq(sk));
+        Level = 1;
+        Primes = [q, PK.Q / q];
+        RLKS = new() { [PK.Q] = (Q, rlk) };
+        SP = rlk.Q / PK.Q;
         // when prime T=2k+1, Thalf=k and InvThalf=-2
         Thalf = new(t / 2);
         InvThalf = new(-2);
@@ -135,7 +152,12 @@ public partial class RLWE
 
     public RLWECipher AND(RLWECipher cipher1, RLWECipher cipher2)
     {
-        return InvThalf * MulRelinBGV(cipher1, cipher2, RLK).ModSwitch(Q);
+        var (c1, c2) = RLWECipher.AdjustLevel(cipher1, cipher2);
+        if (!RLKS.ContainsKey(c1.Q))
+            throw new($"Level 0 reached");
+
+        var (nextMod, rlk) = RLKS[c1.Q];
+        return InvThalf * MulRelinBGV(c1, c2, rlk).ModSwitch(nextMod);
     }
 
     public RLWECipher NAND(RLWECipher cipher1, RLWECipher cipher2) => NOT(AND(cipher1, cipher2));

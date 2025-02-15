@@ -89,6 +89,7 @@ void testBootstrapping(int N, int t0, int level, int nbTest)
     Console.WriteLine();
 }
 
+void runBootstrapping()
 {
     // RLWE.NoiseOff();
     RecomputeAllPrimesUpTo(1000000);
@@ -161,4 +162,52 @@ void testBootstrapping(int N, int t0, int level, int nbTest)
     // 
     // #  Time:17m4s
     // 
+}
+
+{
+    var rlwe = new RLWE(16, 97, 3);
+    var (n, pm, sk, t, q, pk, rlk) = rlwe;
+    var N = 2 * n;
+    var qL = pk.Q;
+    var sp = rlk.Q / qL;
+    var level = 1;
+
+    var u = (int)BigInteger.Log2(t.Num);
+    var B = new Rational(BigInteger.Pow(2, u));
+    var brk = RLWE.BRKgswBGV(sk, pk, B);
+    var ak = N.SeqLazy()
+        .Select(j => RLWE.SWKBGV(pm, sk, sk.Substitute(pm.X.Pow(j)).ResModSigned(pm, t), t, qL, sp.Pow(level)))
+        .ToArray();
+
+    Console.WriteLine($"BGV level = {level}, Gadget Base = {B}");
+    Console.WriteLine($"pm = {pm} T = {t} q = {q} sp = {sp} qL = {qL}");
+    Console.WriteLine($"sk = {sk}");
+    Console.WriteLine($"pk => {pk.Params}");
+    Console.WriteLine();
+
+    int[] m1 = [0, 0, 1, 1];
+    int[] m2 = [0, 1, 0, 1];
+    var c1 = rlwe.Encrypt(m1);
+    var c2 = rlwe.Encrypt(m2);
+
+    var xor_c1c2 = rlwe.XOR(c1, c2);
+    var d_xor = rlwe.Decrypt(xor_c1c2);
+
+    Console.WriteLine($"m1      = [{m1.Glue(" ")}]");
+    Console.WriteLine($"m2      = [{m2.Glue(" ")}]");
+    Console.WriteLine($"m1 | m2 = [{d_xor.Glue(" ")}]");
+    Console.WriteLine();
+
+    Console.WriteLine($"e1   = {rlwe.Errors(c1).Glue(", ", "{0,4}")}");
+    Console.WriteLine($"e2   = {rlwe.Errors(c2).Glue(", ", "{0,4}")}");
+
+    var xor_c1c2_2 = xor_c1c2.Select(e => e.ModSwitch(qL)).ToArray();
+    var xor_c1c2_3 = xor_c1c2.Select(e => RLWE.Bootstrapping(e.ModSwitch(q), B, pk, ak, brk).ctboot).ToArray();
+    Console.WriteLine($"e_xor lvl q    = {rlwe.Errors(xor_c1c2).Select(e => e.NormInf()).Glue(", ", "{0,8}")}");
+    Console.WriteLine($"e_xor modsw qL = {rlwe.Errors(xor_c1c2_2).Select(e => e.NormInf()).Glue(", ", "{0,8}")}");
+    Console.WriteLine($"e_xor boot  qL = {rlwe.Errors(xor_c1c2_3).Select(e => e.NormInf()).Glue(", ", "{0,8}")}");
+    Console.WriteLine(xor_c1c2.Select(e => RLWE.DecryptBGV(e, sk)).Glue(", "));
+    Console.WriteLine(xor_c1c2_2.Select(e => RLWE.DecryptBGV(e, sk)).Glue(", "));
+    Console.WriteLine(xor_c1c2_3.Select(e => RLWE.DecryptBGV(e, sk)).Glue(", "));
+    Console.WriteLine();
 }
