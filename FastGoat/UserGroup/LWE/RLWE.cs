@@ -56,13 +56,13 @@ public partial class RLWE
         ExSK = EXSK(SK, PK);
     }
 
-    public RLWE(int N, int t0, int level)
+    public RLWE(int N, int t, int level)
     {
         if (!int.IsPow2(N))
             throw new($"N = {N} must be 2^k");
 
         (this.N, n, Sigma) = (N, IntExt.Phi(N), 3.0);
-        (PM, SK, T, Primes, SP, PK, RLKS) = SetupBGV(N, t0, level);
+        (PM, SK, T, Primes, SP, PK, RLKS) = SetupBGV(N, t, level);
         Level = level;
         // when prime T=2k+1, Thalf=k and InvThalf=-2
         Thalf = (T / 2).Trunc;
@@ -128,7 +128,8 @@ public partial class RLWE
 
     public RegevCipher[] ToRegevCipher(RLWECipher[] ciphers) => ciphers.Select(ToRegevCipher).ToArray();
 
-    public string Params => $"RLWE N={N}=2^{int.Log2(N)}, Φ(N)={n} PM={PM} t={T} q={Q}";
+    public string Params =>
+        $"RLWE N={N}=2^{int.Log2(N)}, Φ(N)={n} PM={PM} t={T}, q={Q} sp = {SP} level = {Level} primes = [{Primes.Glue(", ")}]";
 
     public void Deconstruct(out int _n, out Rq pm, out Rq sk, out Rational t, out Rational q, out RLWECipher pk,
         out RLWECipher rlk)

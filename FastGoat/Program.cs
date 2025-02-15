@@ -33,10 +33,7 @@ void testBootstrapping(int N, int t0, int level, int nbTest)
     var B = new Rational(BigInteger.Pow(2, u));
     var rlk = rlks[qL].rlk;
     var brk = RLWE.BRKgswBGV(sk, pk, B);
-
-    var ak = N.SeqLazy()
-        .Select(j => RLWE.SWKBGV(pm, sk, sk.Substitute(pm.X.Pow(j)).ResModSigned(pm, t), t, qL, sp.Pow(level)))
-        .ToArray();
+    var ak = RLWE.AKBGV(sk, pk, sp.Pow(level));
 
     Console.WriteLine($"BGV level = {level}, Gadget Base = {B}");
     Console.WriteLine($"pm = {pm} T = {t} q = {q} sp = {sp} qL = {qL}");
@@ -67,15 +64,15 @@ void testBootstrapping(int N, int t0, int level, int nbTest)
         if (!m2.Equals(m2boot))
             throw new($"step[{k + 1}]");
 
-        var c2 = RLWE.MulRelinBGV(ctboot, ctboot, rlk).ModSwitch(rlks[qL].nextMod);
-        var d2 = RLWE.DecryptBGV(c2, sk);
+        var c4 = RLWE.MulRelinBGV(ctboot, ctboot, rlk).ModSwitch(rlks[qL].nextMod);
+        var d4 = RLWE.DecryptBGV(c4, sk);
         var m4 = (m2 * m2).ResModSigned(pm, t);
         Console.WriteLine($"m^4 = {m4}");
-        Console.WriteLine($"    = {d2}");
+        Console.WriteLine($"    = {d4}");
 
         GlobalStopWatch.Show();
         Console.WriteLine();
-        if (!d2.Equals(m4))
+        if (!d4.Equals(m4))
             throw new($"step[{k + 1}]");
     }
 
@@ -89,7 +86,7 @@ void testBootstrapping(int N, int t0, int level, int nbTest)
     Console.WriteLine();
 }
 
-void runBootstrapping()
+// void runBootstrapping()
 {
     // RLWE.NoiseOff();
     RecomputeAllPrimesUpTo(1000000);
@@ -98,8 +95,8 @@ void runBootstrapping()
     testBootstrapping(N: 8, t0: 41, level: 4, nbTest: 5);
     testBootstrapping(N: 16, t0: 97, level: 4, nbTest: 5);
     testBootstrapping(N: 32, t0: 97, level: 3, nbTest: 5);
-    testBootstrapping(N: 64, t0: 257, level: 3, nbTest: 5);
-    testBootstrapping(N: 128, t0: 257, level: 3, nbTest: 1);
+    // testBootstrapping(N: 64, t0: 257, level: 3, nbTest: 5);
+    // testBootstrapping(N: 128, t0: 257, level: 3, nbTest: 1);
 
     // BGV level = 3, Gadget Base = 64
     // pm = x^16 + 1 T = 97 q = 43457 sp = 90599 qL = 12815095448073162241
@@ -164,6 +161,7 @@ void runBootstrapping()
     // 
 }
 
+void testXOR()
 {
     var rlwe = new RLWE(16, 97, 3);
     var (n, pm, sk, t, q, pk, rlk) = rlwe;
@@ -175,9 +173,7 @@ void runBootstrapping()
     var u = (int)BigInteger.Log2(t.Num);
     var B = new Rational(BigInteger.Pow(2, u));
     var brk = RLWE.BRKgswBGV(sk, pk, B);
-    var ak = N.SeqLazy()
-        .Select(j => RLWE.SWKBGV(pm, sk, sk.Substitute(pm.X.Pow(j)).ResModSigned(pm, t), t, qL, sp.Pow(level)))
-        .ToArray();
+    var ak = RLWE.AKBGV(sk, pk, sp.Pow(level));
 
     Console.WriteLine($"BGV level = {level}, Gadget Base = {B}");
     Console.WriteLine($"pm = {pm} T = {t} q = {q} sp = {sp} qL = {qL}");
@@ -195,7 +191,7 @@ void runBootstrapping()
 
     Console.WriteLine($"m1      = [{m1.Glue(" ")}]");
     Console.WriteLine($"m2      = [{m2.Glue(" ")}]");
-    Console.WriteLine($"m1 | m2 = [{d_xor.Glue(" ")}]");
+    Console.WriteLine($"m1 ^ m2 = [{d_xor.Glue(" ")}]");
     Console.WriteLine();
 
     Console.WriteLine($"e1   = {rlwe.Errors(c1).Glue(", ", "{0,4}")}");

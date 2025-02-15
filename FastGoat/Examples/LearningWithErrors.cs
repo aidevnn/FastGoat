@@ -119,7 +119,8 @@ public static class LearningWithErrors
 
     public static void SymbBGV()
     {
-        var ind = new Indeterminates<Xi>(MonomOrder.GrLex, new Xi("k"), new Xi("T"), new Xi("X"), new Xi("sk"), new Xi("sk2"));
+        var ind = new Indeterminates<Xi>(MonomOrder.GrLex, new Xi("k"), new Xi("T"), new Xi("X"), new Xi("sk"),
+            new Xi("sk2"));
         ind.ExtendAppend("epk", "pkb", "erlk", "rlkb");
         ind.ExtendAppend("m1", "u1", "e1a", "e1b");
         ind.ExtendAppend("m2", "u2", "e2a", "e2b");
@@ -287,7 +288,7 @@ public static class LearningWithErrors
         Console.WriteLine(new { t0 });
         RunLeveledBGV(N, t0, level, differentPrimes, nbTests);
     }
-    
+
     public static void Example1Regev()
     {
         GlobalStopWatch.Restart();
@@ -419,48 +420,46 @@ public static class LearningWithErrors
         Console.WriteLine();
     }
 
-    #region Fail
-
     public static void Example5HomomorphicAdditionWithCarry()
     {
         // Weak parameters
         // RLWE N=16=2^4, Φ(N)=8 PM=x^8 + 1 t=97 q=9797=97*101
-        var rlwe = new RLWE(16);
+        IntExt.RecomputeAllPrimesUpTo(500000);
+        var bits = 8;
+        var rlwe = new RLWE(N: 16, t: 17, level: 2 * bits);
         rlwe.Show();
 
-        var bits = 32;
         var fmt = $"{{0,{(int)(bits * double.Log10(2)) + 1}}}";
         string FMT(long a) => string.Format(fmt, a);
 
-        var m1 = DistributionExt.DiceSample(bits - 1, [0, 1]).Append(0).ToArray();
-        var m2 = DistributionExt.DiceSample(bits - 1, [0, 1]).Append(0).ToArray();
-        var a1 = Convert.ToInt64(m1.Reverse().Glue(), 2);
-        var a2 = Convert.ToInt64(m2.Reverse().Glue(), 2);
-        var e1 = rlwe.Encrypt(m1);
-        var e2 = rlwe.Encrypt(m2);
+        for (int k = 0; k < 10; ++k)
+        {
+            var m1 = DistributionExt.DiceSample(bits - 1, [0, 1]).Append(0).ToArray();
+            var m2 = DistributionExt.DiceSample(bits - 1, [0, 1]).Append(0).ToArray();
+            var a1 = Convert.ToInt64(m1.Reverse().Glue(), 2);
+            var a2 = Convert.ToInt64(m2.Reverse().Glue(), 2);
+            var e1 = rlwe.Encrypt(m1);
+            var e2 = rlwe.Encrypt(m2);
 
-        var sumi = a1 + a2;
-        var add_m1m2 = Convert.ToString(sumi, 2).PadLeft(bits, '0');
+            var sumi = a1 + a2;
+            var add_m1m2 = Convert.ToString(sumi, 2).PadLeft(bits, '0');
 
-        var add_e1e2 = rlwe.ADD(e1, e2);
-        var d_add = rlwe.Decrypt(add_e1e2);
+            var add_e1e2 = rlwe.ADD(e1, e2);
+            var d_add = rlwe.Decrypt(add_e1e2);
 
-        m1.Zip(e1).Take(6).Println($"Encrypt(m1 = 0b{m1.Reverse().Glue()})");
-        Console.WriteLine("...");
-        m2.Zip(e2).Take(6).Println($"Encrypt(m2 = 0b{m2.Reverse().Glue()})");
-        Console.WriteLine("...");
-        d_add.Zip(add_e1e2).Take(6).Println($"Decrypt(e1 + e2) = 0b{d_add.Reverse().Glue()}");
-        Console.WriteLine("...");
+            Console.WriteLine($"   0b{m1.Reverse().Glue()} = {FMT(a1)}");
+            Console.WriteLine($" + 0b{m2.Reverse().Glue()} = {FMT(a2)}");
+            Console.WriteLine($" = 0b{d_add.Reverse().Glue()} = {FMT(sumi)}");
+            Console.WriteLine($"   0b{add_m1m2}");
+            Console.WriteLine();
 
-        Console.WriteLine($"   0b{m1.Reverse().Glue()} = {FMT(a1)}");
-        Console.WriteLine($" + 0b{m2.Reverse().Glue()} = {FMT(a2)}");
-        Console.WriteLine($" = 0b{d_add.Reverse().Glue()} = {FMT(sumi)}");
-        Console.WriteLine($"   0b{add_m1m2}");
-
-        var sumf = Convert.ToInt64(d_add.Reverse().Glue(), 2);
-        if (sumi != sumf)
-            throw new();
+            var sumf = Convert.ToInt64(d_add.Reverse().Glue(), 2);
+            if (sumi != sumf)
+                throw new();
+        }
     }
+
+    #region Fail
 
     public static void Example6HomomorphicMultiplicationWithCarry()
     {
@@ -581,7 +580,7 @@ public static class LearningWithErrors
         RunLeveledBGV(N: 32, t0: 521, level: 8, differentPrimes: true, nbTests);
         RunLeveledBGV(N: 64, t0: 521, level: 6, differentPrimes: true, nbTests);
         RunLeveledBGV(N: 128, t0: 521, level: 4, differentPrimes: true, nbTests);
-        
+
         RunLeveledBGV(N: 256, t0: 257, level: 4, differentPrimes: false, nbTests);
         RunLeveledBGV(N: 512, t0: 257, level: 4, differentPrimes: false, nbTests);
         RunLeveledBGV(N: 1024, t0: 257, level: 2, differentPrimes: false, nbTests);
