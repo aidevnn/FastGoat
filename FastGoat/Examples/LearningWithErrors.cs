@@ -425,8 +425,8 @@ public static class LearningWithErrors
         // Weak parameters
         IntExt.RecomputeAllPrimesUpTo(1500000);
         GlobalStopWatch.Restart();
-        var bits = 16;
-        var rlwe = new RLWE(N: 32, t: 97, level: 2 * bits);
+        var bits = 32;
+        var rlwe = new RLWE(N: 32, t: 97, level: bits);
         rlwe.Show();
 
         var fmt = $"{{0,{(int)(bits * double.Log10(2)) + 1}}}";
@@ -435,23 +435,23 @@ public static class LearningWithErrors
         for (int k = 0; k < 10; ++k)
         {
             GlobalStopWatch.AddLap();
-            var m1 = DistributionExt.DiceSample(bits - 1, [0, 1]).Append(0).ToArray();
-            var m2 = DistributionExt.DiceSample(bits - 1, [0, 1]).Append(0).ToArray();
+            var m1 = DistributionExt.DiceSample(bits, [0, 1]).Append(0).ToArray();
+            var m2 = DistributionExt.DiceSample(bits, [0, 1]).Append(0).ToArray();
             var a1 = Convert.ToInt64(m1.Reverse().Glue(), 2);
             var a2 = Convert.ToInt64(m2.Reverse().Glue(), 2);
             var e1 = rlwe.Encrypt(m1);
             var e2 = rlwe.Encrypt(m2);
 
             var sumi = a1 + a2;
-            var add_m1m2 = Convert.ToString(sumi, 2).PadLeft(bits, '0');
+            var add_m1m2 = Convert.ToString(sumi, 2).PadLeft(bits + 1, '0');
 
             var add_e1e2 = rlwe.ADD(e1, e2);
             var d_add = rlwe.Decrypt(add_e1e2);
 
             Console.WriteLine($"   0b{m1.Reverse().Glue()} = {FMT(a1)}");
             Console.WriteLine($" + 0b{m2.Reverse().Glue()} = {FMT(a2)}");
-            Console.WriteLine($" = 0b{d_add.Reverse().Glue()} = {FMT(sumi)}");
-            Console.WriteLine($"   0b{add_m1m2}");
+            Console.WriteLine($" = 0b{add_m1m2} = {FMT(sumi)}");
+            Console.WriteLine($"   0b{d_add.Reverse().Glue()}");
             
             GlobalStopWatch.Show();
             Console.WriteLine();

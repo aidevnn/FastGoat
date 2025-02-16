@@ -149,6 +149,15 @@ public partial class RLWE
         Console.WriteLine();
     }
 
+    public Rational B
+    {
+        get
+        {
+            var u = (int)BigInteger.Log2(T.Num);
+            return new Rational(BigInteger.Pow(2, u));
+        }
+    }
+
     private Dictionary<Rational, int> idxModuli = [];
 
     private Dictionary<Rational, int> IdxModuli
@@ -158,7 +167,7 @@ public partial class RLWE
             if (idxModuli.Count != 0)
                 return idxModuli;
 
-            idxModuli = (Level + 1).SeqLazy(1)
+            idxModuli = Primes.Length.SeqLazy(1)
                 .ToDictionary(i => Primes.Take(i).Aggregate((pi, pj) => pi * pj), i => i);
             return idxModuli;
         }
@@ -175,8 +184,6 @@ public partial class RLWE
             if (brk.Length != 0)
                 return brk;
 
-            var u = (int)BigInteger.Log2(T.Num);
-            var B = new Rational(BigInteger.Pow(2, u));
             if (!SK.NormInf().IsOne())
                 throw new("Only for ternary secret key");
 
@@ -207,8 +214,6 @@ public partial class RLWE
         if (!BootstrappingMode || IdxModuli[cipher.Q] > 2)
             return cipher;
 
-        var u = (int)BigInteger.Log2(T.Num);
-        var B = new Rational(BigInteger.Pow(2, u));
         return Bootstrapping(cipher.ModSwitch(Q), B, PK, AutoMorhKeys, BlindRotateKeys).ctboot;
     }
 
@@ -265,7 +270,7 @@ public partial class RLWE
     {
         var c1_and_nc2 = AND(cipher1, NOT(cipher2));
         var nc1_and_c2 = AND(NOT(cipher1), cipher2);
-        return OR(c1_and_nc2, nc1_and_c2);
+        return c1_and_nc2.Zip(nc1_and_c2).Select(e => e.First + e.Second).ToArray();
     }
 
     public RLWECipher[] OP(string name, RLWECipher[] cipher1, RLWECipher[] cipher2)
@@ -276,7 +281,7 @@ public partial class RLWE
     public RLWECipher[] ADD(RLWECipher[] c1, RLWECipher[] c2)
     {
         var (g1, g2) = (c1.ToArray(), c2.ToArray());
-        for (int i = 0; i < c1.Length; i++)
+        for (int i = 0; i < c1.Length - 1; i++)
         {
             (g1, g2) = (Bootstrapping(g1), Bootstrapping(g2));
             var xor_g1g2 = XOR(g1, g2);
