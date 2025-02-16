@@ -158,21 +158,6 @@ public partial class RLWE
         }
     }
 
-    private Dictionary<Rational, int> idxModuli = [];
-
-    private Dictionary<Rational, int> IdxModuli
-    {
-        get
-        {
-            if (idxModuli.Count != 0)
-                return idxModuli;
-
-            idxModuli = Primes.Length.SeqLazy(1)
-                .ToDictionary(i => Primes.Take(i).Aggregate((pi, pj) => pi * pj), i => i);
-            return idxModuli;
-        }
-    }
-
     private ((Vec<RLWECipher> csm, Vec<RLWECipher> cm) plus, (Vec<RLWECipher> csm, Vec<RLWECipher> cm) minus)[]
         brk = [];
 
@@ -211,13 +196,17 @@ public partial class RLWE
 
     public RLWECipher Bootstrapping(RLWECipher cipher)
     {
-        if (!BootstrappingMode || IdxModuli[cipher.Q] > 2)
+        if (!BootstrappingMode || !RLKS[cipher.Q].nextMod.IsOne())
             return cipher;
 
         return Bootstrapping(cipher.ModSwitch(Q), B, PK, AutoMorhKeys, BlindRotateKeys).ctboot;
     }
 
-    public RLWECipher[] Bootstrapping(RLWECipher[] ciphers) => ciphers.Select(Bootstrapping).ToArray();
+    public RLWECipher[] Bootstrapping(RLWECipher[] ciphers)
+    {
+        Console.WriteLine("Bootstrapping");
+        return ciphers.Select(Bootstrapping).ToArray();
+    }
 
     public RLWECipher NOT(RLWECipher cipher) => Thalf - cipher;
 
