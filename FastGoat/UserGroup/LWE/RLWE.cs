@@ -199,12 +199,11 @@ public partial class RLWE
         if (!BootstrappingMode || !RLKS[cipher.Q].nextMod.IsOne())
             return cipher;
 
-        return Bootstrapping(cipher.ModSwitch(Q), B, PK, AutoMorhKeys, BlindRotateKeys).ctboot;
+        return Bootstrapping(cipher, B, PK, AutoMorhKeys, BlindRotateKeys).ctboot.ModSwitch(RLKS[PK.Q].nextMod);
     }
 
     public RLWECipher[] Bootstrapping(RLWECipher[] ciphers)
     {
-        Console.WriteLine("Bootstrapping");
         return ciphers.Select(Bootstrapping).ToArray();
     }
 
