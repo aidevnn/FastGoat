@@ -576,3 +576,9 @@ September 27, 2021, Suwon.
 Republic of Korea
 Samsung Advanced Institute of Technology
 <i>KDE+21.</i>
+
+[SageMath](https://www.sagemath.org)
+<b>The Sage Developers.</b>
+SageMath, the Sage Mathematics Software System.
+<i>Version 10.4, 2024.</i>
+
