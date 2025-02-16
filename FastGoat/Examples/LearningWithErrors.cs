@@ -425,8 +425,11 @@ public static class LearningWithErrors
         // Weak parameters
         IntExt.RecomputeAllPrimesUpTo(1500000);
         GlobalStopWatch.Restart();
-        var bits = 16;
-        var rlwe = new RLWE(N: 16, t: 17, level: 6, bootstrappingMode: true);
+        var bits = 32;
+        
+        // RLWE N=16=2^4, Φ(N)=8 PM=x^8 + 1 t=17, q=1361 sp = 12343
+        // level = 8 primes = [1361, 5441, 6257, 6529, 8161, 9521, 10337, 11969, 12241]
+        var rlwe = new RLWE(N: 16, t: 17, level: 8, bootstrappingMode: true);
         rlwe.Show();
 
         var fmt = $"{{0,{(int)(bits * double.Log10(2)) + 1}}}";
@@ -453,7 +456,7 @@ public static class LearningWithErrors
             Console.WriteLine($" = 0b{add_m1m2} = {FMT(sumi)}");
             Console.WriteLine($"   0b{d_add.Reverse().Glue()}");
             
-            GlobalStopWatch.Show();
+            GlobalStopWatch.Show(); // Time:35.153s
             Console.WriteLine();
 
             var sumf = Convert.ToInt64(d_add.Reverse().Glue(), 2);

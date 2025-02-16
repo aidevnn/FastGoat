@@ -153,7 +153,7 @@ public partial class RLWE
     {
         get
         {
-            var u = (int)BigInteger.Log2(T.Num);
+            var u = (int)BigInteger.Log2(T.Num) + 1;
             return new Rational(BigInteger.Pow(2, u));
         }
     }
@@ -213,7 +213,8 @@ public partial class RLWE
 
     public RLWECipher AND(RLWECipher cipher1, RLWECipher cipher2)
     {
-        var (c1, c2) = RLWECipher.AdjustLevel(cipher1, cipher2);
+        var (c1, c2) = (Bootstrapping(cipher1), Bootstrapping(cipher2));
+        (c1, c2) = RLWECipher.AdjustLevel(c1, c2);
         if (!RLKS.ContainsKey(c1.Q))
             throw new($"Level 0 reached");
 
@@ -268,15 +269,15 @@ public partial class RLWE
 
     public RLWECipher[] ADD(RLWECipher[] c1, RLWECipher[] c2)
     {
-        var (g1, g2) = (c1.ToArray(), c2.ToArray());
-        for (int i = 0; i < c1.Length - 1; i++)
+        var carry = PK.Zero;
+        var sum = new List<RLWECipher>();
+        for (int i = 0; i < c1.Length; i++)
         {
-            (g1, g2) = (Bootstrapping(g1), Bootstrapping(g2));
-            var xor_g1g2 = XOR(g1, g2);
-            var and_g1g2 = AND(g1, g2).SkipLast(1).Prepend(Zero).ToArray();
-            (g1, g2) = (xor_g1g2, and_g1g2);
+            var (xor, and, or) = (XOR(c1[i], c2[i]), AND(c1[i], c2[i]), OR(c1[i], c2[i]));
+            sum.Add(XOR(xor, carry));
+            carry = OR(and, AND(or, carry));
         }
 
-        return g1;
+        return sum.ToArray();
     }
 }
