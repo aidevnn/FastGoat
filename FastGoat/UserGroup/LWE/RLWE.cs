@@ -279,23 +279,4 @@ public partial class RLWE
 
         return g1;
     }
-
-    public RLWECipher[] MULT(RLWECipher[] ciphers1, RLWECipher[] ciphers2)
-    {
-        var list = new List<RLWECipher[]>();
-        var length = ciphers1.Length + ciphers2.Length;
-        foreach (var (cipher, pos) in ciphers1.Select((c, i) => (c, i)))
-        {
-            var prepend = Enumerable.Repeat(Zero, pos).ToArray();
-            var append = Enumerable.Repeat(Zero, length - pos).ToArray();
-            var tmpMult = ciphers2.Select(c => AND(c, cipher));
-            list.Add(prepend.Concat(tmpMult).Concat(append).ToArray());
-        }
-
-        var sum = Enumerable.Repeat(Zero, length).ToArray();
-        foreach (var ciphers in list)
-            sum = ADD(sum, ciphers);
-
-        return sum;
-    }
 }

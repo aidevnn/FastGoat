@@ -460,64 +460,9 @@ public static class LearningWithErrors
             if (sumi != sumf)
                 throw new();
         }
-        
-        // RLWE N=16=2^4, Φ(N)=8 PM=x^8 + 1 t=17, q=1361 sp = 10711 level = 6 primes = [1361, 5441, 6257, 6529, 8161, 9521, 10337]
-        // 
-        //    0b00101110000000111 = 23559
-        //  + 0b00100100011111100 = 18684
-        //  = 0b01010010100000011 = 42243
-        //    0b01010010100000011
-        // #  Time:1m13s
     }
 
-    #region Fail
-
-    public static void Example6HomomorphicMultiplicationWithCarry()
-    {
-        // Weak parameters
-        // RLWE N=8=2^3, Φ(N)=4 PM=x^4 + 1 t=17 q=323=17*19
-        var rlwe = new RLWE(8);
-        rlwe.Show();
-
-        var bits = 32;
-        var fmt = $"{{0,{(int)(2 * bits * double.Log10(2)) + 1}}}";
-        string FMT(long a) => string.Format(fmt, a);
-
-        var m1 = DistributionExt.DiceSample(bits - 1, [0, 1]).Append(0).ToArray();
-        var m2 = DistributionExt.DiceSample(bits - 1, [0, 1]).Append(0).ToArray();
-        var a1 = Convert.ToInt64(m1.Reverse().Glue(), 2);
-        var a2 = Convert.ToInt64(m2.Reverse().Glue(), 2);
-        var e1 = rlwe.Encrypt(m1);
-        var e2 = rlwe.Encrypt(m2);
-
-        var prodi = a1 * a2;
-        var mult_m1m2 = Convert.ToString(prodi, 2).PadLeft(bits * 2, '0');
-
-        var mult_e1e2 = rlwe.MULT(e1, e2);
-        var d_mult = rlwe.Decrypt(mult_e1e2);
-
-        m1.Zip(e1).Take(6).Println($"Encrypt(m1 = 0b{m1.Reverse().Glue()})");
-        Console.WriteLine("...");
-        m2.Zip(e2).Take(6).Println($"Encrypt(m2 = 0b{m2.Reverse().Glue()})");
-        Console.WriteLine("...");
-        d_mult.Zip(mult_e1e2).Take(6).Println($"Decrypt(e1 * e2) = 0b{d_mult.Reverse().Glue()}");
-        Console.WriteLine("...");
-
-        var zeros = Enumerable.Repeat(0, bits).ToArray();
-        Console.WriteLine($"   0b{m1.Concat(zeros).Reverse().Glue()} = {FMT(a1)}");
-        Console.WriteLine($" * 0b{m2.Concat(zeros).Reverse().Glue()} = {FMT(a2)}");
-        Console.WriteLine($" = 0b{d_mult.Reverse().Glue()} = {FMT(prodi)}");
-        Console.WriteLine($"   0b{mult_m1m2}");
-        Console.WriteLine();
-
-        var prodf = Convert.ToInt64(d_mult.Reverse().Glue(), 2);
-        if (prodi != prodf)
-            throw new();
-    }
-
-    #endregion
-
-    public static void Example7Regev2RLWE()
+    public static void Example6Regev2RLWE()
     {
         // Weak parameters
         // RLWE N=32=2^5, Φ(N)=16 PM=x^16 + 1 t=577 q=36929
@@ -548,7 +493,7 @@ public static class LearningWithErrors
         }
     }
 
-    public static void Example9WrongParameters()
+    public static void Example7WrongParameters()
     {
         for (int k = 2; k < 8; k++)
         {
@@ -581,7 +526,7 @@ public static class LearningWithErrors
         }
     }
 
-    public static void Example10LeveledBGV()
+    public static void Example8LeveledBGV()
     {
         // Weak parameters
         IntExt.RecomputeAllPrimesUpTo(5000000);
