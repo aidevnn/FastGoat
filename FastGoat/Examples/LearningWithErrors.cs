@@ -4,6 +4,7 @@ using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup;
 using FastGoat.UserGroup.Integers;
 using FastGoat.UserGroup.LWE;
+using Rq = FastGoat.Structures.VecSpace.KPoly<FastGoat.UserGroup.Integers.Rational>;
 
 namespace FastGoat.Examples;
 
@@ -117,7 +118,199 @@ public static class LearningWithErrors
         Console.WriteLine();
     }
 
-    public static void SymbBGV()
+    static void RunLeveledBGV(int N, int t0, int level, bool differentPrimes = true)
+    {
+        var sk = RLWE.SKBGV(N / 2);
+        var (pm, _, t, primes, sp, pk, rlks) = RLWE.SetupBGV(N, t0, level, sk, differentPrimes);
+        Console.WriteLine($"pm = {pm} T = {t} Primes = [{primes.Glue(", ")}]");
+        Console.WriteLine($"sk = {sk}");
+        Console.WriteLine($"pk => {pk.Params}");
+
+        foreach (var rlk in rlks)
+            Console.WriteLine($"rlk[{rlk.Key}] => {rlk.Value.rlk.Params}");
+
+        Console.WriteLine();
+
+        var size = 1 << level;
+        var n = pm.Degree;
+
+        var seqMsg = size.SeqLazy().Select(_ => RLWE.GenUnif(n, t)).ToArray();
+        var seqCipher = seqMsg.Select(m => RLWE.EncryptBGV(m, pk)).ToArray();
+        var mul = seqMsg.Aggregate((xi, xj) => (xi * xj).ResModSigned(pm, t));
+
+        var qMul = new Queue<RLWECipher>(seqCipher);
+        while (qMul.Count > 1)
+        {
+            var c1 = qMul.Dequeue();
+            var c2 = qMul.Dequeue();
+            var (nextMod, rlk) = rlks[c1.Q];
+            var c1c2 = RLWE.MulRelinBGV(c1, c2, rlk).ModSwitch(nextMod);
+            qMul.Enqueue(c1c2);
+        }
+
+        var cMul = qMul.Dequeue();
+        var d_mul = RLWE.DecryptBGV(cMul, sk);
+
+        if (size < 17)
+            seqMsg.Println($"level:{level} Size:{size}");
+        else
+        {
+            seqMsg.Take(8).Println($"level:{level} Size:{size}");
+            seqMsg.TakeLast(8).Println("    ...");
+        }
+
+        Console.WriteLine(" *  {0}", Enumerable.Repeat('-', seqMsg.Max(l => $"{l}".Length)).Glue());
+        Console.WriteLine($" =  {mul}");
+        Console.WriteLine($"    {d_mul}");
+        if (!d_mul.Equals(mul))
+            throw new("fail");
+    }
+
+    static void RunLeveledBGV(int N, int t0, int level, bool differentPrimes, int nbTests)
+    {
+        GlobalStopWatch.AddLap();
+        for (int i = 0; i < nbTests; i++)
+        {
+            Console.WriteLine($"Test[{i + 1}]");
+            RunLeveledBGV(N, t0, level, differentPrimes);
+            Console.WriteLine();
+        }
+
+        GlobalStopWatch.Show($"Pass {nbTests} tests. N={N} T={t0} Level={level}.");
+        Console.WriteLine();
+    }
+
+    static void RunLeveledBGV(int N, int level, bool differentPrimes, int nbTests)
+    {
+        var t0 = IntExt.Primes10000.First(t1 => t1 % N == 1);
+        Console.WriteLine(new { t0 });
+        RunLeveledBGV(N, t0, level, differentPrimes, nbTests);
+    }
+
+    static void CheckBR(Rational[] s, Rq pm, (Rational ai, Rational[] bi) ab, Rq f, Rq actual, Rational q)
+    {
+        var n = pm.Degree;
+        var (ai, bi) = ab;
+        Console.WriteLine($"f           :{f}");
+        Console.WriteLine($"f           :[{f.CoefsExtended(n - 1).Glue(", ", "{0,4}")}]");
+        Console.WriteLine($"ai          :{ai}");
+        Console.WriteLine($"bi          :[{bi.Glue(", ", "{0,4}")}]");
+        Console.WriteLine($"blind rotate:{actual}");
+        Console.WriteLine($"            :[{actual.CoefsExtended(n - 1).Glue(", ", "{0,4}")}]");
+
+        // Testing result
+        var u = (ai - bi.Zip(s).Aggregate(q.Zero, (sum, e) => sum + (e.First * e.Second)));
+        var expected = (RLWE.XpowA((int)u.Num, pm, q) * f).ResModSigned(pm, q);
+        var check = expected.Equals(actual);
+        Console.WriteLine($"u= a - <b,s>:{u}");
+        Console.WriteLine($"f*X^{u,-4}    :{expected}");
+        Console.WriteLine($"f*X^{u,-4}    :[{expected.CoefsExtended(n - 1).Glue(", ", "{0,4}")}]");
+        Console.WriteLine($"{(check ? "success" : "fail")}");
+        Console.WriteLine();
+        if (!check)
+            throw new();
+    }
+
+    public static void Example1Regev()
+    {
+        GlobalStopWatch.Restart();
+        // Weak and invalid parameters
+        var reg = new Regev(32);
+        reg.Show();
+
+        RunLWERegev(reg, "hello world lwe");
+        RunLWERegev(reg, "Hello World LWE");
+        RunLWERegev(reg, "AAA+", showCipher: true);
+
+        for (int i = 0; i < 10; i++)
+            RunLWERegev(reg, DistributionExt.Dice(LipsumSentences));
+
+        // long text
+        RunLWERegev(reg, DistributionExt.Dice(LipsumParagraphes), showBinary: false);
+        GlobalStopWatch.Show();
+    }
+
+    public static void Example2RLWE()
+    {
+        GlobalStopWatch.Restart();
+        // Weak and invalid parameters
+        var rlwe = new RLWE(32);
+        rlwe.Show();
+
+        RunRLWE(rlwe, "hello world lwe");
+        RunRLWE(rlwe, "Hello World LWE");
+        RunRLWE(rlwe, "AAA+");
+
+        for (int i = 0; i < 10; i++)
+            RunRLWE(rlwe, DistributionExt.Dice(LipsumSentences));
+
+        // long text
+        RunRLWE(rlwe, DistributionExt.Dice(LipsumParagraphes), showBinary: false);
+        GlobalStopWatch.Show();
+    }
+
+    public static void Example3AdditionMultiplicationBGV()
+    {
+        // Weak parameters
+        // RLWE N=16=2^4, Φ(N)=8 PM=x^8 + 1 t=17 q=1361
+        var rlwe = new RLWE(16);
+        var (n, pm, sk, t, q, pk, rlk) = rlwe;
+        rlwe.Show();
+
+        var m1 = RLWE.GenUnif(n, t);
+        var e1 = RLWE.EncryptBGV(m1, pk);
+        var m2 = RLWE.GenUnif(n, t);
+        var e2 = RLWE.EncryptBGV(m2, pk);
+        var k = RLWE.GenUnif(n, t);
+
+        e1.Show($"e1 = Encrypt(m1 = {m1})");
+        e2.Show($"e2 = Encrypt(m2 = {m2})");
+        var d1 = RLWE.DecryptBGV(e1, sk);
+        var d2 = RLWE.DecryptBGV(e2, sk);
+        Console.WriteLine($"m1          = {e1}");
+        Console.WriteLine($"Decrypt(e1) = {d1}");
+        Console.WriteLine($"m2          = {e2}");
+        Console.WriteLine($"Decrypt(e2) = {d2}");
+        Console.WriteLine();
+        if (!d1.Equals(m1) || !d2.Equals(m2))
+            throw new("encrypt decrypt");
+
+        var add_m1m2 = (m1 + m2).CoefsModSigned(t);
+        var add_e1e2 = e1 + e2;
+        var d_add = RLWE.DecryptBGV(add_e1e2, sk);
+
+        add_e1e2.Show("e1 + e2");
+        Console.WriteLine($"m1 + m2          = {add_m1m2}");
+        Console.WriteLine($"Decrypt(e1 + e2) = {d_add}");
+        Console.WriteLine();
+        if (!d_add.Equals(add_m1m2))
+            throw new("m1 + m2");
+
+        var km1 = (k * m1).ResModSigned(pm, t);
+        var ke1 = k * e1;
+        var d_k1 = RLWE.DecryptBGV(ke1, sk);
+
+        ke1.Show("k * e1");
+        Console.WriteLine($"k               = {k}");
+        Console.WriteLine($"k * m1          = {km1}");
+        Console.WriteLine($"Decrypt(k * e1) = {d_k1}");
+        Console.WriteLine();
+        if (!d_k1.Equals(km1))
+            throw new("k * m1");
+
+        var mul_m1m2 = (m1 * m2).ResModSigned(pm, t);
+        var mul_e1e2 = RLWE.MulRelinBGV(e1, e2, rlk).ModSwitch(q);
+        var d_mul = RLWE.DecryptBGV(mul_e1e2, sk);
+
+        mul_e1e2.Show("e1 * e2");
+        Console.WriteLine($"m1 * m2          = {mul_m1m2}");
+        Console.WriteLine($"Decrypt(e1 * e2) = {d_mul}");
+        Console.WriteLine();
+        if (!d_mul.Equals(mul_m1m2))
+            throw new("m1 * m2");
+    }
+
+    public static void Example3SymbBGV()
     {
         var ind = new Indeterminates<Xi>(MonomOrder.GrLex, new Xi("k"), new Xi("T"), new Xi("X"), new Xi("sk"),
             new Xi("sk2"));
@@ -220,174 +413,6 @@ public static class LearningWithErrors
         Console.WriteLine();
     }
 
-    public static void RunLeveledBGV(int N, int t0, int level, bool differentPrimes = true)
-    {
-        var sk = RLWE.SKBGV(N / 2);
-        var (pm, _, t, primes, sp, pk, rlks) = RLWE.SetupBGV(N, t0, level, sk, differentPrimes);
-        Console.WriteLine($"pm = {pm} T = {t} Primes = [{primes.Glue(", ")}]");
-        Console.WriteLine($"sk = {sk}");
-        Console.WriteLine($"pk => {pk.Params}");
-
-        foreach (var rlk in rlks)
-            Console.WriteLine($"rlk[{rlk.Key}] => {rlk.Value.rlk.Params}");
-
-        Console.WriteLine();
-
-        var size = 1 << level;
-        var n = pm.Degree;
-
-        var seqMsg = size.SeqLazy().Select(_ => RLWE.GenUnif(n, t)).ToArray();
-        var seqCipher = seqMsg.Select(m => RLWE.EncryptBGV(m, pk)).ToArray();
-        var mul = seqMsg.Aggregate((xi, xj) => (xi * xj).ResModSigned(pm, t));
-
-        var qMul = new Queue<RLWECipher>(seqCipher);
-        while (qMul.Count > 1)
-        {
-            var c1 = qMul.Dequeue();
-            var c2 = qMul.Dequeue();
-            var (nextMod, rlk) = rlks[c1.Q];
-            var c1c2 = RLWE.MulRelinBGV(c1, c2, rlk).ModSwitch(nextMod);
-            qMul.Enqueue(c1c2);
-        }
-
-        var cMul = qMul.Dequeue();
-        var d_mul = RLWE.DecryptBGV(cMul, sk);
-
-        if (size < 17)
-            seqMsg.Println($"level:{level} Size:{size}");
-        else
-        {
-            seqMsg.Take(8).Println($"level:{level} Size:{size}");
-            seqMsg.TakeLast(8).Println("    ...");
-        }
-
-        Console.WriteLine(" *  {0}", Enumerable.Repeat('-', seqMsg.Max(l => $"{l}".Length)).Glue());
-        Console.WriteLine($" =  {mul}");
-        Console.WriteLine($"    {d_mul}");
-        if (!d_mul.Equals(mul))
-            throw new("fail");
-    }
-
-    public static void RunLeveledBGV(int N, int t0, int level, bool differentPrimes, int nbTests)
-    {
-        GlobalStopWatch.AddLap();
-        for (int i = 0; i < nbTests; i++)
-        {
-            Console.WriteLine($"Test[{i + 1}]");
-            RunLeveledBGV(N, t0, level, differentPrimes);
-            Console.WriteLine();
-        }
-
-        GlobalStopWatch.Show($"Pass {nbTests} tests. N={N} T={t0} Level={level}.");
-        Console.WriteLine();
-    }
-
-    public static void RunLeveledBGV(int N, int level, bool differentPrimes, int nbTests)
-    {
-        var t0 = IntExt.Primes10000.First(t1 => t1 % N == 1);
-        Console.WriteLine(new { t0 });
-        RunLeveledBGV(N, t0, level, differentPrimes, nbTests);
-    }
-
-    public static void Example1Regev()
-    {
-        GlobalStopWatch.Restart();
-        // Weak and invalid parameters
-        var reg = new Regev(32);
-        reg.Show();
-
-        RunLWERegev(reg, "hello world lwe");
-        RunLWERegev(reg, "Hello World LWE");
-        RunLWERegev(reg, "AAA+", showCipher: true);
-
-        for (int i = 0; i < 10; i++)
-            RunLWERegev(reg, DistributionExt.Dice(LipsumSentences));
-
-        // long text
-        RunLWERegev(reg, DistributionExt.Dice(LipsumParagraphes), showBinary: false);
-        GlobalStopWatch.Show();
-    }
-
-    public static void Example2RLWE()
-    {
-        GlobalStopWatch.Restart();
-        // Weak and invalid parameters
-        var rlwe = new RLWE(32);
-        rlwe.Show();
-
-        RunRLWE(rlwe, "hello world lwe");
-        RunRLWE(rlwe, "Hello World LWE");
-        RunRLWE(rlwe, "AAA+");
-
-        for (int i = 0; i < 10; i++)
-            RunRLWE(rlwe, DistributionExt.Dice(LipsumSentences));
-
-        // long text
-        RunRLWE(rlwe, DistributionExt.Dice(LipsumParagraphes), showBinary: false);
-        GlobalStopWatch.Show();
-    }
-
-    public static void Example3AdditionMultiplication()
-    {
-        // Weak parameters
-        // RLWE N=16=2^4, Φ(N)=8 PM=x^8 + 1 t=17 q=1361
-        var rlwe = new RLWE(16);
-        var (n, pm, sk, t, q, pk, rlk) = rlwe;
-        rlwe.Show();
-
-        var m1 = RLWE.GenUnif(n, t);
-        var e1 = RLWE.EncryptBGV(m1, pk);
-        var m2 = RLWE.GenUnif(n, t);
-        var e2 = RLWE.EncryptBGV(m2, pk);
-        var k = RLWE.GenUnif(n, t);
-
-        e1.Show($"e1 = Encrypt(m1 = {m1})");
-        e2.Show($"e2 = Encrypt(m2 = {m2})");
-        var d1 = RLWE.DecryptBGV(e1, sk);
-        var d2 = RLWE.DecryptBGV(e2, sk);
-        Console.WriteLine($"m1          = {e1}");
-        Console.WriteLine($"Decrypt(e1) = {d1}");
-        Console.WriteLine($"m2          = {e2}");
-        Console.WriteLine($"Decrypt(e2) = {d2}");
-        Console.WriteLine();
-        if (!d1.Equals(m1) || !d2.Equals(m2))
-            throw new("encrypt decrypt");
-
-        var add_m1m2 = (m1 + m2).CoefsModSigned(t);
-        var add_e1e2 = e1 + e2;
-        var d_add = RLWE.DecryptBGV(add_e1e2, sk);
-
-        add_e1e2.Show("e1 + e2");
-        Console.WriteLine($"m1 + m2          = {add_m1m2}");
-        Console.WriteLine($"Decrypt(e1 + e2) = {d_add}");
-        Console.WriteLine();
-        if (!d_add.Equals(add_m1m2))
-            throw new("m1 + m2");
-
-        var km1 = (k * m1).ResModSigned(pm, t);
-        var ke1 = k * e1;
-        var d_k1 = RLWE.DecryptBGV(ke1, sk);
-
-        ke1.Show("k * e1");
-        Console.WriteLine($"k               = {k}");
-        Console.WriteLine($"k * m1          = {km1}");
-        Console.WriteLine($"Decrypt(k * e1) = {d_k1}");
-        Console.WriteLine();
-        if (!d_k1.Equals(km1))
-            throw new("k * m1");
-
-        var mul_m1m2 = (m1 * m2).ResModSigned(pm, t);
-        var mul_e1e2 = RLWE.MulRelinBGV(e1, e2, rlk).ModSwitch(q);
-        var d_mul = RLWE.DecryptBGV(mul_e1e2, sk);
-
-        mul_e1e2.Show("e1 * e2");
-        Console.WriteLine($"m1 * m2          = {mul_m1m2}");
-        Console.WriteLine($"Decrypt(e1 * e2) = {d_mul}");
-        Console.WriteLine();
-        if (!d_mul.Equals(mul_m1m2))
-            throw new("m1 * m2");
-    }
-
     public static void Example4LogicGates()
     {
         // Weak parameters
@@ -413,14 +438,183 @@ public static class LearningWithErrors
         Console.WriteLine($" = [{rlwe.Decrypt(rlwe.AND(e1, e2)).Glue()}]");
         Console.WriteLine();
 
+        Console.WriteLine("NAND");
+        Console.WriteLine($"   [{m1.Glue()}]");
+        Console.WriteLine($"   [{m2.Glue()}]");
+        Console.WriteLine($" = [{rlwe.Decrypt(rlwe.NAND(e1, e2)).Glue()}]");
+        Console.WriteLine();
+
         Console.WriteLine("OR");
         Console.WriteLine($"   [{m1.Glue()}]");
         Console.WriteLine($"   [{m2.Glue()}]");
         Console.WriteLine($" = [{rlwe.Decrypt(rlwe.OR(e1, e2)).Glue()}]");
         Console.WriteLine();
+
+        Console.WriteLine("XOR");
+        Console.WriteLine($"   [{m1.Glue()}]");
+        Console.WriteLine($"   [{m2.Glue()}]");
+        Console.WriteLine($" = [{rlwe.Decrypt(rlwe.XOR(e1, e2)).Glue()}]");
+        Console.WriteLine();
     }
 
-    public static void Example5HomomorphicAdditionWithCarry()
+    public static void Example5Regev2RLWE()
+    {
+        // Weak parameters
+        // RLWE N=32=2^5, Φ(N)=16 PM=x^16 + 1 t=577 q=36929
+        IntExt.RecomputeAllPrimesUpTo(500000);
+        var (reg, rlwe) = Regev.SetupRLWE(16);
+        reg.Show();
+        rlwe.Show();
+
+        for (int k = 0; k < 10; ++k)
+        {
+            var m = DistributionExt.DiceSample(reg.N, [0, 1]).ToArray();
+
+            var c11 = reg.Encrypt(m);
+            var c21 = rlwe.FromRegevCipher(c11);
+            var d1 = rlwe.Decrypt(c21);
+
+            var c12 = rlwe.Encrypt(m);
+            var c22 = rlwe.ToRegevCipher(c12);
+            var d2 = reg.Decrypt(c22);
+
+            Console.WriteLine($"m :[0b{m.Reverse().Glue()}]");
+            Console.WriteLine($"d1:[0b{d1.Reverse().Glue()}] Regev to RLWE");
+            Console.WriteLine($"d2:[0b{d2.Reverse().Glue()}] RLWE  to Regev");
+            Console.WriteLine();
+
+            if (!m.SequenceEqual(d1) || !m.SequenceEqual(d2))
+                throw new($"step[{k}]");
+        }
+    }
+
+    public static void Example6WrongParameters()
+    {
+        for (int k = 2; k < 8; k++)
+        {
+            var n = 1 << (k - 1);
+            var t0 = IntExt.Primes10000.First(t0 => t0 % (2 * n) == 1);
+            var _q0 = IntExt.Primes10000.First(t1 => t1 % (2 * n) == 1 && t1 > t0);
+            var q0 = new Rational(_q0) * t0;
+            var pm = FG.QPoly().Pow(n) + 1;
+            var t = new Rational(t0);
+            var sk = 10000.SeqLazy().Select(_ => RLWE.GenTernary(n))
+                .First(s => !s[n - 1].IsZero() && s.Coefs.Count(e => e.IsZero()) <= n / 4);
+
+            var epk = RLWE.GenDiscrGauss(n);
+            var c1pk = RLWE.GenUnif(n, q0);
+            var c0pk = (t * epk + c1pk * sk).ResModSigned(pm, q0);
+            var pk = new RLWECipher(c0pk, c1pk, pm, t, q0);
+
+            var pka = pk.A.ToZnPoly(t0);
+            var pkb = pk.B.ToZnPoly(t0);
+
+            var a = FG.EPoly(pka.X.Pow(n) + 1, 'a');
+            Console.WriteLine(new { n, t, q0, pm });
+            var sk1 = sk.ToZnPoly(t0).Substitute(a);
+            var sk2 = pka.Substitute(a) / pkb.Substitute(a);
+            Console.WriteLine($"sk = {sk}");
+            Console.WriteLine($"   = {sk1}");
+            Console.WriteLine($"   = {sk2}");
+            Console.WriteLine($"Invalid:{sk1.Equals(sk2)}");
+            Console.WriteLine();
+        }
+    }
+
+    public static void Example7LeveledBGV()
+    {
+        // Weak parameters
+        IntExt.RecomputeAllPrimesUpTo(5000000);
+
+        var nbTests = 5;
+        RunLeveledBGV(N: 16, t0: 521, level: 10, differentPrimes: true, nbTests);
+        RunLeveledBGV(N: 32, t0: 521, level: 8, differentPrimes: true, nbTests);
+        RunLeveledBGV(N: 64, t0: 521, level: 6, differentPrimes: true, nbTests);
+        RunLeveledBGV(N: 128, t0: 521, level: 4, differentPrimes: true, nbTests);
+
+        RunLeveledBGV(N: 256, t0: 257, level: 4, differentPrimes: false, nbTests);
+        RunLeveledBGV(N: 512, t0: 257, level: 4, differentPrimes: false, nbTests);
+        RunLeveledBGV(N: 1024, t0: 257, level: 2, differentPrimes: false, nbTests);
+        RunLeveledBGV(N: 2048, t0: 257, level: 1, differentPrimes: false, nbTests);
+    }
+
+    public static void Example8RGSW()
+    {
+        var N = 32;
+        var n = N / 2;
+        var level = 1;
+        var (pm, sk, t, primes, sp, pk, rlks) = RLWE.SetupBGV(N, level);
+        var q = primes[0];
+        var qL = pk.Q;
+        var B = RLWE.GadgetBase(t);
+        Console.WriteLine($"BGV level = {level}, Gadget Base = {B}");
+        Console.WriteLine($"pm = {pm} T = {t} q = {q} sp = {sp} qL = {qL}");
+        Console.WriteLine($"sk = {sk}");
+        Console.WriteLine($"pk => {pk.Params}");
+        Console.WriteLine();
+    
+        for(int k = 0; k < 5; ++k)
+        {
+            var m1 = RLWE.GenUnif(n, t);
+            var cm1 = RLWE.EncryptBGV(m1, pk);
+            var m2 = RLWE.GenUnif(n, t);
+            var _cm2 = RLWE.EncryptBGV(m2, pk);
+            var (csm2, cm2) = RLWE.EncryptRgswBGV(m2, pk);
+            var m1m2 = (m1 * m2).ResModSigned(pm, t);
+            var cm1m2gsw = RLWE.MulRgsw(cm1, cm2, csm2);
+            var cm1m2rlk = RLWE.MulRelinBGV(cm1, _cm2, rlks[qL].rlk).ModSwitch(qL);
+            var dm1m2gsw = RLWE.DecryptBGV(cm1m2gsw, sk);
+            var dm1m2rlk = RLWE.DecryptBGV(cm1m2rlk, sk);
+            Console.WriteLine($"m1      = {m1}");
+            Console.WriteLine($"m2      = {m2}");
+            Console.WriteLine($"m1 * m2 = {m1m2}");
+            Console.WriteLine($"        = {dm1m2gsw}");
+            Console.WriteLine($"        = {dm1m2rlk}");
+            Console.WriteLine($"egsw    = {RLWE.ErrorsBGV(cm1m2gsw, sk).NormInf()}");
+            Console.WriteLine($"erlk    = {RLWE.ErrorsBGV(cm1m2rlk, sk).NormInf()}");
+            Console.WriteLine();
+            if (!dm1m2gsw.Equals(m1m2))
+                throw new();
+        }
+    }
+
+    public static void Example9BlindRotate()
+    {
+        var N = 32;
+        var n = N / 2;
+        var level = 1;
+        var (pm, sk, t, primes, sp, pk, _) = RLWE.SetupBGV(N, level);
+        var q = primes[0];
+        var qL = pk.Q;
+        var B = RLWE.GadgetBase(t);
+        Console.WriteLine($"BGV level = {level}, Gadget Base = {B}");
+        Console.WriteLine($"pm = {pm} T = {t} q = {q} sp = {sp} qL = {qL}");
+        Console.WriteLine($"sk = {sk}");
+        Console.WriteLine($"pk => {pk.Params}");
+        Console.WriteLine();
+    
+        var brk = RLWE.BRKgswBGV(sk, pk);
+        var rlwe0 = RLWE.EncryptRgswBGV(pm.One, pk, noiseMode: false);
+
+        var x = pm.X;
+        var c = n / 2 - 1;
+        var f = (2 * c + 1).SeqLazy(-c).Select(j => j * RLWE.XpowA(j, pm, t))
+            .Aggregate(x.Zero, (acc, v) => acc + v).ResModSigned(pm, t);
+
+        var s = n.SeqLazy().Select(i => sk[i].Signed(t)).ToVec();
+
+        for (int k = 0; k < 5; ++k)
+        {
+            var ai = new Rational(IntExt.Rng.Next(1, n + 1)).Signed(n);
+            var bi = RLWE.GenUnif(n, n).CoefsExtended(n - 1);
+
+            var acc = RLWE.BlindRotategswBGV((ai, bi), f, rlwe0, brk);
+            var actual = RLWE.DecryptBGV(acc, sk);
+            CheckBR(s.ToArray(), pm, (ai, bi), f, actual, n * t.One);
+        }
+    }
+
+    public static void Example10HomomorphicAdditionWithCarry()
     {
         // Weak parameters
         IntExt.RecomputeAllPrimesUpTo(1500000);
@@ -429,7 +623,7 @@ public static class LearningWithErrors
         
         // RLWE N=16=2^4, Φ(N)=8 PM=x^8 + 1 t=17, q=1361 sp = 12343
         // level = 8 primes = [1361, 5441, 6257, 6529, 8161, 9521, 10337, 11969, 12241]
-        var rlwe = new RLWE(N: 16, t: 17, level: 8, bootstrappingMode: true);
+        var rlwe = new RLWE(N: 16, t: 17, level: 5, bootstrappingMode: true);
         rlwe.Show();
 
         var fmt = $"{{0,{(int)(bits * double.Log10(2)) + 1}}}";
@@ -465,84 +659,4 @@ public static class LearningWithErrors
         }
     }
 
-    public static void Example6Regev2RLWE()
-    {
-        // Weak parameters
-        // RLWE N=32=2^5, Φ(N)=16 PM=x^16 + 1 t=577 q=36929
-        IntExt.RecomputeAllPrimesUpTo(500000);
-        var (reg, rlwe) = Regev.SetupRLWE(16);
-        reg.Show();
-        rlwe.Show();
-
-        for (int k = 0; k < 10; ++k)
-        {
-            var m = DistributionExt.DiceSample(reg.N, [0, 1]).ToArray();
-
-            var c11 = reg.Encrypt(m);
-            var c21 = rlwe.FromRegevCipher(c11);
-            var d1 = rlwe.Decrypt(c21);
-
-            var c12 = rlwe.Encrypt(m);
-            var c22 = rlwe.ToRegevCipher(c12);
-            var d2 = reg.Decrypt(c22);
-
-            Console.WriteLine($"m :[0b{m.Reverse().Glue()}]");
-            Console.WriteLine($"d1:[0b{d1.Reverse().Glue()}] Regev to RLWE");
-            Console.WriteLine($"d2:[0b{d2.Reverse().Glue()}] RLWE  to Regev");
-            Console.WriteLine();
-
-            if (!m.SequenceEqual(d1) || !m.SequenceEqual(d2))
-                throw new($"step[{k}]");
-        }
-    }
-
-    public static void Example7WrongParameters()
-    {
-        for (int k = 2; k < 8; k++)
-        {
-            var n = 1 << (k - 1);
-            var t0 = IntExt.Primes10000.First(t0 => t0 % (2 * n) == 1);
-            var _q0 = IntExt.Primes10000.First(t1 => t1 % (2 * n) == 1 && t1 > t0);
-            var q0 = new Rational(_q0) * t0;
-            var pm = FG.QPoly().Pow(n) + 1;
-            var t = new Rational(t0);
-            var sk = 10000.SeqLazy().Select(_ => RLWE.GenTernary(n))
-                .First(s => !s[n - 1].IsZero() && s.Coefs.Count(e => e.IsZero()) <= n / 4);
-
-            var epk = RLWE.GenDiscrGauss(n);
-            var c1pk = RLWE.GenUnif(n, q0);
-            var c0pk = (t * epk + c1pk * sk).ResModSigned(pm, q0);
-            var pk = new RLWECipher(c0pk, c1pk, pm, t, q0);
-
-            var pka = pk.A.ToZnPoly(t0);
-            var pkb = pk.B.ToZnPoly(t0);
-
-            var a = FG.EPoly(pka.X.Pow(n) + 1, 'a');
-            Console.WriteLine(new { n, t, q0, pm });
-            var sk1 = sk.ToZnPoly(t0).Substitute(a);
-            var sk2 = pka.Substitute(a) / pkb.Substitute(a);
-            Console.WriteLine($"sk = {sk}");
-            Console.WriteLine($"   = {sk1}");
-            Console.WriteLine($"   = {sk2}");
-            Console.WriteLine($"Invalid:{sk1.Equals(sk2)}");
-            Console.WriteLine();
-        }
-    }
-
-    public static void Example8LeveledBGV()
-    {
-        // Weak parameters
-        IntExt.RecomputeAllPrimesUpTo(5000000);
-
-        var nbTests = 5;
-        RunLeveledBGV(N: 16, t0: 521, level: 10, differentPrimes: true, nbTests);
-        RunLeveledBGV(N: 32, t0: 521, level: 8, differentPrimes: true, nbTests);
-        RunLeveledBGV(N: 64, t0: 521, level: 6, differentPrimes: true, nbTests);
-        RunLeveledBGV(N: 128, t0: 521, level: 4, differentPrimes: true, nbTests);
-
-        RunLeveledBGV(N: 256, t0: 257, level: 4, differentPrimes: false, nbTests);
-        RunLeveledBGV(N: 512, t0: 257, level: 4, differentPrimes: false, nbTests);
-        RunLeveledBGV(N: 1024, t0: 257, level: 2, differentPrimes: false, nbTests);
-        RunLeveledBGV(N: 2048, t0: 257, level: 1, differentPrimes: false, nbTests);
-    }
 }
