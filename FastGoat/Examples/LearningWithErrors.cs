@@ -85,7 +85,7 @@ public static class LearningWithErrors
         if (string.Equals(text, text2))
             Console.WriteLine("    SUCCESS");
         else
-            Console.WriteLine("    FAIL");
+            throw new("FAIL");
 
         Console.WriteLine();
     }
@@ -110,10 +110,7 @@ public static class LearningWithErrors
         if (string.Equals(text, text2))
             Console.WriteLine("    SUCCESS");
         else
-        {
-            Console.WriteLine("    FAIL");
-            Console.Beep();
-        }
+            throw new("FAIL");
 
         Console.WriteLine();
     }
@@ -233,7 +230,7 @@ public static class LearningWithErrors
     public static void Example2RLWE()
     {
         GlobalStopWatch.Restart();
-        // Weak and invalid parameters
+        // Weak parameters
         var rlwe = new RLWE(32);
         rlwe.Show();
 
@@ -252,7 +249,6 @@ public static class LearningWithErrors
     public static void Example3AdditionMultiplicationBGV()
     {
         // Weak parameters
-        // RLWE N=16=2^4, Φ(N)=8 PM=x^8 + 1 t=17 q=1361
         var rlwe = new RLWE(16);
         var (n, pm, sk, t, q, pk, rlk) = rlwe;
         rlwe.Show();
@@ -416,7 +412,6 @@ public static class LearningWithErrors
     public static void Example4LogicGates()
     {
         // Weak parameters
-        // RLWE N=16=2^4, Φ(N)=8 PM=x^8 + 1 t=17 q=1361
         var rlwe = new RLWE(16);
         rlwe.Show();
 
@@ -460,9 +455,8 @@ public static class LearningWithErrors
     public static void Example5Regev2RLWE()
     {
         // Weak parameters
-        // RLWE N=32=2^5, Φ(N)=16 PM=x^16 + 1 t=577 q=36929
         IntExt.RecomputeAllPrimesUpTo(500000);
-        var (reg, rlwe) = Regev.SetupRLWE(16);
+        var (reg, rlwe, swk, exsk) = Regev.SetupRLWE(16);
         reg.Show();
         rlwe.Show();
 
@@ -471,11 +465,11 @@ public static class LearningWithErrors
             var m = DistributionExt.DiceSample(reg.N, [0, 1]).ToArray();
 
             var c11 = reg.Encrypt(m);
-            var c21 = rlwe.FromRegevCipher(c11);
+            var c21 = rlwe.FromRegevCipher(c11, exsk);
             var d1 = rlwe.Decrypt(c21);
 
             var c12 = rlwe.Encrypt(m);
-            var c22 = rlwe.ToRegevCipher(c12);
+            var c22 = rlwe.ToRegevCipher(c12, swk);
             var d2 = reg.Decrypt(c22);
 
             Console.WriteLine($"m :[0b{m.Reverse().Glue()}]");
@@ -552,8 +546,8 @@ public static class LearningWithErrors
         Console.WriteLine($"sk = {sk}");
         Console.WriteLine($"pk => {pk.Params}");
         Console.WriteLine();
-    
-        for(int k = 0; k < 5; ++k)
+
+        for (int k = 0; k < 5; ++k)
         {
             var m1 = RLWE.GenUnif(n, t);
             var cm1 = RLWE.EncryptBGV(m1, pk);
@@ -592,7 +586,7 @@ public static class LearningWithErrors
         Console.WriteLine($"sk = {sk}");
         Console.WriteLine($"pk => {pk.Params}");
         Console.WriteLine();
-    
+
         var brk = RLWE.BRKgswBGV(sk, pk);
         var rlwe0 = RLWE.EncryptRgswBGV(pm.One, pk, noiseMode: false);
 
@@ -620,9 +614,9 @@ public static class LearningWithErrors
         IntExt.RecomputeAllPrimesUpTo(1500000);
         GlobalStopWatch.Restart();
         var bits = 32;
-        
-        // RLWE N=16=2^4, Φ(N)=8 PM=x^8 + 1 t=17, q=1361 sp = 12343
-        // level = 8 primes = [1361, 5441, 6257, 6529, 8161, 9521, 10337, 11969, 12241]
+
+        // RLWE N=16=2^4, Φ(N)=8 PM=x^8 + 1 t=17, q=1361 sp=9623
+        // level=5 primes=[1361, 5441, 6257, 6529, 8161, 9521]
         var rlwe = new RLWE(N: 16, t: 17, level: 5, bootstrappingMode: true);
         rlwe.Show();
 
@@ -649,8 +643,8 @@ public static class LearningWithErrors
             Console.WriteLine($" + 0b{m2.Reverse().Glue()} = {FMT(a2)}");
             Console.WriteLine($" = 0b{add_m1m2} = {FMT(sumi)}");
             Console.WriteLine($"   0b{d_add.Reverse().Glue()}");
-            
-            GlobalStopWatch.Show(); // Time:35.153s
+
+            GlobalStopWatch.Show();
             Console.WriteLine();
 
             var sumf = Convert.ToInt64(d_add.Reverse().Glue(), 2);
@@ -658,5 +652,4 @@ public static class LearningWithErrors
                 throw new();
         }
     }
-
 }

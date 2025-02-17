@@ -52,7 +52,7 @@ public class Regev
         (N, P, M, A) = (n, p, m, s / p);
         
         var err = Err = DiscGauss(m, p, s);
-        var sk = SK = Ternary(n, p); // TODO: Uniform sample
+        var sk = SK = TernarySK(n, p);
         PK = err.Select(e => (a: Unif(n, p), b: e))
             .Select(e => new RegevCipher(e.a, e.b + e.a.InnerProd(sk)))
             .ToArray();
@@ -111,24 +111,27 @@ public class Regev
         return DistributionExt.DiscreteGaussianSample(n, sigma, tau).Select(i => new ZnInt64(q, i)).ToVec();
     }
 
-    public static (int q, int m) Setup(int n, int k, bool pow2 = false)
+    public static Vec<ZnInt64> TernarySK(int n, long q)
     {
-        var l = 1 << k;
-        var alpha = 1.0 / (l * double.Log2(n) * double.Log2(n) * double.Sqrt(n));
-        var seq = pow2 ? 16.SeqLazy(1).Select(i => 1 << i) : IntExt.Primes10000;
-        var q = seq.First(q0 => alpha * q0 > 2 * double.Sqrt(n));
-        var m = (int)(1.1 * (n + 1) * double.Log2(q));
-        return (q, m);
+        var o = new ZnInt64(q, 1);
+        var arr = DistributionExt.DiceSample(n, [-o, o]).ToArray();
+        var nb = (int)double.Sqrt(n);
+        var zeros = DistributionExt.DiceSample(nb, (n - 1).Range()).ToArray();
+        foreach (var i in zeros) arr[i] *= 0;
+        return arr.ToVec();
     }
 
-    public static (Regev regev, RLWE rlwe) SetupRLWE(int n)
+    public static (Regev regev, RLWE rlwe, RLWECipher swk, RLWECipher[] exsk) SetupRLWE(int n)
     {
         var alpha = 1.0 / (double.Log2(n) * double.Log2(n) * double.Sqrt(n));
         var q = Primes10000.First(q0 => alpha * q0 > 2 * double.Sqrt(n) && q0 % (2 * n) == 1);
         var m = (int)(1.1 * (n + 1) * double.Log2(q));
         var sigma = alpha * q / double.Sqrt(2 * double.Pi);
         var regev = new Regev(n, m, q, sigma);
-        var rlwe = new RLWE(2 * n, q, regev.SK);
-        return (regev, rlwe);
+        var rlwe = new RLWE(2 * n, q);
+        var sk2 = RLWE.IntVecToRq(regev.SK);
+        var swk = RLWE.SWKBGV(rlwe.PM, sk2, rlwe.SK, rlwe.T, rlwe.PK.Q, rlwe.SP);
+        var exsk = RLWE.EXSK(sk2, rlwe.PK);
+        return (regev, rlwe, swk, exsk);
     }
 }

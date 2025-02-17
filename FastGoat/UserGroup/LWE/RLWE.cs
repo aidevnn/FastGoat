@@ -10,8 +10,11 @@ namespace FastGoat.UserGroup.LWE;
 public partial class RLWE
 {
     public int n { get; }
+
     public int N { get; }
+
     public double Sigma { get; }
+
     public int Level { get; }
 
     public Rq PM { get; }
@@ -20,10 +23,8 @@ public partial class RLWE
 
     public Rational T { get; }
 
-    public Rational Q => Primes[0];
-
     public Rational[] Primes { get; }
-
+    
     public Rational SP { get; }
 
     public RLWECipher PK { get; }
@@ -32,71 +33,36 @@ public partial class RLWE
 
     public Dictionary<Rational, (Rational nextMod, RLWECipher rlk)> RLKS { get; }
 
-    public Rational Thalf { get; }
-    public Rational InvThalf { get; }
-    public RLWECipher Zero => PK.Zero;
-    public RLWECipher[] ExSK { get; }
+    public Rational Q => Primes[0];
+
+
+    public Rational Thalf => (T / 2).Trunc;
+
+    public Rational InvThalf => "-2";
+
     public bool BootstrappingMode { get; } = false;
 
     public RLWE(int N)
     {
-        if (!int.IsPow2(N))
-            throw new($"N = {N} must be 2^k");
-
-        (this.N, n, Sigma) = (N, IntExt.Phi(N), 3.0);
-
+        (this.N, n, Sigma, Level) = (N, IntExt.Phi(N), 3.0, 1);
         var t = IntExt.Primes10000.First(t1 => t1 % N == 1);
-        (PM, SK, T, var q, PK, var rlk) = KeyGenBGV(n, t, SKBGV(n));
-        Level = 1;
-        Primes = [q, PK.Q / q];
-        RLKS = new() { [PK.Q] = (Q, rlk), [Q] = (Q.One, rlk.Zero.ModSwitch("1")) };
-        SP = rlk.Q / PK.Q;
-        // when prime T=2k+1, Thalf=k and InvThalf=-2
-        Thalf = new(t / 2);
-        InvThalf = "-2";
-        ExSK = EXSK(SK, PK);
-    }
-
-    public RLWE(int N, int t, Vec<ZnInt64> sk)
-    {
-        if (!int.IsPow2(N))
-            throw new($"N = {N} must be 2^k");
-
-        if (t <= 2 || !IntExt.Primes10000.Contains(t) || t < N)
-            throw new($"T = {t} must be an odd prime greater than N = {N}");
-
-        if (sk.Any(e => long.Abs(e.Signed) > 1))
-            throw new($"sk = {sk} must be a ternary vector {{-1,0,1}}");
-
-        (this.N, n, Sigma) = (N, IntExt.Phi(N), 3.0);
-
-        (PM, SK, T, var q, PK, var rlk) = KeyGenBGV(n, t, IntVecToRq(sk));
-        Level = 1;
-        Primes = [q, PK.Q / q];
-        RLKS = new() { [PK.Q] = (Q, rlk), [Q] = (Q.One, rlk.Zero.ModSwitch("1")) };
-        SP = rlk.Q / PK.Q;
-        // when prime T=2k+1, Thalf=k and InvThalf=-2
-        Thalf = new(t / 2);
-        InvThalf = "-2";
-        ExSK = EXSK(SK, PK);
+        (PM, SK, T, Primes, SP, PK, RLKS) = SetupBGV(N, t, Level, differentPrimes: true);
     }
 
     public RLWE(int N, int t, int level, bool bootstrappingMode = false)
     {
-        if (!int.IsPow2(N))
-            throw new($"N = {N} must be 2^k");
-
-        if (t <= 2 || !IntExt.Primes10000.Contains(t) || t % N != 1)
+        if (bootstrappingMode && (t <= 2 || !IntExt.Primes10000.Contains(t) || t % N != 1))
             throw new($"T = {t} must be an odd prime such that T = 1 mod N");
 
-        (this.N, n, Sigma) = (N, IntExt.Phi(N), 3.0);
-        (PM, SK, T, Primes, SP, PK, RLKS) = SetupBGV(N, t, level, differentPrimes: false);
-        Level = level;
+        (this.N, n, Sigma, Level) = (N, IntExt.Phi(N), 3.0, level);
+        (PM, SK, T, Primes, SP, PK, RLKS) = SetupBGV(N, t, Level, differentPrimes: true);
         BootstrappingMode = bootstrappingMode;
-        // when prime T=2k+1, Thalf=k and InvThalf=-2
-        Thalf = (T / 2).Trunc;
-        InvThalf = "-2";
-        ExSK = EXSK(SK, PK);
+    }
+
+    public RLWE(int N, int t)
+    {
+        (this.N, n, Sigma, Level) = (N, IntExt.Phi(N), 3.0, 1);
+        (PM, SK, T, Primes, SP, PK, RLKS) = SetupBGV(N, t, Level, differentPrimes: false);
     }
 
     public RLWECipher EncryptBit(int bit)
@@ -122,23 +88,6 @@ public partial class RLWE
 
     public Rq[] Errors(RLWECipher[] ciphers) => ciphers.Select(Errors).ToArray();
 
-    public RLWECipher FromRegevCipher(RegevCipher cipher)
-    {
-        var a = new Rational(cipher.B.Signed);
-        return a - cipher.A.Zip(ExSK).Select(e => new Rational(e.First.Signed) * e.Second).ToVec().Sum();
-    }
-
-    public RLWECipher[] FromRegevCipher(RegevCipher[] ciphers) => ciphers.Select(FromRegevCipher).ToArray();
-
-    public RegevCipher ToRegevCipher(RLWECipher cipher)
-    {
-        var a = ExtractArr(cipher.B, n).Select(e => new ZnInt64((long)T.Num, (long)e.Mod(T).Num)).ToVec();
-        var b = new ZnInt64((long)T.Num, (long)cipher.A[0].Mod(T).Num);
-        return new(a, b);
-    }
-
-    public RegevCipher[] ToRegevCipher(RLWECipher[] ciphers) => ciphers.Select(ToRegevCipher).ToArray();
-
     public string Params =>
         $"RLWE N={N}=2^{int.Log2(N)}, Φ(N)={n} PM={PM} t={T}, q={Q} sp={SP} level={Level} primes=[{Primes.Glue(", ")}]";
 
@@ -158,6 +107,8 @@ public partial class RLWE
         Console.WriteLine();
     }
 
+    public RLWECipher Zero => PK.Zero;
+
     private ((Vec<RLWECipher> csm, Vec<RLWECipher> cm) plus, (Vec<RLWECipher> csm, Vec<RLWECipher> cm) minus)[]
         brk = [];
 
@@ -172,8 +123,7 @@ public partial class RLWE
             if (!SK.NormInf().IsOne())
                 throw new("Only for ternary secret key");
 
-            brk = BRKgswBGV(SK, PK);
-            return brk;
+            return brk = BRKgswBGV(SK, PK);
         }
     }
 
@@ -186,14 +136,32 @@ public partial class RLWE
             if (aks.Length != 0)
                 return aks;
 
-            aks = N.SeqLazy()
+            return aks = N.SeqLazy()
                 .Select(j => SWKBGV(PM, SK, SK.Substitute(PM.X.Pow(j)).ResModSigned(PM, T), T, PK.Q, SP.Pow(Level)))
                 .ToArray();
-
-            return aks;
         }
     }
-    
+
+    public RLWECipher FromRegevCipher(RegevCipher cipher, RLWECipher[] exsk)
+    {
+        var a = new Rational(cipher.B.Signed);
+        return a - cipher.A.Zip(exsk).Select(e => new Rational(e.First.Signed) * e.Second).ToVec().Sum();
+    }
+
+    public RLWECipher[] FromRegevCipher(RegevCipher[] ciphers, RLWECipher[] exsk) =>
+        ciphers.Select(c => FromRegevCipher(c, exsk)).ToArray();
+
+    public RegevCipher ToRegevCipher(RLWECipher cipher, RLWECipher swk)
+    {
+        var cipher2 = SwitchKeyBGV(cipher, swk).ModSwitch(Q);
+        var a = ExtractArr(cipher2.B, n).Select(e => new ZnInt64((long)T.Num, (long)e.Mod(T).Num)).ToVec();
+        var b = new ZnInt64((long)T.Num, (long)cipher2.A[0].Mod(T).Num);
+        return new(a, b);
+    }
+
+    public RegevCipher[] ToRegevCipher(RLWECipher[] ciphers, RLWECipher swk) =>
+        ciphers.Select(c => ToRegevCipher(c, swk)).ToArray();
+
     public RLWECipher Bootstrapping(RLWECipher cipher)
     {
         if (!BootstrappingMode || !RLKS[cipher.Q].nextMod.IsOne())
@@ -223,7 +191,9 @@ public partial class RLWE
     }
 
     public RLWECipher NAND(RLWECipher cipher1, RLWECipher cipher2) => NOT(AND(cipher1, cipher2));
+
     public RLWECipher NOR(RLWECipher cipher1, RLWECipher cipher2) => AND(NOT(cipher1), NOT(cipher2));
+
     public RLWECipher OR(RLWECipher cipher1, RLWECipher cipher2) => NOT(NOR(cipher1, cipher2));
 
     public RLWECipher XOR(RLWECipher cipher1, RLWECipher cipher2) =>
@@ -235,7 +205,9 @@ public partial class RLWE
     }
 
     public RLWECipher[] NAND(RLWECipher[] cipher1, RLWECipher[] cipher2) => NOT(AND(cipher1, cipher2));
+
     public RLWECipher[] NOR(RLWECipher[] cipher1, RLWECipher[] cipher2) => AND(NOT(cipher1), NOT(cipher2));
+
     public RLWECipher[] OR(RLWECipher[] cipher1, RLWECipher[] cipher2) => NOT(NOR(cipher1, cipher2));
 
     public RLWECipher[] XOR(RLWECipher[] cipher1, RLWECipher[] cipher2)
@@ -267,13 +239,13 @@ public partial class RLWE
         return cipher1.Zip(cipher2).Select(e => OP(name, e.First, e.Second)).ToArray();
     }
 
-    public RLWECipher[] ADD(RLWECipher[] c1, RLWECipher[] c2)
+    public RLWECipher[] ADD(RLWECipher[] cipher1, RLWECipher[] cipher2)
     {
         var carry = PK.Zero;
         var sum = new List<RLWECipher>();
-        for (int i = 0; i < c1.Length; i++)
+        for (int i = 0; i < cipher1.Length; i++)
         {
-            var (xor, and, or) = (XOR(c1[i], c2[i]), AND(c1[i], c2[i]), OR(c1[i], c2[i]));
+            var (xor, and, or) = (XOR(cipher1[i], cipher2[i]), AND(cipher1[i], cipher2[i]), OR(cipher1[i], cipher2[i]));
             sum.Add(XOR(xor, carry));
             carry = OR(and, AND(or, carry));
         }
