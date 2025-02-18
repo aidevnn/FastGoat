@@ -124,7 +124,7 @@ public class Regev
     public static (Regev regev, RLWE rlwe, RLWECipher swk, RLWECipher[] exsk) SetupRLWE(int n)
     {
         var alpha = RLWE.Alpha(n);
-        var q = RLWE.RlwePrime(n);
+        var q = (int)RLWE.RlwePrime(n).Num;
         var m = (int)(1.1 * (n + 1) * double.Log2(q));
         var sigma = alpha * q / double.Sqrt(2 * double.Pi);
         var regev = new Regev(n, m, q, sigma);

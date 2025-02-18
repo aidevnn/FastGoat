@@ -19,15 +19,19 @@ using static FastGoat.Commons.IntExt;
 Console.WriteLine("Hello World");
 // RngSeed(259128);
 Ring.DisplayPolynomial = MonomDisplay.StarCaret;
-RecomputeAllPrimesUpTo(5000000);
+RecomputeAllPrimesUpTo(200000);
 
 {
     for (int i = 2; i < 12; i++)
     {
         var n = 1 << i;
+        var N = 2 * n;
         var a = RLWE.Alpha(n);
         var p = RLWE.RlwePrime(n);
+        var q = RLWE.FirstPrimeEqualOneMod(N * p);
         var s = RLWE.Sigma(n, p);
-        Console.WriteLine($"N={2 * n} n={n} p={p} s={s:f4} a={a:f4}");
+        Console.WriteLine($"N={2 * n} n={n} p={p} q={q} s={s:f4} a={a:f4}");
+        Console.WriteLine($"        q={q.Mod(N)} mod N");
+        Console.WriteLine($"         ={q.Mod(p)} mod p");
     }
 }

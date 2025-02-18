@@ -38,7 +38,7 @@ public partial class RLWE
     public static Rq GenUnif(int n, Rational q) => GenUnif(n, q.Num);
 
     public static Rq GenXpow(int n) => IntExt.RngSign * FG.QPoly().Pow(IntExt.Rng.Next(n));
-    public static double Omega(int n) => double.Sqrt(double.Log2(n));
+    public static double Omega(int n) => double.Sqrt(n) / 2;
 
     public static double Alpha(int n) => 1.0 / (2 * double.Log2(n) * double.Log2(n) * Omega(n));
 
@@ -46,16 +46,29 @@ public partial class RLWE
 
     public static double Sigma(int n, Rational p) => Alpha(n) * p;
 
-    public static int RlwePrime(int n)
+    public static Rational FirstPrimeEqualOneMod(Rational p, Rational bound)
+    {
+        var t = (int)double.Sqrt(p);
+        var k = (bound / p).Trunc;
+        var start = k * p + 1;
+        var j = t.SeqLazy().Select(j => start + j * p)
+            .First(p0 => p0 > bound && IntExt.PrimesDecompositionBigInt(p0.Num).All(e => (p0 - e).IsZero()));
+        
+        return j;
+    }
+
+    public static Rational FirstPrimeEqualOneMod(int p, int bound) =>
+        FirstPrimeEqualOneMod(new Rational(p), new Rational(bound));
+
+    public static Rational FirstPrimeEqualOneMod(Rational p) => FirstPrimeEqualOneMod(p, "1");
+    
+    public static Rational FirstPrimeEqualOneMod(int p) => FirstPrimeEqualOneMod(new Rational(p), "1");
+
+    public static Rational RlwePrime(int n)
     {
         var a = Alpha(n);
         var c = 2 * Omega(n);
-        return IntExt.Primes10000.First(t1 => a * t1 > c && t1 % (2 * n) == 1);
-    }
-
-    public static int RlweNextPrime(int N, int p, int t0 = 1)
-    {
-        return IntExt.Primes10000.FirstOrDefault(t1 => t1 > t0 && t1 % p == 1 && t1 % N == 1, t0);
+        return FirstPrimeEqualOneMod(2 * n, (int)double.Ceiling(c / a));
     }
 
     public static Rq IntVecToRq(Vec<ZnInt64> v) => v.Select(e => new Rational(e.Signed)).ToKPoly();
@@ -107,7 +120,6 @@ public partial class RLWE
     public static Dictionary<Rational, (Rational nextMod, RLWECipher rlk)> LeveledSwitchKeyGenBGV(int level, Rq pm,
         Rq sk, Rational t, Rational[] seqMods, Rational sp)
     {
-        var sigma = Sigma(pm.Degree, t);
         var seqRlks = new Dictionary<Rational, (Rational nextMod, RLWECipher rlk)>();
         for (int i = 0; i <= level; i++)
         {
@@ -145,18 +157,18 @@ public partial class RLWE
 
         Rational[] primes;
 
-        var q = RlweNextPrime(N, t0);
+        var q = FirstPrimeEqualOneMod(N * t);
         if (differentPrimes)
         {
-            var seqPrimes = new List<int>() { q };
+            var seqPrimes = new List<Rational>() { q };
             for (int i = 0; i < level; i++)
-                seqPrimes.Add(RlweNextPrime(N, t0, seqPrimes.Last()));
+                seqPrimes.Add(FirstPrimeEqualOneMod(N * t, seqPrimes.Last()));
 
-            primes = seqPrimes.Order().Select(pi => new Rational(pi)).ToArray();
+            primes = seqPrimes.Order().ToArray();
         }
         else
         {
-            primes = Enumerable.Repeat(q * t.One, level + 1).ToArray();
+            primes = Enumerable.Repeat(q, level + 1).ToArray();
         }
 
         if (primes.Length != level + 1 || primes[0].IsOne())
@@ -166,7 +178,7 @@ public partial class RLWE
         var pk = PKBGV(pm, sk, t, qL);
 
         var seqMods = (level + 1).SeqLazy(1).Select(i => primes.Take(i).Aggregate((pi, pj) => pi * pj)).ToArray();
-        var sp = new Rational(IntExt.Primes10000.FirstOrDefault(t1 => t1 > primes.Last() && t1 % t0 == 1, 1));
+        var sp = FirstPrimeEqualOneMod(N * t, primes.Last());
         var seqRlks = LeveledSwitchKeyGenBGV(level, pm, sk, t, seqMods, sp);
 
         return (pm, sk, t, primes, sp, pk, seqRlks);
@@ -183,7 +195,7 @@ public partial class RLWE
         Dictionary<Rational, (Rational nextMod, RLWECipher rlk)> rlks)
         SetupBGV(int N, int level, bool differentPrimes = true)
     {
-        return SetupBGV(N, RlwePrime(N / 2), level, SKBGV(N / 2), differentPrimes);
+        return SetupBGV(N, (int)RlwePrime(N / 2).Num, level, SKBGV(N / 2), differentPrimes);
     }
 
     public static RLWECipher EncryptBGV(Rq m, RLWECipher pk, bool noise = true)

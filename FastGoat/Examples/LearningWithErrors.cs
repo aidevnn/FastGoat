@@ -115,9 +115,9 @@ public static class LearningWithErrors
         Console.WriteLine();
     }
 
-    static void RunLeveledBGV(int N, int level, bool differentPrimes = true)
+    static void RunLeveledBGV(int N, int level)
     {
-        var (pm, sk, t, primes, sp, pk, rlks) = RLWE.SetupBGV(N, level, differentPrimes);
+        var (pm, sk, t, primes, sp, pk, rlks) = RLWE.SetupBGV(N, level);
         Console.WriteLine(
             $"pm = {pm} T = {t} Primes = [{primes.Glue(", ")}] sp = {sp} Sigma = {RLWE.Sigma(pm.Degree, t):f3}");
         Console.WriteLine($"pk => {pk.Params}");
@@ -167,13 +167,13 @@ public static class LearningWithErrors
             throw new("fail");
     }
 
-    static void RunLeveledBGV(int N, int level, bool differentPrimes, int nbTests)
+    static void RunLeveledBGV(int N, int level, int nbTests)
     {
         GlobalStopWatch.AddLap();
         for (int i = 0; i < nbTests; i++)
         {
             Console.WriteLine($"Test[{i + 1}]");
-            RunLeveledBGV(N, level, differentPrimes);
+            RunLeveledBGV(N, level);
             Console.WriteLine();
         }
 
@@ -246,7 +246,6 @@ public static class LearningWithErrors
     public static void Example3AdditionMultiplicationBGV()
     {
         // Weak parameters
-        IntExt.RecomputeAllPrimesUpTo(1000000);
         var rlwe = new RLWE(32);
         var (n, pm, sk, t, q, pk, rlk) = rlwe;
         rlwe.Show();
@@ -453,7 +452,6 @@ public static class LearningWithErrors
     public static void Example5Regev2RLWE()
     {
         // Weak parameters
-        IntExt.RecomputeAllPrimesUpTo(500000);
         var (reg, rlwe, swk, exsk) = Regev.SetupRLWE(16);
         reg.Show();
         rlwe.Show();
@@ -485,7 +483,7 @@ public static class LearningWithErrors
         for (int k = 2; k < 8; k++)
         {
             var n = 1 << (k - 1);
-            var t0 = RLWE.RlwePrime(n);
+            var t0 = (int)RLWE.RlwePrime(n).Num;
             var _q0 = IntExt.Primes10000.First(t1 => t1 % (2 * n) == 1 && t1 > t0);
             var q0 = new Rational(_q0) * t0;
             var pm = FG.QPoly().Pow(n) + 1;
@@ -515,19 +513,19 @@ public static class LearningWithErrors
     public static void Example7LeveledBGV()
     {
         // Weak parameters
-        IntExt.RecomputeAllPrimesUpTo(50000000);
-
+        IntExt.RecomputeAllPrimesUpTo(1000000);
+        
         var nbTests = 5;
-        RunLeveledBGV(N: 16, level: 10, differentPrimes: true, nbTests);
-        RunLeveledBGV(N: 32, level: 8, differentPrimes: true, nbTests);
-        RunLeveledBGV(N: 64, level: 6, differentPrimes: true, nbTests);
-        RunLeveledBGV(N: 128, level: 4, differentPrimes: true, nbTests);
-        RunLeveledBGV(N: 256, level: 4, differentPrimes: true, nbTests);
-
-        // TODO: fix higher dimension
-        // RunLeveledBGV(N: 512, level: 2, differentPrimes: false, nbTests);
-        // RunLeveledBGV(N: 1024, level: 2, differentPrimes: false, nbTests);
-        // RunLeveledBGV(N: 2048, level: 1, differentPrimes: false, nbTests);
+        RunLeveledBGV(N: 16, level: 8, nbTests);
+        RunLeveledBGV(N: 32, level: 8, nbTests);
+        RunLeveledBGV(N: 64, level: 6, nbTests);
+        RunLeveledBGV(N: 128, level: 4, nbTests);
+        RunLeveledBGV(N: 256, level: 4, nbTests);
+        
+        RunLeveledBGV(N: 512, level: 2, nbTests);
+        RunLeveledBGV(N: 1024, level: 2, nbTests);
+        RunLeveledBGV(N: 2048, level: 1, nbTests);
+        // pm = X^1024 + 1 T = 114689 Primes = [14797633537, 19730178049] sp = 21374359553 Sigma = 35.840
     }
 
     public static void Example8RGSW()
@@ -609,12 +607,11 @@ public static class LearningWithErrors
     public static void Example10HomomorphicAdditionWithCarry()
     {
         // Weak parameters
-        IntExt.RecomputeAllPrimesUpTo(1500000);
         GlobalStopWatch.Restart();
         var bits = 32;
 
-        // RLWE N=16=2^4, Φ(N)=8 PM=x^8 + 1 t=17, q=1361 sp=9623
-        // level=5 primes=[1361, 5441, 6257, 6529, 8161, 9521]
+        // RLWE N=16=2^4, Φ(N)=8 PM=X^8 + 1 t=97, q=1553 sp=62081
+        // level=5 primes=[1553, 4657, 20177, 43457, 51217, 52769] Sigma=3.811
         var rlwe = new RLWE(N: 16, level: 5, bootstrappingMode: true);
         rlwe.Show();
 
