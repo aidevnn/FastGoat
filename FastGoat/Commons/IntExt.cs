@@ -98,7 +98,10 @@ public static class IntExt
     /// <param name="n">The maximum number to be included in the sequence.</param>
     public static void RecomputeAllPrimesUpTo(int n)
     {
+        Console.WriteLine($"Recompute All Primes Up To {n}");
         Primes10000 = new(AllPrimes(n));
+        Console.WriteLine("done");
+        Console.WriteLine();
     }
 
     /// <summary>
