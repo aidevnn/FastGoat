@@ -15,9 +15,9 @@ public partial class RLWE
 
     public static void NoiseOff() => NoiseMode = false;
 
-    public static Rq GenDiscrGauss(int n, double s = 3.2)
+    public static Rq GenDiscrGauss(int n, double sigma)
     {
-        return DistributionExt.DiscreteGaussianSample(n, s).ToKPoly(Rational.KZero());
+        return DistributionExt.DiscreteGaussianSample(n, sigma).ToKPoly(Rational.KZero());
     }
 
     public static Rq GenTernary(int n)
@@ -38,6 +38,25 @@ public partial class RLWE
     public static Rq GenUnif(int n, Rational q) => GenUnif(n, q.Num);
 
     public static Rq GenXpow(int n) => IntExt.RngSign * FG.QPoly().Pow(IntExt.Rng.Next(n));
+    public static double Omega(int n) => double.Sqrt(double.Log2(n));
+
+    public static double Alpha(int n) => 1.0 / (2 * double.Log2(n) * double.Log2(n) * Omega(n));
+
+    public static double Sigma(int n, int p) => Alpha(n) * p;
+
+    public static double Sigma(int n, Rational p) => Alpha(n) * p;
+
+    public static int RlwePrime(int n)
+    {
+        var a = Alpha(n);
+        var c = 2 * Omega(n);
+        return IntExt.Primes10000.First(t1 => a * t1 > c && t1 % (2 * n) == 1);
+    }
+
+    public static int RlweNextPrime(int N, int p, int t0 = 1)
+    {
+        return IntExt.Primes10000.FirstOrDefault(t1 => t1 > t0 && t1 % p == 1 && t1 % N == 1, t0);
+    }
 
     public static Rq IntVecToRq(Vec<ZnInt64> v) => v.Select(e => new Rational(e.Signed)).ToKPoly();
 
@@ -55,7 +74,8 @@ public partial class RLWE
     {
         var noiseMode = NoiseMode ? 1 : 0;
         var n = pm.Degree;
-        var e = GenDiscrGauss(n) * noiseMode;
+        var sigma = Sigma(n, t);
+        var e = GenDiscrGauss(n, sigma) * noiseMode;
         while (true)
         {
             var pkb = GenUnif(n, q);
@@ -71,7 +91,8 @@ public partial class RLWE
     {
         var noiseMode = NoiseMode ? 1 : 0;
         var n = pm.Degree;
-        var eswk = GenDiscrGauss(n) * noiseMode;
+        var sigma = Sigma(n, t);
+        var eswk = GenDiscrGauss(n, sigma) * noiseMode;
         while (true)
         {
             var swkb = GenUnif(n, sp * q);
@@ -86,6 +107,7 @@ public partial class RLWE
     public static Dictionary<Rational, (Rational nextMod, RLWECipher rlk)> LeveledSwitchKeyGenBGV(int level, Rq pm,
         Rq sk, Rational t, Rational[] seqMods, Rational sp)
     {
+        var sigma = Sigma(pm.Degree, t);
         var seqRlks = new Dictionary<Rational, (Rational nextMod, RLWECipher rlk)>();
         for (int i = 0; i <= level; i++)
         {
@@ -106,8 +128,8 @@ public partial class RLWE
     }
 
     public static (Rq pm, Rq sk, Rational t, Rational[] primes, Rational sp, RLWECipher pk,
-        Dictionary<Rational, (Rational nextMod, RLWECipher rlk)> rlks) SetupBGV(int N, int t0, int level, Rq sk,
-            bool differentPrimes = true)
+        Dictionary<Rational, (Rational nextMod, RLWECipher rlk)> rlks)
+        SetupBGV(int N, int t0, int level, Rq sk, bool differentPrimes = true)
     {
         if (!int.IsPow2(N))
             throw new($"N = {N} must be 2^k");
@@ -123,16 +145,22 @@ public partial class RLWE
 
         Rational[] primes;
 
+        var q = RlweNextPrime(N, t0);
         if (differentPrimes)
-            primes = IntExt.Primes10000.Where(t1 => t1 % N == 1 && t1 % t0 == 1).Take(level + 1)
-                .Select(pi => new Rational(pi)).ToArray();
+        {
+            var seqPrimes = new List<int>() { q };
+            for (int i = 0; i < level; i++)
+                seqPrimes.Add(RlweNextPrime(N, t0, seqPrimes.Last()));
+
+            primes = seqPrimes.Order().Select(pi => new Rational(pi)).ToArray();
+        }
         else
-            primes = Enumerable.Repeat(IntExt.Primes10000.FirstOrDefault(t1 => t1 % N == 1 && t1 % t0 == 1, 1) * t.One,
-                    level + 1)
-                .ToArray();
+        {
+            primes = Enumerable.Repeat(q * t.One, level + 1).ToArray();
+        }
 
         if (primes.Length != level + 1 || primes[0].IsOne())
-            throw new($"sequence moduli");
+            throw new($"sequence moduli N={N} t={t} q={q} [{primes.Glue(", ")}]");
 
         var qL = primes.Aggregate((pi, pj) => pi * pj);
         var pk = PKBGV(pm, sk, t, qL);
@@ -145,18 +173,17 @@ public partial class RLWE
     }
 
     public static (Rq pm, Rq sk, Rational t, Rational[] primes, Rational sp, RLWECipher pk,
-        Dictionary<Rational, (Rational nextMod, RLWECipher rlk)> rlks) SetupBGV(int N, int t, int level,
-            bool differentPrimes)
+        Dictionary<Rational, (Rational nextMod, RLWECipher rlk)> rlks)
+        SetupBGV(int N, int t, int level, bool differentPrimes)
     {
         return SetupBGV(N, t, level, SKBGV(N / 2), differentPrimes);
     }
 
     public static (Rq pm, Rq sk, Rational t, Rational[] primes, Rational sp, RLWECipher pk,
-        Dictionary<Rational, (Rational nextMod, RLWECipher rlk)> rlks) SetupBGV(int N, int level,
-            bool differentPrimes = true)
+        Dictionary<Rational, (Rational nextMod, RLWECipher rlk)> rlks)
+        SetupBGV(int N, int level, bool differentPrimes = true)
     {
-        var t = IntExt.Primes10000.First(t1 => t1 % N == 1);
-        return SetupBGV(N, t, level, SKBGV(N / 2), differentPrimes);
+        return SetupBGV(N, RlwePrime(N / 2), level, SKBGV(N / 2), differentPrimes);
     }
 
     public static RLWECipher EncryptBGV(Rq m, RLWECipher pk, bool noise = true)
@@ -164,8 +191,9 @@ public partial class RLWE
         var noiseMode = NoiseMode && noise ? 1 : 0;
         var (pm, t, q) = pk.PM_T_Q;
         var n = pm.Degree;
-        var ea = GenDiscrGauss(n) * noiseMode;
-        var eb = GenDiscrGauss(n) * noiseMode;
+        var sigma = Sigma(n, t);
+        var ea = GenDiscrGauss(n, sigma) * noiseMode;
+        var eb = GenDiscrGauss(n, sigma) * noiseMode;
         var u = GenTernary(n) * noiseMode + pm.One * (1 - noiseMode);
 
         var m0 = m.ResModSigned(pm, t);
@@ -207,7 +235,8 @@ public partial class RLWE
     {
         var (pm, t, q) = pk.PM_T_Q;
         var N = 2 * pm.Degree;
-        return N.SeqLazy().Select(j => SWKBGV(pm, sk, sk.Substitute(pm.X.Pow(j)).ResModSigned(pm, t), t, q, spi))
+        return N.SeqLazy()
+            .Select(j => SWKBGV(pm, sk, sk.Substitute(pm.X.Pow(j)).ResModSigned(pm, t), t, q, spi))
             .ToArray();
     }
 

@@ -19,4 +19,15 @@ using static FastGoat.Commons.IntExt;
 Console.WriteLine("Hello World");
 // RngSeed(259128);
 Ring.DisplayPolynomial = MonomDisplay.StarCaret;
-// RecomputeAllPrimesUpTo(5000000);
+RecomputeAllPrimesUpTo(5000000);
+
+{
+    for (int i = 2; i < 12; i++)
+    {
+        var n = 1 << i;
+        var a = RLWE.Alpha(n);
+        var p = RLWE.RlwePrime(n);
+        var s = RLWE.Sigma(n, p);
+        Console.WriteLine($"N={2 * n} n={n} p={p} s={s:f4} a={a:f4}");
+    }
+}

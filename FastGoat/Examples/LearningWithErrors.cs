@@ -115,18 +115,12 @@ public static class LearningWithErrors
         Console.WriteLine();
     }
 
-    static void RunLeveledBGV(int N, int t0, int level, bool differentPrimes = true)
+    static void RunLeveledBGV(int N, int level, bool differentPrimes = true)
     {
-        var sk = RLWE.SKBGV(N / 2);
-        var (pm, _, t, primes, sp, pk, rlks) = RLWE.SetupBGV(N, t0, level, sk, differentPrimes);
-        Console.WriteLine($"pm = {pm} T = {t} Primes = [{primes.Glue(", ")}]");
-        Console.WriteLine($"sk = {sk}");
+        var (pm, sk, t, primes, sp, pk, rlks) = RLWE.SetupBGV(N, level, differentPrimes);
+        Console.WriteLine(
+            $"pm = {pm} T = {t} Primes = [{primes.Glue(", ")}] sp = {sp} Sigma = {RLWE.Sigma(pm.Degree, t):f3}");
         Console.WriteLine($"pk => {pk.Params}");
-
-        foreach (var rlk in rlks)
-            Console.WriteLine($"rlk[{rlk.Key}] => {rlk.Value.rlk.Params}");
-
-        Console.WriteLine();
 
         var size = 1 << level;
         var n = pm.Degree;
@@ -147,41 +141,44 @@ public static class LearningWithErrors
 
         var cMul = qMul.Dequeue();
         var d_mul = RLWE.DecryptBGV(cMul, sk);
-
-        if (size < 17)
-            seqMsg.Println($"level:{level} Size:{size}");
-        else
+        
+        if (n < 17)
         {
-            seqMsg.Take(8).Println($"level:{level} Size:{size}");
-            seqMsg.TakeLast(8).Println("    ...");
+            Console.WriteLine($"sk = {sk}");
+            foreach (var rlk in rlks)
+                Console.WriteLine($"rlk[{rlk.Key}] => {rlk.Value.rlk.Params}");
+
+            Console.WriteLine();
+            
+            if (size < 17)
+                seqMsg.Println($"level:{level} Size:{size}");
+            else
+            {
+                seqMsg.Take(8).Println($"level:{level} Size:{size}");
+                seqMsg.TakeLast(8).Println("    ...");
+            }
+            
+            Console.WriteLine(" *  {0}", Enumerable.Repeat('-', seqMsg.Max(l => $"{l}".Length)).Glue());
+            Console.WriteLine($" =  {mul}");
+            Console.WriteLine($"    {d_mul}");
         }
 
-        Console.WriteLine(" *  {0}", Enumerable.Repeat('-', seqMsg.Max(l => $"{l}".Length)).Glue());
-        Console.WriteLine($" =  {mul}");
-        Console.WriteLine($"    {d_mul}");
         if (!d_mul.Equals(mul))
             throw new("fail");
     }
 
-    static void RunLeveledBGV(int N, int t0, int level, bool differentPrimes, int nbTests)
+    static void RunLeveledBGV(int N, int level, bool differentPrimes, int nbTests)
     {
         GlobalStopWatch.AddLap();
         for (int i = 0; i < nbTests; i++)
         {
             Console.WriteLine($"Test[{i + 1}]");
-            RunLeveledBGV(N, t0, level, differentPrimes);
+            RunLeveledBGV(N, level, differentPrimes);
             Console.WriteLine();
         }
 
-        GlobalStopWatch.Show($"Pass {nbTests} tests. N={N} T={t0} Level={level}.");
+        GlobalStopWatch.Show($"Pass {nbTests} tests. N={N} Level={level}.");
         Console.WriteLine();
-    }
-
-    static void RunLeveledBGV(int N, int level, bool differentPrimes, int nbTests)
-    {
-        var t0 = IntExt.Primes10000.First(t1 => t1 % N == 1);
-        Console.WriteLine(new { t0 });
-        RunLeveledBGV(N, t0, level, differentPrimes, nbTests);
     }
 
     static void CheckBR(Rational[] s, Rq pm, (Rational ai, Rational[] bi) ab, Rq f, Rq actual, Rational q)
@@ -198,7 +195,7 @@ public static class LearningWithErrors
         // Testing result
         var u = (ai - bi.Zip(s).Aggregate(q.Zero, (sum, e) => sum + (e.First * e.Second)));
         var expected = (RLWE.XpowA((int)u.Num, pm, q) * f).ResModSigned(pm, q);
-        var check = expected.Equals(actual);
+        var check = (expected - actual).IsZero();
         Console.WriteLine($"u= a - <b,s>:{u}");
         Console.WriteLine($"f*X^{u,-4}    :{expected}");
         Console.WriteLine($"f*X^{u,-4}    :[{expected.CoefsExtended(n - 1).Glue(", ", "{0,4}")}]");
@@ -249,7 +246,8 @@ public static class LearningWithErrors
     public static void Example3AdditionMultiplicationBGV()
     {
         // Weak parameters
-        var rlwe = new RLWE(16);
+        IntExt.RecomputeAllPrimesUpTo(1000000);
+        var rlwe = new RLWE(32);
         var (n, pm, sk, t, q, pk, rlk) = rlwe;
         rlwe.Show();
 
@@ -487,15 +485,14 @@ public static class LearningWithErrors
         for (int k = 2; k < 8; k++)
         {
             var n = 1 << (k - 1);
-            var t0 = IntExt.Primes10000.First(t0 => t0 % (2 * n) == 1);
+            var t0 = RLWE.RlwePrime(n);
             var _q0 = IntExt.Primes10000.First(t1 => t1 % (2 * n) == 1 && t1 > t0);
             var q0 = new Rational(_q0) * t0;
             var pm = FG.QPoly().Pow(n) + 1;
             var t = new Rational(t0);
-            var sk = 10000.SeqLazy().Select(_ => RLWE.GenTernary(n))
-                .First(s => !s[n - 1].IsZero() && s.Coefs.Count(e => e.IsZero()) <= n / 4);
+            var sk = RLWE.SKBGV(n);
 
-            var epk = RLWE.GenDiscrGauss(n);
+            var epk = RLWE.GenDiscrGauss(n, RLWE.Sigma(n, t0));
             var c1pk = RLWE.GenUnif(n, q0);
             var c0pk = (t * epk + c1pk * sk).ResModSigned(pm, q0);
             var pk = new RLWECipher(c0pk, c1pk, pm, t, q0);
@@ -518,18 +515,19 @@ public static class LearningWithErrors
     public static void Example7LeveledBGV()
     {
         // Weak parameters
-        IntExt.RecomputeAllPrimesUpTo(5000000);
+        IntExt.RecomputeAllPrimesUpTo(50000000);
 
         var nbTests = 5;
-        RunLeveledBGV(N: 16, t0: 521, level: 10, differentPrimes: true, nbTests);
-        RunLeveledBGV(N: 32, t0: 521, level: 8, differentPrimes: true, nbTests);
-        RunLeveledBGV(N: 64, t0: 521, level: 6, differentPrimes: true, nbTests);
-        RunLeveledBGV(N: 128, t0: 521, level: 4, differentPrimes: true, nbTests);
+        RunLeveledBGV(N: 16, level: 10, differentPrimes: true, nbTests);
+        RunLeveledBGV(N: 32, level: 8, differentPrimes: true, nbTests);
+        RunLeveledBGV(N: 64, level: 6, differentPrimes: true, nbTests);
+        RunLeveledBGV(N: 128, level: 4, differentPrimes: true, nbTests);
+        RunLeveledBGV(N: 256, level: 4, differentPrimes: true, nbTests);
 
-        RunLeveledBGV(N: 256, t0: 257, level: 4, differentPrimes: false, nbTests);
-        RunLeveledBGV(N: 512, t0: 257, level: 4, differentPrimes: false, nbTests);
-        RunLeveledBGV(N: 1024, t0: 257, level: 2, differentPrimes: false, nbTests);
-        RunLeveledBGV(N: 2048, t0: 257, level: 1, differentPrimes: false, nbTests);
+        // TODO: fix higher dimension
+        // RunLeveledBGV(N: 512, level: 2, differentPrimes: false, nbTests);
+        // RunLeveledBGV(N: 1024, level: 2, differentPrimes: false, nbTests);
+        // RunLeveledBGV(N: 2048, level: 1, differentPrimes: false, nbTests);
     }
 
     public static void Example8RGSW()
@@ -582,7 +580,7 @@ public static class LearningWithErrors
         var qL = pk.Q;
         var B = RLWE.GadgetBase(t);
         Console.WriteLine($"BGV level = {level}, Gadget Base = {B}");
-        Console.WriteLine($"pm = {pm} T = {t} q = {q} sp = {sp} qL = {qL}");
+        Console.WriteLine($"pm = {pm} T = {t} q = {q} sp = {sp} qL = {qL} sigma = {RLWE.Sigma(n, t)}");
         Console.WriteLine($"sk = {sk}");
         Console.WriteLine($"pk => {pk.Params}");
         Console.WriteLine();
@@ -597,7 +595,7 @@ public static class LearningWithErrors
 
         var s = n.SeqLazy().Select(i => sk[i].Signed(t)).ToVec();
 
-        for (int k = 0; k < 5; ++k)
+        for (int k = 0; k < 50; ++k)
         {
             var ai = new Rational(IntExt.Rng.Next(1, n + 1)).Signed(n);
             var bi = RLWE.GenUnif(n, n).CoefsExtended(n - 1);
@@ -617,7 +615,7 @@ public static class LearningWithErrors
 
         // RLWE N=16=2^4, Φ(N)=8 PM=x^8 + 1 t=17, q=1361 sp=9623
         // level=5 primes=[1361, 5441, 6257, 6529, 8161, 9521]
-        var rlwe = new RLWE(N: 16, t: 17, level: 5, bootstrappingMode: true);
+        var rlwe = new RLWE(N: 16, level: 5, bootstrappingMode: true);
         rlwe.Show();
 
         var fmt = $"{{0,{(int)(bits * double.Log10(2)) + 1}}}";

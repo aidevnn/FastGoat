@@ -1,4 +1,3 @@
-using System.Numerics;
 using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.VecSpace;
@@ -12,8 +11,6 @@ public partial class RLWE
     public int n { get; }
 
     public int N { get; }
-
-    public double Sigma { get; }
 
     public int Level { get; }
 
@@ -40,28 +37,24 @@ public partial class RLWE
 
     public Rational InvThalf => "-2";
 
-    public bool BootstrappingMode { get; } = false;
+    public bool BootstrappingMode { get; }
 
     public RLWE(int N)
     {
-        (this.N, n, Sigma, Level) = (N, IntExt.Phi(N), 3.0, 1);
-        var t = IntExt.Primes10000.First(t1 => t1 % N == 1);
-        (PM, SK, T, Primes, SP, PK, RLKS) = SetupBGV(N, t, Level, differentPrimes: true);
+        (this.N, n, Level) = (N, IntExt.Phi(N), 1);
+        (PM, SK, T, Primes, SP, PK, RLKS) = SetupBGV(N, Level, differentPrimes: true);
     }
 
-    public RLWE(int N, int t, int level, bool bootstrappingMode = false)
+    public RLWE(int N, int level, bool bootstrappingMode = false)
     {
-        if (bootstrappingMode && (t <= 2 || !IntExt.Primes10000.Contains(t) || t % N != 1))
-            throw new($"T = {t} must be an odd prime such that T = 1 mod N");
-
-        (this.N, n, Sigma, Level) = (N, IntExt.Phi(N), 3.0, level);
-        (PM, SK, T, Primes, SP, PK, RLKS) = SetupBGV(N, t, Level, differentPrimes: true);
+        (this.N, n, Level) = (N, IntExt.Phi(N), level);
+        (PM, SK, T, Primes, SP, PK, RLKS) = SetupBGV(N, Level, differentPrimes: true);
         BootstrappingMode = bootstrappingMode;
     }
 
     public RLWE(int N, int t)
     {
-        (this.N, n, Sigma, Level) = (N, IntExt.Phi(N), 3.0, 1);
+        (this.N, n, Level) = (N, IntExt.Phi(N), 1);
         (PM, SK, T, Primes, SP, PK, RLKS) = SetupBGV(N, t, Level, differentPrimes: false);
     }
 
@@ -89,7 +82,7 @@ public partial class RLWE
     public Rq[] Errors(RLWECipher[] ciphers) => ciphers.Select(Errors).ToArray();
 
     public string Params =>
-        $"RLWE N={N}=2^{int.Log2(N)}, Φ(N)={n} PM={PM} t={T}, q={Q} sp={SP} level={Level} primes=[{Primes.Glue(", ")}]";
+        $"RLWE N={N}=2^{int.Log2(N)}, Φ(N)={n} PM={PM} t={T}, q={Q} sp={SP} level={Level} primes=[{Primes.Glue(", ")}] Sigma={Sigma(n, T):f3}";
 
     public void Deconstruct(out int _n, out Rq pm, out Rq sk, out Rational t, out Rational q, out RLWECipher pk,
         out RLWECipher rlk)

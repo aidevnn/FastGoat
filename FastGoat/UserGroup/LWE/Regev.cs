@@ -76,7 +76,7 @@ public class Regev
     public RegevCipher[] Encrypt(int[] bits) => bits.Select(EncryptBit).ToArray();
     public int[] Decrypt(RegevCipher[] ciphers) => ciphers.Select(DecryptBit).ToArray();
 
-    public string Params => $"Regev N:{N,-4} P:{P,-6} M:{M,-6} A:{A:F4} A*P:{A * P:F4} P/M:{P / (1.0 * M):F4}";
+    public string Params => $"Regev N:{N,-4} P:{P,-6} M:{M,-6} A:{A:F3} A*P:{A * P:F4}";
 
     public void Show()
     {
@@ -123,8 +123,8 @@ public class Regev
 
     public static (Regev regev, RLWE rlwe, RLWECipher swk, RLWECipher[] exsk) SetupRLWE(int n)
     {
-        var alpha = 1.0 / (double.Log2(n) * double.Log2(n) * double.Sqrt(n));
-        var q = Primes10000.First(q0 => alpha * q0 > 2 * double.Sqrt(n) && q0 % (2 * n) == 1);
+        var alpha = RLWE.Alpha(n);
+        var q = RLWE.RlwePrime(n);
         var m = (int)(1.1 * (n + 1) * double.Log2(q));
         var sigma = alpha * q / double.Sqrt(2 * double.Pi);
         var regev = new Regev(n, m, q, sigma);

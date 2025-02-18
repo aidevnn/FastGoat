@@ -58,7 +58,7 @@ public partial class RLWE
 
     public static RLWECipher[] EXSK(Rq sk, RLWECipher pk)
     {
-        var (pm, t, q) = pk.PM_T_Q;
+        var pm = pk.PM;
         var n = pm.Degree;
         return n.SeqLazy().Select(i => EncryptBGV(sk[i] * pm.One, pk)).ToArray();
     }
@@ -125,7 +125,6 @@ public partial class RLWE
         ((Vec<RLWECipher> csm, Vec<RLWECipher> cm) plus, (Vec<RLWECipher> csm, Vec<RLWECipher> cm) minus)[] brk)
     {
         var (pm, t, qL) = brk[0].minus.cm[0].PM_T_Q;
-        var B = GadgetBase(t);
         var n = pm.Degree;
         var x = pm.X;
 
@@ -162,7 +161,7 @@ public partial class RLWE
         (Vec<RLWECipher> csm, Vec<RLWECipher> cm) rlwe0,
         ((Vec<RLWECipher> csm, Vec<RLWECipher> cm) plus, (Vec<RLWECipher> csm, Vec<RLWECipher> cm) minus)[] brk)
     {
-        var (pm, t, qL) = brk[0].minus.cm[0].PM_T_Q;
+        var (pm, _, qL) = brk[0].minus.cm[0].PM_T_Q;
         var x = pm.X;
         var c = pm.Degree / 2 - 1;
         var f = (2 * c + 1).SeqLazy(-c).Select(j => j * XpowA(j, pm, qL))
@@ -174,7 +173,7 @@ public partial class RLWE
     public static RLWECipher RepackingBGV(RLWECipher[] accs, RLWECipher[] autSk)
     {
         var acc0 = accs[0];
-        var (pm, t, q) = acc0.PM_T_Q;
+        var (pm, _, q) = acc0.PM_T_Q;
         var n = pm.Degree;
         var x = pm.X;
         var CT = Ring.Matrix(acc0.One, n, n + 1);
