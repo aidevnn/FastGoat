@@ -51,10 +51,8 @@ public partial class RLWE
         var t = (int)double.Sqrt(p);
         var k = (bound / p).Trunc;
         var start = k * p + 1;
-        var j = t.SeqLazy().Select(j => start + j * p)
-            .First(p0 => p0 > bound && IntExt.PrimesDecompositionBigInt(p0.Num).All(e => (p0 - e).IsZero()));
-        
-        return j;
+        return t.SeqLazy().Select(j => start + j * p)
+            .FirstOrDefault(p0 => p0 > bound && IntExt.IsPrime(p0.Num), k.One);
     }
 
     public static Rational FirstPrimeEqualOneMod(int p, int bound) =>

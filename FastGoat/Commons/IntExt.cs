@@ -13,6 +13,7 @@ public static class IntExt
     static IntExt()
     {
         Primes10000 = new(AllPrimes(100000));
+        MaxPrime = Primes10000.Max();
         Partitions32 = IntPartitions(32);
 
         var comp = Comparer<int[]>.Create((a, b) => a.SequenceCompareTo(b));
@@ -54,6 +55,7 @@ public static class IntExt
 
     public static Dictionary<int, Dictionary<int, int[][]>> SolveSquareInt { get; }
 
+    public static long MaxPrime { get; private set; }
     /// <summary>
     /// All Primes less than 10000
     /// </summary>
@@ -100,8 +102,26 @@ public static class IntExt
     {
         Console.WriteLine($"Recompute All Primes Up To {n}");
         Primes10000 = new(AllPrimes(n));
+        MaxPrime = Primes10000.Max();
         Console.WriteLine("done");
         Console.WriteLine();
+    }
+
+    /// <summary>
+    /// Primality test of a given integer. 
+    /// </summary>
+    /// <param name="n">The integer to test.</param>
+    /// <returns>A boolean, true if the given integer is prime or false otherwise.</returns>
+    public static bool IsPrime(BigInteger n)
+    {
+        if (n <= 1)
+            return false;
+        if (n < MaxPrime)
+            return Primes10000.Contains((int)n);
+        if (n > MaxPrime * MaxPrime)
+            throw new($"n={n} is bigger than maxPrime^2={MaxPrime * MaxPrime}");
+
+        return n > 1 && Primes10000.Select(e => new BigInteger(e)).Where(e => e * e <= n).All(e => n % e != 0);
     }
 
     /// <summary>
@@ -112,7 +132,7 @@ public static class IntExt
     public static IEnumerable<int> PrimesDecomposition(int n)
     {
         var n0 = n;
-        foreach (var p in Primes10000.Where(e => e <= n))
+        foreach (var p in Primes10000.Where(p => p <= n))
         {
             while (n0 % p == 0)
             {
@@ -121,6 +141,15 @@ public static class IntExt
             }
 
             if (n0 == 1) break;
+        }
+
+        if (n0 != 1)
+        {
+            var ns = double.Sqrt(n0);
+            if (MaxPrime > ns)
+                yield return n0;
+            else
+                throw new($"n0={n0} is bigger than maxPrime^2={MaxPrime * MaxPrime}");
         }
     }
 
@@ -132,7 +161,7 @@ public static class IntExt
     public static IEnumerable<int> PrimesDecompositionBigInt(BigInteger n)
     {
         var n0 = n;
-        foreach (var p in Primes10000.Where(e => e <= n))
+        foreach (var p in Primes10000.Where(p => p <= n))
         {
             while (n0 % p == 0)
             {
@@ -140,7 +169,18 @@ public static class IntExt
                 n0 /= p;
             }
 
-            if (n0 == 1) break;
+            if (n0 == 1) yield break;
+        }
+
+        if (n0 != 1)
+        {
+            var ns = double.Sqrt((double)n0);
+            if (MaxPrime > ns && n0 < int.MaxValue)
+                yield return (int)n0;
+            else if (MaxPrime < ns)
+                throw new($"n0={n0} is bigger than maxPrime^2={MaxPrime * MaxPrime}");
+            else
+                throw new($"n0={n0} is prime but bigger than intMax={int.MaxValue}");
         }
     }
 
@@ -627,7 +667,7 @@ public static class IntExt
 
         return set;
     }
-    
+
     /// <summary>
     /// Solves the system of congruences using the Chinese Remainder Theorem (CRT).
     /// </summary>
@@ -667,10 +707,10 @@ public static class IntExt
     {
         if (m.Length < 0 || m.Length != a.Length)
             throw new("array dimension");
-    
+
         if (m.Any(mi => mi < 2) || m.Grid2D().Where(e => e.t1 != e.t2).Any(e => GcdLong(e.t1, e.t2) != 1))
             throw new("modulus");
-    
+
         var A = a.Zip(m).Select(e => AmodPlong(e.First, e.Second)).ToArray();
         var mod = m.Aggregate((mi, mj) => mi * mj);
         long x = 0;
@@ -680,7 +720,7 @@ public static class IntExt
             var inv = InvModPbezlong(quo, mi);
             x = (x + ai * quo * inv) % mod;
         }
-    
+
         return (x, mod);
     }
 
@@ -695,10 +735,10 @@ public static class IntExt
     {
         if (m.Length < 0 || m.Length != a.Length)
             throw new("array dimension");
-    
+
         if (m.Any(mi => mi < 2) || m.Grid2D().Where(e => e.t1 != e.t2).Any(e => GcdBigInt(e.t1, e.t2) != 1))
             throw new("modulus");
-    
+
         var A = a.Zip(m).Select(e => AmodPbigint(e.First, e.Second)).ToArray();
         var mod = m.Aggregate((mi, mj) => mi * mj);
         BigInteger x = 0;
@@ -708,7 +748,7 @@ public static class IntExt
             var inv = InvModPbezbigint(quo, mi);
             x = (x + ai * quo * inv) % mod;
         }
-    
+
         return (x % mod, mod);
     }
 
@@ -797,7 +837,7 @@ public static class IntExt
 
         return a0 == 1;
     }
-    
+
     /// <summary>
     /// Calculates the remainder of a divided by p.
     /// </summary>
@@ -851,6 +891,7 @@ public static class IntExt
     /// <param name="p">The modulo.</param>
     /// <returns>The inverse modulo of a modulo p.</returns>
     public static long InvModPbezlong(long a, long p) => AmodPlong(BezoutLong(a, p).x, p);
+
     /// <summary>
     /// Calculates the inverse modulo of a number a modulo p.
     /// Using Bezout method
@@ -1217,13 +1258,13 @@ public static class IntExt
     {
         if (n <= 0)
             return 1;
-        
+
         if (n % 2 == 0 && y.Sign == -1)
             throw new("Even NthRoot must has positive argument");
 
         if (n == 1)
             return y;
-        
+
         if (y.IsOne)
             return y;
 
