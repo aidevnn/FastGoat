@@ -48,7 +48,8 @@ public partial class RLWE
 
     public static Rational FirstPrimeEqualOneMod(Rational p, Rational bound)
     {
-        var t = (int)double.Sqrt(p);
+        bound = Rational.Max("200", bound);
+        var t = (int)Rational.Max("200", p).Num;
         var k = (bound / p).Trunc;
         var start = k * p + 1;
         return t.SeqLazy().Select(j => start + j * p)
@@ -144,7 +145,7 @@ public partial class RLWE
         if (!int.IsPow2(N))
             throw new($"N = {N} must be 2^k");
 
-        if (t0 <= 2 || !IntExt.Primes10000.Contains(t0))
+        if (t0 <= 2 || !IntExt.IsPrime(t0))
             throw new($"T = {t0} must be an odd prime");
 
         if (sk.Degree + 1 != N / 2 || sk.Coefs.Any(e => e.Absolute > 1))

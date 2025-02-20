@@ -119,7 +119,7 @@ public static class LearningWithErrors
     {
         var (pm, sk, t, primes, sp, pk, rlks) = RLWE.SetupBGV(N, level);
         Console.WriteLine(
-            $"pm = {pm} T = {t} Primes = [{primes.Glue(", ")}] sp = {sp} Sigma = {RLWE.Sigma(pm.Degree, t):f3}");
+            $"N = {N} pm = {pm} T = {t} Primes = [{primes.Glue(", ")}] sp = {sp} Sigma = {RLWE.Sigma(pm.Degree, t):f3}");
         Console.WriteLine($"pk => {pk.Params}");
 
         var size = 1 << level;
@@ -141,7 +141,7 @@ public static class LearningWithErrors
 
         var cMul = qMul.Dequeue();
         var d_mul = RLWE.DecryptBGV(cMul, sk);
-        
+
         if (n < 17)
         {
             Console.WriteLine($"sk = {sk}");
@@ -149,7 +149,7 @@ public static class LearningWithErrors
                 Console.WriteLine($"rlk[{rlk.Key}] => {rlk.Value.rlk.Params}");
 
             Console.WriteLine();
-            
+
             if (size < 17)
                 seqMsg.Println($"level:{level} Size:{size}");
             else
@@ -157,7 +157,7 @@ public static class LearningWithErrors
                 seqMsg.Take(8).Println($"level:{level} Size:{size}");
                 seqMsg.TakeLast(8).Println("    ...");
             }
-            
+
             Console.WriteLine(" *  {0}", Enumerable.Repeat('-', seqMsg.Max(l => $"{l}".Length)).Glue());
             Console.WriteLine($" =  {mul}");
             Console.WriteLine($"    {d_mul}");
@@ -483,23 +483,22 @@ public static class LearningWithErrors
         for (int k = 2; k < 8; k++)
         {
             var n = 1 << (k - 1);
-            var t0 = (int)RLWE.RlwePrime(n).Num;
-            var _q0 = IntExt.Primes10000.First(t1 => t1 % (2 * n) == 1 && t1 > t0);
-            var q0 = new Rational(_q0) * t0;
+            var t = RLWE.RlwePrime(n);
+            var q = RLWE.FirstPrimeEqualOneMod(2 * n * t, t) * t;
             var pm = FG.QPoly().Pow(n) + 1;
-            var t = new Rational(t0);
+            Console.WriteLine(new { n, t, q, pm });
+            var t0 = (int)t.Num;
             var sk = RLWE.SKBGV(n);
 
-            var epk = RLWE.GenDiscrGauss(n, RLWE.Sigma(n, t0));
-            var c1pk = RLWE.GenUnif(n, q0);
-            var c0pk = (t * epk + c1pk * sk).ResModSigned(pm, q0);
-            var pk = new RLWECipher(c0pk, c1pk, pm, t, q0);
+            var epk = RLWE.GenDiscrGauss(n, RLWE.Sigma(n, t));
+            var c1pk = RLWE.GenUnif(n, q);
+            var c0pk = (t * epk + c1pk * sk).ResModSigned(pm, q);
+            var pk = new RLWECipher(c0pk, c1pk, pm, t, q);
 
             var pka = pk.A.ToZnPoly(t0);
             var pkb = pk.B.ToZnPoly(t0);
 
             var a = FG.EPoly(pka.X.Pow(n) + 1, 'a');
-            Console.WriteLine(new { n, t, q0, pm });
             var sk1 = sk.ToZnPoly(t0).Substitute(a);
             var sk2 = pka.Substitute(a) / pkb.Substitute(a);
             Console.WriteLine($"sk = {sk}");
@@ -513,23 +512,23 @@ public static class LearningWithErrors
     public static void Example7LeveledBGV()
     {
         // Weak parameters
-        IntExt.RecomputeAllPrimesUpTo(1000000);
-        
+        IntExt.RecomputeAllPrimesUpTo(500000);
+
         var nbTests = 5;
         RunLeveledBGV(N: 16, level: 8, nbTests);
         RunLeveledBGV(N: 32, level: 8, nbTests);
         RunLeveledBGV(N: 64, level: 6, nbTests);
         RunLeveledBGV(N: 128, level: 4, nbTests);
         RunLeveledBGV(N: 256, level: 4, nbTests);
-        
         RunLeveledBGV(N: 512, level: 2, nbTests);
         RunLeveledBGV(N: 1024, level: 2, nbTests);
         RunLeveledBGV(N: 2048, level: 1, nbTests);
-        // pm = X^1024 + 1 T = 114689 Primes = [14797633537, 19730178049] sp = 21374359553 Sigma = 35.840
     }
 
     public static void Example8RGSW()
     {
+        // Weak parameters
+
         var N = 32;
         var n = N / 2;
         var level = 1;
@@ -538,7 +537,7 @@ public static class LearningWithErrors
         var qL = pk.Q;
         var B = RLWE.GadgetBase(t);
         Console.WriteLine($"BGV level = {level}, Gadget Base = {B}");
-        Console.WriteLine($"pm = {pm} T = {t} q = {q} sp = {sp} qL = {qL}");
+        Console.WriteLine($"pm = {pm} T = {t} q = {q} sp = {sp} qL = {qL} Sigma = {RLWE.Sigma(n, t):f4}");
         Console.WriteLine($"sk = {sk}");
         Console.WriteLine($"pk => {pk.Params}");
         Console.WriteLine();
@@ -570,6 +569,8 @@ public static class LearningWithErrors
 
     public static void Example9BlindRotate()
     {
+        // Weak parameters
+
         var N = 32;
         var n = N / 2;
         var level = 1;
@@ -578,7 +579,7 @@ public static class LearningWithErrors
         var qL = pk.Q;
         var B = RLWE.GadgetBase(t);
         Console.WriteLine($"BGV level = {level}, Gadget Base = {B}");
-        Console.WriteLine($"pm = {pm} T = {t} q = {q} sp = {sp} qL = {qL} sigma = {RLWE.Sigma(n, t)}");
+        Console.WriteLine($"pm = {pm} T = {t} q = {q} sp = {sp} qL = {qL} sigma = {RLWE.Sigma(n, t):f4}");
         Console.WriteLine($"sk = {sk}");
         Console.WriteLine($"pk => {pk.Params}");
         Console.WriteLine();
@@ -607,11 +608,9 @@ public static class LearningWithErrors
     public static void Example10HomomorphicAdditionWithCarry()
     {
         // Weak parameters
+
         GlobalStopWatch.Restart();
         var bits = 32;
-
-        // RLWE N=16=2^4, Φ(N)=8 PM=X^8 + 1 t=97, q=1553 sp=62081
-        // level=5 primes=[1553, 4657, 20177, 43457, 51217, 52769] Sigma=3.811
         var rlwe = new RLWE(N: 16, level: 5, bootstrappingMode: true);
         rlwe.Show();
 
