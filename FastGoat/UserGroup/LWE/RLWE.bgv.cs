@@ -38,13 +38,14 @@ public partial class RLWE
     public static Rq GenUnif(int n, Rational q) => GenUnif(n, q.Num);
 
     public static Rq GenXpow(int n) => IntExt.RngSign * FG.QPoly().Pow(IntExt.Rng.Next(n));
-    public static double Omega(int n) => double.Sqrt(n) / 2;
 
-    public static double Alpha(int n) => 1.0 / (2 * double.Log2(n) * double.Log2(n) * Omega(n));
+    public static double Omega(int n) => double.Sqrt(n);
 
-    public static double Sigma(int n, int p) => Alpha(n) * p;
+    public static double Alpha(int n) => 1.0 / (double.Log2(n) * double.Log2(n) * Omega(n));
 
-    public static double Sigma(int n, Rational p) => Alpha(n) * p;
+    public static double Sigma(int n, int p) => Alpha(n) * p / double.Sqrt(2 * double.Pi);
+
+    public static double Sigma(int n, Rational p) => Alpha(n) * p / double.Sqrt(2 * double.Pi);
 
     public static Rational FirstPrimeEqualOneMod(Rational p, Rational bound)
     {
@@ -60,7 +61,7 @@ public partial class RLWE
         FirstPrimeEqualOneMod(new Rational(p), new Rational(bound));
 
     public static Rational FirstPrimeEqualOneMod(Rational p) => FirstPrimeEqualOneMod(p, "1");
-    
+
     public static Rational FirstPrimeEqualOneMod(int p) => FirstPrimeEqualOneMod(new Rational(p), "1");
 
     public static Rational RlwePrime(int n)
