@@ -78,6 +78,15 @@ public class Regev
 
     public string Params => $"Regev N:{N,-4} P:{P,-6} M:{M,-6} A:{A:F3} A*P:{A * P:F4}";
 
+    public string ExportParams
+    {
+        get
+        {
+            var d = (int)((N - double.Sqrt(N)) / 2);
+            var sigma = A * P / double.Sqrt(2 * double.Pi);
+            return $"LWEParameters(n={N}, q={P}, Xs=U({P}), Xe=D({sigma:f4}), m=+oo, tag='fg{N}')";
+        }
+    }
     public void Show()
     {
         Console.WriteLine(Params);

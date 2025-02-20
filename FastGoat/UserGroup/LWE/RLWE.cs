@@ -82,8 +82,16 @@ public partial class RLWE
     public Rq[] Errors(RLWECipher[] ciphers) => ciphers.Select(Errors).ToArray();
 
     public string Params =>
-        $"RLWE N={N}=2^{int.Log2(N)}, Φ(N)={n} PM={PM} t={T}, q={Q} sp={SP} level={Level} primes=[{Primes.Glue(", ")}] Sigma={Sigma(n, T):f3}";
+        $"RLWE N={N}=2^{int.Log2(N)}, Φ(N)={n}, PM={PM}, t={T}, q={Q}, sp={SP}, level={Level} primes=[{Primes.Glue(", ")}] Sigma={Sigma(n, T):f3}, GadgetBase = {GadgetBase(T)}";
 
+    public string ExportParams
+    {
+        get
+        {
+            var d = (int)((n - double.Sqrt(n)) / 2);
+            return $"LWEParameters(n={n}, q={T}, Xs=T({d}, n={n}), Xe=D({Sigma(n, T):f4}), m=+oo, tag='fg{n}')";
+        }
+    }
     public void Deconstruct(out int _n, out Rq pm, out Rq sk, out Rational t, out Rational q, out RLWECipher pk,
         out RLWECipher rlk)
     {
