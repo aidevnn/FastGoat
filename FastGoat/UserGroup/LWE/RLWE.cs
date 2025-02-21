@@ -181,8 +181,7 @@ public partial class RLWE
 
     public RLWECipher AND(RLWECipher cipher1, RLWECipher cipher2)
     {
-        var (c1, c2) = (Bootstrapping(cipher1), Bootstrapping(cipher2));
-        (c1, c2) = RLWECipher.AdjustLevel(c1, c2);
+        var (c1, c2) = RLWECipher.AdjustLevel(cipher1, cipher2);
         if (!RLKS.ContainsKey(c1.Q))
             throw new($"Level 0 reached");
 
@@ -247,8 +246,13 @@ public partial class RLWE
         {
             var (xor, and, or) = (XOR(ciphers1[i], ciphers2[i]), AND(ciphers1[i], ciphers2[i]),
                 OR(ciphers1[i], ciphers2[i]));
+            
+            carry = Bootstrapping(carry);
             sum.Add(XOR(xor, carry));
-            carry = OR(and, AND(or, carry));
+            carry = AND(or, carry);
+            
+            carry = Bootstrapping(carry);
+            carry = OR(and, carry);
         }
 
         return sum.ToArray();
