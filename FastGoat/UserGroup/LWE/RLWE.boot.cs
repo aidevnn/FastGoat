@@ -77,13 +77,13 @@ public partial class RLWE
         return new Rational(BigInteger.Pow(2, u));
     }
 
-    public static (Vec<RLWECipher> csm, Vec<RLWECipher> cm) EncryptRgswBGV(Rq m, RLWECipher pk, bool noiseMode = true)
+    public static (Vec<RLWECipher> csm, Vec<RLWECipher> cm) EncryptRgswBGV(Rq m, RLWECipher pk)
     {
         var (pm, t, q) = pk.PM_T_Q;
         var B = GadgetBase(t);
         var size = (int)(BigInteger.Log10(q.Num) / BigInteger.Log10(B.Num)) + 1;
         var z = pm.Zero;
-        RLWECipher ctZero() => EncryptBGV(z, pk, noiseMode);
+        RLWECipher ctZero() => EncryptBGV(z, pk);
         var cm = size.SeqLazy().Select(i => ctZero() + (m * B.Pow(i), z, pm, t, q)).ToVec();
         var csm = size.SeqLazy().Select(i => ctZero() + (z, -m * B.Pow(i), pm, t, q)).ToVec();
         return (csm, cm);
@@ -121,7 +121,6 @@ public partial class RLWE
     }
 
     public static RLWECipher BlindRotategswBGV((Rational ai, Rational[] bi) ab, Rq f,
-        (Vec<RLWECipher> csm, Vec<RLWECipher> cm) rlwe0,
         ((Vec<RLWECipher> csm, Vec<RLWECipher> cm) plus, (Vec<RLWECipher> csm, Vec<RLWECipher> cm) minus)[] brk)
     {
         var (pm, t, qL) = brk[0].minus.cm[0].PM_T_Q;
@@ -132,7 +131,12 @@ public partial class RLWE
         var alpha = (int)ab.ai.Num;
         var xalpha = XpowA(alpha, pm, qL);
 
-        var (encSOne0, encOne0) = rlwe0;
+        var z = pm.Zero;
+        var B = GadgetBase(t);
+        var size = (int)(BigInteger.Log10(qL.Num) / BigInteger.Log10(B.Num)) + 1;
+        var encOne0 = size.SeqLazy().Select(i => new RLWECipher(pm.One * B.Pow(i), z, pm, t, qL)).ToVec();
+        var encSOne0 = size.SeqLazy().Select(i => new RLWECipher(z, -pm.One * B.Pow(i), pm, t, qL)).ToVec();
+        
         RLWECipher acc = ((f * xalpha).ResModSigned(pm, qL), x.Zero, pm, t, qL);
 
         for (int i = 0; i < n; i++)
@@ -158,7 +162,6 @@ public partial class RLWE
     }
 
     public static RLWECipher BlindRotategswBGV((Rational ai, Rational[] bi) ab,
-        (Vec<RLWECipher> csm, Vec<RLWECipher> cm) rlwe0,
         ((Vec<RLWECipher> csm, Vec<RLWECipher> cm) plus, (Vec<RLWECipher> csm, Vec<RLWECipher> cm) minus)[] brk)
     {
         var (pm, _, qL) = brk[0].minus.cm[0].PM_T_Q;
@@ -167,7 +170,7 @@ public partial class RLWE
         var f = (2 * c + 1).SeqLazy(-c).Select(j => j * XpowA(j, pm, qL))
             .Aggregate(x.Zero, (acc, v) => acc + v).ResModSigned(pm, qL);
 
-        return BlindRotategswBGV(ab, f, rlwe0, brk);
+        return BlindRotategswBGV(ab, f, brk);
     }
 
     public static RLWECipher RepackingBGV(RLWECipher[] accs, RLWECipher[] autSk)
@@ -206,9 +209,8 @@ public partial class RLWE
         var extract = Extract(ctprep);
 
         // 2. BlindRotate
-        var rlwe0 = EncryptRgswBGV(pm.One, pk, noiseMode: false);
         var ni = (1 - qL) / n;
-        var seqBR = extract.Select(ab => ni * BlindRotategswBGV(ab, rlwe0, brk)).ToArray();
+        var seqBR = extract.Select(ab => ni * BlindRotategswBGV(ab, brk)).ToArray();
 
         // Step 3. Repacking
         var ctsm = RepackingBGV(seqBR, skAut);
