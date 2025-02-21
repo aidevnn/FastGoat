@@ -589,7 +589,103 @@ public static class LearningWithErrors
         }
     }
 
-    public static void Example10HomomorphicAdditionWithCarry()
+    public static void Example10Repack()
+    {
+        var (N, level) = (16, 1);
+        var (pm, sk, t, primes, sp, pk, rlks) = RLWE.SetupBGV(N, level);
+        var n = N / 2;
+        var q = primes[0];
+        var qL = pk.Q;
+
+        var ak = RLWE.AKBGV(sk, pk, sp.Pow(level));
+        var ni = (1 - qL) / n;
+        var x = pm.X;
+        var c = pm.Degree / 2 - 1;
+        var f = (2 * c + 1).SeqLazy(-c).Select(j => j * RLWE.XpowA(j, pm, qL))
+            .Aggregate(x.Zero, (acc, v) => acc + v).ResModSigned(pm, qL);
+
+        Console.WriteLine($"BGV level = {level}");
+        Console.WriteLine($"pm = {pm} T = {t} q = {q} sp = {sp} qL = {qL}");
+        Console.WriteLine($"sk = {sk}");
+        Console.WriteLine($"pk => {pk.Params}");
+        Console.WriteLine();
+
+        for (int k = 0; k < 10; ++k)
+        {
+            var uis = n.SeqLazy().Select(_ => IntExt.Rng.Next(-n / 2 + 1, n / 2)).ToArray();
+            var u = uis.ToKPoly(Rational.KOne());
+            var f_uis = uis.Select(ui => (ni * f * RLWE.XpowA(ui, pm, qL)).ResModSigned(pm, qL)).ToArray();
+            var accs = f_uis.Select(fui => new RLWECipher(fui, pm.Zero, pm, t, qL)).ToArray();
+            accs.Println("ni * f * ui");
+            var repack = RLWE.RepackingBGV(accs, ak);
+            Console.WriteLine($"u = {u}");
+            repack.Show("repack");
+            Console.WriteLine();
+            
+            if (!u.Equals(-repack.A))
+                throw new();
+        }
+    }
+
+    public static void Example11Bootstrapping()
+    {
+        var (N, level) = (16, 5);
+        var (pm, sk, t, primes, sp, pk, rlks) = RLWE.SetupBGV(N, level);
+        var n = N / 2;
+        var q = primes[0];
+        var qL = pk.Q;
+
+        var B = RLWE.GadgetBase(t);
+        var rlk = rlks[qL].rlk;
+        var brk = RLWE.BRKgswBGV(sk, pk);
+        var ak = RLWE.AKBGV(sk, pk, sp.Pow(level));
+
+        Console.WriteLine($"BGV level = {level}, Gadget Base = {B}");
+        Console.WriteLine($"pm = {pm} T = {t} q = {q} sp = {sp} qL = {qL}");
+        Console.WriteLine($"sk = {sk}");
+        Console.WriteLine($"pk => {pk.Params}");
+        Console.WriteLine();
+
+        GlobalStopWatch.Restart();
+        for (int k = 0; k < 20; ++k)
+        {
+            GlobalStopWatch.AddLap();
+            var m = RLWE.GenUnif(n, t);
+            var m2 = (m * m).ResModSigned(pm, t);
+            var cm = RLWE.EncryptBGV(m, pk); // level qL
+            var ct = RLWE.MulRelinBGV(cm, cm, rlk).ModSwitch(q); // level q0
+
+            var (ctboot, ctsm) = RLWE.Bootstrapping(ct, pk, ak, brk);
+            Console.WriteLine($"ct     {ct.Params}");
+            Console.WriteLine($"ctboot {ctboot.Params}");
+
+            var m2boot = RLWE.DecryptBGV(ctboot, sk);
+            Console.WriteLine($"m       = {m}");
+            Console.WriteLine($"m^2     = {m2}");
+            Console.WriteLine($"ctboot  = {m2boot}");
+            Console.WriteLine($"eboot   = {RLWE.ErrorsBGV(ctboot, sk).NormInf()}");
+            Console.WriteLine($"emodsw  = {RLWE.ErrorsBGV(ct.ModSwitch(qL), sk).NormInf()}");
+            Console.WriteLine();
+            if (!m2.Equals(m2boot))
+                throw new();
+
+            var c2 = RLWE.MulRelinBGV(ctboot, ctboot, rlk).ModSwitch(rlks[qL].nextMod);
+            var d2 = RLWE.DecryptBGV(c2, sk);
+            var m4 = (m2 * m2).ResModSigned(pm, t);
+            Console.WriteLine($"m^4 = {m4}");
+            Console.WriteLine($"    = {d2}");
+
+            GlobalStopWatch.Show($"Test[{k + 1}]");
+            Console.WriteLine();
+            if (!d2.Equals(m4))
+                throw new();
+        }
+
+        GlobalStopWatch.Show("End");
+        Console.WriteLine();
+    }
+
+    public static void Example12HomomorphicAdditionWithCarry()
     {
         // Weak parameters
 

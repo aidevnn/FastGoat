@@ -17,5 +17,16 @@ using static FastGoat.Commons.IntExt;
 //////////////////////////////////
 
 Console.WriteLine("Hello World");
-RngSeed(259128);
+// RngSeed(259128);
 Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+
+{
+    var staticVoidMeths = typeof(LearningWithErrors).GetMethods()
+        .Where(m => m.IsPublic && m.IsStatic && 
+                    m.GetParameters().Length == 0 &&
+                    m.ReturnType.Equals(typeof(void)))
+        .ToArray();
+    
+    foreach (var meth in staticVoidMeths)
+        meth.Invoke(null, null);
+}
