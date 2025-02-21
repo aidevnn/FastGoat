@@ -409,7 +409,7 @@ public static class LearningWithErrors
     public static void Example4LogicGates()
     {
         // Weak parameters
-        var rlwe = new RLWE(16);
+        var rlwe = new RLWE(32);
         rlwe.Show();
 
         int[] m0 = [0, 1];
@@ -424,29 +424,14 @@ public static class LearningWithErrors
         Console.WriteLine($" = [{rlwe.Decrypt(rlwe.NOT(e0)).Glue()}]");
         Console.WriteLine();
 
-        Console.WriteLine("AND");
-        Console.WriteLine($"   [{m1.Glue()}]");
-        Console.WriteLine($"   [{m2.Glue()}]");
-        Console.WriteLine($" = [{rlwe.Decrypt(rlwe.AND(e1, e2)).Glue()}]");
-        Console.WriteLine();
-
-        Console.WriteLine("NAND");
-        Console.WriteLine($"   [{m1.Glue()}]");
-        Console.WriteLine($"   [{m2.Glue()}]");
-        Console.WriteLine($" = [{rlwe.Decrypt(rlwe.NAND(e1, e2)).Glue()}]");
-        Console.WriteLine();
-
-        Console.WriteLine("OR");
-        Console.WriteLine($"   [{m1.Glue()}]");
-        Console.WriteLine($"   [{m2.Glue()}]");
-        Console.WriteLine($" = [{rlwe.Decrypt(rlwe.OR(e1, e2)).Glue()}]");
-        Console.WriteLine();
-
-        Console.WriteLine("XOR");
-        Console.WriteLine($"   [{m1.Glue()}]");
-        Console.WriteLine($"   [{m2.Glue()}]");
-        Console.WriteLine($" = [{rlwe.Decrypt(rlwe.XOR(e1, e2)).Glue()}]");
-        Console.WriteLine();
+        foreach (var opName in new[] { "AND", "NAND", "NOR", "OR", "XOR" })
+        {
+            Console.WriteLine(opName);
+            Console.WriteLine($"   [{m1.Glue()}]");
+            Console.WriteLine($"   [{m2.Glue()}]");
+            Console.WriteLine($" = [{rlwe.Decrypt(rlwe.OP(opName, e1, e2)).Glue()}]");
+            Console.WriteLine();
+        }
     }
 
     public static void Example5Regev2RLWE()
@@ -585,7 +570,6 @@ public static class LearningWithErrors
         Console.WriteLine();
 
         var brk = RLWE.BRKgswBGV(sk, pk);
-        var rlwe0 = RLWE.EncryptRgswBGV(pm.One, pk, noiseMode: false);
 
         var x = pm.X;
         var c = n / 2 - 1;
@@ -599,7 +583,7 @@ public static class LearningWithErrors
             var ai = new Rational(IntExt.Rng.Next(1, n + 1)).Signed(n);
             var bi = RLWE.GenUnif(n, n).CoefsExtended(n - 1);
 
-            var acc = RLWE.BlindRotategswBGV((ai, bi), f, rlwe0, brk);
+            var acc = RLWE.BlindRotategswBGV((ai, bi), brk);
             var actual = RLWE.DecryptBGV(acc, sk);
             CheckBR(s.ToArray(), pm, (ai, bi), f, actual, n * t.One);
         }
@@ -638,7 +622,7 @@ public static class LearningWithErrors
             Console.WriteLine($" = 0b{add_m1m2} = {FMT(sumi)}");
             Console.WriteLine($"   0b{d_add.Reverse().Glue()}");
 
-            GlobalStopWatch.Show();
+            GlobalStopWatch.Show($"Test[{k + 1}]");
             Console.WriteLine();
 
             var sumf = Convert.ToInt64(d_add.Reverse().Glue(), 2);
