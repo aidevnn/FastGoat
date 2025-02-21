@@ -137,34 +137,36 @@ public static partial class FG
     }
 
     public static KPoly<ZnInt> ToZnPoly(this KPoly<Rational> P, int p) =>
-        new(P.x, ZnInt.ZnZero(p), P.Coefs.Select(c => c.ToZnInt(p)).ToArray());
+        new(P.x, ZnInt.ZnZero(p), P.Coefs.Select(c => c.ToZnInt(p)).TrimSeq().ToArray());
 
     public static KPoly<Rational> ToRationalPoly(this KPoly<ZnInt> P) =>
-        new(P.x, Rational.KOne(), P.Coefs.Select(c => c.K * Rational.KOne()).ToArray());
+        new(P.x, Rational.KOne(), P.Coefs.Select(c => c.K * Rational.KOne()).TrimSeq().ToArray());
 
     public static KPoly<Rational> RoundPoly(this KPoly<Rational> P) =>
-        new(P.x, Rational.KOne(), P.Coefs.Select(c => c.RoundEven).ToArray());
+        new(P.x, Rational.KOne(), P.Coefs.Select(c => c.RoundEven).TrimSeq().ToArray());
 
     public static KPoly<Rational> TruncPoly(this KPoly<Rational> P) =>
-        new(P.x, Rational.KOne(), P.Coefs.Select(c => c.Trunc).ToArray());
+        new(P.x, Rational.KOne(), P.Coefs.Select(c => c.Trunc).TrimSeq().ToArray());
 
     public static KPoly<Rational> FloorPoly(this KPoly<Rational> P) =>
-        new(P.x, Rational.KOne(), P.Coefs.Select(c => c.Floor).ToArray());
+        new(P.x, Rational.KOne(), P.Coefs.Select(c => c.Floor).TrimSeq().ToArray());
 
     public static KPoly<Cplx> ToCPoly(this KPoly<Rational> P) =>
-        new(P.x, Cplx.CZero, P.Coefs.Select(c => c * Cplx.COne).ToArray());
+        new(P.x, Cplx.CZero, P.Coefs.Select(c => c * Cplx.COne).TrimSeq().ToArray());
 
     public static KPoly<BigReal> ToBrPoly(this KPoly<Rational> P, int O = 40) =>
-        new(P.x, BigReal.BrZero(O), P.Coefs.Select(c => BigReal.BrOne(O) * BigReal.FromRational(c, O)).ToArray());
+        new(P.x, BigReal.BrZero(O), P.Coefs.Select(c => BigReal.BrOne(O) * BigReal.FromRational(c, O)).TrimSeq()
+            .ToArray());
 
     public static KPoly<BigCplx> ToBcPoly(this KPoly<Rational> P, int O = 40) =>
-        new(P.x, BigCplx.BcZero(O), P.Coefs.Select(c => BigCplx.BcOne(O) * BigCplx.FromRational(c, O)).ToArray());
+        new(P.x, BigCplx.BcZero(O), P.Coefs.Select(c => BigCplx.BcOne(O) * BigCplx.FromRational(c, O)).TrimSeq()
+            .ToArray());
 
     public static KPoly<BigCplx> ToRoundBcPoly(this KPoly<BigCplx> P, int d = 40) =>
-        new(P.x, BigCplx.Round(P.KZero, d), P.Coefs.Select(c => BigCplx.Round(c, d)).ToArray());
+        new(P.x, BigCplx.Round(P.KZero, d), P.Coefs.Select(c => BigCplx.Round(c, d)).TrimSeq().ToArray());
 
     public static KPoly<BigCplx> ToBcPoly(this KPoly<BigCplx> P, int O = 40) =>
-        new(P.x, BigCplx.BcZero(O), P.Coefs.Select(c => c.ToBigCplx(O)).ToArray());
+        new(P.x, BigCplx.BcZero(O), P.Coefs.Select(c => c.ToBigCplx(O)).TrimSeq().ToArray());
 
     public static KPoly<Rational> ToIntPoly(this KPoly<BigCplx> P, int err = 4)
     {
@@ -183,7 +185,7 @@ public static partial class FG
             return r.RealPart.ToBigReal(one.O - err).ToRational.RoundEven;
         }
 
-        return new(P.x, Rational.KZero(), P.Coefs.Select(Cv).ToArray());
+        return new(P.x, Rational.KZero(), P.Coefs.Select(Cv).TrimSeq().ToArray());
     }
 
     public static KPoly<Rational> ToIntPoly(this KPoly<BigReal> P)
@@ -198,14 +200,14 @@ public static partial class FG
             return BigReal.Round(r, one.O - 4).ToRational;
         }
 
-        return new(P.x, Rational.KZero(), P.Coefs.Select(Cv).ToArray());
+        return new(P.x, Rational.KZero(), P.Coefs.Select(Cv).TrimSeq().ToArray());
     }
 
     public static KPoly<Cplx> ToCPoly(this KPoly<EPoly<Rational>> P, Cplx e) =>
-        new(P.x, Cplx.CZero, P.Coefs.Select(c => c.Poly.Substitute(e)).ToArray());
+        new(P.x, Cplx.CZero, P.Coefs.Select(c => c.Poly.Substitute(e)).TrimSeq().ToArray());
 
     public static KPoly<Rational> ToAbsKPoly(this KPoly<Rational> P) =>
-        new(P.x, P.KZero, P.Coefs.Select(c => c.Absolute).ToArray());
+        new(P.x, P.KZero, P.Coefs.Select(c => c.Absolute).TrimSeq().ToArray());
 
     public static KPoly<Rational> Primitive(this KPoly<Rational> P)
     {
@@ -240,7 +242,7 @@ public static partial class FG
         }
 
         var N = keys[0].Key;
-        var arr = P.Coefs.Select(c => new Cnf(N, c)).ToArray();
+        var arr = P.Coefs.Select(c => new Cnf(N, c)).TrimSeq().ToArray();
         return new('X', Cnf.CnfZero, arr);
     }
 
@@ -251,13 +253,13 @@ public static partial class FG
         if (Fs.Length != 1 || !Fs[0].Coefs.SequenceEqual(pol.Coefs))
             throw new($"Fs:{Fs.Glue(", ")}");
 
-        var arr = P.Coefs.Select(c => new Cnf(N, c)).ToArray();
+        var arr = P.Coefs.Select(c => new Cnf(N, c)).TrimSeq().ToArray();
         return new('X', Cnf.CnfZero, arr);
     }
 
     public static KPoly<Cnf> ToCnfPoly(this KPoly<Cnf> P, int N)
     {
-        return new('X', Cnf.CnfZero, P.Coefs.Select(c => c.ToCnfN(N)).ToArray());
+        return new('X', Cnf.CnfZero, P.Coefs.Select(c => c.ToCnfN(N)).TrimSeq().ToArray());
     }
 
     public static Cnf ToCnfN(this Cnf c, int N)
@@ -273,7 +275,7 @@ public static partial class FG
         var Ns = P.Coefs.Select(c => c.N).ToArray();
         var lcm = IntExt.Lcm(Ns);
         var a = CyclotomicEPoly(lcm);
-        var arr = P.Coefs.Select(c => c.E.Substitute(a.Pow(lcm / c.N))).ToArray();
+        var arr = P.Coefs.Select(c => c.E.Substitute(a.Pow(lcm / c.N))).TrimSeq().ToArray();
         return new(x, a.Zero, arr);
     }
 
