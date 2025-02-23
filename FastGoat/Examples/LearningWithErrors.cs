@@ -12,6 +12,7 @@ public static class LearningWithErrors
 {
     static LearningWithErrors()
     {
+        GlobalStopWatch.Restart();
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
         LipsumSentences = Lipsum.BySentences;
         LipsumParagraphes = Lipsum.ByParagraphes;
@@ -207,7 +208,7 @@ public static class LearningWithErrors
 
     public static void Example1Regev()
     {
-        GlobalStopWatch.Restart();
+        GlobalStopWatch.AddLap();
         // Weak and invalid parameters
         var reg = new Regev(32);
         reg.Show();
@@ -226,7 +227,7 @@ public static class LearningWithErrors
 
     public static void Example2RLWE()
     {
-        GlobalStopWatch.Restart();
+        GlobalStopWatch.AddLap();
         // Weak parameters
         var rlwe = new RLWE(32);
         rlwe.Show();
@@ -646,7 +647,7 @@ public static class LearningWithErrors
         Console.WriteLine($"pk => {pk.Params}");
         Console.WriteLine();
 
-        GlobalStopWatch.Restart();
+        GlobalStopWatch.AddLap();
         for (int k = 0; k < 20; ++k)
         {
             GlobalStopWatch.AddLap();
@@ -660,11 +661,11 @@ public static class LearningWithErrors
             Console.WriteLine($"ctboot {ctboot.Params}");
 
             var m2boot = RLWE.DecryptBGV(ctboot, sk);
-            Console.WriteLine($"m       = {m}");
-            Console.WriteLine($"m^2     = {m2}");
-            Console.WriteLine($"ctboot  = {m2boot}");
-            Console.WriteLine($"eboot   = {RLWE.ErrorsBGV(ctboot, sk).NormInf()}");
-            Console.WriteLine($"emodsw  = {RLWE.ErrorsBGV(ct.ModSwitch(qL), sk).NormInf()}");
+            Console.WriteLine($"m      = {m}");
+            Console.WriteLine($"m^2    = {m2}");
+            Console.WriteLine($"ctboot = {m2boot}");
+            Console.WriteLine($"eboot  = {RLWE.ErrorsBGV(ctboot, sk).NormInf()}");
+            Console.WriteLine($"emodsw = {RLWE.ErrorsBGV(ct.ModSwitch(qL), sk).NormInf()}");
             Console.WriteLine();
             if (!m2.Equals(m2boot))
                 throw new();
@@ -689,7 +690,6 @@ public static class LearningWithErrors
     {
         // Weak parameters
 
-        GlobalStopWatch.Restart();
         var bits = 32;
         var rlwe = new RLWE(N: 16, level: 5, bootstrappingMode: true);
         rlwe.Show();

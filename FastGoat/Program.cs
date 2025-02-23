@@ -29,4 +29,6 @@ Ring.DisplayPolynomial = MonomDisplay.StarCaret;
     
     foreach (var meth in staticVoidMeths)
         meth.Invoke(null, null);
+
+    GlobalStopWatch.Show("End All");
 }
