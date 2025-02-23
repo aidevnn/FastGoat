@@ -615,10 +615,10 @@ public static class LearningWithErrors
         {
             var uis = n.SeqLazy().Select(_ => IntExt.Rng.Next(-n / 2 + 1, n / 2)).ToArray();
             var u = uis.ToKPoly(Rational.KOne());
-            var f_uis = uis.Select(ui => (ni * f * RLWE.XpowA(ui, pm, qL)).ResModSigned(pm, qL)).ToArray();
+            var f_uis = uis.Select(ui => (f * RLWE.XpowA(ui, pm, qL)).ResModSigned(pm, qL)).ToArray();
             var accs = f_uis.Select(fui => new RLWECipher(fui, pm.Zero, pm, t, qL)).ToArray();
-            accs.Println("ni * f * ui");
-            var repack = RLWE.RepackingBGV(accs, ak);
+            accs.Println("f * X^ui");
+            var repack = RLWE.RepackingBGV(accs.Select(e => e * ni).ToArray(), ak);
             Console.WriteLine($"u = {u}");
             repack.Show("repack");
             Console.WriteLine();
@@ -656,7 +656,7 @@ public static class LearningWithErrors
             var cm = RLWE.EncryptBGV(m, pk); // level qL
             var ct = RLWE.MulRelinBGV(cm, cm, rlk).ModSwitch(q); // level q0
 
-            var (ctboot, ctsm) = RLWE.Bootstrapping(ct, pk, ak, brk);
+            var ctboot = RLWE.Bootstrapping(ct, pk, ak, brk);
             Console.WriteLine($"ct     {ct.Params}");
             Console.WriteLine($"ctboot {ctboot.Params}");
 

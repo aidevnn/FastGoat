@@ -197,7 +197,7 @@ public partial class RLWE
         return CT[0, 1];
     }
 
-    public static (RLWECipher ctboot, RLWECipher ctsm) Bootstrapping(RLWECipher cipher, RLWECipher pk,
+    public static RLWECipher Bootstrapping(RLWECipher cipher, RLWECipher pk,
         RLWECipher[] skAut,
         ((Vec<RLWECipher> csm, Vec<RLWECipher> cm) plus, (Vec<RLWECipher> csm, Vec<RLWECipher> cm) minus)[] brk)
     {
@@ -206,16 +206,15 @@ public partial class RLWE
 
         // 1. Extract
         var (ct1, ctprep) = CtPrep(cipher);
-        var extract = Extract(ctprep);
+        var extract = Extract(-ctprep);
 
         // 2. BlindRotate
         var ni = (1 - qL) / n;
         var seqBR = extract.Select(ab => ni * BlindRotategswBGV(ab, brk)).ToArray();
 
         // Step 3. Repacking
-        var ctsm = RepackingBGV(seqBR, skAut);
-        var ctboot = -ctsm + ct1.CoefsModSigned(qL);
         var Ni = (1 - t) / (2 * n);
-        return (ctboot * Ni, ctsm);
+        var ctsm = RepackingBGV(seqBR, skAut);
+        return Ni * (ctsm + ct1.CoefsModSigned(qL));
     }
 }

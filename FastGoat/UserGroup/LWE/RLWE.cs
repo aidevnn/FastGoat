@@ -81,8 +81,16 @@ public partial class RLWE
 
     public Rq[] Errors(RLWECipher[] ciphers) => ciphers.Select(Errors).ToArray();
 
-    public string Params =>
-        $"RLWE N={N}=2^{int.Log2(N)}, Φ(N)={n}, PM={PM}, t={T}, q={Q}, sp={SP}, level={Level} primes=[{Primes.Glue(", ")}] Sigma={Sigma(n, T):f3}, GadgetBase = {GadgetBase(T)}";
+    public string Params
+    {
+        get
+        {
+            var cycloPoly = $"N={N}=2^{int.Log2(N)}, Φ(N)={n}, PM={PM}";
+            var primes = $"t={T}, q={Q}, sp={SP}, level={Level} primes=[{Primes.Glue(", ")}]";
+            var sigma_gadget = $"Sigma={Sigma(n, T):f3}, GadgetBase = {GadgetBase(T)}";
+            return $"RLWE {cycloPoly}, {primes}, {sigma_gadget}";
+        }
+    }
 
     public string ExportParams
     {
@@ -169,7 +177,7 @@ public partial class RLWE
         if (!BootstrappingMode || !RLKS[cipher.Q].nextMod.IsOne())
             return cipher;
 
-        return Bootstrapping(cipher, PK, AutoMorhKeys, BlindRotateKeys).ctboot.ModSwitch(RLKS[PK.Q].nextMod);
+        return Bootstrapping(cipher, PK, AutoMorhKeys, BlindRotateKeys).ModSwitch(RLKS[PK.Q].nextMod);
     }
 
     public RLWECipher[] Bootstrapping(RLWECipher[] ciphers)
