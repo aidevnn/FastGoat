@@ -582,3 +582,9 @@ Samsung Advanced Institute of Technology
 SageMath, the Sage Mathematics Software System.
 <i>Version 10.4, 2024.</i>
 
+[GHS12](https://eprint.iacr.org/2012/099)
+<b>Craig Gentry, Shai Halevi, Nigel P. Smart.</b>
+Homomorphic Evaluation of the AES Circuit.
+January 3, 2015
+<i>GHS12.</i>
+
