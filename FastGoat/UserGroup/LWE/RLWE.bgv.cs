@@ -140,8 +140,7 @@ public partial class RLWE
     }
 
     public static (Rq pm, Rq sk, Rational t, Rational[] primes, Rational sp, RLWECipher pk,
-        Dictionary<Rational, (Rational nextMod, RLWECipher rlk)> rlks)
-        SetupBGV(int N, int t0, int level, Rq sk, bool differentPrimes = true)
+        Dictionary<Rational, (Rational nextMod, RLWECipher rlk)> rlks) SetupBGV(int N, int t0, int level, Rq sk)
     {
         if (!int.IsPow2(N))
             throw new($"N = {N} must be 2^k");
@@ -158,18 +157,11 @@ public partial class RLWE
         Rational[] primes;
 
         var q = FirstPrimeEqualOneMod(N * t);
-        if (differentPrimes)
-        {
-            var seqPrimes = new List<Rational>() { q };
-            for (int i = 0; i < level; i++)
-                seqPrimes.Add(FirstPrimeEqualOneMod(N * t, seqPrimes.Last()));
+        var seqPrimes = new List<Rational>() { q };
+        for (int i = 0; i < level; i++)
+            seqPrimes.Add(FirstPrimeEqualOneMod(N * t, seqPrimes.Last()));
 
-            primes = seqPrimes.Order().ToArray();
-        }
-        else
-        {
-            primes = Enumerable.Repeat(q, level + 1).ToArray();
-        }
+        primes = seqPrimes.Order().ToArray();
 
         if (primes.Length != level + 1 || primes[0].IsOne())
             throw new($"sequence moduli N={N} t={t} q={q} [{primes.Glue(", ")}]");
@@ -186,16 +178,16 @@ public partial class RLWE
 
     public static (Rq pm, Rq sk, Rational t, Rational[] primes, Rational sp, RLWECipher pk,
         Dictionary<Rational, (Rational nextMod, RLWECipher rlk)> rlks)
-        SetupBGV(int N, int t, int level, bool differentPrimes)
+        SetupBGV(int N, int t, int level)
     {
-        return SetupBGV(N, t, level, SKBGV(N / 2), differentPrimes);
+        return SetupBGV(N, t, level, SKBGV(N / 2));
     }
 
     public static (Rq pm, Rq sk, Rational t, Rational[] primes, Rational sp, RLWECipher pk,
         Dictionary<Rational, (Rational nextMod, RLWECipher rlk)> rlks)
-        SetupBGV(int N, int level, bool differentPrimes = true)
+        SetupBGV(int N, int level)
     {
-        return SetupBGV(N, (int)RlwePrime(N / 2).Num, level, SKBGV(N / 2), differentPrimes);
+        return SetupBGV(N, (int)RlwePrime(N / 2).Num, level, SKBGV(N / 2));
     }
 
     public static RLWECipher EncryptBGV(Rq m, RLWECipher pk, bool noise = true)

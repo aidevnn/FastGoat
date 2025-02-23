@@ -23,7 +23,7 @@ public class Regev
     public Vec<ZnInt64> Err { get; }
     public RegevCipher[] PK { get; }
 
-    public Regev(int n)
+    public Regev(int n, bool unifSK = false)
     {
         // All conditions
         
@@ -40,20 +40,8 @@ public class Regev
         // 4) Discrete gaussian sample with s = a*p
         var err = Err = DiscGauss(m, p, s: a * p);
 
-        var sk = SK = Unif(n, p);
+        var sk = SK = unifSK ? Unif(n, p) : TernarySK(n, p);
         PK = err.Select(e => (a:Unif(n, p), b:e))
-            .Select(e => new RegevCipher(e.a, e.b + e.a.InnerProd(sk)))
-            .ToArray();
-    }
-
-    public Regev(int n, int m, int p, double sigma)
-    {
-        var s = double.Sqrt(2 * double.Pi) * sigma;
-        (N, P, M, A) = (n, p, m, s / p);
-        
-        var err = Err = DiscGauss(m, p, s);
-        var sk = SK = TernarySK(n, p);
-        PK = err.Select(e => (a: Unif(n, p), b: e))
             .Select(e => new RegevCipher(e.a, e.b + e.a.InnerProd(sk)))
             .ToArray();
     }
@@ -132,12 +120,8 @@ public class Regev
 
     public static (Regev regev, RLWE rlwe, RLWECipher swk, RLWECipher[] exsk) SetupRLWE(int n)
     {
-        var alpha = RLWE.Alpha(n);
-        var q = (int)RLWE.RlwePrime(n).Num;
-        var m = (int)(1.1 * (n + 1) * double.Log2(q));
-        var sigma = alpha * q / double.Sqrt(2 * double.Pi);
-        var regev = new Regev(n, m, q, sigma);
-        var rlwe = new RLWE(2 * n, q);
+        var regev = new Regev(n, unifSK: false);
+        var rlwe = new RLWE(2 * n, regev.P);
         var sk2 = RLWE.IntVecToRq(regev.SK);
         var swk = RLWE.SWKBGV(rlwe.PM, sk2, rlwe.SK, rlwe.T, rlwe.PK.Q, rlwe.SP);
         var exsk = RLWE.EXSK(sk2, rlwe.PK);

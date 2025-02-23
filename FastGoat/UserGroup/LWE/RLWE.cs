@@ -42,20 +42,20 @@ public partial class RLWE
     public RLWE(int N)
     {
         (this.N, n, Level) = (N, IntExt.Phi(N), 1);
-        (PM, SK, T, Primes, SP, PK, RLKS) = SetupBGV(N, Level, differentPrimes: true);
+        (PM, SK, T, Primes, SP, PK, RLKS) = SetupBGV(N, Level);
     }
 
     public RLWE(int N, int level, bool bootstrappingMode)
     {
         (this.N, n, Level) = (N, IntExt.Phi(N), level);
-        (PM, SK, T, Primes, SP, PK, RLKS) = SetupBGV(N, Level, differentPrimes: true);
+        (PM, SK, T, Primes, SP, PK, RLKS) = SetupBGV(N, Level);
         BootstrappingMode = bootstrappingMode;
     }
 
     public RLWE(int N, int t)
     {
         (this.N, n, Level) = (N, IntExt.Phi(N), 1);
-        (PM, SK, T, Primes, SP, PK, RLKS) = SetupBGV(N, t, Level, differentPrimes: false);
+        (PM, SK, T, Primes, SP, PK, RLKS) = SetupBGV(N, t, Level);
     }
 
     public RLWECipher EncryptBit(int bit)
