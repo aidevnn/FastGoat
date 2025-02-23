@@ -517,12 +517,12 @@ public static class LearningWithErrors
 
         var N = 32;
         var n = N / 2;
-        var level = 1;
+        var level = 2;
         var (pm, sk, t, primes, sp, pk, rlks) = RLWE.SetupBGV(N, level);
         var q = primes[0];
         var qL = pk.Q;
-        var B = RLWE.GadgetBase(t);
-        Console.WriteLine($"BGV level = {level}, Gadget Base = {B}");
+        var B = RLWE.RNSGadgetBase(primes);
+        Console.WriteLine($"BGV level = {level}, Primes = [{primes.Glue(", ")}]");
         Console.WriteLine($"pm = {pm} T = {t} q = {q} sp = {sp} qL = {qL} Sigma = {RLWE.Sigma(n, t):f4}");
         Console.WriteLine($"sk = {sk}");
         Console.WriteLine($"pk => {pk.Params}");
@@ -534,9 +534,9 @@ public static class LearningWithErrors
             var cm1 = RLWE.EncryptBGV(m1, pk);
             var m2 = RLWE.GenUnif(n, t);
             var _cm2 = RLWE.EncryptBGV(m2, pk);
-            var (csm2, cm2) = RLWE.EncryptRgswBGV(m2, pk);
+            var (csm2, cm2) = RLWE.EncryptRgswBGV(m2, pk, B);
             var m1m2 = (m1 * m2).ResModSigned(pm, t);
-            var cm1m2gsw = RLWE.MulRgsw(cm1, cm2, csm2);
+            var cm1m2gsw = RLWE.MulRgsw(RLWE.DecompRNS(cm1, primes), cm2, csm2);
             var cm1m2rlk = RLWE.MulRelinBGV(cm1, _cm2, rlks[qL].rlk).ModSwitch(qL);
             var dm1m2gsw = RLWE.DecryptBGV(cm1m2gsw, sk);
             var dm1m2rlk = RLWE.DecryptBGV(cm1m2rlk, sk);
@@ -546,7 +546,6 @@ public static class LearningWithErrors
             Console.WriteLine($"        = {dm1m2gsw}");
             Console.WriteLine($"        = {dm1m2rlk}");
             Console.WriteLine($"egsw    = {RLWE.ErrorsBGV(cm1m2gsw, sk).NormInf()}");
-            Console.WriteLine($"erlk    = {RLWE.ErrorsBGV(cm1m2rlk, sk).NormInf()}");
             Console.WriteLine();
             if (!dm1m2gsw.Equals(m1m2))
                 throw new();
@@ -559,18 +558,18 @@ public static class LearningWithErrors
 
         var N = 32;
         var n = N / 2;
-        var level = 1;
+        var level = 2;
         var (pm, sk, t, primes, sp, pk, _) = RLWE.SetupBGV(N, level);
         var q = primes[0];
         var qL = pk.Q;
-        var B = RLWE.GadgetBase(t);
-        Console.WriteLine($"BGV level = {level}, Gadget Base = {B}");
+        var B = RLWE.RNSGadgetBase(primes);
+        Console.WriteLine($"BGV level = {level}, Primes = [{primes.Glue(", ")}]");
         Console.WriteLine($"pm = {pm} T = {t} q = {q} sp = {sp} qL = {qL} sigma = {RLWE.Sigma(n, t):f4}");
         Console.WriteLine($"sk = {sk}");
         Console.WriteLine($"pk => {pk.Params}");
         Console.WriteLine();
 
-        var brk = RLWE.BRKgswBGV(sk, pk);
+        var brk = RLWE.BRKgswBGV(sk, pk, B);
 
         var x = pm.X;
         var c = n / 2 - 1;
@@ -581,12 +580,14 @@ public static class LearningWithErrors
 
         for (int k = 0; k < 50; ++k)
         {
+            GlobalStopWatch.AddLap();
             var ai = new Rational(IntExt.Rng.Next(1, n + 1)).Signed(n);
             var bi = RLWE.GenUnif(n, n).CoefsExtended(n - 1);
 
-            var acc = RLWE.BlindRotategswBGV((ai, bi), brk);
+            var acc = RLWE.BlindRotategswBGV((ai, bi), brk, B, primes);
             var actual = RLWE.DecryptBGV(acc, sk);
             CheckBR(s.ToArray(), pm, (ai, bi), f, actual, n * t.One);
+            GlobalStopWatch.Show();
         }
     }
 
@@ -622,7 +623,7 @@ public static class LearningWithErrors
             Console.WriteLine($"u = {u}");
             repack.Show("repack");
             Console.WriteLine();
-            
+
             if (!u.Equals(-repack.A))
                 throw new();
         }
@@ -630,18 +631,18 @@ public static class LearningWithErrors
 
     public static void Example11Bootstrapping()
     {
-        var (N, level) = (16, 5);
+        var (N, level) = (16, 4);
         var (pm, sk, t, primes, sp, pk, rlks) = RLWE.SetupBGV(N, level);
         var n = N / 2;
         var q = primes[0];
         var qL = pk.Q;
 
-        var B = RLWE.GadgetBase(t);
+        var B = RLWE.RNSGadgetBase(primes);
         var rlk = rlks[qL].rlk;
-        var brk = RLWE.BRKgswBGV(sk, pk);
+        var brk = RLWE.BRKgswBGV(sk, pk, B);
         var ak = RLWE.AKBGV(sk, pk, sp.Pow(level));
 
-        Console.WriteLine($"BGV level = {level}, Gadget Base = {B}");
+        Console.WriteLine($"BGV level = {level}, Primes = [{primes.Glue(", ")}]");
         Console.WriteLine($"pm = {pm} T = {t} q = {q} sp = {sp} qL = {qL}");
         Console.WriteLine($"sk = {sk}");
         Console.WriteLine($"pk => {pk.Params}");
@@ -656,7 +657,7 @@ public static class LearningWithErrors
             var cm = RLWE.EncryptBGV(m, pk); // level qL
             var ct = RLWE.MulRelinBGV(cm, cm, rlk).ModSwitch(q); // level q0
 
-            var ctboot = RLWE.Bootstrapping(ct, pk, ak, brk);
+            var ctboot = RLWE.Bootstrapping(ct, pk, ak, brk, B, primes);
             Console.WriteLine($"ct     {ct.Params}");
             Console.WriteLine($"ctboot {ctboot.Params}");
 
@@ -718,7 +719,7 @@ public static class LearningWithErrors
             Console.WriteLine($" = 0b{add_m1m2} = {FMT(sumi)}");
             Console.WriteLine($"   0b{d_add.Reverse().Glue()}");
 
-            GlobalStopWatch.Show($"Test[{k + 1}]");
+            GlobalStopWatch.Show($"Test[{k + 1}]"); // Time:4.790s
             Console.WriteLine();
 
             var sumf = Convert.ToInt64(d_add.Reverse().Glue(), 2);

@@ -87,8 +87,8 @@ public partial class RLWE
         {
             var cycloPoly = $"N={N}=2^{int.Log2(N)}, Φ(N)={n}, PM={PM}";
             var primes = $"t={T}, q={Q}, sp={SP}, level={Level} primes=[{Primes.Glue(", ")}]";
-            var sigma_gadget = $"Sigma={Sigma(n, T):f3}, GadgetBase = {GadgetBase(T)}";
-            return $"RLWE {cycloPoly}, {primes}, {sigma_gadget}";
+            var sigma = $"Sigma={Sigma(n, T):f3}";
+            return $"RLWE {cycloPoly}, {primes}, {sigma}";
         }
     }
 
@@ -118,6 +118,18 @@ public partial class RLWE
     }
 
     public RLWECipher Zero => PK.Zero;
+    public Rational[] _B = [];
+
+    public Rational[] B
+    {
+        get
+        {
+            if (_B.Length != 0)
+                return _B;
+            
+            return _B = RNSGadgetBase(Primes);
+        }
+    }
 
     private ((Vec<RLWECipher> csm, Vec<RLWECipher> cm) plus, (Vec<RLWECipher> csm, Vec<RLWECipher> cm) minus)[]
         brk = [];
@@ -133,7 +145,7 @@ public partial class RLWE
             if (!SK.NormInf().IsOne())
                 throw new("Only for ternary secret key");
 
-            return brk = BRKgswBGV(SK, PK);
+            return brk = BRKgswBGV(SK, PK, B);
         }
     }
 
@@ -177,7 +189,7 @@ public partial class RLWE
         if (!BootstrappingMode || !RLKS[cipher.Q].nextMod.IsOne())
             return cipher;
 
-        return Bootstrapping(cipher, PK, AutoMorhKeys, BlindRotateKeys).ModSwitch(RLKS[PK.Q].nextMod);
+        return Bootstrapping(cipher, PK, AutoMorhKeys, BlindRotateKeys, B, Primes).ModSwitch(RLKS[PK.Q].nextMod);
     }
 
     public RLWECipher[] Bootstrapping(RLWECipher[] ciphers)

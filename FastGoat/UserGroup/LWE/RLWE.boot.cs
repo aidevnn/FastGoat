@@ -36,6 +36,13 @@ public partial class RLWE
         return queue.ToVec();
     }
 
+    public static Vec<RLWECipher> DecompRNS(RLWECipher cipher, Rational[] primes)
+    {
+        var (pm, t, qL) = cipher.PM_T_Q;
+        return primes.Select(pi => new RLWECipher(cipher.A.CoefsModSigned(pi), cipher.B.CoefsModSigned(pi), pm, t, qL))
+            .ToVec();
+    }
+
     public static Rq ExtractVec(Vec<ZnInt64> v, int i = 0)
     {
         var x = FG.QPoly();
@@ -71,30 +78,29 @@ public partial class RLWE
             .ToArray();
     }
 
-    public static Rational GadgetBase(Rational t)
+    public static Rational[] RNSGadgetBase(Rational[] primes)
     {
-        var u = (int)BigInteger.Log2(t.Num) + 1;
-        return new Rational(BigInteger.Pow(2, u));
+        var qL = primes.Aggregate((pi, pj) => pi * pj);
+        return primes
+            .Select(e => (new Rational(IntExt.InvModPbezbigint((qL / e).Num, e.Num)).Signed(e) * (qL / e)).Signed(qL))
+            .ToArray();
     }
 
-    public static (Vec<RLWECipher> csm, Vec<RLWECipher> cm) EncryptRgswBGV(Rq m, RLWECipher pk)
+    public static (Vec<RLWECipher> csm, Vec<RLWECipher> cm) EncryptRgswBGV(Rq m, RLWECipher pk, Rational[] B, 
+        bool noiseMode = true)
     {
         var (pm, t, q) = pk.PM_T_Q;
-        var B = GadgetBase(t);
-        var size = (int)(BigInteger.Log10(q.Num) / BigInteger.Log10(B.Num)) + 1;
         var z = pm.Zero;
-        RLWECipher ctZero() => EncryptBGV(z, pk);
-        var cm = size.SeqLazy().Select(i => ctZero() + (m * B.Pow(i), z, pm, t, q)).ToVec();
-        var csm = size.SeqLazy().Select(i => ctZero() + (z, -m * B.Pow(i), pm, t, q)).ToVec();
+        RLWECipher ctZero() => EncryptBGV(z, pk, noiseMode);
+        var cm = B.Select(e => ctZero() + (m * e, z, pm, t, q)).ToVec();
+        var csm = B.Select(e => ctZero() + (z, -m * e, pm, t, q)).ToVec();
         return (csm, cm);
     }
 
-    public static RLWECipher MulRgsw(RLWECipher c1, Vec<RLWECipher> cm, Vec<RLWECipher> csm)
+    public static RLWECipher MulRgsw(Vec<RLWECipher> c1, Vec<RLWECipher> cm, Vec<RLWECipher> csm)
     {
-        var (_, t, q) = c1.PM_T_Q;
-        var B = GadgetBase(t);
-        var c1ac2m = DecompRq(c1.A, B, q).Zip(cm).Select(e => e.First * e.Second).ToVec().Sum();
-        var c1bc2sm = DecompRq(c1.B, B, q).Zip(csm).Select(e => e.First * e.Second).ToVec().Sum();
+        var c1ac2m = c1.Zip(cm).Select(e => e.First.A * e.Second).ToVec().Sum();
+        var c1bc2sm = c1.Zip(csm).Select(e => e.First.B * e.Second).ToVec().Sum();
         return c1ac2m - c1bc2sm;
     }
 
@@ -110,10 +116,10 @@ public partial class RLWE
     }
 
     public static ((Vec<RLWECipher> csm, Vec<RLWECipher> cm) plus, (Vec<RLWECipher> csm, Vec<RLWECipher> cm) minus)[]
-        BRKgswBGV(Rq sk, RLWECipher pk)
+        BRKgswBGV(Rq sk, RLWECipher pk, Rational[] B)
     {
         var pm = pk.PM;
-        var enc = (int k) => EncryptRgswBGV(pm.One * k, pk);
+        var enc = (int k) => EncryptRgswBGV(pm.One * k, pk, B);
         var n = pm.Degree;
         return n.SeqLazy().Select(i => sk[i])
             .Select(c => (plus: c.IsOne() ? enc(1) : enc(0), minus: (-c).IsOne() ? enc(1) : enc(0)))
@@ -121,7 +127,8 @@ public partial class RLWE
     }
 
     public static RLWECipher BlindRotategswBGV((Rational ai, Rational[] bi) ab, Rq f,
-        ((Vec<RLWECipher> csm, Vec<RLWECipher> cm) plus, (Vec<RLWECipher> csm, Vec<RLWECipher> cm) minus)[] brk)
+        ((Vec<RLWECipher> csm, Vec<RLWECipher> cm) plus, (Vec<RLWECipher> csm, Vec<RLWECipher> cm) minus)[] brk, 
+        Rational[] B, Rational[] primes)
     {
         var (pm, t, qL) = brk[0].minus.cm[0].PM_T_Q;
         var n = pm.Degree;
@@ -132,10 +139,8 @@ public partial class RLWE
         var xalpha = XpowA(alpha, pm, qL);
 
         var z = pm.Zero;
-        var B = GadgetBase(t);
-        var size = (int)(BigInteger.Log10(qL.Num) / BigInteger.Log10(B.Num)) + 1;
-        var encOne0 = size.SeqLazy().Select(i => new RLWECipher(pm.One * B.Pow(i), z, pm, t, qL)).ToVec();
-        var encSOne0 = size.SeqLazy().Select(i => new RLWECipher(z, -pm.One * B.Pow(i), pm, t, qL)).ToVec();
+        var encOne0 = B.Select(e => new RLWECipher(pm.One * e, z, pm, t, qL)).ToVec();
+        var encSOne0 = B.Select(e => new RLWECipher(z, -pm.One * e, pm, t, qL)).ToVec();
         
         RLWECipher acc = ((f * xalpha).ResModSigned(pm, qL), x.Zero, pm, t, qL);
 
@@ -155,14 +160,15 @@ public partial class RLWE
             var acci = encOne0 + cxai + cx_ai;
             var sacci = encSOne0 + csxai + csx_ai;
 
-            acc = MulRgsw(acc, acci, sacci);
+            acc = MulRgsw(DecompRNS(acc, primes), acci, sacci);
         }
 
         return acc;
     }
 
     public static RLWECipher BlindRotategswBGV((Rational ai, Rational[] bi) ab,
-        ((Vec<RLWECipher> csm, Vec<RLWECipher> cm) plus, (Vec<RLWECipher> csm, Vec<RLWECipher> cm) minus)[] brk)
+        ((Vec<RLWECipher> csm, Vec<RLWECipher> cm) plus, (Vec<RLWECipher> csm, Vec<RLWECipher> cm) minus)[] brk, 
+        Rational[] B, Rational[] primes)
     {
         var (pm, _, qL) = brk[0].minus.cm[0].PM_T_Q;
         var x = pm.X;
@@ -170,7 +176,7 @@ public partial class RLWE
         var f = (2 * c + 1).SeqLazy(-c).Select(j => j * XpowA(j, pm, qL))
             .Aggregate(x.Zero, (acc, v) => acc + v).ResModSigned(pm, qL);
 
-        return BlindRotategswBGV(ab, f, brk);
+        return BlindRotategswBGV(ab, f, brk, B, primes);
     }
 
     public static RLWECipher RepackingBGV(RLWECipher[] accs, RLWECipher[] autSk)
@@ -199,7 +205,8 @@ public partial class RLWE
 
     public static RLWECipher Bootstrapping(RLWECipher cipher, RLWECipher pk,
         RLWECipher[] skAut,
-        ((Vec<RLWECipher> csm, Vec<RLWECipher> cm) plus, (Vec<RLWECipher> csm, Vec<RLWECipher> cm) minus)[] brk)
+        ((Vec<RLWECipher> csm, Vec<RLWECipher> cm) plus, (Vec<RLWECipher> csm, Vec<RLWECipher> cm) minus)[] brk, 
+        Rational[] B, Rational[] primes)
     {
         var (pm, t, qL) = pk.PM_T_Q;
         var n = pm.Degree;
@@ -210,7 +217,7 @@ public partial class RLWE
 
         // 2. BlindRotate
         var ni = (1 - qL) / n;
-        var seqBR = extract.Select(ab => ni * BlindRotategswBGV(ab, brk)).ToArray();
+        var seqBR = extract.Select(ab => ni * BlindRotategswBGV(ab, brk, B, primes)).ToArray();
 
         // Step 3. Repacking
         var Ni = (1 - t) / (2 * n);
