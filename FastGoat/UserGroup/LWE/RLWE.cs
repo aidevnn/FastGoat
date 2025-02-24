@@ -189,7 +189,7 @@ public partial class RLWE
         if (!BootstrappingMode || !RLKS[cipher.Q].nextMod.IsOne())
             return cipher;
 
-        return Bootstrapping(cipher, PK, AutoMorhKeys, BlindRotateKeys, B, Primes).ModSwitch(RLKS[PK.Q].nextMod);
+        return Bootstrapping(cipher, PK, AutoMorhKeys, BlindRotateKeys, B, Primes).ModSwitch(PK.Q);
     }
 
     public RLWECipher[] Bootstrapping(RLWECipher[] ciphers)
