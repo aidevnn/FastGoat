@@ -23,7 +23,7 @@ public class Regev
     public Vec<ZnInt64> Err { get; }
     public RegevCipher[] PK { get; }
 
-    public Regev(int n, bool unifSK = false)
+    public Regev(int n, bool unifSK = true)
     {
         // All conditions
         
