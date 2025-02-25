@@ -19,16 +19,128 @@ using static FastGoat.Commons.IntExt;
 Console.WriteLine("Hello World");
 // RngSeed(259128);
 Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+RecomputeAllPrimesUpTo(1000000);
+
+BigInteger AmodPSignedbigint(BigInteger m, BigInteger p)
+{
+    var m0 = AmodPbigint(m, p);
+    return m0 > p / 2 ? m0 - p : m0;
+}
+
+// wikipedia Tonelli–Shanks algorithm
+BigInteger SqrtMod(BigInteger m, BigInteger p)
+{
+    m = AmodPSignedbigint(m, p);
+    var S = PrimesDecompositionBigInt(p - 1).Count(pi => pi == 2);
+    var Q = (p - 1) / (BigInteger.One << S);
+    var z = BigInteger.Zero;
+    for (BigInteger z0 = 1; z0 < p/2; z0++)
+    {
+        var m0 = PowModBigint(z0, (p - 1) / 2, p);
+        if (m0 == p - 1)
+        {
+            z = z0;
+            break;
+        }
+    }
+    var (M, c, t, R) = (S, PowModBigint(z, Q, p), PowModBigint(m, Q, p), PowModBigint(m, (Q + 1) / 2, p));
+    var k = 0;
+    while (true)
+    {
+        ++k;
+        // Console.WriteLine(new { k, M, c, t, R });
+        if (t == 0)
+            return 0;
+        if (t == 1)
+            return AmodPSignedbigint(R, p);
+
+        var t0 = t;
+        var i = (M + 1).SeqLazy().FirstOrDefault(i => PowModBigint(t0, BigInteger.One << i, p) == 1, -1);
+        if (i == M && i > 1)
+            return 0;
+
+        if (i == -1)
+            throw new();
+
+        var b = PowModBigint(c, BigInteger.One << (M - i - 1), p);
+        c = b * b % p;
+        (M, t, R) = (i, t * c % p, R * b % p);
+    }
+}
+
+IEnumerable<BigInteger> Pow2NthRootMod(BigInteger m, BigInteger n, BigInteger p)
+{
+    if (!BigInteger.IsPow2(n))
+        throw new();
+
+    var r = SqrtMod(m, p);
+    if (n == 2)
+    {
+        yield return -r;
+        yield return r;
+        yield break;
+    }
+
+    foreach (var r0 in Pow2NthRootMod(r, n / 2, p))
+        yield return r0;
+
+    foreach (var r0 in Pow2NthRootMod(-r, n / 2, p))
+        yield return r0;
+}
 
 {
-    var staticVoidMeths = typeof(LearningWithErrors).GetMethods()
-        .Where(m => m.IsPublic && m.IsStatic && 
-                    m.GetParameters().Length == 0 &&
-                    m.ReturnType.Equals(typeof(void)))
-        .ToArray();
-    
-    foreach (var meth in staticVoidMeths)
-        meth.Invoke(null, null);
+    var (n, p) = (5, 41);
+    var r = SqrtMod(n, p);
+    var r2 = AmodPbigint(r * r, p);
+    Console.WriteLine(new { n, p, r, r2 });
+}
 
-    GlobalStopWatch.Show("End All");
+{
+    var (n, p) = (1, 41);
+    var r = SqrtMod(n, p);
+    var r2 = AmodPbigint(r * r, p);
+    Console.WriteLine(new { n, p, r, r2 });
+}
+
+{
+    var (n, p) = (4, 241);
+    Console.WriteLine($"{n}-thRoots(-1) mod {p}.");
+    var seqTS = Pow2NthRootMod(-1, n, p).Select(i => AmodPbigint(i, p)).Order().ToArray();
+    var seqPM = (p - 2).SeqLazy(2).Where(i => PowMod(i, n, p) == p - 1).Order().ToArray();
+    Console.WriteLine($"[{seqTS.Glue(", ")}]");
+    Console.WriteLine($"[{seqPM.Glue(", ")}]");
+}
+
+{
+    var (n, p) = (8, 241);
+    Console.WriteLine($"{n}-thRoots(-1) mod {p}.");
+    var seqTS = Pow2NthRootMod(-1, n, p).Select(i => AmodPbigint(i, p)).Order().ToArray();
+    var seqPM = (p - 2).SeqLazy(2).Where(i => PowMod(i, n, p) == p - 1).Order().ToArray();
+    Console.WriteLine($"[{seqTS.Glue(", ")}]");
+    Console.WriteLine($"[{seqPM.Glue(", ")}]");
+    Console.WriteLine();
+}
+
+{
+    var N = 2048;
+    var n = N / 2;
+    var (primes0, sp) = RLWE.RlweSequencePrimes(N, level: 4);
+    var primes = primes0.Append(sp).Select(e => e.Num).ToArray();
+    foreach(var p in primes)
+    {
+        var log2p = BigInteger.Log2(p);
+        Console.WriteLine(new { N, n, p, log2p });
+        var seqTS = Pow2NthRootMod(-1, n, p).ToArray();
+        if (seqTS.Length != n || seqTS.Any(e => !PowModEqualOnebigint(e, N, p)))
+            throw new("Fail");
+
+        Console.WriteLine($"{n}-thRoots(-1) mod {p}. Pass");
+        GlobalStopWatch.Bench(nb: 5, "TS first solution.", () => Pow2NthRootMod(-1, n, p).First());
+        GlobalStopWatch.Bench(nb: 5, "TS all  solutions.", () => Pow2NthRootMod(-1, n, p).Last());
+        Console.WriteLine();
+    }
+    // { N = 2048, n = 1024, p = 23026821121, log2p = 34 }
+    // 1024-thRoots(-1) mod 23026821121. Pass
+    // # TS first solution. Avg Time:6 ms Dev:1.200
+    // # TS all  solutions. Avg Time:662 ms Dev:5.389
 }
