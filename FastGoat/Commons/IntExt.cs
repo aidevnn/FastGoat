@@ -623,11 +623,16 @@ public static class IntExt
     /// <returns>The result of the calculation.</returns>
     public static int PowMod(int a, int exp, int mod)
     {
-        var a0 = 1;
-        for (var k = 0; k < exp; ++k)
-            a0 = a0 * a % mod;
+        var (r, a0, e0) = (1, a, exp);
+        while (e0 > 0)
+        {
+            if (e0 % 2 == 1)
+                r = (r * a0) % mod;
+            e0 >>= 1;
+            a0 = (a0 * a0) % mod;
+        }
 
-        return AmodP(a0, mod);
+        return AmodP(r, mod);
     }
 
     /// <summary>
@@ -637,37 +642,32 @@ public static class IntExt
     /// <param name="exp">The exponent.</param>
     /// <param name="mod">The modulus.</param>
     /// <returns>The result of the calculation.</returns>
-    public static long PowModLong(long a, int exp, long mod)
+    public static long PowModLong(long a, long exp, long mod)
     {
-        long a0 = 1;
-        for (var k = 0; k < exp; ++k)
-            a0 = a0 * a % mod;
-
-        long r = a0 % mod;
-        return r < 0 ? r + mod : r;
-    }
-
-
-    /// <summary>
-    /// Calculates the power of a given number, modulo a given number.
-    /// </summary>
-    /// <param name="a">The number to be powered.</param>
-    /// <param name="mod">The modulo to be used.</param>
-    /// <returns>An IEnumerable of integers containing the result of the power calculation.</returns>
-    public static IEnumerable<int> LoopPowMod(int a, int mod)
-    {
-        HashSet<int> set = new() { a };
-        int a0 = a;
-        while (true)
+        var (r, a0, e0) = ((long)1, a, exp);
+        while (e0 > 0)
         {
-            a0 = (a0 * a) % mod;
-            if (!set.Add(a0))
-                break;
+            if (e0 % 2 == 1)
+                r = (r * a0) % mod;
+            e0 >>= 1;
+            a0 = (a0 * a0) % mod;
         }
 
-        return set;
+        return AmodPlong(r, mod);
     }
-
+    
+    /// <summary>
+    /// Calculates the result of raising a number to a power and then modulo it with a given number. 
+    /// </summary>
+    /// <param name="a">The base number.</param>
+    /// <param name="exp">The exponent.</param>
+    /// <param name="mod">The modulus.</param>
+    /// <returns>The result of the calculation.</returns>
+    public static BigInteger PowModBigint(BigInteger a, BigInteger exp, BigInteger mod)
+    {
+        return AmodPbigint(BigInteger.ModPow(a, exp, mod), mod);
+    }
+    
     /// <summary>
     /// Solves the system of congruences using the Chinese Remainder Theorem (CRT).
     /// </summary>
@@ -787,6 +787,9 @@ public static class IntExt
     /// <returns>True if a^e mod m is equal to 1, false otherwise.</returns>
     public static bool PowModEqualOne(int a, int e, int m)
     {
+        if (PowMod(a, e, m) != 1)
+            return false;
+        
         var a0 = 1;
         for (var k = 0; k < e; ++k)
         {
@@ -807,6 +810,9 @@ public static class IntExt
     /// <returns>True if a^e mod m is equal to 1, false otherwise.</returns>
     public static bool PowModEqualOnelong(long a, long e, long m)
     {
+        if (PowModLong(a, e, m) != 1)
+            return false;
+
         long a0 = 1;
         for (var k = 0; k < e; ++k)
         {
@@ -827,6 +833,9 @@ public static class IntExt
     /// <returns>True if a^e mod m is equal to 1, false otherwise.</returns>
     public static bool PowModEqualOnebigint(BigInteger a, BigInteger e, BigInteger m)
     {
+        if (BigInteger.ModPow(a, e, m) != 1)
+            return false;
+
         BigInteger a0 = 1;
         for (var k = 0; k < e; ++k)
         {
