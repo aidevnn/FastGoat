@@ -139,6 +139,29 @@ public partial class RLWE
         return seqRlks;
     }
 
+    public static (Rational[] primes, Rational sp) RlweSequencePrimes(int N, Rational t, int level)
+    {
+        Rational[] primes;
+        var q = FirstPrimeEqualOneMod(N * t);
+        var seqPrimes = new List<Rational>() { q };
+        for (int i = 0; i < level; i++)
+            seqPrimes.Add(FirstPrimeEqualOneMod(N * t, seqPrimes.Last()));
+
+        primes = seqPrimes.Order().ToArray();
+        if (primes.Length != level + 1 || primes[0].IsOne())
+            throw new($"sequence moduli N={N} t={t} [{primes.Glue(", ")}]");
+        var sp = FirstPrimeEqualOneMod(N * t, primes.Last());
+        if (sp.IsOne())
+            throw new($"Special prime N={N} t={t}");
+        
+        return (primes, sp);
+    }
+
+    public static (Rational[] primes, Rational sp) RlweSequencePrimes(int N, int level)
+    {
+        return RlweSequencePrimes(N, RlwePrime(N / 2), level);
+    }
+
     public static (Rq pm, Rq sk, Rational t, Rational[] primes, Rational sp, RLWECipher pk,
         Dictionary<Rational, (Rational nextMod, RLWECipher rlk)> rlks) SetupBGV(int N, int t0, int level, Rq sk)
     {
@@ -154,23 +177,11 @@ public partial class RLWE
         var pm = FG.CyclotomicPolynomial(N);
         var t = new Rational(t0);
 
-        Rational[] primes;
-
-        var q = FirstPrimeEqualOneMod(N * t);
-        var seqPrimes = new List<Rational>() { q };
-        for (int i = 0; i < level; i++)
-            seqPrimes.Add(FirstPrimeEqualOneMod(N * t, seqPrimes.Last()));
-
-        primes = seqPrimes.Order().ToArray();
-
-        if (primes.Length != level + 1 || primes[0].IsOne())
-            throw new($"sequence moduli N={N} t={t} q={q} [{primes.Glue(", ")}]");
-
+        var (primes, sp) = RlweSequencePrimes(N, t, level);
         var qL = primes.Aggregate((pi, pj) => pi * pj);
         var pk = PKBGV(pm, sk, t, qL);
 
         var seqMods = (level + 1).SeqLazy(1).Select(i => primes.Take(i).Aggregate((pi, pj) => pi * pj)).ToArray();
-        var sp = FirstPrimeEqualOneMod(N * t, primes.Last());
         var seqRlks = LeveledSwitchKeyGenBGV(level, pm, sk, t, seqMods, sp);
 
         return (pm, sk, t, primes, sp, pk, seqRlks);
