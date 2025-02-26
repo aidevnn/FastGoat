@@ -64,7 +64,7 @@ public partial class RLWE
 
     public static Rational FirstPrimeEqualOneMod(int p) => FirstPrimeEqualOneMod(new Rational(p), "1");
 
-    public static Rational RlwePrime(int n)
+    public static Rational CiphertextModulusBGV(int n)
     {
         var a = Alpha(n);
         var c = 2 * Omega(n);
@@ -139,7 +139,7 @@ public partial class RLWE
         return seqRlks;
     }
 
-    public static (Rational[] primes, Rational sp) RlweSequencePrimes(int N, Rational t, int level)
+    public static (Rational[] primes, Rational sp) SequencePrimesBGV(int N, Rational t, int level)
     {
         Rational[] primes;
         var q = FirstPrimeEqualOneMod(N * t);
@@ -157,9 +157,9 @@ public partial class RLWE
         return (primes, sp);
     }
 
-    public static (Rational[] primes, Rational sp) RlweSequencePrimes(int N, int level)
+    public static (Rational[] primes, Rational sp) SequencePrimesBGV(int N, int level)
     {
-        return RlweSequencePrimes(N, RlwePrime(N / 2), level);
+        return SequencePrimesBGV(N, CiphertextModulusBGV(N / 2), level);
     }
 
     public static (Rq pm, Rq sk, Rational t, Rational[] primes, Rational sp, RLWECipher pk,
@@ -177,7 +177,7 @@ public partial class RLWE
         var pm = FG.CyclotomicPolynomial(N);
         var t = new Rational(t0);
 
-        var (primes, sp) = RlweSequencePrimes(N, t, level);
+        var (primes, sp) = SequencePrimesBGV(N, t, level);
         var qL = primes.Aggregate((pi, pj) => pi * pj);
         var pk = PKBGV(pm, sk, t, qL);
 
@@ -198,7 +198,7 @@ public partial class RLWE
         Dictionary<Rational, (Rational nextMod, RLWECipher rlk)> rlks)
         SetupBGV(int N, int level)
     {
-        return SetupBGV(N, (int)RlwePrime(N / 2).Num, level, SKBGV(N / 2));
+        return SetupBGV(N, (int)CiphertextModulusBGV(N / 2).Num, level, SKBGV(N / 2));
     }
 
     public static RLWECipher EncryptBGV(Rq m, RLWECipher pk, bool noise = true)

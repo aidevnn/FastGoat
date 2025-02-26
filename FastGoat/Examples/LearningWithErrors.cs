@@ -469,7 +469,7 @@ public static class LearningWithErrors
         for (int k = 2; k < 8; k++)
         {
             var n = 1 << (k - 1);
-            var t = RLWE.RlwePrime(n);
+            var t = RLWE.CiphertextModulusBGV(n);
             var q = RLWE.FirstPrimeEqualOneMod(2 * n * t, t) * t;
             var pm = FG.QPoly().Pow(n) + 1;
             Console.WriteLine(new { n, t, q, pm });
