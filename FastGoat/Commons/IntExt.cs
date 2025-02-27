@@ -185,6 +185,25 @@ public static class IntExt
     }
 
     /// <summary>
+    /// Calculates the multiplicity of a given factor in a given number and the remaining factor, a=p^m * r 
+    /// </summary>
+    /// <param name="a">The number to decompose.</param>
+    /// <param name="p">The factor.</param>
+    /// <returns>A tuple of integer, the multiplicity of factor p and the remaining factor.</returns>
+    public static (int mul, BigInteger rem) FactorMultiplicity(int p, BigInteger a)
+    {
+        var mul = 0;
+        var rem = a;
+        while (rem % p == 0)
+        {
+            ++mul;
+            rem /= p;
+        }
+
+        return (mul, rem);
+    }
+
+    /// <summary>
     /// This method returns a dictionary containing the prime factors of a given number.
     /// </summary>
     /// <param name="n">The number to be factored.</param>
@@ -623,7 +642,13 @@ public static class IntExt
     /// <returns>The result of the calculation.</returns>
     public static int PowMod(int a, int exp, int mod)
     {
-        var (r, a0, e0) = (1, a, exp);
+        if (exp < 0)
+        {
+            var ai = InvModPbez(a, mod);
+            return PowMod(ai, -exp, mod);
+        }
+        
+        var (r, a0, e0) = (1, AmodP(a, mod), exp);
         while (e0 > 0)
         {
             if (e0 % 2 == 1)
@@ -644,7 +669,13 @@ public static class IntExt
     /// <returns>The result of the calculation.</returns>
     public static long PowModLong(long a, long exp, long mod)
     {
-        var (r, a0, e0) = ((long)1, a, exp);
+        if (exp < 0)
+        {
+            var ai = InvModPbezlong(a, mod);
+            return PowModLong(ai, -exp, mod);
+        }
+
+        var (r, a0, e0) = ((long)1, a % mod, exp);
         while (e0 > 0)
         {
             if (e0 % 2 == 1)
@@ -665,9 +696,39 @@ public static class IntExt
     /// <returns>The result of the calculation.</returns>
     public static BigInteger PowModBigint(BigInteger a, BigInteger exp, BigInteger mod)
     {
+        if (exp < 0)
+        {
+            var ai = InvModPbezbigint(a, mod);
+            return PowModBigint(ai, -exp, mod);
+        }
+
         return AmodPbigint(BigInteger.ModPow(a, exp, mod), mod);
     }
-    
+
+    /// <summary>
+    /// Calculates the Legendre-Jacobi of two given numbers (m|n). 
+    /// </summary>
+    /// <param name="m">The numerator.</param>
+    /// <param name="n">The denominator.</param>
+    /// <returns>The result of the calculation +/- 1.</returns>
+    public static int LegendreJacobi(int m, int n) => PowMod(m, (n - 1) / 2, n);
+
+    /// <summary>
+    /// Calculates the Legendre-Jacobi of two given numbers (m|n). 
+    /// </summary>
+    /// <param name="m">The numerator.</param>
+    /// <param name="n">The denominator.</param>
+    /// <returns>The result of the calculation +/- 1.</returns>
+    public static int LegendreJacobiLong(long m, long n) => (int)PowModLong(m, (n - 1) / 2, n);
+
+    /// <summary>
+    /// Calculates the Legendre-Jacobi of two given numbers (m|n). 
+    /// </summary>
+    /// <param name="m">The numerator.</param>
+    /// <param name="n">The denominator.</param>
+    /// <returns>The result of the calculation +/- 1.</returns>
+    public static int LegendreJacobiBigint(BigInteger m, BigInteger n) => (int)PowModBigint(m, (n - 1) / 2, n);
+
     /// <summary>
     /// Solves the system of congruences using the Chinese Remainder Theorem (CRT).
     /// </summary>
