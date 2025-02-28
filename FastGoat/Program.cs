@@ -20,115 +20,7 @@ using static FastGoat.Commons.IntExt;
 Console.WriteLine("Hello World");
 // RngSeed(259128);
 Ring.DisplayPolynomial = MonomDisplay.StarCaret;
-// RecomputeAllPrimesUpTo(1000000);
-
-BigInteger AmodPSignedbigint(BigInteger m, BigInteger p)
-{
-    var m0 = AmodPbigint(m, p);
-    return m0 > p / 2 ? m0 - p : m0;
-}
-
-// wikipedia Tonelli–Shanks algorithm
-int SqrtMod(int m, int p)
-{
-    var S = PrimesDecomposition(p - 1).Count(pi => pi == 2);
-    var Q = (p - 1) / (1 << S);
-    var z = 0;
-    for (var z0 = 1; z0 < p / 2; z0++)
-    {
-        var m0 = PowMod(z0, (p - 1) / 2, p);
-        if (m0 == p - 1)
-        {
-            z = z0;
-            break;
-        }
-    }
-
-    var (M, c, t, R) = (S, PowMod(z, Q, p), PowMod(m, Q, p), PowMod(m, (Q + 1) / 2, p));
-    var k = 0;
-    while (true)
-    {
-        ++k;
-        // Console.WriteLine(new { k, M, c, t, R });
-        if (t == 0)
-            return 0;
-        if (t == 1)
-            return R;
-
-        var t0 = t;
-        var i = (M + 1).SeqLazy().FirstOrDefault(i => PowMod(t0, 1 << i, p) == 1, -1);
-        if (i == M && i > 1)
-            return 0;
-
-        if (i == -1)
-            throw new();
-
-        var b = PowMod(c, 1 << (M - i - 1), p);
-        c = b * b % p;
-        (M, t, R) = (i, t * c % p, R * b % p);
-    }
-}
-
-BigInteger SqrtModBigint(BigInteger m, BigInteger p)
-{
-    m = AmodPSignedbigint(m, p);
-    var S = PrimesDecompositionBigInt(p - 1).Count(pi => pi == 2);
-    var Q = (p - 1) / (BigInteger.One << S);
-    var z = BigInteger.Zero;
-    for (BigInteger z0 = 1; z0 < p / 2; z0++)
-    {
-        var m0 = PowModBigint(z0, (p - 1) / 2, p);
-        if (m0 == p - 1)
-        {
-            z = z0;
-            break;
-        }
-    }
-
-    var (M, c, t, R) = (S, PowModBigint(z, Q, p), PowModBigint(m, Q, p), PowModBigint(m, (Q + 1) / 2, p));
-    var k = 0;
-    while (true)
-    {
-        ++k;
-        // Console.WriteLine(new { k, M, c, t, R });
-        if (t == 0)
-            return 0;
-        if (t == 1)
-            return AmodPSignedbigint(R, p);
-
-        var t0 = t;
-        var i = (M + 1).SeqLazy().FirstOrDefault(i => PowModBigint(t0, BigInteger.One << i, p) == 1, -1);
-        if (i == M && i > 1)
-            return 0;
-
-        if (i == -1)
-            throw new();
-
-        var b = PowModBigint(c, BigInteger.One << (M - i - 1), p);
-        c = b * b % p;
-        (M, t, R) = (i, t * c % p, R * b % p);
-    }
-}
-
-IEnumerable<BigInteger> Pow2NthRootMod(BigInteger m, BigInteger n, BigInteger p)
-{
-    if (!BigInteger.IsPow2(n))
-        throw new();
-
-    var r = SqrtModBigint(m, p);
-    if (n == 2)
-    {
-        yield return -r;
-        yield return r;
-        yield break;
-    }
-
-    foreach (var r0 in Pow2NthRootMod(r, n / 2, p))
-        yield return r0;
-
-    foreach (var r0 in Pow2NthRootMod(-r, n / 2, p))
-        yield return r0;
-}
+RecomputeAllPrimesUpTo(1000000);
 
 KMatrix<ZnBInt> Vandermonde(int n, ZnBInt w)
 {
@@ -181,14 +73,14 @@ void testTonelliShanks()
 {
     {
         var (n, p) = (5, 41);
-        var r = SqrtModBigint(n, p);
+        var r = NumberTheory.SqrtModWP(n, p);
         var r2 = AmodPbigint(r * r, p);
         Console.WriteLine(new { n, p, r, r2 });
     }
 
     {
         var (n, p) = (1, 41);
-        var r = SqrtModBigint(n, p);
+        var r = NumberTheory.SqrtModWP(n, p);
         var r2 = AmodPbigint(r * r, p);
         Console.WriteLine(new { n, p, r, r2 });
     }
@@ -196,18 +88,23 @@ void testTonelliShanks()
     {
         var (n, p) = (4, 241);
         Console.WriteLine($"{n}-thRoots(-1) mod {p}.");
-        var seqTS = Pow2NthRootMod(-1, n, p).Select(i => AmodPbigint(i, p)).Order().ToArray();
+        var seqTS = NumberTheory.Pow2NthRootsWP(-1, n, p).Order().ToArray();
+        var seqAntv1 = NumberTheory.NthRootsANTV1(-1, n, p).Order().ToArray();
         var seqPM = (p - 2).SeqLazy(2).Where(i => PowMod(i, n, p) == p - 1).Order().ToArray();
         Console.WriteLine($"[{seqTS.Glue(", ")}]");
+        Console.WriteLine($"[{seqAntv1.Glue(", ")}]");
         Console.WriteLine($"[{seqPM.Glue(", ")}]");
+        Console.WriteLine();
     }
 
     {
         var (n, p) = (8, 241);
         Console.WriteLine($"{n}-thRoots(-1) mod {p}.");
-        var seqTS = Pow2NthRootMod(-1, n, p).Select(i => AmodPbigint(i, p)).Order().ToArray();
+        var seqTS = NumberTheory.Pow2NthRootsWP(-1, n, p).Order().ToArray();
+        var seqAntv1 = NumberTheory.NthRootsANTV1(-1, n, p).Order().ToArray();
         var seqPM = (p - 2).SeqLazy(2).Where(i => PowMod(i, n, p) == p - 1).Order().ToArray();
         Console.WriteLine($"[{seqTS.Glue(", ")}]");
+        Console.WriteLine($"[{seqAntv1.Glue(", ")}]");
         Console.WriteLine($"[{seqPM.Glue(", ")}]");
         Console.WriteLine();
     }
@@ -221,19 +118,17 @@ void testTonelliShanks()
         {
             var log2p = BigInteger.Log2(p);
             Console.WriteLine(new { N, n, p, log2p });
-            var seqTS = Pow2NthRootMod(-1, n, p).ToArray();
+            var seqTS = NumberTheory.Pow2NthRootsWP(-1, n, p).ToArray();
             if (seqTS.Length != n || seqTS.Any(e => !PowModEqualOnebigint(e, N, p)))
                 throw new("Fail");
 
             Console.WriteLine($"{n}-thRoots(-1) mod {p}. Pass");
-            GlobalStopWatch.Bench(nb: 5, "TS first solution.", () => Pow2NthRootMod(-1, n, p).First());
-            GlobalStopWatch.Bench(nb: 5, "TS all  solutions.", () => Pow2NthRootMod(-1, n, p).Last());
+            GlobalStopWatch.Bench(nb: 50, "TS", () => NumberTheory.Pow2NthRootsWP(-1, n, p).ToArray());
             Console.WriteLine();
         }
         // { N = 2048, n = 1024, p = 23026821121, log2p = 34 }
         // 1024-thRoots(-1) mod 23026821121. Pass
-        // # TS first solution. Avg Time:6 ms Dev:1.200
-        // # TS all  solutions. Avg Time:662 ms Dev:5.389
+        // # TS Avg Time:4 ms Dev:0.681
     }
 }
 
@@ -241,7 +136,7 @@ void testFFT()
 {
     var (N, p) = (16, 241);
     var n = N / 2;
-    var w = new ZnBInt(p, Pow2NthRootMod(-1, n, p).First());
+    var w = new ZnBInt(p, NumberTheory.NthRootsANTV1(p - 1, n, p).First());
     var Ni = (N * w.One).Inv();
     Console.WriteLine($"{N}-thRoots of unity mod {p} is {w}");
     var Vw = Vandermonde(N, w);
@@ -281,7 +176,7 @@ void testNTT()
 {
     var (N, p) = (16, 241);
     var n = N / 2;
-    var w = new ZnBInt(p, Pow2NthRootMod(-1, n, p).First());
+    var w = new ZnBInt(p, NumberTheory.NthRootsANTV1(p - 1, n, p).First());
     var ni = (n * w.One).Inv();
     Console.WriteLine($"{n}-thRoots(-1) = {w} mod {p}");
     var ntt = NTT(n, w);
@@ -321,7 +216,7 @@ void testBenchNTT()
 {
     var (N, p) = (1024, 12289);
     var n = N / 2;
-    var w = new ZnBInt(p, Pow2NthRootMod(-1, n, p).First());
+    var w = new ZnBInt(p, NumberTheory.NthRootsANTV1(p - 1, n, p).First());
     var ni = (n * w.One).Inv();
     var ntt = NTT(n, w);
     var intt = ni * NTT(n, w.Inv()).T;
@@ -335,116 +230,143 @@ void testBenchNTT()
     GlobalStopWatch.Bench(50, "NTT   ", () => RqMulNTT(a, b, ntt, intt));
 }
 
-{
-    // testFFT();
-    // testNTT();
-    // testBenchNTT();
-}
-
-int NthRoot(int a, int r, int p)
-{
-    var (S, q0) = FactorMultiplicity(r, p - 1);
-    var q = (int)q0;
-    if (q == p - 1)
-        throw new($"r must divide q-1");
-
-    if (PowMod(a, (p - 1) / r, p) != 1)
-        throw new($"a must be {r}-pow residue mod p");
-
-    var k = p.SeqLazy().First(u => (u * q + 1) % r == 0);
-    foreach (var z in (p - r).SeqLazy(r).Where(z => PowMod(z, (p - 1) / r, p) != 1))
-    {
-        var (M, c, t, R) = (S, PowMod(z, q, p), PowMod(a, k * q, p), PowMod(a, (k * q + 1) / r, p));
-        var z_ = PowMod(z, (p - 1) / r, p);
-        var ct = 0;
-        while (true)
-        {
-            ++ct;
-            // var ti = PowMod(t, PowMod(r, M - 1, p), p);
-            // var ci = PowMod(c, PowMod(r, M - 1, p), p);
-            // var Ri = PowMod(R, r, p);
-            // Console.WriteLine(new { k, u, z, z_, M, c, ci, t, ti, R, Ri, a });
-            if (c == 1)
-                break; // TODO: fix when r multiplicity in p-1 is >1 with residual primitive nthroots
-
-            if (t == 0)
-                return 0;
-            if (t == 1)
-                return R;
-
-            var t0 = t;
-            var i = (M + 1).SeqLazy().FirstOrDefault(i => PowMod(t0, PowMod(r, i, p), p) == 1, -1);
-            if (i == M && i > 1)
-                break; // TODO: fix when r multiplicity in p-1 is >1 with residual primitive nthroots
-
-            if (i == -1)
-                throw new();
-
-            var b = PowMod(c, PowMod(r, M - i - 1, p), p);
-            c = PowMod(b, r, p);
-            (M, t, R) = (i, t * c % p, R * b % p);
-        }
-    }
-
-    throw new();
-}
-
 void testSqrtMod()
 {
-    var (n, p) = (2, 12289);
+    var p = 12289;
+    NumberTheory.PohligHellmanInfos? ph = NumberTheory.PreparePohligHellman(p);
     Console.WriteLine($"Sqrt mod {p}");
     var seq = p.SeqLazy().Where(m => LegendreJacobi(m, p) == 1).ToArray();
 
-    var seqWP = seq.Select(m => SqrtMod(m, p)).SelectMany(e => new[] { e, p - e }).Distinct().Order().ToArray();
-    var seqAMM = seq.Select(m => NthRoot(m, 2, p)).SelectMany(e => new[] { e, p - e }).Distinct().Order().ToArray();
-    if (!seqWP.SequenceEqual(seqAMM))
-    {
-        Console.WriteLine(seqWP.Glue(", "));
-        Console.WriteLine(seqAMM.Glue(", "));
-        throw new();
-    }
+    var seqWP = seq.ToDictionary(m => m, m => NumberTheory.SqrtModWP(m, p))
+        .ToDictionary(e => e.Key, e => int.Min(e.Value, p - e.Value));
+    var seqANTV1 = seq.ToDictionary(m => m, m => NumberTheory.SqrtModANTV1(m, p))
+        .ToDictionary(e => e.Key, e => int.Min(e.Value, p - e.Value));
+    var seqMPKCV2 = seq.ToDictionary(m => m, m => NumberTheory.SqrtModMPKCV2(m, p))
+        .ToDictionary(e => e.Key, e => int.Min(e.Value, p - e.Value));
+    var seqMPKCV2ph = seq.ToDictionary(m => m, m => NumberTheory.SqrtModMPKCV2(m, p, ph))
+        .ToDictionary(e => e.Key, e => int.Min(e.Value, p - e.Value));
 
-    GlobalStopWatch.Bench(50, "TS ", () => seq.Select(m => SqrtMod(m, p)).ToArray());
-    GlobalStopWatch.Bench(50, "TSG", () => seq.Select(m => NthRoot(m, 2, p)).ToArray());
-    GlobalStopWatch.Bench(50, "TS ", () => seq.Select(m => SqrtMod(m, p)).ToArray());
-    GlobalStopWatch.Bench(50, "TSG", () => seq.Select(m => NthRoot(m, 2, p)).ToArray());
+    if (seqWP.Any(e => e.Value != seqANTV1[e.Key] || e.Value != seqMPKCV2[e.Key] || e.Value != seqMPKCV2ph[e.Key]))
+        throw new();
+
+    GlobalStopWatch.Bench(50, "WP             ", () => seq.Select(m => NumberTheory.SqrtModWP(m, p)).ToArray());
+    GlobalStopWatch.Bench(50, "ANTV1          ", () => seq.Select(m => NumberTheory.SqrtModANTV1(m, p)).ToArray());
+    GlobalStopWatch.Bench(5, "MPKCV2         ", () => seq.Select(m => NumberTheory.SqrtModMPKCV2(m, p)).ToArray());
+    GlobalStopWatch.Bench(50, "MPKCV2 discrLog", () => seq.Select(m => NumberTheory.SqrtModMPKCV2(m, p, ph)).ToArray());
+    GlobalStopWatch.Bench(50, "WP             ", () => seq.Select(m => NumberTheory.SqrtModWP(m, p)).ToArray());
+    GlobalStopWatch.Bench(50, "ANTV1          ", () => seq.Select(m => NumberTheory.SqrtModANTV1(m, p)).ToArray());
+    GlobalStopWatch.Bench(5, "MPKCV2         ", () => seq.Select(m => NumberTheory.SqrtModMPKCV2(m, p)).ToArray());
+    GlobalStopWatch.Bench(50, "MPKCV2 discrLog", () => seq.Select(m => NumberTheory.SqrtModMPKCV2(m, p, ph)).ToArray());
     Console.WriteLine();
 }
 
 void testNthRootsMod(int n, int minP = 1)
 {
-    foreach (var p in Primes10000.Where(p => p > minP && p % n == 1).Take(10))
+    foreach (var p in Primes10000.Where(p => p < 47000 && p > minP && p % n == 1).Take(10))
     {
         var nbDigits = $"{p + 1}".Length;
         var fmt = $"{{0,{nbDigits}}}";
-        var seq = p.SeqLazy().Where(m => PowMod(m, (p - 1) / n, p) == 1).ToArray();
-        var q = p.SeqLazy().Where(m => PowModEqualOne(m, n, p)).Append(1).Order().ToArray();
+        var seqResidues = p.SeqLazy().Where(m => PowMod(m, (p - 1) / n, p) == 1).ToArray();
+        var primRoots = NumberTheory.AllNthRootUnityMod(n, p).Order().ToArray();
         Console.WriteLine($"primitive {n}-throots of unity mod {p} and (w|{p}){n}");
-        Console.WriteLine($"[{q.ToDictionary(qi => qi, qi => PowMod(qi, (p - 1) / n, p)).GlueMap(", ")}]");
+        Console.WriteLine($"[{primRoots.ToDictionary(qi => qi, qi => PowMod(qi, (p - 1) / n, p)).GlueMap(", ")}]");
+        if (primRoots.Length != n || primRoots.Any(w => w != 1 && !PowModEqualOne(w, n, p)))
+            throw new($"errors roots of unity modulo");
+
         var (mul, rem) = FactorMultiplicity(n, p - 1);
         Console.WriteLine($"{p} - 1 = {n}^{mul} * {rem}");
 
-        var seqRoots = seq.ToDictionary(m => m, m => NthRoot(m, n, p));
+        var seqAMM1 = seqResidues.ToDictionary(m => m, m => NumberTheory.NthRootANTV1(m, n, p))
+            .ToDictionary(e => e.Key, e => primRoots.Select(f => e.Value * f % p).Min());
+        var seqAMM2 = seqResidues.ToDictionary(m => m, m => NumberTheory.NthRootANTV1((BigInteger)m, n, p))
+            .ToDictionary(e => e.Key, e => primRoots.Select(f => e.Value * f % p).Min());
 
-        if (seqRoots.Count < 50)
+        if (seqAMM1.Any(e => e.Value != seqAMM2[e.Key]))
+        {
+            var err = seqAMM1.Where(e => e.Value != seqAMM2[e.Key]).ToArray();
+            foreach (var (e1, e2) in err)
+            {
+                Console.WriteLine($"{e1} => {e2} => {seqAMM2[e1]}");
+                Console.WriteLine(PowModBigint(e2, n, p));
+                Console.WriteLine(PowModBigint(seqAMM2[e1], n, p));
+                Console.WriteLine();
+            }
+
+            Console.WriteLine($"nb err={err.Length}");
+            throw new();
+        }
+
+        if (seqAMM1.Count < 50)
         {
             var fmtHead = $"{n}-thRoots({{0,{nbDigits}}}) mod {p}";
-            seqRoots.Select(e => (m: e.Key, root: q.Select(o => o * e.Value % p).Min()))
-                .Select(e => $"{string.Format(fmtHead, e.m)} = [{q.Select(w => w * e.root % p).Glue(", ", fmt)}]")
-                .Println($"Nb residues = {seqRoots.Count}");
-            if (seqRoots.Any(e => PowMod(e.Value, n, p) != e.Key))
-            {
-                Console.WriteLine(seqRoots.Where(e => PowMod(e.Value, n, p) != e.Key).GlueMap());
-                throw new();
-            }
+            seqAMM1.Select(e => (m: e.Key, root: primRoots.Select(o => o * e.Value % p).Min()))
+                .Select(e =>
+                    $"{string.Format(fmtHead, e.m)} = [{primRoots.Select(w => w * e.root % p).Glue(", ", fmt)}]")
+                .Println($"Nb residues = {seqAMM1.Count}");
+            Console.WriteLine();
         }
+
+        GlobalStopWatch.Bench(50, "AMMint   ",
+            () => seqResidues.Select(m => NumberTheory.NthRootANTV1(m, n, p)).ToArray());
+        GlobalStopWatch.Bench(50, "AMMbigint",
+            () => seqResidues.Select(m => NumberTheory.NthRootANTV1((BigInteger)m, n, p)).ToArray());
+        GlobalStopWatch.Bench(50, "AMMint   ",
+            () => seqResidues.Select(m => NumberTheory.NthRootANTV1(m, n, p)).ToArray());
+        GlobalStopWatch.Bench(50, "AMMbigint",
+            () => seqResidues.Select(m => NumberTheory.NthRootANTV1((BigInteger)m, n, p)).ToArray());
 
         Console.WriteLine("end");
         Console.WriteLine();
     }
 }
 
+void testCRT()
 {
+    var p = 151;
+    var ph = NumberTheory.PreparePohligHellman(p);
+    ph.crtTable.Println($"crt N={ph.N}");
+    ph.primesDec.Println("Primes Decomp");
+    ph.factors.Println("Factors Decomp");
+
+    for (int a = 0; a < ph.N; ++a)
+    {
+        var ais = ph.crtTable.Select(e => a % e.mi).ToArray();
+        var x = NumberTheory.CRT(ais, ph.crtTable, ph.N);
+        Console.WriteLine($"a={a,3} => [{ais.Glue(", ", "{0,3}")}] => {x,3} {x == a}");
+        if (x != a)
+            throw new();
+    }
+    
+    Console.WriteLine();
+}
+
+void testPH()
+{
+    var p = 97;
+    var ph = NumberTheory.PreparePohligHellman(p);
+    var g = NumberTheory.PrimitiveRootMod(p);
+    for (int h = 1; h < ph.N; h++)
+    {
+        var a = NumberTheory.PohligHellman(h, g, ph);
+        var ga = PowMod(g, a, p);
+        Console.WriteLine($"g={g} h={h,3} a={a,3} g^a={ga,3}");
+        if (h != ga)
+            throw new();
+    }
+    
+    Console.WriteLine();
+}
+
+{
+    testTonelliShanks();
+
+    testFFT();
+    testNTT();
+    testBenchNTT();
+    
+    testCRT();
+    testPH();
+    
     testSqrtMod();
     
     testNthRootsMod(3);
@@ -453,4 +375,6 @@ void testNthRootsMod(int n, int minP = 1)
     testNthRootsMod(n: 5, minP: 10000);
     testNthRootsMod(7);
     testNthRootsMod(n: 7, minP: 10000);
+
+    Console.WriteLine($"primRoot mean iter : {NumberTheory.nbLoopPrimRoot / NumberTheory.nbCallPrimRoot:F4}");
 }

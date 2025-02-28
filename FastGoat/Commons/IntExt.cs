@@ -719,7 +719,7 @@ public static class IntExt
     /// <param name="m">The numerator.</param>
     /// <param name="n">The denominator.</param>
     /// <returns>The result of the calculation +/- 1.</returns>
-    public static int LegendreJacobiLong(long m, long n) => (int)PowModLong(m, (n - 1) / 2, n);
+    public static long LegendreJacobiLong(long m, long n) => PowModLong(m, (n - 1) / 2, n);
 
     /// <summary>
     /// Calculates the Legendre-Jacobi of two given numbers (m|n). 
@@ -727,7 +727,7 @@ public static class IntExt
     /// <param name="m">The numerator.</param>
     /// <param name="n">The denominator.</param>
     /// <returns>The result of the calculation +/- 1.</returns>
-    public static int LegendreJacobiBigint(BigInteger m, BigInteger n) => (int)PowModBigint(m, (n - 1) / 2, n);
+    public static BigInteger LegendreJacobiBigint(BigInteger m, BigInteger n) => PowModBigint(m, (n - 1) / 2, n);
 
     /// <summary>
     /// Solves the system of congruences using the Chinese Remainder Theorem (CRT).
