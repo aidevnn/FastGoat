@@ -57,6 +57,18 @@ KMatrix<ZnBInt> NTT(int n, ZnBInt w)
     return new(ntt);
 }
 
+Rq RqAddNTT(Rq a, Rq b, KMatrix<ZnBInt> ntt, KMatrix<ZnBInt> intt)
+{
+    var n = ntt.N;
+    var A = a.CoefsExtended(n - 1).Select(e => e.Num * ntt.KOne).ToKMatrix(n);
+    var _A = ntt * A;
+    var B = b.CoefsExtended(n - 1).Select(e => e.Num * ntt.KOne).ToKMatrix(n);
+    var _B = ntt * B;
+
+    var _AB = _A.Zip(_B).Select(e => e.First + e.Second).ToKMatrix(n);
+    return (intt * _AB).Select(e => new Rational(e.ToSignedBigInt)).ToKPoly();
+}
+
 Rq RqMulNTT(Rq a, Rq b, KMatrix<ZnBInt> ntt, KMatrix<ZnBInt> intt)
 {
     var n = ntt.N;
@@ -201,15 +213,30 @@ void testNTT()
     Console.WriteLine();
 
     var pm = FG.QPoly().Pow(n) + 1;
-    var a = RLWE.GenUnif(n, p);
-    var b = RLWE.GenUnif(n, p);
-    var ab1 = (a * b).ResModSigned(pm, p);
-    var ab2 = RqMulNTT(a, b, ntt, intt);
-    Console.WriteLine($"a     = {a}");
-    Console.WriteLine($"b     = {b}");
-    Console.WriteLine($"a * b = {ab1}");
-    Console.WriteLine($"      = {ab2}");
-    Console.WriteLine();
+
+    for (int i = 0; i < 10; i++)
+    {
+        var a = RLWE.GenUnif(n, p);
+        var b = RLWE.GenUnif(n, p);
+
+        var add_ab1 = (a + b).CoefsModSigned(p);
+        var add_ab2 = RqAddNTT(a, b, ntt, intt);
+        var mul_ab1 = (a * b).ResModSigned(pm, p);
+        var mul_ab2 = RqMulNTT(a, b, ntt, intt);
+
+        Console.WriteLine($"a     = {a}");
+        Console.WriteLine($"b     = {b}");
+        Console.WriteLine($"a + b = {add_ab1}");
+        Console.WriteLine($"      = {add_ab2}");
+        if (!add_ab1.Equals(add_ab2))
+            throw new();
+
+        Console.WriteLine($"a * b = {mul_ab1}");
+        Console.WriteLine($"      = {mul_ab2}");
+        Console.WriteLine();
+        if (!mul_ab1.Equals(mul_ab2))
+            throw new();
+    }
 }
 
 void testBenchNTT()
@@ -224,8 +251,12 @@ void testBenchNTT()
     var a = RLWE.GenUnif(n, p);
     var b = RLWE.GenUnif(n, p);
 
+    GlobalStopWatch.Bench(5, "PolAdd", () => (a + b).ResModSigned(pm, p));
+    GlobalStopWatch.Bench(5, "NTTadd", () => RqAddNTT(a, b, ntt, intt));
     GlobalStopWatch.Bench(5, "PolMul", () => (a * b).ResModSigned(pm, p));
     GlobalStopWatch.Bench(5, "NTT   ", () => RqMulNTT(a, b, ntt, intt));
+    GlobalStopWatch.Bench(50, "PolAdd", () => (a + b).ResModSigned(pm, p));
+    GlobalStopWatch.Bench(50, "NTTadd", () => RqAddNTT(a, b, ntt, intt));
     GlobalStopWatch.Bench(50, "PolMul", () => (a * b).ResModSigned(pm, p));
     GlobalStopWatch.Bench(50, "NTT   ", () => RqMulNTT(a, b, ntt, intt));
 }
