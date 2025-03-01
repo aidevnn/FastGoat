@@ -12,7 +12,7 @@ public static class NumberTheory
     // CHAPTER 2. BASIC ALGORITHMIC NUMBER THEORY. page 59
     // Mathematics of Public Key Cryptography. Version 2.0
     // Steven D.Galbraith
-    public static int NthRootMPKCV2(int a, int r, int p, PohligHellmanInfos? ph = null)
+    public static int NthRootMPKCV2(int a, int r, int p, PohligHellmanInfos<int>? ph = null)
     {
         var q = (int)FactorMultiplicity(r, p - 1).rem;
         if (q == p - 1)
@@ -22,7 +22,8 @@ public static class NumberTheory
             throw new($"a must be residue mod p");
 
         // Lemma 2.9.2. page58, [...] w is like a “ﬁrst approximation” to the 'rth' root of a modulo p
-        var u = (p - 1).SeqLazy(1).First(u => (u * q + 1) % r == 0);
+        var u = Bezout(-q, r).x % r;
+        if (u < 0) u += r;
         var n = 100.SeqLazy().Select(_ => Rng.Next(2, p)).First(n => PowMod(n, (p - 1) / r, p) != 1);
         var (y, w, b) = (PowMod(n, q, p), PowMod(a, (u * q + 1) / r, p), PowMod(a, q, p));
         int j;
@@ -34,7 +35,38 @@ public static class NumberTheory
         return w * PowMod(y, -j, p) % p;
     }
 
-    public static int SqrtModMPKCV2(int a, int p, PohligHellmanInfos? ph = null) => NthRootMPKCV2(a, 2, p, ph);
+    public static int SqrtModMPKCV2(int a, int p, PohligHellmanInfos<int>? ph = null) => NthRootMPKCV2(a, 2, p, ph);
+
+    // Tonelli–Shanks generalisation algorithm
+    // CHAPTER 2. BASIC ALGORITHMIC NUMBER THEORY. page 59
+    // Mathematics of Public Key Cryptography. Version 2.0
+    // Steven D.Galbraith
+    public static BigInteger NthRootMPKCV2(BigInteger a, int r, BigInteger p, PohligHellmanInfos<BigInteger>? ph = null)
+    {
+        var q = FactorMultiplicity(r, p - 1).rem;
+        if (q == p - 1)
+            throw new($"r must divide q-1");
+
+        if (PowModBigint(a, (p - 1) / r, p) != 1)
+            throw new($"a must be residue mod p");
+
+        // Lemma 2.9.2. page58, [...] w is like a “ﬁrst approximation” to the 'rth' root of a modulo p
+        var u = BezoutBigInt(-q, r).Xa % r;
+        if (u < 0) u += r;
+        var n = 100.SeqLazy().Select(_ => DistributionExt.Dice(2, p - 1))
+            .First(n => PowModBigint(n, (p - 1) / r, p) != 1);
+        var (y, w, b) = (PowModBigint(n, q, p), PowModBigint(a, (u * q + 1) / r, p), PowModBigint(a, q, p));
+        BigInteger j;
+        if (ph is null)
+            j = ((int)p).SeqLazy(1).First(k => PowModBigint(y, k * r, p) == b);
+        else
+            j = AmodPbigint((1 - p) / r, p) * PohligHellman(b, y, ph) % p;
+
+        return w * PowModBigint(y, -j, p) % p;
+    }
+
+    public static BigInteger SqrtModMPKCV2(BigInteger a, BigInteger p, PohligHellmanInfos<BigInteger>? ph = null) => 
+        NthRootMPKCV2(a, 2, p, ph);
 
     // L.Adleman, K.Manders, and G.Miller generalization of Tonelli's algorithm
     // Chapter 7. Solving Equations over Finite Fields. page 160
@@ -93,7 +125,8 @@ public static class NumberTheory
             throw new($"a must be residue mod p");
 
         var rs = (p - 1) / t;
-        var h = 1000.SeqLazy().Select(_ => DistributionExt.Dice(2, p - 1)).First(i => PowModBigint(i, (p - 1) / r, p) != 1);
+        var h = 1000.SeqLazy().Select(_ => DistributionExt.Dice(2, p - 1))
+            .First(i => PowModBigint(i, (p - 1) / r, p) != 1);
         var (ar, at, g) = (PowModBigint(a, t, p), PowModBigint(a, rs, p), PowModBigint(h, t, p));
         var e = 0;
         var ri = 1;
@@ -139,6 +172,24 @@ public static class NumberTheory
         return b;
     }
 
+    public static BigInteger SqrtModANTV1(BigInteger a, BigInteger p)
+    {
+        var g = 1000.SeqLazy().Select(_ => DistributionExt.Dice(2, p - 1)).First(i => LegendreJacobiBigint(i, p) != 1);
+        var (s, t) = FactorMultiplicity(2, p - 1);
+        var e = 0;
+        for (int i = 2; i <= s; i++)
+        {
+            var ag = (a * PowModBigint(g, -e, p)) % p;
+            var agp = PowModBigint(ag, (p - 1) / (1 << i), p);
+            if (agp != 1)
+                e += 1 << (i - 1);
+        }
+
+        var h = (a * PowModBigint(g, -e, p)) % p;
+        var b = (PowModBigint(g, e / 2, p) * PowModBigint(h, (t + 1) / 2, p)) % p;
+        return b;
+    }
+
     // Tonelli-Shanks algorithm from wikipedia
     public static int SqrtModWP(int a, int p)
     {
@@ -154,9 +205,6 @@ public static class NumberTheory
         var (M, c, t, R) = (S, PowMod(z, q, p), PowMod(a, q, p), PowMod(a, (q + 1) / 2, p));
         while (true)
         {
-            if (c == 1)
-                break; // TODO: fix when r multiplicity in p-1 is >1 with residual primitive nthroots
-
             if (t == 0)
                 return 0;
 
@@ -165,11 +213,8 @@ public static class NumberTheory
 
             var t0 = t;
             var i = (M + 1).SeqLazy().FirstOrDefault(i => PowMod(t0, 1 << i, p) == 1, -1);
-            if (i == M && i > 1)
-                break; // TODO: fix when r multiplicity in p-1 is >1 with residual primitive nthroots
-
-            if (i == -1)
-                throw new();
+            if (i == M && i > 1 || i == -1)
+                break;
 
             var b = PowMod(c, 1 << (M - i - 1), p);
             c = b * b % p;
@@ -194,9 +239,6 @@ public static class NumberTheory
         var (M, c, t, R) = (S, PowModBigint(z, q, p), PowModBigint(a, q, p), PowModBigint(a, (q + 1) / 2, p));
         while (true)
         {
-            if (c == 1)
-                break; // TODO: fix when r multiplicity in p-1 is >1 with residual primitive nthroots
-
             if (t == 0)
                 return 0;
 
@@ -205,8 +247,8 @@ public static class NumberTheory
 
             var t0 = t;
             var i = (M + 1).SeqLazy().FirstOrDefault(i => PowModBigint(t0, one << i, p) == 1, -1);
-            if (i == M && i > 1)
-                break; // TODO: fix when r multiplicity in p-1 is >1 with residual primitive nthroots
+            if (i == M && i > 1 || i == -1)
+                break;
 
             if (i == -1)
                 throw new();
@@ -313,6 +355,14 @@ public static class NumberTheory
             .ToArray();
     }
 
+    public static (BigInteger mi, BigInteger quo, BigInteger inv)[] CrtTable(BigInteger[] m)
+    {
+        var mod = m.Aggregate((mi, mj) => mi * mj);
+        return m.Select(mi => (mi, quo: mod / mi))
+            .Select(e => (e.mi, e.quo, InvModPbezbigint(e.quo, e.mi)))
+            .ToArray();
+    }
+
     public static int CRT(int[] a, (int mi, int quo, int inv)[] crtTable, int mod)
     {
         var x = 0;
@@ -325,17 +375,33 @@ public static class NumberTheory
         return x;
     }
 
-    public record PohligHellmanInfos(
-        int p,
-        int N,
-        int g,
-        Dictionary<int, int> primesDec,
-        Dictionary<(int pi, int j), int> factors,
-        (int mi, int quo, int inv)[] crtTable);
-
-    public static PohligHellmanInfos PreparePohligHellman(int p)
+    public static BigInteger CRT(BigInteger[] a, (BigInteger mi, BigInteger quo, BigInteger inv)[] crtTable,
+        BigInteger mod)
     {
-        var N = Phi(p);
+        BigInteger x = 0;
+        foreach (var (i, ai) in a.Index())
+        {
+            var (mi, quo, inv) = crtTable[i];
+            x = (x + (ai % mi) * quo * inv) % mod;
+        }
+
+        return x;
+    }
+
+    public record PohligHellmanInfos<T>(
+        T p,
+        T N,
+        T g,
+        Dictionary<int, int> primesDec,
+        Dictionary<(int pi, int j), T> factors,
+        (T mi, T quo, T inv)[] crtTable);
+
+    public static PohligHellmanInfos<int> PreparePohligHellman(int p)
+    {
+        if (!IsPrime(p))
+            throw new("p must be prime");
+
+        var N = p - 1;
         var g = PrimitiveRootMod(p);
         var dec = PrimesDec(N);
         var factors = dec.OrderBy(e => e.Key)
@@ -345,7 +411,22 @@ public static class NumberTheory
         return new(p, N, g, dec, factors, crtTable);
     }
 
-    public static int PohligHellman(int h, int g, PohligHellmanInfos ph)
+    public static PohligHellmanInfos<BigInteger> PreparePohligHellman(BigInteger p)
+    {
+        if (!IsPrime(p))
+            throw new("p must be prime");
+
+        var N = p - 1;
+        var g = PrimitiveRootMod(p);
+        var dec = PrimesDec(N);
+        var factors = dec.OrderBy(e => e.Key)
+            .SelectMany(e => (e.Value + 1).SeqLazy().Select(j => ((e.Key, j), BigInteger.Pow(e.Key, j))))
+            .ToDictionary(e => e.Item1, e => e.Item2);
+        var crtTable = CrtTable(dec.OrderBy(e => e.Key).Select(e => factors[(e.Key, e.Value)]).ToArray());
+        return new(p, N, g, dec, factors, crtTable);
+    }
+
+    public static int PohligHellman(int h, int g, PohligHellmanInfos<int> ph)
     {
         var gPow = ph.factors.ToDictionary(e => e.Key, e => PowMod(g, ph.N / e.Value, ph.p));
         var hPow = ph.factors.ToDictionary(e => e.Key, e => PowMod(h, ph.N / e.Value, ph.p));
@@ -378,7 +459,41 @@ public static class NumberTheory
 
         return CRT(listAi, ph.crtTable, ph.N);
     }
-    
+
+    public static BigInteger PohligHellman(BigInteger h, BigInteger g, PohligHellmanInfos<BigInteger> ph)
+    {
+        var gPow = ph.factors.ToDictionary(e => e.Key, e => PowModBigint(g, ph.N / e.Value, ph.p));
+        var hPow = ph.factors.ToDictionary(e => e.Key, e => PowModBigint(h, ph.N / e.Value, ph.p));
+        var listAi = new BigInteger[ph.primesDec.Count];
+        foreach (var (i, (pi, ei)) in ph.primesDec.Index())
+        {
+            BigInteger ai = 0;
+            foreach (var j in ei.SeqLazy(1))
+            {
+                var (g0, h0) = (gPow[(pi, j)], hPow[(pi, j)]);
+                var u = PowModBigint(g0, -ai, ph.p);
+                h0 = h0 * u % ph.p;
+                if (h0 != 1)
+                {
+                    g0 = gPow[(pi, 1)];
+                    var b = 1;
+                    var T = g0;
+                    while (h0 != T)
+                    {
+                        ++b;
+                        T = T * g0 % ph.p;
+                    }
+
+                    ai = (ai + b * ph.factors[(pi, j - 1)]) % ph.p;
+                }
+            }
+
+            listAi[i] = ai;
+        }
+
+        return CRT(listAi, ph.crtTable, ph.N);
+    }
+
     public static IEnumerable<int> Pow2NthRootsWP(int a, int r, int p)
     {
         var primRoots = AllNthRootUnityMod(r, p);
@@ -404,5 +519,4 @@ public static class NumberTheory
         var g = PrimesDecomposition(r).Aggregate(a, (acc, ri) => NthRootANTV1(acc, ri, p));
         return AllNthRootUnityMod(r, p).Select(w => w * g % p);
     }
-
 }

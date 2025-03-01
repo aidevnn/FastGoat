@@ -264,7 +264,7 @@ void testBenchNTT()
 void testSqrtMod()
 {
     var p = 12289;
-    NumberTheory.PohligHellmanInfos? ph = NumberTheory.PreparePohligHellman(p);
+    NumberTheory.PohligHellmanInfos<int>? ph = NumberTheory.PreparePohligHellman(p);
     Console.WriteLine($"Sqrt mod {p}");
     var seq = p.SeqLazy().Where(m => LegendreJacobi(m, p) == 1).ToArray();
 
@@ -280,14 +280,14 @@ void testSqrtMod()
     if (seqWP.Any(e => e.Value != seqANTV1[e.Key] || e.Value != seqMPKCV2[e.Key] || e.Value != seqMPKCV2ph[e.Key]))
         throw new();
 
-    GlobalStopWatch.Bench(50, "WP             ", () => seq.Select(m => NumberTheory.SqrtModWP(m, p)).ToArray());
-    GlobalStopWatch.Bench(50, "ANTV1          ", () => seq.Select(m => NumberTheory.SqrtModANTV1(m, p)).ToArray());
+    GlobalStopWatch.Bench(5, "WP             ", () => seq.Select(m => NumberTheory.SqrtModWP(m, p)).ToArray());
+    GlobalStopWatch.Bench(5, "ANTV1          ", () => seq.Select(m => NumberTheory.SqrtModANTV1(m, p)).ToArray());
     GlobalStopWatch.Bench(5, "MPKCV2         ", () => seq.Select(m => NumberTheory.SqrtModMPKCV2(m, p)).ToArray());
-    GlobalStopWatch.Bench(50, "MPKCV2 discrLog", () => seq.Select(m => NumberTheory.SqrtModMPKCV2(m, p, ph)).ToArray());
-    GlobalStopWatch.Bench(50, "WP             ", () => seq.Select(m => NumberTheory.SqrtModWP(m, p)).ToArray());
-    GlobalStopWatch.Bench(50, "ANTV1          ", () => seq.Select(m => NumberTheory.SqrtModANTV1(m, p)).ToArray());
+    GlobalStopWatch.Bench(5, "MPKCV2 discrLog", () => seq.Select(m => NumberTheory.SqrtModMPKCV2(m, p, ph)).ToArray());
+    GlobalStopWatch.Bench(5, "WP             ", () => seq.Select(m => NumberTheory.SqrtModWP(m, p)).ToArray());
+    GlobalStopWatch.Bench(5, "ANTV1          ", () => seq.Select(m => NumberTheory.SqrtModANTV1(m, p)).ToArray());
     GlobalStopWatch.Bench(5, "MPKCV2         ", () => seq.Select(m => NumberTheory.SqrtModMPKCV2(m, p)).ToArray());
-    GlobalStopWatch.Bench(50, "MPKCV2 discrLog", () => seq.Select(m => NumberTheory.SqrtModMPKCV2(m, p, ph)).ToArray());
+    GlobalStopWatch.Bench(5, "MPKCV2 discrLog", () => seq.Select(m => NumberTheory.SqrtModMPKCV2(m, p, ph)).ToArray());
     Console.WriteLine();
 }
 
@@ -363,28 +363,34 @@ void testCRT()
     {
         var ais = ph.crtTable.Select(e => a % e.mi).ToArray();
         var x = NumberTheory.CRT(ais, ph.crtTable, ph.N);
-        Console.WriteLine($"a={a,3} => [{ais.Glue(", ", "{0,3}")}] => {x,3} {x == a}");
+        Console.WriteLine($"a={a,3} => [{ais.Glue(", ", "{0,3}")}] => {x,3}");
         if (x != a)
             throw new();
     }
-    
+
     Console.WriteLine();
 }
 
 void testPH()
 {
     var p = 97;
+    var nbdigits = $"{p}".Length;
+    var fmt = $"h={{0,{nbdigits}}}    a={{1,{nbdigits}}}    g^a={{2,{nbdigits}}}";
     var ph = NumberTheory.PreparePohligHellman(p);
-    var g = NumberTheory.PrimitiveRootMod(p);
-    for (int h = 1; h < ph.N; h++)
+    var g = ph.g;
+    Console.WriteLine($"Pohlig-Hellman Discret Log modulo {p}");
+    Console.WriteLine($"solve g^a = h when g={g} and h is given");
+
+    for (int i = 0; i < 100; i++)
     {
+        var h = Rng.Next(p);
         var a = NumberTheory.PohligHellman(h, g, ph);
-        var ga = PowMod(g, a, p);
-        Console.WriteLine($"g={g} h={h,3} a={a,3} g^a={ga,3}");
+        var ga = PowModBigint(g, a, p);
+        Console.WriteLine(fmt, h, a, ga);
         if (h != ga)
             throw new();
     }
-    
+
     Console.WriteLine();
 }
 
