@@ -1,3 +1,4 @@
+using System.Numerics;
 using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.VecSpace;
@@ -19,8 +20,8 @@ public class Regev
     public int P { get; }
     public int M { get; }
     public double A { get; }
-    private Vec<ZnInt64> SK { get; }
-    public Vec<ZnInt64> Err { get; }
+    private Vec<ZnBigInt> SK { get; }
+    public Vec<ZnBigInt> Err { get; }
     public RegevCipher[] PK { get; }
 
     public Regev(int n, bool unifSK = true)
@@ -58,7 +59,7 @@ public class Regev
     {
         // 6) b - <s,a> distance to 0 and to P/2
         var d = cipher.B - cipher.A.InnerProd(SK);
-        return long.Abs(d.Signed) <= P / 4 ? 0 : 1;
+        return BigInteger.Abs(d.K) <= P / 4 ? 0 : 1;
     }
 
     public RegevCipher[] Encrypt(int[] bits) => bits.Select(EncryptBit).ToArray();
@@ -83,34 +84,34 @@ public class Regev
         Console.WriteLine();
     }
 
-    public ZnInt64 Errors(RegevCipher cipher)
+    public ZnBigInt Errors(RegevCipher cipher)
     {
         var m = DecryptBit(cipher);
         return cipher.B - (cipher.A * SK).Sum() - m * P / 2;
     }
 
-    public ZnInt64[] Errors(RegevCipher[] ciphers) => ciphers.Select(Errors).ToArray();
+    public ZnBigInt[] Errors(RegevCipher[] ciphers) => ciphers.Select(Errors).ToArray();
 
-    public void Deconstruct(out int n, out int p, out RegevCipher[] pk, out Vec<ZnInt64> sk, out Vec<ZnInt64> err)
+    public void Deconstruct(out int n, out int p, out RegevCipher[] pk, out Vec<ZnBigInt> sk, out Vec<ZnBigInt> err)
     {
         (n, p, pk, sk, err) = (N, P, PK, SK, Err);
     }
 
-    public static Vec<ZnInt64> Unif(int n, long q) =>
-        DistributionExt.DiceSample(n, 0, q - 1).Select(i => new ZnInt64(q, i)).ToVec();
+    public static Vec<ZnBigInt> Unif(int n, long q) =>
+        DistributionExt.DiceSample(n, 0, q - 1).Select(i => new ZnBigInt(q, i)).ToVec();
 
-    public static Vec<ZnInt64> Ternary(int n, long q) =>
-        DistributionExt.DiceSample(n, [-1, 0, 1]).Select(i => new ZnInt64(q, i)).ToVec();
+    public static Vec<ZnBigInt> Ternary(int n, long q) =>
+        DistributionExt.DiceSample(n, [-1, 0, 1]).Select(i => new ZnBigInt(q, i)).ToVec();
 
-    public static Vec<ZnInt64> DiscGauss(int n, long q, double s, double tau= 1.0)
+    public static Vec<ZnBigInt> DiscGauss(int n, long q, double s, double tau= 1.0)
     {
         var sigma = s / double.Sqrt(2 * double.Pi);
-        return DistributionExt.DiscreteGaussianSample(n, sigma, tau).Select(i => new ZnInt64(q, i)).ToVec();
+        return DistributionExt.DiscreteGaussianSample(n, sigma, tau).Select(i => new ZnBigInt(q, i)).ToVec();
     }
 
-    public static Vec<ZnInt64> TernarySK(int n, long q)
+    public static Vec<ZnBigInt> TernarySK(int n, long q)
     {
-        var o = new ZnInt64(q, 1);
+        var o = new ZnBigInt(q, 1);
         var arr = DistributionExt.DiceSample(n, [-o, o]).ToArray();
         var nb = (int)double.Sqrt(n);
         var zeros = DistributionExt.DiceSample(nb, (n - 1).Range()).ToArray();

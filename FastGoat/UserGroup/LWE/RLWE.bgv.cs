@@ -71,7 +71,7 @@ public partial class RLWE
         return FirstPrimeEqualOneMod(2 * n, (int)double.Ceiling(c / a));
     }
 
-    public static Rq IntVecToRq(Vec<ZnInt64> v) => v.Select(e => new Rational(e.Signed)).ToKPoly();
+    public static Rq IntVecToRq(Vec<ZnBigInt> v) => v.Select(e => new Rational(e.K)).ToKPoly();
 
     public static Rq SKBGV(int n)
     {
@@ -96,7 +96,7 @@ public partial class RLWE
             if (pka.NormInf() * 2 < q)
                 continue;
 
-            return new(pka.CoefsModSigned(q), pkb, pm, t, q);
+            return new RLWECipher(pka.CoefsModSigned(q), pkb, pm, t, q);
         }
     }
 

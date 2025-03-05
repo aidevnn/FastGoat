@@ -20,6 +20,22 @@ public partial class RLWE
         return (x.Pow(IntExt.AmodP(a, n)) * (-1).Pow((a / n + sgn) % 2)).CoefsModSigned(q);
     }
 
+    public static Rq RotateStep(Rq f, Rational q, int n, int u, bool diff = true)
+    {
+        var k = diff ? 1 : 0;
+        var p0 = n.SeqLazy().Select(_ => f.KZero).ToArray();
+        for (int i = 0; i < n; i++)
+        {
+            var e = f[i];
+            var idx = (int)IntExt.AmodPbigint(i + u, n);
+            var fsgn = i + u > 0 || (i + u) % n == 0 ? 0 : 1;
+            var sgn = (-1).Pow(((i + u) / n + fsgn) % 2);
+            p0[idx] = (sgn * e - k * f[idx]).Signed(q);
+        }
+    
+        return p0.ToKPoly();
+    }
+
     public static Vec<Rq> DecompRq(Rq a, Rational bs, Rational mod)
     {
         var size = (int)(BigInteger.Log10(mod.Num) / BigInteger.Log10(bs.Num)) + 1;
@@ -36,6 +52,14 @@ public partial class RLWE
         return queue.ToVec();
     }
 
+    public static RLWECipher RotateStep(RLWECipher cipher, int u, bool diff = true)
+    {
+        var (pm, t, q) = cipher.PM_T_Q;
+        var a = RotateStep(cipher.A, q, pm.Degree, u, diff);
+        var b = RotateStep(cipher.B, q, pm.Degree, u, diff);
+        return new(a, b, pm, t, q);
+    }
+
     public static Vec<RLWECipher> DecompRNS(RLWECipher cipher, Rational[] primes)
     {
         var (pm, t, qL) = cipher.PM_T_Q;
@@ -43,11 +67,11 @@ public partial class RLWE
             .ToVec();
     }
 
-    public static Rq ExtractVec(Vec<ZnInt64> v, int i = 0)
+    public static Rq ExtractVec(Vec<ZnBigInt> v, int i = 0)
     {
         var x = FG.QPoly();
         var n = v.Length;
-        return v.Select(e => new Rational(e.Signed))
+        return v.Select(e => new Rational(e.K))
             .Select((e, j) => i - j >= 0 ? e * x.Pow(i - j) : -e * x.Pow(n + i - j))
             .Aggregate((xi, xj) => xi + xj);
     }
@@ -126,7 +150,7 @@ public partial class RLWE
             .ToArray();
     }
 
-    public static RLWECipher BlindRotategswBGV((Rational ai, Rational[] bi) ab, Rq f,
+    public static RLWECipher BlindRotategswBGVslow((Rational ai, Rational[] bi) ab, Rq f,
         ((Vec<RLWECipher> csm, Vec<RLWECipher> cm) plus, (Vec<RLWECipher> csm, Vec<RLWECipher> cm) minus)[] brk, 
         Rational[] B, Rational[] primes)
     {
@@ -143,7 +167,6 @@ public partial class RLWE
         var encSOne0 = B.Select(e => new RLWECipher(z, -pm.One * e, pm, t, qL)).ToVec();
         
         RLWECipher acc = ((f * xalpha).ResModSigned(pm, qL), x.Zero, pm, t, qL);
-
         for (int i = 0; i < n; i++)
         {
             var (encSi_plus, encSi_minus) = brk[i];
@@ -156,6 +179,43 @@ public partial class RLWE
             var ex_ai = (XpowA(-ai, pm, qL) - 1);
             var cx_ai = encSi_minus.cm.Select(e => ex_ai * e).ToVec();
             var csx_ai = encSi_minus.csm.Select(e => ex_ai * e).ToVec();
+
+            var acci = encOne0 + cxai + cx_ai;
+            var sacci = encSOne0 + csxai + csx_ai;
+
+            acc = MulRgsw(DecompRNS(acc, primes), acci, sacci);
+        }
+
+        return acc;
+    }
+
+    public static RLWECipher BlindRotategswBGV((Rational ai, Rational[] bi) ab, Rq f,
+        ((Vec<RLWECipher> csm, Vec<RLWECipher> cm) plus, (Vec<RLWECipher> csm, Vec<RLWECipher> cm) minus)[] brk,
+        Rational[] B, Rational[] primes)
+    {
+        var (pm, t, qL) = brk[0].minus.cm[0].PM_T_Q;
+        var n = pm.Degree;
+        var x = pm.X;
+
+        var beta = ab.bi;
+        var alpha = (int)ab.ai.Num;
+
+        var z = pm.Zero;
+        var encOne0 = B.Select(e => new RLWECipher(pm.One * e, z, pm, t, qL)).ToVec();
+        var encSOne0 = B.Select(e => new RLWECipher(z, -pm.One * e, pm, t, qL)).ToVec();
+
+        var acc = RotateStep((f, x.Zero, pm, t, qL), alpha, diff: false);
+
+        for (int i = 0; i < n; i++)
+        {
+            var (encSi_plus, encSi_minus) = brk[i];
+            var ai = (int)beta[i].Opp().Num;
+
+            var cxai = encSi_plus.cm.Select(e => RotateStep(e, ai)).ToVec();
+            var csxai = encSi_plus.csm.Select(e => RotateStep(e, ai)).ToVec();
+
+            var cx_ai = encSi_minus.cm.Select(e => RotateStep(e, -ai)).ToVec();
+            var csx_ai = encSi_minus.csm.Select(e => RotateStep(e, -ai)).ToVec();
 
             var acci = encOne0 + cxai + cx_ai;
             var sacci = encSOne0 + csxai + csx_ai;

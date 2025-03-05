@@ -21,6 +21,9 @@ public static partial class FG
     public static ZnBInt ToZnBInt(this Rational e, Modulus p) =>
         new ZnBInt(p, BigInteger.Remainder(e.Num, p.Mod)) / new ZnBInt(p, BigInteger.Remainder(e.Denom, p.Mod));
 
+    public static ZnBigInt ToZnBigInt(this Rational e, BigInteger p) =>
+        new ZnBigInt(p, BigInteger.Remainder(e.Num, p)) / new ZnBigInt(p, BigInteger.Remainder(e.Denom, p));
+
     public static Rational Comb(int k, int n)
     {
         var c = Rational.KOne();
@@ -49,7 +52,7 @@ public static partial class FG
     public static KPoly<ZnInt> ZPoly(int p, char x = 'x') => new KPoly<ZnInt>(x, ZnInt.ZnZero(p)).X;
     public static KPoly<ZnBInt> ZbPoly(int p, char x = 'x') => new KPoly<ZnBInt>(x, ZnBInt.ZnZero(p)).X;
     public static KPoly<ZnBInt> ZbPoly(int p, int o, char x = 'x') => new KPoly<ZnBInt>(x, new ZnBInt(new(p, o), 0)).X;
-    public static KPoly<ZnInt64> ZlPoly(int p, char x = 'x') => new KPoly<ZnInt64>(x, ZnInt64.ZnZero(p)).X;
+    public static KPoly<ZnBigInt> ZlPoly(int p, char x = 'x') => new KPoly<ZnBigInt>(x, ZnBigInt.ZnZero(p)).X;
     public static KPoly<Rational> QPoly(char x = 'x') => new(x);
     public static KPoly<Cplx> CplxPoly(char x = 'x') => new(x);
     public static KPoly<BigCplx> BCplxPoly(int o = 40, char x = 'x') => new KPoly<BigCplx>(x, BigCplx.BcZero(o)).X;
@@ -138,6 +141,9 @@ public static partial class FG
 
     public static KPoly<ZnInt> ToZnPoly(this KPoly<Rational> P, int p) =>
         new(P.x, ZnInt.ZnZero(p), P.Coefs.Select(c => c.ToZnInt(p)).TrimSeq().ToArray());
+
+    public static KPoly<ZnBigInt> ToZnBigIntPoly(this KPoly<Rational> P, BigInteger p) =>
+        new(P.x, ZnBigInt.ZnZero(p), P.Coefs.Select(c => c.ToZnBigInt(p)).TrimSeq().ToArray());
 
     public static KPoly<Rational> ToRationalPoly(this KPoly<ZnInt> P) =>
         new(P.x, Rational.KOne(), P.Coefs.Select(c => c.K * Rational.KOne()).TrimSeq().ToArray());

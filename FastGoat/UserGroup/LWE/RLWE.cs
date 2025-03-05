@@ -166,8 +166,8 @@ public partial class RLWE
 
     public RLWECipher FromRegevCipher(RegevCipher cipher, RLWECipher[] exsk)
     {
-        var a = new Rational(cipher.B.Signed);
-        return a - cipher.A.Zip(exsk).Select(e => new Rational(e.First.Signed) * e.Second).ToVec().Sum();
+        var a = new Rational(cipher.B.K);
+        return a - cipher.A.Zip(exsk).Select(e => new Rational(e.First.K) * e.Second).ToVec().Sum();
     }
 
     public RLWECipher[] FromRegevCipher(RegevCipher[] ciphers, RLWECipher[] exsk) =>
@@ -176,8 +176,8 @@ public partial class RLWE
     public RegevCipher ToRegevCipher(RLWECipher cipher, RLWECipher swk)
     {
         var cipher2 = SwitchKeyBGV(cipher, swk).ModSwitch(Q);
-        var a = ExtractArr(cipher2.B, n).Select(e => new ZnInt64((long)T.Num, (long)e.Mod(T).Num)).ToVec();
-        var b = new ZnInt64((long)T.Num, (long)cipher2.A[0].Mod(T).Num);
+        var a = ExtractArr(cipher2.B, n).Select(e => new ZnBigInt((long)T.Num, (long)e.Mod(T).Num)).ToVec();
+        var b = new ZnBigInt((long)T.Num, (long)cipher2.A[0].Mod(T).Num);
         return new(a, b);
     }
 
