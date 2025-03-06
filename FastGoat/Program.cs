@@ -22,10 +22,10 @@ RngSeed(259128);
 Ring.DisplayPolynomial = MonomDisplay.StarCaret;
 RecomputeAllPrimesUpTo(1000000);
 
-void testRgsw()
+void testRgswNTT()
 {
     // RLWE.NoiseOff();
-    var N = 8;
+    var N = 16;
     var n = N / 2;
     var level = 3;
     var (pm, sk, t, primes, sp, pk, _) = RLWE.SetupBGV(N, level);
@@ -40,31 +40,34 @@ void testRgsw()
 
     var tables = RLWE.PrepareNTT(n, t, primes);
 
-    var m1 = RLWE.GenUnif(n, t);
-    var m2 = RLWE.GenUnif(n, t);
-    var cm1 = RLWE.EncryptBGV(m1, pk);
-    var cm1ntt = RLWE.DecompRNS(cm1, primes).Select(e => RLWE.RLWECipher2NTT(e, tables)).ToVec();
-    var (csm2ntt, cm2ntt) = RLWE.EncryptRgswNTTBGV(m2, pk, B, tables);
+    for (int k = 0; k < 5; ++k)
+    {
+        var m1 = RLWE.GenUnif(n, t);
+        var m2 = RLWE.GenUnif(n, t);
+        var cm1 = RLWE.EncryptBGV(m1, pk);
+        var cm1ntt = RLWE.DecompRNS(cm1, primes).Select(e => RLWE.RLWECipher2NTT(e, tables)).ToVec();
+        var (csm2ntt, cm2ntt) = RLWE.EncryptRgswNTTBGV(m2, pk, B, tables);
 
-    var cm1m2ntt = RLWE.MulRgsw(cm1ntt, cm2ntt, csm2ntt);
-    var d_m1m2ntt = RLWE.DecryptBGV(RLWE.NTTCipher2RLWE(cm1m2ntt, tables), sk);
-    Console.WriteLine($"m1        = {m1}");
-    Console.WriteLine($"m2        = {m2}");
-    Console.WriteLine($"m1 * m2   = {(m1 * m2).ResModSigned(pm, t)}");
-    Console.WriteLine($"          = {d_m1m2ntt}");
-    Console.WriteLine($"          = {RLWE.ErrorsBGV(RLWE.NTTCipher2RLWE(cm1m2ntt, tables), sk).NormInf()}");
-    Console.WriteLine();
+        var cm1m2ntt = RLWE.MulRgsw(cm1ntt, cm2ntt, csm2ntt);
+        var d_m1m2ntt = RLWE.DecryptBGV(RLWE.NTTCipher2RLWE(cm1m2ntt, tables), sk);
+        Console.WriteLine($"m1        = {m1}");
+        Console.WriteLine($"m2        = {m2}");
+        Console.WriteLine($"m1 * m2   = {(m1 * m2).ResModSigned(pm, t)}");
+        Console.WriteLine($"          = {d_m1m2ntt}");
+        Console.WriteLine($"          = {RLWE.ErrorsBGV(RLWE.NTTCipher2RLWE(cm1m2ntt, tables), sk).NormInf()}");
+        Console.WriteLine();
 
-    var cm1m2ntt_ = RLWE.DecompRNS(cm1m2ntt, primes);
-    var cm1m2m2ntt = RLWE.MulRgsw(cm1m2ntt_, cm2ntt, csm2ntt);
-    var d = RLWE.DecryptBGV(RLWE.NTTCipher2RLWE(cm1m2m2ntt, tables), sk);
-    Console.WriteLine($"m1 * m2^2 = {(m1 * m2 * m2).ResModSigned(pm, t)}");
-    Console.WriteLine($"          = {d}");
-    Console.WriteLine($"          = {RLWE.ErrorsBGV(RLWE.NTTCipher2RLWE(cm1m2m2ntt, tables), sk).NormInf()}");
-    Console.WriteLine();
+        var cm1m2ntt_ = RLWE.DecompRNS(cm1m2ntt, primes);
+        var cm1m2m2ntt = RLWE.MulRgsw(cm1m2ntt_, cm2ntt, csm2ntt);
+        var d = RLWE.DecryptBGV(RLWE.NTTCipher2RLWE(cm1m2m2ntt, tables), sk);
+        Console.WriteLine($"m1 * m2^2 = {(m1 * m2 * m2).ResModSigned(pm, t)}");
+        Console.WriteLine($"          = {d}");
+        Console.WriteLine($"          = {RLWE.ErrorsBGV(RLWE.NTTCipher2RLWE(cm1m2m2ntt, tables), sk).NormInf()}");
+        Console.WriteLine();
+    }
 }
 
-void testRotate()
+void testRotateNTT()
 {
     var (n, p) = (16, 97);
     var pm = FG.QPoly().Pow(n) + 1;
@@ -93,7 +96,7 @@ void testRotate()
     }
 }
 
-// void testBRNTT()
+void testBRNTT()
 {
     // RLWE.NoiseOff();
     var N = 64;
@@ -114,14 +117,14 @@ void testRotate()
     GlobalStopWatch.AddLap();
     var brk = RLWE.BRKgswBGV(sk, pk, B);
     GlobalStopWatch.Show("Brk");
-    
+
     GlobalStopWatch.AddLap();
     var brkNTT = RLWE.BRKgswNTTBGV(sk, pk, B, tables);
     GlobalStopWatch.Show("BrkNTT");
-    
+
     Console.WriteLine();
-    
-    for (int k = 0; k < 15; ++k)
+
+    for (int k = 0; k < 10; ++k)
     {
         var ai = new Rational(Rng.Next(1, n + 1)).Signed(n);
         var bi = RLWE.GenUnif(n, n).CoefsExtended(n - 1);
@@ -140,4 +143,10 @@ void testRotate()
 
         Console.WriteLine();
     }
+}
+
+{
+    testRgswNTT();
+    testRotateNTT();
+    testBRNTT();
 }

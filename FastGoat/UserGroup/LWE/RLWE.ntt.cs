@@ -86,8 +86,10 @@ public partial class RLWE
         return ciphers.Select(cipher => RLWECipher2NTT(cipher, nttInfos)).ToVec();
     }
 
-    public static KMatrix<ZnBigInt> KMatMod(KMatrix<ZnBigInt> a, Rational pi) =>
-        a.Select(e => new ZnBigInt(e.Mod, new ZnBigInt(pi.Num, e.K).K)).ToKMatrix(a.M);
+    public static KMatrix<ZnBigInt> KMatMod(KMatrix<ZnBigInt> a, BigInteger mod1, BigInteger mod2) =>
+        a.Select(e => new ZnBigInt(mod1, new ZnBigInt(mod2, e.K).K)).ToKMatrix(a.M);
+
+    public static KMatrix<ZnBigInt> KMatMod(KMatrix<ZnBigInt> a, Rational pi) => KMatMod(a, a.KOne.Mod, pi.Num);
 
     public static NTTCipher NTTCipherMod(NTTCipher cipher, Rational pi)
     {
