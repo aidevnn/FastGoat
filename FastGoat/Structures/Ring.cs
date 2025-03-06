@@ -8,7 +8,7 @@ public static partial class Ring
 {
     public static bool IsOne<T>(this T t) where T : IElt<T>, IRingElt<T>
     {
-        return (t - 1).IsZero();
+        return (t - t.One).IsZero();
     }
 
     public static IEnumerable<T> TrimSeq<T>(this IEnumerable<T> seq) where T : IElt<T>, IRingElt<T>
