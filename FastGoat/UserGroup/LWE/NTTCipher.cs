@@ -27,9 +27,7 @@ public readonly struct NTTCipher : IModuleElt<KMatrix<ZnBigInt>, NTTCipher>, IEl
     public KMatrix<ZnBigInt> KOne => NttInfos.ntt.GetCol(0);
     public NTTCipher KMul(KMatrix<ZnBigInt> k)
     {
-        var a = A.Index().Select(e => e.Item * k[e.Index, 0]).ToKMatrix(A.M);
-        var b = B.Index().Select(e => e.Item * k[e.Index, 0]).ToKMatrix(B.M);
-        return new(a, b, NttInfos);
+        return new(RLWE.MulNTT(A, k), RLWE.MulNTT(B, k), NttInfos);
     }
 
     public static NTTCipher operator +(NTTCipher a, KMatrix<ZnBigInt> b)
