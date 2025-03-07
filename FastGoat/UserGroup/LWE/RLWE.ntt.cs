@@ -105,6 +105,17 @@ public partial class RLWE
             .ToVec();
     }
 
+    public static Vec<KMatrix<ZnBigInt>> DecompRNS(KMatrix<ZnBigInt> a, Rational[] primes, NTTInfos nttInfos)
+    {
+        var a0 = nttInfos.intt * a;
+        return primes.Select(pi => nttInfos.ntt * KMatMod(a0, pi)).ToVec();
+    }
+
+    public static Vec<KMatrix<ZnBigInt>> DecompRq(KMatrix<ZnBigInt> a, Rational[] primes)
+    {
+        return primes.Select(pi => KMatMod(a, pi)).ToVec();
+    }
+
     public static KMatrix<ZnBigInt> RotateStepNTT(KMatrix<ZnBigInt> f, NTTInfos nttInfos, int u, bool diff = true)
     {
         var k = diff ? 1 : 0;

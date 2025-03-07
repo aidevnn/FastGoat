@@ -36,20 +36,9 @@ public partial class RLWE
         return p0.ToKPoly();
     }
 
-    public static Vec<Rq> DecompRq(Rq a, Rational bs, Rational mod)
+    public static Vec<Rq> DecompRq(Rq a, Rational[] primes)
     {
-        var size = (int)(BigInteger.Log10(mod.Num) / BigInteger.Log10(bs.Num)) + 1;
-        var a0 = a.CoefsModSigned(mod);
-        var queue = new Queue<Rq>();
-        for (int i = 0; i < size; ++i)
-        {
-            var a1 = (a0 / bs).TruncPoly();
-            var r = a0 - bs * a1;
-            a0 = a1;
-            queue.Enqueue(r);
-        }
-
-        return queue.ToVec();
+        return primes.Select(pi => a.CoefsModSigned(pi)).ToVec();
     }
 
     public static RLWECipher RotateStep(RLWECipher cipher, int u, bool diff = true)
