@@ -42,7 +42,7 @@ public readonly struct ZnBigInt : IElt<ZnBigInt>, IRingElt<ZnBigInt>, IFieldElt<
 
     public override string ToString()
     {
-        var digits = $"{Mod}".Length;
+        var digits = $"{Mod}".Length + 1;
         var fmt = $"{{0,{digits}}}";
         return string.Format(fmt, K);
     }
