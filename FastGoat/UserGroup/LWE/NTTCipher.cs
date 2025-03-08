@@ -48,6 +48,14 @@ public readonly struct NTTCipher : IModuleElt<KMatrix<ZnBigInt>, NTTCipher>, IEl
     public int Hash { get; }
     public bool IsZero() => A.IsZero() && B.IsZero();
 
+    public NTTCipher Clone()
+    {
+        var nttInfos = new NTTInfos(NttInfos.n, NttInfos.w, NttInfos.ntt.Clone, NttInfos.t, NttInfos.intt.Clone);
+        var a = A.Clone;
+        var b = B.Clone;
+        return new(a, b, nttInfos);
+    }
+
     public NTTCipher Zero => new(A.Zero, B.Zero, NttInfos);
     public NTTCipher One => new(KOne, B.Zero, NttInfos);
     public NTTCipher ESK => new(A.Zero, -KOne, NttInfos);
