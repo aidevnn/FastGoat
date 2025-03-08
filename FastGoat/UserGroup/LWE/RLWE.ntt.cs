@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Numerics;
 using FastGoat.Commons;
 using FastGoat.Structures;
@@ -217,6 +218,37 @@ public partial class RLWE
             .Aggregate(x.Zero, (acc, v) => acc + v).ResModSigned(pm, qL);
 
         return BlindRotateNTTgswBGV(ab, f, brk, B, primes);
+    }
+
+    public static Vec<NTTCipher> Clone(Vec<NTTCipher> v) => v.Select(c => c.Clone()).ToVec();
+    public static RLWECipher BootstrappingNTT(RLWECipher cipher, RLWECipher pk,
+        RLWECipher[] skAut,
+        ((Vec<NTTCipher> csm, Vec<NTTCipher> cm) plus, (Vec<NTTCipher> csm, Vec<NTTCipher> cm) minus)[] brkntt, 
+        Rational[] B, Rational[] primes)
+    {
+        var (pm, t, qL) = pk.PM_T_Q;
+        var n = pm.Degree;
+
+        // 1. Extract
+        var (ct1, ctprep) = CtPrep(cipher);
+        var extract = Extract(-ctprep);
+
+        // 2. BlindRotate
+        var ni = (1 - qL) / n;
+        var seqBR = extract.Select(ab => ni * BlindRotateNTTgswBGV(ab, brkntt, B, primes)).ToArray();
         
+        // var bag = new ConcurrentBag<(int idx, RLWECipher)>();
+        // var opt = new ParallelOptions() { MaxDegreeOfParallelism = 4 };
+        // Parallel.ForEach(extract.Index().ToArray(), opt, (e, _) =>
+        // {
+        //     var acc = ni * BlindRotateNTTgswBGV(e.Item, brkntt, B, primes);
+        //     bag.Add((e.Index, acc));
+        // });
+        // var seqBR = bag.OrderBy(e => e.idx).Select(e => e.Item2).ToArray();
+        
+        // Step 3. Repacking
+        var Ni = (1 - t) / (2 * n);
+        var ctsm = RepackingBGV(seqBR, skAut);
+        return Ni * (ctsm + ct1.CoefsModSigned(qL));
     }
 }

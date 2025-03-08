@@ -638,8 +638,10 @@ public static class LearningWithErrors
         var qL = pk.Q;
 
         var B = RLWE.RNSGadgetBase(primes);
+        var tables = RLWE.PrepareNTT(n, t, primes);
         var rlk = rlks[qL].rlk;
         var brk = RLWE.BRKgswBGV(sk, pk, B);
+        var brkntt = RLWE.BRKgswNTTBGV(sk, pk, B, tables);
         var ak = RLWE.AKBGV(sk, pk, sp.Pow(level));
 
         Console.WriteLine($"BGV level = {level}, Primes = [{primes.Glue(", ")}]");
@@ -657,7 +659,8 @@ public static class LearningWithErrors
             var cm = RLWE.EncryptBGV(m, pk); // level qL
             var ct = RLWE.MulRelinBGV(cm, cm, rlk).ModSwitch(q); // level q0
 
-            var ctboot = RLWE.Bootstrapping(ct, pk, ak, brk, B, primes);
+            // var ctboot = RLWE.Bootstrapping(ct, pk, ak, brk, B, primes);
+            var ctboot = RLWE.BootstrappingNTT(ct, pk, ak, brkntt, B, primes);
             Console.WriteLine($"ct     {ct.Params}");
             Console.WriteLine($"ctboot {ctboot.Params}");
 
@@ -719,7 +722,7 @@ public static class LearningWithErrors
             Console.WriteLine($" = 0b{add_m1m2} = {FMT(sumi)}");
             Console.WriteLine($"   0b{d_add.Reverse().Glue()}");
 
-            GlobalStopWatch.Show($"Test[{k + 1}]"); // Time:4.790s
+            GlobalStopWatch.Show($"Test[{k + 1}]"); // Time:1.533s
             Console.WriteLine();
 
             var sumf = Convert.ToInt64(d_add.Reverse().Glue(), 2);

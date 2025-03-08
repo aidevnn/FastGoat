@@ -149,6 +149,25 @@ public partial class RLWE
         }
     }
 
+    private ((Vec<NTTCipher> csm, Vec<NTTCipher> cm) plus, (Vec<NTTCipher> csm, Vec<NTTCipher> cm) minus)[]
+        brkntt = [];
+
+    public ((Vec<NTTCipher> csm, Vec<NTTCipher> cm) plus, (Vec<NTTCipher> csm, Vec<NTTCipher> cm) minus)[]
+        BlindRotateKeysNTT
+    {
+        get
+        {
+            if (brkntt.Length != 0)
+                return brkntt;
+
+            if (!SK.NormInf().IsOne())
+                throw new("Only for ternary secret key");
+
+            var tables = PrepareNTT(n, T, Primes);
+            return brkntt = BRKgswNTTBGV(SK, PK, B, tables);
+        }
+    }
+
     private RLWECipher[] aks = [];
 
     public RLWECipher[] AutoMorhKeys
@@ -189,7 +208,8 @@ public partial class RLWE
         if (!BootstrappingMode || !RLKS[cipher.Q].nextMod.IsOne())
             return cipher;
 
-        return Bootstrapping(cipher, PK, AutoMorhKeys, BlindRotateKeys, B, Primes).ModSwitch(PK.Q);
+        return BootstrappingNTT(cipher, PK, AutoMorhKeys, BlindRotateKeysNTT, B, Primes).ModSwitch(PK.Q);
+        // return Bootstrapping(cipher, PK, AutoMorhKeys, BlindRotateKeys, B, Primes).ModSwitch(PK.Q);
     }
 
     public RLWECipher[] Bootstrapping(RLWECipher[] ciphers)
