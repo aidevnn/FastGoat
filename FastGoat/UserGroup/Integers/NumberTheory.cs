@@ -507,16 +507,4 @@ public static class NumberTheory
         var g = int.Log2(r).SeqLazy().Aggregate(a, (acc, _) => SqrtModWP(acc, p));
         return primRoots.Select(w => w * g % p);
     }
-
-    public static IEnumerable<int> NthRootsANTV1(int a, int r, int p)
-    {
-        var g = PrimesDecomposition(r).Aggregate(a, (acc, ri) => NthRootANTV1(acc, ri, p));
-        return AllNthRootUnityMod(r, p).Select(w => w * g % p);
-    }
-
-    public static IEnumerable<BigInteger> NthRootsANTV1(BigInteger a, int r, BigInteger p)
-    {
-        var g = PrimesDecomposition(r).Aggregate(a, (acc, ri) => NthRootANTV1(acc, ri, p));
-        return AllNthRootUnityMod(r, p).Select(w => w * g % p);
-    }
 }
