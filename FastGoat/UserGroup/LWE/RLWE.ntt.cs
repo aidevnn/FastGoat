@@ -21,12 +21,62 @@ public partial class RLWE
         return new(ntt);
     }
 
+    public static KMatrix<ZnBigInt> CooleyTukey(Rq m, NTTInfos nttInfos)
+    {
+        var n = nttInfos.n;
+        var z = nttInfos.w.Zero;
+        var E = n.SeqLazy().Select(_ => z).ToArray();
+        for (int j = 0; j < n / 2; j++)
+        {
+            var Aj = z;
+            var Bj = z;
+            for (int i = 0; i < n / 2; i++)
+            {
+                var w = nttInfos.wPows[(4 * i * j + 2 * i) % (2 * n)];
+                Aj += w * m[2 * i].Num;
+                Bj += w * m[2 * i + 1].Num;
+            }
+
+            var wj = nttInfos.wPows[2 * j + 1];
+            E[j] = Aj + wj * Bj;
+            E[j + n / 2] = Aj - wj * Bj;
+        }
+
+        return E.ToKMatrix(n);
+    }
+
+    public static Rq GentlemanSande(KMatrix<ZnBigInt> a, NTTInfos nttInfos)
+    {
+        var n = nttInfos.n;
+        var z = nttInfos.w.Zero;
+        var ni = (n * z.One).Inv();
+        var E = n.SeqLazy().Select(_ => ni.Zero).ToArray();
+        for (int i = 0; i < n / 2; i++)
+        {
+            var Ai = ni.Zero;
+            var Bi = ni.Zero;
+            for (int j = 0; j < n / 2; j++)
+            {
+                var (aj, aj_) = (a[j, 0], a[j + n / 2, 0]);
+                Ai += (aj + aj_) * nttInfos.iwPows[2 * i * (2 * j + 1) % (2 * n)];
+                Bi += (aj - aj_) * nttInfos.iwPows[(2 * i + 1) * (2 * j + 1) % (2 * n)];
+            }
+
+            E[2 * i] = ni * Ai;
+            E[2 * i + 1] = ni * Bi;
+        }
+
+        return E.Select(e => new Rational(e.K)).ToKPoly();
+    }
+
     public static NTTInfos PrepareNTT(int n, Rational t, ZnBigInt w)
     {
         var ntt = NTT(n, w);
         var ni = (n * w.One).Inv();
         var intt = ni * NTT(n, w.Inv()).T;
-        return new(n, w, ntt, t, intt);
+        var wPows = (2 * n).SeqLazy().Select(i => w.Pow(i)).ToArray();
+        var iwPows = (2 * n).SeqLazy().Select(i => w.Inv().Pow(i)).ToArray();
+        return new(n, w, ntt, wPows, t, intt, iwPows);
     }
 
     public static NTTInfos PrepareNTT(int n, Rational t, Rational[] primes)
@@ -38,7 +88,7 @@ public partial class RLWE
         var w = new ZnBigInt(q, NumberTheory.CRT(seq, crt, q));
         return PrepareNTT(n, t, w);
     }
-    
+
     public static KMatrix<ZnBigInt> XpowA(ZnBigInt a, NTTInfos nttInfos)
     {
         if (a.IsZero())
@@ -99,17 +149,23 @@ public partial class RLWE
 
     public static Vec<NTTCipher> DecompRNS(NTTCipher cipher, Rational[] primes)
     {
-        var a = cipher.NttInfos.intt * cipher.A;
-        var b = cipher.NttInfos.intt * cipher.B;
-        return primes.Select(pi => (A: KMatMod(a, pi), B: KMatMod(b, pi)))
-            .Select(c => new NTTCipher(cipher.NttInfos.ntt * c.A, cipher.NttInfos.ntt * c.B, cipher.NttInfos))
-            .ToVec();
+        var a = GentlemanSande(cipher.A, cipher.NttInfos);
+        var b = GentlemanSande(cipher.B, cipher.NttInfos);
+        return primes.Select(pi => (A: a.CoefsModSigned(pi), B: b.CoefsModSigned(pi)))
+            .Select(c => new NTTCipher(CooleyTukey(c.A, cipher.NttInfos), CooleyTukey(c.B, cipher.NttInfos),
+                cipher.NttInfos)).ToVec();
+
+        // var a = cipher.NttInfos.intt * cipher.A;
+        // var b = cipher.NttInfos.intt * cipher.B;
+        // return primes.Select(pi => (A: KMatMod(a, pi), B: KMatMod(b, pi)))
+        //     .Select(c => new NTTCipher(cipher.NttInfos.ntt * c.A, cipher.NttInfos.ntt * c.B, cipher.NttInfos))
+        //     .ToVec();
     }
 
     public static Vec<KMatrix<ZnBigInt>> DecompRNS(KMatrix<ZnBigInt> a, Rational[] primes, NTTInfos nttInfos)
     {
-        var a0 = nttInfos.intt * a;
-        return primes.Select(pi => nttInfos.ntt * KMatMod(a0, pi)).ToVec();
+        var a0 = NTT2Rq(a, nttInfos);
+        return primes.Select(pi => Rq2NTT(a0.CoefsModSigned(pi), nttInfos)).ToVec();
     }
 
     public static Vec<KMatrix<ZnBigInt>> DecompRq(KMatrix<ZnBigInt> a, Rational[] primes)
@@ -221,9 +277,10 @@ public partial class RLWE
     }
 
     public static Vec<NTTCipher> Clone(Vec<NTTCipher> v) => v.Select(c => c.Clone()).ToVec();
+
     public static RLWECipher BootstrappingNTT(RLWECipher cipher, RLWECipher pk,
         RLWECipher[] skAut,
-        ((Vec<NTTCipher> csm, Vec<NTTCipher> cm) plus, (Vec<NTTCipher> csm, Vec<NTTCipher> cm) minus)[] brkntt, 
+        ((Vec<NTTCipher> csm, Vec<NTTCipher> cm) plus, (Vec<NTTCipher> csm, Vec<NTTCipher> cm) minus)[] brkntt,
         Rational[] B, Rational[] primes)
     {
         var (pm, t, qL) = pk.PM_T_Q;
@@ -236,16 +293,16 @@ public partial class RLWE
         // 2. BlindRotate
         var ni = (1 - qL) / n;
         var seqBR = extract.Select(ab => ni * BlindRotateNTTgswBGV(ab, brkntt, B, primes)).ToArray();
-        
-        // var bag = new ConcurrentBag<(int idx, RLWECipher)>();
+
+        // var bag = new ConcurrentDictionary<int, RLWECipher>();
         // var opt = new ParallelOptions() { MaxDegreeOfParallelism = 4 };
         // Parallel.ForEach(extract.Index().ToArray(), opt, (e, _) =>
         // {
         //     var acc = ni * BlindRotateNTTgswBGV(e.Item, brkntt, B, primes);
-        //     bag.Add((e.Index, acc));
+        //     bag[e.Index] = acc;
         // });
-        // var seqBR = bag.OrderBy(e => e.idx).Select(e => e.Item2).ToArray();
-        
+        // var seqBR = bag.OrderBy(e => e.Key).Select(e => e.Value).ToArray();
+
         // Step 3. Repacking
         var Ni = (1 - t) / (2 * n);
         var ctsm = RepackingBGV(seqBR, skAut);

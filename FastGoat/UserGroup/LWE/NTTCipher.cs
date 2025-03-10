@@ -25,6 +25,7 @@ public readonly struct NTTCipher : IModuleElt<KMatrix<ZnBigInt>, NTTCipher>, IEl
 
     public KMatrix<ZnBigInt> KZero => A.Zero;
     public KMatrix<ZnBigInt> KOne => NttInfos.ntt.GetCol(0);
+
     public NTTCipher KMul(KMatrix<ZnBigInt> k)
     {
         return new(RLWE.MulNTT(A, k), RLWE.MulNTT(B, k), NttInfos);
@@ -50,7 +51,8 @@ public readonly struct NTTCipher : IModuleElt<KMatrix<ZnBigInt>, NTTCipher>, IEl
 
     public NTTCipher Clone()
     {
-        var nttInfos = new NTTInfos(NttInfos.n, NttInfos.w, NttInfos.ntt.Clone, NttInfos.t, NttInfos.intt.Clone);
+        var nttInfos = new NTTInfos(NttInfos.n, NttInfos.w, NttInfos.ntt.Clone, NttInfos.wPows.ToArray(), NttInfos.t,
+            NttInfos.intt.Clone, NttInfos.iwPows.ToArray());
         var a = A.Clone;
         var b = B.Clone;
         return new(a, b, nttInfos);
@@ -84,6 +86,7 @@ public readonly struct NTTCipher : IModuleElt<KMatrix<ZnBigInt>, NTTCipher>, IEl
     }
 
     public override int GetHashCode() => Hash;
+
     public override string ToString()
     {
         return $"A:{A.T} B:{B.T} mod {KOne.KOne.Mod}";
