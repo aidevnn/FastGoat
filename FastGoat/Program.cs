@@ -22,16 +22,40 @@ Console.WriteLine("Hello World");
 Ring.DisplayPolynomial = MonomDisplay.StarCaret;
 
 {
-    var staticVoidMeths = typeof(EllipticCurves).GetMethods()
-        .Where(m => m.IsPublic && m.IsStatic &&
-                    m.GetParameters().Length == 0 &&
-                    m.ReturnType.Equals(typeof(void)))
-        .OrderBy(m => m.Name)
-        .ToArray();
-    
-    foreach (var meth in staticVoidMeths)
+    var (sk, tk) = (0, 1000);
+    var examplesList = Assembly.GetExecutingAssembly().GetTypes()
+        .Where(t => t.Namespace == "FastGoat.Examples" && t.IsPublic && t.IsClass)
+        .OrderBy(t => t.FullName)
+        .ToList();
+
+    foreach (var (idxType, examplesClass) in examplesList.Index().Skip(sk).Take(tk))
     {
-        Console.WriteLine($"@@@@@@ EllipticCurves.{meth.Name}()");
-        meth.Invoke(null, null);
+        if (examplesClass.FullName != null && examplesClass.FullName.Contains("CocyclesDFS"))
+            continue;
+        
+        Console.WriteLine($"@@@@@@[{idxType}] {examplesClass.FullName} @@@@@@");
+        Console.WriteLine();
+
+        var staticVoidMeths = examplesClass.GetMethods()
+            .Where(m => m.IsPublic && m.IsStatic &&
+                        m.GetParameters().Length == 0 &&
+                        m.ReturnType.Equals(typeof(void)))
+            .OrderBy(m => m.Name)
+            .ToArray();
+    
+        foreach (var (idxMeth, meth) in staticVoidMeths.Index())
+        {
+            Console.WriteLine($"@@@@@@[{idxType}/{idxMeth}] {examplesClass.FullName}.{meth.Name}()");
+            try
+            {
+                meth.Invoke(null, null);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                Console.WriteLine($"Error at {examplesClass.FullName}.{meth.Name}()");
+                Console.WriteLine();
+            }
+        }
     }
 }
