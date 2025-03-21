@@ -87,7 +87,7 @@ public static class EllipticCurves
             set.IntersectWith(sub);
         }
 
-        allTypes.Println(e => e.Glue(" x ", "C{0}"), $"Morphism Ell[{a},{b}](Q) ->");
+        allTypes.Println(e => e.Glue(" x ", "C{0}"), $"Morphisms Ell[{a},{b}](Q) ->");
         set.Select(l => l.ToArray()).Println(e => e.Glue(" x ", "C{0}"), "Intersections subgroups");
         var tor = set.MaxBy(l => l.Aggregate(1, (acc, i) => acc * i));
         Console.WriteLine($"Ell[{a},{b}](Q) Torsion ~-> {tor!.Descending().Glue(" x ", "C{0}")}");
@@ -308,7 +308,7 @@ public static class EllipticCurves
     // 
     // [-43,166]
     // https://www.lmfdb.org/EllipticCurve/Q/26/b/2
-    public static void ExampleFp()
+    public static void Example2Fp()
     {
         EllTors(-36, 0, show: true); // Ell[-36,0](Q) Torsion = C2 x C2
         EllTors(0, 3); // Ell[0,3](Q) Torsion = C1
@@ -317,7 +317,7 @@ public static class EllipticCurves
         EllTors(-43, 166, nbPrimes: 20); // Ell[-43,166](Q) Torsion = C7
     }
 
-    public static void ExampleNagellLutz()
+    public static void Example3NagellLutz()
     {
         NagellLutz(-36, 0, show: true); // Ell[-36,0](Q) Torsion = C2 x C2
         NagellLutz(0, 3); // Ell[0,3](Q) Torsion = C1
@@ -340,28 +340,28 @@ public static class EllipticCurves
     // 
     // Ell[-43,166](Q) Torsion = C7
 
-    public static void ExampleTransformCurve()
+    public static void Example4TransformCurve()
     {
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
         var (x, y) = Ring.Polynomial(Rational.KZero(), "x", "y").Deconstruct();
 
-        // – E1 : y 2 + 7xy = x3 + 16x ;
+        // – E1 : y^2 + 7xy = x^3 + 16x ;
         var e1 = (y.Pow(2) + 7 * x * y, x.Pow(3) + 16 * x);
-        // – E2 : y 2 + xy − 5y = x3 − 5x2 ;
+        // – E2 : y^2 + xy − 5y = x^3 − 5x^2 ;
         var e2 = (y.Pow(2) + x * y - 5 * y, x.Pow(3) - 5 * x.Pow(2));
-        // – E3 : y 2 − y = x3 − x2 ;
+        // – E3 : y^2 − y = x^3 − x^2 ;
         var e3 = (y.Pow(2) - y, x.Pow(3) - x.Pow(2));
-        // – E4 : y 2 + xy + y = x3 − x2 − 14x + 29 ;
+        // – E4 : y^2 + xy + y = x^3 − x^2 − 14x + 29 ;
         var e4 = (y.Pow(2) + x * y + y, x.Pow(3) - x.Pow(2) - 14 * x + 29);
-        // – E5 : y 2 + xy = x3 − 45x + 81 ;
+        // – E5 : y^2 + xy = x^3 − 45x + 81 ;
         var e5 = (y.Pow(2) + x * y, x.Pow(3) - 45 * x + 81);
-        // – E6 : y 2 + 43xy − 210y = x3 − 210x2 ;
+        // – E6 : y^2 + 43xy − 210y = x^3 − 210x^2 ;
         var e6 = (y.Pow(2) + 43 * x * y - 210 * y, x.Pow(3) - 210 * x.Pow(2));
-        // – E7 : y 2 + 5xy − 6y = x3 − 3x2 ;
+        // – E7 : y^2 + 5xy − 6y = x^3 − 3x^2 ;
         var e7 = (y.Pow(2) + 5 * x * y - 6 * y, x.Pow(3) - 3 * x.Pow(2));
-        // – E8 : y 2 + 17xy − 120y = x3 − 60x2 .
+        // – E8 : y^2 + 17xy − 120y = x^3 − 60x^2 ;
         var e8 = (y.Pow(2) + 17 * x * y - 120 * y, x.Pow(3) - 60 * x.Pow(2));
-        // – E9 : y 2 + xy = x3 − 1070x + 7812 .
+        // – E9 : y^2 + xy = x^3 − 1070x + 7812 ;
         var e9 = (y.Pow(2) + x * y, x.Pow(3) - 1070 * x + 7812);
 
         Transform(e1);
@@ -438,7 +438,7 @@ public static class EllipticCurves
        Ell[-1386747,368636886](Q) Torsion = C8 x C2
      */
 
-    public static void ExampleFromLMFDB()
+    public static void Example5FromLMFDB()
     {
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
         var (x, y) = Ring.Polynomial(Rational.KZero(), "x", "y").Deconstruct();
@@ -504,12 +504,12 @@ public static class EllipticCurves
 
         // Torsion C8 x C2
         Transform((y.Pow(2) + x * y, x.Pow(3) - 1070 * x + 7812), TorsionMeth.NagellLutz);
-        Transform((y.Pow(2) + x * y, x.Pow(3) - 8696090 * x + "9838496100"), TorsionMeth.NagellLutz);
+        // Transform((y.Pow(2) + x * y, x.Pow(3) - 8696090 * x + "9838496100"), TorsionMeth.NagellLutz); // Time:2m20s
 
         GlobalStopWatch.Show("END"); // Time:29.143s
     }
 
-    public static void ExampleMordellCurve()
+    public static void Example6MordellCurve()
     {
         for (int n = 1; n <= 100; n++)
         {
@@ -540,7 +540,7 @@ public static class EllipticCurves
         }
     }
 
-    public static void ExampleMordellsEquation()
+    public static void Example7MordellsEquation()
     {
         GlobalStopWatch.Restart();
         var mordell = new Dictionary<int, (BigInteger x, BigInteger y)[]>();
@@ -595,7 +595,7 @@ public static class EllipticCurves
     }
 
     // Daniel Guin - Thomas Hausberger, Algebre Tome 1, page 174
-    public static void ExampleConguentNumbers()
+    public static void Example8ConguentNumbers()
     {
         var primXYZ = 10.Range(1).Grid2D().Select(e => (a: e.t1, b: e.t2))
             .Where(e => e.a < e.b && (e.a * e.b) % 2 == 0 && IntExt.Gcd(e.a, e.b) == 1)

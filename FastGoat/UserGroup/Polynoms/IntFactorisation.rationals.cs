@@ -389,9 +389,11 @@ public static partial class IntFactorisation
         var discQ = Ring.Discriminant(f).Num;
         if (Logger.Level != LogLevel.Off)
             Console.WriteLine($"f = {f}");
-        var discDecomp = IntExt.PrimesDec(discQ);
         if (Logger.Level != LogLevel.Off)
+        {
+            var discDecomp = IntExt.PrimesDecUnsafe(discQ);
             Console.WriteLine($"Disc(f) = {discQ} ~ {discDecomp.AscendingByKey().GlueMap(" * ", "{0}^{1}")}");
+        }
 
         foreach (var p in IntExt.Primes10000.Where(p => !BigInteger.Remainder(discQ, p).IsZero))
         {
@@ -522,7 +524,7 @@ public static partial class IntFactorisation
         var coefs = f.Coefs.Select(c => c.Absolute).ToArray();
 
         var dicoNum = coefs.Select((c, i) => (c.Num, i)).Where(e => !e.Num.IsZero && e.i != 0)
-            .Select(e => IntExt.PrimesDec(e.Num).Where(kp => kp.Value >= e.i)
+            .Select(e => IntExt.PrimesDecUnsafe(e.Num).Where(kp => kp.Value >= e.i)
                 .SelectMany(kp => Enumerable.Repeat(kp.Key, kp.Value / e.i)))
             .ToArray();
 
@@ -540,7 +542,7 @@ public static partial class IntFactorisation
         var coefs = f.Coefs.Select(c => c.Absolute).ToArray();
 
         var dicoNum = coefs.Select((c, i) => (c.Num, i)).Where(e => !e.Num.IsZero && e.i != deg)
-            .Select(e => IntExt.PrimesDec(e.Num).Where(kp => kp.Value >= deg - e.i)
+            .Select(e => IntExt.PrimesDecUnsafe(e.Num).Where(kp => kp.Value >= deg - e.i)
                 .SelectMany(kp => Enumerable.Repeat(kp.Key, kp.Value / (deg - e.i))))
             .ToArray();
 
@@ -676,9 +678,9 @@ public static partial class IntFactorisation
         var (f0, c) = ConstCoef(P);
         var f = f0.PrimitiveZPoly();
         var discQ = Ring.Discriminant(f).Num;
-        var discDecomp = IntExt.PrimesDec(discQ);
         if (Logger.Level != LogLevel.Off)
         {
+            var discDecomp = IntExt.PrimesDecUnsafe(discQ);
             Console.WriteLine($"f = {f}");
             Console.WriteLine($"Disc(f) = {discQ} ~ {discDecomp.AscendingByKey().GlueMap(" * ", "{0}^{1}")}");
         }

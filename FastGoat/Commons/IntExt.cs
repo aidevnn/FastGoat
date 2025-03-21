@@ -185,6 +185,45 @@ public static class IntExt
     }
 
     /// <summary>
+    /// Calculates the prime decomposition of a given BigInteger. 
+    /// </summary>
+    /// <param name="n">The BigInteger to decompose.</param>
+    /// <returns>An IEnumerable of ints containing the prime factors of the given BigInteger.</returns>
+    public static IEnumerable<BigInteger> PrimesDecompositionBigIntUnsafe(BigInteger n)
+    {
+        var n0 = n;
+        foreach (var p in Primes10000.Where(p => p <= n))
+        {
+            while (n0 % p == 0)
+            {
+                yield return p;
+                n0 /= p;
+            }
+
+            if (n0 == 1) yield break;
+        }
+
+        if (n0 != 1)
+        {
+            var ns = double.Sqrt((double)n0);
+            if (MaxPrime > ns && n0 < int.MaxValue)
+                yield return n0;
+            else if (MaxPrime < ns)
+            {
+                if (Logger.Level == LogLevel.Level2)
+                    Console.WriteLine($"Unsafe n0={n0} is bigger than maxPrime^2={MaxPrime * MaxPrime}");
+                yield return n0;
+            }
+            else
+            {
+                if (Logger.Level == LogLevel.Level2)
+                    Console.WriteLine($"Unsafe n0={n0} is prime but bigger than intMax={int.MaxValue}");
+                yield return n0;
+            }
+        }
+    }
+
+    /// <summary>
     /// Calculates the multiplicity of a given factor in a given number and the remaining factor, a=p^m * r 
     /// </summary>
     /// <param name="a">The number to decompose.</param>
@@ -211,6 +250,20 @@ public static class IntExt
     public static Dictionary<int, int> PrimesDec(BigInteger n)
     {
         var dec = PrimesDecompositionBigInt(BigInteger.Abs(n));
+        var dico = dec.GroupBy(e => e).ToDictionary(e => e.Key, e => e.Count());
+        if (n < 0)
+            dico[-1] = 1;
+        return dico;
+    }
+
+    /// <summary>
+    /// This method returns a dictionary containing the prime factors of a given number.
+    /// </summary>
+    /// <param name="n">The number to be factored.</param>
+    /// <returns>A Dictionary containing the prime factors of the given number.</returns>
+    public static Dictionary<BigInteger, int> PrimesDecUnsafe(BigInteger n)
+    {
+        var dec = PrimesDecompositionBigIntUnsafe(BigInteger.Abs(n));
         var dico = dec.GroupBy(e => e).ToDictionary(e => e.Key, e => e.Count());
         if (n < 0)
             dico[-1] = 1;
