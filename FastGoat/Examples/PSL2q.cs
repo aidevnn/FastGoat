@@ -183,7 +183,7 @@ public static class PSL2q
                 throw new();
 
             var s = $"a4ba{(p + 1) / 2}b";
-            var rel = $"a{p}, {s}{s}, ababab=b2";
+            var rel = $"a{p}, b2, ababab, {s}{s}";
             var wg = FG.WordGroup($"L2({p})wg", rel);
 
             Console.WriteLine($"{wg.ShortName}");
