@@ -588,3 +588,10 @@ Homomorphic Evaluation of the AES Circuit.
 January 3, 2015
 <i>GHS12.</i>
 
+[The Code of Mathematics](https://link.springer.com/book/10.1007/978-3-662-69483-1)
+<b>Stefan Müller-Stach.</b>
+The Code of Mathematics.
+Springer Nature. 2024.
+Universität Mainz,
+Mainz, Germany
+<i>TCOM.</i>
