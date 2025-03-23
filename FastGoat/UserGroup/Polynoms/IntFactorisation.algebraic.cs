@@ -68,7 +68,7 @@ public static partial class IntFactorisation
             return P.X.Pow(2) - P;
         }
 
-        return a.Zero.Poly.SubstituteChar('a');
+        return a.Zero.Poly.SubstituteChar(x);
     }
 
     public static (EPoly<Rational>[], KPoly<Rational>) ExtDegree(EPoly<Rational> a)
@@ -347,7 +347,7 @@ public static partial class IntFactorisation
         if (e.Degree == 0)
             return e.Poly.ToPolynomial(Ring.Polynomial(Rational.KZero()));
 
-        var minPol = CheckQuadraticMinPolynomial(e);
+        var minPol = CheckQuadraticMinPolynomial(e, 'x');
         if (minPol.Degree != 2)
             return cf.E.Poly.ToPolynomial(Ring.Polynomial(Rational.KZero(), MonomOrder.RevLex, $"{Cnf.RootsOfUnit}{cf.N}")[0]);
 
