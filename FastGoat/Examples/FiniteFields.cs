@@ -110,7 +110,7 @@ public static class FiniteFields
         var characteristic = decomp[0];
 
         var cn = new Cn(characteristic);
-        var gr = Product.GpGenerate(Enumerable.Repeat(cn, dim).Cast<IGroup<ZnInt>>().ToArray());
+        var gr = Product.GpGenerate(cn, dim);
         var n = gr.Count() - 1;
 
         var fb = Candidate(gr);
@@ -234,7 +234,7 @@ public static class FiniteFields
         MinPoly(8, matrixForm);
         MinPoly(27, matrixForm);
         MinPoly(125, matrixForm);
-        MinPoly(343, matrixForm);
+        // MinPoly(343, matrixForm);
 
         MinPoly(16, matrixForm);
         MinPoly(81, matrixForm);

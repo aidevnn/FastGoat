@@ -177,6 +177,7 @@ public static class PSL2q
 
     public static void L2pWordGroup()
     {
+        Logger.SetOff();
         foreach (var p in new[] { 5, 7, 11, 13 })
         {
             if (!IntExt.Primes10000.Contains(p) || p <= 3)

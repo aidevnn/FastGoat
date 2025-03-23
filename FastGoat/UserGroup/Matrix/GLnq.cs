@@ -25,14 +25,12 @@ public class GLnq : IGroup<MatFq>
         var digits = Group.GenerateElements(Fq, Fq['x']).Max(e => $"{e}".Length);
         Fmt = $"{{0,{digits}}}";
         _neutralMat = n.Range().Grid2D().Select(a => a.t1 == a.t2 ? one : zero).ToArray();
-        _hashNeutral = _neutralMat.Aggregate(0, (acc, a) => a.GetHashCode() + Fq.Q * acc);
 
         Hash = (n, q).GetHashCode();
         Name = $"GL({n}, {Fq})";
     }
 
     private EPoly<ZnInt>[] _neutralMat;
-    private int _hashNeutral;
     public IEnumerator<MatFq> GetEnumerator() => GetElements().GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator() => GetElements().GetEnumerator();
@@ -57,14 +55,12 @@ public class GLnq : IGroup<MatFq>
                     .Select(e => new EPoly<ZnInt>(Fq.F, new KPoly<ZnInt>(Fq.F.x, ZnInt.ZnZero(Fq.P), e)))
                     .ToArray();
 
-                var hash = table0.Aggregate(0, (acc, a) => a.GetHashCode() + Fq.Q * acc);
-                return new(this, hash, table0);
+                return new(this, table0);
             }
             else if (us0.All(u => u is int || u is char || u is ValueTuple<char, int>))
             {
                 var table = us0.Select(i => Fq[i]).ToArray();
-                var hash = table.Aggregate(0, (acc, a) => a.GetHashCode() + Fq.Q * acc);
-                return new(this, hash, table);
+                return new(this, table);
             }
 
             throw new GroupException(GroupExceptionType.GroupDef);
@@ -86,21 +82,19 @@ public class GLnq : IGroup<MatFq>
 
     public MatFq Create(EPoly<ZnInt>[] arr) => new(this, arr);
     
-    public MatFq Neutral() => new(this, _hashNeutral, _neutralMat);
+    public MatFq Neutral() => new(this, _neutralMat);
 
     public MatFq Invert(MatFq e)
     {
         var inv = Invert(e.Table);
-        var hash = inv.Aggregate(0, (acc, a0) => a0.GetHashCode() + Fq.Q * acc);
-        return new(this, hash, inv);
+        return new(this, inv);
     }
 
     public MatFq Op(MatFq e1, MatFq e2)
     {
         var dot = MatrixProduct(N, e1.Table, e2.Table);
         // var dot = Dot(e1.Table, e2.Table); // TO DO 
-        var hash = dot.Aggregate(0, (acc, a0) => a0.GetHashCode() + Fq.Q * acc);
-        return new(this, hash, dot);
+        return new(this, dot);
     }
 
     public EPoly<ZnInt> Determinant(MatFq mat)

@@ -10,17 +10,12 @@ public struct MatFq : IElt<MatFq>
     public EPoly<ZnInt>[] Table { get; }
     public GLnq GLnq { get; }
 
-    public MatFq(GLnq gl, int hash, EPoly<ZnInt>[] table)
-    {
-        GLnq = gl;
-        Table = table.ToArray();
-        Hash = hash;
-    }
-
     public MatFq(GLnq gl, EPoly<ZnInt>[] table)
     {
         GLnq = gl;
-        var hash = table.Aggregate(0, (acc, a0) => a0.GetHashCode() + gl.Fq.Q * acc);
+        var n = gl.Fq.F.Degree;
+        var hash = table.SelectMany(a => a.Poly.CoefsExtended(n))
+            .Aggregate(gl.Hash, (acc, h) => (acc, h.Hash).GetHashCode());
         Table = table.ToArray();
         Hash = hash;
     }
