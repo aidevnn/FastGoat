@@ -22,55 +22,77 @@ using static FastGoat.Commons.IntExt;
 Console.WriteLine("Hello World");
 Ring.DisplayPolynomial = MonomDisplay.StarCaret;
 
+int Phi2(int n)
 {
-    var (sk, tk) = (5, 5);
-    // 0->4   done ~10min 0 error
-    // 5->9   done ~25min 0 error
-    // 10->14 done ~15min 0 error
-    // 15->19 done ~12min 0 error
-    // 20->24 done ~12min 2 planned errors
-    // 25->29 done ~2min  0 error
-    // 30->34 done ~20min 0 error
-    // 35->39 done ~16min 0 error
-    // 40->44 done ~40min 0 error
-    // 45->49 done ~8min  0 error
-    // 50->54 done ~2min  0 error
-    // 55->57 done ~8min  0 error
-    var examplesList = Assembly.GetExecutingAssembly().GetTypes()
-        .Where(t => t.Namespace == "FastGoat.Examples" && t.IsPublic)
-        .OrderBy(t => t.FullName)
-        .ToList();
-
-    foreach (var (idxType, examplesClass) in examplesList.Index().Skip(sk).Take(tk))
+    var (num, denom) = (1, 1);
+    foreach (var pi in PrimesDec(n).Keys)
     {
-        if (examplesClass.FullName != null && examplesClass.FullName.Contains("CocyclesDFS"))
-            continue;
-
-        Console.WriteLine($"@@@@@@[{idxType}] {examplesClass.FullName} @@@@@@");
-        Console.WriteLine();
-
-        var staticVoidMeths = examplesClass.GetMethods()
-            .Where(m => m.IsPublic && m.IsStatic &&
-                        m.GetParameters().Length == 0 &&
-                        m.ReturnType.Equals(typeof(void)))
-            .OrderBy(m => m.Name)
-            .ToArray();
-
-        foreach (var (idxMeth, meth) in staticVoidMeths.Index())
-        {
-            Console.WriteLine($"@@@@@@[{idxType}/{idxMeth}] {examplesClass.FullName}.{meth.Name}()");
-            try
-            {
-                meth.Invoke(null, null);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                Console.WriteLine($"Error at {examplesClass.FullName}.{meth.Name}()");
-                Console.WriteLine();
-            }
-        }
+        num *= pi - 1;
+        denom *= pi;
     }
 
-    Console.Beep();
+    return n / denom * num;
+}
+
+int Phi3(int n) => (int)double.Round(n * PrimesDec(n).Keys.Aggregate(1.0, (acc, pi) => acc * (1.0 - 1.0 / pi)));
+
+IEnumerable<int> Dividors2(int n)
+{
+    for (int i = 1; i <= double.Sqrt(n); i++)
+    {
+        if (n % i == 0)
+        {
+            yield return i;
+            var i2 = n / i;
+            if (i != i2)
+                yield return i2;
+        }
+    }
+}
+
+IEnumerable<int> Dividors3(int n)
+{
+    var decomp = PrimesDecomposition(int.Abs(n)).GroupBy(e => e)
+        .ToDictionary(e => e.Key, e => e.Count());
+
+    return decomp.Select(e => (e.Value + 1).Range().Select(k => (int)double.Round(double.Pow(e.Key, k))))
+        .MultiLoop()
+        .Select(l => l.Aggregate(1, (acc, e) => acc * e));
+}
+
+{
+    for (int n = 1000000; n <= 1100000; n += 10000)
+    {
+        var phi1 = Phi(n);
+        var phi2 = Phi2(n);
+        var phi3 = Phi3(n);
+        Console.WriteLine($"n={n,3} Phi1={phi1,3} Phi2={phi2,3} Phi3={phi3,3}");
+        if (phi1 != phi2 || phi1 != phi3)
+            throw new();
+
+        var n0 = n;
+        GlobalStopWatch.Bench(50, "Phi1", () => Phi(n0));
+        GlobalStopWatch.Bench(50, "Phi2", () => Phi2(n0));
+        GlobalStopWatch.Bench(50, "Phi3", () => Phi3(n0));
+        Console.WriteLine();
+    }
+}
+
+{
+    for (int n = 10000000; n <= 11000000; n += 100000)
+    {
+        var divs1 = Dividors(n).Append(n).ToArray();
+        var divs2 = Dividors2(n).Order().ToArray();
+        var divs3 = Dividors3(n).Order().ToArray();
+        Console.WriteLine($"n={n,3}");
+        Console.WriteLine($"Divs1={divs1.Length} Divs2={divs2.Length} Divs3={divs3.Length}");
+        if (!divs1.SequenceEqual(divs2) || !divs1.SequenceEqual(divs3))
+            throw new();
+
+        var n0 = n;
+        GlobalStopWatch.Bench(50, "Divs1", () => Dividors(n0).Append(n0).ToArray());
+        GlobalStopWatch.Bench(50, "Divs2", () => Dividors2(n0).Append(n0).ToArray());
+        GlobalStopWatch.Bench(50, "Divs3", () => Dividors3(n0).Append(n0).ToArray());
+        Console.WriteLine();
+    }
 }
