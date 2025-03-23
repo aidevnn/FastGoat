@@ -16,7 +16,9 @@ public static class MathieuGroup
         var b = s11[(3, 7, 11, 8), (4, 10, 5, 6)];
         var m11 = Group.Generate("M11", s11, a, b);
         DisplayGroup.Head(m11);
-        Graph.DefiningRelatorsOfGroup(m11);
+        var rels = Graph.DefiningRelatorsOfGroup(m11);
+        rels.Split(",").Println("All Relators");
+        GlobalStopWatch.Show();
     }
     
     /* |M11| = 7920
@@ -39,7 +41,9 @@ public static class MathieuGroup
         var c = s12[(1, 12), (2, 11), (3, 6), (4, 8), (5, 9), (7, 10)];
         var m12 = Group.Generate("M12", s12, a, b, c);
         DisplayGroup.Head(m12);
-        Graph.DefiningRelatorsOfGroup(m12);
+        var rels = Graph.DefiningRelatorsOfGroup(m12);
+        rels.Split(",").Println("All Relators");
+        GlobalStopWatch.Show();
     }
     
     /* |M12| = 95040
@@ -66,7 +70,9 @@ public static class MathieuGroup
         var b = s21[(1, 21, 5, 12, 20), (2, 16, 3, 4, 17), (6, 18, 7, 19, 15), (8, 13, 9, 14, 11)];
         var m21 = Group.Generate("M21", s21, a, b);
         DisplayGroup.Head(m21);
-        Graph.DefiningRelatorsOfGroup(m21);
+        var rels = Graph.DefiningRelatorsOfGroup(m21);
+        rels.Split(",").Println("All Relators");
+        GlobalStopWatch.Show();
     }
     
     /* |M21| = 20160
@@ -144,7 +150,10 @@ public static class MathieuGroup
         var m22 = Group.Generate("M22", s22, x, y, z);
         DisplayGroup.Head(m22);
         GlobalStopWatch.Show("M22"); // # M22 Time:2.884s
-        Graph.DefiningRelatorsOfGroup(m22);
+        m22.GetGenerators().Println();
+        var rels = Graph.DefiningRelatorsOfGroup(m22);
+        rels.Split(",").Println("All Relators");
+        GlobalStopWatch.Show();
     }
     /* |M22| = 443520
         ...
