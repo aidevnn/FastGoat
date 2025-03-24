@@ -70,6 +70,12 @@ public static class ConwayPolynoms
         else
             allCnPolys[p][n] = cnPoly;
 
+        if (n == 1)
+        {
+            var e = IntExt.Solve_k_pow_m_equal_one_mod_n_strict(p, p - 1);
+            return x + e;
+        }
+
         return cnPoly;
     }
 
@@ -80,7 +86,7 @@ public static class ConwayPolynoms
         var g = PolynomExt.GetConwayPoly(pn);
         var cnPoly0 = g.coefs.Select((k, i) => k * x.Pow(i)).Aggregate(x.Zero, (acc, xi) => acc + xi);
         var cnPoly1 = GetPoly(p, n);
-        Console.WriteLine($"Conway Poly {$"p={p} n={n} |GF({cnPoly0})| = {pn - 1}",-80} Exact:{cnPoly1.Equals(cnPoly0)}");
+        Console.WriteLine($"Conway Poly {$"p={p,2} n={n,2} |GF({cnPoly0})| = {pn - 1}",-80} Exact:{cnPoly1.Equals(cnPoly0)}");
         // var gf = new GFp($"GF({cnPoly})", FG.EPoly(FG.KPoly(ZnInt.KZero(p), 'x', cnPoly.Coefs)));
         // DisplayGroup.Head(Group.Generate(gf));
     }
@@ -179,11 +185,12 @@ public static class ConwayPolynoms
     // Generate Fq polynomial for q < 1024, and check validity 
     public static void RunTestFq()
     {
-        var nb = 1024;
-        foreach (var p in IntExt.Primes10000.Where(p => p * p < nb))
+        Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+        var max_q = 1 << 10;
+        foreach (var p in IntExt.Primes10000.Where(p => p * p < max_q))
         {
-            var mx = (int)(Double.Log(nb) / Double.Log(p));
-            for (int n = 1; n <= mx; n++)
+            var max_n = (int)(Double.Log(max_q) / Double.Log(p));
+            for (int n = 1; n <= max_n; n++)
                 MyPoly(p, n);
         }
     }
