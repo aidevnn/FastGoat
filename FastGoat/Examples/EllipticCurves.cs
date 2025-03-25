@@ -23,10 +23,9 @@ public static class EllipticCurves
 
     static int[][] AbSubTypes(int[] type)
     {
-        var all = type.Select(t => IntExt.Dividors(t).Append(t).ToArray()).MultiLoop()
-            .Select(l => l.Order())
+        var all = type.Select(t => IntExt.DividorsInt(t).Order().ToArray()).MultiLoop()
+            .Select(l => l.Order().ToArray())
             .ToHashSet(new SequenceEquality<int>())
-            .Select(l => l.ToArray())
             .Select(l => l.Where(e => e != 1).ToArray())
             .Where(l => l.Length != 0)
             .Append([1])
@@ -39,16 +38,17 @@ public static class EllipticCurves
 
     static int[] EllFp(BigInteger a, BigInteger b, int p, bool show = false)
     {
-        var (A, B) = (new ZnInt(p, (int)BigInteger.Remainder(a, p)), new ZnInt(p, (int)BigInteger.Remainder(b, p)));
+        var (A, B) = (new ZnBigInt(p, a), new ZnBigInt(p, b));
         var disc = 4 * A.Pow(3) + 27 * B.Pow(2);
         if (disc.IsZero())
             return [];
 
-        var E = new EllGroup<ZnInt>(A, B);
-        var ell = p.Range().Select(k => new ZnInt(p, k)).ToArray().Grid2D()
-            .Select(e => new EllPt<ZnInt>(e.t1, e.t2))
+        var E = new EllGroup<ZnBigInt>(A, B);
+        var ell = p.Range().Select(k => new ZnBigInt(p, k))
+            .Select(x=>(x,y2:x.Pow(3) + A * x + B))
+            .Select(e => (e.x, y: NumberTheory.SqrtModANTV1(e.y2.K, p) * e.x.One))
+            .Select(e => new EllPt<ZnBigInt>(e.x, e.y))
             .Where(e => E.Contains(e.X, e.Y))
-            .Distinct()
             .Order()
             .ToArray();
 
@@ -504,9 +504,9 @@ public static class EllipticCurves
 
         // Torsion C8 x C2
         Transform((y.Pow(2) + x * y, x.Pow(3) - 1070 * x + 7812), TorsionMeth.NagellLutz);
-        // Transform((y.Pow(2) + x * y, x.Pow(3) - 8696090 * x + "9838496100"), TorsionMeth.NagellLutz); // Time:2m20s
+        Transform((y.Pow(2) + x * y, x.Pow(3) - 8696090 * x + "9838496100"), TorsionMeth.NagellLutz);
 
-        GlobalStopWatch.Show("END"); // Time:29.143s
+        GlobalStopWatch.Show("END"); // Time:35.122s
     }
 
     public static void Example6MordellCurve()

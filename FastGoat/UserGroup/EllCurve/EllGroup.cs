@@ -1,6 +1,7 @@
 using System.Collections;
 using FastGoat.Structures;
 using FastGoat.UserGroup.Integers;
+using FastGoat.UserGroup.Padic;
 
 namespace FastGoat.UserGroup.EllCurve;
 
@@ -18,7 +19,9 @@ public struct EllGroup<T> : IGroup<EllPt<T>> where T : struct, IElt<T>, IRingElt
         if (a is Rational a0)
             field = "Q";
         else if (a is ZnInt a1)
-            field = $"Z/{A.P}Z";
+            field = $"Z/{a1.P}Z";
+        else if (a is ZnBigInt a2)
+            field = $"Z/{a2.Mod}Z";
         
         Name = $"Ell[{a},{b}]({field})";
         Hash = (a, b).GetHashCode();
