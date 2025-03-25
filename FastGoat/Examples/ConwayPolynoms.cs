@@ -11,22 +11,26 @@ namespace FastGoat.Examples;
 public static class ConwayPolynoms
 {
     static Dictionary<int, Dictionary<int, KPoly<ZnInt>>> allCnPolys = new();
+    static Dictionary<int, Dictionary<int, KPoly<ZnInt>>> allXPowPolys = new();
+
+    static Dictionary<int, KPoly<ZnInt>> XPow(int p, int n)
+    {
+        var x = FG.ZPoly(p);
+        if (!allXPowPolys.ContainsKey(p))
+            allXPowPolys[p] = new() { [0] = x.Zero };
+
+        if (allXPowPolys[p].ContainsKey(n))
+            return allXPowPolys[p];
+
+        var xp = allXPowPolys[p][n - 1] + x;
+        allXPowPolys[p][n] = xp.FastPow(p) - x;
+        return allXPowPolys[p];
+    }
 
     static KPoly<ZnInt> GetPoly(int p, int n)
     {
         var x = FG.ZPoly(p);
-        var xPow = new Dictionary<int, KPoly<ZnInt>>();
-        var xp = x;
-        for (int k = 1; k <= n; k++)
-        {
-            var xp0 = xp.One;
-            for (int j = 0; j < p; j++)
-                xp0 *= xp;
-
-            xp = xp0;
-            xPow[k] = xp - x;
-        }
-
+        var xPow = XPow(p, n);
         KPoly<ZnInt> Poly_PpowD(int d) => xPow[d]; // x.Pow(p.Pow(d)) - x;
         var seq = EnumerableExt.MultiLoop(n.Range().OrderDescending()
             .Select(i => p.Range().Select(j => j == 0 ? x.Zero : x.Pow(i) * ((n - i) % 2 == 0 ? j : p - j))));
@@ -35,6 +39,7 @@ public static class ConwayPolynoms
         var lPolys = IntExt.Dividors(n).Select(m => (m, l: Poly_PpowD(m))).ToList();
 
         var cnPoly = x.Zero;
+        var pn = p.Pow(n) - 1;
         foreach (var lt in seq)
         {
             var lx = x.Pow(n) + lt.Aggregate(x.Zero, (sum, xi) => xi + sum);
@@ -42,16 +47,14 @@ public static class ConwayPolynoms
                 continue;
 
             var a = FG.EPoly(lx);
-            var pn = p.Pow(n) - 1;
-            var aPow = new Dictionary<int, EPoly<ZnInt>>() { [0] = a.One };
+            var aPow = new Dictionary<int, EPoly<ZnInt>>();
             var acc = a.One;
             var i = 0;
             do
             {
-                ++i;
                 acc *= a;
-                aPow[i] = acc;
-            } while (!acc.Equals(a.One));
+                aPow[++i] = acc;
+            } while (!acc.IsOne());
 
             if (i != pn)
                 continue;
@@ -186,6 +189,9 @@ public static class ConwayPolynoms
     public static void RunTestFq()
     {
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+        GlobalStopWatch.Restart();
+        allCnPolys.Clear();
+        allXPowPolys.Clear();
         var max_q = 1 << 10;
         foreach (var p in IntExt.Primes10000.Where(p => p * p < max_q))
         {
@@ -193,6 +199,8 @@ public static class ConwayPolynoms
             for (int n = 1; n <= max_n; n++)
                 MyPoly(p, n);
         }
+
+        GlobalStopWatch.Show();
     }
 
     public static void FastAutomorphism()

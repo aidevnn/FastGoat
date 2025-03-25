@@ -65,6 +65,27 @@ public static partial class Ring
         return (y0, x0.Add(q.Mul(y0).Opp()));
     }
 
+    public static K FastPow<K>(this K a, int k) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        if (k == 0)
+            return a.One;
+
+        if (k < 0)
+            return a.Inv().FastPow(-k);
+        
+        var (r, a0, e0) = (a.One, a, k);
+        while (e0 > 0)
+        {
+            if (e0 % 2 == 1)
+                r *= a0;
+
+            e0 >>= 1;
+            a0 *= a0;
+        }
+
+        return r;
+    }
+
     public static Monom<Xi> Xi(string c, int n = 1) => new Monom<Xi>(new Xi(c), n);
 
     public static Indeterminates<Xi> Indeterminates(params string[] xs) => new(xs.Select(s => new Xi(s)).ToArray());
