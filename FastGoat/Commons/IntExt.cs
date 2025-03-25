@@ -1042,7 +1042,7 @@ public static class IntExt
     /// <returns>A list of all solutions to the equation k^m = 1 (mod n).</returns>
     public static IEnumerable<int> SolveAll_k_pow_m_equal_one_mod_n(int n, int m)
     {
-        var seq = Enumerable.Range(2, n - 2);
+        var seq = Enumerable.Range(1, n - 1).Reverse();
         var criteria = seq.Where(i => Gcd(i, n) == 1 && PowMod(i, m, n) == 1);
         return criteria;
     }
@@ -1097,7 +1097,17 @@ public static class IntExt
     /// </summary>
     /// <param name="n">The integer for which to compute phi(n).</param>
     /// <returns>The Euler's totient function phi(n).</returns>
-    public static int Phi(int n) => Coprimes(n).Count();
+    public static int Phi(int n)
+    {
+        var (num, denom) = (1, 1);
+        foreach (var pi in PrimesDec(n).Keys)
+        {
+            num *= pi - 1;
+            denom *= pi;
+        }
+
+        return n / denom * num;
+    }
 
     /// <summary>
     /// Calculates the dividors of a given integer.
@@ -1105,6 +1115,23 @@ public static class IntExt
     /// <param name="n">The integer to calculate dividors for.</param>
     /// <returns>An enumerable containing the dividors of the given integer.</returns>
     public static IEnumerable<int> Dividors(int n) => Enumerable.Range(1, n / 2).Where(i => i != n && n % i == 0);
+    public static IEnumerable<int> DividorsInt(int n)
+    {
+        var m = (int)double.Round(double.Sqrt(n));
+        if (m * m > n)
+            --m;
+        
+        for (int i = 1; i <= m; i++)
+        {
+            if (n % i == 0)
+            {
+                yield return i;
+                var j = n / i;
+                if (i != j)
+                    yield return j;
+            }
+        }
+    }
 
     /// <summary>
     /// Calculates the dividors of a given integer.
