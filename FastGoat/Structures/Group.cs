@@ -11,22 +11,31 @@ public static partial class Group
 
     public static void ActivedStorage(bool state = true) => StorageState = state;
     public static int GetStorageCapacity() => StorageState ? StorageCapacity : 0;
-        
-    public static string WithParenthesis(this string name) => (name.First() == '(' && name.Last() == ')') || !name.Contains(' ')
-        ? name
-        : $"({name})";
+
+    public static string WithParenthesis(this string name) =>
+        (name.First() == '(' && name.Last() == ')') || !name.Contains(' ')
+            ? name
+            : $"({name})";
+
     public static string NameParenthesis<T>(this IGroup<T> g) where T : struct, IElt<T> => g.Name.WithParenthesis();
 
     public static T Times<T>(this IGroup<T> g, T e, int p) where T : struct, IElt<T>
     {
-        var acc = g.Neutral();
         if (p == 0)
-            return acc;
+            return g.Neutral();
 
-        var e0 = p > 0 ? e : g.Invert(e);
-        var p0 = p > 0 ? p : -p;
-        for (var k = 0; k < p0; ++k)
-            acc = g.Op(e0, acc);
+        if (p < 0)
+            return Times<T>(g, g.Invert(e), -p);
+
+        var (acc, e2k, p0) = (g.Neutral(), e, p);
+        while (p0 > 0)
+        {
+            if (p0 % 2 == 1)
+                acc = g.Op(acc, e2k);
+
+            p0 >>= 1;
+            e2k = g.Op(e2k, e2k);
+        }
 
         return acc;
     }
@@ -82,7 +91,7 @@ public static partial class Group
 
         return new ReadOnlyDictionary<T, int>(elements);
     }
-    
+
     public static IEnumerable<T> CycleExceptNeutral<T>(ConcreteGroup<T> g, T e) where T : struct, IElt<T>
     {
         var a = g.Neutral();
@@ -265,7 +274,8 @@ public static partial class Group
         return new ConcreteGroup<T>(name, g, generators);
     }
 
-    public static ConcreteGroup<T> DirectProduct<T>(string name, ConcreteGroup<T> g1, ConcreteGroup<T> g2) where T : struct, IElt<T>
+    public static ConcreteGroup<T> DirectProduct<T>(string name, ConcreteGroup<T> g1, ConcreteGroup<T> g2)
+        where T : struct, IElt<T>
     {
         if (!g1.BaseGroup.Equals(g2.BaseGroup))
             throw new GroupException(GroupExceptionType.GroupDef);
