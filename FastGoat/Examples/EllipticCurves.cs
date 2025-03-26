@@ -121,7 +121,7 @@ public static class EllipticCurves
         }
     }
 
-    static (EllGroup<Rational> E, ConcreteGroup<EllPt<Rational>> gEll, int[] abType, HashSet<EllPt<Rational>> intPts)
+    static (EllGroup<Rational> E, ConcreteGroup<EllPt<Rational>> gEll, int[] abType, HashSet<EllPt<Rational>> intPts) 
         NagellLutz(BigInteger a, BigInteger b, EllPt<Rational>[] ellpts)
     {
         var intPts = ellpts.Concat(ellpts.Select(e => new EllPt<Rational>(e.X, -e.Y))).ToHashSet();
@@ -149,8 +149,8 @@ public static class EllipticCurves
         return (E, gEll, abType, intPts);
     }
 
-    static (int[] abType, HashSet<EllPt<Rational>> intPtsF, EllGroup<Rational> E) NagellLutz(BigInteger a, BigInteger b,
-        List<Func<EllPt<Rational>, EllPt<Rational>>> revTrans, bool show = false)
+    static (int[] abType, HashSet<EllPt<Rational>> intPts, EllGroup<Rational> E) 
+        NagellLutz(BigInteger a, BigInteger b, List<Func<EllPt<Rational>, EllPt<Rational>>> revTrans, bool show = false)
     {
         var (disc, Ys) = CandidatsY(a, b);
         var ellpts = SolveX(a, b, Ys, show).ToArray();
@@ -170,48 +170,61 @@ public static class EllipticCurves
         return (abType, intPtsF, E);
     }
 
-    static (int[] abType, HashSet<EllPt<Rational>> intPtsF, EllGroup<Rational> E)
+    static (int[] abType, HashSet<EllPt<Rational>> intPts, EllGroup<Rational> E)
         NagellLutz(BigInteger a, BigInteger b, bool show = false)
     {
         return NagellLutz(a, b, new(), show);
     }
 
-    static void Transform((Polynomial<Rational, Xi> lhs, Polynomial<Rational, Xi> rhs) e,
-        TorsionMeth meth = TorsionMeth.Both)
+    static (KPoly<Rational> P1, List<Func<EllPt<Rational>, EllPt<Rational>>> revTrans) 
+        MinimizedForm((Polynomial<Rational, Xi> lhs, Polynomial<Rational, Xi> rhs) e)
     {
-        Console.WriteLine($"Initial   form {e.lhs} = {e.rhs}");
         var F = -e.lhs + e.rhs;
         var ((y, Y), (x, X)) = F.IndeterminatesAndVariables.Deconstruct();
 
         var a = Ring.Decompose(F, y).Item1[Y].ConstTerm;
-        Console.WriteLine($"{F} = 0");
         var revTrans = new List<Func<EllPt<Rational>, EllPt<Rational>>>();
+
+        if (Logger.Level != LogLevel.Off)
+        {
+            Console.WriteLine($"Initial   form {e.lhs} = {e.rhs}");
+            Console.WriteLine($"{F} = 0");
+        }
 
         if (!a.IsZero())
         {
-            Console.WriteLine($"{Y} <- {Y + a / 2}");
             F = F.Substitute(Y + a / 2, y);
             revTrans.Add(pt => new(pt.X, pt.Y + a / 2));
-            Console.WriteLine($"{F} = 0");
+            if (Logger.Level != LogLevel.Off)
+            {
+                Console.WriteLine($"{Y} <- {Y + a / 2}");
+                Console.WriteLine($"{F} = 0");
+            }
         }
 
         var cX = Ring.Decompose(Ring.Decompose(F, x).Item1[X], y).Item1;
         var b = cX.ContainsKey(Y) ? cX[Y] : F.Zero;
         if (!b.IsZero())
         {
-            Console.WriteLine($"{Y} <- {Y + b * X / 2}");
             F = F.Substitute(Y + b * X / 2, y);
             revTrans.Add(pt => new(pt.X, pt.Y + b.ConstTerm * pt.X / 2));
-            Console.WriteLine($"{F} = 0");
+            if (Logger.Level != LogLevel.Off)
+            {
+                Console.WriteLine($"{Y} <- {Y + b * X / 2}");
+                Console.WriteLine($"{F} = 0");
+            }
         }
 
         var c = Ring.Decompose(F, x).Item1[X.Pow(2)];
         if (!c.IsZero())
         {
-            Console.WriteLine($"{X} <- {X - c / 3}");
             F = F.Substitute(X - c / 3, x);
             revTrans.Add(pt => new(pt.X - c.ConstTerm / 3, pt.Y));
-            Console.WriteLine($"{F} = 0");
+            if (Logger.Level != LogLevel.Off)
+            {
+                Console.WriteLine($"{X} <- {X - c / 3}");
+                Console.WriteLine($"{F} = 0");
+            }
         }
 
         var P = F + Y.Pow(2);
@@ -238,30 +251,38 @@ public static class EllipticCurves
         var d2 = new Rational(decompD.Aggregate(BigInteger.One, (acc, r) => acc * r.Key.Pow(3 * r.Value / 2)));
         if (!(d1 - 1).IsZero())
         {
-            Console.WriteLine($"{X} <- {X / d1}");
-            Console.WriteLine($"{Y} <- {Y / d2}");
             revTrans.Add(pt => new(pt.X / d1, pt.Y / d2));
             F = (d1.Pow(3) * F.Substitute(X / d1, x)).Substitute(Y / d2, y);
-            Console.WriteLine($"{F} = 0");
+            if (Logger.Level != LogLevel.Off)
+            {
+                Console.WriteLine($"{X} <- {X / d1}");
+                Console.WriteLine($"{Y} <- {Y / d2}");
+                Console.WriteLine($"{F} = 0");
+            }
         }
 
-        Console.WriteLine($"Minimized form {Y.Pow(2)} = {F + Y.Pow(2)}");
-        Console.WriteLine();
+        if (Logger.Level != LogLevel.Off)
+        {
+            Console.WriteLine($"Minimized form {Y.Pow(2)} = {F + Y.Pow(2)}");
+            Console.WriteLine();
+        }
 
         var P1 = (F + Y.Pow(2)).ToKPoly(x);
+        return (P1, revTrans);
+    }
+
+    static void Transform((Polynomial<Rational, Xi> lhs, Polynomial<Rational, Xi> rhs) e,
+        TorsionMeth meth = TorsionMeth.Both)
+    {
+        var (P1, revTrans) = MinimizedForm(e);
+        Console.WriteLine($"Elliptic curve      {e.lhs} = {e.rhs}");
+        Console.WriteLine($"Simplified form     y^2 = {P1}");
         var (A, B) = (P1[1], P1[0]);
 
         if ((meth & TorsionMeth.Fp) == TorsionMeth.Fp)
             EllTors(A.Num, B.Num);
         if ((meth & TorsionMeth.NagellLutz) == TorsionMeth.NagellLutz)
-        {
-            var sols = NagellLutz(A.Num, B.Num, revTrans);
-            // TODO: fix integral points
-            // sols.Where(pt => pt.X.IsInteger() && pt.Y.IsInteger()).Order()
-            //     .Println($"Integral Points of {e.lhs} = {e.rhs}"); 
-        }
-
-        Console.WriteLine();
+            NagellLutz(A.Num, B.Num, revTrans);
     }
 
     static (int y, bool sol) ApproxSolver(int x, int n)
@@ -342,6 +363,7 @@ public static class EllipticCurves
 
     public static void Example4TransformCurve()
     {
+        Logger.Level = LogLevel.Level1;
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
         var (x, y) = Ring.Polynomial(Rational.KZero(), "x", "y").Deconstruct();
 
@@ -440,6 +462,7 @@ public static class EllipticCurves
 
     public static void Example5FromLMFDB()
     {
+        Logger.SetOff();
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
         var (x, y) = Ring.Polynomial(Rational.KZero(), "x", "y").Deconstruct();
         GlobalStopWatch.Restart();
@@ -617,7 +640,7 @@ public static class EllipticCurves
             var ellpts = SolveX(a, b, Ys).ToArray();
             var (E, gEll, abType, intPts) = NagellLutz(a, b, ellpts);
             
-            Console.WriteLine($"n = {n} y^2 = x^2 - {n * n}x");
+            Console.WriteLine($"n = {n} Ell y^2 = x^3 - {n * n}x");
             var pts = intPts.Where(e => !e.IsO && !e.Y.IsZero()).Select(e => (pt: e,
                 X: (n.Pow(2) - e.X.Pow(2)) / e.Y, Y: -2 * n * e.X / e.Y, Z: (n.Pow(2) + e.X.Pow(2)) / e.Y)).ToArray();
 
