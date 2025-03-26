@@ -303,6 +303,41 @@ public static class EllipticCurves
         return (0, false);
     }
 
+    static int SchoofEllPtsCount(BigInteger a, BigInteger b, int p)
+    {
+        return p + 1 + p.Range()
+            .Select(x => IntExt.LegendreJacobiBigint((BigInteger.ModPow(x, 3, p) + a * x + b) % p, p))
+            .Sum(k => k <= 1 ? (int)k : -1);
+    }
+
+    static int EllRank(BigInteger a, BigInteger b, int n = 500, bool show = true)
+    {
+        var r = 1.0;
+        var (sumX, sumY, sumX2, sumXY) = (0.0, 0.0, 0.0, 0.0);
+        foreach (var p in IntExt.Primes10000.Take(n))
+        {
+            r *= 1.0 * SchoofEllPtsCount(a, b, p) / p;
+
+            var (x, y) = (double.Log(double.Log(p)), double.Log(r));
+            sumX += x;
+            sumY += y;
+            sumX2 += x * x;
+            sumXY += x * y;
+        }
+
+        var A = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+        var B = (sumY * sumX2 - sumX * sumXY) / (n * sumX2 - sumX * sumX);
+        var rk = (int)double.Round(A);
+        if (show)
+        {
+            Console.WriteLine($"Regr Line y = {A:f4} * x + {B:f4}");
+            Console.WriteLine($"Rank(E[{a},{b}](Q)) = {rk}");
+            Console.WriteLine();
+        }
+
+        return rk;
+    }
+
     public static void Example1()
     {
         var E = new EllGroup<Rational>("-36", "0");
@@ -663,5 +698,31 @@ public static class EllipticCurves
             Console.WriteLine($"X:{X} Y:{Y} Z:{Z}");
             Console.WriteLine($"({Z})^2 = ({X})^2 + ({Y})^2 {(X * X + Y * Y).Equals(Z * Z)}");
         }
+    }
+
+    public static void Example9Rank()
+    {
+        GlobalStopWatch.Restart();
+
+        // Rank 0
+        EllRank(-432, 8208);
+        EllRank(-675, 13662);
+        EllRank(-27, 8694);
+
+        // Rank 1
+        EllRank(0, 3);
+        EllRank(-36, 0);
+        EllRank(-961, 0);
+
+        // Rank 2
+        EllRank(-3024, 46224);
+        EllRank(-5292, -101520);
+        EllRank(-2052, 34560);
+
+        // Rank 0, 1, 2, 3, 4
+        foreach (var d in new[] { 1, 5, 34, 1254, 29274 })
+            EllRank(-d * d, 0);
+
+        GlobalStopWatch.Show(); // Time:5.079s
     }
 }
