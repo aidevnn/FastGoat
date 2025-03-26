@@ -43,19 +43,14 @@ int SchoofEllPtsCount(BigInteger a, BigInteger b, int p)
 //
 // RANKS “CHEAT SHEET”
 // ALICE SILVERBERG
-int EllRank(int a, int b, int n = 500)
+int EllRank(BigInteger a, BigInteger b, int n = 500)
 {
     GlobalStopWatch.AddLap();
     var r = 1.0;
-    var disc = 4 * BigInteger.Pow(a, 3) + 27 * BigInteger.Pow(b, 2);
     var (sumX, sumY, sumX2, sumXY) = (0.0, 0.0, 0.0, 0.0);
     foreach (var p in Primes10000.Take(n))
     {
-        var Np = 1.0 * SchoofEllPtsCount(a, b, p);
-        if (disc % p != 0)
-            r *= Np / p;
-        else
-            r *= (-1.0 + Np) / p;
+        r *= 1.0 * SchoofEllPtsCount(a, b, p) / p;
 
         var (x, y) = (double.Log(double.Log(p)), double.Log(r));
         sumX += x;
@@ -77,7 +72,7 @@ int EllRank(int a, int b, int n = 500)
 
 {
     GlobalStopWatch.Restart();
-    
+
     // Rank 0
     EllRank(-432, 8208);
     EllRank(-675, 13662);
