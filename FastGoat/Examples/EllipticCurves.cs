@@ -170,7 +170,7 @@ public static class EllipticCurves
         return (abType, intPtsF, E);
     }
 
-    static (int[] abType, HashSet<EllPt<Rational>> intPts, EllGroup<Rational> E)
+    public static (int[] abType, HashSet<EllPt<Rational>> intPts, EllGroup<Rational> E)
         NagellLutz(BigInteger a, BigInteger b, bool show = false)
     {
         return NagellLutz(a, b, new(), show);
@@ -310,7 +310,7 @@ public static class EllipticCurves
             .Sum(k => k <= 1 ? (int)k : -1);
     }
 
-    static int EllRank(BigInteger a, BigInteger b, int n = 500, bool show = true)
+    public static int EllRank(BigInteger a, BigInteger b, int n = 500, bool show = true)
     {
         var r = 1.0;
         var (sumX, sumY, sumX2, sumXY) = (0.0, 0.0, 0.0, 0.0);
