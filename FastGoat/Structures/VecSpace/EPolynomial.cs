@@ -114,8 +114,8 @@ public readonly struct EPolynomial<K> : IElt<EPolynomial<K>>, IRingElt<EPolynomi
     {
         var num = Num.ToString();
         var denom = Denom.Equals(Denom.One) ? "" : Denom.ToString();
-        num = num.Contains('+') ? $"({num})" : num;
-        denom = denom.Contains('+') ? $"({denom})" : denom;
+        num = num.Contains('+') || num.Contains('-') ? $"({num})" : num;
+        denom = denom.Contains('+') ||  denom.Contains('-') ? $"({denom})" : denom;
 
         if (denom == "")
             return num;
