@@ -92,7 +92,7 @@ public struct EllGroup<T> : IGroup<EllPt<T>> where T : struct, IElt<T>, IRingElt
         var (x1, y1, x2, y2) = (e1.X, e1.Y, e2.X, e2.Y);
         if (!Contains(x1, y1) || !Contains(x2, y2))
         {
-            Console.WriteLine(new { e1, e2 });
+            Console.WriteLine(new { e1, e2, E = this });
             throw new GroupException(GroupExceptionType.GroupDef);
         }
         

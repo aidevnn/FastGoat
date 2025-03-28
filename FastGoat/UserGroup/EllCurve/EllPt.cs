@@ -27,7 +27,7 @@ public readonly struct EllPt<T> : IElt<EllPt<T>> where T : struct, IElt<T>, IRin
     {
         if ((IsO && !other.IsO) || (!IsO && other.IsO))
             return false;
-        
+
         return (IsO && other.IsO) || (X.Equals(other.X) && Y.Equals(other.Y));
     }
 
@@ -42,7 +42,7 @@ public readonly struct EllPt<T> : IElt<EllPt<T>> where T : struct, IElt<T>, IRin
         if (other.IsO)
             return 1;
 
-        return (X0: X, Y0: Y).CompareTo((other.X, other.Y));
+        return (X, Y).CompareTo((other.X, other.Y));
     }
 
     public override int GetHashCode() => Hash;
