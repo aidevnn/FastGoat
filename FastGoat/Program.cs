@@ -40,17 +40,18 @@ HashSet<BigInteger> TorsionFree(ConcreteGroup<EllPt<Rational>> g, HashSet<EllPt<
     if (!set.Any())
         return new();
 
-    var setRemIntsPts = set.OrderBy(e => g.Contains(e) ? 0 : 1).ThenBy(e => e).ToHashSet();
+    var setRemIntPts = set.OrderBy(e => g.Contains(e) ? 0 : 1).ThenBy(e => e).ToHashSet();
     var setRankGens = new List<EllPt<Rational>>();
     var setIntPts = g.ToHashSet();
-    setRemIntsPts.ExceptWith(g);
-    while (setRemIntsPts.Count != 0)
+    setRemIntPts.ExceptWith(g);
+    var E = (EllGroup<Rational>)g.BaseGroup;
+    while (setRemIntPts.Count != 0)
     {
-        var e0 = setRemIntsPts.MaxBy(t0 =>
+        var e0 = setRemIntPts.MaxBy(t0 =>
         {
             var tmp = setIntPts.Union([t0, g.Invert(t0)]).ToHashSet();
             foreach (var pt in tmp.ToArray())
-                AddNewIntegralPoint((EllGroup<Rational>)g.BaseGroup, tmp, pt);
+                AddNewIntegralPoint(E, tmp, pt);
 
             return tmp.Count;
         });
@@ -61,9 +62,9 @@ HashSet<BigInteger> TorsionFree(ConcreteGroup<EllPt<Rational>> g, HashSet<EllPt<
 
         setIntPts.UnionWith([e0, e1]);
         foreach (var pt in setIntPts.ToArray())
-            AddNewIntegralPoint((EllGroup<Rational>)g.BaseGroup, setIntPts, pt);
+            AddNewIntegralPoint(E, setIntPts, pt);
 
-        setRemIntsPts.ExceptWith(setIntPts);
+        setRemIntPts.ExceptWith(setIntPts);
     }
     
     return setRankGens.Select(e => e.X.Num).ToHashSet();
@@ -86,7 +87,7 @@ HashSet<EllPt<Rational>> SearchTorsionFree(int n, int rk, HashSet<EllPt<Rational
         var rks = TorsionFree(ng1.gEll, xs);
 
         var start = -(int)SqrtBigInt(n1);
-        Console.WriteLine($"E={ng1.E} b={b0}");
+        Console.WriteLine($"{ng1.E} ---> {ng1.E} with b={b0}");
         foreach (var (x, y2) in nMax.SeqLazy(start)
                      .Select(x => (x: new BigInteger(x), y2: BigInteger.Pow(x, 3) - n1 * x)))
         {
@@ -128,7 +129,7 @@ HashSet<EllPt<Rational>> SearchTorsionFree(int n, int rk, HashSet<EllPt<Rational
     foreach (var n in seq)
     {
         Console.WriteLine($"Elliptic curve y^2 = x^3 - {n}^2 * x");
-        var rank = EllipticCurves.EllRank(-n * n, 0);
+        var rank = EllipticCurves.EllRank(-n * n, 0); // instable
         var ng = EllipticCurves.NagellLutzTorsionGroup(-n * n, 0);
         DisplayGroup.HeadElements(ng.gEll);
 
@@ -150,5 +151,5 @@ HashSet<EllPt<Rational>> SearchTorsionFree(int n, int rk, HashSet<EllPt<Rational
         Console.WriteLine();
     }
     
-    GlobalStopWatch.Show();
+    GlobalStopWatch.Show(); // Time:1m41s
 }

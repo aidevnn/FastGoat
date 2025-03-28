@@ -699,21 +699,6 @@ public static class EllipticCurves
             Console.WriteLine($"Check points X^2+Y^2=Z^2:{pts.All(e => (e.X.Pow(2) + e.Y.Pow(2)).Equals(e.Z.Pow(2)))}");
             Console.WriteLine();
         }
-
-        {
-            Rational x = "1681/49";
-            Rational y = "29520/343";
-            var n = 31; // TODO: find primitve Pythagorean triple X,Y,Z with n=s^2 XY/ 2 where s in Rational
-            var (X, Y, Z) = ((n.Pow(2) - x.Pow(2)) / y, -2 * n * x / y, (n.Pow(2) + x.Pow(2)) / y);
-            var (a, b) = (-31 * 31, 0);
-            var (disc, Ys) = CandidatsY(a, b);
-            var ellpts = SolveX(a, b, Ys).ToArray();
-            var (E31, gEll, abType, intPts) = NagellLutz(a, b, ellpts);
-            intPts.Println("Pts");
-            Console.WriteLine($"({x}, {y}) is in E31 {E31.Contains(x, y)}");
-            Console.WriteLine($"X:{X} Y:{Y} Z:{Z}");
-            Console.WriteLine($"({Z})^2 = ({X})^2 + ({Y})^2 {(X * X + Y * Y).Equals(Z * Z)}");
-        }
     }
 
     public static void Example9Rank()
