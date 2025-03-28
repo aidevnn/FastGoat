@@ -21,6 +21,8 @@ public static class EllipticCurves
         Both = 3
     }
 
+    public static bool IsIntegral(this EllPt<Rational> pt) => pt.IsO || (pt.X.IsInteger() && pt.Y.IsInteger());
+
     static int[][] AbSubTypes(int[] type)
     {
         var all = type.Select(t => IntExt.DividorsInt(t).Order().ToArray()).MultiLoop()
@@ -45,7 +47,7 @@ public static class EllipticCurves
 
         var E = new EllGroup<ZnBigInt>(A, B);
         var ell = p.Range().Select(k => new ZnBigInt(p, k))
-            .Select(x=>(x,y2:x.Pow(3) + A * x + B))
+            .Select(x => (x, y2: x.Pow(3) + A * x + B))
             .Select(e => (e.x, y: NumberTheory.SqrtModANTV1(e.y2.K, p) * e.x.One))
             .Select(e => new EllPt<ZnBigInt>(e.x, e.y))
             .Where(e => E.Contains(e.X, e.Y))
@@ -121,7 +123,7 @@ public static class EllipticCurves
         }
     }
 
-    static (EllGroup<Rational> E, ConcreteGroup<EllPt<Rational>> gEll, int[] abType, HashSet<EllPt<Rational>> intPts) 
+    static (EllGroup<Rational> E, ConcreteGroup<EllPt<Rational>> gEll, int[] abType, HashSet<EllPt<Rational>> intPts)
         NagellLutz(BigInteger a, BigInteger b, EllPt<Rational>[] ellpts)
     {
         var intPts = ellpts.Concat(ellpts.Select(e => new EllPt<Rational>(e.X, -e.Y))).ToHashSet();
@@ -149,7 +151,7 @@ public static class EllipticCurves
         return (E, gEll, abType, intPts);
     }
 
-    static (int[] abType, HashSet<EllPt<Rational>> intPts, EllGroup<Rational> E) 
+    static (int[] abType, HashSet<EllPt<Rational>> intPts, EllGroup<Rational> E)
         NagellLutz(BigInteger a, BigInteger b, List<Func<EllPt<Rational>, EllPt<Rational>>> revTrans, bool show = false)
     {
         var (disc, Ys) = CandidatsY(a, b);
@@ -170,13 +172,21 @@ public static class EllipticCurves
         return (abType, intPtsF, E);
     }
 
-    public static (int[] abType, HashSet<EllPt<Rational>> intPts, EllGroup<Rational> E)
+    static (int[] abType, HashSet<EllPt<Rational>> intPts, EllGroup<Rational> E)
         NagellLutz(BigInteger a, BigInteger b, bool show = false)
     {
         return NagellLutz(a, b, new(), show);
     }
 
-    static (KPoly<Rational> P1, List<Func<EllPt<Rational>, EllPt<Rational>>> revTrans) 
+    public static (EllGroup<Rational> E, ConcreteGroup<EllPt<Rational>> gEll, int[] abType,
+        HashSet<EllPt<Rational>> intPts) NagellLutzTorsionGroup(BigInteger a, BigInteger b)
+    {
+        var (disc, Ys) = CandidatsY(a, b);
+        var ellpts = SolveX(a, b, Ys, show: false).ToArray();
+        return NagellLutz(a, b, ellpts);
+    }
+
+    static (KPoly<Rational> P1, List<Func<EllPt<Rational>, EllPt<Rational>>> revTrans)
         MinimizedForm((Polynomial<Rational, Xi> lhs, Polynomial<Rational, Xi> rhs) e)
     {
         var F = -e.lhs + e.rhs;
@@ -664,17 +674,23 @@ public static class EllipticCurves
 
         primXYZ.Println(e => $"{e.z}^2 = {e.x}^2 + {e.y}^2", $"Z^2 = X^2 + Y^2, Count:{primXYZ.Length}");
         Console.WriteLine();
+        // primXYZ.Where(e => e.x < 65000 && e.y < 65000 && e.x * e.y > 0).Select(e => e.x * e.y / 2).Select(e =>
+        //         IntExt.PrimesDec(e).Select(f => (f.Key, f.Value % 2))
+        //             .Aggregate(1, (acc, f) => acc * f.Key.Pow(f.Item2)))
+        //     .Distinct().Order().Take(1000).Println($"n =");
+        // Console.ReadLine();
 
         foreach (var (x, y, z) in primXYZ)
         {
             var n = (x * y) / 2;
             Console.WriteLine($"{z}^2 = {x}^2 + {y}^2 and n = {x * y / 2}");
-            
+
             var (a, b) = (-n * n, 0);
             var (disc, Ys) = CandidatsY(a, b);
             var ellpts = SolveX(a, b, Ys).ToArray();
+            EllRank(a, b);
             var (E, gEll, abType, intPts) = NagellLutz(a, b, ellpts);
-            
+
             Console.WriteLine($"n = {n} Ell y^2 = x^3 - {n * n}x");
             var pts = intPts.Where(e => !e.IsO && !e.Y.IsZero()).Select(e => (pt: e,
                 X: (n.Pow(2) - e.X.Pow(2)) / e.Y, Y: -2 * n * e.X / e.Y, Z: (n.Pow(2) + e.X.Pow(2)) / e.Y)).ToArray();
