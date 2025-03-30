@@ -66,11 +66,11 @@ HashSet<BigInteger> TorsionFree(ConcreteGroup<EllPt<Rational>> g, HashSet<EllPt<
 
         setRemIntPts.ExceptWith(setIntPts);
     }
-    
+
     return setRankGens.Select(e => e.X.Num).ToHashSet();
 }
 
-HashSet<EllPt<Rational>> SearchTorsionFree(int n, int rk, HashSet<EllPt<Rational>> intPts, int nMax = 50000)
+HashSet<EllPt<Rational>> SearchTorsionFree(int n, int rk, HashSet<EllPt<Rational>> intPts, int nMax = 100000)
 {
     var setGensInt = new HashSet<BigInteger>();
     var b = 0;
@@ -86,9 +86,9 @@ HashSet<EllPt<Rational>> SearchTorsionFree(int n, int rk, HashSet<EllPt<Rational
 
         var rks = TorsionFree(ng1.gEll, xs);
 
-        var start = -(int)SqrtBigInt(n1);
+        var nMin = int.Min((int)SqrtBigInt(n1), nMax / 2);
         Console.WriteLine($"{ng1.E} ---> {ng1.E} with b={b0}");
-        foreach (var (x, y2) in nMax.SeqLazy(start)
+        foreach (var (x, y2) in nMin.SeqLazy(step: -1).Concat((nMax / 2).SeqLazy(nMin))
                      .Select(x => (x: new BigInteger(x), y2: BigInteger.Pow(x, 3) - n1 * x)))
         {
             if (rks.Count == rk)
@@ -97,11 +97,10 @@ HashSet<EllPt<Rational>> SearchTorsionFree(int n, int rk, HashSet<EllPt<Rational
             if (xs.Any(e => !e.IsO & e.X.Num == x) || y2 <= 0)
                 continue;
 
-            var dec = PrimesDec(y2);
-            if (dec.Any(e => e.Value % 2 != 0))
+            var y = SqrtBigInt(y2);
+            if (y2 != y * y)
                 continue;
 
-            var y = dec.Select(e => BigInteger.Pow(e.Key, e.Value / 2)).Aggregate((ai, aj) => ai * aj);
             var pt0 = new EllPt<Rational>(new(x), new(y));
 
             AddNewIntegralPoint(ng1.E, xs, pt0);
@@ -122,6 +121,7 @@ HashSet<EllPt<Rational>> SearchTorsionFree(int n, int rk, HashSet<EllPt<Rational
         .ToHashSet();
 }
 
+void test3Rank()
 {
     Ring.DisplayPolynomial = MonomDisplay.StarCaret;
     GlobalStopWatch.Restart();
@@ -150,6 +150,153 @@ HashSet<EllPt<Rational>> SearchTorsionFree(int n, int rk, HashSet<EllPt<Rational
         GlobalStopWatch.Show();
         Console.WriteLine();
     }
-    
+
     GlobalStopWatch.Show(); // Time:1m41s
+}
+
+// void testNumField()
+{
+    var (X, Y, b, m, n, e) = Ring.Polynomial(Rational.KOne(), "X", "Y", "b", "m", "n", "e")
+        .Select(hi => new EPolynomial<Rational>(hi, hi.One)).Deconstruct();
+    var (x, y) = (m / e.Pow(2), n / e.Pow(3));
+    var P = x.Pow(3) - b * x - y.Pow(2);
+    Console.WriteLine(P);
+    Console.WriteLine(P.Num / e.Pow(6).Num);
+}
+
+BigInteger SquareFree(BigInteger a)
+{
+    if (a == 0 || a * a.Sign == 1)
+        return a;
+
+    return a.Sign * PrimesDec(a.Sign * a).Select(e => BigInteger.Pow(e.Key, e.Value % 2))
+        .Aggregate((ai, aj) => ai * aj);
+}
+
+BigInteger Alpha(EllGroup<Rational> E, EllPt<Rational> pt)
+{
+    if (pt.IsO)
+        return 0;
+
+    if (pt.X.IsZero() && pt.Y.IsZero())
+        return SquareFree(E.A.Num);
+
+    return SquareFree(pt.X.Num);
+}
+
+void craft1()
+{
+    var n = 5;
+    Console.WriteLine($"Elliptic curve y^2 = x^3 - {n}^2 * x");
+    // var rank = EllipticCurves.EllRank(-n * n, 0); // instable
+    {
+        var ng = EllipticCurves.NagellLutzTorsionGroup(-n * n, 0);
+        DisplayGroup.HeadElements(ng.gEll);
+
+        var intPts = ng.intPts.Union(ng.gEll).ToHashSet();
+        foreach (var pt in ng.intPts)
+            AddNewIntegralPoint(ng.E, intPts, pt);
+
+        intPts.Println("intPts");
+
+        var alphas = intPts.Select(pt => Alpha(ng.E, pt)).Where(e => e != 0)
+            .SelectMany(e => DividorsBigInt(e))
+            .SelectMany(e => new[] { e, -e }).ToHashSet();
+        Console.WriteLine($"Alphas:[{alphas.Order().Glue(", ")}]");
+
+        var b1 = alphas.Select(e => (e, -n / e)).ToHashSet();
+        b1.Select(e => $"N^2 = {e.Item1}*M^4 + {e.Item2}*e^4").Println("System alpha");
+        Console.WriteLine();
+    }
+
+    {
+        var ng = EllipticCurves.NagellLutzTorsionGroup(4 * n * n, 0);
+        DisplayGroup.HeadElements(ng.gEll);
+
+        var intPts = ng.intPts.Union(ng.gEll).ToHashSet();
+        foreach (var pt in ng.intPts)
+            AddNewIntegralPoint(ng.E, intPts, pt);
+
+        intPts.Println("intPts");
+
+        var alphas = intPts.Select(pt => Alpha(ng.E, pt)).Where(e => e != 0)
+            .SelectMany(e => DividorsBigInt(e))
+            .SelectMany(e => new[] { e, -e }).ToHashSet();
+        Console.WriteLine($"Alphas:[{alphas.Order().Glue(", ")}]");
+
+        var b1 = alphas.Select(e => (e, 4 * n / e)).ToHashSet();
+        b1.Select(e => $"N^2 = {e.Item1}*M^4 + {e.Item2}*e^4").Println("System alpha bar");
+        Console.WriteLine();
+    }
+}
+
+void craft2()
+{
+    var nMax = 50000;
+    var seq = new[] { 5, 6, 7, 14, 15, 21, 22, 23, 29, 30, 31, 34, 39, 41, 78, 210, 840, 1254, 29274 };
+    foreach (var n in seq)
+    {
+        nMax.SeqLazy(1)
+            .Select(i => (i, d: (int)double.Round(double.Sqrt(i * i * n)), d2: i * i * n))
+            .Where(e => e.d2 == e.d * e.d)
+            .Take(5)
+            .Println($"n = {n} (d, d2)");
+    }
+}
+
+HashSet<(Rational x, Rational y, Rational z)> SolveEq(int a, int b, int c, int n)
+{
+    var m = double.Min(a, int.Min(b, c));
+    var max = (int)double.Sqrt(n / m) + 1;
+    var rg = max.Range().Select(i => new Rational(i)).ToArray().Grid2D();
+    return rg.Select(e => (x: e.t1, y: e.t2)).Select(e => (e.x, e.y, az2: (n - a * e.x.Pow(2) - b * e.y.Pow(2)) / c))
+        .Where(e => e.az2.Sign == 1 && e.az2.IsInteger() && e.az2.IsSquare)
+        .Select(e => (e.x, e.y, z: Rational.Sqrt(e.az2)))
+        .ToHashSet();
+}
+
+bool TunnelCriterion(int ni)
+{
+    var nf = PrimesDec(ni).Select(e => e.Key.Pow(e.Value % 2)).Aggregate(1, (acc, ai) => acc * ai);
+    Console.WriteLine(new { ni, nf });
+
+    var A = SolveEq(2, 1, 32, nf);
+    A.Println("A:2x^2+y^2+32z^2=n");
+    var B = SolveEq(2, 1, 8, nf);
+    B.Println("B:2x^2+y^2+8z^2=n");
+    var C = SolveEq(8, 2, 64, nf);
+    C.Println("C:8x^2+2y^2+64z^2=n");
+    var D = SolveEq(8, 2, 16, nf);
+    D.Println("D:8x^2+2y^2+16z^2=n");
+
+    if (nf % 2 == 1)
+        return A.SetEquals(B);
+
+    return C.SetEquals(D);
+}
+
+{
+    GlobalStopWatch.Restart();
+    var set = new HashSet<int>();
+    HashSet<int> A003274 =
+    [
+        5, 6, 7, 13, 14, 15, 20, 21, 22, 23, 24, 28, 29, 30, 31, 34, 37, 38, 39, 41, 45, 46, 47, 52, 53, 54, 55, 56, 60,
+        61, 62, 63, 65, 69, 70, 71, 77, 78, 79, 80, 84, 85, 86, 87, 88, 92, 93, 94, 95, 96, 101, 102, 103, 109, 110,
+        111, 112, 116, 117, 118, 119, 120, 124, 125, 126
+    ];
+
+    var (min, max) = (2, 20);
+    A003274.RemoveWhere(i => i < min || i > max);
+    for (int n = min; n <= max; ++n)
+    {
+        Console.WriteLine($"Elliptic curve y^2 = x^3 - {n}^2 * x");
+        // var rank = EllipticCurves.EllRank(-n * n, 0); // instable
+        if (TunnelCriterion(n))
+            set.Add(n);
+    }
+
+    Console.WriteLine($"Congruent Numbers upto {max} [{set.Glue(", ")}]");
+    set.Except(A003274).Println("errors");
+    A003274.Except(set).Println("missing");
+    GlobalStopWatch.Show();
 }
