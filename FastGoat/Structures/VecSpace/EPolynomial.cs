@@ -6,6 +6,8 @@ public readonly struct EPolynomial<K> : IElt<EPolynomial<K>>, IRingElt<EPolynomi
 {
     public Polynomial<K, Xi> Num { get; }
     public Polynomial<K, Xi> Denom { get; }
+    public EPolynomial<K> ENum => new(Num, Num.One);
+    public EPolynomial<K> EDenom => new(Denom, Denom.One);
     public PolynomialBasis<K, Xi> Basis { get; }
     public int P => Num.P;
 
