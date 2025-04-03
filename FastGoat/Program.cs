@@ -23,7 +23,7 @@ using static FastGoat.Commons.IntExt;
 
 Console.WriteLine("Hello World");
 Ring.DisplayPolynomial = MonomDisplay.StarCaret;
-RecomputeAllPrimesUpTo(20000000);
+RecomputeAllPrimesUpTo(5000000);
 
 void AddNewIntegralPoint(EllGroup<Rational> g, HashSet<EllPt<Rational>> set, EllPt<Rational> pt)
 {
@@ -72,32 +72,128 @@ HashSet<Rational> AllAlpha(HashSet<Rational> gens)
     return set;
 }
 
-void testNumField()
-{
-    var (X, Y, n, u, v, w) = Ring.Polynomial(Rational.KOne(), "X", "Y", "n", "u", "v", "w")
-        .Select(hi => new EPolynomial<Rational>(hi, hi.One)).Deconstruct();
-    var (x, y) = (u / w.Pow(2), v / w.Pow(3));
-    var P = x.Pow(3) - n * n * x - y.Pow(2);
-    Console.WriteLine(P);
-    Console.WriteLine(P.ENum / w.Pow(6).ENum);
-}
-
-(BigInteger M, BigInteger e) SolveEq(BigInteger b1, BigInteger b2, int nMax = 100)
+(BigInteger M, BigInteger e) SolveEq(BigInteger b1, BigInteger b2, int nMax = 200)
 {
     if (b1 < 0 && b2 < 0)
         return (0, 0);
 
-    foreach (var (M, e) in nMax.SeqLazy(1).Grid2D(nMax.SeqLazy(1)))
+    foreach (var e in nMax.SeqLazy(1).Where(e => GcdBigInt(e, b1) == 1))
     {
-        var N2 = (b1 * BigInteger.Pow(M, 4) + b2 * BigInteger.Pow(e, 4));
-        // Console.WriteLine(new { M, e, N2 });
-        if (N2 < 0) continue;
-        var N = SqrtBigInt(N2);
-        if (N * N == N2)
-            return (M, e);
+        foreach (var M in nMax.SeqLazy(1).Where(M => GcdBigInt(e, M) == 1 && GcdBigInt(M, b2) == 1))
+        {
+            var N2 = (b1 * BigInteger.Pow(M, 4) + b2 * BigInteger.Pow(e, 4));
+            // Console.WriteLine(new { M, e, N2 });
+            if (N2 < 0) continue;
+            var N = SqrtBigInt(N2);
+            if (N * N == N2)
+                return (M, e);
+        }
     }
 
     return (0, 0);
+}
+
+List<EllPt<Rational>> Descent1(EllGroup<Rational> E, EllPt<Rational> P,
+    Dictionary<EllPt<Rational>, HashSet<EllPt<Rational>>> cosets)
+{
+    var Q0 = P;
+    var list = new List<EllPt<Rational>>();
+
+    do
+    {
+        list.Add(Q0);
+        var h = Q0.Height();
+        var Q1 = cosets.Keys.ToDictionary(Qi => Qi, Qi => E.Op(Q0, E.Invert(Qi)))
+            .Where(e => e.Value.Height() < h)
+            .OrderBy(e => e.Key.Height())
+            .Select(e => e.Key)
+            .FirstOrDefault(new EllPt<Rational>());
+
+        Q0 = cosets[Q1].MinBy(e => e.Height());
+    } while (!Q0.IsO);
+
+    return list;
+}
+
+HashSet<EllPt<Rational>> Descent2(ConcreteGroup<EllPt<Rational>> E, HashSet<EllPt<Rational>> pts)
+{
+    var setPts = new HashSet<EllPt<Rational>>();
+    foreach (var pt in pts.Except(E).OrderBy(pt => pt.Height()).ThenBy(pt => !pt.IsIntegral()))
+    {
+        var pt1 = pt;
+        while (true)
+        {
+            var pt2 = E.Select(pt0 => E.Op(pt0, pt1)).MinBy(pt0 => pt0.Height());
+            if (pt2.Height() < pt1.Height())
+            {
+                pt1 = pt2;
+            }
+            else
+            {
+                setPts.Add(pt1);
+                break;
+            }
+        }
+    }
+
+    return setPts;
+}
+
+(EllGroup<Rational> E, ConcreteGroup<EllPt<Rational>> gEll, HashSet<EllPt<Rational>> intPts, HashSet<EllPt<Rational>>)
+    EllGenerators(BigInteger b)
+{
+    var ng = EllipticCurves.NagellLutzTorsionGroup(b, 0);
+    var x = FG.QPoly();
+    Console.WriteLine($"Elliptic curve y^2 = {x.Pow(3) + new Rational(b) * x}");
+    var divs_b = DividorsBigInt(BigInteger.Abs(b)).Order().ToArray();
+    var sols = divs_b.SelectMany(b1 => new[] { b1, -b1 }).Select(b1 => (b1, Me: SolveEq(b1, b / b1)))
+        .Where(e => e.Me.M != 0)
+        .Select(e => (e.b1, X: new Rational(e.b1 * BigInteger.Pow(e.Me.M, 2), BigInteger.Pow(e.Me.e, 2))))
+        .Select(e => (e.b1, e.X, Y2: e.X.Pow(3) + b * e.X))
+        .Select(e => (e.b1, e.X, e.Y2, Y: Rational.Sqrt(e.Y2)))
+        .ToArray();
+    var listPts = sols.Select(e => new EllPt<Rational>(e.X, e.Y)).SelectMany(e => new[] { e, ng.E.Invert(e) })
+        .ToHashSet();
+
+    foreach (var pt in listPts.Where(pt => pt.IsIntegral()).ToHashSet())
+        AddNewIntegralPoint(ng.E, ng.intPts, pt);
+
+    DisplayGroup.HeadElements(ng.gEll);
+    // ng.intPts.OrderBy(e => e.Height()).ThenBy(e => e).Println("Integral points");
+
+    var set0 = listPts.Append(ng.E.O).Union(ng.intPts).ToHashSet();
+    var cosets = set0.Select(e => (e, e2: ng.E.Op(e, e))).GroupBy(e => e.e2)
+        .ToDictionary(e => e.Key, e => e.Select(f => f.e).ToHashSet());
+    var set1 = set0.OrderBy(pt => !pt.IsIntegral()).ThenBy(pt => pt.Height())
+        .Select(pt => Descent1(ng.E, pt, cosets).Last()).ToHashSet();
+    var set2 = Descent2(ng.gEll, set1);
+
+    Console.WriteLine($"Start[{set0.Count}] Descent1[{set1.Count}] Descent2[{set2.Count}]");
+    var setPts = ng.gEll.ToHashSet();
+    var gens = ng.gEll.GetGenerators().ToHashSet();
+    foreach (var pt in set2.OrderBy(pt => !pt.IsIntegral()).ThenBy(pt => pt.Height()))
+    {
+        if (setPts.Add(pt))
+        {
+            gens.Add(pt);
+            var pti = ng.E.Invert(pt);
+            if (pt.IsIntegral())
+            {
+                AddNewIntegralPoint(ng.E, setPts, pt);
+                AddNewIntegralPoint(ng.E, setPts, pti);
+            }
+
+            setPts.UnionWith(setPts.Select(pt0 => ng.E.Op(pt0, pt)).ToHashSet());
+            setPts.UnionWith(setPts.Select(pt0 => ng.E.Op(pt0, pti)).ToHashSet());
+        }
+    }
+
+    var rank1 = gens.Count - ng.gEll.GetGenerators().Count();
+    var rank2 = EllipticCurves.EllRank(b, 0); // instable
+    Console.WriteLine($"{ng.E} Gens:[{gens.Glue(", ")}] Rank = {rank1} / {rank2} {(rank1 == rank2 ? "PASS" : "FAIL")}");
+    Console.WriteLine();
+
+    return (ng.E, ng.gEll, ng.intPts, gens);
 }
 
 HashSet<BigInteger> TorsionFree(ConcreteGroup<EllPt<Rational>> g, HashSet<EllPt<Rational>> set)
@@ -200,11 +296,7 @@ EllPt<Rational> PsiEll(EllPt<Rational> pt, Rational b, int k = 1)
     return new(x, y);
 }
 
-EllPt<Rational> PhiEll(EllPt<Rational> pt, Rational b)
-{
-    var pt1 = PsiEll(pt, b);
-    return pt1.IsO ? pt1 : new EllPt<Rational>(pt1.X / 4, pt1.Y / 8);
-}
+EllPt<Rational> PhiEll(EllPt<Rational> pt, Rational b) => PsiEll(pt, b, 2);
 
 (EllGroup<Rational> E, ConcreteGroup<EllPt<Rational>> gEll, HashSet<EllPt<Rational>> setGens,
     HashSet<EllPt<Rational>> intPts) IntegralPoints(int b)
@@ -229,6 +321,7 @@ EllPt<Rational> PhiEll(EllPt<Rational> pt, Rational b)
     return (ng.E, ng.gEll, setGens, intPts);
 }
 
+void craft1()
 {
     Ring.DisplayPolynomial = MonomDisplay.StarCaret;
     GlobalStopWatch.Restart();
@@ -245,6 +338,7 @@ EllPt<Rational> PhiEll(EllPt<Rational> pt, Rational b)
 
         Console.WriteLine($"Start y^2 = {x.Pow(3) - b * x}");
         {
+            var divs_b = DividorsBigInt(BigInteger.Abs(b)).Order().ToArray();
             var ng = IntegralPoints(-b);
             rank1 = ng.setGens.Count;
 
@@ -268,10 +362,23 @@ EllPt<Rational> PhiEll(EllPt<Rational> pt, Rational b)
                 checkHom.Where(e => !e.Item2.Item1.Equals(e.Item2.Item2)).Println("Homomorphism");
                 throw new();
             }
+
+            Console.WriteLine($"Divs:[{divs_b.Glue(", ")}]");
+            var sols = divs_b.SelectMany(b1 => new[] { b1, -b1 }).Select(b1 => (b1, Me: SolveEq(b1, -b / b1)))
+                .Where(e => e.Me.M != 0)
+                .Select(e => (e.b1, X: new Rational(e.b1 * BigInteger.Pow(e.Me.M, 2), BigInteger.Pow(e.Me.e, 2))))
+                .Select(e => (e.b1, e.X, Y2: e.X.Pow(3) - b * e.X))
+                .Select(e => (e.b1, e.X, e.Y2, Y: Rational.Sqrt(e.Y2)))
+                .ToArray();
+            var sols2 = sols.Select(e => new EllPt<Rational>(e.X, e.Y)).ToHashSet();
+
+            sols.Select(e => $"b1:{e.b1} X:{e.X} Y2:{e.Y2} {e.Y2.IsSquare}")
+                .Println($"Check:{sols2.IsSupersetOf(ng.setGens)}");
         }
 
         Console.WriteLine($"Continue y^2 = {x.Pow(3) + 4 * new Rational(b) * x}");
         {
+            var divs_b = DividorsBigInt(BigInteger.Abs(4 * b)).Order().ToArray();
             var ng = IntegralPoints(4 * b);
 
             var dico1 = ng.intPts.ToDictionary(a => a, a => PsiEll(a, ng.E.A));
@@ -294,6 +401,18 @@ EllPt<Rational> PhiEll(EllPt<Rational> pt, Rational b)
                 checkHom.Where(e => !e.Item2.Item1.Equals(e.Item2.Item2)).Println("Homomorphism");
                 throw new();
             }
+
+            Console.WriteLine($"Divs:[{divs_b.Glue(", ")}]");
+            var sols = divs_b.SelectMany(b1 => new[] { b1, -b1 }).Select(b1 => (b1, Me: SolveEq(b1, 4 * b / b1)))
+                .Where(e => e.Me.M != 0)
+                .Select(e => (e.b1, X: new Rational(e.b1 * BigInteger.Pow(e.Me.M, 2), BigInteger.Pow(e.Me.e, 2))))
+                .Select(e => (e.b1, e.X, Y2: e.X.Pow(3) + 4 * b * e.X))
+                .Select(e => (e.b1, e.X, e.Y2, Y: Rational.Sqrt(e.Y2)))
+                .ToArray();
+            var sols2 = sols.Select(e => new EllPt<Rational>(e.X, e.Y)).ToHashSet();
+
+            sols.Select(e => $"b1:{e.b1} X:{e.X} Y2:{e.Y2} {e.Y2.IsSquare}")
+                .Println($"Check:{sols2.IsSupersetOf(ng.setGens)}");
         }
 
         Console.WriteLine($"#Alpha    = {seqAlphas.Count,3} [{seqAlphas.Order().Glue(", ")}]");
@@ -306,4 +425,18 @@ EllPt<Rational> PhiEll(EllPt<Rational> pt, Rational b)
 
     GlobalStopWatch.Show();
     Console.WriteLine();
+    Console.Beep();
+}
+
+// void craft2()
+{
+    Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+    GlobalStopWatch.Restart();
+    var seq = new[] { 1, 5, 6, 7, 14, 15, 21, 22, 29, 30, 31, 34, 78, 210, 1254, 29274 }.Select(n => n * n)
+        .Concat([-1, 5]).Order().ToArray();
+
+    foreach (var b in seq)
+        EllGenerators(-b);
+
+    GlobalStopWatch.Show(); // Time:48.407s
 }

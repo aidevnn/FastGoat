@@ -23,6 +23,14 @@ public static class EllipticCurves
 
     public static bool IsIntegral(this EllPt<Rational> pt) => pt.IsO || (pt.X.IsInteger() && pt.Y.IsInteger());
 
+    public static BigInteger Height(this EllPt<Rational> pt)
+    {
+        if (pt.IsO)
+            return 0;
+
+        return BigInteger.Max(pt.X.Absolute.Num, pt.X.Absolute.Denom);
+    }
+
     static int[][] AbSubTypes(int[] type)
     {
         var all = type.Select(t => IntExt.DividorsInt(t).Order().ToArray()).MultiLoop()

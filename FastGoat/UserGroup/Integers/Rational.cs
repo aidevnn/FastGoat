@@ -67,6 +67,9 @@ public readonly struct Rational : IElt<Rational>, IRingElt<Rational>, IFieldElt<
     {
         get
         {
+            if (IsZero() || this.IsOne())
+                return true;
+            
             var decNum = IntExt.PrimesDec(Num * Num.Sign);
             var decDenom = IntExt.PrimesDec(Denom);
             return decNum.All(e => e.Key == 1 || e.Value % 2 == 0) && decDenom.All(e => e.Key == 1 || e.Value % 2 == 0);
