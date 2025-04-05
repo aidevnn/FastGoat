@@ -57,36 +57,36 @@ void AddNewIntegralPoint(EllGroup<Rational> g, HashSet<EllPt<Rational>> set, Ell
     return (0, 0);
 }
 
-HashSet<EllPt<Rational>> Descent(ConcreteGroup<EllPt<Rational>> E, HashSet<EllPt<Rational>> pts)
+Dictionary<EllPt<Rational>, HashSet<EllPt<Rational>>> EllGoverH(EllGroup<Rational> E, HashSet<EllPt<Rational>> G,
+    HashSet<EllPt<Rational>> H)
 {
-    var setPts = E.GetGenerators().ToHashSet();
-    foreach (var pt in pts.Except(E).OrderBy(pt => !pt.IsIntegral()).ThenBy(pt => pt.Height()))
+    var cosets = new Dictionary<EllPt<Rational>, HashSet<EllPt<Rational>>>();
+    cosets.Add(E.O, H);
+    var maxH = G.Max(pt => pt.Height());
+    var rem = G.Except(H).ToHashSet();
+    while (rem.Count > 0)
     {
-        var pt1 = pt;
-        while (true)
-        {
-            var pt2 = E.Select(pt0 => E.Op(pt0, pt1)).MinBy(pt0 => pt0.Height());
-            if (pt2.Height() < pt1.Height())
-            {
-                pt1 = pt2;
-            }
-            else
-            {
-                setPts.Add(pt1);
-                break;
-            }
-        }
+        var pt = rem.MinBy(pt => pt.Height());
+        var cos = H.Select(pt1 => E.Op(pt, pt1)).Where(pt0 => pt0.Height() <= maxH).ToHashSet();
+        cosets.Add(cos.MinBy(pt1 => pt1.Height()), cos);
+        rem.ExceptWith(cos);
     }
 
-    return setPts;
+    return cosets;
 }
+
+HashSet<EllPt<Rational>> Descent(EllGroup<Rational> E, HashSet<EllPt<Rational>> G, HashSet<EllPt<Rational>> H) =>
+    EllGoverH(E, G, H).Keys.ToHashSet(EqualityComparer<EllPt<Rational>>.Create(
+        (pt0, pt1) => pt0.X.Equals(pt1.X) && pt0.Y.Equals(-pt1.Y),
+        pt => pt.X.GetHashCode())
+    );
 
 HashSet<EllPt<Rational>> Independants(ConcreteGroup<EllPt<Rational>> E, HashSet<EllPt<Rational>> pts, BigInteger maxH)
 {
     var bsE = (EllGroup<Rational>)E.BaseGroup;
     var gens = E.GetGenerators().OrderBy(pt => pt.Height()).ThenBy(pt => !pt.IsO ? pt.X.Absolute : "0").ToHashSet();
     var setPts = E.ToHashSet();
-    foreach (var pt in pts.OrderBy(pt => !pt.IsIntegral()).ThenBy(pt => pt.Height()))
+    foreach (var pt in pts.OrderBy(pt => pt.Height()).ThenByDescending(pt => pt.IsIntegral()))
     {
         if (setPts.Add(pt))
         {
@@ -115,9 +115,9 @@ HashSet<EllPt<Rational>> Independants(ConcreteGroup<EllPt<Rational>> E, HashSet<
     var x = FG.QPoly();
     Console.WriteLine($"Elliptic curve y^2 = {x.Pow(3) + new Rational(b) * x}");
     var divs_b = DividorsBigInt(BigInteger.Abs(b)).Order().ToArray();
-    var sols = divs_b.SelectMany(b1 => new[] { b1, -b1 }).Select(b1 => (b1, Me: SolveEq(b1, b / b1, nMax)))
-        .Where(e => e.Me.M != 0)
-        .Select(e => (e.b1, X: new Rational(e.b1 * BigInteger.Pow(e.Me.M, 2), BigInteger.Pow(e.Me.e, 2))))
+    var sols = divs_b.SelectMany(b1 => new[] { b1, -b1 }).Select(b1 => (b1, s: SolveEq(b1, b / b1, nMax)))
+        .Where(e => e.s.M != 0)
+        .Select(e => (e.b1, X: new Rational(e.b1 * BigInteger.Pow(e.s.M, 2), BigInteger.Pow(e.s.e, 2))))
         .Select(e => (e.b1, e.X, Y2: e.X.Pow(3) + b * e.X))
         .Select(e => (e.b1, e.X, e.Y2, Y: Rational.Sqrt(e.Y2)))
         .ToArray();
@@ -130,32 +130,12 @@ HashSet<EllPt<Rational>> Independants(ConcreteGroup<EllPt<Rational>> E, HashSet<
     DisplayGroup.HeadElements(ng.gEll);
 
     var setG = listPts.Append(ng.E.O).Union(ng.intPts).ToHashSet();
-    var rem = setG.ToHashSet();
-    var set2G = setG.ToDictionary(pt => pt, pt => ng.E.Times(pt, 2))
-        .GroupBy(e => e.Value)
-        .ToDictionary(e => e.Key, e => e.Select(f => f.Key).OrderBy(f => f.Height()).ToHashSet());
-    var Gover2G = new Dictionary<EllPt<Rational>, HashSet<EllPt<Rational>>>();
-    Gover2G.Add(ng.E.O, set2G.Keys.ToHashSet());
-    rem.ExceptWith(Gover2G[ng.E.O]);
-    while (rem.Count > 0)
-    {
-        var pt = rem.MinBy(pt => pt.Height());
-        var cos = set2G.Keys.Select(pt1 => ng.E.Op(pt, pt1)).ToHashSet();
-        Gover2G.Add(cos.MinBy(pt1 => pt1.Height()), cos);
-        rem.ExceptWith(cos);
-    }
+    var set2G = setG.ToDictionary(pt => pt, pt => ng.E.Times(pt, 2)).Select(e => e.Value).ToHashSet();
+    var desc1 = Descent(ng.E, setG, set2G);
+    var desc2 = Descent(ng.E, desc1, ng.gEll.ToHashSet());
+    var gens = Independants(ng.gEll, desc2, setG.Max(pt => pt.Height()));
 
-    // setG.OrderBy(e => e.Height())
-    //     .Println($"G Count={setG.Count}");
-    // set2G.OrderBy(e => e.Key.Height())
-    //     .Println(l => $"{l.Key} = 2x{l.Value.MinBy(e => e.Height())}", $"2G Count={set2G.Count}");
-    // Gover2G.OrderBy(e => e.Key.Height())
-    //     .Println(l => $"{l.Value.MinBy(e => e.Height())}", $"G/2G Count={Gover2G.Count}");
-
-    var desc = Descent(ng.gEll, Gover2G.Keys.ToHashSet());
-    // Console.WriteLine($"Start[{setG.Count}] Descent[{desc.Count}]");
-    var gens = Independants(ng.gEll, desc, setG.Max(pt => pt.Height()));
-
+    Console.WriteLine($"Start[{setG.Count}] Descent1[{desc1.Count}] Descent2[{desc2.Count}] Gens[{gens.Count}]");
     Console.WriteLine($"Elliptic curve y^2 = {x.Pow(3) + new Rational(b) * x}");
     var rank = gens.Count - ng.gEll.GetGenerators().Count();
     Console.WriteLine($"{ng.E} Rank = {rank} Gens = [{gens.Glue(", ")}]");
@@ -164,10 +144,10 @@ HashSet<EllPt<Rational>> Independants(ConcreteGroup<EllPt<Rational>> E, HashSet<
     return (ng.E, ng.gEll, ng.intPts, gens);
 }
 
+void testRank1()
 {
     Ring.DisplayPolynomial = MonomDisplay.StarCaret;
-    var seq = new[] { 1, 5, 6, 7, 14, 15, 21, 22, 29, 30, 31, 34, 78, 210, 1254, 29274 }.Select(n => n * n)
-        .Concat([-1, 5]).Order().ToArray();
+    var seq = new[] { 1, 5, 6, 7, 14, 15, 21, 22, 29, 30, 31, 34, 78, 210, 1254, 29274 }.Select(n => n * n).ToArray();
 
     GlobalStopWatch.Restart();
     var res = seq.Select(b => EllGenerators(-b)).ToArray();
@@ -176,9 +156,35 @@ HashSet<EllPt<Rational>> Independants(ConcreteGroup<EllPt<Rational>> E, HashSet<
     Console.WriteLine();
 
     foreach (var ng in res)
-        Console.WriteLine($"{ng.E, -25} rank = {ng.gens.Count - ng.gEll.GetGenerators().Count()} gens = [{ng.gens.Glue(", ")}]");
-    
+        Console.WriteLine(
+            $"{ng.E,-25} rank = {ng.gens.Count - ng.gEll.GetGenerators().Count()} gens = [{ng.gens.Glue(", ")}]");
+
     Console.WriteLine();
 
     GlobalStopWatch.Show(); // Time:36.398s
+}
+
+void testRank2()
+{
+    Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+    var seq = new[] { -1, 1, -3, 3, -5, 5, 7, 17, 73, -82 };
+
+    GlobalStopWatch.Restart();
+    var res = seq.Select(b => EllGenerators(b)).ToArray();
+    GlobalStopWatch.Show();
+
+    Console.WriteLine();
+
+    foreach (var ng in res)
+        Console.WriteLine(
+            $"{ng.E,-25} rank = {ng.gens.Count - ng.gEll.GetGenerators().Count()} gens = [{ng.gens.Glue(", ")}]");
+
+    Console.WriteLine();
+
+    GlobalStopWatch.Show();
+}
+
+{
+    // testRank1();
+    testRank2();
 }

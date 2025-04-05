@@ -26,7 +26,7 @@ public static class EllipticCurves
     public static BigInteger Height(this EllPt<Rational> pt)
     {
         if (pt.IsO)
-            return long.MaxValue;
+            return 1;
 
         return BigInteger.Max(pt.X.Absolute.Num, pt.X.Absolute.Denom);
     }

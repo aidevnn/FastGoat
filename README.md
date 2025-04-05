@@ -595,3 +595,9 @@ Springer Nature. 2024.
 Universität Mainz,
 Mainz, Germany
 <i>TCOM.</i>
+
+[Rational Points on Elliptic Curves](https://link.springer.com/book/10.1007/978-3-319-18588-0)
+<b>Joseph H. Silverman, John T. Tate.</b>
+Rational Points on Elliptic Curves.
+Second Edition
+Springer 2015.
