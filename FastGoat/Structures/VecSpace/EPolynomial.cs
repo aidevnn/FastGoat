@@ -112,6 +112,19 @@ public readonly struct EPolynomial<K> : IElt<EPolynomial<K>>, IRingElt<EPolynomi
         return new(num, Denom, Basis);
     }
 
+    public EPolynomial<K> Substitute(EPolynomial<K> f, Xi xi)
+    {
+        var num = Num.Substitute(f, xi);
+        var denom = Denom.Substitute(f, xi);
+        return num / denom;
+    }
+
+    public EPolynomial<K> Substitute(params (EPolynomial<K> f, Xi xi)[] subs)
+    {
+        var num = subs.Aggregate(ENum, (acc, e) => acc.Substitute(e.f, e.xi));
+        var denom = subs.Aggregate(EDenom, (acc, e) => acc.Substitute(e.f, e.xi));
+        return num / denom;
+    }
     public override string ToString()
     {
         var num = Num.ToString();

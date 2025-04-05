@@ -181,6 +181,15 @@ public static partial class Ring
         return his.Select(hi => new EPolynomial<K>(hi, hi.One)).ToArray();
     }
 
+    public static EPolynomial<K>[] EPolynomial<K>(params Polynomial<K,Xi>[] xis)
+        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
+    {
+        if (xis.Length == 0)
+            throw new GroupException(GroupExceptionType.GroupDef);
+        
+        return xis.Select(hi => new EPolynomial<K>(hi, hi.One)).ToArray();
+    }
+
     public static EPolynomial<K>[] PolynomialModI<K>(string[] vs, Polynomial<K, Xi> b0, params Polynomial<K, Xi>[] bs)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {

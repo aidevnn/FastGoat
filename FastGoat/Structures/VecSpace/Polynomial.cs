@@ -178,6 +178,11 @@ public readonly struct Polynomial<K, T> : IElt<Polynomial<K, T>>, IRingElt<Polyn
         return poly;
     }
 
+    public Polynomial<K, T> Substitute(params (Polynomial<K, T> f, T xi)[] subs)
+    {
+        return subs.Aggregate(this, (acc, e) => acc.Substitute(e.f, e.xi));
+    }
+
     public Polynomial<K, T> Substitute(List<(T, Polynomial<K, T>)> dico)
     {
         var poly = Zero;
