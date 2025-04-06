@@ -271,6 +271,13 @@ public static class IntExt
     }
 
     /// <summary>
+    /// Test if a given integer is square.
+    /// </summary>
+    /// <param name="n">The integer to test.</param>
+    /// <returns>A boolean, true is n is square or false otherwise.</returns>
+    public static bool IsSquare(BigInteger n) => n * n.Sign == 1 || PrimesDec(n * n.Sign).All(e => e.Value % 2 == 0);
+
+    /// <summary>
     /// Partitions of an integers until N
     /// Return a dictionary where each key is mapped to a collection
     /// </summary>
