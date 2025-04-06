@@ -110,7 +110,7 @@ public static class EllipticCurves
         Console.WriteLine(new { disc });
         var r = IntExt.PrimesDec(BigInteger.Abs(disc))
             .Aggregate(BigInteger.One, (acc, r) => acc * BigInteger.Pow(r.Key, r.Value / 2 + r.Value % 2));
-        var divs = IntExt.DividorsBigInt(r).Order().ToArray();
+        var divs = IntExt.DividorsBigInt(r).Where(y => disc % (y * y) == 0).Order().ToArray();
         return (disc, divs);
     }
 
@@ -160,7 +160,7 @@ public static class EllipticCurves
     }
 
     static (int[] abType, HashSet<EllPt<Rational>> intPts, EllGroup<Rational> E)
-        NagellLutz(BigInteger a, BigInteger b, List<Func<EllPt<Rational>, EllPt<Rational>>> revTrans, bool show = false)
+        NagellLutz(BigInteger a, BigInteger b, Func<EllPt<Rational>, EllPt<Rational>> revTrans, bool show = false)
     {
         var (disc, Ys) = CandidatsY(a, b);
         var ellpts = SolveX(a, b, Ys, show).ToArray();
@@ -172,18 +172,14 @@ public static class EllipticCurves
         DisplayGroup.HeadElements(gEll);
         Console.WriteLine($"{gEll} Torsion = {abType.Glue(" x ", "C{0}")}");
         Console.WriteLine();
-        revTrans.Reverse();
-        var intPtsF = gEll.Where(pt => !pt.IsO).Select(pt => revTrans.Aggregate(pt, (acc, trans) => trans(acc)))
-            .Concat(intPts)
-            .ToHashSet();
-
+        var intPtsF = gEll.Concat(intPts).Select(pt => revTrans(pt)).ToHashSet();
         return (abType, intPtsF, E);
     }
 
     static (int[] abType, HashSet<EllPt<Rational>> intPts, EllGroup<Rational> E)
         NagellLutz(BigInteger a, BigInteger b, bool show = false)
     {
-        return NagellLutz(a, b, new(), show);
+        return NagellLutz(a, b, pt => pt, show);
     }
 
     public static (EllGroup<Rational> E, ConcreteGroup<EllPt<Rational>> gEll, int[] abType,
@@ -194,98 +190,46 @@ public static class EllipticCurves
         return NagellLutz(a, b, ellpts);
     }
 
-    static (KPoly<Rational> P1, List<Func<EllPt<Rational>, EllPt<Rational>>> revTrans)
+    static (KPoly<Rational> P1, Func<EllPt<Rational>, EllPt<Rational>> revTrans)
         MinimizedForm((Polynomial<Rational, Xi> lhs, Polynomial<Rational, Xi> rhs) e)
     {
         var F = -e.lhs + e.rhs;
         var ((y, Y), (x, X)) = F.IndeterminatesAndVariables.Deconstruct();
+        var ind = X.Indeterminates;
+        var (xm, ym) = (new Monom<Xi>(ind, x), new Monom<Xi>(ind, y));
+        var (xym, x2m) = (xm.Mul(ym), xm.Pow(2));
+        var (a1, a2, a3, a4, a5) = (F[xym], F[ym], F[x2m], F[xm], F.ConstTerm);
+        var A = -a1.Pow(4) / 48 - a1.Pow(2) * a3 / 6 + a1 * a2 / 2 - a3.Pow(2) / 3 + a4;
+        var B = a1.Pow(6) / 864 + a1.Pow(4) * a3 / 72 - a1.Pow(3) * a2 / 24 + a1.Pow(2) * a3.Pow(2) / 18 -
+            a1.Pow(2) * a4 / 12 - a1 * a2 * a3 / 6 + 2 * a3.Pow(3) / 27 + a2.Pow(2) / 4 - a3 * a4 / 3 + a5;
 
-        var a = Ring.Decompose(F, y).Item1[Y].ConstTerm;
-        var revTrans = new List<Func<EllPt<Rational>, EllPt<Rational>>>();
+        var sqDivs864 = new[] { 1, 4, 9, 16, 36, 144 } // Square Divisidors of 864 
+            .Select(div => (div, pow2: div * div, pow3: div * div * div)).ToArray();
+        var (sqDiv, _, sqDivPow3) = sqDivs864.OrderBy(f => f.div)
+            .First(div => div.pow2 % A.Denom == 0 && div.pow3 % B.Denom == 0);
+        var d1 = new Rational(sqDiv);
+        var d2 = new Rational(IntExt.SqrtBigInt(sqDivPow3));
 
+        Func<EllPt<Rational>, EllPt<Rational>> revTrans = pt =>
+        {
+            if (pt.IsO)
+                return pt;
+        
+            var _x = pt.X / d1 - a1.Pow(2) / 12 - a3 / 3;
+            var _y = pt.Y / d2;
+            return new(_x, -_y + (a1 * _x + a2) / 2);
+        };
+
+        A *= d1.Pow(2);
+        B *= d1.Pow(3);
         if (Logger.Level != LogLevel.Off)
         {
-            Console.WriteLine($"Initial   form {e.lhs} = {e.rhs}");
-            Console.WriteLine($"{F} = 0");
-        }
-
-        if (!a.IsZero())
-        {
-            F = F.Substitute(Y + a / 2, y);
-            revTrans.Add(pt => new(pt.X, pt.Y + a / 2));
-            if (Logger.Level != LogLevel.Off)
-            {
-                Console.WriteLine($"{Y} <- {Y + a / 2}");
-                Console.WriteLine($"{F} = 0");
-            }
-        }
-
-        var cX = Ring.Decompose(Ring.Decompose(F, x).Item1[X], y).Item1;
-        var b = cX.ContainsKey(Y) ? cX[Y] : F.Zero;
-        if (!b.IsZero())
-        {
-            F = F.Substitute(Y + b * X / 2, y);
-            revTrans.Add(pt => new(pt.X, pt.Y + b.ConstTerm * pt.X / 2));
-            if (Logger.Level != LogLevel.Off)
-            {
-                Console.WriteLine($"{Y} <- {Y + b * X / 2}");
-                Console.WriteLine($"{F} = 0");
-            }
-        }
-
-        var c = Ring.Decompose(F, x).Item1[X.Pow(2)];
-        if (!c.IsZero())
-        {
-            F = F.Substitute(X - c / 3, x);
-            revTrans.Add(pt => new(pt.X - c.ConstTerm / 3, pt.Y));
-            if (Logger.Level != LogLevel.Off)
-            {
-                Console.WriteLine($"{X} <- {X - c / 3}");
-                Console.WriteLine($"{F} = 0");
-            }
-        }
-
-        var P = F + Y.Pow(2);
-        if (P.NbIndeterminates != 1)
-            throw new();
-
-        var P0 = P.ToKPoly(x);
-        var (a0, b0) = (P0[1].Denom, P0[0].Denom);
-        var decompA = !a0.IsZero
-            ? IntExt.PrimesDec(a0).ToDictionary(r => r.Key, r => (r.Value % 2 == 0 ? 0 : 1) + r.Value / 2)
-            : new();
-        var decompB = !b0.IsZero
-            ? IntExt.PrimesDec(b0).ToDictionary(r => r.Key, r => (r.Value % 3 == 0 ? 0 : 1) + r.Value / 3)
-            : new();
-        foreach (var i in decompA.Keys.Intersect(decompB.Keys))
-        {
-            var (ai, bi) = (decompA[i], decompB[i]);
-            decompB[i] = int.Min(ai, bi);
-            decompA.Remove(i);
-        }
-
-        var decompD = decompA.Concat(decompB).ToDictionary(r => r.Key, r => r.Value + r.Value % 2);
-        var d1 = new Rational(decompD.Aggregate(BigInteger.One, (acc, r) => acc * r.Key.Pow(r.Value)));
-        var d2 = new Rational(decompD.Aggregate(BigInteger.One, (acc, r) => acc * r.Key.Pow(3 * r.Value / 2)));
-        if (!(d1 - 1).IsZero())
-        {
-            revTrans.Add(pt => new(pt.X / d1, pt.Y / d2));
-            F = (d1.Pow(3) * F.Substitute(X / d1, x)).Substitute(Y / d2, y);
-            if (Logger.Level != LogLevel.Off)
-            {
-                Console.WriteLine($"{X} <- {X / d1}");
-                Console.WriteLine($"{Y} <- {Y / d2}");
-                Console.WriteLine($"{F} = 0");
-            }
-        }
-
-        if (Logger.Level != LogLevel.Off)
-        {
-            Console.WriteLine($"Minimized form {Y.Pow(2)} = {F + Y.Pow(2)}");
+            Console.WriteLine($"Elliptic curve      {e.lhs} = {e.rhs}");
+            Console.WriteLine($"Simplified form     y^2 = {X.Pow(3) + A * X + B}");
             Console.WriteLine();
         }
 
-        var P1 = (F + Y.Pow(2)).ToKPoly(x);
+        var P1 = (X.Pow(3) + A * X + B).ToKPoly(x);
         return (P1, revTrans);
     }
 
@@ -300,7 +244,12 @@ public static class EllipticCurves
         if ((meth & TorsionMeth.Fp) == TorsionMeth.Fp)
             EllTors(A.Num, B.Num);
         if ((meth & TorsionMeth.NagellLutz) == TorsionMeth.NagellLutz)
-            NagellLutz(A.Num, B.Num, revTrans);
+        {
+            var ng = NagellLutz(A.Num, B.Num, revTrans);
+            ng.intPts.OrderBy(pt => pt.Height())
+                .Println($"Points of Elliptic curve      {e.lhs} = {e.rhs}");
+            Console.WriteLine();
+        }
     }
 
     static (int y, bool sol) ApproxSolver(int x, int n)
@@ -416,7 +365,7 @@ public static class EllipticCurves
 
     public static void Example4TransformCurve()
     {
-        Logger.Level = LogLevel.Level1;
+        Logger.SetOff();
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
         var (x, y) = Ring.Polynomial(Rational.KZero(), "x", "y").Deconstruct();
 
@@ -449,69 +398,6 @@ public static class EllipticCurves
         Transform(e8);
         Transform(e9);
     }
-
-    /* x*y + y^2 = x^3 - 1070*x + 7812
-       x^3 - x*y - y^2 - 1070*x + 7812 = 0
-       y <- -1/2*x + y
-       x^3 + 1/4*x^2 - y^2 - 1070*x + 7812 = 0
-       x <- x - 1/12
-       x^3 - y^2 - 51361/48*x + 6826609/864 = 0
-       y^2 = x^3 - 51361/48*x + 6826609/864
-       x <- 1/36*x
-       y <- 1/216*y
-       x^3 - y^2 - 1386747*x + 368636886 = 0
-
-       #### Start Ell[-1386747,368636886](Q)
-       Ell[ 1, 2](Z/11Z) ~ C8 x C2
-       Ell[ 2, 7](Z/13Z) ~ C8 x C2
-       Ell[11,12](Z/17Z) ~ C8 x C2
-       Ell[ 6, 7](Z/19Z) ~ C8 x C2
-       Ell[15,16](Z/23Z) ~ C16 x C2
-       Ell[ 4,22](Z/29Z) ~ C8 x C4
-       Ell[ 7,14](Z/31Z) ~ C16 x C2
-       Ell[13, 3](Z/37Z) ~ C8 x C4
-       Ell[37,23](Z/41Z) ~ C24 x C2
-       Ell[ 3,36](Z/43Z) ~ C24 x C2
-       Morphism Ell[-1386747,368636886](Q) ->
-           C8 x C2
-           C16 x C2
-           C8 x C4
-           C24 x C2
-       Intersections subgroups
-           C1
-           C2
-           C4
-           C8
-           C2 x C2
-           C2 x C4
-           C2 x C8
-       Ell[-1386747,368636886](Q) Torsion = C8 x C2
-
-       { disc = -6998115764183040000 }
-       |Ell[-1386747,368636886](Q)| = 16
-       Type        AbelianGroup
-       BaseGroup   Ell[-1386747,368636886](Q)
-
-       Elements
-       ( 1)[1] = O
-       ( 2)[2] = (-1293,0)
-       ( 3)[2] = (282,0)
-       ( 4)[2] = (1011,0)
-       ( 5)[4] = (-285,-27216)
-       ( 6)[4] = (-285,27216)
-       ( 7)[4] = (2307,-97200)
-       ( 8)[4] = (2307,97200)
-       ( 9)[8] = (-933,-29160)
-       (10)[8] = (-933,29160)
-       (11)[8] = (147,-12960)
-       (12)[8] = (147,12960)
-       (13)[8] = (1227,-22680)
-       (14)[8] = (1227,22680)
-       (15)[8] = (8787,-816480)
-       (16)[8] = (8787,816480)
-
-       Ell[-1386747,368636886](Q) Torsion = C8 x C2
-     */
 
     public static void Example5FromLMFDB()
     {
