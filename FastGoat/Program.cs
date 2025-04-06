@@ -89,9 +89,9 @@ var listElls = new List<Polynomial<Rational, Xi>>();
     var d1 = new Rational(sqDiv);
     var d2 = new Rational(SqrtBigInt(sqDivPow3));
 
-    Func<EllPt<Rational>, EllPt<Rational>> f1 = pt => pt.IsO ? pt : new(pt.X, pt.Y - (a1 * pt.X + a2) / 2);
+    Func<EllPt<Rational>, EllPt<Rational>> f1 = pt => pt.IsO ? pt : new(pt.X / d1, pt.Y / d2);
     Func<EllPt<Rational>, EllPt<Rational>> f2 = pt => pt.IsO ? pt : new(pt.X - a1.Pow(2) / 12 - a3 / 3, pt.Y);
-    Func<EllPt<Rational>, EllPt<Rational>> f3 = pt => pt.IsO ? pt : new(pt.X / d1, pt.Y / d2);
+    Func<EllPt<Rational>, EllPt<Rational>> f3 = pt => pt.IsO ? pt : new(pt.X, -pt.Y + (a1 * pt.X + a2) / 2);
     var revTrans = new[] { f1, f2, f3 };
 
     A *= d1.Pow(2);
@@ -105,9 +105,21 @@ var listElls = new List<Polynomial<Rational, Xi>>();
 
 void TorsionGroup((Polynomial<Rational, Xi> lhs, Polynomial<Rational, Xi> rhs) e)
 {
-    var (E, _) = MinimizedForm(e.lhs, e.rhs);
+    var F = -e.lhs + e.rhs;
+    var ((y, Y), (x, X)) = F.IndeterminatesAndVariables.Deconstruct();
+    var (E, revTrans) = MinimizedForm(e.lhs, e.rhs);
     var ng = EllipticCurves.NagellLutzTorsionGroup(E.A.Num, E.B.Num);
     Console.WriteLine($"TorsGroup({E}) ~ {ng.abType.Glue(" x ", "C{0}")}");
+
+    var o = X.One;
+    var torsPts = ng.gEll.ToDictionary(pt => pt, pt => revTrans.Aggregate(pt, (acc, trans) => trans(acc)));
+    if (torsPts.Select(f => f.Value)
+        .Any(pt => !pt.IsO && !F.Substitute(pt.X * o, x).Substitute(pt.Y * o, y).IsZero()))
+        throw new();
+
+    DisplayGroup.HeadElements(ng.gEll);
+    torsPts.Println("Torsion Points");
+
     Console.WriteLine();
 }
 
@@ -138,10 +150,8 @@ void testMinimizedForm()
 
     MinimizedForm(y.Pow(2), x.Pow(3) - 2);
     MinimizedForm(y.Pow(2), x.Pow(3) + 8);
-
     MinimizedForm(y.Pow(2) + 5 * x * y - 6 * y, x.Pow(3) - 3 * x.Pow(2));
     MinimizedForm(y.Pow(2) + 17 * x * y - 120 * y, x.Pow(3) - 60 * x.Pow(2));
-
     MinimizedForm(y.Pow(2), x.Pow(3) - 4 * x - 4);
     MinimizedForm(y.Pow(2) + y, x.Pow(3) + x);
     MinimizedForm(y.Pow(2) + x * y + y, x.Pow(3) - x.Pow(2) - 29 * x - 53);
@@ -195,6 +205,7 @@ void testMinimizedForm()
         Console.WriteLine($"E{idx:00}=EllipticCurve({F})");
         Console.WriteLine($"E{idx:00}.torsion_subgroup()");
         Console.WriteLine($"E{idx:00}.short_weierstrass_model()");
+        Console.WriteLine($"E{idx:00}.torsion_points()");
         Console.WriteLine();
     }
 }
