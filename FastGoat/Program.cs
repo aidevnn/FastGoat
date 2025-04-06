@@ -25,166 +25,176 @@ Console.WriteLine("Hello World");
 Ring.DisplayPolynomial = MonomDisplay.StarCaret;
 // RecomputeAllPrimesUpTo(5000000);
 
-void AddNewIntegralPoint(EllGroup<Rational> g, HashSet<EllPt<Rational>> set, EllPt<Rational> pt)
-{
-    var sz = 0;
-    while (set.Count != sz)
-    {
-        sz = set.Count;
-        var tmp = set.Select(e => g.Op(e, pt)).Where(e => e.IsIntegral()).ToHashSet();
-        set.UnionWith(tmp);
-    }
-}
-
-(BigInteger M, BigInteger e) SolveEq(BigInteger b1, BigInteger b2, int nMax = 200)
-{
-    if (b1 < 0 && b2 < 0)
-        return (0, 0);
-
-    foreach (var e in nMax.SeqLazy(1).Where(e => GcdBigInt(e, b1) == 1))
-    {
-        foreach (var M in nMax.SeqLazy(1).Where(M => GcdBigInt(e, M) == 1 && GcdBigInt(M, b2) == 1))
-        {
-            var N2 = (b1 * BigInteger.Pow(M, 4) + b2 * BigInteger.Pow(e, 4));
-            // Console.WriteLine(new { M, e, N2 });
-            if (N2 < 0) continue;
-            var N = SqrtBigInt(N2);
-            if (N * N == N2 && GcdBigInt(N, e) == 1)
-                return (M, e);
-        }
-    }
-
-    return (0, 0);
-}
-
-Dictionary<EllPt<Rational>, HashSet<EllPt<Rational>>> EllGoverH(EllGroup<Rational> E, HashSet<EllPt<Rational>> G,
-    HashSet<EllPt<Rational>> H)
-{
-    var cosets = new Dictionary<EllPt<Rational>, HashSet<EllPt<Rational>>>();
-    cosets.Add(E.O, H);
-    var maxH = G.Max(pt => pt.Height());
-    var rem = G.Except(H).ToHashSet();
-    while (rem.Count > 0)
-    {
-        var pt = rem.MinBy(pt => pt.Height());
-        var cos = H.Select(pt1 => E.Op(pt, pt1)).Where(pt0 => pt0.Height() <= maxH).ToHashSet();
-        cosets.Add(cos.MinBy(pt1 => pt1.Height()), cos);
-        rem.ExceptWith(cos);
-    }
-
-    return cosets;
-}
-
-HashSet<EllPt<Rational>> Descent(EllGroup<Rational> E, HashSet<EllPt<Rational>> G, HashSet<EllPt<Rational>> H) =>
-    EllGoverH(E, G, H).Keys.ToHashSet(EqualityComparer<EllPt<Rational>>.Create(
-        (pt0, pt1) => pt0.X.Equals(pt1.X) && pt0.Y.Equals(-pt1.Y),
-        pt => pt.X.GetHashCode())
-    );
-
-HashSet<EllPt<Rational>> Independants(ConcreteGroup<EllPt<Rational>> E, HashSet<EllPt<Rational>> pts, BigInteger maxH)
-{
-    var bsE = (EllGroup<Rational>)E.BaseGroup;
-    var gens = E.GetGenerators().OrderBy(pt => pt.Height()).ThenBy(pt => !pt.IsO ? pt.X.Absolute : "0").ToHashSet();
-    var setPts = E.ToHashSet();
-    foreach (var pt in pts.OrderBy(pt => pt.Height()).ThenByDescending(pt => pt.IsIntegral()))
-    {
-        if (setPts.Add(pt))
-        {
-            gens.Add(pt);
-            var pti = E.Invert(pt);
-            if (pt.IsIntegral())
-            {
-                AddNewIntegralPoint(bsE, setPts, pt);
-                AddNewIntegralPoint(bsE, setPts, pti);
-            }
-
-            var tmp = setPts.Concat([pt, pti]).ToArray();
-            setPts.UnionWith(tmp.Grid2D(tmp).Select(e => E.Op(e.t1, e.t2)).Where(pt0 => pt0.Height() <= maxH)
-                .ToHashSet());
-        }
-    }
-
-    return gens;
-}
-
-(EllGroup<Rational> E, ConcreteGroup<EllPt<Rational>> gEll, HashSet<EllPt<Rational>> intPts, HashSet<EllPt<Rational>>
-    gens)
-    EllGenerators(BigInteger b, int nMax = 200)
-{
-    var ng = EllipticCurves.NagellLutzTorsionGroup(b, 0);
-    var x = FG.QPoly();
-    Console.WriteLine($"Elliptic curve y^2 = {x.Pow(3) + new Rational(b) * x}");
-    var divs_b = DividorsBigInt(BigInteger.Abs(b)).Order().ToArray();
-    var sols = divs_b.SelectMany(b1 => new[] { b1, -b1 }).Select(b1 => (b1, s: SolveEq(b1, b / b1, nMax)))
-        .Where(e => e.s.M != 0)
-        .Select(e => (e.b1, X: new Rational(e.b1 * BigInteger.Pow(e.s.M, 2), BigInteger.Pow(e.s.e, 2))))
-        .Select(e => (e.b1, e.X, Y2: e.X.Pow(3) + b * e.X))
-        .Select(e => (e.b1, e.X, e.Y2, Y: Rational.Sqrt(e.Y2)))
-        .ToArray();
-    var listPts = sols.Select(e => new EllPt<Rational>(e.X, e.Y)).SelectMany(e => new[] { e, ng.E.Invert(e) })
-        .ToHashSet();
-
-    foreach (var pt in listPts.Where(pt => pt.IsIntegral()).ToHashSet())
-        AddNewIntegralPoint(ng.E, ng.intPts, pt);
-
-    DisplayGroup.HeadElements(ng.gEll);
-
-    var setG = listPts.Append(ng.E.O).Union(ng.intPts).ToHashSet();
-    var set2G = setG.ToDictionary(pt => pt, pt => ng.E.Times(pt, 2)).Select(e => e.Value).ToHashSet();
-    var desc1 = Descent(ng.E, setG, set2G);
-    var desc2 = Descent(ng.E, desc1, ng.gEll.ToHashSet());
-    var gens = Independants(ng.gEll, desc2, setG.Max(pt => pt.Height()));
-
-    Console.WriteLine($"Start[{setG.Count}] Descent1[{desc1.Count}] Descent2[{desc2.Count}] Gens[{gens.Count}]");
-    Console.WriteLine($"Elliptic curve y^2 = {x.Pow(3) + new Rational(b) * x}");
-    var rank = gens.Count - ng.gEll.GetGenerators().Count();
-    Console.WriteLine($"{ng.E} Rank = {rank} Gens = [{gens.Glue(", ")}]");
-    Console.WriteLine();
-
-    return (ng.E, ng.gEll, ng.intPts, gens);
-}
-
-void testRank1()
+void symbMinimizedForm()
 {
     Ring.DisplayPolynomial = MonomDisplay.StarCaret;
-    var seq = new[] { 1, 5, 6, 7, 14, 15, 21, 22, 29, 30, 31, 34, 78, 210, 1254, 29274 }.Select(n => n * n).ToArray();
+    var xis = Ring.Polynomial(Rational.KZero(), "x", "y", "a1", "a2", "a3", "a4", "a5", "d1", "d2", "A", "B");
+    var (X, Y, a1, a2, a3, a4, a5) = Ring.EPolynomial(xis.Take(7).ToArray()).Deconstruct();
+    var (d1, d2, A, B) = Ring.EPolynomial(xis.Skip(7).ToArray()).Deconstruct();
+    var (x, y) = (X.Num.ExtractIndeterminate, Y.Num.ExtractIndeterminate);
 
-    GlobalStopWatch.Restart();
-    var res = seq.Select(b => EllGenerators(-b)).ToArray();
-    GlobalStopWatch.Show();
+    var eq1 = (X.Pow(3) + a3 * X.Pow(2) + a4 * X + a5) - (Y.Pow(2) + a1 * X * Y + a2 * Y);
+    var eq2 = eq1.Substitute((Y - (a1 * X + a2) / 2, y), (X - a1.Pow(2) / 12 - a3 / 3, x));
+    Console.WriteLine(eq1);
+    Console.WriteLine(eq2);
+    Ring.Decompose(eq2.Num, x).Item1.Println();
+    // (x^3 + a3*x^2 - a1*x*y + a4*x - y^2 - a2*y + a5)
+    // (1/864*a1^6 - 1/48*a1^4*x + 1/72*a1^4*a3 - 1/6*a1^2*a3*x - 1/24*a1^3*a2 + 1/18*a1^2*a3^2 + x^3 + 1/2*a1*a2*x - 1/3*a3^2*x - 1/12*a1^2*a4 - 1/6*a1*a2*a3 + 2/27*a3^3 + a4*x - y^2 + 1/4*a2^2 - 1/3*a3*a4 + a5)
+    // Lines
+    //     [1, 1/864*a1^6 + 1/72*a1^4*a3 - 1/24*a1^3*a2 + 1/18*a1^2*a3^2 - 1/12*a1^2*a4 - 1/6*a1*a2*a3 + 2/27*a3^3 - y^2 + 1/4*a2^2 - 1/3*a3*a4 + a5]
+    //     [x, -1/48*a1^4 - 1/6*a1^2*a3 + 1/2*a1*a2 - 1/3*a3^2 + a4]
+    //     [x^2, 0]
+    //     [x^3, 1]
+    // 
 
+    var eq3 = (X.Pow(3) + A * X + B) - Y.Pow(2);
+    var eq4 = (d1.Pow(3) * eq3.Substitute(X / d1, x)).Substitute(Y / d2, y);
+    Console.WriteLine(eq3);
+    Console.WriteLine(eq4);
+    Console.WriteLine(eq4.Num);
+    Console.WriteLine(eq4.Denom);
+    Ring.Decompose(eq4.Num, x).Item1.Println();
     Console.WriteLine();
-
-    foreach (var ng in res)
-        Console.WriteLine(
-            $"{ng.E,-25} rank = {ng.gens.Count - ng.gEll.GetGenerators().Count()} gens = [{ng.gens.Glue(", ")}]");
-
-    Console.WriteLine();
-
-    GlobalStopWatch.Show(); // Time:36.398s
+    // (-A*d1^2*d2^2*x - B*d1^3*d2^2 - d2^2*x^3 + d1^3*y^2)/(-d2^2)
+    // -A*d1^2*d2^2*x - B*d1^3*d2^2 - d2^2*x^3 + d1^3*y^2
+    // -d2^2
+    // Lines
+    //     [1, -B*d1^3*d2^2 + d1^3*y^2]
+    //     [x, -A*d1^2*d2^2]
+    //     [x^2, 0]
+    //     [x^3, -d2^2]
+    // 
 }
 
-void testRank2()
+var listElls = new List<Polynomial<Rational, Xi>>();
+
+(EllGroup<Rational>, Func<EllPt<Rational>, EllPt<Rational>>[] revTrans)
+    MinimizedForm(Polynomial<Rational, Xi> lhs, Polynomial<Rational, Xi> rhs)
 {
-    Ring.DisplayPolynomial = MonomDisplay.StarCaret;
-    var seq = new[] { -1, 1, -3, 3, -5, 5, 7, 17, 73, -82 };
+    var F = -lhs + rhs;
+    listElls.Add(F);
+    var ((y, Y), (x, X)) = F.IndeterminatesAndVariables.Deconstruct();
+    var ind = X.Indeterminates;
+    var (xm, ym) = (new Monom<Xi>(ind, x), new Monom<Xi>(ind, y));
+    var (xym, x2m) = (xm.Mul(ym), xm.Pow(2));
+    var (a1, a2, a3, a4, a5) = (F[xym], F[ym], F[x2m], F[xm], F.ConstTerm);
+    var A = -a1.Pow(4) / 48 - a1.Pow(2) * a3 / 6 + a1 * a2 / 2 - a3.Pow(2) / 3 + a4;
+    var B = a1.Pow(6) / 864 + a1.Pow(4) * a3 / 72 - a1.Pow(3) * a2 / 24 + a1.Pow(2) * a3.Pow(2) / 18 -
+        a1.Pow(2) * a4 / 12 - a1 * a2 * a3 / 6 + 2 * a3.Pow(3) / 27 + a2.Pow(2) / 4 - a3 * a4 / 3 + a5;
 
-    GlobalStopWatch.Restart();
-    var res = seq.Select(b => EllGenerators(b)).ToArray();
-    GlobalStopWatch.Show();
+    var sqDivs864 = new[] { 1, 4, 9, 16, 36, 144 } // Square Divisidors of 864 
+        .Select(div => (div, pow2: div * div, pow3: div * div * div)).ToArray();
+    var (sqDiv, _, sqDivPow3) = sqDivs864.OrderBy(e => e.div)
+        .First(div => div.pow2 % A.Denom == 0 && div.pow3 % B.Denom == 0);
+    var d1 = new Rational(sqDiv);
+    var d2 = new Rational(SqrtBigInt(sqDivPow3));
 
+    Func<EllPt<Rational>, EllPt<Rational>> f1 = pt => pt.IsO ? pt : new(pt.X, pt.Y - (a1 * pt.X + a2) / 2);
+    Func<EllPt<Rational>, EllPt<Rational>> f2 = pt => pt.IsO ? pt : new(pt.X - a1.Pow(2) / 12 - a3 / 3, pt.Y);
+    Func<EllPt<Rational>, EllPt<Rational>> f3 = pt => pt.IsO ? pt : new(pt.X / d1, pt.Y / d2);
+    var revTrans = new[] { f1, f2, f3 };
+
+    A *= d1.Pow(2);
+    B *= d1.Pow(3);
+    Console.WriteLine($"Elliptic curve      {lhs} = {rhs}");
+    Console.WriteLine($"Simplified form     y^2 = {X.Pow(3) + A * X + B}");
     Console.WriteLine();
 
-    foreach (var ng in res)
-        Console.WriteLine(
-            $"{ng.E,-25} rank = {ng.gens.Count - ng.gEll.GetGenerators().Count()} gens = [{ng.gens.Glue(", ")}]");
+    return (new EllGroup<Rational>(A, B), revTrans);
+}
 
+void TorsionGroup((Polynomial<Rational, Xi> lhs, Polynomial<Rational, Xi> rhs) e)
+{
+    var (E, _) = MinimizedForm(e.lhs, e.rhs);
+    var ng = EllipticCurves.NagellLutzTorsionGroup(E.A.Num, E.B.Num);
+    Console.WriteLine($"TorsGroup({E}) ~ {ng.abType.Glue(" x ", "C{0}")}");
     Console.WriteLine();
+}
 
-    GlobalStopWatch.Show();
+void testTorsionGroup()
+{
+    var (x, y) = Ring.Polynomial(Rational.KZero(), "x", "y").Deconstruct();
+
+    TorsionGroup((y.Pow(2), x.Pow(3) - 2));
+    TorsionGroup((y.Pow(2), x.Pow(3) + 8));
+    TorsionGroup((y.Pow(2), x.Pow(3) + 4));
+    TorsionGroup((y.Pow(2), x.Pow(3) + 4 * x));
+    TorsionGroup((y.Pow(2) - y, x.Pow(3) - x.Pow(2)));
+    TorsionGroup((y.Pow(2), x.Pow(3) + 1));
+    TorsionGroup((y.Pow(2), x.Pow(3) - 43 * x + 166));
+    TorsionGroup((y.Pow(2) + 7 * x * y, x.Pow(3) + 16 * x));
+    TorsionGroup((y.Pow(2) + x * y + y, x.Pow(3) - x.Pow(2) - 14 * x + 29));
+    TorsionGroup((y.Pow(2) + x * y, x.Pow(3) - 45 * x + 81));
+    TorsionGroup((y.Pow(2) + 43 * x * y - 210 * y, x.Pow(3) - 210 * x.Pow(2)));
+    TorsionGroup((y.Pow(2), x.Pow(3) - 4 * x));
+    TorsionGroup((y.Pow(2) + x * y - 5 * y, x.Pow(3) - 5 * x.Pow(2)));
+    TorsionGroup((y.Pow(2) + 5 * x * y - 6 * y, x.Pow(3) - 3 * x.Pow(2)));
+    TorsionGroup((y.Pow(2) + 17 * x * y - 120 * y, x.Pow(3) - 60 * x.Pow(2)));
+}
+
+void testMinimizedForm()
+{
+    var (x, y) = Ring.Polynomial(Rational.KZero(), "x", "y").Deconstruct();
+
+    MinimizedForm(y.Pow(2), x.Pow(3) - 2);
+    MinimizedForm(y.Pow(2), x.Pow(3) + 8);
+
+    MinimizedForm(y.Pow(2) + 5 * x * y - 6 * y, x.Pow(3) - 3 * x.Pow(2));
+    MinimizedForm(y.Pow(2) + 17 * x * y - 120 * y, x.Pow(3) - 60 * x.Pow(2));
+
+    MinimizedForm(y.Pow(2), x.Pow(3) - 4 * x - 4);
+    MinimizedForm(y.Pow(2) + y, x.Pow(3) + x);
+    MinimizedForm(y.Pow(2) + x * y + y, x.Pow(3) - x.Pow(2) - 29 * x - 53);
+    MinimizedForm(y.Pow(2), x.Pow(3) - 11 * x - 14);
+    MinimizedForm(y.Pow(2) + x * y, x.Pow(3) + x.Pow(2) + x);
+    MinimizedForm(y.Pow(2) + x * y + y, x.Pow(3) - 14 * x - 64);
+    MinimizedForm(y.Pow(2), x.Pow(3) + 4);
+    MinimizedForm(y.Pow(2) + y, x.Pow(3) + x.Pow(2) + x - 1);
+    MinimizedForm(y.Pow(2) + x * y, x.Pow(3) + 6 * x - 28);
+    MinimizedForm(y.Pow(2), x.Pow(3) - 7 * x - 6);
+    MinimizedForm(y.Pow(2), x.Pow(3) - 2 * x + 1);
+    MinimizedForm(y.Pow(2) + x * y + y, x.Pow(3) + x.Pow(2));
+    MinimizedForm(y.Pow(2) + x * y + y, x.Pow(3) - x.Pow(2) - 6 * x - 4);
+    MinimizedForm(y.Pow(2) + y, x.Pow(3) - x.Pow(2));
+    MinimizedForm(y.Pow(2) + x * y, x.Pow(3) + 15 * x + 9);
+    MinimizedForm(y.Pow(2) + x * y + y, x.Pow(3) + x.Pow(2) + 1);
+    MinimizedForm(y.Pow(2), x.Pow(3) + 1);
+    MinimizedForm(y.Pow(2) + x * y, x.Pow(3) - x.Pow(2) + 6 * x);
+    MinimizedForm(y.Pow(2) + x * y + y, x.Pow(3) - 6 * x + 4);
+    MinimizedForm(y.Pow(2) + x * y, x.Pow(3) + 159 * x + 1737);
+    MinimizedForm(y.Pow(2) + x * y, x.Pow(3) - x + 137);
+    MinimizedForm(y.Pow(2) + x * y + y, x.Pow(3) - x.Pow(2) - 3 * x + 3);
+    MinimizedForm(y.Pow(2), x.Pow(3) + x.Pow(2) + 16 * x + 180);
+    MinimizedForm(y.Pow(2), x.Pow(3) - x.Pow(2) - 4 * x + 4);
+    MinimizedForm(y.Pow(2) + x * y, x.Pow(3) - 34 * x + 68);
+    MinimizedForm(y.Pow(2) + x * y, x.Pow(3) - 4 * x - 1);
+    MinimizedForm(y.Pow(2) + x * y + y, x.Pow(3) - x.Pow(2) - 14 * x + 29);
+    MinimizedForm(y.Pow(2) + x * y, x.Pow(3) + 108 * x + 11664);
+    MinimizedForm(y.Pow(2) + x * y, x.Pow(3) - 4767 * x + 127449);
+    MinimizedForm(y.Pow(2) + x * y, x.Pow(3) - 45 * x + 81);
+    MinimizedForm(y.Pow(2) + x * y, x.Pow(3) + 115 * x + 561);
+    MinimizedForm(y.Pow(2) + x * y, x.Pow(3) - 828 * x + 9072);
+    MinimizedForm(y.Pow(2) + x * y + y, x.Pow(3) - 19 * x + 26);
+    MinimizedForm(y.Pow(2) + x * y + y, x.Pow(3) - x.Pow(2) - 122 * x + 1721);
+    MinimizedForm(y.Pow(2) + x * y, x.Pow(3) - 361 * x + 2585);
+    MinimizedForm(y.Pow(2) + x * y + y, x.Pow(3) + 1922 * x + 20756);
+    MinimizedForm(y.Pow(2) + x * y, x.Pow(3) - 1070 * x + 7812);
+    MinimizedForm(y.Pow(2) + x * y, x.Pow(3) - 8696090 * x + "9838496100");
 }
 
 {
-    // testRank1();
-    testRank2();
+    symbMinimizedForm();
+    testMinimizedForm();
+    testTorsionGroup();
+
+    Console.WriteLine();
+
+    // export to SageMath
+    foreach (var (idx, F) in listElls.Index())
+    {
+        Console.WriteLine($"E{idx:00}=EllipticCurve({F})");
+        Console.WriteLine($"E{idx:00}.torsion_subgroup()");
+        Console.WriteLine($"E{idx:00}.short_weierstrass_model()");
+        Console.WriteLine();
+    }
 }
