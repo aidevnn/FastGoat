@@ -46,13 +46,9 @@ public static class EllipticCurves
         return all;
     }
 
-    static int[] EllFp(BigInteger a, BigInteger b, int p, bool show = false)
+    static ConcreteGroup<EllPt<ZnBigInt>> EllFp(BigInteger a, BigInteger b, int p)
     {
         var (A, B) = (new ZnBigInt(p, a), new ZnBigInt(p, b));
-        var disc = 4 * A.Pow(3) + 27 * B.Pow(2);
-        if (disc.IsZero())
-            return [];
-
         var E = new EllGroup<ZnBigInt>(A, B);
         var ell = p.Range().Select(k => new ZnBigInt(p, k))
             .Select(x => (x, y2: x.Pow(3) + A * x + B))
@@ -62,10 +58,21 @@ public static class EllipticCurves
             .Order()
             .ToArray();
 
-        var gEll = Group.Generate(E, ell);
+        return Group.Generate(E, ell);
+    }
+
+    static int[] EllFpType(BigInteger a, BigInteger b, int p, bool show = false)
+    {
+        var (A, B) = (new ZnBigInt(p, a), new ZnBigInt(p, b));
+        var disc = 4 * A.Pow(3) + 27 * B.Pow(2);
+        if (disc.IsZero())
+            return [];
+
+        var gEll = EllFp(a, b, p);
         if (show)
             DisplayGroup.HeadElements(gEll);
 
+        var E = (EllGroup<ZnBigInt>)gEll.BaseGroup;
         var abType = Group.AbelianGroupType(gEll);
         Console.WriteLine($"{gEll} ~ {abType.Glue(" x ", "C{0}")}");
         if (gEll.Any(e => !e.IsO && !E.Contains(e.X, e.Y)))
@@ -79,7 +86,7 @@ public static class EllipticCurves
         Console.WriteLine($"#### Start Ell[{a},{b}](Q)");
         var disc = 4 * BigInteger.Pow(a, 3) + 27 * BigInteger.Pow(b, 2);
         var allTypes = IntExt.Primes10000.Where(p => (2 * disc) % p != 0).Take(nbPrimes)
-            .Select(n => EllFp(a, b, n, show))
+            .Select(n => EllFpType(a, b, n, show))
             .ToHashSet(new SequenceEquality<int>())
             .ToArray();
 
