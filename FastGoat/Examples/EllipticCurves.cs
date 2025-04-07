@@ -197,8 +197,9 @@ public static class EllipticCurves
         return NagellLutz(a, b, ellpts);
     }
 
-    static (KPoly<Rational> P1, Func<EllPt<Rational>, EllPt<Rational>> revTrans)
-        MinimizedForm((Polynomial<Rational, Xi> lhs, Polynomial<Rational, Xi> rhs) e)
+    static (KPoly<K> P1, Func<EllPt<K>, EllPt<K>> trans, Func<EllPt<K>, EllPt<K>> revTrans)
+        MinimizedForm<K>((Polynomial<K, Xi> lhs, Polynomial<K, Xi> rhs) e)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var F = -e.lhs + e.rhs;
         var ((y, Y), (x, X)) = F.IndeterminatesAndVariables.Deconstruct();
@@ -210,18 +211,33 @@ public static class EllipticCurves
         var B = a1.Pow(6) / 864 + a1.Pow(4) * a3 / 72 - a1.Pow(3) * a2 / 24 + a1.Pow(2) * a3.Pow(2) / 18 -
             a1.Pow(2) * a4 / 12 - a1 * a2 * a3 / 6 + 2 * a3.Pow(3) / 27 + a2.Pow(2) / 4 - a3 * a4 / 3 + a5;
 
-        var sqDivs864 = new[] { 1, 4, 9, 16, 36, 144 } // Square Divisidors of 864 
-            .Select(div => (div, pow2: div * div, pow3: div * div * div)).ToArray();
-        var (sqDiv, _, sqDivPow3) = sqDivs864.OrderBy(f => f.div)
-            .First(div => div.pow2 % A.Denom == 0 && div.pow3 % B.Denom == 0);
-        var d1 = new Rational(sqDiv);
-        var d2 = new Rational(IntExt.SqrtBigInt(sqDivPow3));
+        K d1 = F.KOne, d2 = F.KOne;
+        if (A is Rational A0 && B is Rational B0)
+        {
+            var sqDivs864 = new[] { 1, 4, 9, 16, 36, 144 } // Square Divisidors of 864 
+                .Select(div => (div, pow2: div * div, pow3: div * div * div)).ToArray();
+            var (sqDiv, _, sqDivPow3) = sqDivs864.OrderBy(f => f.div)
+                .First(div => div.pow2 % A0.Denom == 0 && div.pow3 % B0.Denom == 0);
+            dynamic d01 = new Rational(sqDiv);
+            dynamic d02 = new Rational(IntExt.SqrtBigInt(sqDivPow3));
+            (d1, d2) = (d01, d02);
+        }
 
-        Func<EllPt<Rational>, EllPt<Rational>> revTrans = pt =>
+        Func<EllPt<K>, EllPt<K>> trans = pt =>
         {
             if (pt.IsO)
                 return pt;
-        
+
+            var _x = (pt.X + a1.Pow(2) / 12 + a3 / 3) * d1;
+            var _y = (-pt.Y + (a1 * pt.X + a2) / 2) * d2;
+            return new(_x, _y);
+        };
+
+        Func<EllPt<K>, EllPt<K>> revTrans = pt =>
+        {
+            if (pt.IsO)
+                return pt;
+
             var _x = pt.X / d1 - a1.Pow(2) / 12 - a3 / 3;
             var _y = pt.Y / d2;
             return new(_x, -_y + (a1 * _x + a2) / 2);
@@ -231,19 +247,62 @@ public static class EllipticCurves
         B *= d1.Pow(3);
         if (Logger.Level != LogLevel.Off)
         {
-            Console.WriteLine($"Elliptic curve      {e.lhs} = {e.rhs}");
+            var field = typeof(K).Name;
+            if (A is Rational)
+                field = "Q";
+            else if (A is ZnInt A1)
+                field = $"Z/{A1.P}Z";
+            else if (A is ZnBigInt A2)
+                field = $"Z/{A2.Mod}Z";
+
+            Console.WriteLine($"Elliptic curve      {e.lhs} = {e.rhs} in {field}");
             Console.WriteLine($"Simplified form     y^2 = {X.Pow(3) + A * X + B}");
             Console.WriteLine();
         }
 
         var P1 = (X.Pow(3) + A * X + B).ToKPoly(x);
-        return (P1, revTrans);
+        return (P1, trans, revTrans);
     }
+
+    static (KPoly<K> P1, Func<EllPt<K>, EllPt<K>> trans, Func<EllPt<K>, EllPt<K>> revTrans)
+        MinimizedForm<K>(K[] coefs) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        if (coefs.Length == 5)
+        {
+            var (a1, a3, a2, a4, a5) = coefs.Deconstruct();
+            var (x, y) = Ring.Polynomial(a5, "x", "y").Deconstruct();
+            var lhs = y.Pow(2) + a1 * x * y + a2 * y;
+            var rhs = x.Pow(3) + a3 * x.Pow(2) + a4 * x + a5;
+            return MinimizedForm((lhs, rhs));
+        }
+        else if (coefs.Length == 3)
+        {
+            var (a3, a4, a5) = coefs.Deconstruct();
+            var (x, y) = Ring.Polynomial(a5, "x", "y").Deconstruct();
+            var lhs = y.Pow(2);
+            var rhs = x.Pow(3) + a3 * x.Pow(2) + a4 * x + a5;
+            return MinimizedForm((lhs, rhs));
+        }
+
+        throw new();
+    }
+
+    public static (KPoly<Rational> P1,
+        Func<EllPt<Rational>, EllPt<Rational>> trans, Func<EllPt<Rational>, EllPt<Rational>> revTrans)
+        MinimizedForm(int[] coefs) => MinimizedForm(coefs.Select(e => new Rational(e)).ToArray());
+
+    public static (KPoly<ZnBigInt> P1,
+        Func<EllPt<ZnBigInt>, EllPt<ZnBigInt>> trans, Func<EllPt<ZnBigInt>, EllPt<ZnBigInt>> revTrans)
+        MinimizedFormZnBigInt(int p, int[] coefs) => MinimizedForm(coefs.Select(e => new ZnBigInt(p, e)).ToArray());
+
+    public static (KPoly<ZnInt> P1,
+        Func<EllPt<ZnInt>, EllPt<ZnInt>> trans, Func<EllPt<ZnInt>, EllPt<ZnInt>> revTrans)
+        MinimizedFormZnInt(int p, int[] coefs) => MinimizedForm(coefs.Select(e => new ZnInt(p, e)).ToArray());
 
     static void Transform((Polynomial<Rational, Xi> lhs, Polynomial<Rational, Xi> rhs) e,
         TorsionMeth meth = TorsionMeth.Both)
     {
-        var (P1, revTrans) = MinimizedForm(e);
+        var (P1, _, revTrans) = MinimizedForm(e);
         Console.WriteLine($"Elliptic curve      {e.lhs} = {e.rhs}");
         Console.WriteLine($"Simplified form     y^2 = {P1}");
         var (A, B) = (P1[1], P1[0]);
@@ -277,7 +336,7 @@ public static class EllipticCurves
         return (0, false);
     }
 
-    static int SchoofEllPtsCount(BigInteger a, BigInteger b, int p)
+    public static int SchoofEllPtsCount(BigInteger a, BigInteger b, int p)
     {
         return p + 1 + p.Range()
             .Select(x => IntExt.LegendreJacobiBigint((BigInteger.ModPow(x, 3, p) + a * x + b) % p, p))
