@@ -116,6 +116,40 @@ public static partial class Group
         return new ReadOnlyDictionary<T, int>(orders);
     }
 
+    public static int BSGS<T>(IGroup<T> g, T a, T b, int ord) where T : struct, IElt<T>
+    {
+        var (m, tmp1) = ((int)Double.Sqrt(ord) + 1, a);
+        var L = new Dictionary<T, int>() { [a] = 1 };
+        for (int i = 1; i < m; i++)
+        {
+            if (tmp1.Equals(b))
+                return i;
+        
+            tmp1 = g.Op(tmp1, a);
+            L[tmp1] = i + 1;
+        }
+    
+        if (tmp1.Equals(b))
+            return m;
+
+        var (c, tmp2) = (g.Invert(tmp1), b);
+        for (int j = 1; j < m; j++)
+        {
+            tmp2 = g.Op(tmp2, c);
+            if (L.TryGetValue(tmp2, out int i))
+                return j * m + i;
+        }
+
+        throw new($"{g.Name} ord={ord}; a={a} b={b}");
+    }
+
+    public static ReadOnlyDictionary<T, int> ElementsOrdersBSGS<T>(IGroup<T> g, IEnumerable<T> elts, int ord) 
+        where T : struct, IElt<T>
+    {
+        var orders = elts.ToDictionary(a => a, a => BSGS(g, a, g.Neutral(), ord));
+        return new ReadOnlyDictionary<T, int>(orders);
+    }
+
     public static bool IsCommutative<T>(IGroup<T> g, IEnumerable<T> ts) where T : struct, IElt<T>
     {
         var ts0 = ts.ToArray();
