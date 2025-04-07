@@ -486,7 +486,7 @@ public static class EllipticCurves
                     .Where(pt => !pt.IsO && pt.X.IsInteger() && pt.Y.IsInteger()).ToArray());
             }
 
-            var missing = GroupExt.B081119[n] - intPts.Count;
+            var missing = GroupExt.B081119[n] - intPts.Count(pt => !pt.IsO);
             if (missing != 0)
             {
                 Console.WriteLine($"## y^2 = x^3 + {n}");
@@ -495,8 +495,8 @@ public static class EllipticCurves
 
                 Console.WriteLine($"Sols {{ {intPts.Glue(", ")} }} A081119 missing {missing}");
             }
-            else if (intPts.Count != 0)
-                intPts.Println($"{intPts.Count} Integer Points of y^2 = x^3 + {n}");
+            else if (intPts.Count(pt => !pt.IsO) != 0)
+                intPts.Where(pt => !pt.IsO).Println($"{intPts.Count(pt => !pt.IsO)} Integer Points of y^2 = x^3 + {n}");
 
             Console.WriteLine();
         }
