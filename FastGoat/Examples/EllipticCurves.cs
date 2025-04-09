@@ -46,14 +46,32 @@ public static class EllipticCurves
         return all;
     }
 
-    static ConcreteGroup<EllPt<ZnBigInt>> EllFp(BigInteger a, BigInteger b, int p)
+    static T[] CurveArray<T>(params T[] ts) where T : struct, IElt<T>, IRingElt<T>
     {
-        var (A, B) = (new ZnBigInt(p, a), new ZnBigInt(p, b));
-        var E = new EllGroup<ZnBigInt>(A, B);
+        if (ts.Length == 2)
+        {
+            var z = ts[0].Zero;
+            return [z, z, z, ts[0], ts[1]];
+        }
+        else if (ts.Length == 3)
+        {
+            var z = ts[0].Zero;
+            return [z, ts[0], z, ts[1], ts[2]];
+        }
+        else if (ts.Length == 5)
+            return ts;
+        else
+            throw new();
+    }
+
+    static ConcreteGroup<EllPt<ZnBigInt>> EllFp(EllGroup<ZnBigInt> E)
+    {
+        var (A, B) = (E.ShortForm.A, E.ShortForm.B);
+        var p = (int)A.Mod;
         var ell = p.Range().Select(k => new ZnBigInt(p, k))
             .Select(x => (x, y2: x.Pow(3) + A * x + B))
             .Select(e => (e.x, y: NumberTheory.SqrtModANTV1(e.y2.K, p) * e.x.One))
-            .Select(e => new EllPt<ZnBigInt>(e.x, e.y))
+            .Select(e => E.ConvertFromShort(new(e.x, e.y)))
             .Where(e => E.Contains(e.X, e.Y))
             .Order()
             .ToArray();
@@ -61,18 +79,15 @@ public static class EllipticCurves
         return Group.Generate(E, ell);
     }
 
-    static int[] EllFpType(BigInteger a, BigInteger b, int p, bool show = false)
+    static int[] EllFpType(EllGroup<ZnBigInt> E, LogLevel lvl = LogLevel.Off)
     {
-        var (A, B) = (new ZnBigInt(p, a), new ZnBigInt(p, b));
-        var disc = 4 * A.Pow(3) + 27 * B.Pow(2);
-        if (disc.IsZero())
+        if (E.Disc.IsZero())
             return [];
 
-        var gEll = EllFp(a, b, p);
-        if (show)
+        var gEll = EllFp(E);
+        if (lvl == LogLevel.Level2)
             DisplayGroup.HeadElements(gEll);
 
-        var E = (EllGroup<ZnBigInt>)gEll.BaseGroup;
         var abType = Group.AbelianGroupType(gEll);
         Console.WriteLine($"{gEll} ~ {abType.Glue(" x ", "C{0}")}");
         if (gEll.Any(e => !e.IsO && !E.Contains(e.X, e.Y)))
@@ -81,12 +96,19 @@ public static class EllipticCurves
         return abType;
     }
 
-    static void EllTors(BigInteger a, BigInteger b, int nbPrimes = 10, bool show = false)
+    static EllGroup<ZnBigInt> EllRational2ZnBigInt(EllGroup<Rational> E, int p)
     {
-        Console.WriteLine($"#### Start Ell[{a},{b}](Q)");
-        var disc = 4 * BigInteger.Pow(a, 3) + 27 * BigInteger.Pow(b, 2);
-        var allTypes = IntExt.Primes10000.Where(p => (2 * disc) % p != 0).Take(nbPrimes)
-            .Select(n => EllFpType(a, b, n, show))
+        var (a1, a2, a3, a4, a5) = E.Coefs;
+        return new(a1.ToZnBigInt(p), a2.ToZnBigInt(p), a3.ToZnBigInt(p), a4.ToZnBigInt(p), a5.ToZnBigInt(p));
+    }
+
+    static void EllTors(EllGroup<Rational> E, int nbPrimes = 10, LogLevel lvl = LogLevel.Off)
+    {
+        Console.WriteLine($"#### Start {E}");
+        var disc = 16 * E.Disc;
+        var allTypes = IntExt.Primes10000.Where(p => p > 3 && (2 * disc) % p != 0).Take(nbPrimes)
+            .Select(p => EllRational2ZnBigInt(E, p))
+            .Select(Ep => EllFpType(Ep, lvl))
             .ToHashSet(new SequenceEquality<int>())
             .ToArray();
 
@@ -104,218 +126,136 @@ public static class EllipticCurves
             set.IntersectWith(sub);
         }
 
-        allTypes.Println(e => e.Glue(" x ", "C{0}"), $"Morphisms Ell[{a},{b}](Q) ->");
+        allTypes.Println(e => e.Glue(" x ", "C{0}"), $"Morphisms {E} ->");
         set.Select(l => l.ToArray()).Println(e => e.Glue(" x ", "C{0}"), "Intersections subgroups");
         var tor = set.MaxBy(l => l.Aggregate(1, (acc, i) => acc * i));
-        Console.WriteLine($"Ell[{a},{b}](Q) Torsion ~-> {tor!.Descending().Glue(" x ", "C{0}")}");
+        Console.WriteLine($"{E} Torsion ~-> {tor!.Descending().Glue(" x ", "C{0}")}");
         Console.WriteLine();
     }
 
-    static (BigInteger disc, BigInteger[]) CandidatsY(BigInteger a, BigInteger b)
+    static void EllTors(BigInteger a, BigInteger b, int nbPrimes = 10, LogLevel lvl = LogLevel.Off)
     {
-        var disc = 16 * (4 * BigInteger.Pow(a, 3) + 27 * BigInteger.Pow(b, 2));
-        Console.WriteLine(new { disc });
-        var r = IntExt.PrimesDec(BigInteger.Abs(disc))
-            .Aggregate(BigInteger.One, (acc, r) => acc * BigInteger.Pow(r.Key, r.Value / 2 + r.Value % 2));
-        var divs = IntExt.DividorsBigInt(r).Where(y => disc % (y * y) == 0).Order().ToArray();
-        return (disc, divs);
+        EllTors(new(new Rational(a), new Rational(b)), nbPrimes, lvl);
     }
 
-    static IEnumerable<EllPt<Rational>> SolveX(BigInteger a, BigInteger b, BigInteger[] Ys, bool show = false)
+    static IEnumerable<EllPt<Rational>> SolveIntegralPoints(EllGroup<Rational> E, LogLevel lvl = LogLevel.Off)
     {
-        var X = FG.QPoly();
-        var (A, B) = (new Rational(a), new Rational(b));
-        foreach (var y in Ys.Prepend(0).Select(y => new Rational(y)))
+        var disc = E.Disc;
+        var (A, B, C, _, _) = E.LongForm;
+        // Console.WriteLine($"{E} ~ {E.LongFormStr} ~ {E.ShortFormStr}");
+        // var (a1, a2, a3, a4, a5) = E.Coefs;
+        // var (X, Y) = Ring.Polynomial(Rational.KOne(), "X", "Y").Deconstruct();
+        // var F = X.Pow(3) + a2 * X.Pow(2) + a4 * X + a5 - (Y.Pow(2) + a1 * X * Y + a3 * Y);
+        // var disc1 = Ring.Discriminant(Ring.Discriminant(F, Y) / 16, X).ConstTerm / 16;
+        // Console.WriteLine(new { disc, disc1, div = disc / disc1 });
+        var r = IntExt.PrimesDec(BigInteger.Abs(disc.Num))
+            .Aggregate(BigInteger.One, (acc, r) => acc * BigInteger.Pow(r.Key, r.Value / 2 + r.Value % 2));
+        var divs = IntExt.DividorsBigInt(16 * r).Where(y => (256 * disc.Num) % (y * y) == 0).Order()
+            .Select(y => new Rational(y)).ToArray();
+
+        var x = FG.QPoly();
+        foreach (var y in divs.Prepend("0"))
         {
-            var P = X.Pow(3) + A * X + B;
+            var P = x.Pow(3) + A * x * x + B * x + C;
             var sols = IntFactorisation.FactorsQ(P - y.Pow(2));
-            if (show)
+            if (lvl == LogLevel.Level2)
                 sols.Println($"Y = {y}, solve {y.Pow(2)} = {P}");
 
             var ellpts = sols.Where(e => e.Item1.Degree == 1).Select(e => new EllPt<Rational>(-e.Item1[0], y));
             foreach (var pt in ellpts)
-                yield return pt;
+            {
+                yield return E.ConvertFromLong(pt);
+                yield return E.ConvertFromLong(new(pt.X, -pt.Y));
+            }
         }
     }
 
-    static (EllGroup<Rational> E, ConcreteGroup<EllPt<Rational>> gEll, int[] abType, HashSet<EllPt<Rational>> intPts)
-        NagellLutz(BigInteger a, BigInteger b, EllPt<Rational>[] ellpts)
+    static void AddNewIntegralPoint(EllGroup<Rational> g, HashSet<EllPt<Rational>> set, EllPt<Rational> pt)
     {
-        var intPts = ellpts.Concat(ellpts.Select(e => new EllPt<Rational>(e.X, -e.Y))).ToHashSet();
-        var E = new EllGroup<Rational>($"{a}", $"{b}");
-        var set = new List<EllPt<Rational>>() { E.O };
-        foreach (var pt in ellpts)
+        var sz = 0;
+        while (set.Count != sz)
         {
-            var acc = E.O;
-            for (int i = 1; i <= 12; i++)
-            {
-                acc = E.Op(acc, pt);
-                if (acc.IsO || !acc.X.IsInteger() || !acc.Y.IsInteger())
-                    break;
+            sz = set.Count;
+            var tmp = set.Select(e => g.Op(e, pt)).Where(e => e.IsIntegral()).ToHashSet();
+            set.UnionWith(tmp);
+        }
+    }
 
-                intPts.Add(acc);
-                intPts.Add(new(acc.X, -acc.Y));
+    static (ConcreteGroup<EllPt<Rational>> gEll, HashSet<EllPt<Rational>> pts, int[] abType)
+        NagellLutzTorsionGroup(EllGroup<Rational> E, HashSet<EllPt<Rational>> ellpts, LogLevel lvl = LogLevel.Level1)
+    {
+        var set = new List<EllPt<Rational>>() { E.O };
+        foreach (var pt in ellpts.Where(pt => E.ConvertToShort(pt).IsIntegral()))
+        {
+            var acc = pt;
+            for (int i = 1; i <= 4; i++)
+            {
+                acc = E.Times(acc, 2);
+                if (acc.IsO || !E.ConvertToShort(acc).IsIntegral())
+                    break;
             }
 
-            if (acc.IsO)
+            if (E.ConvertToShort(acc).IsIntegral())
                 set.Add(pt);
         }
 
         var gEll = Group.Generate(E, set.ToArray());
         var abType = Group.AbelianGroupType(gEll);
-        return (E, gEll, abType, intPts);
-    }
-
-    static (int[] abType, HashSet<EllPt<Rational>> intPts, EllGroup<Rational> E)
-        NagellLutz(BigInteger a, BigInteger b, Func<EllPt<Rational>, EllPt<Rational>> revTrans, bool show = false)
-    {
-        var (disc, Ys) = CandidatsY(a, b);
-        var ellpts = SolveX(a, b, Ys, show).ToArray();
-        var (E, gEll, abType, intPts) = NagellLutz(a, b, ellpts);
-
-        if (show)
-            intPts.Println("Elements");
-
-        DisplayGroup.HeadElements(gEll);
-        Console.WriteLine($"{gEll} Torsion = {abType.Glue(" x ", "C{0}")}");
-        Console.WriteLine();
-        var intPtsF = gEll.Concat(intPts).Select(pt => revTrans(pt)).ToHashSet();
-        return (abType, intPtsF, E);
-    }
-
-    static (int[] abType, HashSet<EllPt<Rational>> intPts, EllGroup<Rational> E)
-        NagellLutz(BigInteger a, BigInteger b, bool show = false)
-    {
-        return NagellLutz(a, b, pt => pt, show);
-    }
-
-    public static (EllGroup<Rational> E, ConcreteGroup<EllPt<Rational>> gEll, int[] abType,
-        HashSet<EllPt<Rational>> intPts) NagellLutzTorsionGroup(BigInteger a, BigInteger b)
-    {
-        var (disc, Ys) = CandidatsY(a, b);
-        var ellpts = SolveX(a, b, Ys, show: false).ToArray();
-        return NagellLutz(a, b, ellpts);
-    }
-
-    static (KPoly<K> P1, Func<EllPt<K>, EllPt<K>> trans, Func<EllPt<K>, EllPt<K>> revTrans)
-        MinimizedForm<K>((Polynomial<K, Xi> lhs, Polynomial<K, Xi> rhs) e)
-        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
-    {
-        var F = -e.lhs + e.rhs;
-        var ((y, Y), (x, X)) = F.IndeterminatesAndVariables.Deconstruct();
-        var ind = X.Indeterminates;
-        var (xm, ym) = (new Monom<Xi>(ind, x), new Monom<Xi>(ind, y));
-        var (xym, x2m) = (xm.Mul(ym), xm.Pow(2));
-        var (a1, a2, a3, a4, a5) = (F[xym], F[ym], F[x2m], F[xm], F.ConstTerm);
-        var A = -a1.Pow(4) / 48 - a1.Pow(2) * a3 / 6 + a1 * a2 / 2 - a3.Pow(2) / 3 + a4;
-        var B = a1.Pow(6) / 864 + a1.Pow(4) * a3 / 72 - a1.Pow(3) * a2 / 24 + a1.Pow(2) * a3.Pow(2) / 18 -
-            a1.Pow(2) * a4 / 12 - a1 * a2 * a3 / 6 + 2 * a3.Pow(3) / 27 + a2.Pow(2) / 4 - a3 * a4 / 3 + a5;
-
-        K d1 = F.KOne, d2 = F.KOne;
-        if (A is Rational A0 && B is Rational B0)
+        if (lvl != LogLevel.Off)
         {
-            var sqDivs864 = new[] { 1, 4, 9, 16, 36, 144 } // Square Divisidors of 864 
-                .Select(div => (div, pow2: div * div, pow3: div * div * div)).ToArray();
-            var (sqDiv, _, sqDivPow3) = sqDivs864.OrderBy(f => f.div)
-                .First(div => div.pow2 % A0.Denom == 0 && div.pow3 % B0.Denom == 0);
-            dynamic d01 = new Rational(sqDiv);
-            dynamic d02 = new Rational(IntExt.SqrtBigInt(sqDivPow3));
-            (d1, d2) = (d01, d02);
-        }
-
-        Func<EllPt<K>, EllPt<K>> trans = pt =>
-        {
-            if (pt.IsO)
-                return pt;
-
-            var _x = (pt.X + a1.Pow(2) / 12 + a3 / 3) * d1;
-            var _y = (-pt.Y + (a1 * pt.X + a2) / 2) * d2;
-            return new(_x, _y);
-        };
-
-        Func<EllPt<K>, EllPt<K>> revTrans = pt =>
-        {
-            if (pt.IsO)
-                return pt;
-
-            var _x = pt.X / d1 - a1.Pow(2) / 12 - a3 / 3;
-            var _y = pt.Y / d2;
-            return new(_x, -_y + (a1 * _x + a2) / 2);
-        };
-
-        A *= d1.Pow(2);
-        B *= d1.Pow(3);
-        if (Logger.Level != LogLevel.Off)
-        {
-            var field = typeof(K).Name;
-            if (A is Rational)
-                field = "Q";
-            else if (A is ZnInt A1)
-                field = $"Z/{A1.P}Z";
-            else if (A is ZnBigInt A2)
-                field = $"Z/{A2.Mod}Z";
-
-            Console.WriteLine($"Elliptic curve      {e.lhs} = {e.rhs} in {field}");
-            Console.WriteLine($"Simplified form     y^2 = {X.Pow(3) + A * X + B}");
+            DisplayGroup.HeadElements(gEll);
+            Console.WriteLine($"{gEll} TorsionGroup = {abType.Glue(" x ", "C{0}")}");
             Console.WriteLine();
         }
 
-        var P1 = (X.Pow(3) + A * X + B).ToKPoly(x);
-        return (P1, trans, revTrans);
+        var intPts = ellpts.Concat(gEll).Where(pt => pt.IsIntegral()).ToHashSet();
+        return (gEll, intPts, abType);
     }
 
-    static (KPoly<K> P1, Func<EllPt<K>, EllPt<K>> trans, Func<EllPt<K>, EllPt<K>> revTrans)
-        MinimizedForm<K>(K[] coefs) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    static (ConcreteGroup<EllPt<Rational>> gEll, HashSet<EllPt<Rational>> pts, int[] abType)
+        NagellLutzTorsionGroup(EllGroup<Rational> E, LogLevel lvl = LogLevel.Level1)
     {
-        if (coefs.Length == 5)
-        {
-            var (a1, a3, a2, a4, a5) = coefs.Deconstruct();
-            var (x, y) = Ring.Polynomial(a5, "x", "y").Deconstruct();
-            var lhs = y.Pow(2) + a1 * x * y + a2 * y;
-            var rhs = x.Pow(3) + a3 * x.Pow(2) + a4 * x + a5;
-            return MinimizedForm((lhs, rhs));
-        }
-        else if (coefs.Length == 3)
-        {
-            var (a3, a4, a5) = coefs.Deconstruct();
-            var (x, y) = Ring.Polynomial(a5, "x", "y").Deconstruct();
-            var lhs = y.Pow(2);
-            var rhs = x.Pow(3) + a3 * x.Pow(2) + a4 * x + a5;
-            return MinimizedForm((lhs, rhs));
-        }
-
-        throw new();
+        var ellpts = SolveIntegralPoints(E, lvl).ToHashSet();
+        return NagellLutzTorsionGroup(E, ellpts, lvl);
     }
 
-    public static (KPoly<Rational> P1,
-        Func<EllPt<Rational>, EllPt<Rational>> trans, Func<EllPt<Rational>, EllPt<Rational>> revTrans)
-        MinimizedForm(int[] coefs) => MinimizedForm(coefs.Select(e => new Rational(e)).ToArray());
+    static (ConcreteGroup<EllPt<Rational>> gEll, HashSet<EllPt<Rational>> pts, int[] abType)
+        NagellLutzTorsionGroup(BigInteger[] curve, LogLevel lvl = LogLevel.Level1)
+    {
+        var (a1, a2, a3, a4, a5) = CurveArray(curve.Select(e => new Rational(e)).ToArray()).Deconstruct();
+        return NagellLutzTorsionGroup(new EllGroup<Rational>(a1, a2, a3, a4, a5), lvl);
+    }
 
-    public static (KPoly<ZnBigInt> P1,
-        Func<EllPt<ZnBigInt>, EllPt<ZnBigInt>> trans, Func<EllPt<ZnBigInt>, EllPt<ZnBigInt>> revTrans)
-        MinimizedFormZnBigInt(int p, int[] coefs) => MinimizedForm(coefs.Select(e => new ZnBigInt(p, e)).ToArray());
-
-    public static (KPoly<ZnInt> P1,
-        Func<EllPt<ZnInt>, EllPt<ZnInt>> trans, Func<EllPt<ZnInt>, EllPt<ZnInt>> revTrans)
-        MinimizedFormZnInt(int p, int[] coefs) => MinimizedForm(coefs.Select(e => new ZnInt(p, e)).ToArray());
+    static (ConcreteGroup<EllPt<Rational>> gEll, HashSet<EllPt<Rational>> pts, int[] abType)
+        NagellLutzTorsionGroup(BigInteger[] curve, (BigInteger x, BigInteger y)[] ellPts,
+            LogLevel lvl = LogLevel.Level1)
+    {
+        var (a1, a2, a3, a4, a5) = CurveArray(curve.Select(e => new Rational(e)).ToArray()).Deconstruct();
+        var pts = ellPts.Select(e => new EllPt<Rational>($"{e.x}", $"{e.y}")).ToHashSet();
+        return NagellLutzTorsionGroup(new EllGroup<Rational>(a1, a2, a3, a4, a5), pts, lvl);
+    }
 
     static void Transform((Polynomial<Rational, Xi> lhs, Polynomial<Rational, Xi> rhs) e,
         TorsionMeth meth = TorsionMeth.Both)
     {
-        var (P1, _, revTrans) = MinimizedForm(e);
+        var ((y, _), (x, X)) = (-e.lhs + e.rhs).IndeterminatesAndVariables.Deconstruct();
+        var ind = X.Indeterminates;
+        var (xm, ym) = (new Monom<Xi>(ind, x), new Monom<Xi>(ind, y));
+        var (xym, x2m) = (xm.Mul(ym), xm.Pow(2));
+        var (a1, a2, a3, a4, a5) = (e.lhs[xym], e.rhs[x2m], e.lhs[ym], e.rhs[xm], e.rhs.ConstTerm);
+        var E = new EllGroup<Rational>(a1, a2, a3, a4, a5);
+        var P1 = X.Pow(3) + E.LongForm.A * X.Pow(2) + E.LongForm.B * X + E.LongForm.C;
+        var P2 = X.Pow(3) + E.ShortForm.A * X + E.ShortForm.B;
         Console.WriteLine($"Elliptic curve      {e.lhs} = {e.rhs}");
         Console.WriteLine($"Simplified form     y^2 = {P1}");
-        var (A, B) = (P1[1], P1[0]);
+        Console.WriteLine($"Simplified form     y^2 = {P2}");
 
         if ((meth & TorsionMeth.Fp) == TorsionMeth.Fp)
-            EllTors(A.Num, B.Num);
+            EllTors(E);
         if ((meth & TorsionMeth.NagellLutz) == TorsionMeth.NagellLutz)
-        {
-            var ng = NagellLutz(A.Num, B.Num, revTrans);
-            ng.intPts.OrderBy(pt => pt.Height())
-                .Println($"Points of Elliptic curve      {e.lhs} = {e.rhs}");
-            Console.WriteLine();
-        }
+            NagellLutzTorsionGroup(E);
+
+        Console.WriteLine();
     }
 
     static (int y, bool sol) ApproxSolver(int x, int n)
@@ -371,6 +311,82 @@ public static class EllipticCurves
         return rk;
     }
 
+    static void symbWeierstrassForm()
+    {
+        Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+        var xis = Ring.Polynomial(Rational.KZero(), MonomOrder.GrLex,
+            "a1", "a2", "a3", "a4", "a5", "d1", "d2", "A", "B", "C", "x", "y");
+        var (a1, a2, a3, a4, a5, d1, d2) = Ring.EPolynomial(xis.Take(7).ToArray()).Deconstruct();
+        var (A, B, C, X, Y) = Ring.EPolynomial(xis.Skip(7).ToArray()).Deconstruct();
+        var (x, y) = (X.Num.ExtractIndeterminate, Y.Num.ExtractIndeterminate);
+
+        var eqEll = (X.Pow(3) + a2 * X.Pow(2) + a4 * X + a5) - (Y.Pow(2) + a1 * X * Y + a3 * Y);
+
+        var eqLong1 = eqEll.Substitute(Y - (a1 * X + a3) / 2, y);
+        Console.WriteLine(eqEll);
+        Console.WriteLine(eqLong1);
+        Ring.Decompose(eqLong1.Num, x).Item1.Println();
+        // (-a1*x*y + a2*x^2 + x^3 - a3*y + a4*x - y^2 + a5)
+        // (1/4*a1^2*x^2 + 1/2*a1*a3*x + a2*x^2 + x^3 - 1/4*a2^2 + 1/2*a2*a3 + a2*y - a3*y + a4*x - y^2 + a5)
+        // Lines
+        //     [1, -1/4*a2^2 + 1/2*a2*a3 + a2*y - a3*y - y^2 + a5]
+        //     [x, 1/2*a1*a3 + a4]
+        //     [x^2, 1/4*a1^2 + a2]
+        //     [x^3, 1]
+        // 
+
+        var eqLong2 = (X.Pow(3) + A * X * X + B * X + C) - Y.Pow(2);
+        var eqLong3 = (d1.Pow(3) * eqLong2.Substitute(X / d1, x)).Substitute(Y / d2, y);
+        Console.WriteLine(eqLong2);
+        Console.WriteLine(eqLong3);
+        Console.WriteLine(eqLong3.Num);
+        Console.WriteLine(eqLong3.Denom);
+        Ring.Decompose(eqLong3.Num, x).Item1.Println();
+        Console.WriteLine();
+        // (A*x^2 + x^3 + B*x - y^2 + C)
+        // (-C*d1^3*d2^2 - B*d1^2*d2^2*x - A*d1*d2^2*x^2 + d1^3*y^2 - d2^2*x^3)/(-d2^2)
+        // -C*d1^3*d2^2 - B*d1^2*d2^2*x - A*d1*d2^2*x^2 + d1^3*y^2 - d2^2*x^3
+        // -d2^2
+        // Lines
+        //     [1, -C*d1^3*d2^2 + d1^3*y^2]
+        //     [x, -B*d1^2*d2^2]
+        //     [x^2, -A*d1*d2^2]
+        //     [x^3, -d2^2]
+        // 
+
+        var eqShort1 = eqEll.Substitute((Y - (a1 * X + a3) / 2, y), (X - a1.Pow(2) / 12 - a2 / 3, x));
+        Console.WriteLine(eqEll);
+        Console.WriteLine(eqShort1);
+        Ring.Decompose(eqShort1.Num, x).Item1.Println();
+        // (-a1*x*y + a2*x^2 + x^3 - a3*y + a4*x - y^2 + a5)
+        // (1/864*a1^6 + 1/72*a1^4*a2 - 1/48*a1^4*x - 1/24*a1^3*a3 + 1/18*a1^2*a2^2 - 1/6*a1^2*a2*x - 1/12*a1^2*a4 - 1/6*a1*a2*a3 + 1/2*a1*a3*x + 2/27*a2^3 - 1/3*a2^2*x + x^3 - 1/3*a2*a4 + 1/4*a3^2 + a4*x - y^2 + a5)
+        // Lines
+        //     [1, 1/864*a1^6 + 1/72*a1^4*a2 - 1/24*a1^3*a3 + 1/18*a1^2*a2^2 - 1/12*a1^2*a4 - 1/6*a1*a2*a3 + 2/27*a2^3 - 1/3*a2*a4 + 1/4*a3^2 - y^2 + a5]
+        //     [x, -1/48*a1^4 - 1/6*a1^2*a2 + 1/2*a1*a3 - 1/3*a2^2 + a4]
+        //     [x^2, 0]
+        //     [x^3, 1]
+        // 
+
+        var eqShort2 = (X.Pow(3) + A * X + B) - Y.Pow(2);
+        var eqShort3 = (d1.Pow(3) * eqShort2.Substitute(X / d1, x)).Substitute(Y / d2, y);
+        Console.WriteLine(eqShort2);
+        Console.WriteLine(eqShort3);
+        Console.WriteLine(eqShort3.Num);
+        Console.WriteLine(eqShort3.Denom);
+        Ring.Decompose(eqShort3.Num, x).Item1.Println();
+        // (-B*d1^3*d2^2 - A*d1^2*d2^2*x + d1^3*y^2 - d2^2*x^3)/(-d2^2)
+        // -B*d1^3*d2^2 - A*d1^2*d2^2*x + d1^3*y^2 - d2^2*x^3
+        // -d2^2
+        // Lines
+        //     [1, -B*d1^3*d2^2 + d1^3*y^2]
+        //     [x, -A*d1^2*d2^2]
+        //     [x^2, 0]
+        //     [x^3, -d2^2]
+        // 
+
+        Console.WriteLine();
+    }
+
     public static void Example1()
     {
         var E = new EllGroup<Rational>("-36", "0");
@@ -399,7 +415,7 @@ public static class EllipticCurves
     // https://www.lmfdb.org/EllipticCurve/Q/26/b/2
     public static void Example2Fp()
     {
-        EllTors(-36, 0, show: true); // Ell[-36,0](Q) Torsion = C2 x C2
+        EllTors(-36, 0, lvl: LogLevel.Level2); // Ell[-36,0](Q) Torsion = C2 x C2
         EllTors(0, 3); // Ell[0,3](Q) Torsion = C1
         EllTors(1, 0); // Ell[1,0](Q) Torsion = C2
         EllTors(0, 1); // Ell[0,1](Q) Torsion = C6
@@ -408,11 +424,11 @@ public static class EllipticCurves
 
     public static void Example3NagellLutz()
     {
-        NagellLutz(-36, 0, show: true); // Ell[-36,0](Q) Torsion = C2 x C2
-        NagellLutz(0, 3); // Ell[0,3](Q) Torsion = C1
-        NagellLutz(1, 0); // Ell[1,0](Q) Torsion = C2
-        NagellLutz(0, 1); // Ell[0,1](Q) Torsion = C6
-        NagellLutz(-43, 166); // Ell[-43,166](Q) Torsion = C7
+        NagellLutzTorsionGroup([-36, 0], lvl: LogLevel.Level2); // Ell[-36,0](Q) Torsion = C2 x C2
+        NagellLutzTorsionGroup([0, 3]); // Ell[0,3](Q) Torsion = C1
+        NagellLutzTorsionGroup([1, 0]); // Ell[1,0](Q) Torsion = C2
+        NagellLutzTorsionGroup([0, 1]); // Ell[0,1](Q) Torsion = C6
+        NagellLutzTorsionGroup([-43, 166]); // Ell[-43,166](Q) Torsion = C7
     }
     // |Ell[-43,166](Q)| = 7
     // Type        AbelianGroup
@@ -433,6 +449,8 @@ public static class EllipticCurves
     {
         Logger.SetOff();
         Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+        symbWeierstrassForm();
+
         var (x, y) = Ring.Polynomial(Rational.KZero(), "x", "y").Deconstruct();
 
         // – E1 : y^2 + 7xy = x^3 + 16x ;
@@ -534,27 +552,30 @@ public static class EllipticCurves
         Transform((y.Pow(2) + x * y, x.Pow(3) - 1070 * x + 7812), TorsionMeth.NagellLutz);
         Transform((y.Pow(2) + x * y, x.Pow(3) - 8696090 * x + "9838496100"), TorsionMeth.NagellLutz);
 
-        GlobalStopWatch.Show("END"); // Time:35.122s
+        GlobalStopWatch.Show("END"); // Time:5.955s
     }
 
     public static void Example6MordellCurve()
     {
+        var listMissing = new List<int>();
         for (int n = 1; n <= 100; n++)
         {
-            var (abType, ellpts, E) = NagellLutz(0, n);
+            var (gEll, ellpts, abType) = NagellLutzTorsionGroup([0, n], LogLevel.Off);
+            var E = (EllGroup<Rational>)gEll.BaseGroup;
             var intPts = ellpts.ToHashSet();
+
             var sz = -1;
             while (sz != intPts.Count)
             {
                 sz = intPts.Count;
-                intPts.UnionWith(intPts.Prepend(E.O).ToArray().Grid2D()
-                    .SelectMany(e => new[] { E.Op(e.t1, e.t2), E.Invert(E.Op(e.t1, e.t2)) })
-                    .Where(pt => !pt.IsO && pt.X.IsInteger() && pt.Y.IsInteger()).ToArray());
+                foreach (var pt in intPts.ToArray())
+                    AddNewIntegralPoint(E, intPts, pt);
             }
 
             var missing = GroupExt.B081119[n] - intPts.Count(pt => !pt.IsO);
             if (missing != 0)
             {
+                listMissing.Add(n);
                 Console.WriteLine($"## y^2 = x^3 + {n}");
                 if (abType.Length == 1 && abType[0] == 1)
                     Console.WriteLine("Trivial Torsion. TODO Integer Points"); // TODO: Trivial torsion
@@ -566,6 +587,8 @@ public static class EllipticCurves
 
             Console.WriteLine();
         }
+
+        Console.WriteLine($"listMissing = {listMissing.Count} [{listMissing.Glue(", ")}]");
     }
 
     public static void Example7MordellsEquation()
@@ -595,7 +618,8 @@ public static class EllipticCurves
             }
 
             var pts = mordell[n] = set.Order().ToArray();
-            var abType = NagellLutz(0, n, pts.Select(e => new EllPt<Rational>($"{e.x}", $"{e.y}")).ToArray()).abType;
+            var abType = NagellLutzTorsionGroup([0, n], pts, LogLevel.Off).abType;
+            // var abType = NagellLutz(0, n, pts.Select(e => new EllPt<Rational>($"{e.x}", $"{e.y}")).ToArray()).abType;
             tors[n] = abType;
             Console.WriteLine($"n = {n} ");
             Console.CursorTop--;
@@ -628,37 +652,41 @@ public static class EllipticCurves
         var primXYZ = 10.Range(1).Grid2D().Select(e => (a: e.t1, b: e.t2))
             .Where(e => e.a < e.b && (e.a * e.b) % 2 == 0 && IntExt.Gcd(e.a, e.b) == 1)
             .Select(e => (x0: e.b * e.b - e.a * e.a, y0: 2 * e.a * e.b, z: e.a * e.a + e.b * e.b))
-            .Select(e => (x: int.Min(e.x0, e.y0), y: int.Max(e.x0, e.y0), e.z))
-            .Order()
-            .ToArray();
+            .Select(e => (x: BigInteger.Min(e.x0, e.y0), y: BigInteger.Max(e.x0, e.y0), z: new BigInteger(e.z)))
+            .Distinct().Order().ToArray();
 
         primXYZ.Println(e => $"{e.z}^2 = {e.x}^2 + {e.y}^2", $"Z^2 = X^2 + Y^2, Count:{primXYZ.Length}");
         Console.WriteLine();
-        // primXYZ.Where(e => e.x < 65000 && e.y < 65000 && e.x * e.y > 0).Select(e => e.x * e.y / 2).Select(e =>
-        //         IntExt.PrimesDec(e).Select(f => (f.Key, f.Value % 2))
-        //             .Aggregate(1, (acc, f) => acc * f.Key.Pow(f.Item2)))
-        //     .Distinct().Order().Take(1000).Println($"n =");
-        // Console.ReadLine();
 
+        var lt = new HashSet<(Rational X, Rational Y, Rational Z)>();
         foreach (var (x, y, z) in primXYZ)
         {
             var n = (x * y) / 2;
-            Console.WriteLine($"{z}^2 = {x}^2 + {y}^2 and n = {x * y / 2}");
+            Console.WriteLine($"{z}^2 = {x}^2 + {y}^2 and n = {n}");
 
-            var (a, b) = (-n * n, 0);
-            var (disc, Ys) = CandidatsY(a, b);
-            var ellpts = SolveX(a, b, Ys).ToArray();
-            EllRank(a, b);
-            var (E, gEll, abType, intPts) = NagellLutz(a, b, ellpts);
+            var n2 = new Rational(n).Pow(2);
+            EllRank(-n * n, 0);
+            var E = new EllGroup<Rational>(-n2, "0");
+            var (gEll, intPts, _) = NagellLutzTorsionGroup(E, LogLevel.Off);
+            foreach (var pt in intPts.ToArray())
+                AddNewIntegralPoint(E, intPts, pt);
 
-            Console.WriteLine($"n = {n} Ell y^2 = x^3 - {n * n}x");
-            var pts = intPts.Where(e => !e.IsO && !e.Y.IsZero()).Select(e => (pt: e,
-                X: (n.Pow(2) - e.X.Pow(2)) / e.Y, Y: -2 * n * e.X / e.Y, Z: (n.Pow(2) + e.X.Pow(2)) / e.Y)).ToArray();
+            Console.WriteLine($"n = {n} Ell y^2 = x^3 - {n2}x");
+            var pts = intPts.Where(e => e.IsIntegral() && !e.IsO && !e.Y.IsZero())
+                .Select(e => (pt: e, X: (n2 - e.X.Pow(2)) / e.Y, Y: -2 * n * e.X / e.Y, Z: (n2 + e.X.Pow(2)) / e.Y))
+                .Select(e => (e.pt, X: e.X.Absolute, Y: e.Y.Absolute, Z: e.Z.Absolute))
+                .DistinctBy(e => (Rational.Min(e.X, e.Y), Rational.Max(e.X, e.Y)))
+                .ToArray();
 
-            pts.Println(e => $"{e.pt,-20} X:{e.X} Y:{e.Y} Z:{e.Z}", "Pts");
+            lt.UnionWith(pts.Select(e => (Rational.Min(e.X, e.Y), Rational.Max(e.X, e.Y), e.Z)));
+
+            pts.Println(e => $"{e.pt,-20} X:{e.X} Y:{e.Y} Z:{e.Z}", $"Pts = {pts.Length}");
             Console.WriteLine($"Check points X^2+Y^2=Z^2:{pts.All(e => (e.X.Pow(2) + e.Y.Pow(2)).Equals(e.Z.Pow(2)))}");
             Console.WriteLine();
         }
+
+        lt.OrderBy(e => e.Z).ThenBy(e => e.X)
+            .Println(e => $"X:{e.X} Y:{e.Y} Z:{e.Z}", $"All X^2+Y^2=Z^2 total {lt.Count}");
     }
 
     public static void Example9Rank()
