@@ -387,6 +387,27 @@ public static class EllipticCurves
         Console.WriteLine();
     }
 
+    // Elliptic Curve Discrete Logarithm Problem
+    static void ECDLP(int p, (int x, int y) P0, (int x, int y) Q0, int[] curve)
+    {
+        var (a1, a2, a3, a4, a5) = CurveArray(curve.Select(i => new ZnInt(p, i)).ToArray()).Deconstruct();
+        var E = new EllGroup<ZnInt>(a1, a2, a3, a4, a5);
+        var nb = SchoofEllPtsCount(E.ShortForm.A.K, E.ShortForm.B.K, p);
+        Console.WriteLine($"|{E}| = {nb}");
+
+        var P = new EllPt<ZnInt>(new(p, P0.x), new(p, P0.y));
+        var Q = new EllPt<ZnInt>(new(p, Q0.x), new(p, Q0.y));
+
+        GlobalStopWatch.AddLap();
+        var k = Group.BSGS(E, P, Q, nb);
+        var Q1 = E.Times(P, k);
+        Console.WriteLine($"P={P} Q={Q1} {k}xP=Q");
+        GlobalStopWatch.Show();
+        Console.WriteLine();
+        if (!Q.Equals(Q1))
+            throw new();
+    }
+
     public static void Example1()
     {
         var E = new EllGroup<Rational>("-36", "0");
@@ -713,5 +734,31 @@ public static class EllipticCurves
             EllRank(-d * d, 0);
 
         GlobalStopWatch.Show(); // Time:5.079s
+    }
+    
+    public static void Example10ECDLP()
+    {
+        Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+        Logger.Level = LogLevel.Level1;
+    
+        // C : y^2 = x^3 + x^2 + x + 1 p = 97, P = (7, 20), Q = (17, 46)
+        // sage: E=EllipticCurve(GF(97),[0,1,0,1,1]);P=E([7, 20]);Q=Ea([17, 46]);Q.log(P)
+        // pari: E=ellinit([0,1,0,1,1],97);elllog(E,[17, 46],[7, 20])
+        ECDLP(p:97, (7, 20), (17, 46), [0, 1, 0, 1, 1]);
+    
+        // (a) C : y^2 = x^3 + x^2 + x + 3, p = 103, P = (7, 14), Q = (8, 22).
+        ECDLP(p:103, (7, 14), (8, 22), [0, 1, 0, 1, 3]);
+
+        // (b) C : y^2 = x^3 − 2x^2 + 5x + 6, p = 149, P = (11, 16), Q = (110, 46).
+        ECDLP(p:149, (11, 16), (110, 46), [0, -2, 0, 5, 6]);
+
+        // (c) C : y^2 = x^3 + x^2 + x + 2, p = 10037, P = (8, 7358), Q = (2057, 5437).
+        ECDLP(p:10037, (8, 7358), (2057, 5437), [0, 1, 0, 1, 2]);
+
+        // C : y^2 + x*y + y = x^3 - x^2 - 29*x - 53, p = 10037, P = (8, 7358), Q = (2057, 5437).
+        ECDLP(p: 20011, (16897, 9208), (8965, 18468), [1, -1, 1, -29, -53]);
+        // |Ell[1,20010,1,19982,19958](Z/20011Z)| = 19872
+        // P=(16897, 9208) Q=( 8965,18468) 4305xP=Q
+        // #  Time:3ms
     }
 }
