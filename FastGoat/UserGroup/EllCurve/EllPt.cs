@@ -47,6 +47,14 @@ public readonly struct EllPt<T> : IElt<EllPt<T>> where T : struct, IElt<T>, IRin
 
     public override int GetHashCode() => Hash;
 
+    public void Deconstruct(out T x, out T y)
+    {
+        if (IsO)
+            throw new GroupException(GroupExceptionType.GroupDef);
+        
+        (x, y) = (X, Y);
+    }
+
     public override string ToString()
     {
         return IsO ? "O" : $"({X},{Y})";

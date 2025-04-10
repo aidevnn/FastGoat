@@ -135,6 +135,15 @@ public struct EllGroup<T> : IGroup<EllPt<T>> where T : struct, IElt<T>, IRingElt
     {
         get
         {
+            if (us.Length == 2 && us[0] is int x0 && us[1] is int y0)
+            {
+                var (x1, y1) = (ShortForm.A.One * x0, ShortForm.A.One * y0);
+                if (!Contains(x1, y1))
+                    throw new GroupException(GroupExceptionType.GroupDef);
+
+                return new EllPt<T>(x1, y1);
+            }
+
             if (us.Length == 2 && us[0] is T x && us[1] is T y)
             {
                 if (!Contains(x, y))
