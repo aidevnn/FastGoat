@@ -43,11 +43,11 @@ int NCubicRoots(Rational b0, Rational c0, Rational d0, int p)
     return facts.Count(f => f.g.Degree == 1);
 }
 
-(string Kp, int fp, int cp) TateAlgorithm(EllCurveCoefs<Rational> E, int p)
+TateAlgo TateAlgorithm(EllCoefs<Rational> E, int p)
 {
     var n = Ord(p, E.Disc.Num);
     if (n == 0)
-        return ("I0", 0, 1);
+        return new(p, n, "I0", 0, 1);
 
     var Etmp = E.Transform(0, 0, 0, 1);
     var (a1, a2, a3, a4, a6, b2, b4, b6, b8, c4, c6, _) = Etmp.ModelAndInvariants;
@@ -99,14 +99,14 @@ int NCubicRoots(Rational b0, Rational c0, Rational d0, int p)
         else
             cp = 1;
 
-        return ($"I{n}", 1, cp);
+        return new(p, n, $"I{n}", 1, cp);
     }
 
     if (!a6.Mod(p * p).IsZero())
-        return ("II", n, 1);
+        return new(p, n, "II", n, 1);
 
     if (!b8.Mod(p * p * p).IsZero())
-        return ("III", n - 1, 2);
+        return new(p, n, "III", n - 1, 2);
 
     if (!b6.Mod(p * p * p).IsZero())
     {
@@ -115,7 +115,7 @@ int NCubicRoots(Rational b0, Rational c0, Rational d0, int p)
         else
             cp = 1;
 
-        return ("IV", n - 2, cp);
+        return new(p, n, "IV", n - 2, cp);
     }
 
     if (p == 2)
@@ -139,7 +139,7 @@ int NCubicRoots(Rational b0, Rational c0, Rational d0, int p)
     var x = 3 * c - b * b;
 
     if (!w.Mod(p).IsZero())
-        return ("I*0", n - 4, 1 + NCubicRoots(b, c, d, p));
+        return new(p, n, "I*0", n - 4, 1 + NCubicRoots(b, c, d, p));
     else if (!x.Mod(p).IsZero())
     {
         if (p == 2)
@@ -161,7 +161,6 @@ int NCubicRoots(Rational b0, Rational c0, Rational d0, int p)
             var xa3 = a3 / my;
             var xa4 = a4 / (p * mx);
             var xa6 = a6 / (mx * my);
-            // Console.WriteLine(new { dbg = 1, p, cp, m, mx, my, xa2, xa3, xa4, xa6 });
             if (!(xa3.Pow(2) + 4 * xa6).Mod(p).IsZero())
             {
                 if (QuadRoot(a1.One, xa3, -xa6, p))
@@ -185,7 +184,6 @@ int NCubicRoots(Rational b0, Rational c0, Rational d0, int p)
                 xa3 = a3 / my;
                 xa4 = a4 / (p * mx);
                 xa6 = a6 / (mx * my);
-                // Console.WriteLine(new { dbg = 2, p, cp, m, mx, my, xa2, xa3, xa4, xa6 });
                 if (!(xa4.Pow(2) - 4 * xa2 * xa6).Mod(p).IsZero())
                 {
                     if (QuadRoot(xa2, xa4, xa6, p))
@@ -208,7 +206,7 @@ int NCubicRoots(Rational b0, Rational c0, Rational d0, int p)
             }
         }
 
-        return ($"I*{m}", n - m - 4, cp);
+        return new(p, n, $"I*{m}", n - m - 4, cp);
     }
     else
     {
@@ -230,7 +228,7 @@ int NCubicRoots(Rational b0, Rational c0, Rational d0, int p)
             else
                 cp = 1;
 
-            return ("IV*", n - 6, cp);
+            return new(p, n, "IV*", n - 6, cp);
         }
         else
         {
@@ -244,9 +242,9 @@ int NCubicRoots(Rational b0, Rational c0, Rational d0, int p)
             (a1, a2, a3, a4, a6, b2, b4, b6, b8, c4, c6, _) = Etmp.ModelAndInvariants;
 
             if (!a4.Mod(p.Pow(4)).IsZero())
-                return ("III*", n - 7, 2);
+                return new(p, n, "III*", n - 7, 2);
             else if (!a6.Mod(p.Pow(6)).IsZero())
-                return ("II*", n - 8, 1);
+                return new(p, n, "II*", n - 8, 1);
             else
             {
                 Console.WriteLine("restart");
@@ -256,30 +254,94 @@ int NCubicRoots(Rational b0, Rational c0, Rational d0, int p)
     }
 }
 
+int EllAp(EllGroup<Rational> E, int p)
+{
+    if (p <= 3)
+    {
+        var (_a1, _a2, _a3, _a4, _a6) = E.Coefs;
+        var (a1, a2, a3, a4, a6) = (_a1.ToZnInt(p), _a2.ToZnInt(p), _a3.ToZnInt(p), _a4.ToZnInt(p), _a6.ToZnInt(p));
+        var card = 1 + p.Range().Select(k => new ZnInt(p, k)).ToArray().Grid2D().Select(e => (x: e.t1, y: e.t2))
+            .Count(e => (e.y.Pow(2) + a1 * e.x * e.y + a3 * e.y).Equals(e.x.Pow(3) + a2 * e.x * e.x + a4 * e.x + a6));
+
+        return p + 1 - card;
+    }
+
+    var (A, B, _, _) = E.ShortForm;
+    var (a, b) = (A.ToZnInt(p), B.ToZnInt(p));
+    return -p.Range().Select(k => new ZnInt(p, k))
+        .Select(x => LegendreJacobi((x.Pow(3) + a * x + b).K, p))
+        .Sum(k => k <= 1 ? k : -1);
+}
+
+Dictionary<int, int> EllAn(EllGroup<Rational> E, int maxn)
+{
+    var ellAn = Primes10000.Where(p => p <= maxn).ToDictionary(p => p, p => EllAp(E, p));
+    ellAn[0] = 0;
+    ellAn[1] = 1;
+    foreach (var p in ellAn.Keys.Where(p => p > 1).Order().ToArray())
+    {
+        for (int i = 2; p.Pow(i) <= maxn; i++)
+        {
+            var t = (16 * E.Disc).Mod(p).IsZero() ? 0 : 1;
+            var e1 = ellAn[p];
+            var e2 = ellAn[p.Pow(i - 1)];
+            var e3 = ellAn[p.Pow(i - 2)];
+            var e4 = e2 * e1 - t * p * e3;
+            ellAn[p.Pow(i)] = e4;
+        }
+    }
+
+    for (int i = 0; i <= maxn; i++)
+    {
+        if (ellAn.ContainsKey(i))
+            continue;
+
+        var dec = PrimesDec(i);
+        ellAn[i] = dec.Select(e => ellAn[e.Key.Pow(e.Value)]).Aggregate(1, (acc, aj) => acc * aj);
+    }
+
+    return ellAn;
+}
+
+(int N, Dictionary<int, int> ellAn, TateAlgo[] tate, EllGroup<Rational> Ell) EllInfos(BigInteger[] curve, int maxn)
+{
+    var (a1, a2, a3, a4, a6) = curve.Select(i => new Rational(i)).Deconstruct();
+    var E = new EllCoefs<Rational>(a1, a2, a3, a4, a6);
+    var Ell = new EllGroup<Rational>(a1, a2, a3, a4, a6);
+    var dec = PrimesDec(E.Disc.Absolute.Num);
+    var tate = dec.Keys.Select(p => TateAlgorithm(E, p)).ToArray();
+    var N = tate.Select(e => e.p.Pow(e.fp)).Aggregate((pi, pj) => pi * pj);
+    var ellAn = EllAn(Ell, maxn);
+    var t = double.Exp(-2 * double.Pi / double.Sqrt(N));
+    var LE1 = 2 * ellAn.Where(e => e.Key != 0).Select(e => e.Value * double.Pow(t, e.Key) / e.Key).Sum();
+
+    E.Show();
+    Console.WriteLine($"Model {E.ModelStr}");
+    Console.WriteLine($"Kodaira=[{tate.Select(e => e.kp).Glue(", ")}] Cp=[{tate.Select(e => e.cp).Glue(", ")}]");
+    Console.WriteLine($"Conductor={N}");
+    Console.WriteLine($"EllAn = [{ellAn.AscendingByKey().GlueMap(", ", "{0}:{1}")}]");
+    Console.WriteLine($"L(E,1) = {LE1}");
+    Console.WriteLine();
+
+    return (N, ellAn, tate, Ell);
+}
+
 int EllConductor(BigInteger[] curve)
 {
     var (a1, a2, a3, a4, a6) = curve.Select(i => new Rational(i)).Deconstruct();
-    var E = new EllCurveCoefs<Rational>(a1, a2, a3, a4, a6);
+    var E = new EllCoefs<Rational>(a1, a2, a3, a4, a6);
     E.Show();
 
     var dec = PrimesDec(E.Disc.Absolute.Num);
-    var N = 1;
-    var seqKp = new List<string>();
-    var seqCp = new List<int>();
-    foreach (var p in dec.Keys)
-    {
-        var (kp, fp, cp) = TateAlgorithm(E, p);
-        seqKp.Add(kp);
-        seqCp.Add(cp);
-        N *= p.Pow(fp);
-    }
-
-    Console.WriteLine($"Kodaira=[{seqKp.Glue(", ")}] Cp=[{seqCp.Glue(", ")}]");
+    var seq = dec.Keys.Select(p => TateAlgorithm(E, p)).ToArray();
+    var N = seq.Select(e => e.p.Pow(e.fp)).Aggregate((pi, pj) => pi * pj);
+    Console.WriteLine($"Kodaira=[{seq.Select(e => e.kp).Glue(", ")}] Cp=[{seq.Select(e => e.cp).Glue(", ")}]");
     Console.WriteLine($"Conductor={N}");
     Console.WriteLine();
     return N;
 }
 
+void testConductor()
 {
     Ring.DisplayPolynomial = MonomDisplay.StarCaret;
     EllConductor([0, 0, 0, -1, 0]);
@@ -300,9 +362,163 @@ int EllConductor(BigInteger[] curve)
     EllConductor([1, -1, 0, -17, 16]);
 }
 
-public struct EllCurveCoefs<K> where K : struct, IFieldElt<K>, IRingElt<K>, IElt<K>
+void testEllAn()
 {
-    public EllCurveCoefs(K a1, K a2, K a3, K a4, K a6)
+    var maxn = 32;
+    Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+
+    // Rank 0
+    EllInfos([0, 0, 0, -1, 0], maxn);
+    EllInfos([0, 0, 0, 1, 0], maxn);
+    EllInfos([0, -1, 1, 0, 0], maxn);
+    EllInfos([0, -1, 1, -10, -20], maxn);
+    EllInfos([0, 0, 0, -3, -18], maxn);
+    EllInfos([0, 0, 0, -123, -522], maxn);
+    EllInfos([0, 1, 0, 16, 180], maxn);
+}
+
+double[] PrCoefs =
+[
+    1, -0.57721566490153286060651209008240243104, 0.98905599532797255539539565150063470794,
+    -0.90747907608088628901656016735627511493, 0.98172808683440018733638029402185085036,
+    -0.98199506890314520210470141379137467551, 0.99314911462127619315386725332865849803,
+    -0.99600176044243153397007841966456668673, 0.99810569378312892197857540308836723751,
+    -0.99902526762195486779467805964888808852, 0.99951565607277744106705087759437019442,
+    -0.99975659750860128702584244914060923598, 0.99987827131513327572617164259000321937,
+    -0.99993906420644431683585223136895513183, 0.99996951776348210449861140509195350724,
+    -0.99998475269937704874370963172444753831, 0.99999237447907321585539509450510782580,
+    -0.99999618658947331202896495779561431377, 0.99999809308113089205186619151459489769,
+    -0.99999904646891115771748687947054372628, 0.99999952321060573957523929299106456813,
+    -0.99999976159734438057092470106258744744, 0.99999988079601916841665041840424924048,
+    -0.99999994039712498374586288797675081780, 0.99999997019826758235557449619251141976
+];
+
+// RANK OF ELLIPTIC CURVES AND THE BIRCH
+// SWINNERTON-DYER CONJECTURE
+// J. HSU, S. MILLER
+// Department of Mathematics
+// Princeton University
+double factorial(int k)
+{
+    var f = 1.0;
+    for (int i = 1; i <= k; i++)
+        f *= i;
+
+    return f;
+}
+
+double Pr(int r, double x) => (r + 1).SeqLazy().Sum(k => PrCoefs[r - k] * double.Pow(x, k) / factorial(k));
+
+double G(int r, double x)
+{
+    if (x > 30)
+        return 0;
+
+    var pr = Pr(r, double.Log(1 / x));
+    var tmp = pr - 1;
+    var (n, sgn) = (1, -(-1).Pow(r));
+    while (double.Abs(pr - tmp) > 1e-12)
+    {
+        tmp = pr;
+        pr += sgn * double.Pow(x, n) / (double.Pow(n, r) * factorial(n));
+        ++n;
+        sgn *= -1;
+    }
+
+    return 2 * pr;
+}
+
+void EllAnalyticRank(BigInteger[] curve)
+{
+    var (a1, a2, a3, a4, a6) = curve.Select(i => new Rational(i)).Deconstruct();
+    var E = new EllCoefs<Rational>(a1, a2, a3, a4, a6);
+    var Ell = new EllGroup<Rational>(a1, a2, a3, a4, a6);
+    var dec = PrimesDec(E.Disc.Absolute.Num);
+    var tate = dec.Keys.Select(p => TateAlgorithm(E, p)).ToArray();
+    var N = tate.Select(e => e.p.Pow(e.fp)).Aggregate((pi, pj) => pi * pj);
+    var maxn = (int)double.Round(2 * double.Sqrt(N));
+    var ellAn = EllAn(Ell, maxn);
+
+    E.Show();
+    Console.WriteLine($"Model {E.ModelStr}");
+    Console.WriteLine($"Kodaira=[{tate.Select(e => e.kp).Glue(", ")}] Cp=[{tate.Select(e => e.cp).Glue(", ")}]");
+    Console.WriteLine($"Conductor={N}");
+    Console.WriteLine($"EllAn = [{ellAn.Where(e => e.Key <= 32).AscendingByKey().GlueMap(", ", "{0}:{1}")}]");
+
+    var X = 2 * double.Pi / double.Sqrt(N);
+
+    var r = 0;
+    var L0 = maxn.SeqLazy(1).Sum(n => ellAn[n] * G(0, X * n) / n);
+    var L1 = maxn.SeqLazy(1).Sum(n => ellAn[n] * G(1, X * n) / n);
+
+    if (double.Abs(L0) > 0.001 && double.Abs(L1) > 0.001)
+    {
+        Console.WriteLine($"L^(0)(E, 1) = {L0}");
+        Console.WriteLine($"L^(1)(E, 1) = {L1}");
+        
+        Console.WriteLine($"Analytic Rank = 0 or 1"); // TODO: sign of the functional equation
+    }
+    else
+    {
+        if (double.Abs(L0) < 0.001)
+        {
+            r = 2;
+            Console.WriteLine($"L^(0)(E, 1) = {L0}");
+        }
+        else
+        {
+            r = 3;
+            Console.WriteLine($"L^(1)(E, 1) = {L1}");
+        }
+
+        for (; r < 8; r += 2)
+        {
+            var Lr = factorial(r) * maxn.SeqLazy(1).Sum(n => ellAn[n] * G(r, X * n) / n);
+            Console.WriteLine($"L^({r})(E, 1) = {Lr}");
+            if (double.Abs(Lr) > 0.001)
+                break;
+        }
+        
+        Console.WriteLine($"Analytic Rank = {r}");
+    }
+
+    Console.WriteLine();
+}
+
+{
+    Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+    EllAnalyticRank([0, 0, 0, -1, 0]);
+    EllAnalyticRank([0, 0, 0, 1, 0]);
+    EllAnalyticRank([0, -1, 1, 0, 0]);
+    EllAnalyticRank([0, -1, 1, -10, -20]);
+    EllAnalyticRank([0, 0, 0, -3, -18]);
+    EllAnalyticRank([0, 0, 0, -123, -522]);
+    EllAnalyticRank([0, 1, 0, 16, 180]);
+    
+    EllAnalyticRank([0, 0, 0, -5, 0]);
+    EllAnalyticRank([0, 0, 0, -7, 0]);
+    EllAnalyticRank([0, 0, 0, -25, 0]);
+    EllAnalyticRank([0, 0, 0, -961, 0]);
+    EllAnalyticRank([0, 0, 1, -1, 0]);
+    
+    EllAnalyticRank([0, 0, 0, -34 * 34, 0]);
+    EllAnalyticRank([0, 0, 0, -41 * 41, 0]);
+    EllAnalyticRank([0, 0, 0, -25, 25]);
+    EllAnalyticRank([0, 0, 0, -81, 81]);
+    EllAnalyticRank([1, 1, 0, -36, 36]);
+    EllAnalyticRank([1, 1, 0, -49, 49]);
+    EllAnalyticRank([0, 0, 1, -7, 6]);
+    EllAnalyticRank([1, 1, 0, -87, 225]);
+    EllAnalyticRank([1, 1, 0, -104, 276]);
+    EllAnalyticRank([1, -1, 0, -79, 289]);
+    EllAnalyticRank([0, 0, 1, -79, 342]);
+}
+
+public record TateAlgo(int p, int n, string kp, int fp, int cp);
+
+public struct EllCoefs<K> where K : struct, IFieldElt<K>, IRingElt<K>, IElt<K>
+{
+    public EllCoefs(K a1, K a2, K a3, K a4, K a6)
     {
         Model = (a1, a2, a3, a4, a6);
 
@@ -340,6 +556,20 @@ public struct EllCurveCoefs<K> where K : struct, IFieldElt<K>, IRingElt<K>, IElt
 
     public K Disc { get; }
 
+    public string Eq
+    {
+        get
+        {
+            var (x, y) = Ring.Polynomial(Disc, "x", "y").Deconstruct();
+            var (a1, a2, a3, a4, a6) = Model;
+            var lhs = y * y + a1 * x * y + a3 * y;
+            var rhs = x.Pow(3) + a2 * x * x + a4 * x + a6;
+            return $"Ellptic curve {lhs} = {rhs}";
+        }
+    }
+
+    public string ModelStr => $"[{Model}]".Replace("(", "").Replace(")", "");
+
     public string B_InvariantsStr
     {
         get
@@ -360,18 +590,14 @@ public struct EllCurveCoefs<K> where K : struct, IFieldElt<K>, IRingElt<K>, IElt
 
     public void Show()
     {
-        var (x, y) = Ring.Polynomial(Disc, "x", "y").Deconstruct();
-        var (a1, a2, a3, a4, a6) = Model;
-        var lhs = y * y + a1 * x * y + a3 * y;
-        var rhs = x.Pow(3) + a2 * x * x + a4 * x + a6;
-        Console.WriteLine($"Ellptic curve {lhs} = {rhs}");
+        Console.WriteLine(Eq);
         Console.WriteLine($"Disc = {Disc}");
         Console.WriteLine(B_InvariantsStr);
         Console.WriteLine(C_InvariantsStr);
         Console.WriteLine($"J Invariant j={J_Invariant}");
     }
 
-    public EllCurveCoefs<K> Transform(K r, K s, K t, K u)
+    public EllCoefs<K> Transform(K r, K s, K t, K u)
     {
         var (a1, a2, a3, a4, a6) = Model;
         var a01 = (a1 + 2 * s) / u;
@@ -382,7 +608,7 @@ public struct EllCurveCoefs<K> where K : struct, IFieldElt<K>, IRingElt<K>, IElt
         return new(a01, a02, a03, a04, a06);
     }
 
-    public EllCurveCoefs<K> Transform(int r, int s, int t, int u)
+    public EllCoefs<K> Transform(int r, int s, int t, int u)
     {
         var o = Disc.One;
         return Transform(r * o, s * o, t * o, u * o);
