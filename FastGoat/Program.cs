@@ -429,6 +429,7 @@ double G(int r, double x)
     return 2 * pr;
 }
 
+int counter = 0;
 void EllAnalyticRank(BigInteger[] curve)
 {
     var (a1, a2, a3, a4, a6) = curve.Select(i => new Rational(i)).Deconstruct();
@@ -440,54 +441,67 @@ void EllAnalyticRank(BigInteger[] curve)
     var maxn = (int)double.Round(2 * double.Sqrt(N));
     var ellAn = EllAn(Ell, N, maxn);
 
+    Console.WriteLine($"Test[{++counter}]");
     E.Show();
     Console.WriteLine($"Model {E.ModelStr}");
     Console.WriteLine($"Kodaira=[{tate.Select(e => e.kp).Glue(", ")}] Cp=[{tate.Select(e => e.cp).Glue(", ")}]");
     Console.WriteLine($"Conductor={N}");
-    Console.WriteLine($"EllAn = [{ellAn.Where(e => e.Key <= 32).AscendingByKey().GlueMap(", ", "{0}:{1}")}]");
+    Console.WriteLine($"EllAn = [{ellAn.Where(e => e.Key <= 20).AscendingByKey().GlueMap(", ", "{0}:{1}")}]");
 
     var X = 2 * double.Pi / double.Sqrt(N);
 
-    var r = 0;
+    var rank = 0;
     var L0 = maxn.SeqLazy(1).Sum(n => ellAn[n] * G(0, X * n) / n);
     var L1 = maxn.SeqLazy(1).Sum(n => ellAn[n] * G(1, X * n) / n);
 
-    if (double.Abs(L0) > 0.001 && double.Abs(L1) > 0.001)
+    if (double.Abs(L0) > 0.0001 && double.Abs(L1) > 0.0001)
     {
+        var L0_ = maxn.SeqLazy(1).Sum(n => ellAn[n] * (double.Exp(-1.1 * X * n) - double.Exp(-X * n / 1.1)) / n);
+        Console.WriteLine(new { L0_ });
+        if (double.Abs(L0_) < 0.0001)
+        {
+            L0 = L0_;
+            rank = 1;
+        }
+
         Console.WriteLine($"L^(0)(E, 1) = {L0}");
-        Console.WriteLine($"L^(1)(E, 1) = {L1}");
-        
-        Console.WriteLine($"Analytic Rank = 0 or 1"); // TODO: sign of the functional equation
+        if (rank == 1)
+            Console.WriteLine($"L^(1)(E, 1) = {L1}");
+
+        Console.WriteLine($"Analytic Rank = {rank}");
     }
     else
     {
-        if (double.Abs(L0) < 0.001)
+        if (double.Abs(L0) < 0.0001)
         {
-            r = 2;
             Console.WriteLine($"L^(0)(E, 1) = {L0}");
+            rank = 2;
         }
         else
         {
-            r = 3;
             Console.WriteLine($"L^(1)(E, 1) = {L1}");
+            rank = 3;
         }
 
-        for (; r < 8; r += 2)
+        for (; rank < 8; rank += 2)
         {
-            var Lr = factorial(r) * maxn.SeqLazy(1).Sum(n => ellAn[n] * G(r, X * n) / n);
-            Console.WriteLine($"L^({r})(E, 1) = {Lr}");
-            if (double.Abs(Lr) > 0.001)
+            var Lr = factorial(rank) * maxn.SeqLazy(1).Sum(n => ellAn[n] * G(rank, X * n) / n);
+            Console.WriteLine($"L^({rank})(E, 1) = {Lr}");
+            if (double.Abs(Lr) > 0.0001)
                 break;
         }
-        
-        Console.WriteLine($"Analytic Rank = {r}");
+
+        Console.WriteLine($"Analytic Rank = {rank}");
     }
 
     Console.WriteLine();
 }
 
 {
+    GlobalStopWatch.Restart();
     Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+
+    // rank 0
     EllAnalyticRank([0, 0, 0, -1, 0]);
     EllAnalyticRank([0, 0, 0, 1, 0]);
     EllAnalyticRank([0, -1, 1, 0, 0]);
@@ -495,25 +509,146 @@ void EllAnalyticRank(BigInteger[] curve)
     EllAnalyticRank([0, 0, 0, -3, -18]);
     EllAnalyticRank([0, 0, 0, -123, -522]);
     EllAnalyticRank([0, 1, 0, 16, 180]);
-    
+    EllAnalyticRank([0, 1, 1, 1, 0]);
+    EllAnalyticRank([7, 0, 0, 16, 0]);
+    EllAnalyticRank([1, -5, -5, 0, 0]);
+    EllAnalyticRank([0, -1, -1, 0, 0]);
+    EllAnalyticRank([1, -1, 1, -14, 29]);
+    EllAnalyticRank([1, 0, 0, -45, 81]);
+    EllAnalyticRank([43, -210, -210, 0, 0]);
+    EllAnalyticRank([5, -3, -6, 0, 0]);
+    EllAnalyticRank([17, -60, -120, 0, 0]);
+    EllAnalyticRank([1, 0, 0, -1070, 7812]);
+    EllAnalyticRank([0, 0, 0, -4, -4]);
+    EllAnalyticRank([1, -1, 1, -29, -53]);
+    EllAnalyticRank([0, 0, 0, -11, -14]);
+    EllAnalyticRank([1, 1, 0, 1, 0]);
+    EllAnalyticRank([1, 0, 1, -14, -64]);
+    EllAnalyticRank([0, 0, 0, 0, 4]);
+    EllAnalyticRank([0, 1, 1, 1, -1]);
+    EllAnalyticRank([1, 0, 0, 6, -28]);
+    EllAnalyticRank([0, 0, 0, -7, -6]);
+    EllAnalyticRank([0, 0, 0, -2, 1]);
+    EllAnalyticRank([1, 1, 1, 0, 0]);
+    EllAnalyticRank([1, -1, 1, -6, -4]);
+    EllAnalyticRank([1, 0, 0, 15, 9]);
+    EllAnalyticRank([1, 1, 1, 0, 1]);
+    EllAnalyticRank([0, 0, 0, 0, 1]);
+    EllAnalyticRank([1, -1, 0, 6, 0]);
+    EllAnalyticRank([1, 0, 1, -6, 4]);
+    EllAnalyticRank([1, 0, 0, 159, 1737]);
+    EllAnalyticRank([1, 0, 0, -1, 137]);
+    EllAnalyticRank([1, -1, 1, -3, 3]);
+    EllAnalyticRank([0, -1, 0, -4, 4]);
+    EllAnalyticRank([1, 0, 0, -34, 68]);
+    EllAnalyticRank([1, 0, 0, -4, -1]);
+    EllAnalyticRank([1, 0, 0, 108, 11664]);
+    EllAnalyticRank([1, 0, 0, 115, 561]);
+    EllAnalyticRank([1, 0, 0, -828, 9072]);
+    EllAnalyticRank([1, 0, 1, -19, 26]);
+    EllAnalyticRank([1, -1, 1, -122, 1721]);
+    EllAnalyticRank([1, 0, 0, -361, 2585]);
+    EllAnalyticRank([1, 0, 1, 1922, 20756]);
+    EllAnalyticRank([1, 0, 0, -1070, 7812]);
+    EllAnalyticRank([1, 0, 0, -8696090, 9838496100]);
+    // EllAnalyticRank([0, 0, 0, 238, 952]); // slow, Conductor N=627162368
+
+    // rank 1
     EllAnalyticRank([0, 0, 0, -5, 0]);
     EllAnalyticRank([0, 0, 0, -7, 0]);
     EllAnalyticRank([0, 0, 0, -25, 0]);
     EllAnalyticRank([0, 0, 0, -961, 0]);
     EllAnalyticRank([0, 0, 1, -1, 0]);
-    
+    EllAnalyticRank([0, 4, 0, -80, 400]);
+    EllAnalyticRank([0, 0, 1, 1, 0]);
+    EllAnalyticRank([1, 0, 0, -4767, 127449]);
+
+    // rank 2
     EllAnalyticRank([0, 0, 0, -34 * 34, 0]);
     EllAnalyticRank([0, 0, 0, -41 * 41, 0]);
     EllAnalyticRank([0, 0, 0, -25, 25]);
     EllAnalyticRank([0, 0, 0, -81, 81]);
+
+    // rank 3
     EllAnalyticRank([1, 1, 0, -36, 36]);
     EllAnalyticRank([1, 1, 0, -49, 49]);
     EllAnalyticRank([0, 0, 1, -7, 6]);
+
+    // rank 4
     EllAnalyticRank([1, 1, 0, -87, 225]);
     EllAnalyticRank([1, 1, 0, -104, 276]);
     EllAnalyticRank([1, -1, 0, -79, 289]);
+
+    // rank 5
     EllAnalyticRank([0, 0, 1, -79, 342]);
+
+    GlobalStopWatch.Show();
 }
+
+// Test[22]
+// Ellptic curve x*y + y^2 + y = x^3 - 14*x - 64
+// Disc = -1536000
+// B Invariants b2=1 b4=-27 b6=-255 b8=-246
+// C Invariants c4=649 c6=54107
+// J Invariant j=-273359449/1536000
+// Model [1, 0, 1, -14, -64]
+// Kodaira=[In12, In1, In3] Cp=[2, 1, 1]
+// Conductor=30
+// EllAn = [0:0, 1:1, 2:-1, 3:1, 4:1, 5:-1, 6:-1, 7:-4, 8:-1, 9:1, 10:1, 11:0]
+// L^(0)(E, 1) = 0.5586577058392109
+// Analytic Rank = 0
+// 
+// ...
+// 
+// Test[50]
+// Ellptic curve y^2 = x^3 - 5*x
+// Disc = 8000
+// B Invariants b2=0 b4=-10 b6=0 b8=-25
+// C Invariants c4=240 c6=0
+// J Invariant j=1728
+// Model [0, 0, 0, -5, 0]
+// Kodaira=[III, III] Cp=[2, 2]
+// Conductor=800
+// EllAn = [0:0, 1:1, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:-3, 10:0, 11:0, 12:0, 13:-4, 14:0, 15:0, 16:0, 17:-8, 18:0, 19:0, 20:0]
+// { L0_ = 6.012902467739446E-07 }
+// L^(0)(E, 1) = 6.012902467739446E-07
+// L^(1)(E, 1) = 2.2287681204206398
+// Analytic Rank = 1
+// 
+// ...
+// 
+// Test[67]
+// Ellptic curve x*y + y^2 = x^3 - x^2 - 79*x + 289
+// Disc = 468892
+// B Invariants b2=-3 b4=-158 b6=1156 b8=-7108
+// C Invariants c4=3801 c6=-232605
+// J Invariant j=54915331401/468892
+// Model [1, -1, 0, -79, 289]
+// Kodaira=[In2, In1] Cp=[2, 1]
+// Conductor=234446
+// EllAn = [0:0, 1:1, 2:-1, 3:-3, 4:1, 5:-4, 6:3, 7:-5, 8:-1, 9:6, 10:4, 11:-6, 12:-3, 13:-6, 14:5, 15:12, 16:1, 17:-6, 18:-6, 19:-8, 20:-4]
+// L^(0)(E, 1) = 4.3398443215334695E-06
+// L^(2)(E, 1) = 4.146642992950152E-08
+// L^(4)(E, 1) = 214.65233750352138
+// Analytic Rank = 4
+// 
+// Test[68]
+// Ellptic curve y^2 + y = x^3 - 79*x + 342
+// Disc = -19047851
+// B Invariants b2=0 b4=-158 b6=1369 b8=-6241
+// C Invariants c4=3792 c6=-295704
+// J Invariant j=-54526169088/19047851
+// Model [0, 0, 1, -79, 342]
+// Kodaira=[In1] Cp=[1]
+// Conductor=19047851
+// EllAn = [0:0, 1:1, 2:-2, 3:-3, 4:2, 5:-3, 6:6, 7:-4, 8:0, 9:6, 10:6, 11:-6, 12:-6, 13:-5, 14:8, 15:9, 16:-4, 17:-6, 18:-12, 19:-8, 20:-6]
+// L^(1)(E, 1) = 3.713205689695927E-08
+// L^(3)(E, 1) = 1.076727347009639E-09
+// L^(5)(E, 1) = 3634.2825064638528
+// Analytic Rank = 5
+// 
+// #  Time:5.625s
+// 
 
 public record TateAlgo(int p, int n, string kp, int fp, int cp);
 
