@@ -6,6 +6,7 @@ using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup;
 using FastGoat.UserGroup.EllCurve;
 using FastGoat.UserGroup.Integers;
+using FastGoat.UserGroup.Padic;
 using FastGoat.UserGroup.Polynoms;
 using static FastGoat.Commons.IntExt;
 
@@ -99,7 +100,7 @@ TateAlgo TateAlgorithm(EllCoefs<Rational> E, int p)
         else
             cp = 1;
 
-        return new(p, n, $"I{n}", 1, cp);
+        return new(p, n, $"In{n}", 1, cp);
     }
 
     if (!a6.Mod(p * p).IsZero())
@@ -206,7 +207,7 @@ TateAlgo TateAlgorithm(EllCoefs<Rational> E, int p)
             }
         }
 
-        return new(p, n, $"I*{m}", n - m - 4, cp);
+        return new(p, n, $"I*n{m}", n - m - 4, cp);
     }
     else
     {
@@ -267,13 +268,13 @@ int EllAp(EllGroup<Rational> E, int p)
     }
 
     var (A, B, _, _) = E.ShortForm;
-    var (a, b) = (A.ToZnInt(p), B.ToZnInt(p));
-    return -p.Range().Select(k => new ZnInt(p, k))
-        .Select(x => LegendreJacobi((x.Pow(3) + a * x + b).K, p))
+    var (a, b) = (A.ToZnBInt(new(p, 1)), B.ToZnBInt(new(p, 1)));
+    return -p.Range().Select(k => new ZnBInt(p, k))
+        .Select(x => (int)LegendreJacobiBigint((x.Pow(3) + a * x + b).K, p))
         .Sum(k => k <= 1 ? k : -1);
 }
 
-Dictionary<int, int> EllAn(EllGroup<Rational> E, int maxn)
+Dictionary<int, int> EllAn(EllGroup<Rational> E, Rational N, int maxn)
 {
     var ellAn = Primes10000.Where(p => p <= maxn).ToDictionary(p => p, p => EllAp(E, p));
     ellAn[0] = 0;
@@ -282,7 +283,7 @@ Dictionary<int, int> EllAn(EllGroup<Rational> E, int maxn)
     {
         for (int i = 2; p.Pow(i) <= maxn; i++)
         {
-            var t = (16 * E.Disc).Mod(p).IsZero() ? 0 : 1;
+            var t = N.Mod(p).IsZero() ? 0 : 1;
             var e1 = ellAn[p];
             var e2 = ellAn[p.Pow(i - 1)];
             var e3 = ellAn[p.Pow(i - 2)];
@@ -303,15 +304,15 @@ Dictionary<int, int> EllAn(EllGroup<Rational> E, int maxn)
     return ellAn;
 }
 
-(int N, Dictionary<int, int> ellAn, TateAlgo[] tate, EllGroup<Rational> Ell) EllInfos(BigInteger[] curve, int maxn)
+(Rational N, Dictionary<int, int> ellAn, TateAlgo[] tate, EllGroup<Rational> Ell) EllInfos(BigInteger[] curve, int maxn)
 {
     var (a1, a2, a3, a4, a6) = curve.Select(i => new Rational(i)).Deconstruct();
     var E = new EllCoefs<Rational>(a1, a2, a3, a4, a6);
     var Ell = new EllGroup<Rational>(a1, a2, a3, a4, a6);
     var dec = PrimesDec(E.Disc.Absolute.Num);
     var tate = dec.Keys.Select(p => TateAlgorithm(E, p)).ToArray();
-    var N = tate.Select(e => e.p.Pow(e.fp)).Aggregate((pi, pj) => pi * pj);
-    var ellAn = EllAn(Ell, maxn);
+    var N = tate.Select(e => new Rational(e.p).Pow(e.fp)).Aggregate((pi, pj) => pi * pj);
+    var ellAn = EllAn(Ell, N, maxn);
     var t = double.Exp(-2 * double.Pi / double.Sqrt(N));
     var LE1 = 2 * ellAn.Where(e => e.Key != 0).Select(e => e.Value * double.Pow(t, e.Key) / e.Key).Sum();
 
@@ -435,9 +436,9 @@ void EllAnalyticRank(BigInteger[] curve)
     var Ell = new EllGroup<Rational>(a1, a2, a3, a4, a6);
     var dec = PrimesDec(E.Disc.Absolute.Num);
     var tate = dec.Keys.Select(p => TateAlgorithm(E, p)).ToArray();
-    var N = tate.Select(e => e.p.Pow(e.fp)).Aggregate((pi, pj) => pi * pj);
+    var N = tate.Select(e => new Rational(e.p).Pow(e.fp)).Aggregate((pi, pj) => pi * pj);
     var maxn = (int)double.Round(2 * double.Sqrt(N));
-    var ellAn = EllAn(Ell, maxn);
+    var ellAn = EllAn(Ell, N, maxn);
 
     E.Show();
     Console.WriteLine($"Model {E.ModelStr}");
