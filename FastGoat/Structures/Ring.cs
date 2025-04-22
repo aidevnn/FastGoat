@@ -72,7 +72,7 @@ public static partial class Ring
 
         if (k < 0)
             return a.Inv().FastPow(-k);
-        
+
         var (r, a0, e0) = (a.One, a, k);
         while (e0 > 0)
         {
@@ -139,7 +139,8 @@ public static partial class Ring
         return Polynomial(scalar, new[] { "X" })[0];
     }
 
-    public static (Polynomial<K, Xi> X, Polynomial<K, Xi>[] Xis) Polynomial<K>(K scalar, MonomOrder order, (int n, string h) e,
+    public static (Polynomial<K, Xi> X, Polynomial<K, Xi>[] Xis) Polynomial<K>(K scalar, MonomOrder order,
+        (int n, string h) e,
         string x0)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
@@ -181,13 +182,22 @@ public static partial class Ring
         return his.Select(hi => new EPolynomial<K>(hi, hi.One)).ToArray();
     }
 
-    public static EPolynomial<K>[] EPolynomial<K>(params Polynomial<K,Xi>[] xis)
+    public static EPolynomial<K>[] EPolynomial<K>(params Polynomial<K, Xi>[] xis)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
         if (xis.Length == 0)
             throw new GroupException(GroupExceptionType.GroupDef);
-        
+
         return xis.Select(hi => new EPolynomial<K>(hi, hi.One)).ToArray();
+    }
+
+    public static EPolynomial<K>[] EPolynomial<K>(PolynomialBasis<K, Xi> basis, params Polynomial<K, Xi>[] xis)
+        where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
+    {
+        if (xis.Length == 0)
+            throw new GroupException(GroupExceptionType.GroupDef);
+
+        return xis.Select(hi => new EPolynomial<K>(hi, hi.One, basis)).ToArray();
     }
 
     public static EPolynomial<K>[] PolynomialModI<K>(string[] vs, Polynomial<K, Xi> b0, params Polynomial<K, Xi>[] bs)
@@ -206,7 +216,8 @@ public static partial class Ring
         return PolynomialModI(xis.Prepend(x0).ToArray(), P.ToPolynomial(ind, ind.First()));
     }
 
-    public static EPolynomial<K>[] PolynomialModI<K>((int n, string h) e, Polynomial<K, Xi> b0, params Polynomial<K, Xi>[] bs)
+    public static EPolynomial<K>[] PolynomialModI<K>((int n, string h) e, Polynomial<K, Xi> b0,
+        params Polynomial<K, Xi>[] bs)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
         var digits = $"{e.n - 1}".Length;
@@ -275,7 +286,7 @@ public static partial class Ring
     {
         return new(c, f.KZero, f.Coefs);
     }
-    
+
     public static KPoly<K> NewtonInverse<K>(KPoly<K> F, int N) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         if (F.Degree >= N)
@@ -294,12 +305,15 @@ public static partial class Ring
     }
 
     public static Vec<T> ToVec<T>(this IEnumerable<T> ts) where T : IElt<T>, IRingElt<T> => new(ts.ToArray());
+
     public static Vec<K> ToVec<K>(this KPoly<K> poly, int size) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         return new(poly.CoefsExtended(size));
     }
+
     public static Vec<K> ToVec<K>(this KPoly<K> poly) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
         => new(poly.Coefs.ToArray());
+
     public static Vec<Vec<K>> Transpose<K>(this Vec<Vec<K>> vec) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         if (vec.Select(e => e.Length).Distinct().Count() != 1)
@@ -308,5 +322,6 @@ public static partial class Ring
         var n = vec[0].Length;
         return n.SeqLazy().Select(j => vec.Select(v => v[j]).ToVec()).ToVec();
     }
+
     public static MonomDisplay DisplayPolynomial { get; set; } = MonomDisplay.Default;
 }
