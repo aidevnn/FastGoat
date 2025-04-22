@@ -47,6 +47,8 @@ public readonly struct ZnBigInt : IElt<ZnBigInt>, IRingElt<ZnBigInt>, IFieldElt<
         return string.Format(fmt, K);
     }
 
+    public BigInteger Unsigned => K < 0 ? Mod + K : K;
+
     public bool IsZero() => K == 0;
     public ZnBigInt Zero => new(Mod, 0);
     public ZnBigInt One => new(Mod, 1);
