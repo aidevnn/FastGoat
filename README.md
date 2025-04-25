@@ -601,3 +601,11 @@ Mainz, Germany
 Rational Points on Elliptic Curves.
 Second Edition
 Springer 2015.
+
+[EllApBSGS](http://www.numdam.org/item?id=JTNB_1995__7_1_219_0)
+<b>Rene Schoof.</b>
+Counting points on elliptic curves over finite fields
+Journal de Théorie des Nombres de Bordeaux, tome 7, no 1 (1995), p. 219-254
+Université Bordeaux 1, 1995
+Edition NUMDAM
+<i>EllApBSGS.</i>

@@ -9,6 +9,12 @@ namespace FastGoat.Examples;
 
 public static class EllipticCurvesPart2
 {
+    static EllipticCurvesPart2()
+    {
+        GlobalStopWatch.Restart();
+        Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+    }
+
     static (Rational N, Dictionary<int, int> ellAn, TateAlgo[] tate, EllCoefs<Rational>E, EllGroup<Rational> Ell)
         EllInfos(BigInteger[] curve)
     {
@@ -30,7 +36,7 @@ public static class EllipticCurvesPart2
         return (N, ellAn, tate, E, Ell);
     }
 
-    public static (int rank, double L, Rational N, Dictionary<int, int> ellAn, TateAlgo[] tate, EllCoefs<Rational> E) 
+    public static (int rank, double L, Rational N, Dictionary<int, int> ellAn, TateAlgo[] tate, EllCoefs<Rational> E)
         EllAnalyticRank(BigInteger[] curve)
     {
         var (a1, a2, a3, a4, a6) = EC.CurveArray(curve.Select(i => new Rational(i)).ToArray()).Deconstruct();
@@ -51,8 +57,6 @@ public static class EllipticCurvesPart2
 
     public static void Example1TateAlgorithm()
     {
-        Ring.DisplayPolynomial = MonomDisplay.StarCaret;
-
         EllInfos([-1, 0]);
         EllInfos([1, 0]);
         EllInfos([-5, 0]);
@@ -74,8 +78,7 @@ public static class EllipticCurvesPart2
 
     public static void Example2AnalyticRank()
     {
-        GlobalStopWatch.Restart();
-        Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+        GlobalStopWatch.AddLap();
 
         // rank 0
         EllAnalyticRank([-1, 0]);
@@ -160,5 +163,81 @@ public static class EllipticCurvesPart2
 
         GlobalStopWatch.Show();
         Console.WriteLine();
+    }
+
+    public static void Example3LMFDB()
+    {
+        GlobalStopWatch.AddLap();
+
+        var ellDB = EllipticExt.LMFDB_Ell_Q().Select(e => new EllDB(e.name, e.conductor, e.rank, e.torsType, e.model))
+            .ToArray();
+        foreach (var e in ellDB)
+        {
+            Console.WriteLine(e);
+            var ellAnRank = EllipticCurvesPart2.EllAnalyticRank(e.model);
+            var ngl = EC.NagellLutzTorsionGroup(ellAnRank.E.ToEllGroup());
+            if (ellAnRank.rank != e.rank || ellAnRank.N.Num != e.conductor || !ngl.abType.SequenceEqual(e.torsType))
+                throw new($"N={ellAnRank.N} rank={ellAnRank.rank} torsType=[{ngl.abType.Glue(", ")}]");
+        }
+
+        GlobalStopWatch.Show($"EllDB {ellDB.Length} curves"); // # EllDB 166 curves Time:1m4s
+        Console.WriteLine();
+    }
+
+    public static void Example4LargePrime()
+    {
+        var p1 = 10.Pow(6) + 3;
+        var E = EC.EllGroup([1, 1]);
+        EC.EllApBSGS(E, p1, LogLevel.Level1);
+
+        var p2 = BigInteger.Pow(10, 10) + 19;
+        EC.EllApBSGS(E, p2, LogLevel.Level1);
+
+        GlobalStopWatch.Bench(5, $"BSGS p={p1}", () => EC.EllApBSGS(E, p1));
+        GlobalStopWatch.Bench(5, $"BF   p={p1}", () => EC.EllAp(E, p1));
+
+        GlobalStopWatch.Restart();
+        EC.EllApBSGS(E, p2);
+        GlobalStopWatch.Show($"BSGS p={p2}");
+        /*
+           Ep = Ell[1,1](Z/1000003Z) Ap = -723 Case = [1]#1
+           Ep = Ell[1,1](Z/10000000019Z) Ap = 118240 Case = [1]#1
+           # BSGS p=1000003 Avg Time:44 ms Dev:4.454
+           # BF   p=1000003 Avg Time:595 ms Dev:10.423
+           # BSGS p=10000000019 Time:6.573s
+         */
+    }
+
+    public static void Example5CountingPointsFp()
+    {
+        var pmin = 64;
+        foreach (var e in EllipticExt.LMFDB_Ell_Q().Where(e => e.conductor < 100000))
+        {
+            var E = EC.EllGroup(e.model);
+            var pmax = (int)(2 * double.Sqrt((double)e.conductor));
+            foreach (var p in IntExt.Primes10000.Where(p => p > pmin && p < pmax && e.conductor % p != 0))
+            {
+                Console.WriteLine(new EllDB(e.name, e.conductor, e.rank, e.torsType, e.model));
+
+                var actualAp = EC.EllApBSGS(E, p, LogLevel.Level1);
+                var expectedAp = EC.EllAp(E, p);
+                if (actualAp != expectedAp)
+                    throw new($"p={p} ap={actualAp} expected={expectedAp}");
+
+                Console.WriteLine();
+            }
+        }
+    }
+
+    public static void Example6CountingPointsFp()
+    {
+        var E = EC.EllGroup([238, 952]);
+        foreach (var p in IntExt.Primes10000.Where(p => p > 20000 && p < 26000))
+        {
+            var actualAp = EC.EllApBSGS(E, p, LogLevel.Level1);
+            var expectedAp = EC.EllAp(E, p);
+            if (actualAp != expectedAp)
+                throw new($"p={p} ap={actualAp} expected={expectedAp}");
+        }
     }
 }
