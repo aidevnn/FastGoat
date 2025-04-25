@@ -425,6 +425,176 @@ public static class EC
             .Sum(k => k <= 1 ? k : -1);
     }
 
+    static List<BigInteger> CandidatsN(double pmin, double pmax, BigInteger L)
+    {
+        var n0 = (int)(pmin / (double)L);
+        var n1 = (int)(pmax / (double)L) + 1;
+        return (n1 - n0 + 1).SeqLazy(n0).Where(e => e > 0 && L % e == 0)
+            .Select(e => e * L).Where(n => (double)n > pmin && (double)n < pmax).ToList();
+    }
+
+    static EllPt<ZnBigInt> RandPt(EllGroup<ZnBigInt> Ep, HashSet<BigInteger> set)
+    {
+        var p = Ep.ShortForm.A.Mod;
+        while (true)
+        {
+            var xP = new ZnBigInt(p, DistributionExt.Dice(BigInteger.Zero, p));
+            var y2P = xP.Pow(3) + Ep.ShortForm.A * xP + Ep.ShortForm.B;
+            if (LegendreJacobiBigint(y2P.Unsigned, p) != 1)
+                continue;
+
+            var yP = xP.One * NumberTheory.SqrtModANTV1(y2P.K, p);
+            if (set.Add(xP.Unsigned))
+                return Ep.ConvertFromShort(new(xP, yP));
+        }
+    }
+
+    public static long BSGSlong<T>(IGroup<T> g, T a, T b, double ord) where T : struct, IElt<T>
+    {
+        var (m, tmp1) = ((long)Double.Sqrt(ord) + 1, a); // TODO: faster BSGS
+        var L = new Dictionary<T, long>() { [a] = 1 };
+        for (long i = 1; i < m; i++)
+        {
+            if (tmp1.Equals(b))
+                return i;
+
+            tmp1 = g.Op(tmp1, a);
+            L[tmp1] = i + 1;
+        }
+
+        if (tmp1.Equals(b))
+            return m;
+
+        var (c, tmp2) = (g.Invert(tmp1), b);
+        for (long j = 1; j < m; j++)
+        {
+            tmp2 = g.Op(tmp2, c);
+            if (L.TryGetValue(tmp2, out long i))
+                return j * m + i;
+        }
+
+        throw new($"{g.Name} ord={ord}; a={a} b={b}");
+    }
+
+    public static int EllApBSGS(EllGroup<Rational> E, BigInteger p, LogLevel log = LogLevel.Off)
+    {
+        if (p < 200 || E.Disc.ToZnBigInt(p).IsZero()) // TODO: #Ep when disc = 0 mod p
+            return EllAp(E, (int)p);
+        
+        var d = double.Sqrt((double)p);
+        var (pmin, pmax) = ((double)p + 1 - 2 * d, (double)p + 1 + 2 * d);
+
+        (BigInteger L, BigInteger N) = (1, -1);
+        (BigInteger L_, BigInteger N_) = (1, -1);
+
+        var g = 1000.SeqLazy().Select(_ => DistributionExt.Dice(BigInteger.One * 2, p - 1))
+            .Where(g => LegendreJacobiBigint(g, p) != 1)
+            .Select(g => new ZnBigInt(p, g))
+            .Where(g => !(4 * (E.ShortForm.A.ToZnBigInt(p) * g.Pow(2)).Pow(3) +
+                          27 * (E.ShortForm.B.ToZnBigInt(p) * g.Pow(3)).Pow(2)).IsZero())
+            .First();
+        var Ep = E.ToZnBigInt(p);
+        // Mestre's Theorem, quadratic twist of Ep
+        var Ep_ = new EllGroup<ZnBigInt>(Ep.ShortForm.A * g.Pow(2), Ep.ShortForm.B * g.Pow(3));
+        int ct = 0, nbCands = 0, nbCands_ = 0;
+        var set = new HashSet<BigInteger>();
+        var set_ = new HashSet<BigInteger>();
+        var cands = new List<BigInteger>();
+        var cands_ = new List<BigInteger>();
+        while (ct < 2 * d)
+        {
+            ++ct;
+            var P = RandPt(Ep, set);
+            var ordP = BSGSlong(Ep, P, Ep.O, pmax);
+
+            L = LcmBigInt(ordP, L);
+            cands = CandidatsN(pmin, pmax, L);
+            if (cands.Count >= 1)
+                N = cands[0] / L;
+
+            var NL = N * L;
+            var arrCands = $"[{cands.Glue(", ")}]";
+            nbCands = cands.Count;
+
+            var P_ = RandPt(Ep_, set_);
+            var ordP_ = BSGSlong(Ep_, P_, Ep_.O, pmax);
+            L_ = LcmBigInt(ordP_, L_);
+            cands_ = CandidatsN(pmin, pmax, L_);
+            if (cands_.Count >= 1)
+                N_ = cands_[0] / L_;
+
+            var NL_ = N_ * L_;
+            var arrCands_ = $"[{cands_.Glue(", ")}]";
+            nbCands_ = cands_.Count;
+
+            if (log == LogLevel.Level2)
+            {
+                Console.WriteLine(new { p, d, pmin, pmax });
+                Console.WriteLine(new { NL, N, L, arrCands, nbCands });
+                Console.WriteLine(new { NL_, N_, L_, arrCands_, nbCands_ });
+            }
+
+            if (N == 1 || N_ == 1)
+                break;
+
+            if (nbCands == 1 && L % N == 0 && (p - 1) % N == 0 && cands_.Contains(2 * p + 2 - NL))
+            {
+                var N0 = (2 * p + 2 - NL) / L_;
+                if (L_ % N0 == 0 && (p - 1) % N0 == 0)
+                    break;
+            }
+
+            if (nbCands_ == 1 && L_ % N_ == 0 && (p - 1) % N_ == 0 && cands.Contains(2 * p + 2 - NL_))
+            {
+                var N0_ = (2 * p + 2 - NL_) / L;
+                if (L % N0_ == 0 && (p - 1) % N0_ == 0)
+                    break;
+            }
+        }
+
+        int caseNum, outputNum;
+        if (N == 1)
+            (caseNum, outputNum) = (1, 1);
+        else if (N_ == 1)
+            (caseNum, outputNum) = (2, 2);
+        else if (L % N == 0 && (p - 1) % N == 0 && nbCands == 1 && L_ < L)
+            (caseNum, outputNum) = (3, 1);
+        else if (L_ % N_ == 0 && (p - 1) % N_ == 0 && nbCands_ == 1 && L < L_)
+            (caseNum, outputNum) = (4, 2);
+        else if (nbCands == 1 && nbCands_ == 1 && 2 * (p + 1) == cands[0] + cands_[0])
+            (caseNum, outputNum) = (5, 3);
+        else if (nbCands == 2 && nbCands_ == 2)
+        {
+            if (L_ < L)
+                (caseNum, outputNum) = (6, 1);
+            else if (L < L_)
+                (caseNum, outputNum) = (7, 2);
+            else
+                (caseNum, outputNum) = (8, 2);
+        }
+        else
+            (caseNum, outputNum) = (9, 4);
+
+        if (outputNum == 1 || outputNum == 3)
+        {
+            var Ap = (int)cands.Where(NL => (p - 1) % (NL / L) == 0).Select(NL => p + 1 - NL).First();
+            if (log != LogLevel.Off)
+                Console.WriteLine($"Ep = {Ep.ShortFormStr} Ap = {Ap} Case = [{caseNum}]#{outputNum}");
+
+            return Ap;
+        }
+        else if (outputNum == 2)
+        {
+            var Ap = (int)cands_.Where(NL => (p - 1) % (NL / L_) == 0).Select(NL => -(p + 1 - NL)).First();
+            if (log != LogLevel.Off)
+                Console.WriteLine($"Ep = {Ep.ShortFormStr} Ap = {Ap} Case = [{caseNum}]#2");
+
+            return Ap;
+        }
+        else
+            throw new();
+    }
+
     public static Dictionary<int, int> EllAn(EllGroup<Rational> E, Rational N)
     {
         var nmax = 2 * Rational.Sqrt(N).Num;
@@ -510,7 +680,7 @@ public static class EC
     public static double L0Approx(double A, double X, Dictionary<int, int> ellAn) =>
         ellAn.Keys.Max().SeqLazy(1).Sum(n => ellAn[n] * (G(0, A * X * n) - G(0, X * n / A)) / n);
 
-    public static (int rank, double Lr, Rational N, Dictionary<int, int> ellAn, TateAlgo[] , EllGroup<Rational> Ell)
+    public static (int rank, double Lr, Rational N, Dictionary<int, int> ellAn, TateAlgo[], EllGroup<Rational> Ell)
         AnalyticRank(EllCoefs<Rational> E)
     {
         var Ell = E.ToEllGroup();
