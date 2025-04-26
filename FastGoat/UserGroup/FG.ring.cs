@@ -313,6 +313,19 @@ public static partial class FG
         return new FracPoly<K>(x, scalar).X;
     }
 
+    public static FracPoly<K> KFracPoly<K>(KPoly<K> p) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        return new FracPoly<K>(p).X;
+    }
+
+    public static FracPoly<FracPoly<K>> ToFrac<K>(this KPoly<KPoly<K>> f, FracPoly<FracPoly<K>> scalar)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var x = scalar.KOne.X;
+        var y = scalar.X;
+        return f.Coefs.Select((cy, i) => cy.Substitute(x) * y.Pow(i)).ToVec().Sum();
+    }
+
     public static EPoly<K> EPoly<K>(KPoly<K> f) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         return new(f);

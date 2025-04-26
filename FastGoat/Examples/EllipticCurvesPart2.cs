@@ -18,12 +18,8 @@ public static class EllipticCurvesPart2
     static (Rational N, Dictionary<int, int> ellAn, TateAlgo[] tate, EllCoefs<Rational>E, EllGroup<Rational> Ell)
         EllInfos(BigInteger[] curve)
     {
-        var (a1, a2, a3, a4, a6) = EC.CurveArray(curve.Select(i => new Rational(i)).ToArray()).Deconstruct();
-        var E = new EllCoefs<Rational>(a1, a2, a3, a4, a6);
-        var Ell = new EllGroup<Rational>(a1, a2, a3, a4, a6);
-        var dec = IntExt.PrimesDec(E.Disc.Absolute.Num);
-        var tate = dec.Keys.Select(p => EC.TateAlgorithm(E, p)).ToArray();
-        var N = tate.Select(e => new Rational(e.p).Pow(e.fp)).Aggregate((pi, pj) => pi * pj);
+        var E = EC.EllCoefs(curve);
+        var (Ell, N, tate) = EC.EllTateAlgorithm(E);
         var ellAn = EC.EllAn(Ell, N);
 
         E.Show();
@@ -39,8 +35,7 @@ public static class EllipticCurvesPart2
     public static (int rank, double L, Rational N, Dictionary<int, int> ellAn, TateAlgo[] tate, EllCoefs<Rational> E)
         EllAnalyticRank(BigInteger[] curve)
     {
-        var (a1, a2, a3, a4, a6) = EC.CurveArray(curve.Select(i => new Rational(i)).ToArray()).Deconstruct();
-        var E = new EllCoefs<Rational>(a1, a2, a3, a4, a6);
+        var E = EC.EllCoefs(curve);
         var (rank, L, N, ellAn, tate, _) = EC.AnalyticRank(E);
 
         E.Show();
@@ -174,7 +169,7 @@ public static class EllipticCurvesPart2
         foreach (var e in ellDB)
         {
             Console.WriteLine(e);
-            var ellAnRank = EllipticCurvesPart2.EllAnalyticRank(e.model);
+            var ellAnRank = EllAnalyticRank(e.model);
             var ngl = EC.NagellLutzTorsionGroup(ellAnRank.E.ToEllGroup());
             if (ellAnRank.rank != e.rank || ellAnRank.N.Num != e.conductor || !ngl.abType.SequenceEqual(e.torsType))
                 throw new($"N={ellAnRank.N} rank={ellAnRank.rank} torsType=[{ngl.abType.Glue(", ")}]");

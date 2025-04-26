@@ -88,7 +88,7 @@ public readonly struct KPoly<K> : IElt<KPoly<K>>, IRingElt<KPoly<K>>, IFieldElt<
     public bool IsZero() => Degree == 0 && Coefs[0].IsZero();
 
     public KPoly<K> Zero => new(x, KZero, new[] { KZero });
-
+    public KPoly<K> Clone() => new(x, KZero, Coefs.TrimSeq().ToArray());
     public K[] CoefsExtended(int degree)
     {
         var poly = this;
@@ -299,7 +299,10 @@ public readonly struct KPoly<K> : IElt<KPoly<K>>, IRingElt<KPoly<K>>, IFieldElt<
                 var ai = rem[i];
                 var qr = ai.Div(em);
                 if (!qr.rem.IsZero())
+                {
+                    Console.WriteLine($"qr={qr} ai={ai} em={em}");
                     throw new GroupException(GroupExceptionType.GroupDef);
+                }
 
                 quo[i - e.Degree] = qr.quo;
                 for (int j = 0; j <= i; j++)

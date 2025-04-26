@@ -237,7 +237,7 @@ public static partial class Ring
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
     {
         var d = f.DegreeOf(x);
-        var coefs = (d + 1).Range().Select(i => f[new(f.Indeterminates, x, i)]).ToArray();
+        var coefs = (d + 1).Range().Select(i => f[new(f.Indeterminates, x, i)]).TrimSeq().ToArray();
         return new KPoly<K>(x.xi[0], f.KZero, coefs);
     }
 

@@ -160,4 +160,20 @@ public readonly struct FracPoly<K> : IElt<FracPoly<K>>, IRingElt<FracPoly<K>>, I
     public static FracPoly<K> operator *(K a, FracPoly<K> b) => new(a * b.Num, b.Denom);
 
     public static FracPoly<K> operator /(FracPoly<K> a, K b) => new(a.Num, a.Denom * b);
+    // //
+    
+
+    public static FracPoly<K> operator +(FracPoly<K> a, KPoly<K> b) => a + new FracPoly<K>(b);
+
+    public static FracPoly<K> operator +(KPoly<K> a, FracPoly<K> b) => new FracPoly<K>(a) + b;
+
+    public static FracPoly<K> operator -(FracPoly<K> a, KPoly<K> b) => a - new FracPoly<K>(b);
+
+    public static FracPoly<K> operator -(KPoly<K> a, FracPoly<K> b) => new FracPoly<K>(a) - b;
+
+    public static FracPoly<K> operator *(FracPoly<K> a, KPoly<K> b) => new(a.Num * b, a.Denom);
+
+    public static FracPoly<K> operator *(KPoly<K> a, FracPoly<K> b) => new(a * b.Num, b.Denom);
+
+    public static FracPoly<K> operator /(FracPoly<K> a, KPoly<K> b) => new(a.Num, a.Denom * b);
 }

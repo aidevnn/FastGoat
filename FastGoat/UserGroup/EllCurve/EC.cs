@@ -679,14 +679,19 @@ public static class EC
 
     public static double L0Approx(double A, double X, Dictionary<int, int> ellAn) =>
         ellAn.Keys.Max().SeqLazy(1).Sum(n => ellAn[n] * (G(0, A * X * n) - G(0, X * n / A)) / n);
-
-    public static (int rank, double Lr, Rational N, Dictionary<int, int> ellAn, TateAlgo[], EllGroup<Rational> Ell)
-        AnalyticRank(EllCoefs<Rational> E)
+    public static (EllGroup<Rational> Ell, Rational N, TateAlgo[] tate) EllTateAlgorithm(EllCoefs<Rational> E)
     {
         var Ell = E.ToEllGroup();
         var dec = PrimesDec(E.Disc.Absolute.Num);
         var tate = dec.Keys.Select(p => TateAlgorithm(E, p)).ToArray();
         var N = tate.Select(e => new Rational(e.p).Pow(e.fp)).Aggregate((pi, pj) => pi * pj);
+        return (Ell, N, tate);
+    }
+
+    public static (int rank, double Lr, Rational N, Dictionary<int, int> ellAn, TateAlgo[], EllGroup<Rational> Ell)
+        AnalyticRank(EllCoefs<Rational> E)
+    {
+        var (Ell, N, tate) = EllTateAlgorithm(E);
         var ellAn = EllAn(Ell, N);
 
         var X = 2 * double.Pi / double.Sqrt(N);
