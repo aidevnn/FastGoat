@@ -8,6 +8,7 @@ using FastGoat.Structures.GenericGroup;
 using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup;
 using FastGoat.UserGroup.EllCurve;
+using FastGoat.UserGroup.Floats;
 using FastGoat.UserGroup.Integers;
 using FastGoat.UserGroup.Polynoms;
 using static FastGoat.Commons.IntExt;
@@ -29,7 +30,7 @@ Console.WriteLine("Hello World");
     var (Y0, X0) = xis.Deconstruct();
     var basis = new PolynomialBasis<Rational, Xi>((Y0.Pow(2) + a1 * X0 * Y0 + a3 * Y0) -
                                                   (X0.Pow(3) + a2 * X0.Pow(2) + a4 * X0 + a6));
-    
+
     var (Y, X) = Ring.EPolynomial(xis).Deconstruct();
     var Ell = new EllGroup<EPolynomial<Rational>>(a1 * X.One, a2 * X.One, a3 * X.One, a4 * X.One, a6 * X.One);
     var P = new EllPt<EPolynomial<Rational>>(X, Y);
@@ -56,7 +57,7 @@ KPoly<KPoly<Rational>> Simplify(KPoly<KPoly<Rational>> P, KPoly<KPoly<Rational>>
     return Simplify(quo * R + rem, R);
 }
 
-(KPoly<KPoly<Rational>> R, Dictionary<int, KPoly<KPoly<Rational>>> psi, Dictionary<int, KPoly<Rational>> f) 
+(KPoly<KPoly<Rational>> R, Dictionary<int, KPoly<KPoly<Rational>>> psi, Dictionary<int, KPoly<Rational>> f)
     DivisionPolynomial(EllGroup<Rational> E, int nmax)
 {
     var x = FG.QPoly('X');
@@ -83,10 +84,11 @@ KPoly<KPoly<Rational>> Simplify(KPoly<KPoly<Rational>> P, KPoly<KPoly<Rational>>
     return (R, psi, f);
 }
 
-void nP(int n, Dictionary<int, KPoly<KPoly<Rational>>> psi, KPoly<KPoly<Rational>> R)
+(EllPt<FracPoly<FracPoly<Rational>>> P, EllPt<FracPoly<FracPoly<Rational>>> nP)
+    NPt(int n, Dictionary<int, KPoly<KPoly<Rational>>> psi, KPoly<KPoly<Rational>> R)
 {
-    var X = FG.KFracPoly(R.KOne.X).X;
-    var Y = FG.KFracPoly('Y', X).X;
+    var Y = FG.KFracPoly('Y', FG.KFracPoly(R.KOne.X).X).X;
+    var X = Y.KOne.X + Y.Zero;
 
     var tmp1 = Simplify(psi[n - 1] * psi[n + 1], R).ToFrac(Y) / Simplify(psi[n].Pow(2), R).ToFrac(Y);
     var nPX = X - tmp1;
@@ -97,10 +99,179 @@ void nP(int n, Dictionary<int, KPoly<KPoly<Rational>>> psi, KPoly<KPoly<Rational
     var tmp2 = Simplify(psi[n + 2] * psi[n - 1].Pow(2) - psi[n - 2] * psi[n + 1].Pow(2), R).ToFrac(Y);
     var nPY = tmp2 / denom;
 
-    Console.WriteLine($"P=({X},{Y}) and {n}P=({nPX},{nPY})");
-    Console.WriteLine();
+    return (new EllPt<FracPoly<FracPoly<Rational>>>(X, Y), new EllPt<FracPoly<FracPoly<Rational>>>(nPX, nPY));
 }
 
+EllPt<BigCplx>[] EllCM(EllGroup<Rational> E, KPoly<Rational> EqX)
+{
+    var (A, B) = (E.ShortForm.A, E.ShortForm.B);
+    var solsX = FG.NRoots(EqX.ToBcPoly(60), maxLoop: 800).ToHashSet();
+    var pts = new HashSet<EllPt<BigCplx>>();
+    foreach (var x in solsX)
+    {
+        var y2 = x.Pow(3) + A * x + B;
+        var y = BigCplx.Sqrt(y2).ToBigCplx(10);
+        pts.Add(new(x.ToBigCplx(10), y));
+        pts.Add(new(x.ToBigCplx(10), -y));
+    }
+
+    return pts.ToArray();
+}
+
+EPoly<ZnInt>[] Roots(KPoly<EPoly<ZnInt>> P, EPoly<ZnInt> a)
+{
+    var facts = IntFactorisation.MusserSFF(P)
+        .SelectMany(f => IntFactorisation.BerlekampProbabilisticAECF(f.g, a))
+        .ToArray();
+    if (facts.All(f => f.Degree == 1))
+        return facts.Select(f => -f[0]).ToArray();
+    
+    return [];
+}
+
+void EpNTors(EllGroup<Rational> E, KPoly<Rational> P, int p, int n, LogLevel log = LogLevel.Level1)
+{
+    EllGroup<EPoly<ZnInt>> Efq = E.ToGF(p);
+    var setPts = new HashSet<EllPt<EPoly<ZnInt>>>();
+
+    for (int i = 1; i < 10; i++)
+    {
+        var q = p.Pow(i);
+        if (q > 500000)
+            throw new();
+        
+        Efq = E.ToGF(q);
+        var Pq = P.ToGF(q);
+        var a = Pq.KOne.X;
+        Efq.Field = $"GF({p}^{i})";
+        var tmpX = Roots(Pq, a);
+        if (tmpX.Length == 0)
+        {
+            if (log == LogLevel.Level2)
+                Console.WriteLine($"P = {Pq} dont split in GF({p}^{i})[X]");
+            continue;
+        }
+
+        if (log == LogLevel.Level2)
+        {
+            Console.WriteLine($"P = {Pq} split in GF({p}^{i})[X]");
+            Console.WriteLine($"x=[{tmpX.Glue(", ")}]");
+        }
+
+        var (A, B) = (Efq.ShortForm.A, Efq.ShortForm.B);
+        var X = FG.KPoly('X', Efq.a3.X);
+        var Y = FG.KPoly('Y', Efq.a3.X);
+        var tmpY = new Dictionary<EPoly<ZnInt>, EPoly<ZnInt>[]>();
+        foreach (var x in tmpX)
+        {
+            var sols = Roots(Y.Pow(2) - (x.Pow(3) + A * x + B), a);
+            if (sols.Length > 0)
+            {
+                if (log == LogLevel.Level2)
+                    Console.WriteLine($"x={x} y=[{sols.Glue(", ")}]");
+                tmpY[x] = sols;
+            }
+            else
+            {
+                tmpY.Clear();
+                break;
+            }
+        }
+
+        if (tmpY.Count == 0)
+        {
+            if (log == LogLevel.Level2)
+                Console.WriteLine($"Y^2 = {X.Pow(3) + A * X + B} dont always solve in GF({p}^{i})");
+            continue;
+        }
+
+        setPts.UnionWith(tmpY.SelectMany(e => e.Value.Select(y => new EllPt<EPoly<ZnInt>>(e.Key, y))));
+
+        if (log == LogLevel.Level2)
+            setPts.Println("Points");
+
+        break;
+    }
+
+    var gEll = Group.Generate(Efq, setPts.Where(e => Efq.Contains(e.X, e.Y)).ToArray());
+    var Cn = Group.Generate($"{n}-Tors({gEll})", gEll,
+        gEll.ElementsOrders.Where(e => e.Value == n).Select(e => e.Key).ToArray());
+
+    if (log == LogLevel.Level2)
+        DisplayGroup.HeadElements(gEll);
+
+    if (log != LogLevel.Off)
+    {
+        DisplayGroup.HeadElements(Cn);
+        Console.WriteLine($"{Cn} ~ [{Group.AbelianGroupType(Cn).Glue(" x ")}]");
+        Console.WriteLine();
+    }
+}
+
+void CplxMul_NTors(BigInteger[] curve)
+{
+    Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+    var E = EC.EllCoefs(curve);
+    Console.WriteLine($"Ell({E.ModelStr})(Q) {E.Eq}");
+    var (R, psi, divPolys) = DivisionPolynomial(E.ToEllGroup(), 8);
+    var (Ell, N, _) = EC.EllTateAlgorithm(E);
+    var nmax = 2 * double.Sqrt(N);
+
+    EllP2(E);
+    var (P, P2) = NPt(2, psi, R);
+    var P3 = NPt(3, psi, R).nP;
+    var P4 = NPt(4, psi, R).nP;
+    var P5 = NPt(5, psi, R).nP;
+    Console.WriteLine($"P = {P}");
+
+    Console.WriteLine($"2P = {P2}");
+    Console.WriteLine(P2.X);
+    var x2P = P2.X.Num[0].Num.Monic;
+    Console.WriteLine(x2P);
+    var facts2P = IntFactorisation.FactorsQ(x2P);
+    facts2P.Println($"factors x(2P) = {x2P}");
+    EllCM(Ell, x2P).Println("C[2]");
+    Console.WriteLine();
+
+    Console.WriteLine($"3P = {P3}");
+    Console.WriteLine(P2.X - P.X);
+    Console.WriteLine(P3.X);
+    var x3Pa = P3.X.Num[0].Denom.Monic;
+    var x3Pb = (P2.X - P.X).Num[0].Num.Monic;
+    Console.WriteLine(x3Pa);
+    Console.WriteLine(x3Pb);
+    Console.WriteLine(x3Pa.Div(x3Pb));
+    var facts3P = IntFactorisation.FactorsQ(x3Pb);
+    facts3P.Println($"factors x(3P) = {x3Pb}");
+    EllCM(Ell, x3Pa).Println("C[3]");
+    Console.WriteLine();
+
+    Console.WriteLine($"4P = {P4}");
+    Console.WriteLine(P3.X - P.X);
+    Console.WriteLine(P4.X);
+    var x4Pa = P4.X.Num[0].Denom.Monic;
+    var x4Pb = (P3.X - P.X).Num[0].Num.Monic;
+    var x4Pc = (P2.Y * P.X).Num[0].Num.Monic;
+    Console.WriteLine(x4Pa);
+    Console.WriteLine(x4Pb);
+    Console.WriteLine(x4Pc);
+    Console.WriteLine();
+    Console.WriteLine(x4Pa.Div(x4Pc));
+    Console.WriteLine(x4Pb.Div(x4Pc));
+    var facts4P = IntFactorisation.FactorsQ(x4Pc);
+    facts4P.Println($"factors x(4P) = {x4Pc}");
+    EllCM(Ell, x4Pa).Println("C[4}");
+    Console.WriteLine();
+
+    foreach (var p in Primes10000.Where(p => p > 3 && p <= nmax && !E.Disc.Mod(p).IsZero()))
+    {
+        EpNTors(Ell, x2P, p, 2);
+        EpNTors(Ell, x3Pb, p, 3);
+        EpNTors(Ell, x4Pc, p, 4);
+    }
+}
+
+void testDivPolys()
 {
     Ring.DisplayPolynomial = MonomDisplay.StarCaret;
     var E = EC.EllCoefs([1, 0]);
@@ -113,22 +284,24 @@ void nP(int n, Dictionary<int, KPoly<KPoly<Rational>>> psi, KPoly<KPoly<Rational
         .Println("Degree of divPolys");
 
     EllP2(E);
-    nP(2, psi, R);
-    nP(3, psi, R);
+    var (P, P2) = NPt(2, psi, R);
+    var P3 = NPt(3, psi, R).nP;
+    Console.WriteLine($"P = {P}");
+    Console.WriteLine($"2P = {P2}");
+    Console.WriteLine($"3P = {P3}");
 }
 
 {
-    Ring.DisplayPolynomial = MonomDisplay.StarCaret;
-    var E = EC.EllCoefs([1, 1]);
-    Console.WriteLine($"Ell({E.ModelStr})(Q) {E.Eq}");
-    var (R, psi, divPolys) = DivisionPolynomial(E.ToEllGroup(), 8);
-    psi.Println("psi");
-    divPolys.Println("divPolys");
-    divPolys.Where(e => e.Key != 0)
-        .ToDictionary(e => e.Key, e => (e.Value.Degree, (e.Key.Pow(2) - 1 - 3 * ((e.Key + 1) % 2)) / 2))
-        .Println("Degree of divPolys");
-    
-    EllP2(E);
-    nP(2, psi, R);
-    nP(3, psi, R);
+    GlobalStopWatch.Restart();
+    GlobalStopWatch.AddLap();
+    CplxMul_NTors([1, 0]);
+    GlobalStopWatch.Show(); // Time:23.652s
+    Console.WriteLine();
+
+    GlobalStopWatch.AddLap();
+    CplxMul_NTors([-1, 0]);
+    GlobalStopWatch.Show(); // Time:20.742s
+    Console.WriteLine();
+
+    Console.Beep();
 }
