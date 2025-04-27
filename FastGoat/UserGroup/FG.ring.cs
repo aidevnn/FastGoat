@@ -24,6 +24,12 @@ public static partial class FG
     public static ZnBigInt ToZnBigInt(this Rational e, BigInteger p) =>
         new ZnBigInt(p, BigInteger.Remainder(e.Num, p)) / new ZnBigInt(p, BigInteger.Remainder(e.Denom, p));
 
+    public static EPoly<ZnInt> ToGF(this Rational e, int q, char a = 'a')
+    {
+        var x = FqX(q, a);
+        return x.One * e.ToZnInt(x.P);
+    }
+
     public static Rational Comb(int k, int n)
     {
         var c = Rational.KOne();
@@ -79,7 +85,7 @@ public static partial class FG
         var roots = new List<Cplx>();
         while (P0.Degree > 0)
         {
-            var a0 = NSolve(P0, epsilon);
+            var a0 = NSolve(P0, epsilon, maxLoop);
             roots.Add(a0);
             P0 /= P0.X - a0;
         }
@@ -144,6 +150,8 @@ public static partial class FG
 
     public static KPoly<ZnBigInt> ToZnBigIntPoly(this KPoly<Rational> P, BigInteger p) =>
         new(P.x, ZnBigInt.ZnZero(p), P.Coefs.Select(c => c.ToZnBigInt(p)).TrimSeq().ToArray());
+
+    public static KPoly<EPoly<ZnInt>> ToGF(this KPoly<Rational> P, int q) => P.Coefs.Select(c => c.ToGF(q)).ToKPoly();
 
     public static KPoly<Rational> ToRationalPoly(this KPoly<ZnInt> P) =>
         new(P.x, Rational.KOne(), P.Coefs.Select(c => c.K * Rational.KOne()).TrimSeq().ToArray());
@@ -324,6 +332,15 @@ public static partial class FG
         var x = scalar.KOne.X;
         var y = scalar.X;
         return f.Coefs.Select((cy, i) => cy.Substitute(x) * y.Pow(i)).ToVec().Sum();
+    }
+
+    public static T Substitute<K, T>(this FracPoly<FracPoly<K>> f, T x, T y)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+        where T : struct, IElt<T>, IRingElt<T>, IFieldElt<T>, IModuleElt<K, T>,IVsElt<K, T>
+    {
+        var num = f.Num.Coefs.Select((cy, i) => y.Pow(i) * cy.Substitute(x)).ToVec().Sum();
+        var denom = f.Denom.Coefs.Select((cy, i) => y.Pow(i) * cy.Substitute(x)).ToVec().Sum();
+        return num / denom;
     }
 
     public static EPoly<K> EPoly<K>(KPoly<K> f) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>

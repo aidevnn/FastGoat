@@ -107,11 +107,18 @@ public readonly struct FracPoly<K> : IElt<FracPoly<K>>, IRingElt<FracPoly<K>>, I
     {
         if (k < 0)
             return new(Denom.Pow(-k), Num.Pow(-k));
-        
+
         return new(Num.Pow(k), Denom.Pow(k));
     }
 
     public override int GetHashCode() => Hash;
+
+    public T Substitute<T>(T f) where T : struct, IElt<T>, IRingElt<T>, IFieldElt<T>, IModuleElt<K, T>, IVsElt<K, T>
+    {
+        var num = Num.Substitute(f);
+        var denom = Denom.Substitute(f);
+        return num / denom;
+    }
 
     public override string ToString()
     {
@@ -161,7 +168,7 @@ public readonly struct FracPoly<K> : IElt<FracPoly<K>>, IRingElt<FracPoly<K>>, I
 
     public static FracPoly<K> operator /(FracPoly<K> a, K b) => new(a.Num, a.Denom * b);
     // //
-    
+
 
     public static FracPoly<K> operator +(FracPoly<K> a, KPoly<K> b) => a + new FracPoly<K>(b);
 

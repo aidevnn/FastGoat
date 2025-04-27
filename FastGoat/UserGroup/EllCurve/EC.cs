@@ -2,6 +2,7 @@ using System.Numerics;
 using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.GenericGroup;
+using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup.Polynoms;
 using FastGoat.UserGroup.Integers;
 using static FastGoat.Commons.IntExt;
@@ -90,6 +91,12 @@ public static class EC
     {
         var (a1, a2, a3, a4, a5) = E.Coefs;
         return new(a1.ToZnInt(p), a2.ToZnInt(p), a3.ToZnInt(p), a4.ToZnInt(p), a5.ToZnInt(p));
+    }
+
+    public static EllGroup<EPoly<ZnInt>> ToGF(this EllGroup<Rational> E, int p, char a='a')
+    {
+        var (a1, a2, a3, a4, a5) = E.Coefs;
+        return new(a1.ToGF(p, a), a2.ToGF(p, a), a3.ToGF(p, a), a4.ToGF(p, a), a5.ToGF(p, a));
     }
 
     public static EllGroup<ZnBigInt> ToZnBigInt(this EllGroup<Rational> E, BigInteger p)

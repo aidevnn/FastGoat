@@ -225,6 +225,9 @@ public readonly struct BigCplx : IElt<BigCplx>, IRingElt<BigCplx>, IFieldElt<Big
             return NthRoot(r, -n).Inv();
 
         BigCplx ai;
+        var s = r.RealPart.Sign != 1 ? -1 : 1;
+        var f = s == 1 ? r.One : r.I;
+        r *= s;
         var aj = 1 + r / n;
         do
         {
@@ -235,7 +238,7 @@ public readonly struct BigCplx : IElt<BigCplx>, IRingElt<BigCplx>, IFieldElt<Big
             aj = ai - num / denom; // Newton iteration
         } while (!(ai - aj).Magnitude2.IsZero());
 
-        return aj;
+        return aj * f;
     }
 
     public static BigCplx operator +(BigCplx a, BigCplx b) => a.Add(b);

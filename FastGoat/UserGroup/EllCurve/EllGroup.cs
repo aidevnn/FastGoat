@@ -57,9 +57,6 @@ public struct EllGroup<T> : IGroup<EllPt<T>> where T : struct, IElt<T>, IRingElt
         else if (A1 is ZnBigInt _a2)
             Field = $"Z/{_a2.Mod}Z";
 
-        Name = a1.IsZero() && a2.IsZero() && a3.IsZero()
-            ? $"Ell[{a4},{a5}]({Field})".Replace(" ", "")
-            : $"Ell[{a1},{a2},{a3},{a4},{a5}]({Field})".Replace(" ", "");
         Hash = (Coefs, ShortForm).GetHashCode();
     }
 
@@ -117,8 +114,12 @@ public struct EllGroup<T> : IGroup<EllPt<T>> where T : struct, IElt<T>, IRingElt
     }
 
     public int Hash { get; }
-    public string Name { get; }
-    public string Field { get; }
+
+    public string Name => a1.IsZero() && a2.IsZero() && a3.IsZero()
+        ? $"Ell[{a4},{a5}]({Field})".Replace(" ", "")
+        : $"Ell[{a1},{a2},{a3},{a4},{a5}]({Field})".Replace(" ", "");
+
+    public string Field { get; set; }
     public T Disc { get; }
     public (T a1, T a2, T a3, T a4, T a5) Coefs { get; }
     public (T A, T B, T d1, T d2) ShortForm { get; }

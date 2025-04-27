@@ -82,7 +82,7 @@ public static partial class IntFactorisation
     {
         if (f.Degree != 0)
         {
-            var sff = IntFactorisation.MusserSFF(f);
+            var sff = MusserSFF(f);
             var l0 = sff.Select(e => (e.g, q, m: e.i)).ToList();
             foreach (var l in l0)
             {

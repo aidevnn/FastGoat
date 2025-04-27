@@ -229,7 +229,7 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
         }
     }
 
-    public int Sign => K.Sign;
+    public int Sign => K.IsZero ? 1 : K.Sign;
     public Dcml ToDcml => new(ToDecimal);
     public Dble ToDble => new(ToDouble);
     

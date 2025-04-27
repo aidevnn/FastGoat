@@ -16,6 +16,8 @@ public static partial class FG
     public static Complex Substitute(this KPoly<Rational> f, Complex c) => f.Coefs.Select((k, i) => k * Complex.Pow(c, i))
         .Aggregate(Complex.Zero, (sum, ci) => sum + ci);
 
+    public static double NormInf(this Complex c) => double.Max(double.Abs(c.Real), double.Abs(c.Imaginary));
+
     public static Character<T> CharacterOne<T>(ConcreteGroup<T> gr) where T : struct, IElt<T>
     {
         return new Character<T>(gr);

@@ -65,7 +65,7 @@ public static partial class Ring
         return (y0, x0.Add(q.Mul(y0).Opp()));
     }
 
-    public static K FastPow<K>(this K a, int k) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    public static K FastPow<K>(this K a, BigInteger k) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         if (k == 0)
             return a.One;
