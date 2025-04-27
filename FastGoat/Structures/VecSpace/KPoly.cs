@@ -250,18 +250,7 @@ public readonly struct KPoly<K> : IElt<KPoly<K>>, IRingElt<KPoly<K>>, IFieldElt<
         if (Degree == 0)
             return new(x, KZero, new[] { this[0].Pow(k) });
 
-        // var prod = new KPoly<K>(x, KZero, Enumerable.Repeat(KZero, k * Degree + 1).ToArray());
-        // prod.Coefs[0] = KOne;
-        // var cache = Enumerable.Repeat(KZero, k * Degree + 1).ToArray();
-        // for (int i = 0; i < k; i++)
-        // {
-        //     prod.InPlaceProd(this, cache, i * Degree);
-        // }
-        //
-        // return prod;
-
-        var pi = this;
-        return Enumerable.Repeat(pi, k).Aggregate((a, b) => a.Mul(b));
+        return Ring.FastPow(this, k);
     }
 
     public (KPoly<K> quo, KPoly<K> rem) Div(KPoly<K> e)

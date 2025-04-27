@@ -852,9 +852,9 @@ public static partial class Ring
 
         var d1 = A.Degree - B.Degree;
         var y1 = B.Coefs.Last();
-        var w1 = i == 0 ? -A.KOne : (-y0).Pow(d0) / w0.Pow(d0 - 1);
-        var b = i == 0 ? ((d0 + 1) % 2 == 0 ? A.KOne : -A.KOne) : -y0 * w1.Pow(d1);
-        var r = (y1.Pow(d1 + 1) * A).Div(B).rem / b;
+        var w1 = i == 0 ? -A.KOne : FastPow(-y0, d0) / FastPow(w0, d0 - 1);
+        var b = i == 0 ? ((d0 + 1) % 2 == 0 ? A.KOne : -A.KOne) : -y0 * FastPow(w1, d1);
+        var r = (FastPow(y1, d1 + 1) * A).Div(B).rem / b;
         return FastGCDInternal(B, r, w1, y1, d1, i + 1);
     }
 

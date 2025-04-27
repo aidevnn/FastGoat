@@ -151,7 +151,8 @@ public static partial class FG
     public static KPoly<ZnBigInt> ToZnBigIntPoly(this KPoly<Rational> P, BigInteger p) =>
         new(P.x, ZnBigInt.ZnZero(p), P.Coefs.Select(c => c.ToZnBigInt(p)).TrimSeq().ToArray());
 
-    public static KPoly<EPoly<ZnInt>> ToGF(this KPoly<Rational> P, int q) => P.Coefs.Select(c => c.ToGF(q)).ToKPoly();
+    public static KPoly<EPoly<ZnInt>> ToGF(this KPoly<Rational> P, int q, char x = 'a') =>
+        P.Coefs.Select(c => c.ToGF(q, x)).ToKPoly();
 
     public static KPoly<Rational> ToRationalPoly(this KPoly<ZnInt> P) =>
         new(P.x, Rational.KOne(), P.Coefs.Select(c => c.K * Rational.KOne()).TrimSeq().ToArray());
