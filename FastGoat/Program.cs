@@ -118,33 +118,34 @@ EllPt<BigCplx>[] EllCM(EllGroup<Rational> E, KPoly<Rational> EqX)
     return pts.ToArray();
 }
 
-EPoly<ZnInt>[] Roots(KPoly<EPoly<ZnInt>> P, EPoly<ZnInt> a)
+EPoly<ZnInt>[] Roots(KPoly<EPoly<ZnInt>> P, EPoly<ZnInt> a, BigInteger q)
 {
     var facts = IntFactorisation.MusserSFF(P)
-        .SelectMany(f => IntFactorisation.BerlekampProbabilisticAECF(f.g, a))
+        .SelectMany(f => IntFactorisation.CantorZassenhausAECF(f.g, a, q))
         .ToArray();
     if (facts.All(f => f.Degree == 1))
         return facts.Select(f => -f[0]).ToArray();
-    
+
     return [];
 }
 
 void EpNTors(EllGroup<Rational> E, KPoly<Rational> P, int p, int n, LogLevel log = LogLevel.Level1)
 {
+    if (log != LogLevel.Off)
+        GlobalStopWatch.AddLap();
+
     EllGroup<EPoly<ZnInt>> Efq = E.ToGF(p);
     var setPts = new HashSet<EllPt<EPoly<ZnInt>>>();
 
     for (int i = 1; i < 10; i++)
     {
-        var q = p.Pow(i);
-        if (q > 500000)
-            throw new();
-        
+        var q = BigInteger.Pow(p, i);
+
         Efq = E.ToGF(q);
         var Pq = P.ToGF(q);
-        var a = Pq.KOne.X;
         Efq.Field = $"GF({p}^{i})";
-        var tmpX = Roots(Pq, a);
+        var a = Pq.KOne.X;
+        var tmpX = Roots(Pq, a, q);
         if (tmpX.Length == 0)
         {
             if (log == LogLevel.Level2)
@@ -164,7 +165,7 @@ void EpNTors(EllGroup<Rational> E, KPoly<Rational> P, int p, int n, LogLevel log
         var tmpY = new Dictionary<EPoly<ZnInt>, EPoly<ZnInt>[]>();
         foreach (var x in tmpX)
         {
-            var sols = Roots(Y.Pow(2) - (x.Pow(3) + A * x + B), a);
+            var sols = Roots(Y.Pow(2) - (x.Pow(3) + A * x + B), a, q);
             if (sols.Length > 0)
             {
                 if (log == LogLevel.Level2)
@@ -181,7 +182,7 @@ void EpNTors(EllGroup<Rational> E, KPoly<Rational> P, int p, int n, LogLevel log
         if (tmpY.Count == 0)
         {
             if (log == LogLevel.Level2)
-                Console.WriteLine($"Y^2 = {X.Pow(3) + A * X + B} dont always solve in GF({p}^{i})");
+                Console.WriteLine($"Y^2 = {X.Pow(3) + A * X + B} dont have {n}-torsion in GF({p}^{i})");
             continue;
         }
 
@@ -203,7 +204,16 @@ void EpNTors(EllGroup<Rational> E, KPoly<Rational> P, int p, int n, LogLevel log
     if (log != LogLevel.Off)
     {
         DisplayGroup.HeadElements(Cn);
-        Console.WriteLine($"{Cn} ~ [{Group.AbelianGroupType(Cn).Glue(" x ")}]");
+
+        var abCn = FG.AbelianDirectSum(Cn);
+        abCn.DecompMap.Println(e => $"{e.Key} of order {e.Value}", $"Generators of {Cn}");
+        Console.WriteLine();
+        Console.WriteLine($"{Cn} ~ {abCn.DecompMap.Values.Glue(" x ", "C{0}")}");
+
+        if (Cn.Count() == 1)
+            Console.WriteLine($"Warnings");
+
+        GlobalStopWatch.Show();
         Console.WriteLine();
     }
 }
@@ -230,7 +240,7 @@ void CplxMul_NTors(BigInteger[] curve)
     Console.WriteLine(x2P);
     var facts2P = IntFactorisation.FactorsQ(x2P);
     facts2P.Println($"factors x(2P) = {x2P}");
-    EllCM(Ell, x2P).Println("C[2]");
+    // EllCM(Ell, x2P).Println("C[2]");
     Console.WriteLine();
 
     Console.WriteLine($"3P = {P3}");
@@ -243,7 +253,7 @@ void CplxMul_NTors(BigInteger[] curve)
     Console.WriteLine(x3Pa.Div(x3Pb));
     var facts3P = IntFactorisation.FactorsQ(x3Pb);
     facts3P.Println($"factors x(3P) = {x3Pb}");
-    EllCM(Ell, x3Pa).Println("C[3]");
+    // EllCM(Ell, x3Pa).Println("C[3]");
     Console.WriteLine();
 
     Console.WriteLine($"4P = {P4}");
@@ -260,7 +270,15 @@ void CplxMul_NTors(BigInteger[] curve)
     Console.WriteLine(x4Pb.Div(x4Pc));
     var facts4P = IntFactorisation.FactorsQ(x4Pc);
     facts4P.Println($"factors x(4P) = {x4Pc}");
-    EllCM(Ell, x4Pa).Println("C[4}");
+    // EllCM(Ell, x4Pa).Println("C[4]");
+    Console.WriteLine();
+
+    var x5Pa = P5.X.Num[0].Denom.Monic;
+    Console.WriteLine(x5Pa);
+    var facts5P = IntFactorisation.FactorsQ(x5Pa);
+    facts5P.Println($"factors x(5P) = {x5Pa}");
+    var x5Pb = facts5P.Aggregate(x5Pa.One, (acc, fi) => acc * fi.Item1);
+    Console.WriteLine(x5Pb);
     Console.WriteLine();
 
     foreach (var p in Primes10000.Where(p => p > 3 && p <= nmax && !E.Disc.Mod(p).IsZero()))
@@ -268,6 +286,8 @@ void CplxMul_NTors(BigInteger[] curve)
         EpNTors(Ell, x2P, p, 2);
         EpNTors(Ell, x3Pb, p, 3);
         EpNTors(Ell, x4Pc, p, 4);
+        if (p > 5)
+            EpNTors(Ell, x5Pb, p, 5);
     }
 }
 
@@ -293,14 +313,20 @@ void testDivPolys()
 
 {
     GlobalStopWatch.Restart();
+    
     GlobalStopWatch.AddLap();
     CplxMul_NTors([1, 0]);
-    GlobalStopWatch.Show(); // Time:23.652s
+    GlobalStopWatch.Show();
     Console.WriteLine();
 
     GlobalStopWatch.AddLap();
     CplxMul_NTors([-1, 0]);
-    GlobalStopWatch.Show(); // Time:20.742s
+    GlobalStopWatch.Show();
+    Console.WriteLine();
+
+    GlobalStopWatch.AddLap();
+    CplxMul_NTors([1, 1]);
+    GlobalStopWatch.Show();
     Console.WriteLine();
 
     Console.Beep();

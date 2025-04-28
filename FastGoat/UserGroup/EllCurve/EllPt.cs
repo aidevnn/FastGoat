@@ -57,7 +57,7 @@ public readonly struct EllPt<T> : IElt<EllPt<T>> where T : struct, IElt<T>, IRin
 
     public override string ToString()
     {
-        return IsO ? "O" : $"({X},{Y})";
+        return IsO ? "O" : $"({X}, {Y})";
     }
 
     public static implicit operator EllPt<T>((T x, T y) P) => new(P.x, P.y);
