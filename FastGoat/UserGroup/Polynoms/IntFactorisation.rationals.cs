@@ -231,7 +231,7 @@ public static partial class IntFactorisation
 
         // GlobalStopWatch.AddLap();
         // var firr0 = Firr(f0, a0).ToArray();
-        var firr0 = BerlekampProbabilisticVShoup(f0.Monic, a0).ToArray();
+        var firr0 = BerlekampProbabilisticVShoup(f0.Monic, a0, p).ToArray();
         // var firr0 = BerlekampProbabilisticAECF(f0, a0).ToArray();
         // var firr0 = CantorZassenhausVShoup(f0, a0).ToArray();
         // GlobalStopWatch.Show("Firr");
@@ -771,7 +771,7 @@ public static partial class IntFactorisation
         var (p, n) = dec.First();
         var fq = new Fq(q, 'a');
         var f0 = new KPoly<EPoly<ZnInt>>(f.x, fq.Zero, f.Coefs.Select(c => c.ToZnInt(p) * fq.One).ToArray());
-        return BerlekampProbabilisticAECF(f0, fq.One.X).ToArray();
+        return BerlekampProbabilisticAECF(f0, fq.One.X, fq.Q).ToArray();
     }
 
     public static KPoly<ZnBInt>[] FirrFp(KPoly<Rational> f, int p)
@@ -783,6 +783,6 @@ public static partial class IntFactorisation
         var a0 = new ZnBInt(p, e, 1);
         var po = a0.Details;
         var f0 = QPoly2ZnInt(f, po);
-        return BerlekampProbabilisticAECF(f0, a0).ToArray();
+        return BerlekampProbabilisticAECF(f0, a0, p).ToArray();
     }
 }

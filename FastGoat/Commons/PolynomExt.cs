@@ -1,3 +1,5 @@
+using System.Numerics;
+
 namespace FastGoat.Commons;
 
 /// <summary>
@@ -36,15 +38,15 @@ public static class PolynomExt
     /// </summary>
     /// <param name="q">The integer for which to calculate the Conway polynomial.</param>
     /// <returns>A tuple containing the prime and multiplicity of the polynomial, as well as an array of coefficients.</returns>
-    public static ((int p, int m) pm, int[] coefs) GetConwayPoly(int q)
+    public static ((int p, int m) pm, int[] coefs) GetConwayPoly(BigInteger q)
     {
-        if (IntExt.Primes10000.Contains(q))
+        if (q < IntExt.MaxPrime && IntExt.Primes10000.Contains((int)q))
         {
-            var k = IntExt.Solve_k_pow_m_equal_one_mod_n_strict(q, q - 1);
-            return ((q, 1), [k, 1]);
+            var k = IntExt.Solve_k_pow_m_equal_one_mod_n_strict((int)q, (int)q - 1);
+            return (((int)q, 1), [k, 1]);
         }
         
-        var pm = IntExt.PrimesDecomposition(q).ToArray();
+        var pm = IntExt.PrimesDecompositionBigInt(q).ToArray();
         if (pm.Distinct().Count() != 1)
             throw new();
 

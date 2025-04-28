@@ -1,3 +1,4 @@
+using System.Numerics;
 using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.CartesianProduct;
@@ -499,7 +500,12 @@ public static partial class FG
         return new KAutGroup<K>(P);
     }
 
-    public static EPoly<ZnInt> FqX(int q, char x = 'x') => new Fq(q, x)[x];
+    public static EPoly<ZnInt> FqX(BigInteger q, char x = 'x')
+    {
+        ((int p, int m), int[] coefs) = PolynomExt.GetConwayPoly(q);
+        var F = new KPoly<ZnInt>(x, ZnInt.ZnZero(p), coefs.Select(i => new ZnInt(p, i)).ToArray());
+        return new(F, F.X);
+    }
 
     public static NthRootQ NthRootQ(int n) => new(n);
     public static NthRootFq NthRootFq(int n, int q) => new(n, q);

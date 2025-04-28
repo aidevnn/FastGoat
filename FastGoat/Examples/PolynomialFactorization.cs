@@ -378,6 +378,7 @@ public static class PolynomialFactorization
         {
             var p = IntExt.Primes10000[IntExt.Rng.Next(5)]; // 2, 3, 5, 7, 11
             var d = IntExt.Rng.Next((int)(Math.Log(50) / Math.Log(p))) + 1; // p^d < 50 => 4, 8, 9, 16, 25, 27, 32, 49
+            (p, d) = (2, 1);
             var fq = new Fq(p.Pow(d), 'a');
             var gf = FG.Galois(p.Pow(d), 'a');
             var a0 = gf.GetGenerators().First();
@@ -392,6 +393,7 @@ public static class PolynomialFactorization
                 continue;
             }
 
+            Console.WriteLine($"Test[{i + 1}]");
             Console.WriteLine($"{fq} with {fq.F} = 0");
             Console.WriteLine($"f = {f} mod ({p})");
             Console.WriteLine($"Disc(f) = {Ring.Discriminant(f)} mod ({p})");
@@ -399,16 +401,16 @@ public static class PolynomialFactorization
             var firr0 = IntFactorisation.Firr(f, a0).Order().ToArray();
             Console.WriteLine($"Fact1(f) = {firr0.Glue("*", "({0})")} mod ({p})");
 
-            var firr1 = IntFactorisation.CantorZassenhausVShoup(f, a0).Order().ToArray();
+            var firr1 = IntFactorisation.CantorZassenhausVShoup(f, a0, fq.Q).Order().ToArray();
             Console.WriteLine($"Fact2(f) = {firr1.Glue("*", "({0})")} mod ({p})");
 
-            var firr2 = IntFactorisation.CantorZassenhausAECF(f, a0).Order().ToArray();
+            var firr2 = IntFactorisation.CantorZassenhausAECF(f, a0, fq.Q).Order().ToArray();
             Console.WriteLine($"Fact3(f) = {firr2.Glue("*", "({0})")} mod ({p})");
 
-            var firr3 = IntFactorisation.BerlekampProbabilisticVShoup(f, a0).Order().ToArray();
+            var firr3 = IntFactorisation.BerlekampProbabilisticVShoup(f, a0, fq.Q).Order().ToArray();
             Console.WriteLine($"Fact4(f) = {firr3.Glue("*", "({0})")} mod ({p})");
 
-            var firr4 = IntFactorisation.BerlekampProbabilisticAECF(f, a0).Order().ToArray();
+            var firr4 = IntFactorisation.BerlekampProbabilisticAECF(f, a0, fq.Q).Order().ToArray();
             Console.WriteLine($"Fact5(f) = {firr4.Glue("*", "({0})")} mod ({p})");
 
             var check1 = firr0.Aggregate(f.One, (prod, fi) => fi * prod).Equals(f);
@@ -424,10 +426,10 @@ public static class PolynomialFactorization
 
             var nb = 3;
             GlobalStopWatch.Bench(nb, "B1", () => IntFactorisation.Firr(f, a0).Order().ToArray());
-            GlobalStopWatch.Bench(nb, "B2", () => IntFactorisation.BerlekampProbabilisticVShoup(f, a0).Order().ToArray());
-            GlobalStopWatch.Bench(nb, "B3", () => IntFactorisation.BerlekampProbabilisticAECF(f, a0).Order().ToArray());
-            GlobalStopWatch.Bench(nb, "CZ2", () => IntFactorisation.CantorZassenhausVShoup(f, a0).Order().ToArray());
-            GlobalStopWatch.Bench(nb, "CZ3", () => IntFactorisation.CantorZassenhausAECF(f, a0).Order().ToArray());
+            GlobalStopWatch.Bench(nb, "B2", () => IntFactorisation.BerlekampProbabilisticVShoup(f, a0, fq.Q).Order().ToArray());
+            GlobalStopWatch.Bench(nb, "B3", () => IntFactorisation.BerlekampProbabilisticAECF(f, a0, fq.Q).Order().ToArray());
+            GlobalStopWatch.Bench(nb, "CZ2", () => IntFactorisation.CantorZassenhausVShoup(f, a0, fq.Q).Order().ToArray());
+            GlobalStopWatch.Bench(nb, "CZ3", () => IntFactorisation.CantorZassenhausAECF(f, a0, fq.Q).Order().ToArray());
 
             Console.WriteLine();
         }

@@ -24,7 +24,7 @@ public static partial class FG
     public static ZnBigInt ToZnBigInt(this Rational e, BigInteger p) =>
         new ZnBigInt(p, BigInteger.Remainder(e.Num, p)) / new ZnBigInt(p, BigInteger.Remainder(e.Denom, p));
 
-    public static EPoly<ZnInt> ToGF(this Rational e, int q, char a = 'a')
+    public static EPoly<ZnInt> ToGF(this Rational e, BigInteger q, char a = 'a')
     {
         var x = FqX(q, a);
         return x.One * e.ToZnInt(x.P);
@@ -151,7 +151,7 @@ public static partial class FG
     public static KPoly<ZnBigInt> ToZnBigIntPoly(this KPoly<Rational> P, BigInteger p) =>
         new(P.x, ZnBigInt.ZnZero(p), P.Coefs.Select(c => c.ToZnBigInt(p)).TrimSeq().ToArray());
 
-    public static KPoly<EPoly<ZnInt>> ToGF(this KPoly<Rational> P, int q, char x = 'a') =>
+    public static KPoly<EPoly<ZnInt>> ToGF(this KPoly<Rational> P, BigInteger q, char x = 'a') =>
         P.Coefs.Select(c => c.ToGF(q, x)).ToKPoly();
 
     public static KPoly<Rational> ToRationalPoly(this KPoly<ZnInt> P) =>

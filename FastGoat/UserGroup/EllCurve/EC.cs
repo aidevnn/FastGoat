@@ -93,10 +93,10 @@ public static class EC
         return new(a1.ToZnInt(p), a2.ToZnInt(p), a3.ToZnInt(p), a4.ToZnInt(p), a5.ToZnInt(p));
     }
 
-    public static EllGroup<EPoly<ZnInt>> ToGF(this EllGroup<Rational> E, int p, char a='a')
+    public static EllGroup<EPoly<ZnInt>> ToGF(this EllGroup<Rational> E, BigInteger q, char a='a')
     {
         var (a1, a2, a3, a4, a5) = E.Coefs;
-        return new(a1.ToGF(p, a), a2.ToGF(p, a), a3.ToGF(p, a), a4.ToGF(p, a), a5.ToGF(p, a));
+        return new(a1.ToGF(q, a), a2.ToGF(q, a), a3.ToGF(q, a), a4.ToGF(q, a), a5.ToGF(q, a));
     }
 
     public static EllGroup<ZnBigInt> ToZnBigInt(this EllGroup<Rational> E, BigInteger p)
