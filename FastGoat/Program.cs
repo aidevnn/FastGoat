@@ -22,6 +22,7 @@ using RegXGroup = System.Text.RegularExpressions.Group;
 //////////////////////////////////
 
 Console.WriteLine("Hello World");
+Ring.DisplayPolynomial = MonomDisplay.StarCaret;
 
 (KPoly<Rational> X2, KPoly<Rational> Y2) EllP2(EllCoefs<Rational> E)
 {
@@ -129,7 +130,8 @@ EPoly<ZnInt>[] Roots(KPoly<EPoly<ZnInt>> P, EPoly<ZnInt> a, BigInteger q)
     return [];
 }
 
-void EpNTors(EllGroup<Rational> E, KPoly<Rational> P, int p, int n, LogLevel log = LogLevel.Level1)
+ConcreteGroup<EllPt<EPoly<ZnInt>>>
+    EpNTors(EllGroup<Rational> E, KPoly<Rational> P, int p, int l, LogLevel log = LogLevel.Level1)
 {
     if (log != LogLevel.Off)
         GlobalStopWatch.AddLap();
@@ -182,7 +184,7 @@ void EpNTors(EllGroup<Rational> E, KPoly<Rational> P, int p, int n, LogLevel log
         if (tmpY.Count == 0)
         {
             if (log == LogLevel.Level2)
-                Console.WriteLine($"Y^2 = {X.Pow(3) + A * X + B} dont have {n}-torsion in GF({p}^{i})");
+                Console.WriteLine($"Y^2 = {X.Pow(3) + A * X + B} dont have {l}-torsion in GF({p}^{i})");
             continue;
         }
 
@@ -195,8 +197,8 @@ void EpNTors(EllGroup<Rational> E, KPoly<Rational> P, int p, int n, LogLevel log
     }
 
     var gEll = Group.Generate(Efq, setPts.Where(e => Efq.Contains(e.X, e.Y)).ToArray());
-    var Cn = Group.Generate($"{n}-Tors({gEll})", gEll,
-        gEll.ElementsOrders.Where(e => e.Value == n).Select(e => e.Key).ToArray());
+    var Cn = Group.Generate($"{l}-Tors({gEll})", gEll,
+        gEll.ElementsOrders.Where(e => e.Value == l).Select(e => e.Key).ToArray());
 
     if (log == LogLevel.Level2)
         DisplayGroup.HeadElements(gEll);
@@ -209,18 +211,19 @@ void EpNTors(EllGroup<Rational> E, KPoly<Rational> P, int p, int n, LogLevel log
         abCn.DecompMap.Println(e => $"{e.Key} of order {e.Value}", $"Generators of {Cn}");
         Console.WriteLine();
         Console.WriteLine($"{Cn} ~ {abCn.DecompMap.Values.Glue(" x ", "C{0}")}");
-        
+
         if (Cn.Count() == 1)
             Console.WriteLine($"Warnings");
 
         GlobalStopWatch.Show();
         Console.WriteLine();
     }
+
+    return Cn;
 }
 
 void CplxMul_NTors(BigInteger[] curve)
 {
-    Ring.DisplayPolynomial = MonomDisplay.StarCaret;
     var E = EC.EllCoefs(curve);
     Console.WriteLine($"Ell({E.ModelStr})(Q) {E.Eq}");
     var (R, psi, divPolys) = DivisionPolynomial(E.ToEllGroup(), 8);
@@ -291,9 +294,104 @@ void CplxMul_NTors(BigInteger[] curve)
     }
 }
 
+(List<int> listL, int L) GetPrimesL(int p)
+{
+    var listL = new List<int>();
+    var L = 1;
+    var lmax = 8 * double.Sqrt(p);
+    foreach (var l in Primes10000.Where(l => l < p))
+    {
+        listL.Add(l);
+        L *= l;
+        if (L > lmax)
+            break;
+    }
+
+    return (listL, L);
+}
+
+(string ModelStr, string N, int pmax, int[] listLmax, int lmax) ParamsNTors(BigInteger[] curve, Rational N)
+{
+    var E = EC.EllCoefs(curve);
+    var nmax = 2 * double.Sqrt(N);
+    var pmax = Primes10000.Last(p => p <= nmax && !N.Mod(p).IsZero());
+    var (listLmax, Lmax) = GetPrimesL(pmax);
+
+    Console.WriteLine($"Ell({E.ModelStr})(Q) pmax = {pmax} lmax = {listLmax.Max()}  L = {Lmax}");
+    return (E.ModelStr, N: $"{N}", pmax, listLmax.ToArray(), lmax: listLmax.Max());
+}
+
+EllPt<EPoly<ZnInt>> Frob(EllPt<EPoly<ZnInt>> pt)
+{
+    if (pt.IsO)
+        return pt;
+
+    var p = pt.X.P;
+    return new(pt.X.Pow(p), pt.Y.Pow(p));
+}
+
+bool Relation(ConcreteGroup<EllPt<EPoly<ZnInt>>> E, EllPt<EPoly<ZnInt>> pt, int t)
+{
+    if (pt.IsO)
+        return true;
+
+    var p = pt.X.P;
+    var phi2 = Frob(Frob(pt));
+    var t_phi = Frob(E.Times(pt, -t));
+    var q = E.Times(pt, p);
+    return E.Op(phi2, E.Op(t_phi, q)).IsO;
+}
+
+int FrobTrace(ConcreteGroup<EllPt<EPoly<ZnInt>>> nTors, int l)
+{
+    var p = nTors.First(pt => !pt.IsO).X.P;
+    return (p - 1).SeqLazy(1).First(t => nTors.All(pt => Relation(nTors, pt, t))) % l;
+}
+
+void EllApFrobTrace(BigInteger[] curve, Rational N)
+{
+    var E = EC.EllCoefs(curve);
+    var Ell = E.ToEllGroup();
+    var nmax = 2 * double.Sqrt(N);
+
+    var lmax = ParamsNTors(curve, N).lmax;
+    var (R, psi, divPolys) = DivisionPolynomial(Ell, 2 * lmax);
+    var prepXnP = Primes10000.Where(l => l <= lmax).ToDictionary(l => l, l => NPt(l, psi, R).nP.X.Num[0].Denom.Monic);
+
+    foreach (var p in Primes10000.Where(p => p > 3 && p <= nmax && !N.Mod(p).IsZero()))
+    {
+        var Ep = Ell.ToGF(p);
+        Ep.Field = $"GF({p})";
+        var (listL, _) = GetPrimesL(p);
+        var ap = EC.EllAp(Ell, p);
+        var frobTr = new Dictionary<int, int>();
+        foreach (var l in listL)
+        {
+            if (p % l == 0)
+                continue;
+
+            var nTors = EpNTors(Ell, prepXnP[l], p, l);
+            if (nTors.Count() != l * l)
+                continue;
+
+            frobTr[l] = FrobTrace(nTors, l);
+            Console.WriteLine();
+        }
+
+        frobTr.Println("Frob Traces");
+        var keys = frobTr.Keys.ToArray();
+        var values = keys.Select(k => frobTr[k]).ToArray();
+        var crtTable = NumberTheory.CrtTable(keys);
+        var L = keys.Aggregate((li, lj) => li * lj);
+        var crt = NumberTheory.CRT(values, crtTable, L);
+        var ap1 = crt < L / 2 ? crt : crt - L;
+        Console.WriteLine($"p = {p} ap = {ap} crt = {crt} ap1 = {ap1} L = {L} Check:{ap == ap1}");
+        Console.WriteLine();
+    }
+}
+
 void testDivPolys()
 {
-    Ring.DisplayPolynomial = MonomDisplay.StarCaret;
     var E = EC.EllCoefs([1, 0]);
     Console.WriteLine($"Ell({E.ModelStr})(Q) {E.Eq}");
     var (R, psi, divPolys) = DivisionPolynomial(E.ToEllGroup(), 8);
@@ -311,9 +409,10 @@ void testDivPolys()
     Console.WriteLine($"3P = {P3}");
 }
 
+void runCM_NTors()
 {
     GlobalStopWatch.Restart();
-    
+
     GlobalStopWatch.AddLap();
     CplxMul_NTors([1, 0]);
     GlobalStopWatch.Show();
@@ -330,4 +429,26 @@ void testDivPolys()
     Console.WriteLine();
 
     Console.Beep();
+}
+
+{
+    GlobalStopWatch.Restart();
+
+    {
+        BigInteger[] curve = [1, 0];
+        var N = EC.EllTateAlgorithm(EC.EllCoefs(curve)).N;
+        EllApFrobTrace(curve, N);
+    }
+    {
+        BigInteger[] curve = [-1, 0];
+        var N = EC.EllTateAlgorithm(EC.EllCoefs(curve)).N;
+        EllApFrobTrace(curve, N);
+    }
+    {
+        BigInteger[] curve = [1, 1];
+        var N = EC.EllTateAlgorithm(EC.EllCoefs(curve)).N;
+        EllApFrobTrace(curve, N);
+    }
+
+    GlobalStopWatch.Show();
 }
