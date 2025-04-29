@@ -209,7 +209,7 @@ void EpNTors(EllGroup<Rational> E, KPoly<Rational> P, int p, int n, LogLevel log
         abCn.DecompMap.Println(e => $"{e.Key} of order {e.Value}", $"Generators of {Cn}");
         Console.WriteLine();
         Console.WriteLine($"{Cn} ~ {abCn.DecompMap.Values.Glue(" x ", "C{0}")}");
-
+        
         if (Cn.Count() == 1)
             Console.WriteLine($"Warnings");
 
@@ -236,7 +236,7 @@ void CplxMul_NTors(BigInteger[] curve)
 
     Console.WriteLine($"2P = {P2}");
     Console.WriteLine(P2.X);
-    var x2P = P2.X.Num[0].Num.Monic;
+    var x2P = P2.X.Num[0].Denom.Monic;
     Console.WriteLine(x2P);
     var facts2P = IntFactorisation.FactorsQ(x2P);
     facts2P.Println($"factors x(2P) = {x2P}");
