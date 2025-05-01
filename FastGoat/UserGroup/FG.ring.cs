@@ -30,6 +30,21 @@ public static partial class FG
         return x.One * e.ToZnInt(x.P);
     }
 
+    public static EPoly<ZnInt> ToGF(this EPoly<ZnInt> e, BigInteger q, char a = 'a')
+    {
+        if (e.F.Degree != 1)
+            throw new();
+
+        if (q == e.P)
+            return e;
+
+        var x = FqX(q, a);
+        if (x.P != e.P)
+            throw new();
+        
+        return e.Substitute(x);
+    }
+
     public static Rational Comb(int k, int n)
     {
         var c = Rational.KOne();
@@ -126,7 +141,7 @@ public static partial class FG
         var roots = new List<BigCplx>();
         var (pi, e) = (BigReal.Pi(O2), BigReal.E(O2));
         var a0 = new BigCplx(pi, e);
-        
+
         while (P0.Degree > 0)
         {
             var P1 = P0.ToBcPoly(O2);
@@ -136,7 +151,7 @@ public static partial class FG
                 a0 = new BigCplx(pi, e);
                 continue;
             }
-            
+
             var a1 = NSolve(P, a0.ToBigCplx(O1), maxLoop);
             roots.Add(a1);
             P0 /= P0.X - a1;
@@ -152,6 +167,9 @@ public static partial class FG
         new(P.x, ZnBigInt.ZnZero(p), P.Coefs.Select(c => c.ToZnBigInt(p)).TrimSeq().ToArray());
 
     public static KPoly<EPoly<ZnInt>> ToGF(this KPoly<Rational> P, BigInteger q, char x = 'a') =>
+        P.Coefs.Select(c => c.ToGF(q, x)).ToKPoly();
+
+    public static KPoly<EPoly<ZnInt>> ToGF(this KPoly<EPoly<ZnInt>> P, BigInteger q, char x = 'a') =>
         P.Coefs.Select(c => c.ToGF(q, x)).ToKPoly();
 
     public static KPoly<Rational> ToRationalPoly(this KPoly<ZnInt> P) =>
@@ -226,6 +244,9 @@ public static partial class FG
 
     public static KPoly<Rational> Primitive(this KPoly<Rational> P)
     {
+        if (P.Degree == 0)
+            return P * new Rational(P[0].Denom);
+
         var lcm = new Rational(IntExt.LcmBigInt(P.Coefs.Select(e => e.Denom).Distinct().ToArray()));
         var P0 = P * lcm; // removes denominators
         var gcd = new Rational(
@@ -235,6 +256,9 @@ public static partial class FG
 
     public static KPoly<Rational> ZPoly(this KPoly<Rational> P)
     {
+        if (P.Degree == 0)
+            return P * new Rational(P[0].Denom);
+
         var lcm = new Rational(IntExt.LcmBigInt(P.Coefs.Select(e => e.Denom).Distinct().ToArray()));
         return P * lcm; // removes denominators
     }
@@ -337,7 +361,7 @@ public static partial class FG
 
     public static T Substitute<K, T>(this FracPoly<FracPoly<K>> f, T x, T y)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
-        where T : struct, IElt<T>, IRingElt<T>, IFieldElt<T>, IModuleElt<K, T>,IVsElt<K, T>
+        where T : struct, IElt<T>, IRingElt<T>, IFieldElt<T>, IModuleElt<K, T>, IVsElt<K, T>
     {
         var num = f.Num.Coefs.Select((cy, i) => y.Pow(i) * cy.Substitute(x)).ToVec().Sum();
         var denom = f.Denom.Coefs.Select((cy, i) => y.Pow(i) * cy.Substitute(x)).ToVec().Sum();
@@ -387,19 +411,19 @@ public static partial class FG
     {
         return EPolyXC(f, f.x);
     }
-    
+
     public static (KPoly<EPoly<K>> X, KPoly<EPoly<K>> c) EPolyXC<K>(K scalar, char a, char b, params int[] coefs)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         return EPolyXC(coefs.ToKPoly(scalar, a), a, b);
     }
-    
+
     public static EPoly<K> EPoly<K>(K scalar, char x, params int[] coefs)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         return EPoly(coefs.ToKPoly(scalar, x));
     }
-    
+
     public static KPoly<K> ResMod<K>(this KPoly<K> P, KPoly<K> F) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
         => P.Div(F).rem;
 
@@ -419,10 +443,12 @@ public static partial class FG
 
     public static KPoly<Rational> CoefsMod(this KPoly<Rational> P, Rational Q)
         => P.Coefs.Select(c => c.Mod(Q)).ToKPoly();
+
     public static KPoly<Rational> CoefsMod(this KPoly<Rational> P, int Q)
         => P.Coefs.Select(c => c.Mod(Q)).ToKPoly();
-    
-    public static KPoly<Rational> ClosestModulusTo(this KPoly<Rational> source, KPoly<Rational> destination, Rational mod)
+
+    public static KPoly<Rational> ClosestModulusTo(this KPoly<Rational> source, KPoly<Rational> destination,
+        Rational mod)
     {
         var deg = int.Max(source.Degree, destination.Degree);
         return (deg + 1).SeqLazy().Select(i => source[i].ClosestModulusTo(destination[i], mod)).ToKPoly();
@@ -436,20 +462,22 @@ public static partial class FG
 
     public static KPoly<Rational> CoefsModSigned(this KPoly<Rational> P, Rational Q)
         => P.Coefs.Select(c => c.Signed(Q)).ToKPoly();
+
     public static KPoly<Rational> CoefsModSigned(this KPoly<Rational> P, int Q)
         => P.Coefs.Select(c => c.Signed(Q)).ToKPoly();
-    
+
     public static KPoly<Rational> ResMod(this KPoly<Rational> P, KPoly<Rational> F, Rational Q)
         => P.Div(F).rem.CoefsMod(Q);
-    
+
     public static KPoly<Rational> ResMod(this KPoly<Rational> P, KPoly<Rational> F, int Q)
         => P.Div(F).rem.CoefsMod(Q);
-    
+
     public static KPoly<Rational> ResModSigned(this KPoly<Rational> P, KPoly<Rational> F, Rational Q)
         => P.Div(F).rem.CoefsModSigned(Q);
-    
+
     public static KPoly<Rational> ResModSigned(this KPoly<Rational> P, KPoly<Rational> F, int Q)
         => P.Div(F).rem.CoefsModSigned(Q);
+
     public static EPoly<Rational> EQPoly(char x, params int[] coefs) => EPoly(Rational.KZero(), x, coefs);
 
     public static FracPoly<Rational> QFracPoly(char x = 'x') => KFracPoly(x, Rational.KZero());
@@ -477,7 +505,7 @@ public static partial class FG
         var a = FqX(q, xa.a);
         return (KPoly(xa.x, a), a);
     }
-    
+
     public static (KPoly<EPoly<ZnInt>> x, EPoly<ZnInt> a) FqX_Poly(int q) => FqX_Poly(q, ('x', 'a'));
 
     public static BigInteger GLnqOrder(int n, int q) => BigInteger.Pow(q, n * (n - 1) / 2) * n.Range()
@@ -852,7 +880,7 @@ public static partial class FG
 
         if (!IntExt.Primes10000.Contains(p))
             throw new($"p={p} isnt prime");
-        
+
         var gl = new GL(n, p);
         var e0 = IntExt.Solve_k_pow_m_equal_one_mod_n_strict(gl.P, p - 1);
         var e1 = IntExt.InvModPbez(e0, p);
@@ -1086,7 +1114,7 @@ public static partial class FG
     public static KMatrix<ZnInt> ToKMatrix(this Mat m) => m.Table.Select(e => new ZnInt(m.GL.P, e)).ToKMatrix(m.GL.N);
 
     public static GLn<ZnInt> ToGLnK(this GL gl) => GLnK($"F{gl.P}", gl.N, ZnInt.ZnZero(gl.P));
-    
+
     public static Polynomial<ZnInt, Xi> Mod(this Polynomial<ZnInt, Xi> P, int mod)
     {
         var coefs = P.Coefs.Select(e => (e.Key, IntExt.AmodP(e.Value.K, mod)))

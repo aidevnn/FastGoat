@@ -99,6 +99,18 @@ public static class EC
         return new(a1.ToGF(q, a), a2.ToGF(q, a), a3.ToGF(q, a), a4.ToGF(q, a), a5.ToGF(q, a));
     }
 
+    public static EllCoefs<EPoly<ZnInt>> ToGF(this EllCoefs<Rational> E, BigInteger q, char a='a')
+    {
+        var (a1, a2, a3, a4, a5) = E.Model;
+        return new(a1.ToGF(q, a), a2.ToGF(q, a), a3.ToGF(q, a), a4.ToGF(q, a), a5.ToGF(q, a));
+    }
+
+    public static EllGroup<EPoly<ZnInt>> ToGF(this EllGroup<EPoly<ZnInt>> E, BigInteger q, char a='a')
+    {
+        var (a1, a2, a3, a4, a5) = E.Coefs;
+        return new(a1.ToGF(q, a), a2.ToGF(q, a), a3.ToGF(q, a), a4.ToGF(q, a), a5.ToGF(q, a));
+    }
+
     public static EllGroup<ZnBigInt> ToZnBigInt(this EllGroup<Rational> E, BigInteger p)
     {
         var (a1, a2, a3, a4, a5) = E.Coefs;
@@ -108,7 +120,7 @@ public static class EC
     public static IEnumerable<EllPt<Rational>> SolveIntegralPoints(EllGroup<Rational> E, LogLevel lvl = LogLevel.Off)
     {
         var disc = E.Disc;
-        var (A, B, C, _, _) = E.LongForm;
+        var (A, B, C, _, _, _, _) = E.LongForm;
         var r = PrimesDec(BigInteger.Abs(disc.Num))
             .Aggregate(BigInteger.One, (acc, r) => acc * BigInteger.Pow(r.Key, r.Value / 2 + r.Value % 2));
         var divs = DividorsBigInt(16 * r).Where(y => (256 * disc.Num) % (y * y) == 0).Order()
@@ -426,7 +438,7 @@ public static class EC
             return p + 1 - card;
         }
 
-        var (A, B, _, _) = E.ShortForm;
+        var (A, B, _, _, _, _) = E.ShortForm;
         var (a, b) = (A.ToZnBigInt(p).Unsigned, B.ToZnBigInt(p).Unsigned);
         return -p.Range().Select(x => (int)LegendreJacobiBigint((BigInteger.Pow(x, 3) + a * x + b) % p, p))
             .Sum(k => k <= 1 ? k : -1);
