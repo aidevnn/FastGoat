@@ -93,23 +93,31 @@ public static class EC
         return new(a1.ToZnInt(p), a2.ToZnInt(p), a3.ToZnInt(p), a4.ToZnInt(p), a5.ToZnInt(p));
     }
 
-    public static EllGroup<EPoly<ZnInt>> ToGF(this EllGroup<Rational> E, BigInteger q, char a='a')
+    public static EllGroup<EPoly<ZnInt>> ToGF(this EllGroup<Rational> E, BigInteger q, char a = 'a')
     {
         var (a1, a2, a3, a4, a5) = E.Coefs;
         return new(a1.ToGF(q, a), a2.ToGF(q, a), a3.ToGF(q, a), a4.ToGF(q, a), a5.ToGF(q, a));
     }
 
-    public static EllCoefs<EPoly<ZnInt>> ToGF(this EllCoefs<Rational> E, BigInteger q, char a='a')
+    public static EllCoefs<EPoly<ZnInt>> ToGF(this EllCoefs<Rational> E, BigInteger q, char a = 'a')
     {
         var (a1, a2, a3, a4, a5) = E.Model;
         return new(a1.ToGF(q, a), a2.ToGF(q, a), a3.ToGF(q, a), a4.ToGF(q, a), a5.ToGF(q, a));
     }
 
-    public static EllGroup<EPoly<ZnInt>> ToGF(this EllGroup<EPoly<ZnInt>> E, BigInteger q, char a='a')
+    public static EllGroup<EPoly<ZnInt>> ToGF(this EllGroup<EPoly<ZnInt>> E, BigInteger q, char a = 'a')
     {
         var (a1, a2, a3, a4, a5) = E.Coefs;
         return new(a1.ToGF(q, a), a2.ToGF(q, a), a3.ToGF(q, a), a4.ToGF(q, a), a5.ToGF(q, a));
     }
+
+    public static EllGroup<EPoly<ZnInt>> ToGF(this EllGroup<EPoly<ZnInt>> E, EPoly<ZnInt> a)
+    {
+        var (a1, a2, a3, a4, a5) = E.Coefs;
+        return new(a1.Substitute(a), a2.Substitute(a), a3.Substitute(a), a4.Substitute(a), a5.Substitute(a));
+    }
+
+    public static EllGroup<EPoly<ZnInt>> ToGF(this EllGroup<Rational> E, EPoly<ZnInt> a) => E.ToGF(a.P).ToGF(a);
 
     public static EllGroup<ZnBigInt> ToZnBigInt(this EllGroup<Rational> E, BigInteger p)
     {
@@ -499,7 +507,7 @@ public static class EC
     {
         if (p < 200 || E.Disc.ToZnBigInt(p).IsZero()) // TODO: #Ep when disc = 0 mod p
             return EllAp(E, (int)p);
-        
+
         var d = double.Sqrt((double)p);
         var (pmin, pmax) = ((double)p + 1 - 2 * d, (double)p + 1 + 2 * d);
 
@@ -698,6 +706,7 @@ public static class EC
 
     public static double L0Approx(double A, double X, Dictionary<int, int> ellAn) =>
         ellAn.Keys.Max().SeqLazy(1).Sum(n => ellAn[n] * (G(0, A * X * n) - G(0, X * n / A)) / n);
+
     public static (EllGroup<Rational> Ell, Rational N, TateAlgo[] tate) EllTateAlgorithm(EllCoefs<Rational> E)
     {
         var Ell = E.ToEllGroup();
@@ -753,4 +762,209 @@ public static class EC
 
     public static (int rank, double Lr, Rational N, Dictionary<int, int> ellAn, TateAlgo[] tate, EllGroup<Rational> Ell)
         AnalyticRank(BigInteger[] curve) => AnalyticRank(EllCoefs(curve));
+    
+    static KPoly<KPoly<K>> Simplify<K>(KPoly<KPoly<K>> P, KPoly<KPoly<K>> F, KPoly<KPoly<K>> G)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        if (P.Degree < F.Degree)
+            return P;
+
+        var (quo, rem) = P.Div(F);
+        return Simplify(quo * G + rem, F, G);
+    }
+
+    static (EllPt<FracPoly<FracPoly<K>>> P, EllPt<FracPoly<FracPoly<K>>> nP)
+        NPt<K>(int n, Dictionary<int, KPoly<KPoly<K>>> psi, KPoly<KPoly<K>> R)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var Y = FG.KFracPoly('Y', FG.KFracPoly(R.KOne.X).X).X;
+        var X = Y.KOne.X + Y.Zero;
+
+        var Y2 = R.X.Pow(2);
+        var tmp1 = Simplify(psi[n - 1] * psi[n + 1], Y2, R).ToFrac(Y) / Simplify(psi[n].Pow(2), Y2, R).ToFrac(Y);
+        var nPX = X - tmp1;
+
+        var denom = n % 2 == 0
+            ? Y * Simplify(4 * psi[n].Pow(3), Y2, R).ToFrac(Y)
+            : Simplify(4 * R.X * psi[n].Pow(3), Y2, R).ToFrac(Y);
+        var tmp2 = Simplify(psi[n + 2] * psi[n - 1].Pow(2) - psi[n - 2] * psi[n + 1].Pow(2), Y2, R).ToFrac(Y);
+        var nPY = tmp2 / denom;
+
+        return (new EllPt<FracPoly<FracPoly<K>>>(X, Y), new EllPt<FracPoly<FracPoly<K>>>(nPX, nPY));
+    }
+
+    public static (KPoly<KPoly<K>> R, Dictionary<int, KPoly<KPoly<K>>> psi, Dictionary<int, KPoly<K>> f)
+        DivisionPolynomial<K>(EllGroup<K> E, int nmax) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var x = FG.KPoly('X', E.a1);
+        var Y = FG.KPoly('Y', x);
+        var X = x * Y.One;
+        var (A, B) = (E.ShortForm.A * x.One * Y.One, E.ShortForm.B * x.One * Y.One);
+        var R = X.Pow(3) + A * X + B;
+
+        var psi = new Dictionary<int, KPoly<KPoly<K>>>();
+        (psi[0], psi[1], psi[2]) = (Y.Zero, Y.One, 2 * Y);
+        psi[3] = 3 * X.Pow(4) + 6 * A * X.Pow(2) + 12 * B * X - A.Pow(2);
+        psi[4] = 4 * Y * (X.Pow(6) + 5 * A * X.Pow(4) + 20 * B * X.Pow(3) - 5 * A.Pow(2) * X.Pow(2) - 4 * A * B * X -
+                          8 * B.Pow(2) - A.Pow(3));
+
+        for (int n = 2; n < nmax / 2; n++)
+        {
+            if (n > 2)
+                psi[2 * n] = Simplify(
+                    psi[n] * (psi[n + 2] * psi[n - 1].Pow(2) - psi[n - 2] * psi[n + 1].Pow(2)) / (2 * Y),
+                    Y * Y, R);
+            psi[2 * n + 1] = Simplify(psi[n + 2] * psi[n].Pow(3) - psi[n + 1].Pow(3) * psi[n - 1], Y * Y, R);
+        }
+
+        var f = psi.ToDictionary(e => e.Key, e => e.Key % 2 == 0 ? (e.Value / Y)[0].Clone() : e.Value[0].Clone());
+        f[2] = NPt(2, psi, R).nP.X.Num[0].Denom;
+        return (R, psi, f);
+    }
+    public static EPoly<ZnInt>[] Roots(KPoly<EPoly<ZnInt>> P)
+    {
+        var a = P.KOne.X;
+        var q = BigInteger.Pow(P.P, a.F.Degree);
+        var facts = IntFactorisation.MusserSFF(P)
+            .SelectMany(f => IntFactorisation.CantorZassenhausAECF(f.g, a, q))
+            .ToArray();
+
+        if (facts.All(f => f.Degree == 1))
+            return facts.Select(f => -f[0]).ToArray();
+
+        return [];
+    }
+
+    public static EPoly<ZnInt>[] Roots(KPoly<EPoly<ZnInt>> P, EPoly<ZnInt> a)
+    {
+        var q = BigInteger.Pow(P.P, a.F.Degree);
+        var facts = IntFactorisation.MusserSFF(P)
+            .SelectMany(f => IntFactorisation.CantorZassenhausAECF(f.g, a, q))
+            .ToArray();
+
+        if (facts.All(f => f.Degree == 1))
+            return facts.Select(f => -f[0]).ToArray();
+
+        return [];
+    }
+
+    static (EPoly<ZnInt>[] roots, int i) NTorsSplittingFieldFp(KPoly<EPoly<ZnInt>> P, LogLevel log = LogLevel.Level1)
+    {
+        var p = P.P;
+        for (int i = 1; i <= P.Degree; i++)
+        {
+            var q = BigInteger.Pow(p, i);
+            var Pq = P.ToGF(q);
+            var roots = Roots(Pq);
+            if (roots.Length == 0)
+            {
+                if (log == LogLevel.Level2)
+                    Console.WriteLine($"P = {Pq} dont split in GF({p}^{i})[X]");
+                continue;
+            }
+
+            if (log == LogLevel.Level2)
+            {
+                Console.WriteLine($"P = {Pq} split in GF({p}^{i})[X]");
+                Console.WriteLine($"x=[{roots.Glue(", ")}]");
+            }
+
+            return (roots, i);
+        }
+
+        throw new($"Unexpected issue #1");
+    }
+
+    static (EllGroup<EPoly<ZnInt>> Efq, HashSet<EllPt<EPoly<ZnInt>>> pts, int d)
+        NTorsExtensionFieldFp(EllGroup<EPoly<ZnInt>> Efq0, KPoly<EPoly<ZnInt>> P0, int l,
+            LogLevel log = LogLevel.Level1)
+    {
+        var (roots0, i0) = NTorsSplittingFieldFp(P0, log);
+        var p = P0.P;
+        foreach (var d in 3.SeqLazy())
+        {
+            var q = BigInteger.Pow(p, i0 * 2.Pow(d));
+            var Efq = Efq0.ToGF(q);
+            Efq.Field = $"GF({p}^{i0 * 2.Pow(d)})";
+            var P = P0.ToGF(q);
+            if (d > 0)
+                roots0 = Roots(P);
+
+            var (A, B) = (Efq.ShortForm.A, Efq.ShortForm.B);
+            var Y = FG.KPoly('Y', Efq.a3.X);
+            var tmpY = new Dictionary<EPoly<ZnInt>, EPoly<ZnInt>[]>();
+            foreach (var x in roots0)
+            {
+                var sols = Roots(Y.Pow(2) - (x.Pow(3) + A * x + B));
+                if (sols.Length > 0)
+                {
+                    if (log == LogLevel.Level2)
+                        Console.WriteLine($"x={x} y=[{sols.Glue(", ")}]");
+                    tmpY[x] = sols;
+                }
+                else
+                {
+                    tmpY.Clear();
+                    break;
+                }
+            }
+
+            if (tmpY.Count == 0)
+            {
+                if (log == LogLevel.Level2)
+                    Console.WriteLine($"{Efq} dont have {l}-torsion");
+                continue;
+            }
+
+            var shortPts = tmpY.SelectMany(e0 => e0.Value.Select(y => new EllPt<EPoly<ZnInt>>(e0.Key, y))).ToHashSet();
+            var setPts = shortPts.Select(pt => Efq.ConvertFromShort(pt)).ToHashSet();
+            if (setPts.Count(pt => Efq.Contains(pt.X, pt.Y)) == 0)
+            {
+                Console.WriteLine($"{l}-torsion solutions are not in {Efq}");
+                setPts.Println("Points");
+                continue;
+            }
+
+            if (log == LogLevel.Level2)
+                setPts.Where(pt => Efq.Contains(pt.X, pt.Y)).Println("Points");
+
+            return (Efq, setPts, i0 * 2.Pow(d));
+        }
+
+        throw new("Unexpected issue #2");
+    }
+
+    public static ConcreteGroup<EllPt<EPoly<ZnInt>>>
+        EllFpNTors(EllGroup<EPoly<ZnInt>> Efq0, KPoly<EPoly<ZnInt>> P0, int l, LogLevel log = LogLevel.Level1)
+    {
+        if (log != LogLevel.Off)
+            GlobalStopWatch.AddLap();
+
+        var (Efq, setPts, d) = NTorsExtensionFieldFp(Efq0, P0, l, log);
+
+        var gEll = Group.Generate(Efq, setPts.Where(e => Efq.Contains(e.X, e.Y)).ToArray());
+        var Cn = Group.Generate($"{l}-Tors({gEll})", gEll,
+            gEll.ElementsOrders.Where(e => e.Value == l).Select(e => e.Key).ToArray());
+
+        if (log == LogLevel.Level2)
+            DisplayGroup.HeadElements(gEll);
+
+        if (log != LogLevel.Off)
+        {
+            DisplayGroup.HeadElements(Cn);
+
+            var abCn = FG.AbelianDirectSum(Cn);
+            abCn.DecompMap.Println(e => $"{e.Key} of order {e.Value}", $"Generators of {Cn}");
+            Console.WriteLine();
+            Console.WriteLine($"{Cn} ~ {abCn.DecompMap.Values.Glue(" x ", "C{0}")}");
+
+            if (Cn.Count() == 1)
+                Console.WriteLine("Warnings Algebraic closure out of Finite Fields database");
+
+            GlobalStopWatch.Show();
+            Console.WriteLine();
+        }
+
+        return Cn;
+    }
 }

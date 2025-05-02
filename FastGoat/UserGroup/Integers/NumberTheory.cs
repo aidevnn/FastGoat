@@ -1,6 +1,7 @@
 using System.Numerics;
 using FastGoat.Commons;
 using FastGoat.Structures;
+using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup.Padic;
 using static FastGoat.Commons.IntExt;
 
@@ -65,7 +66,7 @@ public static class NumberTheory
         return w * PowModBigint(y, -j, p) % p;
     }
 
-    public static BigInteger SqrtModMPKCV2(BigInteger a, BigInteger p, PohligHellmanInfos<BigInteger>? ph = null) => 
+    public static BigInteger SqrtModMPKCV2(BigInteger a, BigInteger p, PohligHellmanInfos<BigInteger>? ph = null) =>
         NthRootMPKCV2(a, 2, p, ph);
 
     // L.Adleman, K.Manders, and G.Miller generalization of Tonelli's algorithm
@@ -188,6 +189,60 @@ public static class NumberTheory
         var h = (a * PowModBigint(g, -e, p)) % p;
         var b = (PowModBigint(g, e / 2, p) * PowModBigint(h, (t + 1) / 2, p)) % p;
         return b;
+    }
+
+    public static EPoly<ZnInt> SqrtModANTV1(EPoly<ZnInt> a, EPoly<ZnInt> d)
+    {
+        var (p, n) = (a.P, a.F.Degree);
+        var q = BigInteger.Pow(p, n);
+        var g = 1000.SeqLazy().Select(_ => DistributionExt.Dice(2, q - 1)).Select(i => Ring.FastPow(d, i))
+            .First(g => !Ring.FastPow(g, (q - 1) / 2).IsOne());
+        var (s, t) = FactorMultiplicity(2, q - 1);
+        var e = 0;
+        for (int i = 2; i <= s; i++)
+        {
+            var ag = a * g.Pow(-e);
+            var agp = Ring.FastPow(ag, (q - 1) / (1 << i));
+            if (!agp.IsOne())
+                e += 1 << (i - 1);
+        }
+
+        var h = a * g.Pow(-e);
+        var b = g.Pow(e / 2) * Ring.FastPow(h, (t + 1) / 2);
+        return b;
+    }
+
+    public static EPoly<ZnInt> PrimitiveRoot(EPoly<ZnInt> a)
+    {
+        var p = a.P;
+        var n = a.F.Degree;
+        var q = BigInteger.Pow(p, n);
+        var dec = PrimesDecUnsafe(q - 1);
+        var pis = dec.ToDictionary(e => e.Key, e => BigInteger.Pow(e.Key, e.Value));
+        ++nbCallPrimRoot;
+        var t = a.One;
+        GlobalStopWatch.InfiniteLoopBreakerReset();
+        while (pis.Count != 0)
+        {
+            GlobalStopWatch.InfiniteLoopBreaker(100, "Infinity loop PrimitiveRoot");
+            ++nbLoopPrimRoot;
+            var g = n.SeqLazy().Select(i => Rng.Next(p) * a.X.Pow(i)).ToVec().Sum();
+            if (g.IsZero())
+                continue;
+            
+            var S = pis.Keys.ToHashSet();
+            foreach (var pi in S)
+            {
+                var gi = Ring.FastPow(g, (q - 1) / pis[pi]);
+                if (!Ring.FastPow(gi, pis[pi] / pi).IsOne())
+                {
+                    pis.Remove(pi);
+                    t = t * gi;
+                }
+            }
+        }
+
+        return t;
     }
 
     // Tonelli-Shanks algorithm from wikipedia

@@ -1,10 +1,12 @@
 using System.Collections;
+using System.Numerics;
 using FastGoat.Commons;
 using FastGoat.Examples;
 using FastGoat.Structures;
 using FastGoat.Structures.CartesianProduct;
 using FastGoat.Structures.GenericGroup;
 using FastGoat.Structures.VecSpace;
+using FastGoat.UserGroup.EllCurve;
 using FastGoat.UserGroup.Integers;
 using FastGoat.UserGroup.Padic;
 
@@ -74,7 +76,7 @@ public class GFp : IGroup<EPoly<ZnInt>>
 
     public IEnumerable<EPoly<ZnInt>> GetGenerators()
     {
-        yield return X;
+        yield return NumberTheory.PrimitiveRoot(X);
     }
 
     public EPoly<ZnInt> Neutral() => X.One;
