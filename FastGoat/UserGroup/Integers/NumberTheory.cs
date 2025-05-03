@@ -191,24 +191,31 @@ public static class NumberTheory
         return b;
     }
 
+    public static EPoly<ZnInt> LegendreJacobiGf(EPoly<ZnInt> a)
+    {
+        var (p, n) = (a.P, a.F.Degree);
+        var q = BigInteger.Pow(p, n);
+        return a.FastPow((q - 1) / 2);
+    }
+    
     public static EPoly<ZnInt> SqrtModANTV1(EPoly<ZnInt> a, EPoly<ZnInt> d)
     {
         var (p, n) = (a.P, a.F.Degree);
         var q = BigInteger.Pow(p, n);
-        var g = 1000.SeqLazy().Select(_ => DistributionExt.Dice(2, q - 1)).Select(i => Ring.FastPow(d, i))
-            .First(g => !Ring.FastPow(g, (q - 1) / 2).IsOne());
+        var g = 1000.SeqLazy().Select(_ => DistributionExt.Dice(2, q - 1)).Select(i => d.FastPow(i))
+            .First(g => !LegendreJacobiGf(g).IsOne());
         var (s, t) = FactorMultiplicity(2, q - 1);
         var e = 0;
         for (int i = 2; i <= s; i++)
         {
             var ag = a * g.Pow(-e);
-            var agp = Ring.FastPow(ag, (q - 1) / (1 << i));
+            var agp = ag.FastPow((q - 1) / (1 << i));
             if (!agp.IsOne())
                 e += 1 << (i - 1);
         }
 
         var h = a * g.Pow(-e);
-        var b = g.Pow(e / 2) * Ring.FastPow(h, (t + 1) / 2);
+        var b = g.Pow(e / 2) * h.FastPow((t + 1) / 2);
         return b;
     }
 
@@ -233,8 +240,8 @@ public static class NumberTheory
             var S = pis.Keys.ToHashSet();
             foreach (var pi in S)
             {
-                var gi = Ring.FastPow(g, (q - 1) / pis[pi]);
-                if (!Ring.FastPow(gi, pis[pi] / pi).IsOne())
+                var gi = g.FastPow((q - 1) / pis[pi]);
+                if (!gi.FastPow(pis[pi] / pi).IsOne())
                 {
                     pis.Remove(pi);
                     t = t * gi;
