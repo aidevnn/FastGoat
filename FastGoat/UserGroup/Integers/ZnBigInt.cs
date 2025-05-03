@@ -9,7 +9,7 @@ public readonly struct ZnBigInt : IElt<ZnBigInt>, IRingElt<ZnBigInt>, IFieldElt<
     public static ZnDisplay Display = ZnDisplay.Unsigned;
     public BigInteger Mod { get; }
     public BigInteger K { get; }
-    public int P => 0; // TODO: field characteristic
+    public int P => Mod < Int32.MaxValue ? (int)Mod : -1;
 
     public static double Abs(ZnBigInt z) => throw new(); // z.P == 0 ? double.Abs(z.K) : z.K;
     public static bool IsValuedField => false;

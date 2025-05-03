@@ -1,6 +1,7 @@
 using System.Collections;
 using FastGoat.Commons;
 using FastGoat.Structures;
+using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup.Integers;
 
 namespace FastGoat.UserGroup.EllCurve;
@@ -11,8 +12,11 @@ public struct EllGroup<T> : IGroup<EllPt<T>> where T : struct, IElt<T>, IRingElt
 {
     public EllGroup(EllCoefs<T> ellCoefs)
     {
-        var (A1, A2, A3, A4, A6) = Coefs = ellCoefs.Model;
+        Coefs = ellCoefs.Model;
         Disc = ellCoefs.Disc;
+
+        if (Disc.P != 0 && Disc.P <= 3)
+            throw new GroupException(GroupExceptionType.GroupDef);
 
         var longCoefs = ellCoefs.Flat().ToLongWeierstrassForm();
         var (_, A2l, _, A4l, A6l) = longCoefs.Model;
@@ -25,12 +29,19 @@ public struct EllGroup<T> : IGroup<EllPt<T>> where T : struct, IElt<T>, IRingElt
         ShortForm = (A4s, A6s, rs, ss, ts, us);
 
         Field = typeof(T).Name;
-        if (A1 is Rational)
+        if (Disc is Rational)
             Field = "Q";
-        else if (A1 is ZnInt _a1)
-            Field = $"Z/{_a1.P}Z";
-        else if (A1 is ZnBigInt _a2)
-            Field = $"Z/{_a2.Mod}Z";
+        else if (Disc is ZnInt disc1)
+            Field = $"Z/{disc1.P}Z";
+        else if (Disc is ZnBigInt disc2)
+            Field = $"Z/{disc2.Mod}Z";
+        else if (Disc is EPoly<ZnInt> disc3)
+        {
+            if (disc3.F.Degree > 1)
+                Field = $"GF({disc3.P}^{disc3.F.Degree})";
+            else
+                Field = $"GF({disc3.P})";
+        }
 
         Hash = (Coefs, ShortForm).GetHashCode();
     }
