@@ -31,7 +31,7 @@ public class ConcreteGroup<T> : IGroup<T> where T : struct, IElt<T>
                     ? Group.UniqueGenerators(this, g.Order().ToArray())
                     : Group.UniqueGenerators(this, gens.Order().ToArray());
                 Elements = new HashSet<T>(tmpElements);
-                ElementsOrders = Group.ElementsOrders(g, Elements);
+                ElementsOrders = Group.ElementsOrdersBSGS(g, Elements, Elements.Count);
                 PseudoGenerators = new(uniqueGenerators);
                 GroupType = Group.IsCommutative(g, PseudoGenerators)
                     ? GroupType.AbelianGroup
@@ -64,7 +64,7 @@ public class ConcreteGroup<T> : IGroup<T> where T : struct, IElt<T>
 
         var (tmpElements, uniqueGenerators) = Group.UniqueGenerators(this, generators.Order().ToArray());
         Elements = new HashSet<T>(tmpElements);
-        ElementsOrders = Group.ElementsOrders(g, Elements);
+        ElementsOrders = Group.ElementsOrdersBSGS(g, Elements, Elements.Count);
         PseudoGenerators = new(uniqueGenerators);
         GroupType = Group.IsCommutative(g, PseudoGenerators)
             ? GroupType.AbelianGroup
