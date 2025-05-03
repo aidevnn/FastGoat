@@ -33,7 +33,7 @@ public class GFp : IGroup<EPoly<ZnInt>>
     {
     }
 
-    public GFp(KPoly<ZnInt> f) : this($"F{f.P}/({f})", FG.EPoly(f))
+    public GFp(KPoly<ZnInt> f) : this($"F{f.P}[{f.x}]/({f})", FG.EPoly(f))
     {
     }
 
