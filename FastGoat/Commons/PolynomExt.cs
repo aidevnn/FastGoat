@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Text.RegularExpressions;
 
 namespace FastGoat.Commons;
 
@@ -15,12 +16,8 @@ public static class PolynomExt
         AllConwayPolys = new();
         foreach (var str in ConwayPolysTable)
         {
-            var split = str.Split(':');
-            var pm = split[0].Split(',').Select(int.Parse).ToArray();
-            var coefs = split[1].Split(',').Select(int.Parse).ToArray();
-
-            var p = pm[0];
-            var m = pm[1];
+            var seq = Regex.Matches(str, @"\d+").Select(e => e.Value).ToArray();
+            var (p, m, coefs) = (int.Parse(seq[0]), int.Parse(seq[1]), seq.Skip(2).Select(e => int.Parse(e)).ToArray());
             if (!AllConwayPolys.ContainsKey(p))
                 AllConwayPolys[p] = new();
 
@@ -45,7 +42,7 @@ public static class PolynomExt
             var k = IntExt.Solve_k_pow_m_equal_one_mod_n_strict((int)q, (int)q - 1);
             return (((int)q, 1), [k, 1]);
         }
-        
+
         var pm = IntExt.PrimesDecompositionBigInt(q).ToArray();
         if (pm.Distinct().Count() != 1)
             throw new();
