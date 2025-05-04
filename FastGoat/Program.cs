@@ -39,7 +39,7 @@ Dictionary<int, List<int>> SmallPrimesList(Rational N)
         var lmax = 4 * double.Sqrt(p);
         listL[p] = new();
         var L = 1;
-        foreach (var l in Primes10000.Where(l => l <= p))
+        foreach (var l in Primes10000.Where(l => p % l != 0))
         {
             listL[p].Add(l);
             L *= l;
@@ -72,11 +72,8 @@ bool Relation(EllGroup<GFelt> E, EllPt<GFelt> pt, int t)
     return E.Op(phi2, E.Op(t_phi, q)).IsO;
 }
 
-int FrobTrace(EllGroup<GFelt> E, EllPt<GFelt>[] nTors, int l)
-{
-    var p = nTors.First(pt => !pt.IsO).X.P;
-    return (p - 1).SeqLazy(1).First(t => nTors.All(pt => Relation(E, pt, t))) % l;
-}
+int FrobTrace(EllGroup<GFelt> E, EllPt<GFelt>[] nTors, int l) =>
+    l.SeqLazy().First(t => nTors.All(pt => Relation(E, pt, t)));
 
 void EllApFrobTrace(BigInteger[] curve)
 {
@@ -91,13 +88,13 @@ void EllApFrobTrace(BigInteger[] curve)
 
     var divPolys = EC.DivisionPolynomial(Ell, lmax + 3).f.ToDictionary(e => e.Key, e => e.Value.PrimitiveZPoly());
     divPolys.Println("divPolys");
-    
+
     Console.WriteLine($"N = {N} pmax = {pmax} listMax = {lmax}");
     foreach (var (p, listL) in allList)
     {
         if (p < 5)
             continue;
-        
+
         var ap = EC.EllAp(Ell, p);
         var frobTr = new Dictionary<int, int>();
         foreach (var l in listL)
@@ -121,7 +118,7 @@ void EllApFrobTrace(BigInteger[] curve)
         var crtTable = NumberTheory.CrtTable(keys);
         var L = keys.Aggregate((li, lj) => li * lj);
         var crt = NumberTheory.CRT(values, crtTable, L);
-        var ap1 = crt < L / 2 ? crt : crt - L; // TODO: Fix sign
+        var ap1 = crt < L / 2 ? crt : crt - L;
         Console.WriteLine($"p = {p} ap = {ap} crt = {crt} ap1 = {ap1} L = {L} Check:{ap == ap1}");
         if (ap != ap1)
         {
@@ -153,10 +150,10 @@ void testEllApFrobTrace2()
     EllApFrobTrace([1, 1]);
     EllApFrobTrace([-43, 166]);
     EllApFrobTrace([0, 0, 1, 0, -7]);
-    EllApFrobTrace([1, 0, 0, 0, 1]); // 1 error
-    EllApFrobTrace([1, -1, 0, -4, 4]); // 1 error
+    EllApFrobTrace([1, 0, 0, 0, 1]);
+    EllApFrobTrace([1, -1, 0, -4, 4]);
     EllApFrobTrace([1, -1, 1, -19353, 958713]);
-    EllApFrobTrace([1, 1, 1, -17714, 900047]); // ~6min
+    EllApFrobTrace([1, 1, 1, -17714, 900047]);
 }
 
 void testEllApFrobTrace3()
@@ -178,7 +175,6 @@ void runTest(Action act)
     Console.WriteLine($"Total Errors {nbErrors}/{nbAp}");
     GlobalStopWatch.Show();
     Console.WriteLine();
-    
 }
 
 {
@@ -186,7 +182,7 @@ void runTest(Action act)
     runTest(testEllApFrobTrace1);
     runTest(testEllApFrobTrace2);
     runTest(testEllApFrobTrace3);
-    
+
     // 5-torsion of Ell[1,1](GF(13)) from Ell[1,1](Q)
     // 5-divPol mod 13 =  5*X^12 + 10*X^10 +  3*X^9 + 12*X^8 +  6*X^7 +  6*X^6 +  6*X^5 +  9*X^4 + 10*X^3 +  9*X^2 + X + 12
     // x(P) and y(P) in GF(13^4)
@@ -208,20 +204,20 @@ void runTest(Action act)
     //
     // testEllApFrobTrace1
     // Nb Curves 4
-    // Max field GF(29^20)
+    // Max field GF(5^48)
     // Total Errors 0/20
-    // #  Time:6.739s
+    // #  Time:1m28s
     // 
     // testEllApFrobTrace2
     // Nb Curves 9
     // Max field GF(61^48)
-    // Total Errors 2/69
-    // #  Time:1m34s
+    // Total Errors 0/69
+    // #  Time:4m24s
     // 
     // testEllApFrobTrace3
     // Nb Curves 88
     // Max field GF(61^48)
-    // Total Errors 10/427
-    // #  Time:5m20s
+    // Total Errors 0/427
+    // #  Time:19m30s
     // 
 }
