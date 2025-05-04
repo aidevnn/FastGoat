@@ -30,7 +30,10 @@ public readonly struct FracPoly<K> : IElt<FracPoly<K>>, IRingElt<FracPoly<K>>, I
     public FracPoly(KPoly<K> num, KPoly<K> denom)
     {
         if (num.P != denom.P || num.x != denom.x)
+        {
+            Console.WriteLine($"Char:{num.P}/{denom.P} symb:{num.x}/{denom.x}");
             throw new GroupException(GroupExceptionType.GroupDef);
+        }
 
         if (denom.IsZero())
             throw new DivideByZeroException();
@@ -51,6 +54,7 @@ public readonly struct FracPoly<K> : IElt<FracPoly<K>>, IRingElt<FracPoly<K>>, I
             Denom = denom0 / c;
         }
 
+        P = Num.P;
         Hash = (Num.Hash, Denom.Hash).GetHashCode();
     }
 

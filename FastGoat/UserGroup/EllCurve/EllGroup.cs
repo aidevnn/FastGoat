@@ -42,8 +42,16 @@ public struct EllGroup<T> : IGroup<EllPt<T>> where T : struct, IElt<T>, IRingElt
             else
                 Field = $"GF({disc3.P})";
         }
+        else if (Disc is EPoly<EPoly<ZnInt>> disc4)
+        {
+            if (disc4.KOne.F.Degree > 1)
+                Field = $"GF({disc4.P}^{disc4.KOne.F.Degree})(x,y)";
+            else
+                Field = $"GF({disc4.P})(x,y)";
+        }
 
         Hash = (Coefs, ShortForm).GetHashCode();
+        Simplify = t => t;
     }
 
     public EllGroup(T a1, T a2, T a3, T a4, T a6) : this(new EllCoefs<T>(a1, a2, a3, a4, a6))
@@ -83,10 +91,17 @@ public struct EllGroup<T> : IGroup<EllPt<T>> where T : struct, IElt<T>, IRingElt
         if (pt.IsO)
             return pt;
 
-        var (_, _, r, s, t, u) = ShortForm;
-        var x = u * u * pt.X + r;
-        var y = u.Pow(3) * pt.Y + s * u * u * pt.X + t;
-        return new(x, y);
+        try
+        {
+            var (_, _, r, s, t, u) = ShortForm;
+            var x = u * u * pt.X + r;
+            var y = u.Pow(3) * pt.Y + s * u * u * pt.X + t;
+            return new(Simplify(x), Simplify(y));
+        }
+        catch (Exception e)
+        {
+            return O;
+        }
     }
 
     public EllPt<T> ConvertToLong(EllPt<T> pt)
@@ -108,8 +123,10 @@ public struct EllGroup<T> : IGroup<EllPt<T>> where T : struct, IElt<T>, IRingElt
         var (_, _, _, r, s, t, u) = LongForm;
         var x = u * u * pt.X + r;
         var y = u.Pow(3) * pt.Y + s * u * u * pt.X + t;
-        return new(x, y);
+        return new(Simplify(x), Simplify(y));
     }
+    
+    public Func<T,T> Simplify { get; set; }
 
     public int Hash { get; }
 
@@ -163,6 +180,8 @@ public struct EllGroup<T> : IGroup<EllPt<T>> where T : struct, IElt<T>, IRingElt
     public T a4 => Coefs.a4;
     public T a5 => Coefs.a5;
 
+    public T[] ArrCoefs => [a1, a2, a3, a4, a5];
+
     public EllPt<T> this[params ValueType[] us]
     {
         get
@@ -198,11 +217,18 @@ public struct EllGroup<T> : IGroup<EllPt<T>> where T : struct, IElt<T>, IRingElt
         yield return new EllPt<T>();
     }
 
+    public bool ContainsPt(EllPt<T> pt)
+    {
+        if (pt.IsO)
+            return true;
+
+        return Contains(pt.X, pt.Y);
+    }
     public bool Contains(T X, T Y)
     {
         var lhs = Y * Y + a1 * X * Y + a3 * Y;
         var rhs = X.Pow(3) + a2 * X * X + a4 * X + a5;
-        return lhs.Equals(rhs);
+        return Simplify(lhs - rhs).IsZero();
     }
 
     public EllPt<T> O => new();

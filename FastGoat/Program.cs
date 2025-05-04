@@ -1,6 +1,5 @@
 ﻿using System.Numerics;
 using System.Text;
-using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using FastGoat.Commons;
 using FastGoat.Examples;
@@ -16,6 +15,7 @@ using static FastGoat.Commons.IntExt;
 using Group = FastGoat.Structures.Group;
 using RegXGroup = System.Text.RegularExpressions.Group;
 using GFelt = FastGoat.Structures.VecSpace.EPoly<FastGoat.UserGroup.Integers.ZnInt>;
+using Rl = FastGoat.Structures.VecSpace.EPoly<FastGoat.Structures.VecSpace.EPoly<FastGoat.UserGroup.Integers.ZnInt>>;
 
 //////////////////////////////////
 //                              //
@@ -51,13 +51,25 @@ Dictionary<int, List<int>> SmallPrimesList(Rational N)
     return listL;
 }
 
-EllPt<GFelt> Frob(EllPt<GFelt> pt)
+EllPt<GFelt> Frob(EllPt<GFelt> pt, int n = 1)
 {
     if (pt.IsO)
         return pt;
 
     var p = pt.X.P;
-    return new(pt.X.Pow(p), pt.Y.Pow(p));
+    return new(pt.X.FastPow(BigInteger.Pow(p, n)), pt.Y.FastPow(BigInteger.Pow(p, n)));
+}
+
+EllPt<GFelt> FrobEq(EllGroup<GFelt> E, EllPt<GFelt> pt, int t)
+{
+    if (pt.IsO)
+        return pt;
+
+    var p = pt.X.P;
+    var phi2 = Frob(Frob(pt));
+    var t_phi = Frob(E.Times(pt, -t));
+    var q = E.Times(pt, p);
+    return E.Op(phi2, E.Op(t_phi, q));
 }
 
 bool Relation(EllGroup<GFelt> E, EllPt<GFelt> pt, int t)
@@ -70,6 +82,39 @@ bool Relation(EllGroup<GFelt> E, EllPt<GFelt> pt, int t)
     var t_phi = Frob(E.Times(pt, -t));
     var q = E.Times(pt, p);
     return E.Op(phi2, E.Op(t_phi, q)).IsO;
+}
+
+FracPoly<FracPoly<ZnInt>> FastPowRl(FracPoly<FracPoly<ZnInt>> a, BigInteger k, KPoly<ZnInt> R0, KPoly<ZnInt> R1,
+    KPoly<FracPoly<ZnInt>> R2, KPoly<FracPoly<ZnInt>> R3)
+{
+    if (k == 0)
+        return a.One;
+
+    if (k < 0)
+        return FastPowRl(a.Inv(), -k, R0, R1, R2, R3);
+
+    var (r, a0, e0) = (a.One, a, k);
+    while (e0 > 0)
+    {
+        if (e0 % 2 == 1)
+            r = Simplify5(r * a0, R0, R1, R2, R3);
+
+        e0 >>= 1;
+        a0 = Simplify5(a0 * a0, R0, R1, R2, R3);
+    }
+
+    return r;
+}
+
+EllPt<FracPoly<FracPoly<ZnInt>>> FrobRl(EllPt<FracPoly<FracPoly<ZnInt>>> pt, int n, KPoly<ZnInt> R0, KPoly<ZnInt> R1,
+    KPoly<FracPoly<ZnInt>> R2, KPoly<FracPoly<ZnInt>> R3)
+{
+    if (pt.IsO)
+        return pt;
+
+    var p = pt.X.P;
+    return new(FastPowRl(pt.X, BigInteger.Pow(p, n), R0, R1, R2, R3),
+        FastPowRl(pt.Y, BigInteger.Pow(p, n), R0, R1, R2, R3));
 }
 
 int FrobTrace(EllGroup<GFelt> E, EllPt<GFelt>[] nTors, int l) =>
@@ -107,7 +152,8 @@ void EllApFrobTrace(BigInteger[] curve)
             Console.WriteLine($"{l}-torsion of {Ep} from {Ell}");
             Console.WriteLine($"{l}-divPol mod {p} = {divPolys[l].ToZnPoly(p)}");
             var (nTors, g) = EC.EllFpNTors(Ell, divPolys[l], p, l);
-            var Egf = Ell.ToGF(p).ToGF(g);
+            l.SeqLazy().Grid2D(nTors).Select(e => (e, FrobEq(Ep.ToGF(g.X), e.t2, e.t1))).Println();
+            var Egf = Ell.ToGF(g);
             setGF.Add((p, g.X.F.Degree));
             frobTr[l] = FrobTrace(Egf, nTors.GetGenerators().ToArray(), l);
         }
@@ -174,9 +220,12 @@ void runTest(Action act)
     Console.WriteLine($"Max field GF({p}^{n})");
     Console.WriteLine($"Total Errors {nbErrors}/{nbAp}");
     GlobalStopWatch.Show();
+    setGF.Where(e => !PolynomExt.AllConwayPolys.ContainsKey(e.p) || !PolynomExt.AllConwayPolys[e.p].ContainsKey(e.n))
+        .Println(gf => $"GF({gf.p}^{gf.n})", "Missing Fq");
     Console.WriteLine();
 }
 
+void runAll()
 {
     GlobalStopWatch.Restart();
     runTest(testEllApFrobTrace1);
@@ -220,4 +269,154 @@ void runTest(Action act)
     // Total Errors 0/427
     // #  Time:19m30s
     // 
+}
+
+KPoly<ZnInt> Simplify1(KPoly<ZnInt> P, KPoly<ZnInt> R0, KPoly<ZnInt> R1)
+{
+    var (quo, rem) = P.Div(R0);
+    if (quo.IsZero())
+        return P;
+
+    return Simplify1(quo * R1 + rem, R0, R1);
+}
+
+KPoly<FracPoly<ZnInt>> Simplify2(KPoly<FracPoly<ZnInt>> P, KPoly<FracPoly<ZnInt>> R0, KPoly<FracPoly<ZnInt>> R1)
+{
+    var (quo, rem) = P.Div(R0);
+    if (quo.IsZero())
+        return P;
+
+    return Simplify2(quo * R1 + rem, R0, R1);
+}
+
+FracPoly<ZnInt> Simplify3(FracPoly<ZnInt> P, KPoly<ZnInt> R0, KPoly<ZnInt> R1)
+{
+    var num = Simplify1(P.Num, R0, R1);
+    var denom = Simplify1(P.Denom, R0, R1);
+    return new(num, denom);
+}
+
+FracPoly<FracPoly<ZnInt>> Simplify4(FracPoly<FracPoly<ZnInt>> P, KPoly<ZnInt> R0, KPoly<ZnInt> R1)
+{
+    var num = new KPoly<FracPoly<ZnInt>>(P.x, P.Num.KZero, P.Num.Coefs.Select(n0 => Simplify3(n0, R0, R1)).ToArray());
+    var denom = new KPoly<FracPoly<ZnInt>>(P.x, P.Denom.KZero,
+        P.Denom.Coefs.Select(n0 => Simplify3(n0, R0, R1)).ToArray());
+    return new(num, denom);
+}
+
+FracPoly<FracPoly<ZnInt>> Simplify5(FracPoly<FracPoly<ZnInt>> P, KPoly<ZnInt> R0, KPoly<ZnInt> R1,
+    KPoly<FracPoly<ZnInt>> R2, KPoly<FracPoly<ZnInt>> R3)
+{
+    // Console.WriteLine(new { P });
+    var P1 = Simplify4(P, R0, R1);
+    // Console.WriteLine(new { P1 });
+    var num = Simplify2(P1.Num, R2, R3);
+    var denom = Simplify2(P1.Denom, R2, R3);
+    var P2 = new FracPoly<FracPoly<ZnInt>>(num, denom);
+    // Console.WriteLine(new { P2 });
+    var P3 = Simplify4(P2, R0, R1);
+    // Console.WriteLine(new { P3 });
+    return P3;
+}
+
+void RingRl(BigInteger[] curve)
+{
+    var E = EC.EllCoefs(curve);
+    var N = EC.EllTateAlgorithm(EC.EllCoefs(curve)).N;
+    var Ell = E.ToEllGroup();
+    var allList = SmallPrimesList(N);
+    var pmax = allList.Keys.Max();
+    var lmax = allList.Max(e => e.Value.Max());
+    Console.WriteLine($"{Ell} {Ell.ShortFormStr}");
+
+    var divPolys = EC.DivisionPolynomial(Ell, lmax + 3).f.ToDictionary(e => e.Key, e => e.Value.PrimitiveZPoly());
+    divPolys.Println("divPolys");
+
+    Console.WriteLine($"N = {N} pmax = {pmax} listMax = {lmax}");
+    foreach (var (p, listL) in allList)
+    {
+        if (p < 5)
+            continue;
+
+        var a0 = NumberTheory.PrimitiveRootMod(p);
+        var ap = EC.EllAp(Ell, p);
+        var frobTr = new Dictionary<int, int>();
+        foreach (var l in listL)
+        {
+            Console.WriteLine($"p={p} l={l}");
+            var psi = divPolys[l].ToZnPoly(p).SubstituteChar('X');
+            Console.WriteLine($"psi = {psi}");
+            var facts = IntFactorisation.MusserSFF(psi)
+                .SelectMany(e => IntFactorisation.CantorZassenhausAECF(e.g, new(p, a0), p))
+                .OrderBy(f => f.Degree).ToArray();
+            Console.WriteLine($"psi ~ {facts.Glue(" x ", "({0})")}");
+            var f = facts.Last();
+            var x = FG.KFracPoly(f.X).X;
+            var Y = FG.KFracPoly('Y', x).X;
+            var X = Y.KOne.X + Y.Zero;
+            var Psi = psi.Substitute(Y.KOne.X) + Y.Zero;
+            Console.WriteLine(Psi);
+            var (a1, a2, a3, a4, a6) = E.ToEllGroup().ToZnInt(p).ArrCoefs.Select(c => c * Y.KOne * Y.One).Deconstruct();
+            var lhs = Y.Pow(2) + a1 * X * Y + a3 * Y;
+            var rhs = Simplify4(X.Pow(3) + a2 * X.Pow(2) + a4 * X + a6, psi, psi.Zero);
+            var Erl = new EllGroup<FracPoly<FracPoly<ZnInt>>>(a1, a2, a3, a4, a6);
+            Console.WriteLine(new { lhs, rhs });
+            if (rhs.IsZero())
+            {
+                frobTr[l] = 0;
+                continue;
+            }
+            Erl.Simplify = P0 => Simplify5(P0, psi, psi.Zero, lhs.Num, rhs.Num);
+            var pt = new EllPt<FracPoly<FracPoly<ZnInt>>>(X, Y);
+            Console.WriteLine(Erl.ContainsPt(pt));
+            var pt2 = Erl.Op(pt, pt);
+            Console.WriteLine(pt2);
+            Console.WriteLine(Erl.ContainsPt(pt2));
+            var nPt = Erl.Times(pt, p % l);
+
+            Console.WriteLine(new { nPt });
+            Console.WriteLine(Erl.ContainsPt(nPt));
+            var phi = FrobRl(pt, 1, psi, psi.Zero, lhs.Num, rhs.Num);
+            Console.WriteLine(new { phi });
+            Console.WriteLine(Erl.ContainsPt(phi));
+            var phi2 = FrobRl(pt, 2, psi, psi.Zero, lhs.Num, rhs.Num);
+            Console.WriteLine(new { phi2 });
+            Console.WriteLine(Erl.ContainsPt(phi2));
+            Console.WriteLine();
+            var sum = Erl.Op(phi2, nPt);
+            Console.WriteLine(new { sum });
+            Console.WriteLine(Erl.ContainsPt(sum));
+            Console.WriteLine();
+            foreach (var t in l.SeqLazy(1))
+            {
+                var t_phi = Erl.Times(phi, -t);
+                Console.WriteLine(Erl.ContainsPt(t_phi));
+                var test = Erl.Op(sum, t_phi);
+                Console.WriteLine(new { t, t_phi, test });
+                if (test.IsO)
+                {
+                    frobTr[l] = AmodP(-t, l);
+                    break;
+                }
+            }
+
+            if (!frobTr.ContainsKey(l))
+                throw new();
+        }
+
+        frobTr.Println("Frob Traces");
+        var keys = frobTr.Keys.ToArray();
+        var values = keys.Select(k => frobTr[k]).ToArray();
+        var crtTable = NumberTheory.CrtTable(keys);
+        var L = keys.Aggregate((li, lj) => li * lj);
+        var crt = NumberTheory.CRT(values, crtTable, L);
+        var ap1 = crt < L / 2 ? crt : crt - L;
+        Console.WriteLine($"p = {p} ap = {ap} crt = {crt} ap1 = {ap1} L = {L} Check:{ap == ap1}");
+        Console.WriteLine();
+    }
+}
+
+{
+    // EllApFrobTrace([1, 0]);
+    RingRl([1, 0]);
 }
