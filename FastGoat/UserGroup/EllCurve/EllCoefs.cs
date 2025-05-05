@@ -29,6 +29,7 @@ public struct EllCoefs<K> where K : struct, IFieldElt<K>, IRingElt<K>, IElt<K>
     }
 
     public (K a1, K a2, K a3, K a4, K a6) Model => (a1, a2, a3, a4, a6);
+    public K[] ArrModel => [a1, a2, a3, a4, a6];
     public (K b2, K b4, K b6, K b8) B_Invariants => (b2, b4, b6, b8);
     public (K c4, K c6) C_Invariants => (c4, c6);
     public K J_Invariant => j;

@@ -868,7 +868,7 @@ public static class EC
 
         if (facts.Length == 0)
             throw new();
-        
+
         var fact = facts.MaxBy(f => f.Degree);
         var (X, a) = FG.EPolyXc(fact, 'a');
         var g = NumberTheory.PrimitiveRoot(a);
@@ -879,7 +879,7 @@ public static class EC
         return (roots, g);
     }
 
-    static (HashSet<EllPt<GFelt>>, GFelt g) 
+    static (HashSet<EllPt<GFelt>>, GFelt g)
         NTorsExtensionFp(EllGroup<Rational> Efq, KPoly<Rational> P, int p, LogLevel log = LogLevel.Level1)
     {
         var (roots0, g0) = NTorsSplittingFp(P.ToZnPoly(p));
@@ -897,6 +897,7 @@ public static class EC
                 Console.WriteLine($"    MinPol   of GF({p}^{g0.F.Degree}) = {g0.F.SubstituteChar('X')}");
                 Console.WriteLine($"    PrimRoot of GF({p}^{g0.F.Degree}) = {g0}");
             }
+
             var sqrts0 = seq0.Select(e => (e.x, e.b, e.c, e.delta, sqrtDelta: NumberTheory.SqrtModANTV1(e.delta, g0)));
             return (sqrts0.SelectMany(e => new[]
                 {
@@ -913,6 +914,7 @@ public static class EC
                 Console.WriteLine($"    MinPol   of GF({p}^{g0.F.Degree}) = {g0.F.SubstituteChar('X')}");
                 Console.WriteLine($"    PrimRoot of GF({p}^{g0.F.Degree}) = {g0}");
             }
+
             var delta = seq0.First(e => !e.delta.IsZero() && !e.resQuad.IsOne()).delta;
             var Y = FG.KPoly('Y', g0.X);
             var (r, a, _) = IntFactorisation.PrimitiveElt(Y.Pow(2) - delta);
@@ -926,13 +928,14 @@ public static class EC
             var test1 = seq1.All(e => e.delta.IsZero() || e.resQuad.IsOne());
             if (!test1)
                 throw new("#1");
-            
+
             if (log != LogLevel.Off)
             {
                 Console.WriteLine($"y(P) in GF({p}^{g1.F.Degree})");
                 Console.WriteLine($"    MinPol   of GF({p}^{g1.F.Degree}) = {g1.F.SubstituteChar('X')}");
                 Console.WriteLine($"    PrimRoot of GF({p}^{g1.F.Degree}) = {g1}");
             }
+
             var sqrts1 = seq1.Select(e => (e.x, e.b, e.c, e.delta, sqrtDelta: NumberTheory.SqrtModANTV1(e.delta, g1)));
             return (sqrts1.SelectMany(e => new[]
                 {
@@ -955,8 +958,10 @@ public static class EC
             throw new("#2");
 
         var orders = pts.ToDictionary(pt => pt, pt => Group.Cycle(Efq1, pt));
-        var e1 = orders.First(e => e.Value.Count == l).Key;
-        var e2 = orders.First(e => e.Value.Count == l && !e.Value.Keys.Contains(e1)).Key;
+        var e1 = orders.OrderByDescending(e => e.Key.X.Degree + e.Key.Y.Degree)
+            .First(e => e.Value.Count == l).Key;
+        var e2 = orders.OrderByDescending(e => e.Key.X.Degree + e.Key.Y.Degree)
+            .First(e => e.Value.Count == l && !e.Value.Keys.Contains(e1)).Key;
         var nTors = Group.Generate(Efq1, [e1, e2]);
         nTors.Name = $"{l}-Tors({nTors.Name})";
 

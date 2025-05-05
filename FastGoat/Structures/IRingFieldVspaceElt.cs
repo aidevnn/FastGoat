@@ -88,3 +88,10 @@ public interface IFixedPrecisionElt<K> : IEquatable<K>, IComparable<K>
     static abstract K Min(K a, K b);
     static abstract K Max(K a, K b);
 }
+
+public interface IFieldInfElt<K> : IEquatable<K>, IComparable<K>
+    where K : IElt<K>, IRingElt<K>, IFieldElt<K>, IFieldInfElt<K>
+{
+    public bool IsInfinity { get; }
+    public bool IsIndeterminate { get; }
+}
