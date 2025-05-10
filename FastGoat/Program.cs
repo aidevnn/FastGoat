@@ -17,7 +17,7 @@ using static FastGoat.Commons.IntExt;
 using Group = FastGoat.Structures.Group;
 using RegXGroup = System.Text.RegularExpressions.Group;
 using GFelt = FastGoat.Structures.VecSpace.EPoly<FastGoat.UserGroup.Integers.ZnInt>;
-using RlElt = FastGoat.Structures.VecSpace.Frac<FastGoat.Structures.VecSpace.Frac<FastGoat.UserGroup.Integers.ZnInt>>;
+using RlElt = FastGoat.UserGroup.EllCurve.Frac<FastGoat.UserGroup.EllCurve.Frac<FastGoat.UserGroup.Integers.ZnInt>>;
 
 
 //////////////////////////////////

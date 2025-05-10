@@ -4,6 +4,7 @@ using FastGoat.Structures;
 using FastGoat.Structures.GenericGroup;
 using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup.Characters;
+using FastGoat.UserGroup.EllCurve;
 using FastGoat.UserGroup.Floats;
 using FastGoat.UserGroup.Integers;
 using FastGoat.UserGroup.Matrix;
@@ -357,23 +358,6 @@ public static partial class FG
         var x = scalar.KOne.X;
         var y = scalar.X;
         return f.Coefs.Select((cy, i) => cy.Substitute(x) * y.Pow(i)).ToVec().Sum();
-    }
-
-    public static Frac<Rational> FracQ(char x = 'x') => new(QPoly(x));
-    public static Frac<ZnInt> FracZnInt(int p, char x = 'x') => new(ZPoly(p, x));
-
-    public static (Frac<Frac<Rational>> X, Frac<Frac<Rational>> Y) BiVariateFracQ(char x = 'x', char y = 'y')
-    {
-        var X = FracQ(x);
-        var Y = new Frac<Frac<Rational>>(y, X);
-        return (X * Y.One, Y);
-    }
-
-    public static (Frac<Frac<ZnInt>> X, Frac<Frac<ZnInt>> Y) BiVariateFracZnInt(int p, char x = 'x', char y = 'y')
-    {
-        var X = FracZnInt(p, x);
-        var Y = new Frac<Frac<ZnInt>>(y, X);
-        return (X * Y.One, Y);
     }
 
     public static T Substitute<K, T>(this FracPoly<FracPoly<K>> f, T x, T y)

@@ -1,10 +1,11 @@
-using System.Reflection;
+using FastGoat.Structures;
+using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup.Integers;
 
-namespace FastGoat.Structures.VecSpace;
+namespace FastGoat.UserGroup.EllCurve;
 
 public readonly struct Frac<K> : IElt<Frac<K>>, IRingElt<Frac<K>>, IFieldElt<Frac<K>>, IModuleElt<K, Frac<K>>,
-    IVsElt<K, Frac<K>>, IFieldInfElt<Frac<K>>
+    IVsElt<K, Frac<K>>
     where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
 {
     public KPoly<K> Num { get; }
@@ -39,7 +40,7 @@ public readonly struct Frac<K> : IElt<Frac<K>>, IRingElt<Frac<K>>, IFieldElt<Fra
             Console.WriteLine($"Char:{num.P}/{denom.P} symb:{num.x}/{denom.x}");
             throw new GroupException(GroupExceptionType.GroupDef);
         }
-        
+
         var (_, isIndNum, isInfNum) = num.Rec();
         var (_, isIndDenom, isInfDenom) = denom.Rec();
 
@@ -88,11 +89,7 @@ public readonly struct Frac<K> : IElt<Frac<K>>, IRingElt<Frac<K>>, IFieldElt<Fra
         }
         else
         {
-            // Console.WriteLine(new{num, denom});
-            // Console.WriteLine($"num => {num.Rec()}");
-            // Console.WriteLine($"denom => {denom.Rec()}");
             var gcd = Ring.FastGCD(num, denom);
-            // Console.WriteLine(new { gcd });
             var num0 = num.Div(gcd).quo;
             var denom0 = denom.Div(gcd).quo;
             var c = denom0.Coefs.Last();
@@ -109,7 +106,6 @@ public readonly struct Frac<K> : IElt<Frac<K>>, IRingElt<Frac<K>>, IFieldElt<Fra
     {
         if (IsIndeterminate || other.IsIndeterminate)
             return false;
-
         if (IsInfinity && !other.IsInfinity)
             return false;
         if (other.IsInfinity && !IsInfinity)
@@ -138,15 +134,17 @@ public readonly struct Frac<K> : IElt<Frac<K>>, IRingElt<Frac<K>>, IFieldElt<Fra
     public Frac<K> Indeterminate => new(Num.Zero, Num.Zero);
     public Frac<K> Infinity => new(Num.One, Num.Zero);
     public bool IsDeterminate => !IsInfinity && !IsIndeterminate;
+
     public Frac<K> KMul(K k)
     {
         if (IsIndeterminate)
             return this;
         if (IsInfinity)
             return k.IsZero() ? Indeterminate : Infinity;
-        
+
         return new(k * Num, Denom);
     }
+
     public int Hash { get; }
 
     public bool IsZero() => IsDeterminate && Num.IsZero();
@@ -160,7 +158,7 @@ public readonly struct Frac<K> : IElt<Frac<K>>, IRingElt<Frac<K>>, IFieldElt<Fra
     {
         if (IsIndeterminate || e.IsIndeterminate)
             return Indeterminate;
-        
+
         if (IsDeterminate && e.IsDeterminate)
             return new(Num.Mul(e.Denom).Add(e.Num.Mul(Denom)), Denom.Mul(e.Denom));
 
@@ -171,7 +169,7 @@ public readonly struct Frac<K> : IElt<Frac<K>>, IRingElt<Frac<K>>, IFieldElt<Fra
     {
         if (IsIndeterminate || e.IsIndeterminate)
             return Indeterminate;
-        
+
         if (IsDeterminate && e.IsDeterminate)
             return new(Num.Mul(e.Denom).Sub(e.Num.Mul(Denom)), Denom.Mul(e.Denom));
 
@@ -184,7 +182,7 @@ public readonly struct Frac<K> : IElt<Frac<K>>, IRingElt<Frac<K>>, IFieldElt<Fra
     {
         if (IsIndeterminate || e.IsIndeterminate)
             return Indeterminate;
-        
+
         if (IsDeterminate && e.IsDeterminate)
             return new(Num * e.Num, Denom * e.Denom);
 
@@ -236,7 +234,7 @@ public readonly struct Frac<K> : IElt<Frac<K>>, IRingElt<Frac<K>>, IFieldElt<Fra
 
         if (IsInfinity)
             return k == 0 ? Indeterminate : k < 0 ? Zero : Infinity;
-        
+
         if (k < 0)
             return new(Denom.Pow(-k), Num.Pow(-k));
 
@@ -251,7 +249,7 @@ public readonly struct Frac<K> : IElt<Frac<K>>, IRingElt<Frac<K>>, IFieldElt<Fra
             return "?ind?";
         if (IsInfinity)
             return "infty";
-        
+
         if (Denom.Equals(Denom.One))
             return Num.ToString();
 
@@ -315,7 +313,7 @@ public readonly struct Frac<K> : IElt<Frac<K>>, IRingElt<Frac<K>>, IFieldElt<Fra
 
 file static class FracRec
 {
-    private static (KPoly<K>, bool isInd, bool isInf) Rec<K, T>(this KPoly<K> F) 
+    private static (KPoly<K>, bool isInd, bool isInf) Rec<K, T>(this KPoly<K> F)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
         where T : struct, IElt<T>, IRingElt<T>, IFieldElt<T>
     {
@@ -323,7 +321,7 @@ file static class FracRec
         {
             if (F.Coefs.Cast<Frac<T>>().Any(f => f.IsIndeterminate))
                 return ((dynamic)F.Zero * e.Indeterminate, true, false);
-            
+
             if (F.Coefs.Cast<Frac<T>>().Any(f => f.IsInfinity))
                 return ((dynamic)F.One * e.Infinity, false, true);
         }
