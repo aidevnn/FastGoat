@@ -3,7 +3,7 @@ using FastGoat.UserGroup.Polynoms;
 
 namespace FastGoat.Structures.VecSpace;
 
-public readonly struct Polynomial<K, T> : IElt<Polynomial<K, T>>, IRingElt<Polynomial<K, T>>, 
+public readonly struct Polynomial<K, T> : IElt<Polynomial<K, T>>, IRingElt<Polynomial<K, T>>,
     IFieldElt<Polynomial<K, T>>, IModuleElt<K, Polynomial<K, T>>, IVsElt<K, Polynomial<K, T>>
     where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     where T : struct, IElt<T>
@@ -203,7 +203,7 @@ public readonly struct Polynomial<K, T> : IElt<Polynomial<K, T>>, IRingElt<Polyn
         return poly;
     }
 
-    public Polynomial<U, T> Substitute<U>(U f, T xi) 
+    public Polynomial<U, T> Substitute<U>(U f, T xi)
         where U : struct, IElt<U>, IRingElt<U>, IFieldElt<U>, IModuleElt<K, U>, IVsElt<K, U>
     {
         var poly = new Polynomial<U, T>(Indeterminates, f.Zero);
@@ -449,7 +449,7 @@ public readonly struct Polynomial<K, T> : IElt<Polynomial<K, T>>, IRingElt<Polyn
 
     public override int GetHashCode() => Hash;
 
-    public string GetString(bool reverse = false)
+    public string GetString()
     {
         var one = KZero.One;
         var sep = (Ring.DisplayPolynomial & MonomDisplay.Star) == MonomDisplay.Star ? "*" : "·";
@@ -468,10 +468,10 @@ public readonly struct Polynomial<K, T> : IElt<Polynomial<K, T>>, IRingElt<Polyn
             return string.IsNullOrEmpty(sm) ? $"{k}" : $"{k0}{sep}{sm}";
         }
 
-        if (reverse)
-            return Coefs.Reverse().Select(kp => Str(kp.Key, kp.Value)).Glue(" + ");
-
-        return Coefs.Select(kp => Str(kp.Key, kp.Value)).Glue(" + ");
+        return Coefs.OrderByDescending(kp => kp.Key.Degree)
+            .ThenBy(kp => kp.Key.ContentIndeterminates.Count())
+            .ThenByDescending(kp => kp.Key)
+            .Select(kp => Str(kp.Key, kp.Value)).Glue(" + ");
     }
 
     public int NbIndeterminates
@@ -500,7 +500,7 @@ public readonly struct Polynomial<K, T> : IElt<Polynomial<K, T>>, IRingElt<Polyn
         }
     }
 
-    public override string ToString() => GetString(true).Replace("+ -", "- ");
+    public override string ToString() => GetString().Replace("+ -", "- ");
 
     public static Polynomial<K, T> operator +(Polynomial<K, T> a, Polynomial<K, T> b) => a.Add(b);
     public static Polynomial<K, T> operator +(int a, Polynomial<K, T> b) => b.Add(b.One.Mul(a));

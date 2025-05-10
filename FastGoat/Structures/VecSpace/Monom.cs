@@ -250,7 +250,6 @@ public readonly struct Monom<T> : IElt<Monom<T>> where T : struct, IElt<T>
         }
 
         return 0;
-        return sgn * ToTuples().SequenceCompareTo(other.ToTuples());
     }
 
     public int Hash { get; }
@@ -259,15 +258,16 @@ public readonly struct Monom<T> : IElt<Monom<T>> where T : struct, IElt<T>
 
     public override string ToString()
     {
+        var ind = Indeterminates;
         var sep = (Ring.DisplayPolynomial & MonomDisplay.Star) == MonomDisplay.Star ? "*" :
             (Ring.DisplayPolynomial & MonomDisplay.Dot) == MonomDisplay.Dot ? "." : "";
 
         if ((Ring.DisplayPolynomial & MonomDisplay.Caret) == MonomDisplay.Caret)
-            return Content.OrderBy(e => e.Key).Select(kp => kp.Value == 1 ? $"{kp.Key}" : $"{kp.Key}^{kp.Value}")
+            return Content.OrderBy(e => ind[e.Key]).Select(kp => kp.Value == 1 ? $"{kp.Key}" : $"{kp.Key}^{kp.Value}")
                 .Glue(sep);
 
         if ((Ring.DisplayPolynomial & MonomDisplay.PowFct) == MonomDisplay.PowFct)
-            return Content.OrderBy(e => e.Key).Select(kp => kp.Value == 1 ? $"{kp.Key}" : $"{kp.Key}.Pow({kp.Value})")
+            return Content.OrderBy(e => ind[e.Key]).Select(kp => kp.Value == 1 ? $"{kp.Key}" : $"{kp.Key}.Pow({kp.Value})")
                 .Glue(sep);
 
         string Sup(int v)
@@ -278,11 +278,9 @@ public readonly struct Monom<T> : IElt<Monom<T>> where T : struct, IElt<T>
             return v0;
         }
 
-        var s = Content.OrderBy(e => e.Key)
+        return Content.OrderBy(e => ind[e.Key])
             .Select(kp => kp.Value == 1 ? $"{kp.Key}" : $"{kp.Key}{Sup(kp.Value)}")
             .Glue(sep);
-
-        return s;
     }
 
     private static string superscripts = "⁰¹²³⁴⁵⁶⁷⁸⁹";

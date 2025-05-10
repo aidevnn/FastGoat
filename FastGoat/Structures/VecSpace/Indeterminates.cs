@@ -118,6 +118,17 @@ public class Indeterminates<T> : IEnumerable<T>, IEquatable<Indeterminates<T>> w
 
     public T this[int index] => Reverse ? Content[^(index + 1)] : Content[index];
     public T this[string name] => Content.First(xi => xi.ToString()!.Equals(name));
+
+    public int this[T e]
+    {
+        get
+        {
+            if (Reverse)
+                return Content.Reverse().ToList().FindIndex(d => d.Equals(e));
+            
+            return Content.ToList().FindIndex(d => d.Equals(e));
+        }
+    }
     public override int GetHashCode() => Hash;
     public override string ToString() => $"[{this.Glue(",")}]({Order})";
 
