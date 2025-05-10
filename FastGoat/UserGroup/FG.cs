@@ -25,7 +25,8 @@ public static partial class FG
         CyclotomicPolynomials = new() { [1] = x - 1 };
         CnfBasisMap = new();
 
-        allIds = GroupExt.DBGap.Select(txt => new IdGroup(txt)).GroupBy(e => e.Order).ToDictionary(e => e.Key, e => e.Order().ToArray());
+        allIds = GroupExt.DBGap.Select(txt => new IdGroup(txt)).GroupBy(e => e.Order)
+            .ToDictionary(e => e.Key, e => e.Order().ToArray());
         nbSubGroupsDetails = allIds.ToDictionary(
             e => e.Key,
             e => e.Value.GroupBy(a => a.Infos).ToDictionary(a => a.Key, a => a.Count()));
@@ -109,6 +110,7 @@ public static partial class FG
         var m1 = gl[0, 1, 1, 0];
         return Group.Generate($"D{2 * n}", gl, m0, m1);
     }
+
     public static ConcreteGroup<Perm> PermGroup(string name, int n, params ValueType[] generators)
     {
         var sn = new Sn(n);
@@ -180,7 +182,8 @@ public static partial class FG
             return new() { Abelian(1) };
 
         var dec = IntExt.PrimesDec(k);
-        return dec.Select(e => IntExt.Partitions32[e.Value].Select(l => l.Select(i => e.Key.Pow(i)).ToArray())).MultiLoop()
+        return dec.Select(e => IntExt.Partitions32[e.Value].Select(l => l.Select(i => e.Key.Pow(i)).ToArray()))
+            .MultiLoop()
             .Select(l => Abelian(l.SelectMany(i => i).OrderDescending().ToArray())).ToList();
     }
 
@@ -192,7 +195,8 @@ public static partial class FG
         var n = seq.Length.Range();
         var gens = n.Select(i => ((char)('a' + i)).ToString()).ToArray();
         var allCombs = n.SelectMany(i => n.Where(j => j > i).Select(j => (gens[i], gens[j]))).ToArray();
-        var relators = gens.Select((g, i) => $"{g}{seq[i]}").Concat(allCombs.Select(e => $"{e.Item1}{e.Item2}={e.Item2}{e.Item1}"))
+        var relators = gens.Select((g, i) => $"{g}{seq[i]}")
+            .Concat(allCombs.Select(e => $"{e.Item1}{e.Item2}={e.Item2}{e.Item1}"))
             .Glue(", ");
 
         return new WordGroup(name, relators);
@@ -216,7 +220,8 @@ public static partial class FG
             return new() { AbelianWg(1) };
 
         var dec = IntExt.PrimesDec(k);
-        return dec.Select(e => IntExt.Partitions32[e.Value].Select(l => l.Select(i => e.Key.Pow(i)).ToArray())).MultiLoop()
+        return dec.Select(e => IntExt.Partitions32[e.Value].Select(l => l.Select(i => e.Key.Pow(i)).ToArray()))
+            .MultiLoop()
             .Select(l => AbelianWg(l.SelectMany(i => i).OrderDescending().ToArray())).ToList();
     }
 
@@ -228,7 +233,8 @@ public static partial class FG
         var rg = (n - 2).Range();
         string s0(int e) => $"{(char)('a' + e)}";
         var r1 = rg.Select(e => $"{s0(e)}3").Glue(", ");
-        var r2 = rg.Grid2D().Where(e => e.t1 < e.t2).Select(e => $"{s0(e.t1)}{s0(e.t2)}{s0(e.t1)}{s0(e.t2)}").Glue(", ");
+        var r2 = rg.Grid2D().Where(e => e.t1 < e.t2).Select(e => $"{s0(e.t1)}{s0(e.t2)}{s0(e.t1)}{s0(e.t2)}")
+            .Glue(", ");
         return WordGroup($"A{n}", $"{r1}, {r2}");
     }
 
@@ -319,8 +325,10 @@ public static partial class FG
             .ToList();
     }
 
-    public static WordGroup DiCyclic(int n) => new(int.IsPow2(4 * n) ? $"Q{4 * n}" : $"Dic{n}", $"a{n} = b2, b2 = abab");
-    public static WordGroup DiCyclicThreeGens(int n) 
+    public static WordGroup DiCyclic(int n) =>
+        new(int.IsPow2(4 * n) ? $"Q{4 * n}" : $"Dic{n}", $"a{n} = b2, b2 = abab");
+
+    public static WordGroup DiCyclicThreeGens(int n)
         => new(int.IsPow2(4 * n) ? $"Q{4 * n}" : $"Dic{n}", $"a-1bc, abcb-2, abc-{n - 1}");
 
     public static ConcreteGroup<Mat> Quaternion(int k)
@@ -408,6 +416,7 @@ public static partial class FG
 
         return Dic_m;
     }
+
     public static WordGroup SemiDihedral(int n)
     {
         var n1 = 1 << (n - 1);
@@ -486,6 +495,7 @@ public static partial class FG
 
         return Group.Generate($"MM{2 * n1}", gl, m0, m1);
     }
+
     public static WordGroup WordGroup(string relators) => new WordGroup(relators);
     public static WordGroup WordGroup(string name, string relators) => new WordGroup(name, relators);
 
@@ -504,7 +514,10 @@ public static partial class FG
     {
         ((int p, int m), int[] coefs) = PolynomExt.GetConwayPoly(q);
         var F = new KPoly<ZnInt>(x, ZnInt.ZnZero(p), coefs.Select(i => new ZnInt(p, i)).ToArray());
-        return new(F, F.X);
+        if (m > 1)
+            return new(F, F.X);
+
+        return new(F, F.Zero + F[0]);
     }
 
     public static NthRootQ NthRootQ(int n) => new(n);

@@ -37,10 +37,11 @@ public static class PolynomExt
     /// <returns>A tuple containing the prime and multiplicity of the polynomial, as well as an array of coefficients.</returns>
     public static ((int p, int m) pm, int[] coefs) GetConwayPoly(BigInteger q)
     {
-        if (q < IntExt.MaxPrime && IntExt.Primes10000.Contains((int)q))
+        if (q < IntExt.MaxPrime && IntExt.Primes10000.Contains((int)q) && !AllConwayPolys.ContainsKey((int)q))
         {
-            var k = IntExt.Solve_k_pow_m_equal_one_mod_n_strict((int)q, (int)q - 1);
-            return (((int)q, 1), [k, 1]);
+            var p0 = (int)q;
+            var k = IntExt.Solve_k_pow_m_equal_one_mod_n_strict(p0, (p0 - 1));
+            return ((p0, 1), [IntExt.AmodP(-k, p0), 1]);
         }
 
         var pm = IntExt.PrimesDecompositionBigInt(q).ToArray();
