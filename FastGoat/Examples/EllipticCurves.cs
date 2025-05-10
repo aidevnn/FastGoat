@@ -101,11 +101,11 @@ public static class EllipticCurves
         var (xym, x2m) = (xm.Mul(ym), xm.Pow(2));
         var (a1, a2, a3, a4, a5) = (e.lhs[xym], e.rhs[x2m], e.lhs[ym], e.rhs[xm], e.rhs.ConstTerm);
         var E = new EllGroup<Rational>(a1, a2, a3, a4, a5);
-        var P1 = X.Pow(3) + E.LongForm.A * X.Pow(2) + E.LongForm.B * X + E.LongForm.C;
-        var P2 = X.Pow(3) + E.ShortForm.A * X + E.ShortForm.B;
-        Console.WriteLine($"Elliptic curve      {e.lhs} = {e.rhs}");
-        Console.WriteLine($"Simplified form     y^2 = {P1}");
-        Console.WriteLine($"Simplified form     y^2 = {P2}");
+        var El = E.ToLongWeierstrassForm();
+        var Es = E.ToShortWeierstrassForm();
+        Console.WriteLine($"Elliptic curve      {E.Eq}");
+        Console.WriteLine($"Simplified form     {El.Eq}");
+        Console.WriteLine($"Short form          {Es.Eq}");
 
         if ((meth & EC.TorsionMeth.Fp) == EC.TorsionMeth.Fp)
             EllTors(E);
@@ -252,7 +252,7 @@ public static class EllipticCurves
         GlobalStopWatch.AddLap();
         var k = Group.BSGS(Ep, P, Q, nb);
         var Q1 = Ep.Times(P, k);
-        Console.WriteLine($"P={P} Q={Q1} {k}xP=Q");
+        Console.WriteLine($"P={P} Q={Q1} {k}*P=Q");
         GlobalStopWatch.Show();
         Console.WriteLine();
         if (!Q.Equals(Q1))
@@ -422,7 +422,7 @@ public static class EllipticCurves
 
         // Torsion C8 x C2
         Transform((y.Pow(2) + x * y, x.Pow(3) - 1070 * x + 7812), EC.TorsionMeth.NagellLutz);
-        Transform((y.Pow(2) + x * y, x.Pow(3) - 8696090 * x + "9838496100"), EC.TorsionMeth.NagellLutz);
+        // Transform((y.Pow(2) + x * y, x.Pow(3) - 8696090 * x + "9838496100"), EC.TorsionMeth.NagellLutz);
 
         GlobalStopWatch.Show("END"); // Time:5.955s
     }

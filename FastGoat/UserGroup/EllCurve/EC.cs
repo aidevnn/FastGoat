@@ -75,12 +75,12 @@ public static class EC
 
     public static ConcreteGroup<EllPt<ZnBigInt>> EllFp(EllGroup<ZnBigInt> E)
     {
-        var (A, B) = (E.ShortForm.A, E.ShortForm.B);
-        var p = (int)A.Mod;
+        var Es = E.ToShortWeierstrassForm();
+        var p = (int)Es.a4.Mod;
         var ell = p.Range().Select(k => new ZnBigInt(p, k))
-            .Select(x => (x, y2: x.Pow(3) + A * x + B))
+            .Select(x => (x, y2: x.Pow(3) + Es.a4 * x + Es.a6))
             .Select(e => (e.x, y: NumberTheory.SqrtModANTV1(e.y2.K, p) * e.x.One))
-            .Select(e => E.ConvertFromShort(new(e.x, e.y)))
+            .Select(e => Es.RevTrans(new(e.x, e.y)))
             .Where(e => E.Contains(e.X, e.Y))
             .Order()
             .ToArray();
@@ -122,14 +122,14 @@ public static class EC
 
     public static EllGroup<ZnBigInt> ToZnBigInt(this EllGroup<Rational> E, BigInteger p)
     {
-        var (a1, a2, a3, a4, a5) = E.Coefs;
-        return new(a1.ToZnBigInt(p), a2.ToZnBigInt(p), a3.ToZnBigInt(p), a4.ToZnBigInt(p), a5.ToZnBigInt(p));
+        var (a1, a2, a3, a4, a6) = E.Coefs;
+        return new(a1.ToZnBigInt(p), a2.ToZnBigInt(p), a3.ToZnBigInt(p), a4.ToZnBigInt(p), a6.ToZnBigInt(p));
     }
 
     public static IEnumerable<EllPt<Rational>> SolveIntegralPoints(EllGroup<Rational> E, LogLevel lvl = LogLevel.Off)
     {
         var disc = E.Disc;
-        var (A, B, C, _, _, _, _) = E.LongForm;
+        var Es = E.ToLongWeierstrassForm();
         var r = PrimesDec(BigInteger.Abs(disc.Num))
             .Aggregate(BigInteger.One, (acc, r) => acc * BigInteger.Pow(r.Key, r.Value / 2 + r.Value % 2));
         var divs = DividorsBigInt(16 * r).Where(y => (256 * disc.Num) % (y * y) == 0).Order()
@@ -138,7 +138,7 @@ public static class EC
         var x = FG.QPoly();
         foreach (var y in divs.Prepend("0"))
         {
-            var P = x.Pow(3) + A * x * x + B * x + C;
+            var P = x.Pow(3) + Es.a2 * x * x + Es.a4 * x + Es.a6;
             var sols = IntFactorisation.FactorsQ(P - y.Pow(2));
             if (lvl == LogLevel.Level2)
                 sols.Println($"Y = {y}, solve {y.Pow(2)} = {P}");
@@ -146,8 +146,8 @@ public static class EC
             var ellpts = sols.Where(e => e.Item1.Degree == 1).Select(e => new EllPt<Rational>(-e.Item1[0], y));
             foreach (var pt in ellpts)
             {
-                yield return E.ConvertFromLong(pt);
-                yield return E.ConvertFromLong(new(pt.X, -pt.Y));
+                yield return Es.RevTrans(pt);
+                yield return Es.RevTrans(new(pt.X, -pt.Y));
             }
         }
     }
@@ -167,17 +167,19 @@ public static class EC
         NagellLutzTorsionGroup(EllGroup<Rational> E, HashSet<EllPt<Rational>> ellpts, LogLevel lvl = LogLevel.Level1)
     {
         var set = new List<EllPt<Rational>>() { E.O };
-        foreach (var pt in ellpts.Where(pt => E.ConvertToShort(pt).IsIntegral()))
+        var Ecoefs = E.ToEllCoefs();
+        var Es = Ecoefs.ToLongWeierstrassForm();
+        foreach (var pt in ellpts.Where(pt => Es.Trans(pt).IsIntegral()))
         {
             var acc = pt;
             for (int i = 1; i <= 4; i++)
             {
                 acc = E.Times(acc, 2);
-                if (acc.IsO || !E.ConvertToShort(acc).IsIntegral())
+                if (acc.IsO || !Es.Trans(acc).IsIntegral())
                     break;
             }
 
-            if (E.ConvertToShort(acc).IsIntegral())
+            if (Es.Trans(acc).IsIntegral())
                 set.Add(pt);
         }
 
@@ -447,8 +449,8 @@ public static class EC
             return p + 1 - card;
         }
 
-        var (A, B, _, _, _, _) = E.ShortForm;
-        var (a, b) = (A.ToZnBigInt(p).Unsigned, B.ToZnBigInt(p).Unsigned);
+        var Es = E.ToShortWeierstrassForm();
+        var (a, b) = (Es.a4.ToZnBigInt(p).Unsigned, Es.a6.ToZnBigInt(p).Unsigned);
         return -p.Range().Select(x => (int)LegendreJacobiBigint((BigInteger.Pow(x, 3) + a * x + b) % p, p))
             .Sum(k => k <= 1 ? k : -1);
     }
@@ -463,17 +465,18 @@ public static class EC
 
     static EllPt<ZnBigInt> RandPt(EllGroup<ZnBigInt> Ep, HashSet<BigInteger> set)
     {
-        var p = Ep.ShortForm.A.Mod;
+        var Es = Ep.ToShortWeierstrassForm();
+        var p = Es.a4.Mod;
         while (true)
         {
             var xP = new ZnBigInt(p, DistributionExt.Dice(BigInteger.Zero, p));
-            var y2P = xP.Pow(3) + Ep.ShortForm.A * xP + Ep.ShortForm.B;
+            var y2P = xP.Pow(3) + Es.a4 * xP + Es.a6;
             if (LegendreJacobiBigint(y2P.Unsigned, p) != 1)
                 continue;
 
             var yP = xP.One * NumberTheory.SqrtModANTV1(y2P.K, p);
             if (set.Add(xP.Unsigned))
-                return Ep.ConvertFromShort(new(xP, yP));
+                return Es.RevTrans(new(xP, yP));
         }
     }
 
@@ -514,16 +517,17 @@ public static class EC
 
         (BigInteger L, BigInteger N) = (1, -1);
         (BigInteger L_, BigInteger N_) = (1, -1);
+        var Ep = E.ToZnBigInt(p);
+        var Es = Ep.ToShortWeierstrassForm();
 
         var g = 1000.SeqLazy().Select(_ => DistributionExt.Dice(BigInteger.One * 2, p - 1))
             .Where(g => LegendreJacobiBigint(g, p) != 1)
             .Select(g => new ZnBigInt(p, g))
-            .Where(g => !(4 * (E.ShortForm.A.ToZnBigInt(p) * g.Pow(2)).Pow(3) +
-                          27 * (E.ShortForm.B.ToZnBigInt(p) * g.Pow(3)).Pow(2)).IsZero())
+            .Where(g => !(4 * (Es.a4 * g.Pow(2)).Pow(3) + 27 * (Es.a6 * g.Pow(3)).Pow(2)).IsZero())
             .First();
-        var Ep = E.ToZnBigInt(p);
+        
         // Mestre's Theorem, quadratic twist of Ep
-        var Ep_ = new EllGroup<ZnBigInt>(Ep.ShortForm.A * g.Pow(2), Ep.ShortForm.B * g.Pow(3));
+        var Ep_ = new EllGroup<ZnBigInt>(Es.a4 * g.Pow(2), Es.a6 * g.Pow(3));
         int ct = 0, nbCands = 0, nbCands_ = 0;
         var set = new HashSet<BigInteger>();
         var set_ = new HashSet<BigInteger>();
@@ -607,7 +611,7 @@ public static class EC
         {
             var Ap = (int)cands.Where(NL => (p - 1) % (NL / L) == 0).Select(NL => p + 1 - NL).First();
             if (log != LogLevel.Off)
-                Console.WriteLine($"Ep = {Ep.ShortFormStr} Ap = {Ap} Case = [{caseNum}]#{outputNum}");
+                Console.WriteLine($"Ep = {Ep} Ap = {Ap} Case = [{caseNum}]#{outputNum}");
 
             return Ap;
         }
@@ -615,7 +619,7 @@ public static class EC
         {
             var Ap = (int)cands_.Where(NL => (p - 1) % (NL / L_) == 0).Select(NL => -(p + 1 - NL)).First();
             if (log != LogLevel.Off)
-                Console.WriteLine($"Ep = {Ep.ShortFormStr} Ap = {Ap} Case = [{caseNum}]#2");
+                Console.WriteLine($"Ep = {Ep} Ap = {Ap} Case = [{caseNum}]#2");
 
             return Ap;
         }
@@ -802,11 +806,10 @@ public static class EC
         var Y = FG.KPoly('Y', x);
         var X = x * Y.One;
         var (X2, X3, X4, X5, X6) = 5.SeqLazy(2).Select(i => X.Pow(i)).Deconstruct();
-        var (A, B) = (E.ShortForm.A * x.One * Y.One, E.ShortForm.B * x.One * Y.One);
-        var eCoefs = new EllCoefs<K>(E.a1, E.a2, E.a3, E.a4, E.a5);
+        var eCoefs = new EllCoefs<K>(E.a1, E.a2, E.a3, E.a4, E.a6);
         var (a1, a2, a3, a4, a6) = (E.a1 * x.One * Y.One, E.a2 * x.One * Y.One, E.a3 * x.One * Y.One,
             E.a4 * x.One * Y.One,
-            E.a5 * x.One * Y.One);
+            E.a6 * x.One * Y.One);
         var (b2, b4, b6, b8) = (eCoefs.b2 * x.One * Y.One, eCoefs.b4 * x.One * Y.One, eCoefs.b6 * x.One * Y.One,
             eCoefs.b8 * x.One * Y.One);
 

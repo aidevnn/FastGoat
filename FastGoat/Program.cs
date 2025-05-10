@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Numerics;
-using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Text.RegularExpressions;
 using FastGoat.Commons;
@@ -90,7 +89,9 @@ bool Relation(EllGroup<GFelt> E, EllPt<GFelt> pt, int t)
 int FrobTrace(EllGroup<GFelt> E, EllPt<GFelt>[] nTors, int l) =>
     l.SeqLazy().First(t => nTors.All(pt => Relation(E, pt, t)));
 
-Dictionary<int, Dictionary<int, (GFelt g, EllPt<GFelt> e1, EllPt<GFelt> e2)>> EllApFrobTrace(BigInteger[] curve)
+(Dictionary<int, KPoly<Rational>> divPolys,
+    Dictionary<int, Dictionary<int, (GFelt g, EllPt<GFelt> e1, EllPt<GFelt> e2)>> allBasis)
+    EllApFrobTrace(BigInteger[] curve)
 {
     GlobalStopWatch.AddLap();
     var E = EC.EllCoefs(curve);
@@ -99,7 +100,7 @@ Dictionary<int, Dictionary<int, (GFelt g, EllPt<GFelt> e1, EllPt<GFelt> e2)>> El
     var allList = SmallPrimesList(N);
     var pmax = allList.Keys.Max();
     var lmax = allList.Max(e => e.Value.Max());
-    Console.WriteLine($"{Ell} {Ell.ShortFormStr} {Ell.LongFormStr}");
+    Console.WriteLine($"{Ell}");
 
     var divPolys = EC.DivisionPolynomial(Ell, lmax + 3).f.ToDictionary(e => e.Key, e => e.Value.PrimitiveZPoly());
     divPolys.Println("divPolys");
@@ -153,7 +154,7 @@ Dictionary<int, Dictionary<int, (GFelt g, EllPt<GFelt> e1, EllPt<GFelt> e2)>> El
     ++nbCurves;
     GlobalStopWatch.Show($"End FrobTrace {Ell}");
     Console.WriteLine();
-    return allBasis;
+    return (divPolys, allBasis);
 }
 
 void testEllApFrobTrace1()
@@ -193,14 +194,16 @@ void runTest(Action act)
     Console.WriteLine($"Nb Curves {nbCurves}");
     Console.WriteLine($"Total Errors {nbErrors}/{nbAp}");
     GlobalStopWatch.Show();
-    
+
     if (setGF.Count != 0)
     {
         var (p, n) = setGF.MaxBy(e => BigInteger.Pow(e.p, e.n));
         Console.WriteLine($"Max field GF({p}^{n})");
-        setGF.Where(e => !PolynomExt.AllConwayPolys.ContainsKey(e.p) || !PolynomExt.AllConwayPolys[e.p].ContainsKey(e.n))
+        setGF.Where(
+                e => !PolynomExt.AllConwayPolys.ContainsKey(e.p) || !PolynomExt.AllConwayPolys[e.p].ContainsKey(e.n))
             .Println(gf => $"GF({gf.p}^{gf.n})", "Missing Fq");
     }
+
     Console.WriteLine();
 }
 
@@ -250,18 +253,18 @@ void runAll()
     // 
 }
 
-void Verif(EllGroupSymb E,  EllPt<RlElt> pt, EllPt<GFelt> b1, EllPt<GFelt> b2, EllPt<GFelt> pt1, EllPt<GFelt> pt2,
+void Verif(EllGroupSymb E, EllPt<RlElt> pt, EllPt<GFelt> b1, EllPt<GFelt> b2, EllPt<GFelt> pt1, EllPt<GFelt> pt2,
     string lbl = "pt")
 {
     Console.WriteLine($"{E} contains {lbl} => {E.ContainsPt(pt)}");
     var ept1 = E.SubstitutePt(pt, b1);
     var ept2 = E.SubstitutePt(pt, b2);
-    Console.WriteLine($"Check on base: {ept1.Equals(pt1)}/{ept1.Equals(pt2)}");
+    Console.WriteLine($"Check on base: {ept1.Equals(pt1)}/{ept2.Equals(pt2)}");
     Console.WriteLine($"b1: {ept1} / {pt1}");
     Console.WriteLine($"b2: {ept2} / {pt2}");
 }
 
-void LDivRing(BigInteger[] curve, LogLevel log = LogLevel.Off)
+void LDivRing(BigInteger[] curve, LogLevel log = LogLevel.Level1)
 {
     var allBasis =
         new Dictionary<int, Dictionary<int, (EPoly<ZnInt> g, EllPt<EPoly<ZnInt>> e1, EllPt<EPoly<ZnInt>> e2)>>();
@@ -270,14 +273,14 @@ void LDivRing(BigInteger[] curve, LogLevel log = LogLevel.Off)
     var El = E.ToLongWeierstrassForm();
     var Ell = El.ToEllGroup();
     if (log != LogLevel.Off)
-        allBasis = EllApFrobTrace(El.ArrModel.Select(e => e.Num).ToArray());
+        allBasis = EllApFrobTrace(El.ArrModel.Select(e => e.Num).ToArray()).allBasis;
 
     GlobalStopWatch.AddLap();
     var N = EC.EllTateAlgorithm(EC.EllCoefs(curve)).N;
     var allList = SmallPrimesList(N);
     var pmax = allList.Keys.Max();
     var lmax = allList.Max(e => e.Value.Max());
-    Console.WriteLine($"{E.ToEllGroup()} => {Ell} => {Ell.ShortFormStr}");
+    Console.WriteLine($"{E.ToEllGroup()} => {Ell}");
 
     var divPolys = EC.DivisionPolynomial(Ell, lmax + 3).f.ToDictionary(e => e.Key, e => e.Value.PrimitiveZPoly());
     divPolys.Println("divPolys");
@@ -314,12 +317,12 @@ void LDivRing(BigInteger[] curve, LogLevel log = LogLevel.Off)
             var phi = Erl.FrobRl(pt);
             var phi2 = Erl.FrobRl(pt, 2);
             var add_phi2_p = Erl.Op(phi2, p_Pt);
-            
+
             if (log != LogLevel.Off)
             {
                 var (bg, be1, be2) = basis[l];
                 var Ep = Ell.ToGF(bg);
-            
+
                 Console.WriteLine(new { pt });
                 Verif(Erl, pt, be1, be2, be1, be2, "P");
 
@@ -343,7 +346,6 @@ void LDivRing(BigInteger[] curve, LogLevel log = LogLevel.Off)
                 Console.WriteLine(new { add_phi2_pPy = add_phi2_p });
                 Verif(Erl, add_phi2_p, be1, be2, Ep.Op(Frob(be1, 2), Ep.Times(be1, p % l)),
                     Ep.Op(Frob(be2, 2), Ep.Times(be2, p % l)), "phi^2 + [p]*P");
-
             }
 
             foreach (var t in l.SeqLazy())
@@ -358,7 +360,6 @@ void LDivRing(BigInteger[] curve, LogLevel log = LogLevel.Off)
                     Verif(Erl, eqFrob, be1, be2, FrobEq(Ep, be1, l, -t), FrobEq(Ep, be2, l, -t),
                         "phi^2 - [t]*phi + [p]*P");
                     Console.WriteLine(new { t, eqFrob });
-
                 }
 
                 if (eqFrob.IsO)
@@ -403,8 +404,8 @@ void testLDivRing1()
 {
     LDivRing([1, 0]);
     LDivRing([-1, 0]);
-    LDivRing([1, 1]);
-    LDivRing([-43, 166]);
+    // LDivRing([1, 1]);
+    // LDivRing([-43, 166]);
 }
 
 void testLDivRing2()
@@ -417,444 +418,103 @@ void testLDivRing2()
 }
 
 {
-    runTest(testLDivRing1);
-    runTest(testLDivRing2);
-    
+    // runTest(testLDivRing1);
+    // runTest(testLDivRing2);
+
     // testLDivRing1
     // Nb Curves 4
     // Total Errors 0/20
-    // #  Time:8m42s
+    // #  Time:2m26s
     // 
     // testLDivRing2
     // Nb Curves 5
     // Total Errors 0/49
-    // #  Time:15m48s
+    // #  Time:14m24s
     // 
 
-    Console.Beep();
+    // Console.Beep();
 }
 
-public struct EllGroupSymb : IGroup<EllPt<RlElt>>
+Polynomial<K, Xi> Eq<K>(Polynomial<K, Xi> x, Polynomial<K, Xi> y, Polynomial<K, Xi> a1, Polynomial<K, Xi> a2,
+    Polynomial<K, Xi> a3, Polynomial<K, Xi> a4, Polynomial<K, Xi> a6)
+    where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    => (x.Pow(3) + a2 * x.Pow(2) + a4 * x + a6) - (y * y + a1 * x * y + a3 * y);
+
+void SymbOps()
 {
-    public EllGroupSymb(EllCoefs<RlElt> ellCoefs, KPoly<ZnInt> divPol)
-    {
-        Coefs = ellCoefs.Model;
-        Disc = ellCoefs.Disc;
-
-        if (Disc.P != 0 && Disc.P <= 3)
-            throw new GroupException(GroupExceptionType.GroupDef);
-
-        var longCoefs = ellCoefs.Flat().ToLongWeierstrassForm();
-        var (_, A2l, _, A4l, A6l) = longCoefs.Model;
-        var (rl, sl, tl, ul) = longCoefs.TransCoef;
-        LongForm = (A2l, A4l, A6l, rl, sl, tl, ul);
-
-        var shortCoefs = ellCoefs.Flat().ToShortWeierstrassForm();
-        var (_, _, _, A4s, A6s) = shortCoefs.Model;
-        var (rs, ss, ts, us) = shortCoefs.TransCoef;
-        ShortForm = (A4s, A6s, rs, ss, ts, us);
-
-        Field = $"F{Disc.P}[X,Y]";
-
-        Hash = (Coefs, ShortForm).GetHashCode();
-        (X, Y) = FG.BiVariateFracZnInt(Disc.P, 'X', 'Y');
-        var dvp = DivPolynomial = divPol;
-        EllEqLhs = Y.Pow(2) + a1 * X * Y + a3 * Y;
-        EllEqRhs = SimplifyDivPol(X.Pow(3) + a2 * X.Pow(2) + a4 * X + a6, dvp);
-        var eq = EllEq = EllEqLhs - EllEqRhs;
-        SimplifyPt = pt => SimplifyEllPt(pt, dvp, eq.Num);
-    }
-
-    public EllGroupSymb(RlElt a1, RlElt a2, RlElt a3, RlElt a4, RlElt a6, KPoly<ZnInt> divPol)
-        : this(new EllCoefs<RlElt>(a1, a2, a3, a4, a6), divPol)
-    {
-    }
-
-    public EllGroupSymb(RlElt a, RlElt b, KPoly<ZnInt> divPol) : this(a.Zero, a.Zero, a.Zero, a, b, divPol)
-    {
-    }
-
-    public EllGroupSymb(RlElt a, RlElt b, RlElt c, KPoly<ZnInt> divPol) : this(a.Zero, a, a.Zero, b, c, divPol)
-    {
-    }
-
-    public IEnumerator<EllPt<RlElt>> GetEnumerator() => GetElements().GetEnumerator();
-
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return GetEnumerator();
-    }
-
-    public bool Equals(IGroup<EllPt<RlElt>>? other) => other?.Hash == Hash;
-
-    public EllPt<RlElt> ConvertToShort(EllPt<RlElt> pt)
-    {
-        if (pt.IsO)
-            return pt;
-
-        try
-        {
-            var (_, _, r, s, t, u) = ShortForm;
-            var x = (pt.X - r) / (u * u);
-            var y = (pt.Y - t - s * u * u * x) / u.Pow(3);
-            return SimplifyPt(new(x, y));
-        }
-        catch (Exception e)
-        {
-            var (_, _, r, s, t, u) = ShortForm;
-            var x = (pt.X - r) / (u * u);
-            var y = (pt.Y - t - s * u * u * x) / u.Pow(3);
-            Console.WriteLine(e.Message);
-            Console.WriteLine(new { ShortForm });
-            Console.WriteLine(new{x});
-            Console.WriteLine(new{y});
-            return O;
-        }
-    }
-
-    public EllPt<RlElt> ConvertFromShort(EllPt<RlElt> pt)
-    {
-        if (pt.IsO)
-            return pt;
-
-        try
-        {
-            var (_, _, r, s, t, u) = ShortForm;
-            var x = u * u * pt.X + r;
-            var y = u.Pow(3) * pt.Y + s * u * u * pt.X + t;
-            return SimplifyPt(new(x, y));
-        }
-        catch (Exception e)
-        {
-            var (_, _, r, s, t, u) = ShortForm;
-            var x = u * u * pt.X + r;
-            var y = u.Pow(3) * pt.Y + s * u * u * pt.X + t;
-            Console.WriteLine(e.Message);
-            Console.WriteLine(new { ShortForm });
-            Console.WriteLine(new { x = SimplifyEll(x, DivPolynomial, EllEq.Num) });
-            Console.WriteLine(new { y = SimplifyEll(y, DivPolynomial, EllEq.Num) });
-            return O;
-        }
-    }
-
-    public EllPt<RlElt> ConvertToLong(EllPt<RlElt> pt)
-    {
-        if (pt.IsO)
-            return pt;
-
-        var (_, _, _, r, s, t, u) = LongForm;
-        var x = (pt.X - r) / (u * u);
-        var y = (pt.Y - t - s * u * u * x) / u.Pow(3);
-        return new(x, y);
-    }
-
-    public EllPt<RlElt> ConvertFromLong(EllPt<RlElt> pt)
-    {
-        if (pt.IsO)
-            return pt;
-
-        var (_, _, _, r, s, t, u) = LongForm;
-        var x = u * u * pt.X + r;
-        var y = u.Pow(3) * pt.Y + s * u * u * pt.X + t;
-        return new(x, y);
-    }
-
-    public Func<EllPt<RlElt>, EllPt<RlElt>> SimplifyPt { get; }
-
-    public int Hash { get; }
-
-    public string Eq => $"Elliptic curve {EllEqLhs} = {EllEqRhs}";
-
-    public string EqShort => $"Elliptic curve short form {Y * Y} = {X.Pow(3) + ShortForm.A * X + ShortForm.B}";
-
-    public string EqLong =>
-        $"Elliptic curve long form {Y * Y} = {X.Pow(3) + LongForm.A * X * X + LongForm.B * X + LongForm.C}";
-
-    public string Name => a1.IsZero() && a2.IsZero() && a3.IsZero()
-        ? $"Ell[{a4},{a6}]({Field})".Replace(" ", "")
-        : $"Ell[{a1},{a2},{a3},{a4},{a6}]({Field})".Replace(" ", "");
-
-    public string Field { get; set; }
-    public RlElt X { get; }
-    public RlElt Y { get; }
-    public (RlElt a1, RlElt a2, RlElt a3, RlElt a4, RlElt a6) Coefs { get; }
-    public RlElt Disc { get; }
-    public RlElt EllEqLhs { get; }
-    public RlElt EllEqRhs { get; }
-    public RlElt EllEq { get; }
-
-    public EllPt<RlElt> Pt
-    {
-        get
-        {
-            if (EllEqRhs.IsZero())
-                return new(X, Y.Zero);
-
-            return new(X, Y);
-        }
-    }
-
-    public KPoly<ZnInt> DivPolynomial { get; }
-    public (RlElt A, RlElt B, RlElt r, RlElt s, RlElt t, RlElt u) ShortForm { get; }
-    public (RlElt A, RlElt B, RlElt C, RlElt r, RlElt s, RlElt t, RlElt u) LongForm { get; }
-    public string ShortFormStr => $"Ell[{ShortForm.A},{ShortForm.B}]({Field})".Replace(" ", "");
-    public string LongFormStr => $"Ell[0,{LongForm.A},0,{LongForm.B},{LongForm.C}]({Field})".Replace(" ", "");
-    public RlElt a1 => Coefs.a1;
-    public RlElt a2 => Coefs.a2;
-    public RlElt a3 => Coefs.a3;
-    public RlElt a4 => Coefs.a4;
-    public RlElt a6 => Coefs.a6;
-
-    public RlElt[] ArrCoefs => [a1, a2, a3, a4, a6];
-
-    public EllPt<RlElt> this[params ValueType[] us]
-    {
-        get
-        {
-            if (us.Length == 2 && us[0] is int x0 && us[1] is int y0)
-            {
-                var (x1, y1) = (ShortForm.A.One * x0, ShortForm.A.One * y0);
-                if (!Contains(x1, y1))
-                    throw new GroupException(GroupExceptionType.GroupDef);
-
-                return new EllPt<RlElt>(x1, y1);
-            }
-
-            if (us.Length == 2 && us[0] is RlElt x && us[1] is RlElt y)
-            {
-                if (!Contains(x, y))
-                    throw new GroupException(GroupExceptionType.GroupDef);
-
-                return new EllPt<RlElt>(x, y);
-            }
-
-            throw new GroupException(GroupExceptionType.GroupDef);
-        }
-    }
-
-    public IEnumerable<EllPt<RlElt>> GetElements()
-    {
-        yield return new EllPt<RlElt>();
-    }
-
-    public IEnumerable<EllPt<RlElt>> GetGenerators()
-    {
-        yield return new EllPt<RlElt>();
-    }
-
-    public bool ContainsPt(EllPt<RlElt> pt)
-    {
-        if (pt.IsO)
-            return true;
-
-        return Contains(pt.X, pt.Y);
-    }
-
-    public bool Contains(RlElt X0, RlElt Y0)
-    {
-        var lhs = Y0 * Y0 + a1 * X0 * Y0 + a3 * Y0;
-        var rhs = X0.Pow(3) + a2 * X0 * X0 + a4 * X0 + a6;
-        var diff = SimplifyEll(lhs - rhs, DivPolynomial, EllEq.Num);
-        return diff.IsInfinity || diff.IsZero();
-    }
-
-    public EllPt<RlElt> O => new();
-    public EllPt<RlElt> Neutral() => O;
-
-    public EllPt<RlElt> Invert(EllPt<RlElt> P)
-    {
-        if (P.IsO)
-            return P;
-
-        if (!Contains(P.X, P.Y))
-            throw new GroupException(GroupExceptionType.GroupDef);
-
-        var P1 = ConvertToShort(P);
-        return ConvertFromShort(new EllPt<RlElt>(P1.X, -P1.Y));
-    }
-
-    public EllPt<RlElt> Op(EllPt<RlElt> e1, EllPt<RlElt> e2)
-    {
-        if (e1.IsO)
-            return e2;
-
-        if (e2.IsO)
-            return e1;
-
-        if (!Contains(e1.X, e1.Y) || !Contains(e2.X, e2.Y))
-        {
-            Console.WriteLine(new { e1, e2, E = this });
-            throw new GroupException(GroupExceptionType.GroupDef);
-        }
-
-        var (e1_, e2_) = (ConvertToShort(e1), ConvertToShort(e2));
-        var (x1, y1, x2, y2) = (e1_.X, e1_.Y, e2_.X, e2_.Y);
-        if (!SimplifyEll(x1 - x2, DivPolynomial, EllEq.Num).IsZero())
-        {
-            var alpha = (y2 - y1) / (x2 - x1);
-            var x3 = alpha.Pow(2) - x1 - x2;
-            var y3 = -y1 + alpha * (x1 - x3);
-            return ConvertFromShort(new(x3, y3));
-        }
-        else
-        {
-            if (!SimplifyEll(y1 + y2, DivPolynomial, EllEq.Num).IsZero())
-            {
-                if (y1.IsZero())
-                {
-                    Console.WriteLine(new { y1, y2 });
-                    return new();
-                }
-
-                var alpha = (3 * x1.Pow(2) + ShortForm.A) / (2 * y1);
-                var x3 = alpha.Pow(2) - 2 * x1;
-                var y3 = -y1 + alpha * (x1 - x3);
-                return ConvertFromShort(new(x3, y3));
-            }
-            else
-                return new();
-        }
-    }
-
-    public override int GetHashCode() => Hash;
-
-    public override string ToString() => Name;
-
-    RlElt FastPowRl(RlElt a, BigInteger k)
-    {
-        if (k == 0)
-            return a.One;
-
-        if (k < 0)
-            return FastPowRl(a.Inv(), -k);
-
-        var (r, a0, e0) = (a.One, a, k);
-        while (e0 > 0)
-        {
-            if (e0 % 2 == 1)
-                r = SimplifyEll(r * a0, DivPolynomial, EllEq.Num);
-
-            e0 >>= 1;
-            a0 = SimplifyEll(a0 * a0, DivPolynomial, EllEq.Num);
-        }
-
-        return r;
-    }
-
-    public EllPt<RlElt> FrobRl(EllPt<RlElt> pt, int n = 1)
-    {
-        if (pt.IsO)
-            return pt;
-
-        var p = pt.X.P;
-        var x = FastPowRl(pt.X, BigInteger.Pow(p, n));
-        var y = FastPowRl(pt.Y, BigInteger.Pow(p, n));
-
-        if (x.IsIndeterminate || y.IsIndeterminate)
-            throw new("Indeterminate exception");
-        if (x.IsInfinity || y.IsInfinity)
-            return new();
-
-        return new(x, y);
-    }
-
-    (GFelt num, GFelt denom) Substitute(RlElt P1, EllPt<GFelt> P2)
-    {
-        if (P1.Num.Coefs.Any(c => c.Denom.Substitute(P2.X).IsZero()) ||
-            P1.Denom.Coefs.Any(c => c.Denom.Substitute(P2.X).IsZero()))
-            return (P2.X.Zero, P2.X.Zero);
-
-        var num = P1.Num.Coefs.Select((c, i) => P2.Y.Pow(i) * c.Num.Substitute(P2.X) / c.Denom.Substitute(P2.X))
-            .ToVec().Sum();
-        var denom = P1.Denom.Coefs.Select((c, i) => P2.Y.Pow(i) * c.Num.Substitute(P2.X) / c.Denom.Substitute(P2.X))
-            .ToVec().Sum();
-
-        return (num, denom);
-    }
-
-    public EllPt<GFelt> SubstitutePt(EllPt<RlElt> P1, EllPt<GFelt> P2)
-    {
-        if (P1.IsO)
-            return new();
-
-        var x = Substitute(P1.X, P2);
-        var y = Substitute(P1.Y, P2);
-        if (x.denom.IsZero() || y.denom.IsZero())
-            return new();
-
-        return new(x.num / x.denom, y.num / y.denom);
-    }
-
-    public static KPoly<ZnInt> SimplifyDivPol(KPoly<ZnInt> P, KPoly<ZnInt> divPoly)
-    {
-        var (quo, rem) = P.Div(divPoly);
-        if (rem.IsZero())
-            return rem;
-
-        if (quo.IsZero())
-        {
-            var gcd = Ring.FastGCD(divPoly, P);
-            if (gcd.Degree > 1)
-                return P.Zero;
-
-            return P;
-        }
-
-        return SimplifyDivPol(rem, divPoly);
-    }
-
-    public static Frac<ZnInt> SimplifyDivPol(Frac<ZnInt> P, KPoly<ZnInt> divPoly)
-    {
-        var num = SimplifyDivPol(P.Num, divPoly);
-        var denom = SimplifyDivPol(P.Denom, divPoly);
-        return new(num, denom);
-    }
-
-    public static RlElt SimplifyDivPol(RlElt P, KPoly<ZnInt> divPoly)
-    {
-        var num = new KPoly<Frac<ZnInt>>(P.x, P.Num.KZero,
-            P.Num.Coefs.Select(n0 => SimplifyDivPol(n0, divPoly)).ToArray());
-        var denom = new KPoly<Frac<ZnInt>>(P.x, P.Denom.KZero,
-            P.Denom.Coefs.Select(n0 => SimplifyDivPol(n0, divPoly)).ToArray());
-        return new(num, denom);
-    }
-
-    public static KPoly<Frac<ZnInt>> SimplifyEll(KPoly<Frac<ZnInt>> P, KPoly<Frac<ZnInt>> EllEq)
-    {
-        var (quo, rem) = P.Div(EllEq);
-        if (quo.IsZero())
-            return P;
-
-        return SimplifyEll(rem, EllEq);
-    }
-
-    public static RlElt SimplifyEll(RlElt P, KPoly<ZnInt> divPoly, KPoly<Frac<ZnInt>> EllEq)
-    {
-        var num = SimplifyEll(P.Num, EllEq);
-        var denom = SimplifyEll(P.Denom, EllEq);
-        var P2 = new RlElt(num, denom);
-        var P3 = SimplifyDivPol(P2, divPoly);
-        return P3;
-    }
-
-    public static EllPt<RlElt> SimplifyEllPt(EllPt<RlElt> Pt, KPoly<ZnInt> divPoly, KPoly<Frac<ZnInt>> EllEq)
-    {
-        var x = SimplifyEll(Pt.X, divPoly, EllEq);
-        var y = SimplifyEll(Pt.Y, divPoly, EllEq);
-        if (x.IsIndeterminate || y.IsIndeterminate)
-            throw new("Indeterminate exception");
-        if (x.IsInfinity || y.IsInfinity)
-            return new();
-
-        return new(x, y);
-    }
-
-    public static EllGroupSymb FromEllGroup(EllGroup<ZnInt> E, KPoly<ZnInt> divPoly)
-    {
-        var Y = FG.BiVariateFracZnInt(divPoly.P, 'X', 'Y').Y;
-        var (a1, a2, a3, a4, a6) = E.Coefs;
-        var (A1, A2, A3, A4, A6) = (a1 * Y.KOne * Y.One, a2 * Y.KOne * Y.One, a3 * Y.KOne * Y.One, a4 * Y.KOne * Y.One,
-            a6 * Y.KOne * Y.One);
-        return new(A1, A2, A3, A4, A6, divPoly);
-    }
+    Ring.DisplayPolynomial = MonomDisplay.StarPowFct;
+    var xis = Ring.Polynomial(Rational.KOne(), MonomOrder.Lex, "x1", "x2", "x3", "y1", "y2", "y3", "a1", "a2", "a3",
+        "a4", "a6", "alpha");
+    var (x1, x2, x3, y1, y2, y3) = xis.Deconstruct();
+    var (a1, a2, a3, a4, a6, alpha) = xis.Skip(6).Deconstruct();
+
+    var eq1 = Eq(x1, y1, a1, a2, a3, a4, a6);
+    var eq3 = Eq(x3, y3, a1, a2, a3, a4, a6);
+    var eq2 = eq3.Substitute(alpha * (x3 - x1) + y1, "y3");
+    var dec = Ring.Decompose(eq2, "x3").Item1;
+    Console.WriteLine($"{eq3} = 0");
+    dec.Println($"{eq2} = 0");
+    Console.WriteLine();
+
+    Console.WriteLine("case -P1 = P3");
+    Console.WriteLine($"var x3 = {x1};");
+    Console.WriteLine($"var y3 = {-a1 * x1 - a3 - y1};");
+    Console.WriteLine();
+
+    var sol = -(dec[x3 * x3] + x1 + x2);
+    Console.WriteLine("case P1 + P2 = P3");
+    Console.WriteLine($"var {alpha} = ({y2 - y1}) / ({x2 - x1});");
+    Console.WriteLine($"var x3 = {sol};");
+    Console.WriteLine($"var y3 = {alpha * (x3 - x1) + y1};");
+    Console.WriteLine();
+
+    Console.WriteLine("case 2*P1 = P3");
+    Console.WriteLine($"var {alpha} = ({eq1.D("x1")}) / ({-eq1.D("y1")});");
+    Console.WriteLine($"var x3 = {sol.Substitute(x1, "x2")};");
+    Console.WriteLine($"var y3 = {alpha * (x3 - x1) + y1};");
+    Console.WriteLine();
+}
+
+void testOps1()
+{
+    var E = EC.EllGroup([7, 0, 0, 16, 0]);
+    Console.WriteLine(E.Eq);
+    var O = E.O;
+    EllPt<Rational> P = ("-8", "40");
+    EllPt<Rational> Q = ("4", "4");
+    Console.WriteLine(new { O, P, Q });
+    Console.WriteLine($"-P = {E.Invert(P)}");
+    Console.WriteLine($"-Q = {E.Invert(Q)}");
+    Console.WriteLine($"P + Q = {E.Op(P, Q)}");
+    Console.WriteLine($"2P = {E.Op(P, P)}");
+    Console.WriteLine($"2P = {E.Times(P, 2)}");
+    Console.WriteLine($"2Q = {E.Times(Q, 2)}");
+    Console.WriteLine($"2P + 2Q = {E.Op(E.Times(P, 2), E.Times(Q, 2))}");
+    Console.WriteLine($"2(P + Q) = {E.Times(E.Op(P, Q), 2)}");
+    Console.WriteLine();
+}
+
+void testOps2()
+{
+    var E = EC.EllGroup([1, -1, 1, -14, 29]);
+    Console.WriteLine(E.Eq);
+    var O = E.O;
+    EllPt<Rational> P = ("-3", "7");
+    EllPt<Rational> Q = ("9", "19");
+    Console.WriteLine(new { O, P, Q });
+    Console.WriteLine($"-P = {E.Invert(P)}");
+    Console.WriteLine($"-Q = {E.Invert(Q)}");
+    Console.WriteLine($"P + Q = {E.Op(P, Q)}");
+    Console.WriteLine($"2P = {E.Op(P, P)}");
+    Console.WriteLine($"2P = {E.Times(P, 2)}");
+    Console.WriteLine($"2Q = {E.Times(Q, 2)}");
+    Console.WriteLine($"2P + 2Q = {E.Op(E.Times(P, 2), E.Times(Q, 2))}");
+    Console.WriteLine($"2(P + Q) = {E.Times(E.Op(P, Q), 2)}");
+    Console.WriteLine();
+}
+
+{
+    SymbOps();
+    testOps1();
+    testOps2();
 }
