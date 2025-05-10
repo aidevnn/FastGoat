@@ -1,10 +1,10 @@
-using System.Numerics;
+using System.Collections;
 using FastGoat.Commons;
 
 namespace FastGoat.Structures.VecSpace;
 
 public readonly struct KPoly<K> : IElt<KPoly<K>>, IRingElt<KPoly<K>>, IFieldElt<KPoly<K>>, IModuleElt<K, KPoly<K>>,
-    IVsElt<K, KPoly<K>>
+    IVsElt<K, KPoly<K>>, IEnumerable<K> 
     where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
 {
     public static double Abs(KPoly<K> t)
@@ -308,6 +308,10 @@ public readonly struct KPoly<K> : IElt<KPoly<K>>, IRingElt<KPoly<K>>, IFieldElt<
     }
 
     public bool Invertible() => !IsZero() && Degree == 0;
+    public IEnumerator<K> GetEnumerator() => Coefs.Select(e => e).GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
     public override int GetHashCode() => Hash;
 
     public override string ToString()

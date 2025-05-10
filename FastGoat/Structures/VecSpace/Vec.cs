@@ -153,10 +153,7 @@ public readonly struct Vec<A> : IEnumerable<A>, IElt<Vec<A>>, IRingElt<Vec<A>>, 
 
     public IEnumerator<A> GetEnumerator() => V.Ei.Select(e => e).GetEnumerator();
 
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return GetEnumerator();
-    }
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     public override int GetHashCode() => Hash;
 

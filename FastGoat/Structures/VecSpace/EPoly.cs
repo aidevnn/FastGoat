@@ -1,7 +1,9 @@
+using System.Collections;
+
 namespace FastGoat.Structures.VecSpace;
 
 public readonly struct EPoly<K> : IElt<EPoly<K>>, IRingElt<EPoly<K>>, IFieldElt<EPoly<K>>, IModuleElt<K, EPoly<K>>,
-    IVsElt<K, EPoly<K>>
+    IVsElt<K, EPoly<K>>, IEnumerable<K>
     where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
 {
     public KPoly<K> F { get; }
@@ -42,6 +44,10 @@ public readonly struct EPoly<K> : IElt<EPoly<K>>, IRingElt<EPoly<K>>, IFieldElt<
         var gcd = (Poly * x + F * y).Div(F).rem;
         return new(F, (x / gcd).Div(F).rem);
     }
+
+    public IEnumerator<K> GetEnumerator() => Poly.GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     public bool Invertible() => !IsZero();
 
