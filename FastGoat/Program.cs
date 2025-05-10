@@ -417,9 +417,10 @@ void testLDivRing2()
     LDivRing([1, 1, 1, -17714, 900047]);
 }
 
+void testLDiv()
 {
-    // runTest(testLDivRing1);
-    // runTest(testLDivRing2);
+    runTest(testLDivRing1);
+    runTest(testLDivRing2);
 
     // testLDivRing1
     // Nb Curves 4
@@ -513,8 +514,58 @@ void testOps2()
     Console.WriteLine();
 }
 
+ConcreteGroup<EllPt<GFelt>> EllFq(BigInteger[] curve, int q)
 {
-    SymbOps();
-    testOps1();
-    testOps2();
+    var g = FG.FqX(q, 'a');
+    EllGroup<GFelt> E = EC.EllGroup(curve).ToGF(g);
+    if (q > 3000)
+        throw new();
+
+    var y = FG.KPoly('y', g);
+    var ell = q.Range().Select(k => g.Pow(k)).Prepend(g.Zero)
+        .Select(x => (x, eq: (y.Pow(2) + E.a1 * x * y + E.a3 * y) - (x.Pow(3) + E.a2 * x.Pow(2) + E.a4 * x + E.a6)))
+        .SelectMany(e => IntFactorisation.MusserSFF(e.eq)
+            .SelectMany(f => IntFactorisation.BerlekampProbabilisticAECF(f.g, g, q))
+            .Where(f => f.Degree == 1)
+            .Select(f => (e.x, y: -f[0])))
+        .Select(e => new EllPt<GFelt>(e.x, e.y))
+        .Where(e => E.Contains(e.X, e.Y))
+        .SelectMany(pt => new[] { pt, E.Invert(pt) })
+        .Order()
+        .ToArray();
+
+    return Group.Generate(E, ell);
+}
+
+void testChar2()
+{
+    for (int i = 1; i <= 10; i++)
+    {
+        var gEll = EllFq([1, 0, 0, 1, 0], 2.Pow(i));
+        var abEll = Group.AbelianDecompositions(gEll);
+        var abType = abEll.abType.Select(e => e.o).Glue(" x ");
+        abEll.abType.Println(l => $"{l.g} of order {l.o}", $"Generators of {gEll.ShortName} ~ [{abType}]");
+        Console.WriteLine();
+    }
+}
+
+void testChar3()
+{
+    for (int i = 1; i <= 7; i++)
+    {
+        var gEll = EllFq([1, 0, 2, 1, 0], 3.Pow(i));
+        var abEll = Group.AbelianDecompositions(gEll);
+        var abType = abEll.abType.Select(e => e.o).Glue(" x ");
+        abEll.abType.Println(l => $"{l.g} of order {l.o}", $"Generators of {gEll.ShortName} ~ [{abType}]");
+        Console.WriteLine();
+    }
+}
+
+{
+    // testLDiv();
+    // SymbOps();
+    // testOps1();
+    // testOps2();
+    testChar2();
+    testChar3();
 }
