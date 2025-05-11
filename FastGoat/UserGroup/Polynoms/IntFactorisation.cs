@@ -185,6 +185,16 @@ public static partial class IntFactorisation
         return all;
     }
 
+    public static List<(KPoly<K> g, int q, int m)> FirrFsepBerlekampAECF<K>(KPoly<K> f, K a0, BigInteger q)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        List<(KPoly<K> g, int q, int m)> all = new();
+        foreach (var (g, q0, m) in GianniTrager(f))
+            all.AddRange(BerlekampProbabilisticAECF(g, a0, q).Select(g0 => (g0, q0, m)));
+
+        return all;
+    }
+
     public static EPoly<K> Mk<K>(EPoly<K> g, int k, BigInteger q) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         if (BigInteger.IsPow2(q))
