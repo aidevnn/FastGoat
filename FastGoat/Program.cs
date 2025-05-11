@@ -516,49 +516,164 @@ void testOps2()
 
 ConcreteGroup<EllPt<GFelt>> EllFq(BigInteger[] curve, int q)
 {
-    var g = FG.FqX(q, 'a');
+    var g = NumberTheory.PrimitiveRoot(FG.FqX(q, 'a'));
     EllGroup<GFelt> E = EC.EllGroup(curve).ToGF(g);
     if (q > 3000)
         throw new();
 
+    var d = 2 * double.Sqrt(q);
     var y = FG.KPoly('y', g);
-    var ell = q.Range().Select(k => g.Pow(k)).Prepend(g.Zero)
-        .Select(x => (x, eq: (y.Pow(2) + E.a1 * x * y + E.a3 * y) - (x.Pow(3) + E.a2 * x.Pow(2) + E.a4 * x + E.a6)))
-        .SelectMany(e => IntFactorisation.MusserSFF(e.eq)
-            .SelectMany(f => IntFactorisation.BerlekampProbabilisticAECF(f.g, g, q))
-            .Where(f => f.Degree == 1)
-            .Select(f => (e.x, y: -f[0])))
-        .Select(e => new EllPt<GFelt>(e.x, e.y))
-        .Where(e => E.Contains(e.X, e.Y))
-        .SelectMany(pt => new[] { pt, E.Invert(pt) })
-        .Order()
-        .ToArray();
+    var gens = new HashSet<EllPt<GFelt>>();
+    var set = new HashSet<EllPt<GFelt>>();
+    set.Add(E.Neutral());
+    var idx = 0;
+    foreach (var x in q.SeqLazy().Shuffle().Select(k => g.Pow(k)).Prepend(g.Zero))
+    {
+        if (set.Any(pt => !pt.IsO && pt.X.Equals(x)))
+            continue;
 
-    return Group.Generate(E, ell);
+        var eq = (y.Pow(2) + E.a1 * x * y + E.a3 * y) - (x.Pow(3) + E.a2 * x.Pow(2) + E.a4 * x + E.a6);
+        var pts = IntFactorisation.FirrFsepBerlekampAECF(eq, g, q)
+            .Where(f => f.g.Degree == 1)
+            .Select(f => (x, y: -f.g[0]))
+            .Select(e => new EllPt<GFelt>(e.x, e.y))
+            .Where(e => E.Contains(e.X, e.Y))
+            .ToList();
+
+        idx++;
+        if (pts.Count == 0)
+            continue;
+
+        gens.UnionWith(pts);
+        set = Group.GenerateElements(E, set, pts);
+        var count = set.Count;
+        // Console.WriteLine(new { x, newGens = pts.Count, ptsCount = count });
+        if (idx > g.P && idx > d && double.Abs(count - q - 1) < d)
+            break;
+    }
+
+    return Group.Generate(E, gens.ToArray());
 }
 
-void testChar2()
+// Mathematics of Public Key Cryptography. Version 2.0
+// Steven D Galbraith
+// CHAPTER 9. ELLIPTIC CURVES
+// 9.10. FROBENIUS MAP
+// Corollary 9.10.9 page 185
+(EPoly<Rational> alpha, EPoly<Rational> beta) SolveFrobTrace(EllGroup<Rational> E0, int p)
 {
-    for (int i = 1; i <= 10; i++)
+    var t = EC.EllAp(E0, p);
+    var x = FG.QPoly();
+    var (alpha, beta) = IntFactorisation.AlgebraicRoots(x.Pow(2) - t * x + p).Deconstruct();
+    return (alpha, beta);
+}
+
+int EllCardExt(EPoly<Rational> alpha, EPoly<Rational> beta, int q)
+{
+    var p = Primes10000.First(p => q % p == 0);
+    var n = (int)double.Round(double.Log(q) / double.Log(p));
+    var card = (1 - alpha.Pow(n)) * (1 - beta.Pow(n));
+    return (int)card[0].Num;
+}
+
+void testEllFq(BigInteger[] curve, int p)
+{
+    var n = (int)(double.Log(1000) / double.Log(p));
+    var E = EC.EllGroup(curve);
+    var (alpha, beta) = SolveFrobTrace(E, p);
+    for (int i = 1; i <= n; i++)
     {
-        var gEll = EllFq([1, 0, 0, 1, 0], 2.Pow(i));
+        var q = p.Pow(i);
+        var card = EllCardExt(alpha, beta, q);
+        Console.WriteLine($"q={q,-6} #{$"{E.ToGF(q)}",-25} = {card}");
+        var gEll = EllFq(curve, q);
         var abEll = Group.AbelianDecompositions(gEll);
         var abType = abEll.abType.Select(e => e.o).Glue(" x ");
         abEll.abType.Println(l => $"{l.g} of order {l.o}", $"Generators of {gEll.ShortName} ~ [{abType}]");
+        if (card != gEll.Count())
+            throw new();
+
         Console.WriteLine();
     }
 }
 
-void testChar3()
+void testEllFqCard(BigInteger[] curve, int p, bool bf = false)
 {
-    for (int i = 1; i <= 7; i++)
+    var n = (int)(double.Log(100000) / double.Log(p));
+    var E = EC.EllGroup(curve);
+    var (alpha, beta) = SolveFrobTrace(E, p);
+    for (int i = 1; i <= n; i++)
     {
-        var gEll = EllFq([1, 0, 2, 1, 0], 3.Pow(i));
-        var abEll = Group.AbelianDecompositions(gEll);
-        var abType = abEll.abType.Select(e => e.o).Glue(" x ");
-        abEll.abType.Println(l => $"{l.g} of order {l.o}", $"Generators of {gEll.ShortName} ~ [{abType}]");
-        Console.WriteLine();
+        var q = p.Pow(i);
+        var cardExt = EllCardExt(alpha, beta, q);
+        if (q > 3000 || !bf)
+            Console.WriteLine($"q={q,-6} #{$"{E.ToGF(q)}",-25} = {cardExt}");
+        else
+        {
+            var cardBf = EllCardBF(E, q);
+            Console.WriteLine($"q={q,-6} #{$"{E.ToGF(q)}",-25} = {cardExt,-7} cardBf = {cardBf}");
+            if (cardExt != cardBf)
+                throw new();
+        }
     }
+
+    Console.WriteLine();
+}
+
+IEnumerable<GFelt> SetFq(GFelt g)
+{
+    var (p, n) = (g.P, g.F.Degree);
+    yield return g.Zero;
+    var x = g.One;
+    for (int i = 0; i < p.Pow(n) - 1; i++)
+    {
+        yield return x;
+        x *= g;
+    }
+}
+
+int EllCardBF(EllGroup<Rational> E0, int q)
+{
+    var card = 1;
+    var g = NumberTheory.PrimitiveRoot(FG.FqX(q, 'a'));
+    EllGroup<GFelt> E = E0.ToGF(g);
+    if (int.IsPow2(q))
+    {
+        // Mathematics of Public Key Cryptography. Version 2.0
+        // Steven D Galbraith
+        // CHAPTER 2. BASIC ALGORITHMIC NUMBER THEORY
+        // 2.14.2 Solving Quadratic Equations in Finite Fields
+        // Exercise 2.14.7. page 67
+        foreach (var x in SetFq(g))
+        {
+            var a = E.a1 * x + E.a3;
+            var b = x.Pow(3) + E.a2 * x.Pow(2) + E.a4 * x + E.a6;
+            if (a.IsZero())
+            {
+                if (b.IsZero() || NumberTheory.LegendreJacobiGf(b).IsOne())
+                    ++card;
+            }
+            else
+            {
+                if (IntFactorisation.Mk(b / a.Pow(2), 1, q).IsZero())
+                    card += 2;
+            }
+        }
+    }
+    else
+    {
+        var Eql = E.ToLongWeierstrassForm();
+        foreach (var x in SetFq(g))
+        {
+            var resQuad = NumberTheory.LegendreJacobiGf(x.Pow(3) + Eql.a2 * x.Pow(2) + Eql.a4 * x + Eql.a6);
+            if (resQuad.IsOne())
+                card += 2;
+            else if (resQuad.IsZero())
+                ++card;
+        }
+    }
+
+    return card;
 }
 
 {
@@ -566,6 +681,27 @@ void testChar3()
     // SymbOps();
     // testOps1();
     // testOps2();
-    testChar2();
-    testChar3();
+
+    BigInteger[][] curves =
+    [
+        [0, 1, 1, 0, 1],
+        [0, 0, 1, 0, 1],
+        [1, 0, 1, 0, 1],
+        [1, 1, 0, 0, 1],
+        [1, 0, 0, 1, 0],
+        [1, 0, 2, 0, 1],
+        [2, 0, 0, 1, 0]
+    ];
+
+    foreach (var p in new[] { 2, 3, 5 })
+    {
+        foreach (var curve in curves.Where(e => !EC.EllCoefs(e).ToZnInt(p).Disc.IsZero()))
+            testEllFq(curve, p);
+    }
+
+    foreach (var p in Primes10000.Take(10))
+    {
+        foreach (var curve in curves.Where(e => !EC.EllCoefs(e).ToZnInt(p).Disc.IsZero()))
+            testEllFqCard(curve, p, bf: true);
+    }
 }
