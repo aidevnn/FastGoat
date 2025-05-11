@@ -21,7 +21,6 @@ public struct EllCoefs<K> where K : struct, IFieldElt<K>, IRingElt<K>, IElt<K>
         c6 = -b2.Pow(3) + 36 * b2 * b4 - 216 * b6;
 
         Disc = -b2 * b2 * b8 - 8 * b4.Pow(3) - 27 * b6 * b6 + 9 * b2 * b4 * b6;
-        j = c4.Pow(3) / Disc;
     }
 
     public EllCoefs(K a1, K a2, K a3, K a4, K a6) : this(a1, a2, a3, a4, a6, a1.Zero, a1.Zero, a1.Zero, a1.One)
@@ -49,7 +48,7 @@ public struct EllCoefs<K> where K : struct, IFieldElt<K>, IRingElt<K>, IElt<K>
     public K b8 { get; }
     public K c4 { get; }
     public K c6 { get; }
-    public K j { get; }
+    public K j => c4.Pow(3) / Disc;
     public K r { get; }
     public K s { get; }
     public K t { get; }

@@ -94,6 +94,12 @@ public static class EC
         return new(a1.ToZnInt(p), a2.ToZnInt(p), a3.ToZnInt(p), a4.ToZnInt(p), a5.ToZnInt(p));
     }
 
+    public static EllCoefs<ZnInt> ToZnInt(this EllCoefs<Rational> E, int p)
+    {
+        var (a1, a2, a3, a4, a5) = E.Model;
+        return new(a1.ToZnInt(p), a2.ToZnInt(p), a3.ToZnInt(p), a4.ToZnInt(p), a5.ToZnInt(p));
+    }
+
     public static EllGroup<GFelt> ToGF(this EllGroup<Rational> E, BigInteger q, char a = 'a')
     {
         var (a1, a2, a3, a4, a5) = E.Coefs;
