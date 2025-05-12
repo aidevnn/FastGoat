@@ -2,8 +2,11 @@ using System.Numerics;
 using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.VecSpace;
+using FastGoat.UserGroup;
 using FastGoat.UserGroup.EllCurve;
 using FastGoat.UserGroup.Integers;
+using FastGoat.UserGroup.Polynoms;
+using GFelt = FastGoat.Structures.VecSpace.EPoly<FastGoat.UserGroup.Integers.ZnInt>;
 
 namespace FastGoat.Examples;
 
@@ -48,6 +51,108 @@ public static class EllipticCurvesPart2
         Console.WriteLine();
 
         return (rank, L, N, ellAn, tate, E);
+    }
+
+    static void EllFq(BigInteger[] curve, int p)
+    {
+        var n = (int)(double.Log(1000) / double.Log(p));
+        var E = EC.EllGroup(curve);
+        for (int i = 1; i <= n; i++)
+        {
+            var q = p.Pow(i);
+            var card = q + 1 - EC.EllAq(E, q);
+            Console.WriteLine($"q={q,-6} #{$"{E.ToGF(q)}",-25} = {card}");
+            var gEll = EC.EllFq(curve, q);
+            var abEll = Group.AbelianDecompositions(gEll);
+            var abType = abEll.abType.Select(e => e.o).Glue(" x ");
+            abEll.abType.Println(l => $"{l.g} of order {l.o}", $"Generators of {gEll.ShortName} ~ [{abType}]");
+            if (card != gEll.Count())
+                throw new();
+
+            Console.WriteLine();
+        }
+    }
+
+    static IEnumerable<GFelt> SetFq(GFelt g)
+    {
+        var (p, n) = (g.P, g.F.Degree);
+        yield return g.Zero;
+        var x = g.One;
+        for (int i = 0; i < p.Pow(n) - 1; i++)
+        {
+            yield return x;
+            x *= g;
+        }
+    }
+
+    static int EllCardBF(EllGroup<Rational> E0, int q)
+    {
+        var card = 1;
+        var g = FG.FqX(q, 'a');
+        EllGroup<GFelt> E = E0.ToGF(g);
+        if (int.IsPow2(q))
+        {
+            // Mathematics of Public Key Cryptography. Version 2.0
+            // Steven D Galbraith
+            // CHAPTER 2. BASIC ALGORITHMIC NUMBER THEORY
+            // 2.14.2 Solving Quadratic Equations in Finite Fields
+            // Exercise 2.14.7. page 67
+            foreach (var x in SetFq(g))
+            {
+                var a = E.a1 * x + E.a3;
+                var b = x.Pow(3) + E.a2 * x.Pow(2) + E.a4 * x + E.a6;
+                if (a.IsZero())
+                {
+                    if (b.IsZero() || NumberTheory.LegendreJacobiGf(b).IsOne())
+                        ++card;
+                }
+                else
+                {
+                    if (IntFactorisation.Mk(b / a.Pow(2), 1, q).IsZero())
+                        card += 2;
+                }
+            }
+        }
+        else
+        {
+            var Eql = E.ToLongWeierstrassForm();
+            foreach (var x in SetFq(g))
+            {
+                var resQuad = NumberTheory.LegendreJacobiGf(x.Pow(3) + Eql.a2 * x.Pow(2) + Eql.a4 * x + Eql.a6);
+                if (resQuad.IsOne())
+                    card += 2;
+                else if (resQuad.IsZero())
+                    ++card;
+            }
+        }
+
+        return card;
+    }
+
+    static void EllFqCard(BigInteger[] curve, int p, bool bf = false)
+    {
+        var n = (int)(double.Log(100000) / double.Log(p));
+        var E = EC.EllGroup(curve);
+        var ellAp = EC.EllAp(E, p);
+        for (int i = 1; i <= n; i++)
+        {
+            var q = p.Pow(i);
+            var aq = EC.EllAq(ellAp, p, i);
+            var card = q + 1 - aq;
+            if (q > 3000 || !bf)
+            {
+                Console.WriteLine($"q={q,-6} #{$"{E.ToGF(q)}",-25} = {card}");
+            }
+            else
+            {
+                var cardBf = EllCardBF(E, q);
+                Console.WriteLine($"q={q,-6} #{$"{E.ToGF(q)}",-25} = {card,-7} cardBf = {cardBf}");
+                if (card != cardBf)
+                    throw new();
+            }
+        }
+
+        Console.WriteLine();
     }
 
     public static void Example1TateAlgorithm()
@@ -234,5 +339,79 @@ public static class EllipticCurvesPart2
             if (actualAp != expectedAp)
                 throw new($"p={p} ap={actualAp} expected={expectedAp}");
         }
+    }
+
+    public static void Example7EllFqCharacteristic_2_3()
+    {
+        BigInteger[][] curves =
+        [
+            [0, 1, 1, 0, 1],
+            [0, 0, 1, 0, 1],
+            [1, 0, 1, 0, 1],
+            [1, 1, 0, 0, 1],
+            [1, 0, 0, 1, 0],
+            [1, 0, 2, 0, 1],
+            [2, 0, 0, 1, 0]
+        ];
+        
+        {
+            var p = 2;
+            foreach (var curve in curves.Where(e => !EC.EllCoefs(e).ToZnInt(p).Disc.IsZero()))
+                EllFq(curve, p);
+        }
+
+        {
+            var p = 3;
+            foreach (var curve in curves.Where(e => !EC.EllCoefs(e).ToZnInt(p).Disc.IsZero()))
+                EllFq(curve, p);
+        }
+
+        {
+            var p = 7;
+            foreach (var curve in curves.Where(e => !EC.EllCoefs(e).ToZnInt(p).Disc.IsZero()))
+                EllFq(curve, p);
+        }
+
+        {
+            var p = 17;
+            foreach (var curve in curves.Where(e => !EC.EllCoefs(e).ToZnInt(p).Disc.IsZero()))
+                EllFq(curve, p);
+        }
+
+    }
+
+    public static void Example8CountingPointsFq()
+    {
+        BigInteger[][] curves =
+        [
+            [0, 1, 1, 0, 1],
+            [0, 0, 1, 0, 1],
+            [1, 0, 1, 0, 1],
+            [1, 1, 0, 0, 1],
+            [1, 0, 0, 1, 0],
+            [1, 0, 2, 0, 1],
+            [2, 0, 0, 1, 0]
+        ];
+
+        foreach (var p in IntExt.Primes10000.Take(10))
+        {
+            foreach (var curve in curves.Where(e => !EC.EllCoefs(e).ToZnInt(p).Disc.IsZero()))
+                EllFqCard(curve, p, bf: true);
+        }
+    }
+
+    public static void Example9EllApFrobTrace()
+    {
+        GlobalStopWatch.Restart();
+        EC.EllApFrobTrace([1, 0]);
+        EC.EllApFrobTrace([-1, 0]);
+        EC.EllApFrobTrace([1, 1]);
+        EC.EllApFrobTrace([-43, 166]);
+        EC.EllApFrobTrace([0, 0, 1, 0, -7]);
+        EC.EllApFrobTrace([1, 0, 0, 0, 1]);
+        EC.EllApFrobTrace([1, -1, 0, -4, 4]);
+        EC.EllApFrobTrace([1, -1, 1, -19353, 958713]);
+        EC.EllApFrobTrace([1, 1, 1, -17714, 900047]);
+        GlobalStopWatch.Show();
     }
 }

@@ -513,11 +513,8 @@ public static partial class FG
     public static EPoly<ZnInt> FqX(BigInteger q, char x = 'x')
     {
         ((int p, int m), int[] coefs) = PolynomExt.GetConwayPoly(q);
-        var F = new KPoly<ZnInt>(x, ZnInt.ZnZero(p), coefs.Select(i => new ZnInt(p, i)).ToArray());
-        if (m > 1)
-            return new(F, F.X);
-
-        return new(F, F.Zero + F[0]);
+        var F = coefs.ToKPoly(ZnInt.ZnZero(p), x);
+        return new EPoly<ZnInt>(F, F.X).X;
     }
 
     public static NthRootQ NthRootQ(int n) => new(n);

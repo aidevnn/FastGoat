@@ -87,6 +87,46 @@ public static class EC
 
         return Group.Generate(E, ell);
     }
+    
+    public static ConcreteGroup<EllPt<GFelt>> EllFq(BigInteger[] curve, int q)
+    {
+        var g = FG.FqX(q, 'a');
+        EllGroup<GFelt> E = EllGroup(curve).ToGF(g);
+        if (q > 3000)
+            throw new();
+
+        var d = 2 * double.Sqrt(q);
+        var y = FG.KPoly('y', g);
+        var gens = new HashSet<EllPt<GFelt>>();
+        var set = new HashSet<EllPt<GFelt>>();
+        set.Add(E.Neutral());
+        var idx = 0;
+        foreach (var x in q.SeqLazy().Shuffle().Select(k => g.Pow(k)).Prepend(g.Zero))
+        {
+            if (set.Any(pt => !pt.IsO && pt.X.Equals(x)))
+                continue;
+
+            var eq = (y.Pow(2) + E.a1 * x * y + E.a3 * y) - (x.Pow(3) + E.a2 * x.Pow(2) + E.a4 * x + E.a6);
+            var pts = IntFactorisation.FirrFsepBerlekampAECF(eq, g, q)
+                .Where(f => f.g.Degree == 1)
+                .Select(f => (x, y: -f.g[0]))
+                .Select(e => new EllPt<GFelt>(e.x, e.y))
+                .Where(e => E.Contains(e.X, e.Y))
+                .ToList();
+
+            idx++;
+            if (pts.Count == 0)
+                continue;
+
+            gens.UnionWith(pts);
+            set = Group.GenerateElements(E, set, pts);
+            var count = set.Count;
+            if (idx > g.P && idx > d && double.Abs(count - q - 1) < d)
+                break;
+        }
+
+        return Group.Generate(E, gens.ToArray());
+    }
 
     public static EllGroup<ZnInt> ToZnInt(this EllGroup<Rational> E, int p)
     {
@@ -230,7 +270,7 @@ public static class EC
         var x = FG.ZPoly(p);
         var Q = x.Pow(3) + b * x * x + c * x + d;
         var a0 = NumberTheory.PrimitiveRootMod(p);
-        var facts = IntFactorisation.FirrFsep(Q, x.KOne * a0);
+        var facts = IntFactorisation.FirrFsepBerlekampAECF(Q, x.KOne * a0, p);
         return facts.Count(f => f.g.Degree == 1);
     }
 
@@ -444,6 +484,9 @@ public static class EC
 
     public static int EllAp(EllGroup<Rational> E, int p)
     {
+        if (!IsPrime(p))
+            throw new($"p must be prime");
+        
         if (p <= 3)
         {
             var (_a1, _a2, _a3, _a4, _a6) = E.Coefs;
@@ -631,6 +674,30 @@ public static class EC
         }
         else
             throw new();
+    }
+
+    public static int EllAq(EllGroup<Rational> E, int q)
+    {
+        var dec = PrimesDec(q);
+        if (dec.Count != 1)
+            throw new($"q must equals p^n");
+
+        var p = dec.Keys.First();
+        var n = dec.Values.First();
+        return EllAq(EllAp(E, p), p, n);
+    }
+
+    public static int EllAq(int ellAp, int p, int n)
+    {
+        var q = p.Pow(n);
+        if (ellAp * ellAp >= 4 * q)
+            throw new($"ellAp < 2*Sqrt(p^n)");
+        
+        var x = FG.QPoly();
+        var alpha = FG.EPoly(x.Pow(2) - ellAp * x + p);
+        var beta = p / alpha;
+        var card = (1 - alpha.Pow(n)) * (1 - beta.Pow(n));
+        return q + 1 - (int)card[0].Num;
     }
 
     public static Dictionary<int, int> EllAn(EllGroup<Rational> E, Rational N)
@@ -985,4 +1052,110 @@ public static class EC
 
         return (nTors, g);
     }
+    
+    public static Dictionary<int, List<int>> SmallPrimesList(Rational N)
+    {
+        var nmax = 2 * double.Sqrt(N);
+        var listL = new Dictionary<int, List<int>>();
+        foreach (var p in Primes10000.Where(p => p <= nmax && !N.Mod(p).IsZero()))
+        {
+            var lmax = 4 * double.Sqrt(p);
+            listL[p] = new();
+            var L = 1;
+            foreach (var l in Primes10000.Where(l => p % l != 0))
+            {
+                listL[p].Add(l);
+                L *= l;
+                if (L > lmax)
+                    break;
+            }
+        }
+
+        return listL;
+    }
+
+    public static EllPt<GFelt> Frob(EllPt<GFelt> pt, int n = 1)
+    {
+        if (pt.IsO)
+            return pt;
+
+        var p = pt.X.P;
+        return new(pt.X.FastPow(BigInteger.Pow(p, n)), pt.Y.FastPow(BigInteger.Pow(p, n)));
+    }
+
+    public static int FrobTrace(EllGroup<GFelt> E, EllPt<GFelt>[] nTors, int l) =>
+        l.SeqLazy().First(t => nTors.All(pt =>
+        {
+            if (pt.IsO)
+                return true;
+
+            var p = pt.X.P;
+            var phi2 = Frob(Frob(pt));
+            var t_phi = Frob(E.Times(pt, -t));
+            var q = E.Times(pt, p);
+            return E.Op(phi2, E.Op(t_phi, q)).IsO;
+        }));
+
+    public static (Dictionary<int, KPoly<Rational>> divPolys,
+        Dictionary<int, Dictionary<int, (GFelt g, EllPt<GFelt> e1, EllPt<GFelt> e2)>> allBasis)
+        EllApFrobTrace(BigInteger[] curve)
+    {
+        GlobalStopWatch.AddLap();
+        var E = EllCoefs(curve);
+        var N = EllTateAlgorithm(EllCoefs(curve)).N;
+        var Ell = E.ToEllGroup();
+        var allList = SmallPrimesList(N);
+        var pmax = allList.Keys.Max();
+        var lmax = allList.Max(e => e.Value.Max());
+        Console.WriteLine($"{Ell}");
+
+        var divPolys = DivisionPolynomial(Ell, lmax + 3).f.ToDictionary(e => e.Key, e => e.Value.PrimitiveZPoly());
+        divPolys.Println("divPolys");
+
+        Console.WriteLine($"N = {N} pmax = {pmax} listMax = {lmax}");
+        var allBasis = new Dictionary<int, Dictionary<int, (GFelt g, EllPt<GFelt> e1, EllPt<GFelt> e2)>>();
+        foreach (var (p, listL) in allList)
+        {
+            if (p < 5)
+                continue;
+
+            var ap = EllAp(Ell, p);
+            var frobTr = new Dictionary<int, int>();
+            var basis = new Dictionary<int, (GFelt g, EllPt<GFelt> e1, EllPt<GFelt> e2)>();
+            foreach (var l in listL)
+            {
+                if (p % l == 0)
+                    continue;
+
+                var Ep = Ell.ToGF(p);
+                Ep.Field = $"GF({p})";
+                Console.WriteLine($"{l}-torsion of {Ep} from {Ell}");
+                Console.WriteLine($"{l}-divPol mod {p} = {divPolys[l].ToZnPoly(p)}");
+                var (nTors, g) = EllFpNTors(Ell, divPolys[l], p, l);
+                var Egf = Ell.ToGF(g);
+                var (e1, e2) = nTors.GetGenerators().Deconstruct();
+                frobTr[l] = FrobTrace(Egf, nTors.GetGenerators().ToArray(), l);
+                basis[l] = (g, e1, e2);
+            }
+
+            allBasis[p] = basis;
+            frobTr.Println("Frob Traces");
+            var keys = frobTr.Keys.ToArray();
+            var values = keys.Select(k => frobTr[k]).ToArray();
+            var crtTable = NumberTheory.CrtTable(keys);
+            var L = keys.Aggregate((li, lj) => li * lj);
+            var crt = NumberTheory.CRT(values, crtTable, L);
+            var ap1 = crt < L / 2 ? crt : crt - L;
+            Console.WriteLine($"p = {p} ap = {ap} crt = {crt} ap1 = {ap1} L = {L} Check:{ap == ap1}");
+            if (ap != ap1)
+                throw new();
+
+            Console.WriteLine();
+        }
+
+        GlobalStopWatch.Show($"End FrobTrace {Ell}");
+        Console.WriteLine();
+        return (divPolys, allBasis);
+    }
+
 }

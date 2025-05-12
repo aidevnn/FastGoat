@@ -67,7 +67,7 @@ public static partial class Ring
 
     public static K FastPow<K>(this K a, BigInteger k) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
-        if (a.IsZero())
+        if (a.IsZero() && k > 0)
             return a;
         
         if (k == 0)
