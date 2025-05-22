@@ -62,7 +62,7 @@ public readonly struct EPoly<K> : IElt<EPoly<K>>, IRingElt<EPoly<K>>, IFieldElt<
     public K KOne => F.KOne;
     public EPoly<K> Zero => new(F, F.Zero);
     public EPoly<K> One => new(F, F.One);
-    public EPoly<K> X => new(F, F.X.Div(F).rem);
+    public EPoly<K> X => F.Degree == 1 ? new(F, F[0] * F.One) : new(F, F.X.Div(F).rem);
     public EPoly<K> Derivative => new(F, Poly.Derivative.Div(F).rem);
     public EPoly<K> Substitute(KPoly<K> f) => new(F, Poly.Substitute(f).Div(F).rem);
     public EPoly<K> Substitute(EPoly<K> f) => Poly.Substitute(f);
@@ -99,7 +99,10 @@ public readonly struct EPoly<K> : IElt<EPoly<K>>, IRingElt<EPoly<K>>, IFieldElt<
 
     public (EPoly<K> quo, EPoly<K> rem) Div(EPoly<K> e)
     {
-        return (Mul(e.Inv()), Zero);
+        var gcd = Ring.FastGCD(Poly, e.Poly);
+        var e0 = new EPoly<K>(F, Poly / gcd);
+        var e1 = new EPoly<K>(F, e.Poly / gcd);
+        return (e0.Mul(e1.Inv()), Zero);
     }
 
     public EPoly<K> Mul(int k) => new(F, Poly.Mul(k).Div(F).rem);
