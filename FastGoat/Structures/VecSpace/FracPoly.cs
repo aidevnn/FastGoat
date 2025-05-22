@@ -68,6 +68,16 @@ public readonly struct FracPoly<K> : IElt<FracPoly<K>>, IRingElt<FracPoly<K>>, I
     public K KOne => Num.KOne;
 
     public FracPoly<K> KMul(K k) => new(k * Num, Denom);
+
+    public FracPoly<K> Derivative
+    {
+        get
+        {
+            var dNum = Num.Derivative;
+            var dDenom = Denom.Derivative;
+            return new(dNum * Denom + dDenom * Num, Denom * Denom);
+        }
+    }
     public int Hash { get; }
 
     public bool IsZero() => Num.IsZero();
