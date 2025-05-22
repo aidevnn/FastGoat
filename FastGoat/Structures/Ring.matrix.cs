@@ -723,10 +723,29 @@ public static partial class Ring
         var S = SylvesterMatrix(f, X, g, X);
         var am = f.CoefMax(X);
         var n = f.DegreeOf(X);
-        var n0 = (int)(n * (n - 1) / 2);
+        var n0 = n * (n - 1) / 2;
         var s = n0 % 2 == 0 ? 1 : -1;
-        var det = Determinant(S, f.Zero);
-        return det.Div(am).quo.Mul(s);
+        
+        var nbInd = f.NbIndeterminates;
+        if (nbInd == 2)
+        {
+            var Y = f.ExtractAllIndeterminates.First(xi => !xi.Equals(X));
+            var (dim1, dim2) = (S.GetLength(0), S.GetLength(1));
+            var S1 = new FracPoly<K>[dim1, dim2];
+            for (int i = 0; i < dim1; i++)
+            {
+                for (int j = 0; j < dim2; j++)
+                    S1[i, j] = new(S[i, j].ToKPoly(Y));
+            }
+        
+            var det = DeterminantByPivot(S1);
+            return det.Num.ToPolynomial(f.Indeterminates, Y).Div(am).quo.Mul(s);
+        }
+        else
+        {
+            var det = Determinant(S, f.Zero);
+            return det.Div(am).quo.Mul(s);
+        }
     }
 
     public static Polynomial<K, T> Discriminant<K, T>(Polynomial<K, T> f, Polynomial<K, T> X)
@@ -843,6 +862,14 @@ public static partial class Ring
         return FastBezoutInternal(A, B, A.KOne, A.KOne, 0);
     }
 
+    public static KPoly<K> FastInv<K>(KPoly<K> A, KPoly<K> mod)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var (U, V) = FastBezout(A, mod);
+        var gcd = (A * U + mod * V);
+        return (U / gcd).Div(mod).rem;
+    }
+
     // https://en.wikipedia.org/wiki/Polynomial_greatest_common_divisor#Pseudo-remainder_sequences
     static KPoly<K> FastGCDInternal<K>(KPoly<K> A, KPoly<K> B, K w0, K y0, int d0, int i = 0)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
@@ -864,6 +891,33 @@ public static partial class Ring
             return FastGCD(B, A);
 
         return FastGCDInternal(A, B, A.KOne, A.KOne, 0);
+    }
+
+    public static KPoly<K> FastGCD<K>(KPoly<K>[] arr) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        if (arr.Length == 0)
+            throw new ArgumentException();
+
+        if (arr.Length == 1)
+            return arr[0];
+
+        return FastGCD(arr.First(), FastGCD(arr.Skip(1).ToArray()));
+    }
+    
+    public static KPoly<K> FastLCM<K>(KPoly<K> A, KPoly<K> B) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        return (A * B) / FastGCD(A, B);
+    }
+    
+    public static KPoly<K> FastLCM<K>(KPoly<K>[] arr) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        if (arr.Length == 0)
+            throw new ArgumentException();
+
+        if (arr.Length == 1)
+            return arr[0];
+
+        return FastLCM(arr.First(), FastLCM(arr.Skip(1).ToArray()));
     }
 
     public static (KMatrix<K> O, KMatrix<K> U) GramSchmidt<K>(KMatrix<K> A)
