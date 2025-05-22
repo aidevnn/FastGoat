@@ -1106,6 +1106,22 @@ public static partial class FG
             new(P.Coefs.ToDictionary(kv => kv.Key, kv => new ZnInt(mod, kv.Value.K))));
     }
 
+    public static Polynomial<ZnBInt, T> ToZnBInt<T>(this Polynomial<ZnInt, T> P) where T : struct, IElt<T>
+    {
+        var mod = P.KZero.Mod;
+        return new Polynomial<ZnBInt, T>(P.Indeterminates, ZnBInt.ZnZero(mod),
+            new(P.Coefs.ToDictionary(kv => kv.Key, kv => new ZnBInt(mod, kv.Value.K))));
+    }
+
+    public static Polynomial<ZnInt, T> ToZnInt<T>(this Polynomial<ZnBInt, T> P) where T : struct, IElt<T>
+    {
+        if (P.KZero.Details.O > 1)
+            throw new();
+        var mod = (int)P.KZero.Mod;
+        return new Polynomial<ZnInt, T>(P.Indeterminates, ZnInt.ZnZero(mod),
+            new(P.Coefs.ToDictionary(kv => kv.Key, kv => new ZnInt(mod, (int)kv.Value.K))));
+    }
+
     public static Polynomial<Rational, T> ToRationalPoly<T>(this Polynomial<ZnInt, T> P) where T : struct, IElt<T>
     {
         return new Polynomial<Rational, T>(P.Indeterminates, Rational.KZero(),
@@ -1247,4 +1263,5 @@ public static partial class FG
 
         throw new();
     }
+
 }
