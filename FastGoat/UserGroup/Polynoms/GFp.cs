@@ -37,6 +37,10 @@ public class GFp : IGroup<EPoly<ZnInt>>
     {
     }
 
+    public GFp(EPoly<ZnInt> e) : this($"F{e.P}[{e.F.x}]/({e.F})", e)
+    {
+    }
+
     public KPoly<ZnInt> F { get; }
     public EPoly<ZnInt> X { get; }
     public int M { get; }
