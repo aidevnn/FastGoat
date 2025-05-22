@@ -293,7 +293,7 @@ public readonly struct Monom<T> : IElt<Monom<T>> where T : struct, IElt<T>
         var content = a.Indeterminates.Select(e => (e, k: Int32.Min(a[e], b[e]))).Where(e => e.k != 0)
             .ToDictionary(e => e.e, e => e.k);
 
-        return new(a.Indeterminates, content);
+        return new Monom<T>(a.Indeterminates, content);
     }
 
     public static (Monom<T> pa, Monom<T>pb) Reduce(Monom<T> a, Monom<T> b)
@@ -318,5 +318,23 @@ public readonly struct Monom<T> : IElt<Monom<T>> where T : struct, IElt<T>
         }
 
         return (new(a.Indeterminates, da), new(a.Indeterminates, db));
+    }
+
+    public static Monom<T> Swap(Monom<T> mnm, T xi, T xj)
+    {
+        var content = mnm.Content.ToDictionary(x => x.Key, x => x.Value);
+        if (content.ContainsKey(xi) && content.ContainsKey(xj))
+            (content[xi], content[xj]) = (content[xj], content[xi]);
+        else if (content.ContainsKey(xi))
+        {
+            content[xj] = content[xi];
+            content.Remove(xi);
+        }
+        else if (content.ContainsKey(xj))
+        {
+            content[xi] = content[xj];
+            content.Remove(xj);
+        }
+        return new(mnm.Indeterminates, content);
     }
 }
