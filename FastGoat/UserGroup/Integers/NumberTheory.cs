@@ -219,6 +219,60 @@ public static class NumberTheory
         return b;
     }
 
+    public static EPoly<ZnInt> NthRootANTV1(EPoly<ZnInt> a, int r, EPoly<ZnInt> d)
+    {
+        if (r < 1 || !IsPrime(r))
+            throw new($"r must be prime");
+        
+        if (r == 1)
+            return a;
+        
+        var q = BigInteger.Pow(a.P, a.F.Degree);
+        var (s, t0) = FactorMultiplicity(r, q - 1);
+        var t = (int)t0;
+        if (t == q - 1)
+            throw new($"r must divide q-1");
+
+        if (!a.FastPow((q - 1) / r).IsOne())
+            throw new($"a must be residue mod q");
+
+        var rs = (q - 1) / t;
+        var h = 1000.SeqLazy().Select(_ => DistributionExt.Dice(2, q - 1)).Select(i => d.FastPow(i))
+            .First(di => !di.FastPow((q - 1) / r).IsOne());
+        var (ar, at, g) = (a.FastPow(t), a.FastPow(rs), h.FastPow(t));
+        var e = 0;
+        var ri = 1;
+        var rsi = (q - 1) / (t * r);
+        for (int i = 0; i < s; i++)
+        {
+            for (var ei = 0; ei < r; ei++)
+            {
+                // var ga = (PowMod(g, e + ei * ri, p) * ar) % p;
+                var ga = ar * g.Pow(e + ei * ri);
+                // if (PowMod(ga, rsi, p) == 1)
+                if(ga.FastPow(rsi).IsOne())
+                {
+                    e += ei * ri;
+                    break;
+                }
+            }
+
+            ri *= r;
+            rsi /= r;
+        }
+
+        var r_ = InvModPbez(r, t);
+        var (br, bt) = (g.Pow(-e / r), at.Pow(r_));
+        var (alpha, beta, _) = BezoutBigInt(t, rs);
+        var b = br.FastPow(alpha) * bt.FastPow(beta);
+        return b;
+    }
+
+    public static EPoly<ZnInt> NthRoot(EPoly<ZnInt> a, int r, EPoly<ZnInt> d)
+    {
+        return PrimesDecomposition(r).Aggregate(a, (acc, ri) => NthRootANTV1(acc, ri, d));
+    }
+
     public static EPoly<ZnInt> PrimitiveRoot(EPoly<ZnInt> a)
     {
         var p = a.P;

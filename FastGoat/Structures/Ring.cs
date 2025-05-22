@@ -67,10 +67,13 @@ public static partial class Ring
 
     public static K FastPow<K>(this K a, BigInteger k) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
+        if (a.IsZero() && k == 0)
+            throw new DivideByZeroException();
+        
         if (a.IsZero() && k > 0)
             return a;
         
-        if (k == 0)
+        if (k == 0 && !a.IsZero())
             return a.One;
 
         if (k < 0)
@@ -236,12 +239,15 @@ public static partial class Ring
         return PolynomialModI(e, bs[0], bs.Skip(1).ToArray());
     }
 
-    public static KPoly<K> ToKPoly<K>(this Polynomial<K, Xi> f, Xi x)
+    public static KPoly<K> ToKPoly<K, T>(this Polynomial<K, T> f, T x)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
+        where T : struct, IElt<T>
     {
-        var d = f.DegreeOf(x);
-        var coefs = (d + 1).Range().Select(i => f[new(f.Indeterminates, x, i)]).TrimSeq().ToArray();
-        return new KPoly<K>(x.xi[0], f.KZero, coefs);
+        var f1 = f.ExtractAllIndeterminates.Where(xi => !xi.Equals(x))
+            .Aggregate(f, (acc, xi) => acc.Substitute(f.Zero, xi));
+        var d = f1.DegreeOf(x);
+        var coefs = (d + 1).Range().Select(i => f1[new(f.Indeterminates, x, i)]).TrimSeq().ToArray();
+        return new KPoly<K>($"{x}"[0], f.KZero, coefs);
     }
 
     public static KPoly<K> ToKPoly<K>(this Polynomial<K, Xi> f, Polynomial<K, Xi> x)
@@ -250,11 +256,12 @@ public static partial class Ring
         return ToKPoly(f, x.ExtractIndeterminate);
     }
 
-    public static Polynomial<K, Xi> ToPolynomial<K>(this KPoly<K> f, Indeterminates<Xi> indeterminates, Xi xi)
+    public static Polynomial<K, T> ToPolynomial<K, T>(this KPoly<K> f, Indeterminates<T> indeterminates, T xi)
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
+        where T : struct, IElt<T>
     {
-        var mnm = new Monom<Xi>(indeterminates, xi, 1);
-        return f.Coefs.Select((k, i) => new Polynomial<K, Xi>(mnm.Pow(i), k)).Aggregate((a, b) => a + b);
+        var mnm = new Monom<T>(indeterminates, xi, 1);
+        return f.Coefs.Select((k, i) => new Polynomial<K, T>(mnm.Pow(i), k)).Aggregate((a, b) => a + b);
     }
 
     public static Polynomial<K, Xi> ToPolynomial<K>(this KPoly<K> f, Polynomial<K, Xi> x)
@@ -324,6 +331,33 @@ public static partial class Ring
 
         var n = vec[0].Length;
         return n.SeqLazy().Select(j => vec.Select(v => v[j]).ToVec()).ToVec();
+    }
+
+    public static int BSGS<T>(T a, T b, int ord) where T : struct, IElt<T>, IRingElt<T>, IFieldElt<T>
+    {
+        var (m, tmp1) = ((int)Double.Sqrt(ord) + 1, a);
+        var L = new Dictionary<T, int>() { [a] = 1 };
+        for (int i = 1; i < m; i++)
+        {
+            if (tmp1.Equals(b))
+                return i;
+
+            tmp1 *= a;
+            L[tmp1] = i + 1;
+        }
+    
+        if (tmp1.Equals(b))
+            return m;
+
+        var (c, tmp2) = (tmp1.Inv(), b);
+        for (int j = 1; j < m; j++)
+        {
+            tmp2 *= c;
+            if (L.TryGetValue(tmp2, out int i))
+                return j * m + i;
+        }
+
+        throw new($"ord={ord}; a={a} b={b}");
     }
 
     public static MonomDisplay DisplayPolynomial { get; set; } = MonomDisplay.Default;
