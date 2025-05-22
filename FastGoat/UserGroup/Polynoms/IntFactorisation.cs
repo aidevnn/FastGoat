@@ -195,6 +195,16 @@ public static partial class IntFactorisation
         return all;
     }
 
+    public static List<(KPoly<K> g, int q, int m)> FirrFsepCantorZassenhausAECF<K>(KPoly<K> f, K a0, BigInteger q)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        List<(KPoly<K> g, int q, int m)> all = new();
+        foreach (var (g, q0, m) in GianniTrager(f))
+            all.AddRange(CantorZassenhausAECF(g, a0, q).Select(g0 => (g0, q0, m)));
+
+        return all;
+    }
+
     public static EPoly<K> Mk<K>(EPoly<K> g, int k, BigInteger q) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         if (BigInteger.IsPow2(q))
@@ -264,7 +274,7 @@ public static partial class IntFactorisation
                 ? IntExt.Rng.NextInt64((long)q)
                 : DistributionExt.Dice(BigInteger.Zero, q - 1);
 
-        return k == 0 ? a.Zero : Ring.FastPow(a, k);
+        return k == 0 ? a.Zero : a.FastPow(k);
     }
 
     // AECF Algorithme de Berlekamp 353
