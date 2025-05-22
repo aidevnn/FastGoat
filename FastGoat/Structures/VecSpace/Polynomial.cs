@@ -99,6 +99,18 @@ public readonly struct Polynomial<K, T> : IElt<Polynomial<K, T>>, IRingElt<Polyn
         }
     }
 
+    public (T, Polynomial<K, T>)[] AllIndeterminatesAndVariables
+    {
+        get
+        {
+            var list = new List<(T, Polynomial<K, T>)>();
+            foreach (var xi in Indeterminates)
+                list.Add((xi, X(xi)));
+
+            return list.ToArray();
+        }
+    }
+
     public Polynomial<K, T> X(T t)
     {
         if (!Indeterminates.Contains(t))
@@ -145,7 +157,7 @@ public readonly struct Polynomial<K, T> : IElt<Polynomial<K, T>>, IRingElt<Polyn
         get
         {
             if (NbIndeterminates != 1)
-                throw new ArgumentException("Not univariate polynomial");
+                throw new ArgumentException($"Not univariate polynomial P={this}");
 
             var coefs = Coefs.Keys.First(m => m.Degree > 0);
             return Indeterminates.First(xi => coefs[xi] > 0);
