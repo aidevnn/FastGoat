@@ -2,7 +2,7 @@ using System.Collections;
 using FastGoat.Structures;
 using FastGoat.Structures.VecSpace;
 
-namespace FastGoat.UserGroup.Polynoms;
+namespace FastGoat.Structures.VecSpace;
 
 public readonly struct SPoly<K> : IElt<SPoly<K>>, IRingElt<SPoly<K>>, IFieldElt<SPoly<K>>, IModuleElt<K, SPoly<K>>,
     IVsElt<K, SPoly<K>>, IEnumerable<K>
@@ -10,21 +10,23 @@ public readonly struct SPoly<K> : IElt<SPoly<K>>, IRingElt<SPoly<K>>, IFieldElt<
 {
     public int Ord { get; }
     public KPoly<K> Poly { get; }
-    public static double Abs(SPoly<K> e) => throw new NotImplementedException();
-    public static bool IsValuedField => false;
+
+    public static double Abs(SPoly<K> e) => e.IsZero()
+        ? double.PositiveInfinity
+        : e.Index().First(c => !c.Item.IsZero()).Index;
+    public static bool IsValuedField => true;
 
     public SPoly(int ord, char x, K k)
     {
         Ord = ord;
-        var poly = new KPoly<K>(x, k);
-        Poly = poly.Coefs.Take(Ord).ToKPoly(poly.x);
+        Poly = new KPoly<K>(x, k);
         Hash = (Poly.Degree, order: ord).GetHashCode();
     }
 
     public SPoly(int ord, KPoly<K> poly)
     {
         Ord = ord;
-        Poly = poly.Coefs.Take(Ord).ToKPoly(poly.x);
+        Poly = new KPoly<K>(x, poly.KZero, poly.Coefs.Take(Ord).TrimSeq().ToArray());
         Hash = (Poly.Degree, order: ord).GetHashCode();
     }
 
