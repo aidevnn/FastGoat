@@ -197,7 +197,7 @@ public static class NumberTheory
         var q = BigInteger.Pow(p, n);
         return a.FastPow((q - 1) / 2);
     }
-    
+
     public static EPoly<ZnInt> SqrtModANTV1(EPoly<ZnInt> a, EPoly<ZnInt> d)
     {
         var (p, n) = (a.P, a.F.Degree);
@@ -223,15 +223,15 @@ public static class NumberTheory
     {
         if (r < 1 || !IsPrime(r))
             throw new($"r must be prime");
-        
+
         if (r == 1)
             return a;
-        
+
         var q = BigInteger.Pow(a.P, a.F.Degree);
         var (s, t0) = FactorMultiplicity(r, q - 1);
         var t = (int)t0;
         if (t == q - 1)
-            throw new($"r must divide q-1");
+            throw new($"r must divide q - 1");
 
         if (!a.FastPow((q - 1) / r).IsOne())
             throw new($"a must be residue mod q");
@@ -247,10 +247,8 @@ public static class NumberTheory
         {
             for (var ei = 0; ei < r; ei++)
             {
-                // var ga = (PowMod(g, e + ei * ri, p) * ar) % p;
                 var ga = ar * g.Pow(e + ei * ri);
-                // if (PowMod(ga, rsi, p) == 1)
-                if(ga.FastPow(rsi).IsOne())
+                if (ga.FastPow(rsi).IsOne())
                 {
                     e += ei * ri;
                     break;
@@ -290,7 +288,7 @@ public static class NumberTheory
             var g = n.SeqLazy().Select(i => Rng.Next(p) * a.X.Pow(i)).ToVec().Sum();
             if (g.IsZero())
                 continue;
-            
+
             var S = pis.Keys.ToHashSet();
             foreach (var pi in S)
             {

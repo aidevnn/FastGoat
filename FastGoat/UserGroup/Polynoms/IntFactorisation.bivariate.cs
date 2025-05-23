@@ -44,7 +44,7 @@ public static partial class IntFactorisation
         var (Y, X) = Ring.Polynomial(ZnInt.ZnZero(p), MonomOrder.Lex, "Y", "X").Deconstruct();
         var monoms = AllMonoms([X, Y], maxMonomDegree);
         var pols = (10 * nbRandPolys).SeqLazy().Select(_ => RandPol(monoms, nbMonoms, p)).Distinct()
-            .Where(FilterRandPolynomialFxy).Take(nbRandPolys).ToArray();
+            .Where(IsFxyResultantZero).Take(nbRandPolys).ToArray();
 
         return (100 * nbRandPolys).SeqLazy().Select(_ => nbFacts.SeqLazy()
             .Select(_ => pols[IntExt.Rng.Next(pols.Length)])
@@ -58,7 +58,7 @@ public static partial class IntFactorisation
         var (Y, X) = Ring.Polynomial(Rational.KZero(), MonomOrder.Lex, "Y", "X").Deconstruct();
         var monoms = AllMonoms([X, Y], maxMonomDegree);
         var pols = (10 * nbRandPolys).SeqLazy().Select(_ => RandPol(monoms, nbMonoms, amplitude)).Distinct()
-            .Where(FilterRandPolynomialFxy).Take(nbRandPolys).ToArray();
+            .Where(IsFxyResultantZero).Take(nbRandPolys).ToArray();
 
         return (100 * nbRandPolys).SeqLazy().Select(_ => nbFacts.SeqLazy()
             .Select(_ => pols[IntExt.Rng.Next(pols.Length)]).Aggregate(X.One, (acc, e) => e * acc)
@@ -292,7 +292,7 @@ public static partial class IntFactorisation
         return RewritingPolynomialLeadingTerm(F, seq);
     }
 
-    public static bool FilterRandPolynomialFxy<K, T>(Polynomial<K, T> F)
+    public static bool IsFxyResultantZero<K, T>(Polynomial<K, T> F)
         where T : struct, IElt<T>
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
@@ -317,7 +317,7 @@ public static partial class IntFactorisation
         foreach (var gk in seq)
         {
             var F1 = F.Substitute(X + gk, x);
-            if (!FilterRandPolynomialFxy(F1))
+            if (!IsFxyResultantZero(F1))
                 continue;
 
             return (true, gk, F1);

@@ -31,12 +31,8 @@ public static class BivariatePolynomialFactorization
         return new KPoly<ZnBInt>(P.x, z, coefs);
     }
 
-    /// <summary>
-    /// The BivariatePolynomialFactorization class provides methods for factorizing bivariate polynomials over a finite field.
-    /// </summary>
     public static void Example1_Fp()
     {
-        Ring.DisplayPolynomial = MonomDisplay.StarCaret;
         var (X2, X1) = Ring.Polynomial(ZnBInt.ZnZero(101), MonomOrder.Lex, "X2", "X1").Deconstruct();
 
         // (X2^2 + 100*X1^2 + 100) * (X2^2 +  99*X2 + X1^2)
@@ -62,17 +58,8 @@ public static class BivariatePolynomialFactorization
         Console.WriteLine();
     }
 
-    /// <summary>
-    /// This method demonstrates an example of rational polynomial factorization using the FastGoat library.
-    /// It computes the factorization of a given bivariate polynomial over a field of rational numbers.
-    /// The example starts by setting the display format for polynomials. Then it defines a list of bivariate polynomials.
-    /// Each polynomial in the list is created using operations like addition, subtraction, multiplication, and exponentiation
-    /// on the monomials and coefficients of the variables X2 and X1.
-    /// Finally, it iterates over the list of polynomials and calls the FactorsFxy method to perform the factorization.
-    /// </summary>
     public static void Example2_Rational()
     {
-        Ring.DisplayPolynomial = MonomDisplay.StarCaret;
         var (X2, X1) = Ring.Polynomial(Rational.KZero(), MonomOrder.Lex, "X2", "X1").Deconstruct();
 
         // All Working 
@@ -95,25 +82,17 @@ public static class BivariatePolynomialFactorization
         }
     }
 
-    /// <summary>
-    /// The purpose of this method is to demonstrate batch factorization of random polynomials.
-    /// The method uses a nested foreach loop to iterate over pairs of values for `n` and `m`.
-    /// For each pair, the method calls the `FactorisationRandPolFxy` method with the specified parameters.
-    /// After the loop finishes, the method calls the `Console.Beep` method and then displays the elapsed time
-    /// using the `GlobalStopWatch.Show` method.
-    /// </summary>
     public static void Example3_BatchRandomPolynomial()
     {
-        IntExt.RngSeed(25413);
-        Logger.Level = LogLevel.Level1;
-        Ring.DisplayPolynomial = MonomDisplay.StarCaret;
-
+        // IntExt.RngSeed(25413);
+        // Logger.Level = LogLevel.Level1;
+        
         GlobalStopWatch.AddLap();
         foreach (var (n, m) in 4.Range(1).SelectMany(m => (5 - m).Range(2).Select(n => (n, m))))
         {
             var pols = IntFactorisation.RandRationalPolynomials(amplitude: 10, maxMonomDegree: m,
                     nbFacts: n, nbRandPolys: 100)
-                .Where(F => F.CoefMax("Y").Degree == 0 && IntFactorisation.FilterRandPolynomialFxy(F))
+                .Where(F => F.CoefMax("Y").Degree == 0 && IntFactorisation.IsFxyResultantZero(F))
                 .Distinct().Take(10).ToArray();
 
             foreach (var (idx, F) in pols.Index())
@@ -143,7 +122,6 @@ public static class BivariatePolynomialFactorization
     // AECF p405
     public static void Example4_Fp()
     {
-        Ring.DisplayPolynomial = MonomDisplay.StarCaret;
         var (X2, X1) = Ring.Polynomial(ZnBInt.ZnZero(101), MonomOrder.Lex, "X2", "X1").Deconstruct();
 
         // (X2^2 + 100*X1^2 + 100) * (X2^2 +  99*X2 + X1^2)
@@ -194,9 +172,6 @@ public static class BivariatePolynomialFactorization
             .Aggregate((acc, e) => e * acc).Div(X1.Pow(nu + 1)).rem).Println($"Factors in F101[X1,X2]");
     }
 
-    /// <summary>
-    /// Contains example related to the substitution of variables using method Rewrite in a bivariate polynomial.
-    /// </summary>
     public static void Example5_Substitution()
     {
         var (X2, X1) = Ring.Polynomial(Rational.KZero(), MonomOrder.Lex, "X2", "X1").Deconstruct();
@@ -223,10 +198,10 @@ public static class BivariatePolynomialFactorization
 
         var (_, i0, F0) = IntFactorisation.RewritingPolynomialResultantZero(F);
         Console.WriteLine(new { F });
-        Console.WriteLine($"Res(F)(0,0) != 0 : {IntFactorisation.FilterRandPolynomialFxy(F)}");
+        Console.WriteLine($"Res(F)(0,0) != 0 : {IntFactorisation.IsFxyResultantZero(F)}");
         Console.WriteLine(new { F0 });
         Console.WriteLine($"Substitute {X1} <- {X1 + i0}");
-        Console.WriteLine($"Res(F0)(0,0) != 0 : {IntFactorisation.FilterRandPolynomialFxy(F0)}");
+        Console.WriteLine($"Res(F0)(0,0) != 0 : {IntFactorisation.IsFxyResultantZero(F0)}");
         var (_, i1, F1) = IntFactorisation.RewritingPolynomialLeadingTerm(F0);
         Console.WriteLine(new { F1 });
         Console.WriteLine($"Substitute {X1} <- {X1 + i1 * X2}");
@@ -250,7 +225,7 @@ public static class BivariatePolynomialFactorization
     {
         // IntExt.RngSeed(812665);
         GlobalStopWatch.AddLap();
-        Logger.Level = LogLevel.Level1;
+        // Logger.Level = LogLevel.Level1;
         foreach (var (n, m) in 4.Range(1).SelectMany(m => (5 - m).Range(2).Select(n => (n, m))))
         {
             var ct = 0;
@@ -264,7 +239,7 @@ public static class BivariatePolynomialFactorization
                 if (F.CoefMax(y).Degree == 0 && m > 1)
                     continue;
 
-                if (IntFactorisation.FilterRandPolynomialFxy(F))
+                if (IntFactorisation.IsFxyResultantZero(F))
                     continue;
 
                 Console.WriteLine($"P{ct} = {F}");
@@ -289,7 +264,7 @@ public static class BivariatePolynomialFactorization
     public static void Example8_NonSeparable()
     {
         GlobalStopWatch.AddLap();
-        Ring.DisplayPolynomial = MonomDisplay.StarCaret;
+
         var (X2, X1) = Ring.Polynomial(Rational.KZero(), MonomOrder.Lex, "X2", "X1").Deconstruct();
         var F = X2.Pow(6) - 9 * X1 * X2.Pow(5) + 25 * X1.Pow(2) * X2.Pow(4) - 3 * X1 * X2.Pow(4) -
             44 * X1.Pow(3) * X2.Pow(3) + 27 * X1.Pow(2) * X2.Pow(3) + 72 * X1.Pow(4) * X2.Pow(2) -
@@ -337,18 +312,15 @@ public static class BivariatePolynomialFactorization
                 Console.WriteLine("#######################################");
                 Console.WriteLine($"P{ct} = {F}");
                 var (F1, ctx, cty) = IntFactorisation.CT(F);
-                var sff = IntFactorisation.SFF(F1).Select(f => (g: IntFactorisation.Primitive(f.g), f.m)).ToArray();
-
-                if (sff.Sum(f => f.m) > 1)
+                if (!F.Equals(F1))
                 {
-                    if (!F.Equals(F1))
-                    {
-                        Console.WriteLine($"CTX = {ctx} CTY = {cty}");
-                        Console.WriteLine($"F1 = {F1}");
-                    }
-
-                    sff.Println("SFF");
+                    Console.WriteLine($"CTX = {ctx} CTY = {cty}");
+                    Console.WriteLine($"F1 = {F1}");
                 }
+
+                var sff = IntFactorisation.SFF(F1).Select(f => (g: IntFactorisation.Primitive(f.g), f.m)).ToArray();
+                if (sff.Sum(f => f.m) > 1)
+                    sff.Println("SFF");
 
                 var ctXY = new List<(Polynomial<Rational, Xi> g, int m)>();
                 if (!ctx.IsOne())
@@ -366,6 +338,7 @@ public static class BivariatePolynomialFactorization
                     .ThenBy(e => e.m)
                     .ThenBy(e => e.g)
                     .ToArray();
+
                 var prod = factsF.Aggregate(F.One, (acc, e) => e.Item1.Pow(e.Item2) * acc);
                 var lc = F.Div(prod).quo;
                 if (!lc.Equals(lc.One))
@@ -395,15 +368,14 @@ public static class BivariatePolynomialFactorization
 
     public static void Example10_FullFactorisationFp()
     {
+        Logger.Level = LogLevel.Level1;
         foreach (var (p, n) in new[] { (2, 4), (3, 4), (5, 3), (11, 3) })
         {
             var (Y, X) = Ring.Polynomial(ZnInt.ZnZero(p), MonomOrder.Lex, "Y", "X").Deconstruct();
             var (x, y) = (X.ExtractIndeterminate, Y.ExtractIndeterminate);
 
-            foreach (var (i0, P0) in IntFactorisation.RandZnIntPolynomials(p, nbFacts: n).Distinct().Take(5).Index())
+            foreach (var (i0, P1) in IntFactorisation.RandZnIntPolynomials(p, nbFacts: n).Distinct().Take(5).Index())
             {
-                var P1 = new Polynomial<ZnInt, Xi>(P0.Indeterminates, P0.KZero,
-                    new(P0.Coefs.ToDictionary(e => e.Key, e => e.Value)));
                 var i = i0 + 1;
                 Console.WriteLine($"P{i} = {P1}");
                 var facts = IntFactorisation.FactorFxyFp(P1);
