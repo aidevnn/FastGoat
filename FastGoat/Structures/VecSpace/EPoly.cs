@@ -99,7 +99,7 @@ public readonly struct EPoly<K> : IElt<EPoly<K>>, IRingElt<EPoly<K>>, IFieldElt<
 
     public (EPoly<K> quo, EPoly<K> rem) Div(EPoly<K> e)
     {
-        var gcd = Ring.FastGCD(Poly, e.Poly);
+        var gcd = P == 0 ? Ring.FastGCD(Poly, e.Poly).Monic : Ring.Gcd(Poly, e.Poly);
         var e0 = new EPoly<K>(F, Poly / gcd);
         var e1 = new EPoly<K>(F, e.Poly / gcd);
         return (e0.Mul(e1.Inv()), Zero);
