@@ -355,7 +355,7 @@ public static partial class IntFactorisation
         var a0 = ZnBInt.ZnZero(p) + k;
         var po = a0.Details;
         var f0y = QPoly2ZnInt(F0y, po);
-        var firr = BerlekampProbabilisticAECF(f0y.Monic, a0, p).ToArray();
+        var firr = CantorZassenhausAECF(f0y.Monic, a0, p).ToArray();
 
         var all = new List<KPoly<ZnBInt>>(firr);
         while (po.O < o && all.Count > 1)
@@ -772,7 +772,7 @@ public static partial class IntFactorisation
         if (F.DegreeOf(y) == 0)
         {
             var Fx = F.ToKPoly(x);
-            return FirrFsepBerlekampAECF(Fx, g, q)
+            return FirrFsepCantorZassenhausAECF(Fx, g, q)
                 .SelectMany(e => Enumerable.Repeat(e.g, e.m * e.q))
                 .Select(e => e.ToPolynomial(F.Indeterminates, x))
                 .ToArray();
@@ -884,7 +884,7 @@ public static partial class IntFactorisation
         {
             var Fx = ctx.ToKPoly(x);
             var g = Fx.KOne * NumberTheory.PrimitiveRootMod(Fx.P);
-            sff.AddRange(FirrFsepBerlekampAECF(Fx, g, Fx.P)
+            sff.AddRange(FirrFsepCantorZassenhausAECF(Fx, g, Fx.P)
                 .Select(e => (e.g.ToPolynomial(ctx.Indeterminates, x), m: e.m * e.q)));
         }
 

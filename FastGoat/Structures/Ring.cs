@@ -22,10 +22,11 @@ public static partial class Ring
 
     public static T Gcd<T>(T a, T b) where T : IElt<T>, IRingElt<T>
     {
-        if (b.IsZero())
-            return a.CompareTo(a.Opp()) == -1 ? a.Opp() : a;
-
-        return Gcd(b, a.Div(b).rem);
+        var (a0, b0) = (a, b);
+        while (!b0.IsZero())
+            (a0, b0) = (b0, a0.Div(b0).rem);
+        
+        return a0.CompareTo(a0.Opp()) == -1 ? a0.Opp() : a0;
     }
 
     public static T Lcm<T>(T a, T b) where T : IElt<T>, IRingElt<T>
@@ -67,15 +68,12 @@ public static partial class Ring
 
     public static K FastPow<K>(this K a, BigInteger k) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
-        if (a.IsZero() && k == 0)
-            throw new DivideByZeroException();
-        
-        if (a.IsZero() && k > 0)
+        if (a.IsZero())
             return a;
         
-        if (k == 0 && !a.IsZero())
+        if (k == 0)
             return a.One;
-
+        
         if (k < 0)
             return a.Inv().FastPow(-k);
 

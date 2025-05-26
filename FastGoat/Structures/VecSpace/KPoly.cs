@@ -105,7 +105,7 @@ public readonly struct KPoly<K> : IElt<KPoly<K>>, IRingElt<KPoly<K>>, IFieldElt<
         var acc = f.Zero;
         for (int i = 0; i <= Degree; i++)
         {
-            acc += f.Pow(i) * Coefs[i];
+            acc += g0 * Coefs[i];
             g0 *= f;
         }
 

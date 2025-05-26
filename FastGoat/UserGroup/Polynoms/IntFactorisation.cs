@@ -36,13 +36,13 @@ public static partial class IntFactorisation
         var L = new List<(KPoly<K>, int, int)>() { (f.LT * f.One, 1, 1) };
         var l = 1;
         var df = f.Derivative;
-        var u = Ring.Gcd(f, df);
+        var u = Ring.FastGCD(f, df);
         var v = f / u;
         var w = f.Derivative / u;
         while (v.Degree >= 1)
         {
             var w_dv = w - v.Derivative;
-            var h = Ring.Gcd(v, w_dv);
+            var h = Ring.FastGCD(v, w_dv);
             w = w_dv / h;
             v = v / h;
             if (h.Degree >= 1)
@@ -114,7 +114,7 @@ public static partial class IntFactorisation
         var n = baseCan.Length;
         var M = new K[n, n];
         var polys = baseCan.Select(g => Ring.FastPow(g, q) - g).ToArray();
-        foreach (var (i, j) in n.Range().Grid2D(n.Range()))
+        foreach (var (i, j) in n.Range().Grid2D())
         {
             M[i, j] = polys[j][i];
         }
@@ -156,7 +156,7 @@ public static partial class IntFactorisation
             foreach (var (g, a) in polys.Where(g => g.Degree > 0).Grid2D(allF.Skip(1)))
             {
                 var g_a = g - a;
-                var gcd = Ring.FastGCD(f, g_a).Monic;
+                var gcd = Ring.Gcd(f, g_a).Monic;
                 if (gcd.Degree != 0)
                 {
                     foreach (var f1 in FirrInternal(gcd, allF))
@@ -185,24 +185,17 @@ public static partial class IntFactorisation
         return all;
     }
 
-    public static List<(KPoly<K> g, int q, int m)> FirrFsepBerlekampAECF<K>(KPoly<K> f, K a0, BigInteger q)
+    public static (KPoly<K> g, int q, int m)[] FirrFsepBerlekampAECF<K>(KPoly<K> f, K a0, BigInteger q)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
-        List<(KPoly<K> g, int q, int m)> all = new();
-        foreach (var (g, q0, m) in GianniTrager(f))
-            all.AddRange(BerlekampProbabilisticAECF(g, a0, q).Select(g0 => (g0, q0, m)));
-
-        return all;
+        return GianniTrager(f).SelectMany(e => BerlekampProbabilisticAECF(e.g, a0, q).Select(g0 => (g0, e.q, e.m)))
+            .ToArray();
     }
 
-    public static List<(KPoly<K> g, int q, int m)> FirrFsepCantorZassenhausAECF<K>(KPoly<K> f, K a0, BigInteger q)
+    public static (KPoly<K> g, int q, int m)[] FirrFsepCantorZassenhausAECF<K>(KPoly<K> f, K a0, BigInteger q)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
-        List<(KPoly<K> g, int q, int m)> all = new();
-        foreach (var (g, q0, m) in GianniTrager(f))
-            all.AddRange(CantorZassenhausAECF(g, a0, q).Select(g0 => (g0, q0, m)));
-
-        return all;
+        return GianniTrager(f).SelectMany(e => CantorZassenhausAECF(e.g, a0, q).Select(g0 => (g0, e.q, e.m))).ToArray();
     }
 
     public static EPoly<K> Mk<K>(EPoly<K> g, int k, BigInteger q) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
@@ -339,29 +332,30 @@ public static partial class IntFactorisation
             yield return f;
     }
 
-    static (int i, KPoly<K> Ei)[] DDF<K>(KPoly<K> F, BigInteger q) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    static IEnumerable<(int i, KPoly<K> Ei)> DDF<K>(KPoly<K> F, BigInteger q) 
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var n = F.Degree;
         var X = FG.EPoly(F);
-        var LX0 = new List<EPoly<K>>() { X };
+        var LX0 = new List<EPoly<K>>(capacity: n + 1) { X };
         var f = F;
+        var Xq = X.FastPow(q).Poly;
         for (int i = 1; i <= n; i++)
         {
-            var Xi0 = LX0.Last();
-            LX0.Add(Ring.FastPow(Xi0, q));
+            if (n > 1)
+                LX0.Add(Xq.Substitute(LX0.Last()));
+            else
+                LX0.Add(Ring.FastPow(LX0.Last(), q));
         }
 
-        var L = new List<(int i, KPoly<K> Ei)>();
         foreach (var (poly, i) in LX0.Select((ei, i) => (ei.Poly, i)).Skip(1))
         {
             var Ei = Ring.Gcd(poly - F.X, f).Monic;
-            if (!Ei.Equals(f.One))
-                L.Add((i, Ei));
+            if (!Ei.IsOne())
+                yield return (i, Ei);
 
-            f = f / Ei;
+            f /= Ei;
         }
-
-        return L.ToArray();
     }
 
     static IEnumerable<KPoly<K>> EDF<K>(KPoly<K> F, K a0, BigInteger q, int i)
@@ -376,7 +370,7 @@ public static partial class IntFactorisation
         KPoly<K> H1;
         while (true)
         {
-            var G = new KPoly<K>(F.x, F.KZero, F.Degree.Range().Select(_ => RandomElt(a0, q)).TrimSeq().ToArray());
+            var G = F.Degree.Range().Select(_ => RandomElt(a0, q)).ToKPoly(F.x);
             if (G.Degree == 0)
                 continue;
 
@@ -384,8 +378,7 @@ public static partial class IntFactorisation
             if (H1.Degree > 0 && H1.Degree != F.Degree)
                 break;
 
-            var x = FG.EPoly(F);
-            var H = Mk(G.Substitute(x), i, q).Poly.Monic;
+            var H = Mk(new EPoly<K>(F, G), i, q).Poly.Monic;
             if (H.Degree == 0)
                 continue;
 
@@ -405,22 +398,23 @@ public static partial class IntFactorisation
     public static IEnumerable<KPoly<K>> CantorZassenhausVShoup<K>(KPoly<K> F, K a0, BigInteger q)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
+        var n = F.Degree;
         foreach (var (i, ei) in DDF(F, q))
         {
             var r = ei.Degree / i;
-            var H = new List<KPoly<K>>() { ei };
+            var H = new List<KPoly<K>>(capacity: n + 1) { ei };
             while (H.Count < r)
             {
-                var Hp = new HashSet<KPoly<K>>();
+                var Hp = new HashSet<KPoly<K>>(capacity: n + 1);
                 foreach (var h in H)
                 {
-                    var G = new KPoly<K>(F.x, F.KZero, h.Degree.Range().Select(_ => RandomElt(a0, q)).TrimSeq().ToArray());
+                    var G = h.Degree.Range().Select(_ => RandomElt(a0, q)).ToKPoly(F.x);
                     var a = new EPoly<K>(h, G);
                     var d = Ring.Gcd(Mk(a, i, q).Poly, h).Monic;
-                    if (d.Equals(d.One) || d.Equals(h))
+                    if (d.IsOne() || d.Equals(h))
                         Hp.Add(h);
                     else
-                        Hp.UnionWith(new[] { d, (h / d).Monic });
+                        Hp.UnionWith([d, (h / d).Monic]);
                 }
 
                 H = Hp.ToList();

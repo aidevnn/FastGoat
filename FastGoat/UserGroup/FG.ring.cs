@@ -33,17 +33,19 @@ public static partial class FG
 
     public static EPoly<ZnInt> ToGF(this EPoly<ZnInt> e, BigInteger q, char a = 'a')
     {
-        if (e.F.Degree != 1)
-            throw new();
-
-        if (q == e.P)
-            return e;
-
+        if (!e.F.IsInConwayPolynomialsDB())
+            throw new($"[{e.P},{e.F.Degree}:{e.F.Glue(",")}] is not in local Conway Polynomials Database");
+        
         var x = FqX(q, a);
         if (x.P != e.P)
             throw new();
         
-        return e.Substitute(x);
+        var q0 = BigInteger.Pow(e.P, e.F.Degree);
+        if (x.F.Degree % e.F.Degree != 0)
+            throw new();
+
+        var d = (q - 1) / (q0 - 1);
+        return e.Substitute(x.FastPow(d));
     }
 
     public static Rational Comb(int k, int n)
@@ -161,6 +163,12 @@ public static partial class FG
         return roots.ToArray();
     }
 
+    public static bool IsInConwayPolynomialsDB<K>(this KPoly<K> P) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var (n, p) = (P.Degree, P.P);
+        return PolynomExt.AllConwayPolys[p][n].Index().All(e => (P[e.Index] - e.Item).IsZero());
+    }
+
     public static KPoly<ZnInt> ToZnPoly(this KPoly<Rational> P, int p) =>
         new(P.x, ZnInt.ZnZero(p), P.Coefs.Select(c => c.ToZnInt(p)).TrimSeq().ToArray());
 
@@ -168,10 +176,10 @@ public static partial class FG
         new(P.x, ZnBigInt.ZnZero(p), P.Coefs.Select(c => c.ToZnBigInt(p)).TrimSeq().ToArray());
 
     public static KPoly<EPoly<ZnInt>> ToGF(this KPoly<Rational> P, BigInteger q, char x = 'a') =>
-        P.Coefs.Select(c => c.ToGF(q, x)).ToKPoly();
+        P.Coefs.Select(c => c.ToGF(q, x)).ToKPoly(P.x);
 
     public static KPoly<EPoly<ZnInt>> ToGF(this KPoly<EPoly<ZnInt>> P, BigInteger q, char x = 'a') =>
-        P.Coefs.Select(c => c.ToGF(q, x)).ToKPoly();
+        P.Coefs.Select(c => c.ToGF(q, x)).ToKPoly(P.x);
 
     public static KPoly<Rational> ToRationalPoly(this KPoly<ZnInt> P) =>
         new(P.x, Rational.KOne(), P.Coefs.Select(c => c.K * Rational.KOne()).TrimSeq().ToArray());

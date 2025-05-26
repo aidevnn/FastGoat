@@ -107,7 +107,7 @@ public static class EC
                 continue;
 
             var eq = (y.Pow(2) + E.a1 * x * y + E.a3 * y) - (x.Pow(3) + E.a2 * x.Pow(2) + E.a4 * x + E.a6);
-            var pts = IntFactorisation.FirrFsepBerlekampAECF(eq, g, q)
+            var pts = IntFactorisation.FirrFsepCantorZassenhausAECF(eq, g, q)
                 .Where(f => f.g.Degree == 1)
                 .Select(f => (x, y: -f.g[0]))
                 .Select(e => new EllPt<GFelt>(e.x, e.y))
@@ -270,7 +270,7 @@ public static class EC
         var x = FG.ZPoly(p);
         var Q = x.Pow(3) + b * x * x + c * x + d;
         var a0 = NumberTheory.PrimitiveRootMod(p);
-        var facts = IntFactorisation.FirrFsepBerlekampAECF(Q, x.KOne * a0, p);
+        var facts = IntFactorisation.FirrFsepCantorZassenhausAECF(Q, x.KOne * a0, p);
         return facts.Count(f => f.g.Degree == 1);
     }
 
@@ -703,7 +703,7 @@ public static class EC
     public static Dictionary<int, int> EllAn(EllGroup<Rational> E, Rational N)
     {
         var nmax = 2 * Rational.Sqrt(N).Num;
-        var ellAn = Primes10000.Where(p => p <= nmax).ToDictionary(p => p, p => EllAp(E, p));
+        var ellAn = Primes10000.Where(p => p <= nmax).ToDictionary(p => p, p => EllApBSGS(E, p));
         ellAn[0] = 0;
         ellAn[1] = 1;
         foreach (var p in ellAn.Keys.Where(p => p > 1).Order().ToArray())
@@ -924,9 +924,7 @@ public static class EC
     public static GFelt[] Roots(KPoly<GFelt> P, GFelt a)
     {
         var q = BigInteger.Pow(P.P, a.F.Degree);
-        var facts = IntFactorisation.MusserSFF(P)
-            .SelectMany(f => IntFactorisation.CantorZassenhausAECF(f.g, a, q))
-            .ToArray();
+        var facts = IntFactorisation.CantorZassenhausAECF(P, a, q).ToArray();
 
         if (facts.All(f => f.Degree == 1))
             return facts.Select(f => -f[0]).ToArray();
@@ -941,7 +939,7 @@ public static class EC
         var facts = IntFactorisation.MusserSFF(P)
             .SelectMany(f => IntFactorisation.CantorZassenhausAECF(f.g, a0, p))
             .ToArray();
-
+        
         if (facts.Length == 0)
             throw new();
 
@@ -951,7 +949,7 @@ public static class EC
         var roots = facts.SelectMany(f => Roots(f.Substitute(X), g)).Distinct().ToArray();
         if (roots.Length == 0)
             throw new();
-
+        
         return (roots, g);
     }
 
@@ -974,13 +972,13 @@ public static class EC
                 Console.WriteLine($"    PrimRoot of GF({p}^{g0.F.Degree}) = {g0}");
             }
 
-            var sqrts0 = seq0.Select(e => (e.x, e.b, e.c, e.delta, sqrtDelta: NumberTheory.SqrtModANTV1(e.delta, g0)));
+            var sqrts0 = seq0.Select(e => (e.x, e.b, e.c, e.delta, sqrtDelta: NumberTheory.SqrtFqANTV1(e.delta, g0)))
+                .ToArray();
             return (sqrts0.SelectMany(e => new[]
                 {
                     new EllPt<GFelt>(e.x, (-e.b + e.sqrtDelta) / 2),
                     new EllPt<GFelt>(e.x, (-e.b - e.sqrtDelta) / 2)
-                })
-                .ToHashSet(), g0);
+                }).ToHashSet(), g0);
         }
         else
         {
@@ -994,7 +992,7 @@ public static class EC
             var delta = seq0.First(e => !e.delta.IsZero() && !e.resQuad.IsOne()).delta;
             var Y = FG.KPoly('Y', g0.X);
             var (r, a, _) = IntFactorisation.PrimitiveElt(Y.Pow(2) - delta);
-            var (X, a0) = FG.EPolyXc(r, delta.Poly.x);
+            var a0 = FG.EPoly(r, delta.Poly.x);
             var a1 = a.Substitute(a0);
             var g1 = NumberTheory.PrimitiveRoot(a0.X);
             var seq1 = seq0.Select(e => (x: e.x.Substitute(a1), b: e.b.Substitute(a1), c: e.c.Substitute(a1),
@@ -1012,7 +1010,7 @@ public static class EC
                 Console.WriteLine($"    PrimRoot of GF({p}^{g1.F.Degree}) = {g1}");
             }
 
-            var sqrts1 = seq1.Select(e => (e.x, e.b, e.c, e.delta, sqrtDelta: NumberTheory.SqrtModANTV1(e.delta, g1)));
+            var sqrts1 = seq1.Select(e => (e.x, e.b, e.c, e.delta, sqrtDelta: NumberTheory.SqrtFqANTV1(e.delta, g1)));
             return (sqrts1.SelectMany(e => new[]
                 {
                     new EllPt<GFelt>(e.x, (-e.b + e.sqrtDelta) / 2),

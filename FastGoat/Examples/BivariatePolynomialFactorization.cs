@@ -296,21 +296,27 @@ public static class BivariatePolynomialFactorization
         // IntExt.RngSeed(812665);
         GlobalStopWatch.AddLap();
         // Logger.Level = LogLevel.Level1;
-        foreach (var (n, m) in 4.Range(1).SelectMany(m => (6 - m).Range(2).Select(n => (n, m))))
-        {
-            var ct = 0;
-            GlobalStopWatch.AddLap();
-            while (ct < 5)
-            {
-                var F = IntFactorisation.RandRationalPolynomials(10, maxMonomDegree: m, nbMonoms: 4, nbFacts: 1)
-                    .SelectMany(f => Enumerable.Repeat(f, IntExt.Rng.Next(1, 4))).Take(3 * n).Shuffle().Take(n + 1)
-                    .Aggregate((ai, aj) => ai * aj);
-                var (y, x) = F.Indeterminates.Deconstruct();
-                if (F.DegreeOf(y) == 0 || F.Coefs.Max(e => e.Value.Absolute.Num) > 5000)
-                    continue;
 
+        GlobalStopWatch.AddLap();
+        var paramsFactsDegrees = 4.Range(1).SelectMany(m => (6 - m).Range(2).Select(n => (n, m))).ToArray();
+        var allPolys = paramsFactsDegrees.Select(e =>
+            (e, 500.SeqLazy().Select(_ => IntFactorisation
+                    .RandRationalPolynomials(10, maxMonomDegree: e.m, nbMonoms: 4, nbFacts: 1)
+                    .SelectMany(f => Enumerable.Repeat(f, IntExt.Rng.Next(1, 4))).Take(3 * e.n).Shuffle().Take(e.n + 1)
+                    .Aggregate((ai, aj) => ai * aj))
+                .Where(f => f.DegreeOf("Y") != 0 && f.Coefs.Max(c => c.Value.Absolute.Num) < 5000)
+                .Take(5).Index().ToArray())
+        ).ToArray();
+        GlobalStopWatch.Show("End Rand Polynomials");
+        
+        foreach (var ((n, m), polys) in allPolys)
+        {
+            GlobalStopWatch.AddLap();
+            foreach(var (idx, F) in polys)
+            {
+                var (y, x) = F.Indeterminates.Deconstruct();
                 Console.WriteLine("#######################################");
-                Console.WriteLine($"P{ct} = {F}");
+                Console.WriteLine($"P{idx} = {F}");
                 var (F1, ctx, cty) = IntFactorisation.CT(F);
                 if (!F.Equals(F1))
                 {
@@ -355,7 +361,6 @@ public static class BivariatePolynomialFactorization
                     throw new();
 
                 Console.WriteLine();
-                ++ct;
             }
 
             GlobalStopWatch.Show($"MaxDegree:{m} NbFactors:{n}");
@@ -368,14 +373,23 @@ public static class BivariatePolynomialFactorization
 
     public static void Example10_FullFactorisationFp()
     {
+        IntExt.RngSeed(5896);
         Logger.Level = LogLevel.Level1;
-        foreach (var (p, n) in new[] { (2, 4), (3, 4), (5, 3), (11, 3) })
+        
+        GlobalStopWatch.AddLap();
+        
+        GlobalStopWatch.AddLap();
+        var paramsPrimesFacts = new[] { (2, 4), (3, 4), (5, 3), (11, 3) };
+        var allPolys = paramsPrimesFacts.Select(e =>
+                (e, IntFactorisation.RandZnIntPolynomials(e.Item1, nbFacts: e.Item2).Distinct().Take(5).Index().ToArray()))
+            .ToArray();
+        GlobalStopWatch.Show("End Rand Polynomials");
+        
+        foreach (var ((p, n), polys) in allPolys)
         {
-            var (Y, X) = Ring.Polynomial(ZnInt.ZnZero(p), MonomOrder.Lex, "Y", "X").Deconstruct();
-            var (x, y) = (X.ExtractIndeterminate, Y.ExtractIndeterminate);
-
-            foreach (var (i0, P1) in IntFactorisation.RandZnIntPolynomials(p, nbFacts: n).Distinct().Take(5).Index())
+            foreach (var (i0, P1) in polys)
             {
+                var (y, x) = P1.Indeterminates.Deconstruct();
                 var i = i0 + 1;
                 Console.WriteLine($"P{i} = {P1}");
                 var facts = IntFactorisation.FactorFxyFp(P1);
@@ -397,5 +411,7 @@ public static class BivariatePolynomialFactorization
                 Console.WriteLine();
             }
         }
+        
+        GlobalStopWatch.Show("End factorisation");
     }
 }
