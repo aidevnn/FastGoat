@@ -198,10 +198,16 @@ public static class NumberTheory
         return a.FastPow((q - 1) / 2);
     }
 
-    public static EPoly<ZnInt> SqrtModANTV1(EPoly<ZnInt> a, EPoly<ZnInt> d)
+    public static EPoly<ZnInt> SqrtFqANTV1(EPoly<ZnInt> a, EPoly<ZnInt> d)
     {
+        if (a.IsZero() || a.IsOne())
+            return a;
+        
         var (p, n) = (a.P, a.F.Degree);
         var q = BigInteger.Pow(p, n);
+        if (n == 1)
+            return SqrtModANTV1(a[0].K, p) * a.One;
+        
         var g = 1000.SeqLazy().Select(_ => DistributionExt.Dice(2, q - 1)).Select(i => d.FastPow(i))
             .First(g => !LegendreJacobiGf(g).IsOne());
         var (s, t) = FactorMultiplicity(2, q - 1);
