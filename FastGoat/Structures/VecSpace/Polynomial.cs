@@ -80,6 +80,18 @@ public readonly struct Polynomial<K, T> : IElt<Polynomial<K, T>>, IRingElt<Polyn
         get
         {
             var list = new List<Polynomial<K, T>>();
+            foreach (var xi in ExtractAllIndeterminates)
+                list.Add(X(xi));
+
+            return list.ToArray();
+        }
+    }
+
+    public Polynomial<K, T>[] AllVariables
+    {
+        get
+        {
+            var list = new List<Polynomial<K, T>>();
             foreach (var xi in Indeterminates)
                 list.Add(X(xi));
 
@@ -117,6 +129,15 @@ public readonly struct Polynomial<K, T> : IElt<Polynomial<K, T>>, IRingElt<Polyn
             throw new();
 
         return new Polynomial<K, T>(new Monom<T>(Indeterminates, t), KOne);
+    }
+
+    public Polynomial<K, T> XY(Monom<T> mn)
+    {
+        var ind = Indeterminates;
+        if (mn.ContentIndeterminates.Any(t => !ind.Contains(t)))
+            throw new();
+
+        return new Polynomial<K, T>(mn, KOne);
     }
 
     public Polynomial<K, T> Inv()
@@ -480,10 +501,7 @@ public readonly struct Polynomial<K, T> : IElt<Polynomial<K, T>>, IRingElt<Polyn
             return string.IsNullOrEmpty(sm) ? $"{k}" : $"{k0}{sep}{sm}";
         }
 
-        return Coefs.OrderByDescending(kp => kp.Key.Degree)
-            .ThenBy(kp => kp.Key.ContentIndeterminates.Count())
-            .ThenByDescending(kp => kp.Key)
-            .Select(kp => Str(kp.Key, kp.Value)).Glue(" + ");
+        return Coefs.OrderByDescending(e => e.Key).Select(kp => Str(kp.Key, kp.Value)).Glue(" + ");
     }
 
     public int NbIndeterminates

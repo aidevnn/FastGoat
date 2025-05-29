@@ -766,7 +766,7 @@ public static partial class IntFactorisation
     static Polynomial<K, Xi>[] FactorStepFxyFq<K>(Polynomial<K, Xi> F, K g, BigInteger q)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
-        var (Y, X) = F.Variables.Deconstruct();
+        var (Y, X) = F.AllVariables.Deconstruct();
         var (y, x) = F.Indeterminates.Deconstruct();
 
         if (F.DegreeOf(y) == 0)
@@ -816,7 +816,7 @@ public static partial class IntFactorisation
         if (lt0 && resNotNull0)
         {
             var (y, x) = F20.Indeterminates.Deconstruct();
-            var (Y, X) = F20.Variables.Deconstruct();
+            var (Y, X) = F20.AllVariables.Deconstruct();
             var facts = FactorStepFxyFq(F20, g0, p);
             var facts3 = facts.Select(f => f.Substitute((X - i20, x), (X - i10 * Y, x)).Monic()).ToList();
             if (Logger.Level != LogLevel.Off)
@@ -848,7 +848,7 @@ public static partial class IntFactorisation
             }
 
             var (y, x) = F2.Indeterminates.Deconstruct();
-            var (Y, X) = F2.Variables.Deconstruct();
+            var (Y, X) = F2.AllVariables.Deconstruct();
             var facts = FactorStepFxyFq(F2, g1, q);
 
             var facts3 = facts.Select(f => f.Substitute((X - i2, x), (X - i1 * Y, x)).Monic()).ToList();

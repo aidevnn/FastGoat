@@ -314,7 +314,7 @@ public static class LearningWithErrors
         ind.ExtendAppend("b");
 
         var z = new Polynomial<Rational, Xi>(ind, Rational.KZero());
-        var Vars = z.Variables;
+        var Vars = z.AllVariables;
         var (k, t, X, sk, sk2) = Vars.Take(5).Deconstruct();
         var (epk, pkb, erlk, rlkb) = Vars.Skip(5).Take(4).Deconstruct();
         var pka = (t * epk + pkb * sk);

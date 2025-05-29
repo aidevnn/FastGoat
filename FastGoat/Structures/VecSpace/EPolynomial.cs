@@ -6,8 +6,31 @@ public readonly struct EPolynomial<K> : IElt<EPolynomial<K>>, IRingElt<EPolynomi
 {
     public Polynomial<K, Xi> Num { get; }
     public Polynomial<K, Xi> Denom { get; }
-    public EPolynomial<K> ENum => new(Num, Num.One);
-    public EPolynomial<K> EDenom => new(Denom, Denom.One);
+    public EPolynomial<K> ENum => new(Num, Num.One, Basis);
+    public EPolynomial<K> EDenom => new(Denom, Denom.One, Basis);
+    public EPolynomial<K> X(Xi xi) => new(Num.X(xi), Num.One, Basis);
+    public EPolynomial<K> XY(Monom<Xi> mn) => new(Num.XY(mn), Num.One, Basis);
+
+    public Indeterminates<Xi> Indeterminates => Num.Indeterminates;
+    public EPolynomial<K>[] AllVariables
+    {
+        get
+        {
+            var basis = Basis;
+            return Num.AllVariables.Select(e => new EPolynomial<K>(e, e.One, basis)).ToArray();
+
+        }
+    }
+    public (Xi xi, EPolynomial<K> P)[] AllIndeterminatesAndVariables
+    {
+        get
+        {
+            var basis = Basis;
+            return Num.AllIndeterminatesAndVariables
+                .Select(e => (e.Item1, new EPolynomial<K>(e.Item2, e.Item2.One, basis))).ToArray();
+
+        }
+    }
     public PolynomialBasis<K, Xi> Basis { get; }
     public int P => Num.P;
 
@@ -46,7 +69,7 @@ public readonly struct EPolynomial<K> : IElt<EPolynomial<K>>, IRingElt<EPolynomi
     }
 
     public int Hash { get; }
-    public bool Equals(EPolynomial<K> other) => (Num * other.Denom).Equals(Denom * other.Num);
+    public bool Equals(EPolynomial<K> other) => (Num * other.Denom - Denom * other.Num).IsZero();
 
     public int CompareTo(EPolynomial<K> other) => (Num * other.Denom).CompareTo(Denom * other.Num);
     public K KZero => Num.KZero;
