@@ -881,22 +881,41 @@ public static class EC
         return Simplify(quo * G + rem, F, G);
     }
 
+    public static KPoly<FracPoly<K>> Simplify<K>(KPoly<FracPoly<K>> P, KPoly<FracPoly<K>> F, KPoly<FracPoly<K>> G)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        if (P.Degree < F.Degree)
+            return P;
+
+        var (quo, rem) = P.Div(F);
+        return Simplify(quo * G + rem, F, G);
+    }
+
+    public static FracPoly<FracPoly<K>> Simplify<K>(FracPoly<FracPoly<K>> P, KPoly<FracPoly<K>> s, KPoly<KPoly<K>> F, KPoly<KPoly<K>> G)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var F0 = F.ToFrac().Num;
+        var G0 = G.ToFrac().Num;
+        var num = Simplify(P.Denom.Degree == 0 ? P.Num : P.Num * s, F0, G0);
+        var denom = Simplify(P.Denom.Degree == 0 ? P.Denom : P.Denom * s, F0, G0);
+        return new FracPoly<FracPoly<K>>(num, denom);
+    }
+
     public static (EllPt<FracPoly<FracPoly<K>>> P, EllPt<FracPoly<FracPoly<K>>> nP)
         NPt<K>(int n, Dictionary<int, KPoly<KPoly<K>>> psi, KPoly<KPoly<K>> R0, KPoly<KPoly<K>> R1)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var Y = FG.KFracPoly('Y', FG.KFracPoly(R1.KOne.X).X).X;
         var X = Y.KOne.X + Y.Zero;
+        var psi2 = psi[2].ToFrac();
+        var (a1, a3) = (psi2.Num[0].Num[1] * X.KOne, psi2.Num[0].Num[0] * X.KOne);
 
-        var tmp1 = Simplify(psi[n - 1] * psi[n + 1], R0, R1).ToFrac(Y) /
-                   Simplify(psi[n].Pow(2), R0, R1).ToFrac(Y);
-        var nPX = X - tmp1;
+        var tmp1 = Simplify(psi[n - 1] * psi[n + 1], R0, R1).ToFrac() / Simplify(psi[n].Pow(2), R0, R1).ToFrac();
+        var nPX = Simplify(X - tmp1, psi2.Num, R0, R1);
 
-        var denom = n % 2 == 0
-            ? Y * Simplify(4 * psi[n].Pow(3), R0, R1).ToFrac(Y)
-            : Simplify(4 * R1.X * psi[n].Pow(3), R0, R1).ToFrac(Y);
-        var tmp2 = Simplify(psi[n + 2] * psi[n - 1].Pow(2) - psi[n - 2] * psi[n + 1].Pow(2), R0, R1).ToFrac(Y);
-        var nPY = tmp2 / denom;
+        var num = Simplify(psi[n + 2] * psi[n - 1].Pow(2) - psi[n - 2] * psi[n + 1].Pow(2), R0, R1).ToFrac();
+        var denom = Simplify(2 * psi[2] * psi[n].Pow(3), R0, R1).ToFrac();
+        var nPY = Simplify(num / denom - (a1 * nPX + a3) / 2, psi2.Num, R0, R1);
 
         return (new EllPt<FracPoly<FracPoly<K>>>(X, Y), new EllPt<FracPoly<FracPoly<K>>>(nPX, nPY));
     }
@@ -909,12 +928,9 @@ public static class EC
         var Y = FG.KPoly('Y', x);
         var X = x * Y.One;
         var (X2, X3, X4, X5, X6) = 5.SeqLazy(2).Select(i => X.Pow(i)).Deconstruct();
-        var eCoefs = new EllCoefs<K>(E.a1, E.a2, E.a3, E.a4, E.a6);
-        var (a1, a2, a3, a4, a6) = (E.a1 * x.One * Y.One, E.a2 * x.One * Y.One, E.a3 * x.One * Y.One,
-            E.a4 * x.One * Y.One,
-            E.a6 * x.One * Y.One);
-        var (b2, b4, b6, b8) = (eCoefs.b2 * x.One * Y.One, eCoefs.b4 * x.One * Y.One, eCoefs.b6 * x.One * Y.One,
-            eCoefs.b8 * x.One * Y.One);
+        var eCoefs = new EllCoefs<K>(E.a1, E.a2, E.a3, E.a4, E.a6).ToEllCoefs(x);
+        var (a1, a2, a3, a4, a6) = eCoefs.Model;
+        var (b2, b4, b6, b8) = eCoefs.B_Invariants;
 
         var R0 = Y.Pow(2) + a1 * X * Y + a3 * Y;
         var R1 = X3 + a2 * X2 + a4 * X + a6;
@@ -925,15 +941,15 @@ public static class EC
         psi[4] = psi[2] * (2 * X6 + b2 * X5 + 5 * b4 * X4 + 10 * b6 * X3 + 10 * b8 * X2 + (b2 * b8 - b4 * b6) * X +
                            (b4 * b8 - b6 * b6));
 
-        for (int n = 2; n < nmax / 2; n++)
+        for (int n = 2; n <= nmax / 2; n++)
         {
             psi[2 * n] = Simplify(psi[n] * (psi[n + 2] * psi[n - 1].Pow(2) - psi[n - 2] * psi[n + 1].Pow(2)) / psi[2],
                 R0, R1);
-            psi[2 * n + 1] = Simplify(psi[n + 2] * psi[n].Pow(3) - psi[n + 1].Pow(3) * psi[n - 1], R0, R1);
+            if (2 * n + 1 <= nmax)
+                psi[2 * n + 1] = Simplify(psi[n + 2] * psi[n].Pow(3) - psi[n + 1].Pow(3) * psi[n - 1], R0, R1);
         }
 
-        var f = psi.ToDictionary(e => e.Key, e => e.Key % 2 == 0 ? (e.Value / Y)[0].Clone() : e.Value[0].Clone());
-        f[2] = NPt(2, psi, R0, R1).nP.X.Num[0].Denom;
+        var f = psi.ToDictionary(e => e.Key, e => e.Key % 2 == 0 ? (e.Value / psi[2])[0] : e.Value[0]);
         return (R0, R1, psi, f);
     }
 
