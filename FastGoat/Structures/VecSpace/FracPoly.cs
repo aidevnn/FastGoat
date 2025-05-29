@@ -46,7 +46,7 @@ public readonly struct FracPoly<K> : IElt<FracPoly<K>>, IRingElt<FracPoly<K>>, I
         }
         else
         {
-            var gcd = Ring.FastGCD(num, denom);
+            var gcd = num.P == 0 ? Ring.FastGCD(num, denom) : Ring.Gcd(num, denom);
             var num0 = num.Div(gcd).quo;
             var denom0 = denom.Div(gcd).quo;
             var c = denom0.Coefs.Last();
@@ -81,6 +81,13 @@ public readonly struct FracPoly<K> : IElt<FracPoly<K>>, IRingElt<FracPoly<K>>, I
     public int Hash { get; }
 
     public bool IsZero() => Num.IsZero();
+
+    public K Substitute(K s)
+    {
+        var num = Num.Coefs.Select((c, i) => c * s.Pow(i)).Aggregate(KZero, (acc, a) => a + acc);
+        var denom = Denom.Coefs.Select((c, i) => c * s.Pow(i)).Aggregate(KZero, (acc, a) => a + acc);
+        return num / denom;
+    }
 
     public FracPoly<K> Substitute(FracPoly<K> s)
     {

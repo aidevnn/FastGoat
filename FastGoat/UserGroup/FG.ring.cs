@@ -360,11 +360,11 @@ public static partial class FG
         return new FracPoly<K>(p).X;
     }
 
-    public static FracPoly<FracPoly<K>> ToFrac<K>(this KPoly<KPoly<K>> f, FracPoly<FracPoly<K>> scalar)
+    public static FracPoly<FracPoly<K>> ToFrac<K>(this KPoly<KPoly<K>> f)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
-        var x = scalar.KOne.X;
-        var y = scalar.X;
+        var x = KFracPoly(f.KOne.X);
+        var y = KFracPoly(f.x, x.One);
         return f.Coefs.Select((cy, i) => cy.Substitute(x) * y.Pow(i)).ToVec().Sum();
     }
 
