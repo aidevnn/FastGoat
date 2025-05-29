@@ -87,10 +87,29 @@ public static class EC
 
         return Group.Generate(E, ell);
     }
+
+    public static ConcreteGroup<EllPt<ZnInt>> EllFp(EllGroup<ZnInt> E)
+    {
+        var Es = E.ToShortWeierstrassForm();
+        var p = Es.a4.Mod;
+        var ell = p.Range().Select(k => new ZnInt(p, k))
+            .Select(x => (x, y2: x.Pow(3) + Es.a4 * x + Es.a6))
+            .Select(e => (e.x, y: NumberTheory.SqrtModANTV1(e.y2.K, p) * e.x.One))
+            .Select(e => Es.RevTrans(new(e.x, e.y)))
+            .Where(e => E.Contains(e.X, e.Y))
+            .Order()
+            .ToArray();
+
+        return Group.Generate(E, ell);
+    }
     
     public static ConcreteGroup<EllPt<GFelt>> EllFq(BigInteger[] curve, int q)
     {
         var g = FG.FqX(q, 'a');
+        var (p, n) = (g.P, g.F.Degree);
+        if (n == 1)
+            g = g.One * NumberTheory.PrimitiveRootMod(p);
+        
         EllGroup<GFelt> E = EllGroup(curve).ToGF(g);
         if (q > 3000)
             throw new();

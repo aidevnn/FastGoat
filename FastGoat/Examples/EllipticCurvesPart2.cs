@@ -76,6 +76,9 @@ public static class EllipticCurvesPart2
     static IEnumerable<GFelt> SetFq(GFelt g)
     {
         var (p, n) = (g.P, g.F.Degree);
+        if (n == 1)
+            g = g.One * NumberTheory.PrimitiveRootMod(p);
+        
         yield return g.Zero;
         var x = g.One;
         for (int i = 0; i < p.Pow(n) - 1; i++)
