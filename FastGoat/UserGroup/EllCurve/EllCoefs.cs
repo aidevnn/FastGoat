@@ -144,6 +144,13 @@ public struct EllCoefs<K> where K : struct, IFieldElt<K>, IRingElt<K>, IElt<K>
         return E.Transform(r1, r1.Zero, r1.Zero, u1).Simplify();
     }
 
+    public EllCoefs<T> ToEllCoefs<T>(T scalar)
+        where T : struct, IElt<T>, IRingElt<T>, IFieldElt<T>, IVsElt<K, T>, IModuleElt<K, T>
+    {
+        var o = scalar.One;
+        return new(a1 * o, a2 * o, a3 * o, a4 * o, a6 * o, r * o, s * o, t * o, u * o);
+    }
+
     private EllCoefs<K> Simplify()
     {
         if (typeof(K).Equals(typeof(Rational)))

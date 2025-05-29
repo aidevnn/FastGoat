@@ -60,6 +60,11 @@ public static class EC
         var (a1, a2, a3, a4, a6) = CurveArray(curve.Select(e => new Rational(e)).ToArray()).Deconstruct();
         return new(a1, a2, a3, a4, a6);
     }
+    public static EllGroup<T> EllGroup<T>(T[] curve) where T : struct, IElt<T>, IRingElt<T>, IFieldElt<T>
+    {
+        var (a1, a2, a3, a4, a6) = CurveArray(curve).Deconstruct();
+        return new(a1, a2, a3, a4, a6);
+    }
 
     public static EllCoefs<Rational> EllCoefs(BigInteger[] curve)
     {
@@ -70,6 +75,12 @@ public static class EC
     public static EllCoefs<Rational> EllCoefs(int[] curve)
     {
         var (a1, a2, a3, a4, a6) = CurveArray(curve.Select(e => new Rational(e)).ToArray()).Deconstruct();
+        return new(a1, a2, a3, a4, a6);
+    }
+
+    public static EllCoefs<T> EllCoefs<T>(T[] curve) where T : struct, IElt<T>, IRingElt<T>, IFieldElt<T>
+    {
+        var (a1, a2, a3, a4, a6) = CurveArray(curve).Deconstruct();
         return new(a1, a2, a3, a4, a6);
     }
 
@@ -102,7 +113,7 @@ public static class EC
 
         return Group.Generate(E, ell);
     }
-    
+
     public static ConcreteGroup<EllPt<GFelt>> EllFq(BigInteger[] curve, int q)
     {
         var g = FG.FqX(q, 'a');

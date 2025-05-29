@@ -103,7 +103,7 @@ public static class EllipticCurves
         var E = new EllGroup<Rational>(a1, a2, a3, a4, a5);
         var El = E.ToLongWeierstrassForm();
         var Es = E.ToShortWeierstrassForm();
-        Console.WriteLine($"Elliptic curve      {E.Eq}");
+        Console.WriteLine($"Elliptic curve      {E.EqStr}");
         Console.WriteLine($"Simplified form     {El.Eq}");
         Console.WriteLine($"Short form          {Es.Eq}");
 

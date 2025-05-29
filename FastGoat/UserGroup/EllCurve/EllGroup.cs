@@ -64,15 +64,31 @@ public struct EllGroup<T> : IGroup<EllPt<T>> where T : struct, IElt<T>, IRingElt
 
     public int Hash { get; }
 
-    public string Eq
+    public string EqStr
     {
         get
         {
-            var (x, y) = Ring.Polynomial(Disc, "x", "y").Deconstruct();
-            var lhs = y * y + a1 * x * y + a3 * y;
-            var rhs = x.Pow(3) + a2 * x * x + a4 * x + a6;
+            var (lhs, rhs) = Eq();
             return $"Elliptic curve {lhs} = {rhs}";
         }
+    }
+
+    public (Polynomial<T, Xi> lhs, Polynomial<T, Xi> rhs) Eq(Indeterminates<Xi> ind, Xi x, Xi y)
+    {
+        var X = new Polynomial<T, Xi>(new Monom<Xi>(ind, x), a1.One);
+        var Y = new Polynomial<T, Xi>(new Monom<Xi>(ind, y), a1.One);
+        var lhs = Y * Y + a1 * X * Y + a3 * Y;
+        var rhs = X.Pow(3) + a2 * X * X + a4 * X + a6;
+        return (lhs, rhs);
+    }
+
+    public (Polynomial<T, Xi> lhs, Polynomial<T, Xi> rhs) Eq(Polynomial<T, Xi> x, Polynomial<T, Xi> y) =>
+        Eq(x.Indeterminates, x.ExtractIndeterminate, y.ExtractIndeterminate);
+
+    public (Polynomial<T, Xi> lhs, Polynomial<T, Xi> rhs) Eq()
+    {
+        var (y, x) = Ring.Polynomial(Disc, MonomOrder.Lex, "Y", "X").Deconstruct();
+        return Eq(x, y);
     }
 
     public string Name => a1.IsZero() && a2.IsZero() && a3.IsZero()
@@ -82,6 +98,7 @@ public struct EllGroup<T> : IGroup<EllPt<T>> where T : struct, IElt<T>, IRingElt
     public string Field { get; set; }
     public T Disc { get; }
     public (T a1, T a2, T a3, T a4, T a6) Coefs { get; }
+    public T[] ArrCoefs => [a1, a2, a3, a4, a6];
     public T a1 => Coefs.a1;
     public T a2 => Coefs.a2;
     public T a3 => Coefs.a3;

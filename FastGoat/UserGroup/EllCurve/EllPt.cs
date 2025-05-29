@@ -28,7 +28,7 @@ public readonly struct EllPt<T> : IElt<EllPt<T>> where T : struct, IElt<T>, IRin
         if ((IsO && !other.IsO) || (!IsO && other.IsO))
             return false;
 
-        return (IsO && other.IsO) || (X.Equals(other.X) && Y.Equals(other.Y));
+        return (IsO && other.IsO) || ((X - other.X).IsZero() && (Y - other.Y).IsZero());
     }
 
     public int CompareTo(EllPt<T> other)
