@@ -415,6 +415,21 @@ public static class EllipticCurvesPart2
         EC.EllApFrobTrace([1, -1, 0, -4, 4]);
         EC.EllApFrobTrace([1, -1, 1, -19353, 958713]);
         EC.EllApFrobTrace([1, 1, 1, -17714, 900047]);
-        GlobalStopWatch.Show();
+        GlobalStopWatch.Show(); // #  Time:3m31s
+    }
+
+    public static void Example10EllApFrobTraceLDivRing()
+    {
+        GlobalStopWatch.Restart();
+        EC.EllApFrobTraceLDivRing([1, 0]);
+        EC.EllApFrobTraceLDivRing([-1, 0]);
+        EC.EllApFrobTraceLDivRing([1, 1]);
+        EC.EllApFrobTraceLDivRing([-43, 166]);
+        EC.EllApFrobTraceLDivRing([0, 0, 1, 0, -7]);
+        EC.EllApFrobTraceLDivRing([1, 0, 0, 0, 1]);
+        EC.EllApFrobTraceLDivRing([1, -1, 0, -4, 4]);
+        EC.EllApFrobTraceLDivRing([1, -1, 1, -19353, 958713]);
+        EC.EllApFrobTraceLDivRing([1, 1, 1, -17714, 900047]);
+        GlobalStopWatch.Show(); // #  Time:38.190s
     }
 }

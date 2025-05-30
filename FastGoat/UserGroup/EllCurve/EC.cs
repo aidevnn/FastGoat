@@ -1205,4 +1205,88 @@ public static class EC
         return (divPolys, allBasis);
     }
 
+    public static Dictionary<int, Dictionary<int, int>> EllApFrobTraceLDivRing(BigInteger[] curve)
+    {
+        var E = EllCoefs(curve);
+        var El = E.ToLongWeierstrassForm();
+        var Ell = El.ToEllGroup();
+
+        GlobalStopWatch.AddLap();
+        var N = EllTateAlgorithm(EllCoefs(curve)).N;
+        var allList = SmallPrimesList(N);
+        var pmax = allList.Keys.Max();
+        var lmax = allList.Max(e => e.Value.Max());
+        Console.WriteLine($"{E.ToEllGroup()} => {Ell} Conductor N = {N} j-Inv = {E.J_Invariant}");
+
+        var (R0, R1, psi0, fdiv) = DivisionPolynomial(Ell, lmax + 3);
+        var Pt2 = NPt(2, psi0, R0, R1).nP;
+        fdiv[2] = Pt2.X.Num[0].Denom;
+        var divPolys = fdiv.ToDictionary(e => e.Key, e => e.Value.PrimitiveZPoly());
+        divPolys.Println("divPolys");
+
+        Console.WriteLine($"N = {N} pmax = {pmax} listMax = {lmax}");
+        var frobTr = new Dictionary<int, Dictionary<int, int>>();
+        foreach (var (p, listL) in allList)
+        {
+            if (p < 5)
+                continue;
+
+            var ap = EllAp(Ell, p);
+            var pFrobTr = frobTr[p] = new Dictionary<int, int>();
+
+            foreach (var l in listL)
+            {
+                GlobalStopWatch.AddLap();
+                var psi = divPolys[l].ToZnPoly(p).SubstituteChar('X');
+                var Erl = EllGroupSymb.FromEllGroup(Ell.ToZnInt(p), psi);
+                Console.WriteLine($"p={p} l={l} {Erl}");
+                Console.WriteLine($"{Erl.Eq}");
+                Console.WriteLine($"psi = {psi}");
+
+                var pt = Erl.Pt;
+                var p_Pt = Erl.Times(pt, p % l);
+                var phi = Erl.Invert(Erl.FrobRl(pt));
+                var phi2 = Erl.FrobRl(pt, 2);
+                var add_phi2_p = Erl.Op(phi2, p_Pt);
+
+                foreach (var t in l.SeqLazy())
+                {
+                    var t_phi = Erl.FrobRl(Erl.Times(pt, -t));
+                    var eqFrob = Erl.Op(add_phi2_p, t_phi);
+
+                    if (eqFrob.IsO)
+                    {
+                        pFrobTr[l] = t;
+                        Console.WriteLine($"t = {t}");
+                        break;
+                    }
+                }
+
+                if (!pFrobTr.ContainsKey(l))
+                    throw new();
+
+                GlobalStopWatch.Show();
+                Console.WriteLine();
+            }
+
+            pFrobTr.Println("Frob Traces");
+            var keys = pFrobTr.Keys.ToArray();
+            var values = keys.Select(k => pFrobTr[k]).ToArray();
+            var crtTable = NumberTheory.CrtTable(keys);
+            var L = keys.Aggregate((li, lj) => li * lj);
+            var crt = NumberTheory.CRT(values, crtTable, L);
+            var ap1 = crt < L / 2 ? crt : crt - L;
+            Console.WriteLine($"p = {p} ap = {ap} crt = {crt} ap1 = {ap1} L = {L} Check:{ap == ap1}");
+            if (ap != ap1)
+                throw new();
+
+            Console.WriteLine();
+        }
+
+        GlobalStopWatch.Show($"End LDivRing {Ell}");
+        Console.WriteLine();
+
+        return frobTr;
+    }
+
 }
