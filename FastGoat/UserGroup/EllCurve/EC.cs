@@ -1153,7 +1153,10 @@ public static class EC
         var lmax = allList.Max(e => e.Value.Max());
         Console.WriteLine($"{Ell}");
 
-        var divPolys = DivisionPolynomial(Ell, lmax + 3).f.ToDictionary(e => e.Key, e => e.Value.PrimitiveZPoly());
+        var (R0, R1, psi0, fdiv) = DivisionPolynomial(Ell, lmax + 3);
+        var Pt2 = NPt(2, psi0, R0, R1).nP;
+        fdiv[2] = Pt2.X.Num[0].Denom;
+        var divPolys = fdiv.ToDictionary(e => e.Key, e => e.Value.PrimitiveZPoly());
         divPolys.Println("divPolys");
 
         Console.WriteLine($"N = {N} pmax = {pmax} listMax = {lmax}");
