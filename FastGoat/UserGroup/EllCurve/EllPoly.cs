@@ -15,7 +15,7 @@ public readonly struct EllPoly<K> : IElt<EllPoly<K>>, IRingElt<EllPoly<K>>, IFie
     public Polynomial<K, Xi> EqEll => Reduction.eqEll;
     public Polynomial<K, Xi> DivPol => Reduction.dvp;
     public Polynomial<K, Xi> SD => Reduction.sd;
-    public bool IsDeterminate => !IsInfty && !IsIndeterminate;
+    public bool IsNumber => !IsInfty && !IsIndeterminate;
 
     public EllPoly((Polynomial<K, Xi> eqEll, Polynomial<K, Xi> sd, Polynomial<K, Xi> dvp) red, Polynomial<K, Xi> num,
         Polynomial<K, Xi> denom)
@@ -104,7 +104,7 @@ public readonly struct EllPoly<K> : IElt<EllPoly<K>>, IRingElt<EllPoly<K>>, IFie
         if (IsIndeterminate || e.IsIndeterminate)
             return Indeterminate;
 
-        if (IsDeterminate && e.IsDeterminate)
+        if (IsNumber && e.IsNumber)
         {
             var num = (Num * e.Denom + Denom * e.Num);
             var denom = Denom.Mul(e.Denom);
@@ -119,7 +119,7 @@ public readonly struct EllPoly<K> : IElt<EllPoly<K>>, IRingElt<EllPoly<K>>, IFie
         if (IsIndeterminate || e.IsIndeterminate)
             return Indeterminate;
 
-        if (IsDeterminate && e.IsDeterminate)
+        if (IsNumber && e.IsNumber)
         {
             var num = (Num * e.Denom - Denom * e.Num);
             var denom = Denom.Mul(e.Denom);
@@ -136,7 +136,7 @@ public readonly struct EllPoly<K> : IElt<EllPoly<K>>, IRingElt<EllPoly<K>>, IFie
         if (IsIndeterminate || e.IsIndeterminate)
             return Indeterminate;
 
-        if (IsDeterminate && e.IsDeterminate)
+        if (IsNumber && e.IsNumber)
         {
             var num = (Num * e.Num);
             var denom = (Denom * e.Denom);
@@ -157,7 +157,7 @@ public readonly struct EllPoly<K> : IElt<EllPoly<K>>, IRingElt<EllPoly<K>>, IFie
         if (IsIndeterminate || e.IsIndeterminate)
             return (Indeterminate, Indeterminate);
 
-        if (IsDeterminate && e.IsDeterminate)
+        if (IsNumber && e.IsNumber)
         {
             var num = Num * e.Denom;
             var denom = Denom * e.Num;
@@ -167,7 +167,7 @@ public readonly struct EllPoly<K> : IElt<EllPoly<K>>, IRingElt<EllPoly<K>>, IFie
         if (IsInfty && e.IsInfty)
             return (Indeterminate, Indeterminate);
 
-        if (IsDeterminate && e.IsInfty)
+        if (IsNumber && e.IsInfty)
             return (Zero, Zero);
 
         return (Infty, Infty);
@@ -196,7 +196,7 @@ public readonly struct EllPoly<K> : IElt<EllPoly<K>>, IRingElt<EllPoly<K>>, IFie
 
     public EllPoly<K> Inv()
     {
-        if (IsDeterminate)
+        if (IsNumber)
             return new(Reduction, Denom, Num);
 
         if (IsIndeterminate)

@@ -234,7 +234,7 @@ public struct EllGroupSymb : IGroup<EllPt<EllPoly<ZnInt>>>
         if (pt.IsO)
             return pt;
 
-        if (!pt.X.IsDeterminate || !pt.Y.IsDeterminate)
+        if (!pt.X.IsNumber || !pt.Y.IsNumber)
         {
             Console.WriteLine("??????????? ######################## ");
             return new();
