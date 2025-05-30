@@ -1,3 +1,4 @@
+using System.Numerics;
 using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.CartesianProduct;
@@ -75,8 +76,8 @@ public static class ConwayPolynoms
 
         if (n == 1)
         {
-            var e = IntExt.Solve_k_pow_m_equal_one_mod_n_strict(p, p - 1);
-            return x + e;
+            var e = IntExt.SolveAll_k_pow_m_equal_one_mod_n_strict(p, p - 1).FirstOrDefault(-1);
+            return x - e;
         }
 
         return cnPoly;
