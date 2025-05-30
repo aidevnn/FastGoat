@@ -368,7 +368,6 @@ public static class BivariatePolynomialFactorization
         }
 
         GlobalStopWatch.Show("End");
-        Console.Beep();
     }
 
     public static void Example10_FullFactorisationFp()

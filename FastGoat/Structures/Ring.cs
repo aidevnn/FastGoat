@@ -68,11 +68,11 @@ public static partial class Ring
 
     public static K FastPow<K>(this K a, BigInteger k) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
-        if (a.IsZero())
-            return a;
-        
         if (k == 0)
             return a.One;
+
+        if (a.IsZero())
+            return a;
         
         if (k < 0)
             return a.Inv().FastPow(-k);
@@ -241,8 +241,7 @@ public static partial class Ring
         where K : struct, IFieldElt<K>, IElt<K>, IRingElt<K>
         where T : struct, IElt<T>
     {
-        var f1 = f.ExtractAllIndeterminates.Where(xi => !xi.Equals(x))
-            .Aggregate(f, (acc, xi) => acc.Substitute(f.Zero, xi));
+        var f1 = f.Indeterminates.Where(xi => !xi.Equals(x)).Aggregate(f, (acc, xi) => acc.Substitute(f.Zero, xi));
         var d = f1.DegreeOf(x);
         var coefs = (d + 1).Range().Select(i => f1[new(f.Indeterminates, x, i)]).TrimSeq().ToArray();
         return new KPoly<K>($"{x}"[0], f.KZero, coefs);
