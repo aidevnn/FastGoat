@@ -417,7 +417,7 @@ public static partial class IntFactorisation
     {
         var d = ((char)(f[0].F.x + 1)).ToString();
         var (X, Y, T) = Ring.Polynomial(f.KZero.KZero, MonomOrder.Lex, "X", "Y", d).Deconstruct();
-        var (x, y, t) = Y.Indeterminates;
+        var (x, y, t) = Y.Indeterminates.Deconstruct();
         var P = f.Coefs.Select((k, i) => k.Poly.ToPolynomial(Y) * X.Pow(i)).Aggregate(X.Zero, (acc, xi) => acc + xi);
         var M = f[0].F.ToPolynomial(Y);
         for (int s = 1; s < 50; s++)

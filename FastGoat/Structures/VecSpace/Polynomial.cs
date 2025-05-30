@@ -476,8 +476,7 @@ public readonly struct Polynomial<K, T> : IElt<Polynomial<K, T>>, IRingElt<Polyn
         if (k < 0)
             throw new GroupException(GroupExceptionType.GroupDef);
 
-        var pi = this;
-        return Enumerable.Repeat(pi, k).Aggregate(One, (a, b) => a.Mul(b));
+        return this.FastPow(k);
     }
 
     public override int GetHashCode() => Hash;
