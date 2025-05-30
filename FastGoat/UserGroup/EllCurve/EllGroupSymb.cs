@@ -61,24 +61,10 @@ public struct EllGroupSymb : IGroup<EllPt<EllPoly<ZnInt>>>
         if (pt.IsO)
             return pt;
 
-        try
-        {
-            var (_, _, r, s, t, u) = ShortForm;
-            var x = (pt.X - r) / (u * u);
-            var y = (pt.Y - t - s * u * u * x) / u.Pow(3);
-            return new(x, y);
-        }
-        catch (Exception e)
-        {
-            var (_, _, r, s, t, u) = ShortForm;
-            var x = (pt.X - r) / (u * u);
-            var y = (pt.Y - t - s * u * u * x) / u.Pow(3);
-            Console.WriteLine(e.Message);
-            Console.WriteLine(new { ShortForm });
-            Console.WriteLine(new { x });
-            Console.WriteLine(new { y });
-            return O;
-        }
+        var (_, _, r, s, t, u) = ShortForm;
+        var x = (pt.X - r) / (u * u);
+        var y = (pt.Y - t - s * u * u * x) / u.Pow(3);
+        return DummyTrackPt(new(x, y));
     }
 
     public EllPt<EllPoly<ZnInt>> ConvertFromShort(EllPt<EllPoly<ZnInt>> pt)
@@ -86,21 +72,10 @@ public struct EllGroupSymb : IGroup<EllPt<EllPoly<ZnInt>>>
         if (pt.IsO)
             return pt;
 
-        try
-        {
-            var (_, _, r, s, t, u) = ShortForm;
-            var x = u * u * pt.X + r;
-            var y = u.Pow(3) * pt.Y + s * u * u * pt.X + t;
-            return new(x, y);
-        }
-        catch (Exception e)
-        {
-            var (_, _, r, s, t, u) = ShortForm;
-            var x = u * u * pt.X + r;
-            var y = u.Pow(3) * pt.Y + s * u * u * pt.X + t;
-            Console.WriteLine(e.Message);
-            return O;
-        }
+        var (_, _, r, s, t, u) = ShortForm;
+        var x = u * u * pt.X + r;
+        var y = u.Pow(3) * pt.Y + s * u * u * pt.X + t;
+        return DummyTrackPt(new(x, y));
     }
 
     public EllPt<EllPoly<ZnInt>> ConvertToLong(EllPt<EllPoly<ZnInt>> pt)
@@ -111,7 +86,7 @@ public struct EllGroupSymb : IGroup<EllPt<EllPoly<ZnInt>>>
         var (_, _, _, r, s, t, u) = LongForm;
         var x = (pt.X - r) / (u * u);
         var y = (pt.Y - t - s * u * u * x) / u.Pow(3);
-        return new(x, y);
+        return DummyTrackPt(new(x, y));
     }
 
     public EllPt<EllPoly<ZnInt>> ConvertFromLong(EllPt<EllPoly<ZnInt>> pt)
@@ -122,7 +97,7 @@ public struct EllGroupSymb : IGroup<EllPt<EllPoly<ZnInt>>>
         var (_, _, _, r, s, t, u) = LongForm;
         var x = u * u * pt.X + r;
         var y = u.Pow(3) * pt.Y + s * u * u * pt.X + t;
-        return new(x, y);
+        return DummyTrackPt(new(x, y));
     }
 
     public int Hash { get; }
@@ -254,8 +229,17 @@ public struct EllGroupSymb : IGroup<EllPt<EllPoly<ZnInt>>>
         return new(P.X, -a1 * P.X - a3 - P.Y);
     }
 
-    public EllPt<EllPoly<ZnInt>> Validate(EllPt<EllPoly<ZnInt>> pt)
+    public EllPt<EllPoly<ZnInt>> DummyTrackPt(EllPt<EllPoly<ZnInt>> pt)
     {
+        if (pt.IsO)
+            return pt;
+
+        if (!pt.X.IsDeterminate || !pt.Y.IsDeterminate)
+        {
+            Console.WriteLine("??????????? ######################## ");
+            return new();
+        }
+
         if (!Contains(pt.X, pt.Y))
             Console.WriteLine("######################## ??????????? ");
 
@@ -282,7 +266,7 @@ public struct EllGroupSymb : IGroup<EllPt<EllPoly<ZnInt>>>
             var alpha = (y2 - y1) / (x2 - x1);
             var x3 = alpha.Pow(2) + a1 * alpha - a2 - x2 - x1;
             var y3 = -(alpha * (x3 - x1) + y1) - a1 * x3 - a3;
-            return Validate(new(x3, y3));
+            return DummyTrackPt(new(x3, y3));
         }
         else
         {
@@ -291,7 +275,7 @@ public struct EllGroupSymb : IGroup<EllPt<EllPoly<ZnInt>>>
                 var alpha = (3 * x1.Pow(2) - y1 * a1 + 2 * x1 * a2 + a4) / (x1 * a1 + a3 + 2 * y1);
                 var x3 = alpha.Pow(2) + a1 * alpha - a2 - 2 * x1;
                 var y3 = -(alpha * (x3 - x1) + y1) - a1 * x3 - a3;
-                return Validate(new(x3, y3));
+                return DummyTrackPt(new(x3, y3));
             }
             else
                 return new();
