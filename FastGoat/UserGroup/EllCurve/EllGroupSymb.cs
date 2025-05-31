@@ -1,16 +1,16 @@
 using System.Collections;
 using System.Numerics;
+using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.VecSpace;
-using FastGoat.UserGroup.Integers;
 
 namespace FastGoat.UserGroup.EllCurve;
 
-public struct EllGroupSymb : IGroup<EllPt<EllPoly<ZnInt>>>
+public struct EllGroupSymb<K> : IGroup<EllPt<EllPoly<K>>> where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
 {
-    public EllGroupSymb(EllCoefs<ZnInt> ellCoefs, KPoly<ZnInt> divPol)
+    public EllGroupSymb(EllCoefs<K> ellCoefs, Polynomial<K, Xi> divPol)
     {
-        var (x, y) = (X, Y) = GetXY(divPol, ellCoefs);
+        var (y, x) = (Y, X) = GetYX(divPol, ellCoefs);
         DivPolynomial = divPol;
         var ec = ellCoefs.ToEllCoefs(x);
         Coefs = ec.Model;
@@ -34,29 +34,29 @@ public struct EllGroupSymb : IGroup<EllPt<EllPoly<ZnInt>>>
         EllCoefs = ellCoefs;
     }
 
-    public EllGroupSymb(ZnInt a1, ZnInt a2, ZnInt a3, ZnInt a4, ZnInt a6, KPoly<ZnInt> divPol)
-        : this(new EllCoefs<ZnInt>(a1, a2, a3, a4, a6), divPol)
+    public EllGroupSymb(K a1, K a2, K a3, K a4, K a6, Polynomial<K, Xi> divPol)
+        : this(new EllCoefs<K>(a1, a2, a3, a4, a6), divPol)
     {
     }
 
-    public EllGroupSymb(ZnInt a, ZnInt b, KPoly<ZnInt> divPol) : this(a.Zero, a.Zero, a.Zero, a, b, divPol)
+    public EllGroupSymb(K a, K b, Polynomial<K, Xi> divPol) : this(a.Zero, a.Zero, a.Zero, a, b, divPol)
     {
     }
 
-    public EllGroupSymb(ZnInt a, ZnInt b, ZnInt c, KPoly<ZnInt> divPol) : this(a.Zero, a, a.Zero, b, c, divPol)
+    public EllGroupSymb(K a, K b, K c, Polynomial<K, Xi> divPol) : this(a.Zero, a, a.Zero, b, c, divPol)
     {
     }
 
-    public IEnumerator<EllPt<EllPoly<ZnInt>>> GetEnumerator() => GetElements().GetEnumerator();
+    public IEnumerator<EllPt<EllPoly<K>>> GetEnumerator() => GetElements().GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator()
     {
         return GetEnumerator();
     }
 
-    public bool Equals(IGroup<EllPt<EllPoly<ZnInt>>>? other) => other?.Hash == Hash;
+    public bool Equals(IGroup<EllPt<EllPoly<K>>>? other) => other?.Hash == Hash;
 
-    public EllPt<EllPoly<ZnInt>> ConvertToShort(EllPt<EllPoly<ZnInt>> pt)
+    public EllPt<EllPoly<K>> ConvertToShort(EllPt<EllPoly<K>> pt)
     {
         if (pt.IsO)
             return pt;
@@ -67,7 +67,7 @@ public struct EllGroupSymb : IGroup<EllPt<EllPoly<ZnInt>>>
         return DummyTrackPt(new(x, y));
     }
 
-    public EllPt<EllPoly<ZnInt>> ConvertFromShort(EllPt<EllPoly<ZnInt>> pt)
+    public EllPt<EllPoly<K>> ConvertFromShort(EllPt<EllPoly<K>> pt)
     {
         if (pt.IsO)
             return pt;
@@ -78,7 +78,7 @@ public struct EllGroupSymb : IGroup<EllPt<EllPoly<ZnInt>>>
         return DummyTrackPt(new(x, y));
     }
 
-    public EllPt<EllPoly<ZnInt>> ConvertToLong(EllPt<EllPoly<ZnInt>> pt)
+    public EllPt<EllPoly<K>> ConvertToLong(EllPt<EllPoly<K>> pt)
     {
         if (pt.IsO)
             return pt;
@@ -89,7 +89,7 @@ public struct EllGroupSymb : IGroup<EllPt<EllPoly<ZnInt>>>
         return DummyTrackPt(new(x, y));
     }
 
-    public EllPt<EllPoly<ZnInt>> ConvertFromLong(EllPt<EllPoly<ZnInt>> pt)
+    public EllPt<EllPoly<K>> ConvertFromLong(EllPt<EllPoly<K>> pt)
     {
         if (pt.IsO)
             return pt;
@@ -113,17 +113,14 @@ public struct EllGroupSymb : IGroup<EllPt<EllPoly<ZnInt>>>
         : $"Ell[{a1},{a2},{a3},{a4},{a6}]({Field})".Replace(" ", "");
 
     public string Field { get; set; }
-    public EllPoly<ZnInt> X { get; }
-    public EllPoly<ZnInt> Y { get; }
+    public EllPoly<K> X { get; }
+    public EllPoly<K> Y { get; }
+    public bool CheckValidity { get; set; } = true;
+    public (EllPoly<K> a1, EllPoly<K> a2, EllPoly<K> a3, EllPoly<K> a4, EllPoly<K> a6) Coefs { get; }
 
-    public (EllPoly<ZnInt> a1, EllPoly<ZnInt> a2, EllPoly<ZnInt> a3, EllPoly<ZnInt> a4, EllPoly<ZnInt> a6) Coefs
-    {
-        get;
-    }
+    public EllPoly<K> Disc { get; }
 
-    public EllPoly<ZnInt> Disc { get; }
-
-    public EllPt<EllPoly<ZnInt>> Pt
+    public EllPt<EllPoly<K>> Pt
     {
         get
         {
@@ -136,26 +133,26 @@ public struct EllGroupSymb : IGroup<EllPt<EllPoly<ZnInt>>>
         }
     }
 
-    public KPoly<ZnInt> DivPolynomial { get; }
+    public Polynomial<K, Xi> DivPolynomial { get; }
 
-    public (EllPoly<ZnInt> A, EllPoly<ZnInt> B, EllPoly<ZnInt> r, EllPoly<ZnInt> s, EllPoly<ZnInt> t, EllPoly<ZnInt> u)
+    public (EllPoly<K> A, EllPoly<K> B, EllPoly<K> r, EllPoly<K> s, EllPoly<K> t, EllPoly<K> u)
         ShortForm { get; }
 
-    public (EllPoly<ZnInt> A, EllPoly<ZnInt> B, EllPoly<ZnInt> C, EllPoly<ZnInt> r, EllPoly<ZnInt> s, EllPoly<ZnInt> t,
-        EllPoly<ZnInt> u) LongForm { get; }
+    public (EllPoly<K> A, EllPoly<K> B, EllPoly<K> C, EllPoly<K> r, EllPoly<K> s, EllPoly<K> t,
+        EllPoly<K> u) LongForm { get; }
 
     public string ShortFormStr => $"Ell[{ShortForm.A},{ShortForm.B}]({Field})".Replace(" ", "");
     public string LongFormStr => $"Ell[0,{LongForm.A},0,{LongForm.B},{LongForm.C}]({Field})".Replace(" ", "");
-    public EllPoly<ZnInt> a1 => Coefs.a1;
-    public EllPoly<ZnInt> a2 => Coefs.a2;
-    public EllPoly<ZnInt> a3 => Coefs.a3;
-    public EllPoly<ZnInt> a4 => Coefs.a4;
-    public EllPoly<ZnInt> a6 => Coefs.a6;
+    public EllPoly<K> a1 => Coefs.a1;
+    public EllPoly<K> a2 => Coefs.a2;
+    public EllPoly<K> a3 => Coefs.a3;
+    public EllPoly<K> a4 => Coefs.a4;
+    public EllPoly<K> a6 => Coefs.a6;
 
-    public EllPoly<ZnInt>[] ArrCoefs => [a1, a2, a3, a4, a6];
-    public EllCoefs<ZnInt> EllCoefs { get; }
+    public EllPoly<K>[] ArrCoefs => [a1, a2, a3, a4, a6];
+    public EllCoefs<K> EllCoefs { get; }
 
-    public EllPt<EllPoly<ZnInt>> this[params ValueType[] us]
+    public EllPt<EllPoly<K>> this[params ValueType[] us]
     {
         get
         {
@@ -165,32 +162,32 @@ public struct EllGroupSymb : IGroup<EllPt<EllPoly<ZnInt>>>
                 if (!Contains(x1, y1))
                     throw new GroupException(GroupExceptionType.GroupDef);
 
-                return new EllPt<EllPoly<ZnInt>>(x1, y1);
+                return new EllPt<EllPoly<K>>(x1, y1);
             }
 
-            if (us.Length == 2 && us[0] is EllPoly<ZnInt> x && us[1] is EllPoly<ZnInt> y)
+            if (us.Length == 2 && us[0] is EllPoly<K> x && us[1] is EllPoly<K> y)
             {
                 if (!Contains(x, y))
                     throw new GroupException(GroupExceptionType.GroupDef);
 
-                return new EllPt<EllPoly<ZnInt>>(x, y);
+                return new EllPt<EllPoly<K>>(x, y);
             }
 
             throw new GroupException(GroupExceptionType.GroupDef);
         }
     }
 
-    public IEnumerable<EllPt<EllPoly<ZnInt>>> GetElements()
+    public IEnumerable<EllPt<EllPoly<K>>> GetElements()
     {
-        yield return new EllPt<EllPoly<ZnInt>>();
+        yield return new EllPt<EllPoly<K>>();
     }
 
-    public IEnumerable<EllPt<EllPoly<ZnInt>>> GetGenerators()
+    public IEnumerable<EllPt<EllPoly<K>>> GetGenerators()
     {
-        yield return new EllPt<EllPoly<ZnInt>>();
+        yield return new EllPt<EllPoly<K>>();
     }
 
-    public bool ContainsPt(EllPt<EllPoly<ZnInt>> pt)
+    public bool ContainsPt(EllPt<EllPoly<K>> pt)
     {
         if (pt.IsO)
             return true;
@@ -198,15 +195,18 @@ public struct EllGroupSymb : IGroup<EllPt<EllPoly<ZnInt>>>
         return Contains(pt.X, pt.Y);
     }
 
-    public bool Contains(EllPoly<ZnInt> X0, EllPoly<ZnInt> Y0)
+    public bool Contains(EllPoly<K> X0, EllPoly<K> Y0)
     {
+        if (!CheckValidity)
+            return true;
+
         var lhs = Y0 * Y0 + a1 * X0 * Y0 + a3 * Y0;
         var rhs = X0.Pow(3) + a2 * X0 * X0 + a4 * X0 + a6;
         var diff = (lhs - rhs);
         var check = diff.IsInfty || diff.IsIndeterminate || diff.IsZero();
         if (!check)
         {
-            var pt = new EllPt<EllPoly<ZnInt>>(X0, Y0);
+            var pt = new EllPt<EllPoly<K>>(X0, Y0);
             Console.WriteLine(new { pt });
             Console.WriteLine(new { X.Reduction });
             Console.WriteLine(new { lhs, rhs, diff });
@@ -215,10 +215,10 @@ public struct EllGroupSymb : IGroup<EllPt<EllPoly<ZnInt>>>
         return check;
     }
 
-    public EllPt<EllPoly<ZnInt>> O => new();
-    public EllPt<EllPoly<ZnInt>> Neutral() => O;
+    public EllPt<EllPoly<K>> O => new();
+    public EllPt<EllPoly<K>> Neutral() => O;
 
-    public EllPt<EllPoly<ZnInt>> Invert(EllPt<EllPoly<ZnInt>> P)
+    public EllPt<EllPoly<K>> Invert(EllPt<EllPoly<K>> P)
     {
         if (P.IsO)
             return P;
@@ -229,7 +229,7 @@ public struct EllGroupSymb : IGroup<EllPt<EllPoly<ZnInt>>>
         return new(P.X, -a1 * P.X - a3 - P.Y);
     }
 
-    public EllPt<EllPoly<ZnInt>> DummyTrackPt(EllPt<EllPoly<ZnInt>> pt)
+    public EllPt<EllPoly<K>> DummyTrackPt(EllPt<EllPoly<K>> pt)
     {
         if (pt.IsO)
             return pt;
@@ -246,7 +246,7 @@ public struct EllGroupSymb : IGroup<EllPt<EllPoly<ZnInt>>>
         return pt;
     }
 
-    public EllPt<EllPoly<ZnInt>> Op(EllPt<EllPoly<ZnInt>> e1, EllPt<EllPoly<ZnInt>> e2)
+    public EllPt<EllPoly<K>> Op(EllPt<EllPoly<K>> e1, EllPt<EllPoly<K>> e2)
     {
         if (e1.IsO)
             return e2;
@@ -286,7 +286,7 @@ public struct EllGroupSymb : IGroup<EllPt<EllPoly<ZnInt>>>
 
     public override string ToString() => Name;
 
-    EllPoly<ZnInt> FastPowRl(EllPoly<ZnInt> a, BigInteger k)
+    EllPoly<K> FastPowRl(EllPoly<K> a, BigInteger k)
     {
         if (k == 0)
             return a.One;
@@ -307,7 +307,7 @@ public struct EllGroupSymb : IGroup<EllPt<EllPoly<ZnInt>>>
         return r;
     }
 
-    public EllPt<EllPoly<ZnInt>> FrobRl(EllPt<EllPoly<ZnInt>> pt, int n = 1)
+    public EllPt<EllPoly<K>> FrobRl(EllPt<EllPoly<K>> pt, int n = 1)
     {
         if (pt.IsO)
             return pt;
@@ -324,30 +324,32 @@ public struct EllGroupSymb : IGroup<EllPt<EllPoly<ZnInt>>>
         return new(x, y);
     }
 
-    public static EllGroupSymb FromEllGroup(EllGroup<ZnInt> E, KPoly<ZnInt> divPoly)
+    public static EllGroupSymb<K> FromEllGroup(EllGroup<K> E, Polynomial<K, Xi> divPoly)
     {
         return new(E.ToEllCoefs(), divPoly);
     }
 
-    public static EllGroupSymb FromEllGroup(EllGroup<ZnInt> E)
+    public static EllGroupSymb<K> FromEllGroup(EllGroup<K> E)
     {
-        return new(E.ToEllCoefs(), FG.ZPoly(E.a1.P).One);
+        var (_, x) = Ring.Polynomial(E.a1, MonomOrder.Lex, "Y", "X").Deconstruct();
+        return new(E.ToEllCoefs(), x.Zero);
     }
 
-    public static EllGroupSymb FromEllCoefs(EllCoefs<ZnInt> E)
-    {
-        return new(E, FG.ZPoly(E.a1.P).One);
-    }
-
-    public static EllGroupSymb FromEllCoefs(EllCoefs<ZnInt> E, KPoly<ZnInt> divPoly)
+    public static EllGroupSymb<K> FromEllCoefs(EllCoefs<K> E, Polynomial<K, Xi> divPoly)
     {
         return new(E, divPoly);
     }
 
-    public static (EllPoly<ZnInt> X, EllPoly<ZnInt> Y) GetXY(KPoly<ZnInt> divPol, EllCoefs<ZnInt> ellCoefs)
+    public static EllGroupSymb<K> FromEllCoefs(EllCoefs<K> E)
     {
-        var (x, y, eq, sd) = ellCoefs.ToEllGroup().GetPolynomials();
-        var dvp = divPol.Substitute(x);
-        return EllPoly<ZnInt>.GetXY(eq, sd, dvp);
+        var (_, x) = Ring.Polynomial(E.a1, MonomOrder.Lex, "Y", "X").Deconstruct();
+        return new(E, x.Zero);
+    }
+
+    public static (EllPoly<K> Y, EllPoly<K> X) GetYX(Polynomial<K, Xi> divPol, EllCoefs<K> ellCoefs)
+    {
+        var (y, x) = divPol.AllVariables.Deconstruct();
+        var (eq, sd) = ellCoefs.ToEllGroup().GetPolynomials(x, y);
+        return EllPoly<K>.GetYX(eq, sd, divPol);
     }
 }

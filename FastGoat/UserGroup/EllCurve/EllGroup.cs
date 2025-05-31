@@ -90,6 +90,12 @@ public struct EllGroup<T> : IGroup<EllPt<T>> where T : struct, IElt<T>, IRingElt
         var (y, x) = Ring.Polynomial(Disc, MonomOrder.Lex, "Y", "X").Deconstruct();
         return Eq(x, y);
     }
+    public (Polynomial<T, Xi> Eq, Polynomial<T, Xi> sd) GetPolynomials(Polynomial<T, Xi> x, Polynomial<T, Xi> y)
+    {
+        var (lhs, rhs) = Eq(x, y);
+        return (lhs - rhs, 2 * y + a1 * x + a3);
+    }
+
     public (Polynomial<T, Xi> X, Polynomial<T, Xi> Y, Polynomial<T, Xi> Eq, Polynomial<T, Xi> sd) GetPolynomials()
     {
         var (y, x) = Ring.Polynomial(Disc, MonomOrder.Lex, "Y", "X").Deconstruct();

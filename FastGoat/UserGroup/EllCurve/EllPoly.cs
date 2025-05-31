@@ -73,6 +73,9 @@ public readonly struct EllPoly<K> : IElt<EllPoly<K>>, IRingElt<EllPoly<K>>, IFie
         if (Num.IsZero())
             return true;
 
+        if (DivPol.IsZero())
+            return false;
+
         var num = Num.Div(DivPol).rem;
         var (y, x) = num.Indeterminates.Deconstruct();
         var dvp = DivPol.ToKPoly(x);
@@ -229,13 +232,13 @@ public readonly struct EllPoly<K> : IElt<EllPoly<K>>, IRingElt<EllPoly<K>>, IFie
 
     public bool Invertible() => !IsIndeterminate;
 
-    public static (EllPoly<K> X, EllPoly<K> Y) GetXY(Polynomial<K, Xi> eqEll, Polynomial<K, Xi> sd,
+    public static (EllPoly<K> Y, EllPoly<K> X) GetYX(Polynomial<K, Xi> eqEll, Polynomial<K, Xi> sd,
         Polynomial<K, Xi> dvp)
     {
         var (Y, X) = eqEll.AllVariables
             .Select(xi => new EllPoly<K>((eqEll, sd, dvp), xi, xi.One))
             .Deconstruct();
-        return (X, Y);
+        return (Y, X);
     }
 
     public static EllPoly<K> Simplify((Polynomial<K, Xi> eqEll, Polynomial<K, Xi> sd, Polynomial<K, Xi> dvp) red,
@@ -322,12 +325,13 @@ public readonly struct EllPoly<K> : IElt<EllPoly<K>>, IRingElt<EllPoly<K>>, IFie
 
 public static class EllPolyExt
 {
-    public static EllPt<FracPoly<FracPoly<K>>> ToFracPoly<K>(this EllPt<EllPoly<K>> P, Xi x, Xi y)
+    public static EllPt<FracPoly<FracPoly<K>>> ToFracPoly<K>(this EllPt<EllPoly<K>> P)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         if (P.IsO)
             return new();
 
+        var (y, x) = P.X.Num.Indeterminates.Deconstruct();
         return new(P.X.ToFracPoly(x, y), P.Y.ToFracPoly(x, y));
     }
 
