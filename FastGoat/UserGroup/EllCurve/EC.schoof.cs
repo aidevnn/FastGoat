@@ -457,7 +457,7 @@ public static partial class EC
         return (divPolys, allBasis);
     }
 
-    public static Dictionary<int, Dictionary<int, int>> EllApFrobTraceLDivRing(BigInteger[] curve)
+    public static void EllApSchoof(BigInteger[] curve)
     {
         var E = EllCoefs(curve);
         var El = E.ToLongWeierstrassForm();
@@ -485,13 +485,14 @@ public static partial class EC
                 continue;
 
             var ap = EllAp(Ell, p);
-            var pFrobTr = frobTr[p] = new Dictionary<int, int>();
+            var pFrobTr = new Dictionary<int, int>();
 
+            GlobalStopWatch.AddLap();
             foreach (var l in listL)
             {
                 GlobalStopWatch.AddLap();
                 var psi = divPolys[l].ToZnInt(p);
-                var Erl = EllGroupSymb<ZnInt>.FromEllGroup(Ell.ToZnInt(p), psi);
+                var Erl = new EllGroupSymb<ZnInt>(Ell.ToEllCoefs().ToZnInt(p), psi);
                 Erl.CheckValidity = false;
                 Console.WriteLine($"p={p} l={l} {Erl}");
                 Console.WriteLine($"{Erl.Eq}");
@@ -499,21 +500,23 @@ public static partial class EC
 
                 var pt = Erl.Pt;
                 var p_Pt = Erl.Times(pt, p % l);
-                var phi = Erl.Invert(Erl.FrobRl(pt));
                 var phi2 = Erl.FrobRl(pt, 2);
                 var add_phi2_p = Erl.Op(phi2, p_Pt);
 
+                var phi = Erl.Invert(Erl.FrobRl(pt));
+                var t_phi = Erl.O;
                 foreach (var t in l.SeqLazy())
                 {
-                    var t_phi = Erl.FrobRl(Erl.Times(pt, -t));
                     var eqFrob = Erl.Op(add_phi2_p, t_phi);
-
                     if (eqFrob.IsO)
                     {
                         pFrobTr[l] = t;
-                        Console.WriteLine($"t = {t}");
+                        Console.WriteLine($"phi(P)^2 - t*phi(P) + p*P = O");
+                        Console.WriteLine($"    t = {t}");
                         break;
                     }
+
+                    t_phi = Erl.Op(phi, t_phi);
                 }
 
                 if (!pFrobTr.ContainsKey(l))
@@ -531,16 +534,15 @@ public static partial class EC
             var crt = NumberTheory.CRT(values, crtTable, L);
             var ap1 = crt < L / 2 ? crt : crt - L;
             Console.WriteLine($"p = {p} ap = {ap} crt = {crt} ap1 = {ap1} L = {L} Check:{ap == ap1}");
+            GlobalStopWatch.Show($"EllApSchoof({EllGroupSymb<ZnInt>.FromEllCoefs(E.ToZnInt(p))})");
             if (ap != ap1)
                 throw new();
 
             Console.WriteLine();
         }
 
-        GlobalStopWatch.Show($"End LDivRing {Ell}");
+        GlobalStopWatch.Show($"End EllApSchoof {Ell}");
         Console.WriteLine();
-
-        return frobTr;
     }
 
 }

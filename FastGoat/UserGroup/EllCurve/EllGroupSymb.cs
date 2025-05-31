@@ -324,20 +324,10 @@ public struct EllGroupSymb<K> : IGroup<EllPt<EllPoly<K>>> where K : struct, IElt
         return new(x, y);
     }
 
-    public static EllGroupSymb<K> FromEllGroup(EllGroup<K> E, Polynomial<K, Xi> divPoly)
-    {
-        return new(E.ToEllCoefs(), divPoly);
-    }
-
     public static EllGroupSymb<K> FromEllGroup(EllGroup<K> E)
     {
         var (_, x) = Ring.Polynomial(E.a1, MonomOrder.Lex, "Y", "X").Deconstruct();
         return new(E.ToEllCoefs(), x.Zero);
-    }
-
-    public static EllGroupSymb<K> FromEllCoefs(EllCoefs<K> E, Polynomial<K, Xi> divPoly)
-    {
-        return new(E, divPoly);
     }
 
     public static EllGroupSymb<K> FromEllCoefs(EllCoefs<K> E)

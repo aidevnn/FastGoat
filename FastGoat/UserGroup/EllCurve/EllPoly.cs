@@ -79,11 +79,9 @@ public readonly struct EllPoly<K> : IElt<EllPoly<K>>, IRingElt<EllPoly<K>>, IFie
         var num = Num.Div(DivPol).rem;
         var (y, x) = num.Indeterminates.Deconstruct();
         var dvp = DivPol.ToKPoly(x);
-        var num0 = Ring.Decompose(num, y).Item1.ToDictionary(e => e.Key,
-                e => Ring.FastGCD(e.Value.ToKPoly(x), dvp).Degree > 0 ? e.Value.Zero : e.Value)
-            .Select(e => e.Key * e.Value).ToVec().Sum();
-
-        return num0.IsZero();
+        return Ring.Decompose(num, y).Item1.Values.Where(f => !f.IsZero())
+            .Select(f => f.ToKPoly(x)).Order()
+            .All(f => Ring.Gcd(f, dvp).Degree > 0);
     }
 
     public EllPoly<K> Zero => new(Reduction, Num.Zero, Num.One);
@@ -230,7 +228,7 @@ public readonly struct EllPoly<K> : IElt<EllPoly<K>>, IRingElt<EllPoly<K>>, IFie
         return new(num, denom);
     }
 
-    public bool Invertible() => !IsIndeterminate;
+    public bool Invertible() => !IsIndeterminate && !IsDivZero();
 
     public static (EllPoly<K> Y, EllPoly<K> X) GetYX(Polynomial<K, Xi> eqEll, Polynomial<K, Xi> sd,
         Polynomial<K, Xi> dvp)

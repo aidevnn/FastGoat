@@ -78,7 +78,7 @@ public static class EllipticCurvesPart2
         var (p, n) = (g.P, g.F.Degree);
         if (n == 1)
             g = g.One * NumberTheory.PrimitiveRootMod(p);
-        
+
         yield return g.Zero;
         var x = g.One;
         for (int i = 0; i < p.Pow(n) - 1; i++)
@@ -313,7 +313,9 @@ public static class EllipticCurvesPart2
 
     public static void Example5CountingPointsFp()
     {
-        var pmin = 64;
+        var pmin = 200;
+        GlobalStopWatch.AddLap();
+        
         foreach (var e in EllipticExt.LMFDB_Ell_Q().Where(e => e.conductor < 100000))
         {
             var E = EC.EllGroup(e.model);
@@ -330,6 +332,8 @@ public static class EllipticCurvesPart2
                 Console.WriteLine();
             }
         }
+        
+        GlobalStopWatch.Show();
     }
 
     public static void Example6CountingPointsFp()
@@ -356,7 +360,7 @@ public static class EllipticCurvesPart2
             [1, 0, 2, 0, 1],
             [2, 0, 0, 1, 0]
         ];
-        
+
         {
             var p = 2;
             foreach (var curve in curves.Where(e => !EC.EllCoefs(e).ToZnInt(p).Disc.IsZero()))
@@ -380,7 +384,6 @@ public static class EllipticCurvesPart2
             foreach (var curve in curves.Where(e => !EC.EllCoefs(e).ToZnInt(p).Disc.IsZero()))
                 EllFq(curve, p);
         }
-
     }
 
     public static void Example8CountingPointsFq()
@@ -405,7 +408,7 @@ public static class EllipticCurvesPart2
 
     public static void Example9EllApFrobTrace()
     {
-        GlobalStopWatch.Restart();
+        GlobalStopWatch.AddLap();
         EC.EllApFrobTrace([1, 0]);
         EC.EllApFrobTrace([-1, 0]);
         EC.EllApFrobTrace([1, 1]);
@@ -418,18 +421,31 @@ public static class EllipticCurvesPart2
         GlobalStopWatch.Show(); // #  Time:3m31s
     }
 
-    public static void Example10EllApFrobTraceLDivRing()
+    public static void Example10EllApSchoof()
     {
-        GlobalStopWatch.Restart();
-        EC.EllApFrobTraceLDivRing([1, 0]);
-        EC.EllApFrobTraceLDivRing([-1, 0]);
-        EC.EllApFrobTraceLDivRing([1, 1]);
-        EC.EllApFrobTraceLDivRing([-43, 166]);
-        EC.EllApFrobTraceLDivRing([0, 0, 1, 0, -7]);
-        EC.EllApFrobTraceLDivRing([1, 0, 0, 0, 1]);
-        EC.EllApFrobTraceLDivRing([1, -1, 0, -4, 4]);
-        EC.EllApFrobTraceLDivRing([1, -1, 1, -19353, 958713]);
-        EC.EllApFrobTraceLDivRing([1, 1, 1, -17714, 900047]);
-        GlobalStopWatch.Show(); // #  Time:20.894s
+        GlobalStopWatch.AddLap();
+        EC.EllApSchoof([1, 0]);
+        EC.EllApSchoof([-1, 0]);
+        EC.EllApSchoof([1, 1]);
+        EC.EllApSchoof([-43, 166]);
+        EC.EllApSchoof([0, 0, 1, 0, -7]);
+        EC.EllApSchoof([1, 0, 0, 0, 1]);
+        EC.EllApSchoof([1, -1, 0, -4, 4]);
+        EC.EllApSchoof([1, -1, 1, -19353, 958713]);
+        EC.EllApSchoof([1, 1, 1, -17714, 900047]);
+        GlobalStopWatch.Show(); // #  Time:13.138s
+    }
+
+    public static void Example11EllApSchoof()
+    {
+        var (nbCurves, minN, maxN) = (1000, 1, 100000);
+        var curves = EllipticExt.LMFDB_Ell_Q().Where(e => e.conductor >= minN && e.conductor <= maxN).Shuffle()
+            .Take(nbCurves).OrderBy(e => e.conductor).ToArray();
+        GlobalStopWatch.AddLap();
+        foreach (var e in curves)
+            EC.EllApSchoof(e.model);
+
+        GlobalStopWatch.Show($"Nb curves = {curves.Length} of conductor in [{minN}, {maxN}]");
+        // # Nb curves = 145 of conductor in [1, 100000] Time:18m51s
     }
 }
