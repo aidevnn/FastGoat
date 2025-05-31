@@ -100,7 +100,7 @@ public static class BivariatePolynomialFactorization
                 Console.WriteLine($"P{idx,-2} = {F}");
                 var (y, x) = F.Indeterminates.Deconstruct();
                 var factsF = IntFactorisation.FactorsFxy(F, rewrite: true)
-                    .Select(f => IntFactorisation.Primitive(f)).Where(f => !(f - 1).IsZero()).Order().ToArray();
+                    .Select(f => f.Primitive()).Where(f => !(f - 1).IsZero()).Order().ToArray();
                 var lt = F / factsF.Aggregate((acc, e) => e * acc);
                 if (!(lt - 1).IsZero())
                     factsF = factsF.Prepend(lt).ToArray();
@@ -208,7 +208,7 @@ public static class BivariatePolynomialFactorization
         var facts = IntFactorisation.FactorsFxy(F1);
         var factsF1 = facts.Select(f => f.Substitute(X1 - i0 * X2, X1)).Order().ToArray();
         var factsF = factsF1.Select(f => f.Substitute(X1 - i1, X1))
-            .Select(f => IntFactorisation.Primitive(f)).Order().ToArray();
+            .Select(f => f.Primitive()).Order().ToArray();
         var prod = factsF.Aggregate((acc, e) => e * acc);
         var lc = F.LeadingDetails.lc / prod.LeadingDetails.lc;
         if (!(lc - 1).IsZero())
@@ -324,7 +324,7 @@ public static class BivariatePolynomialFactorization
                     Console.WriteLine($"F1 = {F1}");
                 }
 
-                var sff = IntFactorisation.SFF(F1).Select(f => (g: IntFactorisation.Primitive(f.g), f.m)).ToArray();
+                var sff = IntFactorisation.SFF(F1).Select(f => (g: f.g.Primitive(), f.m)).ToArray();
                 if (sff.Sum(f => f.m) > 1)
                     sff.Println("SFF");
 
@@ -337,7 +337,7 @@ public static class BivariatePolynomialFactorization
 
                 var factsF = sff.SelectMany(f => IntFactorisation.FactorsFxy(f.g, rewrite: true).Select(g => (g, f.m)))
                     .Concat(ctXY)
-                    .Select(e => (g: IntFactorisation.Primitive(e.g), e.m))
+                    .Select(e => (g: e.g.Primitive(), e.m))
                     .GroupBy(e => e.g).Select(e => (g: e.Key, m: e.Sum(f => f.Item2)))
                     .OrderBy(e => e.g.NbIndeterminates)
                     .ThenBy(e => e.g.Coefs.Keys.Count)

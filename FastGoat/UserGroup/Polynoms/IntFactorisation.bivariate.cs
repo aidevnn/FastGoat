@@ -62,7 +62,7 @@ public static partial class IntFactorisation
 
         return (100 * nbRandPolys).SeqLazy().Select(_ => nbFacts.SeqLazy()
             .Select(_ => pols[IntExt.Rng.Next(pols.Length)]).Aggregate(X.One, (acc, e) => e * acc)
-        ).Select(f => Primitive(f));
+        ).Select(f => f.Primitive());
     }
 
     public static Polynomial<K, T> Swap<K, T>(Polynomial<K, T> F, T xi, T xj)
@@ -234,7 +234,7 @@ public static partial class IntFactorisation
         return new Polynomial<Rational, Xi>(f.Indeterminates, Rational.KZero(), new(coefs1));
     }
 
-    public static Polynomial<Rational, Xi> Primitive(Polynomial<Rational, Xi> f)
+    public static Polynomial<Rational, Xi> Primitive(this Polynomial<Rational, Xi> f)
     {
         if (f.IsZero())
             return f;
@@ -242,6 +242,12 @@ public static partial class IntFactorisation
         var arrGcd = f.Coefs.Values.Where(e => !e.IsZero()).Select(e => e.Absolute.Num).Distinct().Order().ToArray();
         var arrLcm = f.Coefs.Values.Select(e => e.Absolute.Denom).Distinct().Order().ToArray();
         return f * new Rational(f.LeadingDetails.lc.Sign * IntExt.LcmBigInt(arrLcm), IntExt.GcdBigInt(arrGcd));
+    }
+
+    public static Polynomial<ZnInt, Xi> ToZnInt(this Polynomial<Rational, Xi> f, int p)
+    {
+        var z = new ZnInt(p, 0);
+        return new(f.Indeterminates, z, new(f.Coefs.ToDictionary(e => e.Key, e => e.Value.ToZnInt(p))));
     }
 
     public static (bool Lt, K gk, Polynomial<K, T> F) RewritingPolynomialLeadingTerm<K, T>(Polynomial<K, T> F,
@@ -515,7 +521,7 @@ public static partial class IntFactorisation
                 var factQ1 = ZPoly2QPoly(fact, c.One);
                 if (F.Div(factQ1).rem.IsZero())
                 {
-                    factsQ.Add(Primitive(factQ1));
+                    factsQ.Add(factQ1.Primitive());
                     rem.ExceptWith(comb);
                     nbCombs = comb.Length;
                     break;
@@ -524,7 +530,7 @@ public static partial class IntFactorisation
                 var factQc = ZPoly2QPoly(fact, c);
                 if (F.Div(factQc).rem.IsZero())
                 {
-                    factsQ.Add(Primitive(factQc));
+                    factsQ.Add(factQc.Primitive());
                     rem.ExceptWith(comb);
                     nbCombs = comb.Length;
                     break;
@@ -586,7 +592,7 @@ public static partial class IntFactorisation
                 if (Logger.Level != LogLevel.Off)
                     factsQ.Println($"Recombinaison in Q[{x},{y}]");
 
-                return factsQ.Select(f => Primitive(f)).Order().ToArray();
+                return factsQ.Select(f => f.Primitive()).Order().ToArray();
             }
             catch (Exception e)
             {
@@ -608,9 +614,9 @@ public static partial class IntFactorisation
             var seq = (2 * degY + 1).Range(-degY).Select(i => new Rational(i))
                 .OrderBy(i => i.Absolute).ThenDescending().ToArray();
             (_, i0, F1) = RewritingPolynomialLeadingTerm(F, seq);
-            F1 = Primitive(F1);
+            F1 = F1.Primitive();
             (_, i1, F2) = RewritingPolynomialResultantZero(F1, seq);
-            F2 = Primitive(F2);
+            F2 = F2.Primitive();
         }
 
         if (Logger.Level != LogLevel.Off)
