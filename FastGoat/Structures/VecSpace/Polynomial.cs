@@ -398,21 +398,21 @@ public readonly struct Polynomial<K, T> : IElt<Polynomial<K, T>>, IRingElt<Polyn
         return new(Indeterminates, KZero, coefs);
     }
 
-    private Polynomial<K, T> InPlaceSubMul(Polynomial<K, T> e, K c, Monom<T> m)
+    private void InPlaceSubMul(SortedList<Monom<T>, K> A, SortedList<Monom<T>, K> B, K c, Monom<T> m)
     {
-        SortedList<Monom<T>, K> coefs = new(Coefs);
-        foreach (var kp in e.Coefs)
+        foreach (var kp in B)
         {
             var key = kp.Key.Mul(m);
-            coefs[key] = coefs.ContainsKey(key)
-                ? coefs[key].Sub(kp.Value * c)
+            A[key] = A.ContainsKey(key)
+                ? A[key].Sub(kp.Value * c)
                 : -kp.Value * c;
         }
 
-        foreach (var a in coefs.Where(a => a.Value.IsZero()).ToArray())
-            coefs.Remove(a.Key);
+        foreach (var a in A.Where(a => a.Value.IsZero()).ToArray())
+            A.Remove(a.Key);
 
-        return new(Indeterminates, KZero, coefs);
+        if (A.Count == 0)
+            A[m.One] = c.Zero;
     }
 
     public (Polynomial<K, T> quo, Polynomial<K, T> rem) Div(Polynomial<K, T> e)
@@ -420,17 +420,14 @@ public readonly struct Polynomial<K, T> : IElt<Polynomial<K, T>>, IRingElt<Polyn
         if (e.IsZero())
             throw new DivideByZeroException();
 
-        // if (e.Coefs.Keys.SelectMany(a => a.ContentIndeterminates).Distinct().Count() > 1)
-        //     throw new GroupException(GroupExceptionType.GroupDef);
-
-        var rem = new Polynomial<K, T>(Indeterminates, KZero, new(Coefs));
+        var rem = new SortedList<Monom<T>, K>(Coefs);
         var (elm, elc) = e.Coefs.Last();
-        int k = rem.Coefs.Count - 1;
+        int k = rem.Count - 1;
         SortedList<Monom<T>, K> quo = new();
+        var mn0 = new Monom<T>(Indeterminates);
         while (k >= 0)
         {
-            var (alm, alc) = (rem.Coefs.Keys[k], rem.Coefs.Values[k]);
-            // var mnm = alm.Div(elm);
+            var (alm, alc) = (rem.Keys[k], rem.Values[k]);
             var (mnm0, mnm1) = Monom<T>.Reduce(alm, elm);
             if (!mnm0.IsOne)
             {
@@ -443,14 +440,14 @@ public readonly struct Polynomial<K, T> : IElt<Polynomial<K, T>>, IRingElt<Polyn
             if (!r.IsZero())
                 break;
 
-            rem = rem.InPlaceSubMul(e, q, m);
-            k = rem.Coefs.Count - 1;
+            InPlaceSubMul(rem, e.Coefs, q, m);
+            k = rem.Count - 1;
             quo[m] = q;
-            if (rem.IsZero())
+            if (rem.Count == 1 && rem.ContainsKey(mn0) && rem[mn0].IsZero())
                 break;
         }
 
-        return (new(Indeterminates, KZero, quo), rem);
+        return (new(Indeterminates, KZero, quo), new(Indeterminates, KZero, rem));
     }
 
     public Polynomial<K, T> KMul(K k)
