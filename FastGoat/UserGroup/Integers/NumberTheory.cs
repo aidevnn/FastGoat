@@ -157,6 +157,9 @@ public static class NumberTheory
 
     public static int SqrtModANTV1(int a, int p)
     {
+        if (p == 2)
+            return a;
+        
         var g = p.SeqLazy().Select(_ => Rng.Next(2, p)).First(i => LegendreJacobi(i, p) != 1);
         var (s, t0) = FactorMultiplicity(2, p - 1);
         var (t, e) = ((int)t0, 0);
@@ -440,6 +443,7 @@ public static class NumberTheory
         return t;
     }
 
+    public static ZnInt PrimitiveRootFp(int p) => new ZnInt(p, PrimitiveRootMod(p));
     public static int NthRootUnityMod(int n, int p) => PowMod(PrimitiveRootMod(p), (p - 1) / n, p);
 
     public static BigInteger NthRootUnityMod(BigInteger n, BigInteger p) =>
