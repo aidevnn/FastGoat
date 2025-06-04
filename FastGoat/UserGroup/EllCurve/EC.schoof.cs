@@ -12,6 +12,88 @@ namespace FastGoat.UserGroup.EllCurve;
 
 public static partial class EC
 {
+    public static (EllPoly<K> X, EllPoly<K> Y, EllPoly<K> Z) EllPoly<K>(K scalar, MonomOrder order = MonomOrder.Lex)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var s = new EllPoly<K>(scalar, order);
+        return (s.X3, s.X2, s.X1);
+    }
+
+    public static EllPoly<Rational> Primitive(this EllPoly<Rational> f)
+    {
+        if (f.IsZero())
+            return f;
+
+        var arrGcd = f.Coefs.Values.Where(e => !e.IsZero()).Select(e => e.Absolute.Num).Distinct().Order().ToArray();
+        var arrLcm = f.Coefs.Values.Select(e => e.Absolute.Denom).Distinct().Order().ToArray();
+        return f * new Rational(f.LeadingDetails.lc.Sign * IntExt.LcmBigInt(arrLcm), IntExt.GcdBigInt(arrGcd));
+    }
+
+    public static EllPoly<ZnInt> ToZnInt(this EllPoly<Rational> f, int p)
+    {
+        var z = new ZnInt(p, 0);
+        var coefs = f.Coefs.Select(e => (e.Key, e.Value.ToZnInt(p)))
+            .Where(e => !e.Item2.IsZero()).ToDictionary(e => e.Key, e => e.Item2);
+        return new(f.IndTriVar, z, coefs);
+    }
+
+    public static (EllFracPoly<K> Y, EllFracPoly<K> X) EllFracPolyYX<K>((K a1, K a2, K a3, K a4, K a6) coefs,
+        EllPoly<K> divPol)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var ind = divPol.IndTriVar;
+        var (a1, a2, a3, a4, a6) = coefs;
+        var x = new EllPoly<K>(ind, a1.Zero).X1;
+        var y = x.X2;
+        var lhs = y * y + a1 * x * y + a3 * y;
+        var rhs = x.Pow(3) + a2 * x * x + a4 * x + a6;
+        var (eq, sd) = (lhs - rhs, 2 * y + a1 * x + a3);
+        var (Y, X) = new[] { eq.X2, eq.X1 }
+            .Select(xi => new EllFracPoly<K>((eq, sd, divPol), xi, xi.One))
+            .Deconstruct();
+        return (Y, X);
+    }
+
+    public static (EllFracPoly<K> Y, EllFracPoly<K> X) EllFracPolyYX<K>(this EllGroup<K> ell, EllPoly<K> divPol)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        return EllFracPolyYX(ell.Coefs, divPol);
+    }
+
+    public static (EllFracPoly<K> Y, EllFracPoly<K> X) EllFracPolyYX<K>(this EllGroup<K> ell)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        return ell.EllFracPolyYX(EllPoly(ell.a1).X.Zero);
+    }
+
+    public static (EllFracPoly<K> Y, EllFracPoly<K> X) EllFracPolyYX<K>(this EllCoefs<K> ell, EllPoly<K> divPol)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        return EllFracPolyYX(ell.Model, divPol);
+    }
+
+    public static (EllFracPoly<K> Y, EllFracPoly<K> X) EllFracPolyYX<K>(this EllCoefs<K> ell)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        return ell.EllFracPolyYX(EllPoly(ell.a1).X.Zero);
+    }
+
+    public static (EllFracPoly<K> X, EllFracPoly<K> Y) EllFracPolyYX<K>(EllPoly<K> eqEll, EllPoly<K> sd, EllPoly<K> dvp)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var (Y, X) = new[] { eqEll.X2, eqEll.X1 }
+            .Select(xi => new EllFracPoly<K>((eqEll, sd, dvp), xi, xi.One))
+            .Deconstruct();
+        return (Y, X);
+    }
+
+    public static EllGroupSymb<K> ToEllGroupSymb<K>(this EllCoefs<K> E)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var x = new EllPoly<K>(E.a1).X1;
+        return new(E, x.Zero);
+    }
+
     public static long BSGSlong<T>(IGroup<T> g, T a, T b, double ord) where T : struct, IElt<T>
     {
         var (m, tmp1) = ((long)Double.Sqrt(ord) + 1, a); // TODO: faster BSGS
@@ -57,7 +139,7 @@ public static partial class EC
             .Select(g => new ZnBigInt(p, g))
             .Where(g => !(4 * (Es.a4 * g.Pow(2)).Pow(3) + 27 * (Es.a6 * g.Pow(3)).Pow(2)).IsZero())
             .First();
-        
+
         // Mestre's Theorem, quadratic twist of Ep
         var Ep_ = new EllGroup<ZnBigInt>(Es.a4 * g.Pow(2), Es.a6 * g.Pow(3));
         int ct = 0, nbCands = 0, nbCands_ = 0;
@@ -159,17 +241,16 @@ public static partial class EC
             throw new();
     }
 
-    public static (Dictionary<int, EllPoly<K>> psi, Dictionary<int, EllPoly<K>> f)
+    public static (Dictionary<int, EllFracPoly<K>> psi, Dictionary<int, EllFracPoly<K>> f)
         DivisionPolynomial<K>(EllGroup<K> E, int nmax) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
-        var Erl = EllGroupSymb<K>.FromEllGroup(E);
-        var (X, Y) = Erl.Pt;
+        var (Y, X) = E.EllFracPolyYX();
         var (X2, X3, X4, X5, X6) = 5.SeqLazy(2).Select(i => X.Pow(i)).Deconstruct();
         var eCoefs = E.ToEllCoefs().ToEllCoefs(X);
         var (a1, a2, a3, a4, a6) = eCoefs.Model;
         var (b2, b4, b6, b8) = eCoefs.B_Invariants;
 
-        var psi = new Dictionary<int, EllPoly<K>>();
+        var psi = new Dictionary<int, EllFracPoly<K>>();
         (psi[0], psi[1], psi[2]) = (Y.Zero, Y.One, 2 * Y + a1 * X + a3);
         psi[3] = 3 * X4 + b2 * X3 + 3 * b4 * X2 + 3 * b6 * X + b8;
         psi[4] = psi[2] * (2 * X6 + b2 * X5 + 5 * b4 * X4 + 10 * b6 * X3 + 10 * b8 * X2 + (b2 * b8 - b4 * b6) * X +
@@ -186,13 +267,12 @@ public static partial class EC
         return (psi, f);
     }
 
-    public static EllPt<EllPoly<K>> NPt<K>(int n, Dictionary<int, EllPoly<K>> psi)
+    public static EllPt<EllFracPoly<K>> NPt<K>(int n, Dictionary<int, EllFracPoly<K>> psi)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var psi2 = psi[2];
-        var (_, X) = EllPoly<K>.GetYX(psi2.EqEll, psi2.SD, psi2.DivPol);
-        var (_, x) = psi2.Num.AllVariables.Deconstruct();
-        var (a1, a3) = (psi2.Num[x.ExtractMonom], psi2.Num.ConstTerm);
+        var X = EllFracPolyYX(psi2.EqEll, psi2.SD, psi2.DivPol).X;
+        var (a1, a3) = (psi2.Num[(0, 0, 1)], psi2.Num.ConstTerm);
 
         var nPX = X - psi[n - 1] * psi[n + 1] / psi[n].Pow(2);
 
@@ -235,17 +315,23 @@ public static partial class EC
         var facts = IntFactorisation.MusserSFF(P)
             .SelectMany(f => IntFactorisation.CantorZassenhausAECF(f.g, a0, p))
             .ToArray();
-        
+
         if (facts.Length == 0)
             throw new();
 
         var fact = facts.MaxBy(f => f.Degree);
         var (X, a) = FG.EPolyXc(fact, 'a');
         var g = NumberTheory.PrimitiveRoot(a);
+        // Irreductibles factors of division polynomial in Fp
+        // when f = f1 * f2 * ... * fi orderer by degree
+        // it seems that // deg(f1) | deg(f2) | ... | deg(fi) | deg(divPol)
+        // and fi seems to be the minimal polynomial of the primitive element
+        // of the splitting field of f in Fp[a]
+        // TODO: proof
         var roots = facts.SelectMany(f => Roots(f.Substitute(X), g)).Distinct().ToArray();
         if (roots.Length == 0)
             throw new();
-        
+
         return (roots, g);
     }
 
@@ -271,10 +357,10 @@ public static partial class EC
             var sqrts0 = seq0.Select(e => (e.x, e.b, e.c, e.delta, sqrtDelta: NumberTheory.SqrtFqANTV1(e.delta, g0)))
                 .ToArray();
             return (sqrts0.SelectMany(e => new[]
-                {
-                    new EllPt<GFelt>(e.x, (-e.b + e.sqrtDelta) / 2),
-                    new EllPt<GFelt>(e.x, (-e.b - e.sqrtDelta) / 2)
-                }).ToHashSet(), g0);
+            {
+                new EllPt<GFelt>(e.x, (-e.b + e.sqrtDelta) / 2),
+                new EllPt<GFelt>(e.x, (-e.b - e.sqrtDelta) / 2)
+            }).ToHashSet(), g0);
         }
         else
         {
@@ -323,7 +409,7 @@ public static partial class EC
             GlobalStopWatch.AddLap();
 
         var (pts, g) = NTorsExtensionFp(Efq, P, p, log);
-        var Efq1 = Efq.ToGF(g.X);
+        var Efq1 = Efq.ToGF(g);
         if (pts.Any(pt => !Efq1.Contains(pt.X, pt.Y)))
             throw new("#2");
 
@@ -346,7 +432,7 @@ public static partial class EC
 
         return (nTors, g);
     }
-    
+
     public static Dictionary<int, List<int>> SmallPrimesList(Rational N)
     {
         var nmax = 2 * double.Sqrt(N);
@@ -405,9 +491,8 @@ public static partial class EC
 
         var (psi0, fdiv0) = DivisionPolynomial(Ell, lmax + 3);
         var Pt2 = NPt(2, psi0);
-        var (y, x) = Pt2.X.Num.Indeterminates.Deconstruct();
         fdiv0[2] = new(Pt2.X.Reduction, Pt2.X.Denom, Pt2.X.Num.One);
-        var divPolys = fdiv0.ToDictionary(e => e.Key, e => e.Value.Num.ToKPoly(x))
+        var divPolys = fdiv0.ToDictionary(e => e.Key, e => e.Value.Num.ToKPolyX1())
             .ToDictionary(e => e.Key, e => e.Value.PrimitiveZPoly());
         divPolys.Println("divPolys");
 
@@ -464,7 +549,7 @@ public static partial class EC
         var Ell = El.ToEllGroup();
 
         GlobalStopWatch.AddLap();
-        var N = EllTateAlgorithm(EllCoefs(curve)).N;
+        var N = EllTateAlgorithm(E).N;
         var allList = SmallPrimesList(N);
         var pmax = allList.Keys.Max();
         var lmax = allList.Max(e => e.Value.Max());
@@ -472,7 +557,7 @@ public static partial class EC
 
         var (psi0, fdiv0) = DivisionPolynomial(Ell, lmax + 3);
         var Pt2 = NPt(2, psi0);
-        var (y, x) = Pt2.X.Num.Indeterminates.Deconstruct();
+        var x = Pt2.X.Num.X1;
         fdiv0[2] = new(Pt2.X.Reduction, Pt2.X.Denom, Pt2.X.Num.One);
         var divPolys = fdiv0.ToDictionary(e => e.Key, e => e.Value.Num.Primitive());
         divPolys.Println("divPolys");
@@ -481,22 +566,34 @@ public static partial class EC
         var frobTr = new Dictionary<int, Dictionary<int, int>>();
         foreach (var (p, listL) in allList)
         {
-            if (p < 5)
+            if (p <= 3)
                 continue;
 
             var ap = EllAp(Ell, p);
             var pFrobTr = new Dictionary<int, int>();
-
+            var g = NumberTheory.PrimitiveRootFp(p);
+            var Ep = Ell.ToEllCoefs().ToZnInt(p);
             GlobalStopWatch.AddLap();
             foreach (var l in listL)
             {
                 GlobalStopWatch.AddLap();
                 var psi = divPolys[l].ToZnInt(p);
-                var Erl = new EllGroupSymb<ZnInt>(Ell.ToEllCoefs().ToZnInt(p), psi);
+
+                var facts = IntFactorisation.FirrFsepCantorZassenhausAECF(psi.ToKPolyX1(), g, p);
+                facts.Println($"psi = {psi}");
+                var fPsi = facts.OrderDescending().First().g.Substitute(x.ToZnInt(p));
+                // Irreductibles factors of division polynomial in Fp
+                // when f = f1 * f2 * ... * fi orderer by degree
+                // it seems that // deg(f1) | deg(f2) | ... | deg(fi) | deg(divPol)
+                // and fi seems to be the minimal polynomial of the primitive element
+                // of the splitting field of f in Fp[a]
+                // TODO: proof
+                var Erl = new EllGroupSymb<ZnInt>(Ep, fPsi);
                 Erl.CheckValidity = false;
                 Console.WriteLine($"p={p} l={l} {Erl}");
                 Console.WriteLine($"{Erl.Eq}");
-                Console.WriteLine($"psi = {psi}");
+                Console.WriteLine($"psi  = {psi}");
+                Console.WriteLine($"fPsi = {fPsi}");
 
                 var pt = Erl.Pt;
                 var p_Pt = Erl.Times(pt, p % l);
@@ -534,7 +631,7 @@ public static partial class EC
             var crt = NumberTheory.CRT(values, crtTable, L);
             var ap1 = crt < L / 2 ? crt : crt - L;
             Console.WriteLine($"p = {p} ap = {ap} crt = {crt} ap1 = {ap1} L = {L} Check:{ap == ap1}");
-            GlobalStopWatch.Show($"EllApSchoof({EllGroupSymb<ZnInt>.FromEllCoefs(E.ToZnInt(p))})");
+            GlobalStopWatch.Show($"EllApSchoof({Ep.ToEllGroupSymb()})");
             if (ap != ap1)
                 throw new();
 
@@ -544,5 +641,4 @@ public static partial class EC
         GlobalStopWatch.Show($"End EllApSchoof {Ell}");
         Console.WriteLine();
     }
-
 }

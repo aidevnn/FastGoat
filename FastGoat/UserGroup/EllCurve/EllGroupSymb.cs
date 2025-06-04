@@ -6,13 +6,14 @@ using FastGoat.Structures.VecSpace;
 
 namespace FastGoat.UserGroup.EllCurve;
 
-public struct EllGroupSymb<K> : IGroup<EllPt<EllPoly<K>>> where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+
+public struct EllGroupSymb<K> : IGroup<EllPt<EllFracPoly<K>>> where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
 {
-    public EllGroupSymb(EllCoefs<K> ellCoefs, Polynomial<K, Xi> divPol)
+    public EllGroupSymb(EllCoefs<K> ellCoefs, EllPoly<K> divPol)
     {
-        var (y, x) = (Y, X) = GetYX(divPol, ellCoefs);
+        (Y, X) = ellCoefs.EllFracPolyYX(divPol);
         DivPolynomial = divPol;
-        var ec = ellCoefs.ToEllCoefs(x);
+        var ec = ellCoefs.ToEllCoefs(X);
         Coefs = ec.Model;
         Disc = ec.Disc;
 
@@ -34,29 +35,29 @@ public struct EllGroupSymb<K> : IGroup<EllPt<EllPoly<K>>> where K : struct, IElt
         EllCoefs = ellCoefs;
     }
 
-    public EllGroupSymb(K a1, K a2, K a3, K a4, K a6, Polynomial<K, Xi> divPol)
+    public EllGroupSymb(K a1, K a2, K a3, K a4, K a6, EllPoly<K> divPol)
         : this(new EllCoefs<K>(a1, a2, a3, a4, a6), divPol)
     {
     }
 
-    public EllGroupSymb(K a, K b, Polynomial<K, Xi> divPol) : this(a.Zero, a.Zero, a.Zero, a, b, divPol)
+    public EllGroupSymb(K a, K b, EllPoly<K> divPol) : this(a.Zero, a.Zero, a.Zero, a, b, divPol)
     {
     }
 
-    public EllGroupSymb(K a, K b, K c, Polynomial<K, Xi> divPol) : this(a.Zero, a, a.Zero, b, c, divPol)
+    public EllGroupSymb(K a, K b, K c, EllPoly<K> divPol) : this(a.Zero, a, a.Zero, b, c, divPol)
     {
     }
 
-    public IEnumerator<EllPt<EllPoly<K>>> GetEnumerator() => GetElements().GetEnumerator();
+    public IEnumerator<EllPt<EllFracPoly<K>>> GetEnumerator() => GetElements().GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator()
     {
         return GetEnumerator();
     }
 
-    public bool Equals(IGroup<EllPt<EllPoly<K>>>? other) => other?.Hash == Hash;
+    public bool Equals(IGroup<EllPt<EllFracPoly<K>>>? other) => other?.Hash == Hash;
 
-    public EllPt<EllPoly<K>> ConvertToShort(EllPt<EllPoly<K>> pt)
+    public EllPt<EllFracPoly<K>> ConvertToShort(EllPt<EllFracPoly<K>> pt)
     {
         if (pt.IsO)
             return pt;
@@ -64,10 +65,10 @@ public struct EllGroupSymb<K> : IGroup<EllPt<EllPoly<K>>> where K : struct, IElt
         var (_, _, r, s, t, u) = ShortForm;
         var x = (pt.X - r) / (u * u);
         var y = (pt.Y - t - s * u * u * x) / u.Pow(3);
-        return DummyTrackPt(new(x, y));
+        return new(x, y);
     }
 
-    public EllPt<EllPoly<K>> ConvertFromShort(EllPt<EllPoly<K>> pt)
+    public EllPt<EllFracPoly<K>> ConvertFromShort(EllPt<EllFracPoly<K>> pt)
     {
         if (pt.IsO)
             return pt;
@@ -75,10 +76,10 @@ public struct EllGroupSymb<K> : IGroup<EllPt<EllPoly<K>>> where K : struct, IElt
         var (_, _, r, s, t, u) = ShortForm;
         var x = u * u * pt.X + r;
         var y = u.Pow(3) * pt.Y + s * u * u * pt.X + t;
-        return DummyTrackPt(new(x, y));
+        return new(x, y);
     }
 
-    public EllPt<EllPoly<K>> ConvertToLong(EllPt<EllPoly<K>> pt)
+    public EllPt<EllFracPoly<K>> ConvertToLong(EllPt<EllFracPoly<K>> pt)
     {
         if (pt.IsO)
             return pt;
@@ -86,10 +87,10 @@ public struct EllGroupSymb<K> : IGroup<EllPt<EllPoly<K>>> where K : struct, IElt
         var (_, _, _, r, s, t, u) = LongForm;
         var x = (pt.X - r) / (u * u);
         var y = (pt.Y - t - s * u * u * x) / u.Pow(3);
-        return DummyTrackPt(new(x, y));
+        return new(x, y);
     }
 
-    public EllPt<EllPoly<K>> ConvertFromLong(EllPt<EllPoly<K>> pt)
+    public EllPt<EllFracPoly<K>> ConvertFromLong(EllPt<EllFracPoly<K>> pt)
     {
         if (pt.IsO)
             return pt;
@@ -97,7 +98,7 @@ public struct EllGroupSymb<K> : IGroup<EllPt<EllPoly<K>>> where K : struct, IElt
         var (_, _, _, r, s, t, u) = LongForm;
         var x = u * u * pt.X + r;
         var y = u.Pow(3) * pt.Y + s * u * u * pt.X + t;
-        return DummyTrackPt(new(x, y));
+        return new(x, y);
     }
 
     public int Hash { get; }
@@ -113,14 +114,14 @@ public struct EllGroupSymb<K> : IGroup<EllPt<EllPoly<K>>> where K : struct, IElt
         : $"Ell[{a1},{a2},{a3},{a4},{a6}]({Field})".Replace(" ", "");
 
     public string Field { get; set; }
-    public EllPoly<K> X { get; }
-    public EllPoly<K> Y { get; }
+    public EllFracPoly<K> X { get; }
+    public EllFracPoly<K> Y { get; }
     public bool CheckValidity { get; set; } = true;
-    public (EllPoly<K> a1, EllPoly<K> a2, EllPoly<K> a3, EllPoly<K> a4, EllPoly<K> a6) Coefs { get; }
+    public (EllFracPoly<K> a1, EllFracPoly<K> a2, EllFracPoly<K> a3, EllFracPoly<K> a4, EllFracPoly<K> a6) Coefs { get; }
 
-    public EllPoly<K> Disc { get; }
+    public EllFracPoly<K> Disc { get; }
 
-    public EllPt<EllPoly<K>> Pt
+    public EllPt<EllFracPoly<K>> Pt
     {
         get
         {
@@ -133,26 +134,26 @@ public struct EllGroupSymb<K> : IGroup<EllPt<EllPoly<K>>> where K : struct, IElt
         }
     }
 
-    public Polynomial<K, Xi> DivPolynomial { get; }
+    public EllPoly<K> DivPolynomial { get; }
 
-    public (EllPoly<K> A, EllPoly<K> B, EllPoly<K> r, EllPoly<K> s, EllPoly<K> t, EllPoly<K> u)
+    public (EllFracPoly<K> A, EllFracPoly<K> B, EllFracPoly<K> r, EllFracPoly<K> s, EllFracPoly<K> t, EllFracPoly<K> u)
         ShortForm { get; }
 
-    public (EllPoly<K> A, EllPoly<K> B, EllPoly<K> C, EllPoly<K> r, EllPoly<K> s, EllPoly<K> t,
-        EllPoly<K> u) LongForm { get; }
+    public (EllFracPoly<K> A, EllFracPoly<K> B, EllFracPoly<K> C, EllFracPoly<K> r, EllFracPoly<K> s, EllFracPoly<K> t,
+        EllFracPoly<K> u) LongForm { get; }
 
     public string ShortFormStr => $"Ell[{ShortForm.A},{ShortForm.B}]({Field})".Replace(" ", "");
     public string LongFormStr => $"Ell[0,{LongForm.A},0,{LongForm.B},{LongForm.C}]({Field})".Replace(" ", "");
-    public EllPoly<K> a1 => Coefs.a1;
-    public EllPoly<K> a2 => Coefs.a2;
-    public EllPoly<K> a3 => Coefs.a3;
-    public EllPoly<K> a4 => Coefs.a4;
-    public EllPoly<K> a6 => Coefs.a6;
+    public EllFracPoly<K> a1 => Coefs.a1;
+    public EllFracPoly<K> a2 => Coefs.a2;
+    public EllFracPoly<K> a3 => Coefs.a3;
+    public EllFracPoly<K> a4 => Coefs.a4;
+    public EllFracPoly<K> a6 => Coefs.a6;
 
-    public EllPoly<K>[] ArrCoefs => [a1, a2, a3, a4, a6];
+    public EllFracPoly<K>[] ArrCoefs => [a1, a2, a3, a4, a6];
     public EllCoefs<K> EllCoefs { get; }
 
-    public EllPt<EllPoly<K>> this[params ValueType[] us]
+    public EllPt<EllFracPoly<K>> this[params ValueType[] us]
     {
         get
         {
@@ -162,32 +163,32 @@ public struct EllGroupSymb<K> : IGroup<EllPt<EllPoly<K>>> where K : struct, IElt
                 if (!Contains(x1, y1))
                     throw new GroupException(GroupExceptionType.GroupDef);
 
-                return new EllPt<EllPoly<K>>(x1, y1);
+                return new EllPt<EllFracPoly<K>>(x1, y1);
             }
 
-            if (us.Length == 2 && us[0] is EllPoly<K> x && us[1] is EllPoly<K> y)
+            if (us.Length == 2 && us[0] is EllFracPoly<K> x && us[1] is EllFracPoly<K> y)
             {
                 if (!Contains(x, y))
                     throw new GroupException(GroupExceptionType.GroupDef);
 
-                return new EllPt<EllPoly<K>>(x, y);
+                return new EllPt<EllFracPoly<K>>(x, y);
             }
 
             throw new GroupException(GroupExceptionType.GroupDef);
         }
     }
 
-    public IEnumerable<EllPt<EllPoly<K>>> GetElements()
+    public IEnumerable<EllPt<EllFracPoly<K>>> GetElements()
     {
-        yield return new EllPt<EllPoly<K>>();
+        yield return new EllPt<EllFracPoly<K>>();
     }
 
-    public IEnumerable<EllPt<EllPoly<K>>> GetGenerators()
+    public IEnumerable<EllPt<EllFracPoly<K>>> GetGenerators()
     {
-        yield return new EllPt<EllPoly<K>>();
+        yield return new EllPt<EllFracPoly<K>>();
     }
 
-    public bool ContainsPt(EllPt<EllPoly<K>> pt)
+    public bool ContainsPt(EllPt<EllFracPoly<K>> pt)
     {
         if (pt.IsO)
             return true;
@@ -195,7 +196,7 @@ public struct EllGroupSymb<K> : IGroup<EllPt<EllPoly<K>>> where K : struct, IElt
         return Contains(pt.X, pt.Y);
     }
 
-    public bool Contains(EllPoly<K> X0, EllPoly<K> Y0)
+    public bool Contains(EllFracPoly<K> X0, EllFracPoly<K> Y0)
     {
         if (!CheckValidity)
             return true;
@@ -203,10 +204,10 @@ public struct EllGroupSymb<K> : IGroup<EllPt<EllPoly<K>>> where K : struct, IElt
         var lhs = Y0 * Y0 + a1 * X0 * Y0 + a3 * Y0;
         var rhs = X0.Pow(3) + a2 * X0 * X0 + a4 * X0 + a6;
         var diff = (lhs - rhs);
-        var check = diff.IsInfty || diff.IsIndeterminate || diff.IsZero();
+        var check = diff.IsZero();
         if (!check)
         {
-            var pt = new EllPt<EllPoly<K>>(X0, Y0);
+            var pt = new EllPt<EllFracPoly<K>>(X0, Y0);
             Console.WriteLine(new { pt });
             Console.WriteLine(new { X.Reduction });
             Console.WriteLine(new { lhs, rhs, diff });
@@ -215,10 +216,10 @@ public struct EllGroupSymb<K> : IGroup<EllPt<EllPoly<K>>> where K : struct, IElt
         return check;
     }
 
-    public EllPt<EllPoly<K>> O => new();
-    public EllPt<EllPoly<K>> Neutral() => O;
+    public EllPt<EllFracPoly<K>> O => new();
+    public EllPt<EllFracPoly<K>> Neutral() => O;
 
-    public EllPt<EllPoly<K>> Invert(EllPt<EllPoly<K>> P)
+    public EllPt<EllFracPoly<K>> Invert(EllPt<EllFracPoly<K>> P)
     {
         if (P.IsO)
             return P;
@@ -229,24 +230,7 @@ public struct EllGroupSymb<K> : IGroup<EllPt<EllPoly<K>>> where K : struct, IElt
         return new(P.X, -a1 * P.X - a3 - P.Y);
     }
 
-    public EllPt<EllPoly<K>> DummyTrackPt(EllPt<EllPoly<K>> pt)
-    {
-        if (pt.IsO)
-            return pt;
-
-        if (!pt.X.IsNumber || !pt.Y.IsNumber)
-        {
-            Console.WriteLine("??????????? ######################## ");
-            return new();
-        }
-
-        if (!Contains(pt.X, pt.Y))
-            Console.WriteLine("######################## ??????????? ");
-
-        return pt;
-    }
-
-    public EllPt<EllPoly<K>> Op(EllPt<EllPoly<K>> e1, EllPt<EllPoly<K>> e2)
+    public EllPt<EllFracPoly<K>> Op(EllPt<EllFracPoly<K>> e1, EllPt<EllFracPoly<K>> e2)
     {
         if (e1.IsO)
             return e2;
@@ -261,21 +245,21 @@ public struct EllGroupSymb<K> : IGroup<EllPt<EllPoly<K>>> where K : struct, IElt
         }
 
         var ((x1, y1), (x2, y2)) = (e1, e2);
-        if (!(x1 - x2).IsDivZero())
+        if (!(x1 - x2).IsZero())
         {
             var alpha = (y2 - y1) / (x2 - x1);
             var x3 = alpha.Pow(2) + a1 * alpha - a2 - x2 - x1;
             var y3 = -(alpha * (x3 - x1) + y1) - a1 * x3 - a3;
-            return DummyTrackPt(new(x3, y3));
+            return new(x3, y3);
         }
         else
         {
-            if (!(y1 + a1 * x2 + a3 + y2).IsDivZero())
+            if (!(y1 + a1 * x2 + a3 + y2).IsZero())
             {
                 var alpha = (3 * x1.Pow(2) - y1 * a1 + 2 * x1 * a2 + a4) / (x1 * a1 + a3 + 2 * y1);
                 var x3 = alpha.Pow(2) + a1 * alpha - a2 - 2 * x1;
                 var y3 = -(alpha * (x3 - x1) + y1) - a1 * x3 - a3;
-                return DummyTrackPt(new(x3, y3));
+                return new(x3, y3);
             }
             else
                 return new();
@@ -286,60 +270,15 @@ public struct EllGroupSymb<K> : IGroup<EllPt<EllPoly<K>>> where K : struct, IElt
 
     public override string ToString() => Name;
 
-    EllPoly<K> FastPowRl(EllPoly<K> a, BigInteger k)
-    {
-        if (k == 0)
-            return a.One;
-
-        if (k < 0)
-            return FastPowRl(a.Inv(), -k);
-
-        var (r, a0, e0) = (a.One, a, k);
-        while (e0 > 0)
-        {
-            if (e0 % 2 == 1)
-                r *= a0;
-
-            e0 >>= 1;
-            a0 *= a0;
-        }
-
-        return r;
-    }
-
-    public EllPt<EllPoly<K>> FrobRl(EllPt<EllPoly<K>> pt, int n = 1)
+    public EllPt<EllFracPoly<K>> FrobRl(EllPt<EllFracPoly<K>> pt, int n = 1)
     {
         if (pt.IsO)
             return pt;
 
         var p = pt.X.P;
-        var x = FastPowRl(pt.X, BigInteger.Pow(p, n));
-        var y = FastPowRl(pt.Y, BigInteger.Pow(p, n));
-
-        if (x.IsIndeterminate || y.IsIndeterminate)
-            throw new("Indeterminate exception");
-        if (x.IsInfty || y.IsInfty)
-            return new();
-
+        var x = pt.X.FastPow(BigInteger.Pow(p, n));
+        var y = pt.Y.FastPow(BigInteger.Pow(p, n));
+        
         return new(x, y);
-    }
-
-    public static EllGroupSymb<K> FromEllGroup(EllGroup<K> E)
-    {
-        var (_, x) = Ring.Polynomial(E.a1, MonomOrder.Lex, "Y", "X").Deconstruct();
-        return new(E.ToEllCoefs(), x.Zero);
-    }
-
-    public static EllGroupSymb<K> FromEllCoefs(EllCoefs<K> E)
-    {
-        var (_, x) = Ring.Polynomial(E.a1, MonomOrder.Lex, "Y", "X").Deconstruct();
-        return new(E, x.Zero);
-    }
-
-    public static (EllPoly<K> Y, EllPoly<K> X) GetYX(Polynomial<K, Xi> divPol, EllCoefs<K> ellCoefs)
-    {
-        var (y, x) = divPol.AllVariables.Deconstruct();
-        var (eq, sd) = ellCoefs.ToEllGroup().GetPolynomials(x, y);
-        return EllPoly<K>.GetYX(eq, sd, divPol);
     }
 }

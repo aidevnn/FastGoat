@@ -68,39 +68,11 @@ public struct EllGroup<T> : IGroup<EllPt<T>> where T : struct, IElt<T>, IRingElt
     {
         get
         {
-            var (lhs, rhs) = Eq();
+            var (Y, X) = Ring.Polynomial(Disc, MonomOrder.Lex, "Y", "X").Deconstruct();
+            var lhs = Y * Y + a1 * X * Y + a3 * Y;
+            var rhs = X.Pow(3) + a2 * X * X + a4 * X + a6;
             return $"Elliptic curve {lhs} = {rhs}";
         }
-    }
-
-    public (Polynomial<T, Xi> lhs, Polynomial<T, Xi> rhs) Eq(Indeterminates<Xi> ind, Xi x, Xi y)
-    {
-        var X = new Polynomial<T, Xi>(new Monom<Xi>(ind, x), a1.One);
-        var Y = new Polynomial<T, Xi>(new Monom<Xi>(ind, y), a1.One);
-        var lhs = Y * Y + a1 * X * Y + a3 * Y;
-        var rhs = X.Pow(3) + a2 * X * X + a4 * X + a6;
-        return (lhs, rhs);
-    }
-
-    public (Polynomial<T, Xi> lhs, Polynomial<T, Xi> rhs) Eq(Polynomial<T, Xi> x, Polynomial<T, Xi> y) =>
-        Eq(x.Indeterminates, x.ExtractIndeterminate, y.ExtractIndeterminate);
-
-    public (Polynomial<T, Xi> lhs, Polynomial<T, Xi> rhs) Eq()
-    {
-        var (y, x) = Ring.Polynomial(Disc, MonomOrder.Lex, "Y", "X").Deconstruct();
-        return Eq(x, y);
-    }
-    public (Polynomial<T, Xi> Eq, Polynomial<T, Xi> sd) GetPolynomials(Polynomial<T, Xi> x, Polynomial<T, Xi> y)
-    {
-        var (lhs, rhs) = Eq(x, y);
-        return (lhs - rhs, 2 * y + a1 * x + a3);
-    }
-
-    public (Polynomial<T, Xi> X, Polynomial<T, Xi> Y, Polynomial<T, Xi> Eq, Polynomial<T, Xi> sd) GetPolynomials()
-    {
-        var (y, x) = Ring.Polynomial(Disc, MonomOrder.Lex, "Y", "X").Deconstruct();
-        var (lhs, rhs) = Eq(x, y);
-        return (x, y, lhs - rhs, 2 * y + a1 * x + a3);
     }
 
     public string Name => a1.IsZero() && a2.IsZero() && a3.IsZero()

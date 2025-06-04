@@ -1,285 +1,328 @@
 using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.VecSpace;
-using FastGoat.UserGroup.Polynoms;
 
 namespace FastGoat.UserGroup.EllCurve;
 
-public readonly struct EllPoly<K> : IElt<EllPoly<K>>, IRingElt<EllPoly<K>>, IFieldElt<EllPoly<K>>,
-    IModuleElt<K, EllPoly<K>>, IVsElt<K, EllPoly<K>>
+public readonly struct EllPoly<K> : IElt<EllPoly<K>>, IRingElt<EllPoly<K>>, IModuleElt<K, EllPoly<K>>,
+    IVsElt<K, EllPoly<K>>, IFieldElt<EllPoly<K>>
     where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
 {
-    public Polynomial<K, Xi> Num { get; }
-    public Polynomial<K, Xi> Denom { get; }
-    public (Polynomial<K, Xi> eqEll, Polynomial<K, Xi> sd, Polynomial<K, Xi> dvp) Reduction { get; }
-    public Polynomial<K, Xi> EqEll => Reduction.eqEll;
-    public Polynomial<K, Xi> DivPol => Reduction.dvp;
-    public Polynomial<K, Xi> SD => Reduction.sd;
-    public bool IsNumber => !IsInfty && !IsIndeterminate;
+    public SortedList<TriVar, K> Coefs { get; }
+    public IndTriVar IndTriVar { get; }
 
-    public EllPoly((Polynomial<K, Xi> eqEll, Polynomial<K, Xi> sd, Polynomial<K, Xi> dvp) red, Polynomial<K, Xi> num,
-        Polynomial<K, Xi> denom)
+    public EllPoly(K scalar, MonomOrder monomOrder = MonomOrder.Lex)
     {
-        (Reduction, Num, Denom) = (red, num, denom);
+        IndTriVar = new(monomOrder);
+        Coefs = new(IndTriVar.GetComparer()) { [new()] = scalar };
+        KZero = scalar.Zero;
+        Hash = Coefs.Aggregate(IndTriVar.GetHashCode(), (acc, a) => (acc, (a.Key, a.Value.Hash)).GetHashCode());
+    }
 
-        if (denom.IsZero() && !num.IsZero())
-            (Num, Denom) = (num.One, denom);
-        else if (denom.IsZero())
-            (Num, Denom) = (num.One, denom);
-        else
-        {
-            var (q, r) = num.Div(denom);
-            if (r.IsZero())
-                (Num, Denom) = (q, q.One);
-        }
+    public EllPoly(IndTriVar triVar, K scalar)
+    {
+        IndTriVar = triVar;
+        Coefs = new(IndTriVar.GetComparer()) { [new()] = scalar };
+        KZero = scalar.Zero;
+        Hash = Coefs.Aggregate(IndTriVar.GetHashCode(), (acc, a) => (acc, (a.Key, a.Value.Hash)).GetHashCode());
+    }
 
-        var lt = Denom.LeadingDetails.lc;
-        if (!lt.IsZero())
-        {
-            Num *= lt.Inv();
-            Denom *= lt.Inv();
-        }
+    public EllPoly(IndTriVar triVar, K scalar, IDictionary<TriVar, K> coefs)
+    {
+        IndTriVar = triVar;
+        Coefs = new(IndTriVar.GetComparer());
+        foreach (var (k, v) in coefs.Where(e => !e.Value.IsZero()))
+            Coefs[k] = v;
 
-        Hash = (Num.Hash, Denom.Hash, Reduction.GetHashCode()).GetHashCode();
+        if (Coefs.Count == 0)
+            Coefs[new()] = scalar.Zero;
+
+        KZero = scalar.Zero;
+        Hash = Coefs.Aggregate(IndTriVar.GetHashCode(), (acc, a) => (acc, (a.Key, a.Value.Hash)).GetHashCode());
+    }
+
+    public EllPoly(IndTriVar triVar, (TriVar xyz, K c) coef) : this(triVar, coef.c,
+        new Dictionary<TriVar, K>() { [coef.xyz] = coef.c })
+    {
     }
 
     public bool Equals(EllPoly<K> other)
     {
-        return Sub(other).IsZero();
+        return Coefs.Count == other.Coefs.Count &&
+               Coefs.All(e => other.Coefs.ContainsKey(e.Key) && other.Coefs[e.Key].Equals(e.Value));
     }
 
     public int CompareTo(EllPoly<K> other)
     {
-        if (IsIndeterminate)
-            return -1;
-        if (other.IsIndeterminate)
-            return 1;
-        if (IsInfty)
-            return 1;
-        if (other.IsInfty)
-            return -1;
-        return (Num * other.Denom).CompareTo(Denom * other.Num);
+        var coefs = Coefs.OrderByDescending(kp => kp.Key, IndTriVar.GetComparer()).Select(kp => (kp.Key, kp.Value));
+        var oCoefs = other.Coefs.OrderByDescending(kp => kp.Key, other.IndTriVar.GetComparer())
+            .Select(kp => (kp.Key, kp.Value));
+        return coefs.SequenceCompareTo(oCoefs);
     }
 
-    public bool IsInfty => !Num.IsZero() && Denom.IsZero();
-    public bool IsIndeterminate => Num.IsZero() && Denom.IsZero();
-    public EllPoly<K> Infty => new(Reduction, Num.One, Num.Zero);
-    public EllPoly<K> Indeterminate => new(Reduction, Num.Zero, Num.Zero);
     public int Hash { get; }
-    public bool IsZero() => !Denom.IsZero() && Num.IsZero();
 
-    public bool IsDivZero()
+    public bool IsZero()
     {
-        if (Num.IsZero())
-            return true;
+        foreach (var (key, value) in Coefs)
+        {
+            if (!key.IsOne() || !value.IsZero())
+                return false;
+        }
 
-        if (DivPol.IsZero())
-            return false;
-
-        var num = Num.Div(DivPol).rem;
-        var (y, x) = num.Indeterminates.Deconstruct();
-        var dvp = DivPol.ToKPoly(x);
-        return Ring.Decompose(num, y).Item1.Values.Where(f => !f.IsZero())
-            .Select(f => f.ToKPoly(x)).Order()
-            .All(f => Ring.Gcd(f, dvp).Degree > 0);
+        return true;
     }
 
-    public EllPoly<K> Zero => new(Reduction, Num.Zero, Num.One);
-    public EllPoly<K> One => new(Reduction, Num.One, Num.One);
+    public int P => KZero.P;
+    public K KZero { get; }
+    public K KOne => KZero.One;
+    public EllPoly<K> Zero => new(IndTriVar, KZero);
+    public EllPoly<K> One => new(IndTriVar, KOne);
 
-    public K KZero => Num.KZero;
-    public K KOne => Num.KOne;
+    public K ConstTerm => this[new()];
 
-    public EllPoly<K> KMul(K k)
+    public (K lc, TriVar lm, EllPoly<K> lt) LeadingDetails
     {
-        if (IsIndeterminate)
-            return this;
-        if (IsInfty)
-            return k.IsZero() ? Indeterminate : Infty;
+        get
+        {
+            if (IsZero())
+                throw new ArgumentException();
 
-        return new(Reduction, k * Num, Denom);
+            var (lm, lc) = Coefs.Last();
+            return (lc, lm, new(IndTriVar, (lm, lc)));
+        }
     }
+
+    public EllPoly<K> X3 => new(IndTriVar, ((1, 0, 0), KOne));
+    public EllPoly<K> X2 => new(IndTriVar, ((0, 1, 0), KOne));
+    public EllPoly<K> X1 => new(IndTriVar, ((0, 0, 1), KOne));
+
+    public int DegreeOfX3 => Coefs.Max(e => e.Key.X3);
+    public int DegreeOfX2 => Coefs.Max(e => e.Key.X2);
+    public int DegreeOfX1 => Coefs.Max(e => e.Key.X1);
+
+    public KPoly<K> ToKPolyX3()
+    {
+        var zero = KZero;
+        var arr = (DegreeOfX3 + 1).SeqLazy().Select(_ => zero).ToArray();
+        foreach (var i in (DegreeOfX3 + 1).SeqLazy())
+            arr[i] = this[(i, 0, 0)];
+
+        return arr.ToKPoly(IndTriVar.X3[0]);
+    }
+
+    public KPoly<K> ToKPolyX2()
+    {
+        var zero = KZero;
+        var arr = (DegreeOfX2 + 1).SeqLazy().Select(_ => zero).ToArray();
+        foreach (var i in (DegreeOfX2 + 1).SeqLazy())
+            arr[i] = this[(0, i, 0)];
+
+        return arr.ToKPoly(IndTriVar.X2[0]);
+    }
+
+    public KPoly<K> ToKPolyX1()
+    {
+        var zero = KZero;
+        var arr = (DegreeOfX1 + 1).SeqLazy().Select(_ => zero).ToArray();
+        foreach (var i in (DegreeOfX1 + 1).SeqLazy())
+            arr[i] = this[(0, 0, i)];
+
+        return arr.ToKPoly(IndTriVar.X1[0]);
+    }
+
+    public int Degree => Coefs.Last().Key.Degree;
 
     public EllPoly<K> Add(EllPoly<K> e)
     {
-        if (IsIndeterminate || e.IsIndeterminate)
-            return Indeterminate;
-
-        if (IsNumber && e.IsNumber)
+        var coefs = Coefs.ToDictionary(kv => kv.Key, kv => kv.Value);
+        foreach (var (xyz, c) in e.Coefs)
         {
-            var num = (Num * e.Denom + Denom * e.Num);
-            var denom = Denom.Mul(e.Denom);
-            return Simplify(Reduction, num, denom);
+            if (coefs.ContainsKey(xyz))
+                coefs[xyz] = coefs[xyz] + c;
+            else
+                coefs[xyz] = c;
         }
 
-        return Infty;
+        return new(IndTriVar, KZero, coefs);
     }
 
     public EllPoly<K> Sub(EllPoly<K> e)
     {
-        if (IsIndeterminate || e.IsIndeterminate)
-            return Indeterminate;
-
-        if (IsNumber && e.IsNumber)
+        var coefs = Coefs.ToDictionary(kv => kv.Key, kv => kv.Value);
+        foreach (var (xyz, c) in e.Coefs)
         {
-            var num = (Num * e.Denom - Denom * e.Num);
-            var denom = Denom.Mul(e.Denom);
-            return Simplify(Reduction, num, denom);
+            if (coefs.ContainsKey(xyz))
+                coefs[xyz] = coefs[xyz] - c;
+            else
+                coefs[xyz] = -c;
         }
 
-        return Infty;
+        return new(IndTriVar, KZero, coefs);
     }
 
-    public EllPoly<K> Opp() => new(Reduction, -Num, Denom);
+    public EllPoly<K> Opp()
+    {
+        var coefs = Coefs.ToDictionary(kv => kv.Key, kv => -kv.Value);
+        return new(IndTriVar, KZero, coefs);
+    }
 
     public EllPoly<K> Mul(EllPoly<K> e)
     {
-        if (IsIndeterminate || e.IsIndeterminate)
-            return Indeterminate;
-
-        if (IsNumber && e.IsNumber)
+        var coefs = new Dictionary<TriVar, K>(Coefs.Count + e.Coefs.Count);
+        foreach (var (a1, c1) in Coefs)
         {
-            var num = (Num * e.Num);
-            var denom = (Denom * e.Denom);
-            return Simplify(Reduction, num, denom);
+            foreach (var (a2, c2) in e.Coefs)
+            {
+                var a3 = a1.Mul(a2);
+                var c3 = c1 * c2;
+                if (coefs.ContainsKey(a3))
+                    coefs[a3] = coefs[a3] + c3;
+                else
+                    coefs[a3] = c3;
+            }
         }
 
-        if (IsInfty && e.IsZero())
-            return Indeterminate;
+        return new(IndTriVar, KZero, coefs);
+    }
 
-        if (e.IsInfty && IsZero())
-            return Indeterminate;
+    private void InPlaceSubMul(SortedList<TriVar, K> A, SortedList<TriVar, K> B, K c, TriVar m)
+    {
+        foreach (var (k0, v) in B)
+        {
+            var k1 = k0.Mul(m);
+            if (A.ContainsKey(k1))
+                A[k1] = A[k1].Sub(v * c);
+            else
+                A[k1] = -v * c;
+        }
 
-        return Infty;
+        foreach (var (k, _) in A.Where(e => e.Value.IsZero()).ToArray())
+            A.Remove(k);
+
+        if (A.Count == 0)
+            A[new()] = c.Zero;
     }
 
     public (EllPoly<K> quo, EllPoly<K> rem) Div(EllPoly<K> e)
     {
-        if (IsIndeterminate || e.IsIndeterminate)
-            return (Indeterminate, Indeterminate);
+        if (e.IsZero())
+            throw new DivideByZeroException();
 
-        if (IsNumber && e.IsNumber)
+        var rem = new SortedList<TriVar, K>(Coefs, IndTriVar.GetComparer());
+        var quo = new SortedList<TriVar, K>(IndTriVar.GetComparer());
+        var (elm, elc) = e.Coefs.Last();
+        var k = Coefs.Count - 1;
+        var one = new TriVar();
+        while (k >= 0)
         {
-            var num = Num * e.Denom;
-            var denom = Denom * e.Num;
-            return (Simplify(Reduction, num, denom), Zero);
+            var (alm, alc) = (rem.Keys[k], rem.Values[k]);
+            var (mnm0, mnm1) = TriVar.Reduce(alm, elm);
+            if (!mnm0.IsOne())
+            {
+                --k;
+                continue;
+            }
+
+            var (q, r) = alc.Div(elc);
+            if (!r.IsZero())
+                break;
+
+            InPlaceSubMul(rem, e.Coefs, q, mnm1);
+            k = rem.Count - 1;
+            quo[mnm1] = q;
+            if (rem.Count == 1 && rem.ContainsKey(one) && rem[one].IsZero())
+                break;
         }
 
-        if (IsInfty && e.IsInfty)
-            return (Indeterminate, Indeterminate);
-
-        if (IsNumber && e.IsInfty)
-            return (Zero, Zero);
-
-        return (Infty, Infty);
+        return (new(IndTriVar, KZero, quo), new(IndTriVar, KZero, rem));
     }
 
-    public EllPoly<K> Mul(int k) => KMul(k * KOne);
+    public EllPoly<K> Mul(int k)
+    {
+        var coefs = Coefs.ToDictionary(kv => kv.Key, kv => k * kv.Value);
+        return new(IndTriVar, KZero, coefs);
+    }
 
     public EllPoly<K> Pow(int k)
     {
-        if (IsIndeterminate)
-            return Indeterminate;
-
-        if (IsInfty)
-            return k == 0 ? Indeterminate : k < 0 ? Zero : Infty;
+        if (k < 0)
+            throw new GroupException(GroupExceptionType.GroupDef);
 
         if (k == 0)
             return One;
 
-        if (k < 0)
-            return Inv().Pow(-k);
-
-        return Ring.FastPow(this, k);
+        return this.FastPow(k);
     }
 
-    public int P => Num.P;
+    public EllPoly<K> KMul(K k)
+    {
+        var coefs = Coefs.ToDictionary(kv => kv.Key, kv => k * kv.Value);
+        return new(IndTriVar, KZero, coefs);
+    }
 
     public EllPoly<K> Inv()
     {
-        if (IsNumber)
-            return new(Reduction, Denom, Num);
+        if (Invertible())
+            return new(IndTriVar, ConstTerm.Inv());
 
-        if (IsIndeterminate)
-            return Indeterminate;
+        throw new DivideByZeroException();
+    }
 
-        return new(Reduction, Num.Zero, Num.One);
+    public bool Invertible() => Degree == 0 && ConstTerm.Invertible();
+
+    public Dictionary<EllPoly<K>, EllPoly<K>> DecomposeX3()
+    {
+        var (ind, kzero, x3) = (IndTriVar, KZero, X3);
+        return Coefs.GroupBy(e => e.Key.X3).ToDictionary(
+            e => x3.Pow(e.Key),
+            e => new EllPoly<K>(ind, kzero, e.ToDictionary(a => a.Key.GetX2X1(), a => a.Value))
+        );
+    }
+    
+    public Dictionary<EllPoly<K>, EllPoly<K>> DecomposeX2()
+    {
+        var (ind, kzero, x2) = (IndTriVar, KZero, X2);
+        return Coefs.GroupBy(e => e.Key.X2).ToDictionary(
+            e => x2.Pow(e.Key),
+            e => new EllPoly<K>(ind, kzero, e.ToDictionary(a => a.Key.GetX3X1(), a => a.Value))
+        );
+    }
+
+    public Dictionary<EllPoly<K>, EllPoly<K>> DecomposeX1()
+    {
+        var (ind, kzero, x1) = (IndTriVar, KZero, X1);
+        return Coefs.GroupBy(e => e.Key.X1).ToDictionary(
+            e => x1.Pow(e.Key),
+            e => new EllPoly<K>(ind, kzero, e.ToDictionary(a => a.Key.GetX3X2(), a => a.Value))
+        );
     }
 
     public override int GetHashCode() => Hash;
 
     public override string ToString()
     {
-        if (IsIndeterminate)
-            return "?ind?";
-        if (IsInfty)
-            return "infty";
-
-        if (Denom.Equals(Denom.One))
-            return Num.ToString();
-
-        return $"({Num})/({Denom})";
-    }
-
-    public FracPoly<FracPoly<K>> ToFracPoly(Xi x, Xi y)
-    {
-        var num = Num.ToFracPoly(x, y);
-        var denom = Denom.ToFracPoly(x, y);
-        return new(num, denom);
-    }
-
-    public bool Invertible() => !IsIndeterminate && !IsDivZero();
-
-    public static (EllPoly<K> Y, EllPoly<K> X) GetYX(Polynomial<K, Xi> eqEll, Polynomial<K, Xi> sd,
-        Polynomial<K, Xi> dvp)
-    {
-        var (Y, X) = eqEll.AllVariables
-            .Select(xi => new EllPoly<K>((eqEll, sd, dvp), xi, xi.One))
+        var (x3, x2, x1) = Ring.Polynomial(KZero, IndTriVar.MonomOrder, IndTriVar.X3, IndTriVar.X2, IndTriVar.X1)
             .Deconstruct();
-        return (Y, X);
+        var pol = Coefs.Select(e => e.Value * x3.Pow(e.Key.X3) * x2.Pow(e.Key.X2) * x1.Pow(e.Key.X1))
+            .Aggregate(x3.Zero, (acc, e) => acc + e);
+        return $"{pol}";
     }
 
-    public static EllPoly<K> Simplify((Polynomial<K, Xi> eqEll, Polynomial<K, Xi> sd, Polynomial<K, Xi> dvp) red,
-        Polynomial<K, Xi> num, Polynomial<K, Xi> denom)
+    public K this[TriVar index]
     {
-        if (denom.IsZero())
-            return new(red, num, denom);
-
-        var (y, x) = num.Indeterminates.Deconstruct();
-
-        if (denom.DegreeOf(y) % 2 == 1)
+        get
         {
-            num *= red.sd;
-            denom *= red.sd;
-        }
+            if (Coefs.TryGetValue(index, out K v))
+                return v;
 
-        num = num.Div(red.eqEll).rem;
-        denom = denom.Div(red.eqEll).rem;
-        if (!red.dvp.IsZero())
-        {
-            num = num.Div(red.dvp).rem;
-            denom = denom.Div(red.dvp).rem;
+            return KZero;
         }
-        else
-        {
-            var decNum = Ring.Decompose(num, y).Item1.ToDictionary(e => e.Key, e => (e.Value, e.Value.ToKPoly(x)));
-            var decDenom = Ring.Decompose(denom, y).Item1.ToDictionary(e => e.Key, e => (e.Value, e.Value.ToKPoly(x)));
-            var arr = decNum.Values.Select(e => e.Item2).Concat(decDenom.Values.Select(e => e.Item2))
-                .Where(e => !e.IsZero()).Distinct().ToArray();
-            if (arr.Length != 0)
-            {
-                var gcd = Ring.FastGCD(arr).ToPolynomial(num.Indeterminates, x);
-                num = decNum.Select(e => e.Key * (e.Value.Value / gcd)).ToVec().Sum();
-                denom = decDenom.Select(e => e.Key * (e.Value.Value / gcd)).ToVec().Sum();
-            }
-        }
-
-        return new(red, num, denom);
     }
 
     public static EllPoly<K> operator +(EllPoly<K> a, EllPoly<K> b) => a.Add(b);
 
-    public static EllPoly<K> operator +(int a, EllPoly<K> b) => (b.One.Mul(a)).Add(b);
+    public static EllPoly<K> operator +(int a, EllPoly<K> b) => b.One.Mul(a).Add(b);
 
     public static EllPoly<K> operator +(EllPoly<K> a, int b) => a.Add(a.One.Mul(b));
 
@@ -287,7 +330,7 @@ public readonly struct EllPoly<K> : IElt<EllPoly<K>>, IRingElt<EllPoly<K>>, IFie
 
     public static EllPoly<K> operator -(EllPoly<K> a, EllPoly<K> b) => a.Sub(b);
 
-    public static EllPoly<K> operator -(int a, EllPoly<K> b) => (b.One.Mul(a)).Sub(b);
+    public static EllPoly<K> operator -(int a, EllPoly<K> b) => b.One.Mul(a).Sub(b);
 
     public static EllPoly<K> operator -(EllPoly<K> a, int b) => a.Sub(a.One.Mul(b));
 
@@ -299,54 +342,28 @@ public readonly struct EllPoly<K> : IElt<EllPoly<K>>, IRingElt<EllPoly<K>>, IFie
 
     public static EllPoly<K> operator /(EllPoly<K> a, EllPoly<K> b) => a.Div(b).quo;
 
-    public static EllPoly<K> operator /(EllPoly<K> a, int b) => new(a.Reduction, a.Num, a.Denom * b);
+    public static EllPoly<K> operator /(EllPoly<K> a, int b) => a.Div(a.One.Mul(b)).quo;
 
-    public static EllPoly<K> operator /(int a, EllPoly<K> b) => a * b.Inv();
+    public static EllPoly<K> operator +(EllPoly<K> a, K b) => a.Add(a.One.KMul(b));
 
-    public static EllPoly<K> operator +(EllPoly<K> a, K b) => a + a.One.KMul(b);
+    public static EllPoly<K> operator +(K a, EllPoly<K> b) => b.One.KMul(a).Add(b);
 
-    public static EllPoly<K> operator +(K a, EllPoly<K> b) => b.One.KMul(a) + b;
+    public static EllPoly<K> operator -(EllPoly<K> a, K b) => a.Sub(a.One.KMul(b));
 
-    public static EllPoly<K> operator -(EllPoly<K> a, K b) => a - a.One.KMul(b);
-
-    public static EllPoly<K> operator -(K a, EllPoly<K> b) => b.One.KMul(a) - b;
+    public static EllPoly<K> operator -(K a, EllPoly<K> b) => b.One.KMul(a).Sub(b);
 
     public static EllPoly<K> operator *(EllPoly<K> a, K b) => a.KMul(b);
 
     public static EllPoly<K> operator *(K a, EllPoly<K> b) => b.KMul(a);
 
-    public static EllPoly<K> operator /(EllPoly<K> a, K b) => new(a.Reduction, a.Num, a.Denom * b);
-    public static double Abs(EllPoly<K> t) => Polynomial<K, Xi>.Abs(t.Num) / Polynomial<K, Xi>.Abs(t.Denom);
+    public static EllPoly<K> operator /(EllPoly<K> a, K b) => a.KMul(b.Inv());
 
-    public static bool IsValuedField => K.IsValuedField;
-}
-
-public static class EllPolyExt
-{
-    public static EllPt<FracPoly<FracPoly<K>>> ToFracPoly<K>(this EllPt<EllPoly<K>> P)
-        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    public static EllPoly<K> operator /(int a, EllPoly<K> b)
     {
-        if (P.IsO)
-            return new();
-
-        var (y, x) = P.X.Num.Indeterminates.Deconstruct();
-        return new(P.X.ToFracPoly(x, y), P.Y.ToFracPoly(x, y));
+        throw new NotImplementedException();
     }
 
-    public static EllPoly<K> ToEllPoly<K>(this FracPoly<FracPoly<K>> f, EllPoly<K> x, EllPoly<K> y)
-        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
-    {
-        var num = f.Num.Coefs.Select((c, i) => c.Num.Substitute(x.Num) * y.Num.Pow(i)).ToVec().Sum();
-        var denom = f.Num.Coefs.Select(c => c.Denom.Substitute(x.Num)).ToVec().Sum();
-        return EllPoly<K>.Simplify(x.Reduction, num, denom);
-    }
+    public static double Abs(EllPoly<K> t) => throw new();
 
-    public static EllPt<EllPoly<K>> ToEllPoly<K>(this EllPt<FracPoly<FracPoly<K>>> P, EllPoly<K> x, EllPoly<K> y)
-        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
-    {
-        if (P.IsO)
-            return new();
-
-        return new(P.X.ToEllPoly(x, y), P.Y.ToEllPoly(x, y));
-    }
+    public static bool IsValuedField => false;
 }
