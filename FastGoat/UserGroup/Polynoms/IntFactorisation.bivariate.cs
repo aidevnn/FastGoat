@@ -247,7 +247,9 @@ public static partial class IntFactorisation
     public static Polynomial<ZnInt, Xi> ToZnInt(this Polynomial<Rational, Xi> f, int p)
     {
         var z = new ZnInt(p, 0);
-        return new(f.Indeterminates, z, new(f.Coefs.ToDictionary(e => e.Key, e => e.Value.ToZnInt(p))));
+        var coefs = f.Coefs.Select(e => (e.Key, e.Value.ToZnInt(p)))
+            .Where(e => !e.Item2.IsZero()).ToDictionary(e => e.Key, e => e.Item2);
+        return new(f.Indeterminates, z, new(coefs));
     }
 
     public static (bool Lt, K gk, Polynomial<K, T> F) RewritingPolynomialLeadingTerm<K, T>(Polynomial<K, T> F,
