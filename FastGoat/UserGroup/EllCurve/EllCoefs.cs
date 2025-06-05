@@ -172,4 +172,6 @@ public struct EllCoefs<K> where K : struct, IFieldElt<K>, IRingElt<K>, IElt<K>
     }
 
     public EllGroup<K> ToEllGroup() => new(this);
+
+    public override string ToString() => ToEllGroup().ToString();
 }
