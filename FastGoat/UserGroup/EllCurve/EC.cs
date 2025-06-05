@@ -170,6 +170,12 @@ public static partial class EC
         return new(a1.ToZnInt(p), a2.ToZnInt(p), a3.ToZnInt(p), a4.ToZnInt(p), a5.ToZnInt(p));
     }
 
+    public static EllCoefs<ZnBigInt> ToZnBigInt(this EllCoefs<Rational> E, BigInteger p)
+    {
+        var (a1, a2, a3, a4, a5) = E.Model;
+        return new(a1.ToZnBigInt(p), a2.ToZnBigInt(p), a3.ToZnBigInt(p), a4.ToZnBigInt(p), a5.ToZnBigInt(p));
+    }
+
     public static EllGroup<GFelt> ToGF(this EllGroup<Rational> E, BigInteger q, char a = 'a')
     {
         var (a1, a2, a3, a4, a5) = E.Coefs;

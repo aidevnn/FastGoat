@@ -37,6 +37,14 @@ public static partial class EC
         return new(f.IndTriVar, z, coefs);
     }
 
+    public static EllPoly<ZnBigInt> ToZnBigInt(this EllPoly<Rational> f, BigInteger p)
+    {
+        var z = new ZnBigInt(p, 0);
+        var coefs = f.Coefs.Select(e => (e.Key, e.Value.ToZnBigInt(p)))
+            .Where(e => !e.Item2.IsZero()).ToDictionary(e => e.Key, e => e.Item2);
+        return new(f.IndTriVar, z, coefs);
+    }
+
     public static (EllFracPoly<K> Y, EllFracPoly<K> X) EllFracPolyYX<K>((K a1, K a2, K a3, K a4, K a6) coefs,
         EllPoly<K> divPol)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
