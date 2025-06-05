@@ -44,7 +44,10 @@ public readonly struct ZnBigInt : IElt<ZnBigInt>, IRingElt<ZnBigInt>, IFieldElt<
     {
         var digits = $"{Mod}".Length + 1;
         var fmt = $"{{0,{digits}}}";
-        return string.Format(fmt, K);
+        if (Display == ZnDisplay.Signed)
+            return string.Format(fmt, K);
+
+        return string.Format(fmt, K < 0 ? K + Mod : K);
     }
 
     public BigInteger Unsigned => K < 0 ? Mod + K : K;
