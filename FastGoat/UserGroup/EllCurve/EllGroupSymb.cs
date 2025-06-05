@@ -3,6 +3,7 @@ using System.Numerics;
 using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.VecSpace;
+using FastGoat.UserGroup.Integers;
 
 namespace FastGoat.UserGroup.EllCurve;
 
@@ -17,7 +18,8 @@ public struct EllGroupSymb<K> : IGroup<EllPt<EllFracPoly<K>>> where K : struct, 
         Coefs = ec.Model;
         Disc = ec.Disc;
 
-        if (Disc.P != 0 && Disc.P <= 3)
+        var discP = ellCoefs.Disc is ZnBigInt d0 ? d0.Mod : ellCoefs.Disc.P;
+        if (discP != 0 && discP <= 3)
             throw new GroupException(GroupExceptionType.GroupDef);
 
         var longCoefs = ec.Flat().ToLongWeierstrassForm();
@@ -30,7 +32,7 @@ public struct EllGroupSymb<K> : IGroup<EllPt<EllFracPoly<K>>> where K : struct, 
         var (rs, ss, ts, us) = shortCoefs.TransCoef;
         ShortForm = (A4s, A6s, rs, ss, ts, us);
 
-        Field = $"F{Disc.P}[X,Y]";
+        Field = $"F{discP}[X,Y]";
         Hash = (Coefs, ShortForm).GetHashCode();
         EllCoefs = ellCoefs;
     }
@@ -245,7 +247,7 @@ public struct EllGroupSymb<K> : IGroup<EllPt<EllFracPoly<K>>> where K : struct, 
         }
 
         var ((x1, y1), (x2, y2)) = (e1, e2);
-        if (!(x1 - x2).IsZero())
+        if (!(x1 - x2).IsDivZero())
         {
             var alpha = (y2 - y1) / (x2 - x1);
             var x3 = alpha.Pow(2) + a1 * alpha - a2 - x2 - x1;
@@ -254,7 +256,7 @@ public struct EllGroupSymb<K> : IGroup<EllPt<EllFracPoly<K>>> where K : struct, 
         }
         else
         {
-            if (!(y1 + a1 * x2 + a3 + y2).IsZero())
+            if (!(y1 + a1 * x2 + a3 + y2).IsDivZero() && !(x1 * a1 + a3 + 2 * y1).IsDivZero())
             {
                 var alpha = (3 * x1.Pow(2) - y1 * a1 + 2 * x1 * a2 + a4) / (x1 * a1 + a3 + 2 * y1);
                 var x3 = alpha.Pow(2) + a1 * alpha - a2 - 2 * x1;
@@ -275,7 +277,7 @@ public struct EllGroupSymb<K> : IGroup<EllPt<EllFracPoly<K>>> where K : struct, 
         if (pt.IsO)
             return pt;
 
-        var p = pt.X.P;
+        var p = pt.X is EllFracPoly<ZnBigInt> x0 ? x0.KOne.Mod : pt.X.P;
         var x = pt.X.FastPow(BigInteger.Pow(p, n));
         var y = pt.Y.FastPow(BigInteger.Pow(p, n));
         

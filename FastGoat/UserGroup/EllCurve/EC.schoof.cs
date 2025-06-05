@@ -12,6 +12,7 @@ namespace FastGoat.UserGroup.EllCurve;
 
 public static partial class EC
 {
+    public static bool CheckDivOfZero = false;
     public static (EllPoly<K> X, EllPoly<K> Y, EllPoly<K> Z) EllPoly<K>(K scalar, MonomOrder order = MonomOrder.Lex)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
@@ -441,25 +442,27 @@ public static partial class EC
         return (nTors, g);
     }
 
-    public static Dictionary<int, List<int>> SmallPrimesList(Rational N)
+    public static List<int> SmallPrimesList(BigInteger p)
     {
-        var nmax = 2 * double.Sqrt(N);
-        var listL = new Dictionary<int, List<int>>();
-        foreach (var p in Primes10000.Where(p => p <= nmax && !N.Mod(p).IsZero()))
+        var lmax = 4 * double.Sqrt((double)p);
+        var list = new List<int>();
+        var L = 1;
+        foreach (var l in Primes10000.Where(l => p % l != 0))
         {
-            var lmax = 4 * double.Sqrt(p);
-            listL[p] = new();
-            var L = 1;
-            foreach (var l in Primes10000.Where(l => p % l != 0))
-            {
-                listL[p].Add(l);
-                L *= l;
-                if (L > lmax)
-                    break;
-            }
+            list.Add(l);
+            L *= l;
+            if (L > lmax)
+                break;
         }
 
-        return listL;
+        return list;
+    }
+
+    public static Dictionary<int, List<int>> SmallPrimesMap(Rational N)
+    {
+        var nmax = 2 * double.Sqrt(N);
+        return Primes10000.Where(p => p <= nmax && !N.Mod(p).IsZero())
+            .ToDictionary(p => p, p => SmallPrimesList(p));
     }
 
     public static EllPt<GFelt> Frob(EllPt<GFelt> pt, int n = 1)
@@ -492,7 +495,7 @@ public static partial class EC
         var E = EllCoefs(curve);
         var N = EllTateAlgorithm(EllCoefs(curve)).N;
         var Ell = E.ToEllGroup();
-        var allList = SmallPrimesList(N);
+        var allList = SmallPrimesMap(N);
         var pmax = allList.Keys.Max();
         var lmax = allList.Max(e => e.Value.Max());
         Console.WriteLine($"{Ell}");
@@ -550,6 +553,128 @@ public static partial class EC
         return (divPolys, allBasis);
     }
 
+    public static int EllApSchoof<K>(EllCoefs<K> Ep, Dictionary<int, EllPoly<K>> divPolys,  List<int> listL, K g, BigInteger p)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var pFrobTr = new Dictionary<int, int>();
+        GlobalStopWatch.AddLap();
+        foreach (var l in listL)
+        {
+            GlobalStopWatch.AddLap();
+            var psi = divPolys[l];
+            var x = psi.X1;
+            if (!CheckDivOfZero)
+            {
+                var facts = IntFactorisation.FirrFsepCantorZassenhausAECF(psi.ToKPolyX1(), g, p);
+                facts.Println($"psi = {psi}");
+                psi = facts.OrderDescending().First().g.Substitute(x);
+            }
+            Console.WriteLine($"psi = {psi}");
+            var Erl = new EllGroupSymb<K>(Ep, psi);
+            Erl.CheckValidity = false;
+            Console.WriteLine($"p={p} l={l} {Erl}");
+            Console.WriteLine($"{Erl.Eq}");
+            Console.WriteLine($"psi  = {psi}");
+            // Console.WriteLine($"fPsi = {fPsi}");
+
+            var pt = Erl.Pt;
+            var p_Pt = Erl.Times(pt, (int)(p % l));
+            var phi2 = Erl.FrobRl(pt, 2);
+            var add_phi2_p = Erl.Op(phi2, p_Pt);
+
+            var phi = Erl.Invert(Erl.FrobRl(pt));
+            var t_phi = Erl.O;
+            foreach (var t in l.SeqLazy())
+            {
+                var eqFrob = Erl.Op(add_phi2_p, t_phi);
+                if (eqFrob.IsO)
+                {
+                    pFrobTr[l] = t;
+                    Console.WriteLine($"phi(P)^2 - t*phi(P) + p*P = O");
+                    Console.WriteLine($"    t = {t}");
+                    break;
+                }
+
+                t_phi = Erl.Op(phi, t_phi);
+            }
+
+            if (!pFrobTr.ContainsKey(l))
+                throw new();
+
+            GlobalStopWatch.Show();
+            Console.WriteLine();
+        }
+
+        pFrobTr.Println("Frob Traces");
+        var keys = pFrobTr.Keys.ToArray();
+        var values = keys.Select(k => pFrobTr[k]).ToArray();
+        var crtTable = NumberTheory.CrtTable(keys);
+        var L = keys.Aggregate((li, lj) => li * lj);
+        var crt = NumberTheory.CRT(values, crtTable, L);
+        var ap = crt < L / 2 ? crt : crt - L;
+        Console.WriteLine($"p = {p} crt = {crt} ap = {ap} L = {L}");
+        GlobalStopWatch.Show($"EllApSchoof({Ep.ToEllGroupSymb()})");
+        Console.WriteLine();
+        return ap;
+    }
+    
+    public static void EllApSchoof(BigInteger[] curve, int p)
+    {
+        var E = EllCoefs(curve);
+        var Ell = E.ToEllGroup();
+        var N = EllTateAlgorithm(E).N;
+        var listL = SmallPrimesList(p);
+        var lmax = listL.Max();
+        Console.WriteLine($"{E} Conductor N = {N} j-Inv = {E.J_Invariant}");
+        Console.WriteLine($"listL[{listL.Glue(", ")}]");
+
+        var (psi0, fdiv0) = DivisionPolynomial(Ell, lmax + 3);
+        var Pt2 = NPt(2, psi0);
+        fdiv0[2] = new(Pt2.X.Reduction, Pt2.X.Denom, Pt2.X.Num.One);
+        var divPolys = fdiv0.ToDictionary(e => e.Key, e => e.Value.Num.Primitive());
+        divPolys.Println("divPolys");
+    
+        var ap = EllApBSGS(Ell, p);
+        var g = NumberTheory.PrimitiveRootFp(p);
+        var Ep = Ell.ToEllCoefs().ToZnInt(p);
+        var ap0 = EllApSchoof(Ep,
+            divPolys.Where(e => listL.Contains(e.Key)).ToDictionary(e => e.Key, e => e.Value.ToZnInt(p)), 
+            listL, g, p);
+        if (ap != ap0)
+            throw new($"Expected ap = {ap} Actual ap = {ap0}");
+
+        Console.WriteLine();
+    }
+
+    public static void EllApSchoofBigInt(BigInteger[] curve, BigInteger p)
+    {
+        var E = EllCoefs(curve);
+        var Ell = E.ToEllGroup();
+        var N = EllTateAlgorithm(E).N;
+        var listL = SmallPrimesList(p);
+        var lmax = listL.Max();
+        Console.WriteLine($"{E} Conductor N = {N} j-Inv = {E.J_Invariant}");
+        Console.WriteLine($"listL[{listL.Glue(", ")}]");
+
+        var (psi0, fdiv0) = DivisionPolynomial(Ell, lmax + 3);
+        var Pt2 = NPt(2, psi0);
+        fdiv0[2] = new(Pt2.X.Reduction, Pt2.X.Denom, Pt2.X.Num.One);
+        var divPolys = fdiv0.ToDictionary(e => e.Key, e => e.Value.Num.Primitive());
+        divPolys.Println("divPolys");
+    
+        var ap = EllApBSGS(Ell, p);
+        ZnBigInt.Display = ZnDisplay.Unsigned;
+        var g = new ZnBigInt(p,NumberTheory.PrimitiveRootMod(p));
+        var Ep = Ell.ToEllCoefs().ToZnBigInt(p);
+        var ap0 = EllApSchoof(Ep,
+            divPolys.Where(e => listL.Contains(e.Key)).ToDictionary(e => e.Key, e => e.Value.ToZnBigInt(p)), 
+            listL, g, p);
+        if (ap != ap0)
+            throw new($"Expected ap = {ap} Actual ap = {ap0}");
+
+        Console.WriteLine();
+    }
+
     public static void EllApSchoof(BigInteger[] curve)
     {
         var E = EllCoefs(curve);
@@ -558,90 +683,31 @@ public static partial class EC
 
         GlobalStopWatch.AddLap();
         var N = EllTateAlgorithm(E).N;
-        var allList = SmallPrimesList(N);
+        var allList = SmallPrimesMap(N);
         var pmax = allList.Keys.Max();
         var lmax = allList.Max(e => e.Value.Max());
         Console.WriteLine($"{E.ToEllGroup()} => {Ell} Conductor N = {N} j-Inv = {E.J_Invariant}");
 
         var (psi0, fdiv0) = DivisionPolynomial(Ell, lmax + 3);
         var Pt2 = NPt(2, psi0);
-        var x = Pt2.X.Num.X1;
         fdiv0[2] = new(Pt2.X.Reduction, Pt2.X.Denom, Pt2.X.Num.One);
         var divPolys = fdiv0.ToDictionary(e => e.Key, e => e.Value.Num.Primitive());
         divPolys.Println("divPolys");
 
         Console.WriteLine($"N = {N} pmax = {pmax} listMax = {lmax}");
-        var frobTr = new Dictionary<int, Dictionary<int, int>>();
         foreach (var (p, listL) in allList)
         {
             if (p <= 3)
                 continue;
 
             var ap = EllAp(Ell, p);
-            var pFrobTr = new Dictionary<int, int>();
             var g = NumberTheory.PrimitiveRootFp(p);
             var Ep = Ell.ToEllCoefs().ToZnInt(p);
-            GlobalStopWatch.AddLap();
-            foreach (var l in listL)
-            {
-                GlobalStopWatch.AddLap();
-                var psi = divPolys[l].ToZnInt(p);
-
-                var facts = IntFactorisation.FirrFsepCantorZassenhausAECF(psi.ToKPolyX1(), g, p);
-                facts.Println($"psi = {psi}");
-                var fPsi = facts.OrderDescending().First().g.Substitute(x.ToZnInt(p));
-                // Irreductibles factors of division polynomial in Fp
-                // when f = f1 * f2 * ... * fi orderer by degree
-                // it seems that // deg(f1) | deg(f2) | ... | deg(fi) | deg(divPol)
-                // and fi seems to be the minimal polynomial of the primitive element
-                // of the splitting field of f in Fp[a]
-                // TODO: proof
-                var Erl = new EllGroupSymb<ZnInt>(Ep, fPsi);
-                Erl.CheckValidity = false;
-                Console.WriteLine($"p={p} l={l} {Erl}");
-                Console.WriteLine($"{Erl.Eq}");
-                Console.WriteLine($"psi  = {psi}");
-                Console.WriteLine($"fPsi = {fPsi}");
-
-                var pt = Erl.Pt;
-                var p_Pt = Erl.Times(pt, p % l);
-                var phi2 = Erl.FrobRl(pt, 2);
-                var add_phi2_p = Erl.Op(phi2, p_Pt);
-
-                var phi = Erl.Invert(Erl.FrobRl(pt));
-                var t_phi = Erl.O;
-                foreach (var t in l.SeqLazy())
-                {
-                    var eqFrob = Erl.Op(add_phi2_p, t_phi);
-                    if (eqFrob.IsO)
-                    {
-                        pFrobTr[l] = t;
-                        Console.WriteLine($"phi(P)^2 - t*phi(P) + p*P = O");
-                        Console.WriteLine($"    t = {t}");
-                        break;
-                    }
-
-                    t_phi = Erl.Op(phi, t_phi);
-                }
-
-                if (!pFrobTr.ContainsKey(l))
-                    throw new();
-
-                GlobalStopWatch.Show();
-                Console.WriteLine();
-            }
-
-            pFrobTr.Println("Frob Traces");
-            var keys = pFrobTr.Keys.ToArray();
-            var values = keys.Select(k => pFrobTr[k]).ToArray();
-            var crtTable = NumberTheory.CrtTable(keys);
-            var L = keys.Aggregate((li, lj) => li * lj);
-            var crt = NumberTheory.CRT(values, crtTable, L);
-            var ap1 = crt < L / 2 ? crt : crt - L;
-            Console.WriteLine($"p = {p} ap = {ap} crt = {crt} ap1 = {ap1} L = {L} Check:{ap == ap1}");
-            GlobalStopWatch.Show($"EllApSchoof({Ep.ToEllGroupSymb()})");
-            if (ap != ap1)
-                throw new();
+            var ap0 = EllApSchoof(Ep,
+                divPolys.Where(e => listL.Contains(e.Key)).ToDictionary(e => e.Key, e => e.Value.ToZnInt(p)), 
+                listL, g, p);
+            if (ap != ap0)
+                throw new($"Expected ap = {ap} Actual ap = {ap0}");
 
             Console.WriteLine();
         }
@@ -649,4 +715,5 @@ public static partial class EC
         GlobalStopWatch.Show($"End EllApSchoof {Ell}");
         Console.WriteLine();
     }
+
 }

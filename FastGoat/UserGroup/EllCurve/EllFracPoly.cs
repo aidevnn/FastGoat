@@ -53,6 +53,23 @@ public readonly struct EllFracPoly<K> : IElt<EllFracPoly<K>>, IRingElt<EllFracPo
     public int Hash { get; }
     public bool IsZero() => !Denom.IsZero() && Num.IsZero();
 
+    public bool IsDivZero()
+    {
+        if (IsZero())
+            return true;
+
+        if (!EC.CheckDivOfZero)
+            return false;
+        
+        var decNum = Num.DecomposeX2().ToDictionary(e => e.Key, e => (e.Value, e.Value.ToKPolyX1()));
+        var arr = decNum.Values.Select(e => e.Item2).Where(e => !e.IsZero()).Distinct().ToArray();
+        var fdiv = DivPol.ToKPolyX1();
+        if (arr.All(f => Ring.Gcd(f, fdiv).Degree > 0))
+            return true;
+
+        return false;
+    }
+
     public EllFracPoly<K> Zero => new(Reduction, Num.Zero, Num.One);
     public EllFracPoly<K> One => new(Reduction, Num.One, Num.One);
 
