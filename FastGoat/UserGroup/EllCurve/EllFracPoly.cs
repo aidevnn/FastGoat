@@ -57,9 +57,6 @@ public readonly struct EllFracPoly<K> : IElt<EllFracPoly<K>>, IRingElt<EllFracPo
     {
         if (IsZero())
             return true;
-
-        if (!EC.CheckDivOfZero)
-            return false;
         
         var decNum = Num.DecomposeX2().ToDictionary(e => e.Key, e => (e.Value, e.Value.ToKPolyX1()));
         var arr = decNum.Values.Select(e => e.Item2).Where(e => !e.IsZero()).Distinct().ToArray();
@@ -141,7 +138,7 @@ public readonly struct EllFracPoly<K> : IElt<EllFracPoly<K>>, IRingElt<EllFracPo
         return $"({Num})/({Denom})";
     }
 
-    public bool Invertible() => !IsZero();
+    public bool Invertible() => !IsDivZero();
 
     public static EllFracPoly<K> Simplify((EllPoly<K> eqEll, EllPoly<K> sd, EllPoly<K> dvp) red, EllPoly<K> num,
         EllPoly<K> denom)

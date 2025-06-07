@@ -88,6 +88,8 @@ public struct EllGroup<T> : IGroup<EllPt<T>> where T : struct, IElt<T>, IRingElt
     public T a3 => Coefs.a3;
     public T a4 => Coefs.a4;
     public T a6 => Coefs.a6;
+    
+    public bool CheckValidity { get; set; } = true;
 
     public EllPt<T> this[params ValueType[] us]
     {
@@ -126,6 +128,9 @@ public struct EllGroup<T> : IGroup<EllPt<T>> where T : struct, IElt<T>, IRingElt
 
     public bool Contains(T X, T Y)
     {
+        if (!CheckValidity)
+            return true;
+
         var lhs = Y * Y + a1 * X * Y + a3 * Y;
         var rhs = X.Pow(3) + a2 * X * X + a4 * X + a6;
         return lhs.Equals(rhs);
@@ -163,7 +168,7 @@ public struct EllGroup<T> : IGroup<EllPt<T>> where T : struct, IElt<T>, IRingElt
         }
 
         var ((x1, y1), (x2, y2)) = (e1, e2);
-        if (!x1.Equals(x2))
+        if ((x1 - x2).Invertible())
         {
             var alpha = (y2 - y1) / (x2 - x1);
             var x3 = alpha.Pow(2) + a1 * alpha - a2 - x2 - x1;
@@ -172,7 +177,7 @@ public struct EllGroup<T> : IGroup<EllPt<T>> where T : struct, IElt<T>, IRingElt
         }
         else
         {
-            if (!y1.Equals(-a1 * x2 - a3 - y2))
+            if ((y1 + a1 * x2 + a3 + y2).Invertible() && (x1 * a1 + a3 + 2 * y1).Invertible())
             {
                 var alpha = (3 * x1.Pow(2) - y1 * a1 + 2 * x1 * a2 + a4) / (x1 * a1 + a3 + 2 * y1);
                 var x3 = alpha.Pow(2) + a1 * alpha - a2 - 2 * x1;

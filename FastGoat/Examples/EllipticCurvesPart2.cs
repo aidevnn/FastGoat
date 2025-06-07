@@ -433,7 +433,7 @@ public static class EllipticCurvesPart2
         EC.EllApSchoof([1, -1, 0, -4, 4]);
         EC.EllApSchoof([1, -1, 1, -19353, 958713]);
         EC.EllApSchoof([1, 1, 1, -17714, 900047]);
-        GlobalStopWatch.Show(); // #  Time:5.466s
+        GlobalStopWatch.Show(); // #  Time:4.486s
     }
 
     public static void Example11EllApSchoof()
@@ -446,6 +446,6 @@ public static class EllipticCurvesPart2
             EC.EllApSchoof(e.model);
 
         GlobalStopWatch.Show($"Nb curves = {curves.Length} of conductor in [{minN}, {maxN}]");
-        // # Nb curves = 145 of conductor in [1, 100000] Time:6m30s
+        // # Nb curves = 145 of conductor in [1, 100000] Time:3m0s
     }
 }
