@@ -57,9 +57,9 @@ public readonly struct TriVar : IElt<TriVar>
         };
     }
 
-    public TriVar GetX() => new(X3, 0, 0);
-    public TriVar GetY() => new(0, X2, 0);
-    public TriVar GetZ() => new(0, 0, X1);
+    public TriVar GetX3() => new(X3, 0, 0);
+    public TriVar GetX2() => new(0, X2, 0);
+    public TriVar GetX1() => new(0, 0, X1);
     public TriVar GetX3X2() => new(X3, X2, 0);
     public TriVar GetX3X1() => new(X3, 0, X1);
     public TriVar GetX2X1() => new(0, X2, X1);
