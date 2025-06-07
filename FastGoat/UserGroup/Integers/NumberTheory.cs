@@ -420,7 +420,7 @@ public static class NumberTheory
         if (!IsPrime(p))
             throw new("p must be prime");
 
-        var dec = PrimesDec(p - 1);
+        var dec = PrimesDecUnsafe(p - 1);
         var pis = dec.ToDictionary(e => e.Key, e => PowModBigint(e.Key, e.Value, p));
         ++nbCallPrimRoot;
         BigInteger t = 1;
@@ -443,7 +443,8 @@ public static class NumberTheory
         return t;
     }
 
-    public static ZnInt PrimitiveRootFp(int p) => new ZnInt(p, PrimitiveRootMod(p));
+    public static ZnInt PrimitiveRootFp(int p) => new(p, PrimitiveRootMod(p));
+    public static ZnBigInt PrimitiveRootFp(BigInteger p) => new(p, PrimitiveRootMod(p));
     public static int NthRootUnityMod(int n, int p) => PowMod(PrimitiveRootMod(p), (p - 1) / n, p);
 
     public static BigInteger NthRootUnityMod(BigInteger n, BigInteger p) =>
