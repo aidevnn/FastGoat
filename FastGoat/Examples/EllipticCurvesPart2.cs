@@ -448,4 +448,55 @@ public static class EllipticCurvesPart2
         GlobalStopWatch.Show($"Nb curves = {curves.Length} of conductor in [{minN}, {maxN}]");
         // # Nb curves = 145 of conductor in [1, 100000] Time:3m0s
     }
+    
+    public static void Example12LargerPrime()
+    {
+        IntExt.RecomputeAllPrimesUpTo(32000000);
+        
+        EC.EllApSchoofBigInt([1, 1], 10.Pow(6) + 3); // Time:3.484s
+        EC.EllApSchoofBigInt([1, 1], BigInteger.Pow(10, 10) + 19); // Time:25.543s
+        
+        EC.EllApSchoofBigInt([1, 1], BigInteger.Pow(10, 14) + 31);
+        /*
+         Frob Traces
+               [2, 0]
+               [3, 2]
+               [5, 1]
+               [7, 0]
+               [11, 7]
+               [13, 10]
+               [17, 4]
+               [19, 13]
+               [23, 7]
+           p = 100000000000031 crt = 208037606 ap = -15055264 L = 223092870
+           # EllApSchoof(Ell[1,1](Z/100000000000031Z)) Time:4m1s
+           
+           
+           pari/gp
+           ? ellap(ellinit([1,1]),10^14+31)
+           %42 = -15055264
+         */
+        
+        EC.EllApSchoofBigInt([1, 1], BigInteger.Pow(10, 15) + 37);
+        /*
+         Frob Traces
+               [2, 1]
+               [3, 2]
+               [5, 3]
+               [7, 0]
+               [11, 3]
+               [13, 2]
+               [17, 2]
+               [19, 14]
+               [23, 9]
+           p = 1000000000000037 crt = 1847783 ap = 1847783 L = 223092870
+           # EllApSchoof(Ell[1,1](Z/1000000000000037Z)) Time:3m42s
+           
+           
+           pari/gp
+           ? ellap(ellinit([1,1]),10^15+37)
+           %65 = 1847783
+         */
+    }
+
 }
