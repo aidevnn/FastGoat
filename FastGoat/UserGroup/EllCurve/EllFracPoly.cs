@@ -57,6 +57,9 @@ public readonly struct EllFracPoly<K> : IElt<EllFracPoly<K>>, IRingElt<EllFracPo
     {
         if (IsZero())
             return true;
+
+        if (DivPol.IsZero())
+            return false;
         
         var decNum = Num.DecomposeX2().ToDictionary(e => e.Key, e => (e.Value, e.Value.ToKPolyX1()));
         var arr = decNum.Values.Select(e => e.Item2).Where(e => !e.IsZero()).Distinct().ToArray();

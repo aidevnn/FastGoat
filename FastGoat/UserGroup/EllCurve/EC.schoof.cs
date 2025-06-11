@@ -50,6 +50,33 @@ public static partial class EC
         return new(f.IndTriVar, z, coefs);
     }
 
+    public static EllFracPoly<ZnInt> ToZnInt(this EllFracPoly<Rational> f, int p)
+    {
+        var eqEll = f.Reduction.eqEll.ToZnInt(p);
+        var dvp = f.Reduction.dvp.ToZnInt(p);
+        var sd = f.Reduction.sd.ToZnInt(p);
+        var num = f.Num.ToZnInt(p);
+        var denom = f.Denom.ToZnInt(p);
+        return new((eqEll, sd, dvp), num, denom);
+    }
+
+    public static EllFracPoly<K> ChgDivPol<K>(this EllFracPoly<K> f, EllPoly<K> dvp)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        var (eqEll, sd, _) = f.Reduction;
+        return EllFracPoly<K>.Simplify((eqEll, sd, dvp), f.Num, f.Denom);
+    }
+
+    public static EllFracPoly<ZnBigInt> ToZnBigInt(this EllFracPoly<Rational> f, int p)
+    {
+        var eqEll = f.Reduction.eqEll.ToZnBigInt(p);
+        var dvp = f.Reduction.dvp.ToZnBigInt(p);
+        var sd = f.Reduction.sd.ToZnBigInt(p);
+        var num = f.Num.ToZnBigInt(p);
+        var denom = f.Denom.ToZnBigInt(p);
+        return new((eqEll, sd, dvp), num, denom);
+    }
+
     public static EllPoly<ZnBigInt> ToZnBigInt(this EllPoly<Rational> f, BigInteger p)
     {
         var z = new ZnBigInt(p, 0);
@@ -99,7 +126,7 @@ public static partial class EC
         return ell.EllFracPolyYX(EllPoly(ell.a1).X.Zero);
     }
 
-    public static (EllFracPoly<K> X, EllFracPoly<K> Y) EllFracPolyYX<K>(EllPoly<K> eqEll, EllPoly<K> sd, EllPoly<K> dvp)
+    public static (EllFracPoly<K> Y, EllFracPoly<K> X) EllFracPolyYX<K>(EllPoly<K> eqEll, EllPoly<K> sd, EllPoly<K> dvp)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var (Y, X) = new[] { eqEll.X2, eqEll.X1 }
@@ -265,7 +292,7 @@ public static partial class EC
         var (b2, b4, b6, b8) = eCoefs.B_Invariants;
 
         var psi = new Dictionary<int, EllFracPoly<K>>();
-        (psi[0], psi[1], psi[2]) = (Y.Zero, Y.One, 2 * Y + a1 * X + a3);
+        (psi[-1], psi[0], psi[1], psi[2]) = (-Y.One, Y.Zero, Y.One, 2 * Y + a1 * X + a3);
         psi[3] = 3 * X4 + b2 * X3 + 3 * b4 * X2 + 3 * b6 * X + b8;
         psi[4] = psi[2] * (2 * X6 + b2 * X5 + 5 * b4 * X4 + 10 * b6 * X3 + 10 * b8 * X2 + (b2 * b8 - b4 * b6) * X +
                            (b4 * b8 - b6 * b6));
@@ -276,7 +303,7 @@ public static partial class EC
             if (2 * n + 1 <= nmax)
                 psi[2 * n + 1] = psi[n + 2] * psi[n].Pow(3) - psi[n + 1].Pow(3) * psi[n - 1];
         }
-
+        
         var f = psi.ToDictionary(e => e.Key, e => e.Key % 2 == 0 ? (e.Value / psi[2]) : e.Value);
         return (psi, f);
     }
@@ -285,7 +312,7 @@ public static partial class EC
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var psi2 = psi[2];
-        var X = EllFracPolyYX(psi2.EqEll, psi2.SD, psi2.DivPol).X;
+        var (Y, X) = EllFracPolyYX(psi2.EqEll, psi2.SD, psi2.DivPol);
         var (a1, a3) = (psi2.Num[(0, 0, 1)], psi2.Num.ConstTerm);
 
         var nPX = X - psi[n - 1] * psi[n + 1] / psi[n].Pow(2);
@@ -558,7 +585,7 @@ public static partial class EC
         return (divPolys, allBasis);
     }
 
-    public static BigInteger EllApSchoof<K>(EllCoefs<K> Ep, Dictionary<int, EllPoly<K>> divPolys, List<int> listL, K g,
+    public static BigInteger EllApSchoof<K>(EllCoefs<K> Ep, Dictionary<int, EllPoly<K>> divPolys, List<int> listL, K g, 
         BigInteger p)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
@@ -570,19 +597,18 @@ public static partial class EC
         foreach (var l in listL)
         {
             GlobalStopWatch.AddLap();
-            var psi = divPolys[l];
-            var (Y, X) = EllFracPolyYX(Ep, psi);
+            var divPol = divPolys[l];
+            var (Y, X) = EllFracPolyYX(Ep, divPol);
             var (_, a2, _, a4, a6) = Ep.Model;
             if ((X.Pow(3) + a2 * X.Pow(2) + a4 * X + a6).IsZero())
                 Y = Y.Zero;
 
-            Console.WriteLine($"psi = {psi}");
+            Console.WriteLine($"divPol = {divPol}");
             var Erl = new EllGroup<EllFracPoly<K>>(Ep.ToEllCoefs(X));
             Erl.CheckValidity = false;
             Console.WriteLine($"p={p} l={l} {Erl}");
             Console.WriteLine($"{Erl.EqStr}");
-            Console.WriteLine($"psi  = {psi}");
-            // Console.WriteLine($"fPsi = {fPsi}");
+            Console.WriteLine($"divPol  = {divPol}");
 
             var pt = Erl[X, Y];
             var p_Pt = Erl.Times(pt, (int)(p % l));
