@@ -21,7 +21,7 @@ public enum MonomDisplay
     PowFct = 0b00100,
     Star = 0b01000,
     Dot = 0b10000,
-    Default = Superscript,
+    Default = StarCaret,
     StarSuperscript = Star | Superscript,
     StarCaret = Star | Caret,
     StarPowFct = Star | PowFct,
