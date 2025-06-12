@@ -58,13 +58,12 @@ public readonly struct EllFracPoly<K> : IElt<EllFracPoly<K>>, IRingElt<EllFracPo
         if (IsZero())
             return true;
 
-        if (DivPol.IsZero())
+        if (DivPol.Degree == 0)
             return false;
-        
-        var decNum = Num.DecomposeX2().ToDictionary(e => e.Key, e => (e.Value, e.Value.ToKPolyX1()));
-        var arr = decNum.Values.Select(e => e.Item2).Where(e => !e.IsZero()).Distinct().ToArray();
-        var fdiv = DivPol.ToKPolyX1();
-        if (arr.All(f => Ring.Gcd(f, fdiv).Degree > 0))
+
+        var fdiv = DivPol;
+        var arr = Num.DecomposeX2().Values.Where(e => !e.IsZero());
+        if (arr.All(f => f.Degree > 0 && EC.FastGCD(f, fdiv).Degree > 0))
             return true;
 
         return false;
@@ -154,23 +153,21 @@ public readonly struct EllFracPoly<K> : IElt<EllFracPoly<K>>, IRingElt<EllFracPo
 
         num = num.Div(red.eqEll).rem;
         denom = denom.Div(red.eqEll).rem;
-        if (!red.dvp.IsZero())
+        if (red.dvp.Degree > 0)
         {
             num = num.Div(red.dvp).rem;
             denom = denom.Div(red.dvp).rem;
         }
         else
         {
-            var decNum = num.DecomposeX2().ToDictionary(e => e.Key, e => (e.Value, e.Value.ToKPolyX1()));
-            var decDenom = denom.DecomposeX2().ToDictionary(e => e.Key, e => (e.Value, e.Value.ToKPolyX1()));
-            var arr = decNum.Values.Select(e => e.Item2).Concat(decDenom.Values.Select(e => e.Item2))
-                .Where(e => !e.IsZero()).Distinct().ToArray();
-            if (arr.Length != 0)
+            var decNum = num.DecomposeX2();
+            var decDenom = denom.DecomposeX2();
+            var arr = decNum.Values.Concat(decDenom.Values).Where(e => e.Degree > 0).Distinct().ToArray();
+            if (arr.Length > 1)
             {
-                var gcd0 = Ring.FastGCD(arr).Monic;
-                var gcd1 = gcd0.Substitute(num.X1);
-                num = decNum.Select(e => e.Key * (e.Value.Value / gcd1)).ToVec().Sum();
-                denom = decDenom.Select(e => e.Key * (e.Value.Value / gcd1)).ToVec().Sum();
+                var gcd = EC.FastGCD(arr).Monic;
+                num = decNum.Select(e => e.Key * (e.Value / gcd)).Aggregate(gcd.Zero, (acc, e) => e + acc);
+                denom = decDenom.Select(e => e.Key * (e.Value / gcd)).Aggregate(gcd.Zero, (acc, e) => e + acc);
             }
         }
 

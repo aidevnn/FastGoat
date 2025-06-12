@@ -132,6 +132,8 @@ public readonly struct EllPoly<K> : IElt<EllPoly<K>>, IRingElt<EllPoly<K>>, IMod
     }
 
     public int Degree => Coefs.Last().Key.Degree;
+    public EllPoly<K> Monic => IsZero() ? this : KMul(LeadingDetails.lc);
+    public K LC => LeadingDetails.lc;
 
     public EllPoly<K> Add(EllPoly<K> e)
     {
@@ -236,6 +238,39 @@ public readonly struct EllPoly<K> : IElt<EllPoly<K>>, IRingElt<EllPoly<K>>, IMod
         }
 
         return (new(IndTriVar, KZero, quo), new(IndTriVar, KZero, rem));
+    }
+
+    public EllPoly<K> Rem(EllPoly<K> e)
+    {
+        if (e.IsZero())
+            throw new DivideByZeroException();
+
+        var rem = new SortedList<TriVar, K>(Coefs, IndTriVar.GetComparer());
+        var (elm, elc) = e.Coefs.Last();
+        var k = Coefs.Count - 1;
+        var one = new TriVar();
+        while (k >= 0)
+        {
+            var alm = rem.Keys[k];
+            var (mnm0, mnm1) = TriVar.Reduce(alm, elm);
+            if (!mnm0.IsOne())
+            {
+                --k;
+                continue;
+            }
+
+            var alc = rem.Values[k];
+            var (q, r) = alc.Div(elc);
+            if (!r.IsZero())
+                break;
+
+            InPlaceSubMul(rem, e.Coefs, q, mnm1);
+            k = rem.Count - 1;
+            if (rem.Count == 1 && rem.ContainsKey(one) && rem[one].IsZero())
+                break;
+        }
+
+        return new(IndTriVar, KZero, rem);
     }
 
     public EllPoly<K> Mul(int k)

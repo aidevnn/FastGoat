@@ -21,7 +21,7 @@ public readonly struct ZnBigInt : IElt<ZnBigInt>, IRingElt<ZnBigInt>, IFieldElt<
     public ZnBigInt(BigInteger mod, BigInteger k)
     {
         Mod = mod;
-        K = Mod == 0 ? k : IntExt.AmodPbigint(k % Mod, Mod);
+        K = Mod == 0 ? k : IntExt.AmodPbigint(k, Mod);
         K = K * 2 > Mod ? K - Mod : K;
         Hash = (K, Mod).GetHashCode();
     }
