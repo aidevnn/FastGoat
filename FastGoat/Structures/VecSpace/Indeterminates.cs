@@ -130,7 +130,7 @@ public class Indeterminates<T> : IEnumerable<T>, IEquatable<Indeterminates<T>> w
         }
     }
     public override int GetHashCode() => Hash;
-    public override string ToString() => $"[{this.Glue(",")}]({Order})";
+    public override string ToString() => $"[{Content.Glue(",")}]({Order})";
 
     public bool Equals(Indeterminates<T>? other)
     {
@@ -146,24 +146,4 @@ public class Indeterminates<T> : IEnumerable<T>, IEquatable<Indeterminates<T>> w
         if (obj.GetType() != this.GetType()) return false;
         return Equals((Indeterminates<T>)obj);
     }
-
-    // public void Deconstruct(out T a, out T b)
-    // {
-    //     (a, b) = (this[0], this[1]);
-    // }
-    //
-    // public void Deconstruct(out T a, out T b, out T c)
-    // {
-    //     (a, b, c) = (this[0], this[1], this[2]);
-    // }
-    //
-    // public void Deconstruct(out T a, out T b, out T c, out T d)
-    // {
-    //     (a, b, c, d) = (this[0], this[1], this[2], this[3]);
-    // }
-    //
-    // public void Deconstruct(out T a, out T b, out T c, out T d, out T e)
-    // {
-    //     (a, b, c, d, e) = (this[0], this[1], this[2], this[3], this[4]);
-    // }
 }
