@@ -33,7 +33,7 @@ public static partial class IntFactorisation
     public static List<(KPoly<K> g, int q, int i)> YunSFF<K>(KPoly<K> f)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
-        var L = new List<(KPoly<K>, int, int)>() { (f.LT * f.One, 1, 1) };
+        var L = new List<(KPoly<K>, int, int)>() { (f.LC * f.One, 1, 1) };
         var l = 1;
         var df = f.Derivative;
         var u = Ring.FastGCD(f, df);

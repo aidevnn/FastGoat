@@ -317,7 +317,7 @@ public static partial class IntFactorisation
 
     public static (Rational disc, KPoly<EPoly<Rational>>[] roots) FactorsQuadratic(KPoly<Rational> P, char a = 'a')
     {
-        if (P.Degree != 2 || !P.LT.Equals(Rational.KOne()))
+        if (P.Degree != 2 || !P.LC.Equals(Rational.KOne()))
             throw new("P must be monic and quadratic");
 
         var (P1, c) = ConstCoef(P, monic: true);

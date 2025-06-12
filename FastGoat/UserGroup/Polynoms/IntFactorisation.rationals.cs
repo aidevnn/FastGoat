@@ -178,7 +178,7 @@ public static partial class IntFactorisation
 
     public static IEnumerable<(int p, int s)> PSigma(KPoly<Rational> f, int limit = 150)
     {
-        var disc = (Ring.Discriminant(f) * f.LT).Num;
+        var disc = (Ring.Discriminant(f) * f.LC).Num;
 
         var n = f.Degree;
         var norm = f.Coefs.Select(e => Double.Abs(e)).Max();
@@ -268,7 +268,7 @@ public static partial class IntFactorisation
             throw new ArgumentException();
 
         var (f0, firr0, allS) = HenselLifting(f, p, o);
-        var c0 = f.LT * allS[0].KOne;
+        var c0 = f.LC * allS[0].KOne;
         var o0 = allS.Max(pl => pl.KZero.Details.O);
         var xp = FG.KPoly(f.x, new ZnBInt(new Modulus(p, o0), 0));
         var F = new KPoly<Rational>(f.x, f.KZero, f.Coefs);
@@ -315,10 +315,10 @@ public static partial class IntFactorisation
         }
 
         var f1 = listIrr.Aggregate((a, b) => a * b);
-        if (!f.LT.Equals(Rational.KOne()))
+        if (!f.LC.Equals(Rational.KOne()))
         {
-            firr0 = firr0.Prepend(f.LT * f0.KOne * f0.One).ToArray();
-            var a = f.LT / f1.LT;
+            firr0 = firr0.Prepend(f.LC * f0.KOne * f0.One).ToArray();
+            var a = f.LC / f1.LC;
             if (!a.Equals(a.One))
             {
                 listIrr.Insert(0, a * f.One);
@@ -449,15 +449,15 @@ public static partial class IntFactorisation
                 var bs = (t + 1).Range().Select(i0 => cols[i0].T.Extract(0, 1, 0, s)).ToArray();
                 var coefs = bs.Select(mat => mat.Select(r => (int)r.Num).ToArray()).ToArray();
                 var one0 = irrs2[0].One;
-                var c0 = one0 * (one0.KOne * P.LT);
+                var c0 = one0 * (one0.KOne * P.LC);
                 var polys = coefs.Select(l => rgS.Aggregate(c0, (prod, i0) => prod * irrs2[i0].Pow(l[i0])))
                     .Select(e => ZPoly2QPoly(e).Monic).ToArray();
 
                 var one1 = polys[0].One;
-                if (!P.LT.Equals(P.KOne))
+                if (!P.LC.Equals(P.KOne))
                 {
-                    polys = polys.Prepend(P.LT * P.One).ToArray();
-                    firr0 = firr0.Prepend(P.LT * f0.KOne * f0.One).ToArray();
+                    polys = polys.Prepend(P.LC * P.One).ToArray();
+                    firr0 = firr0.Prepend(P.LC * f0.KOne * f0.One).ToArray();
                 }
 
                 if (Logger.Level != LogLevel.Off)
@@ -698,13 +698,13 @@ public static partial class IntFactorisation
             try
             {
                 var polys = HenselLiftingNaive(f, p, o)
-                    .Select(f2 => f2.Degree == 0 ? P.LT * P.One : f2.Substitute(f2.X / c).Monic)
+                    .Select(f2 => f2.Degree == 0 ? P.LC * P.One : f2.Substitute(f2.X / c).Monic)
                     .OrderBy(f2 => f2.Degree)
                     .ThenBy(f2 => f2)
                     .ToArray();
 
-                if (polys.All(f2 => f2.Degree != 0) && !P.LT.Equals(P.KOne))
-                    polys = polys.Prepend(P.LT * P.One).ToArray();
+                if (polys.All(f2 => f2.Degree != 0) && !P.LC.Equals(P.KOne))
+                    polys = polys.Prepend(P.LC * P.One).ToArray();
 
                 if (Logger.Level != LogLevel.Off)
                 {

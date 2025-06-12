@@ -840,7 +840,7 @@ public static partial class Ring
             return A.CompareTo(A.Opp()) == -1 ? (A.One.Opp(), A.One) : (A.One, A.Zero);
 
         var d1 = A.Degree - B.Degree;
-        var y1 = B.LT;
+        var y1 = B.LC;
         var w1 = i == 0 ? -A.KOne : (-y0).Pow(d0) * w0.Pow(d0 - 1).Inv();
         var b = i == 0 ? ((d0 + 1) % 2 == 0 ? A.KOne : -A.KOne) : -y0 * w1.Pow(d1);
         var bi = b.Inv();
@@ -878,7 +878,7 @@ public static partial class Ring
             return A;
 
         var d1 = A.Degree - B.Degree;
-        var y1 = B.LT;
+        var y1 = B.LC;
         var w1 = i == 0 ? -A.KOne : FastPow(-y0, d0) / FastPow(w0, d0 - 1);
         var b = i == 0 ? ((d0 + 1) % 2 == 0 ? A.KOne : -A.KOne) : -y0 * FastPow(w1, d1);
         var r = (FastPow(y1, d1 + 1) * A).Div(B).rem / b;

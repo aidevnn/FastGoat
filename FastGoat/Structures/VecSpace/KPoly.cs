@@ -237,7 +237,7 @@ public readonly struct KPoly<K> : IElt<KPoly<K>>, IRingElt<KPoly<K>>, IFieldElt<
 
     public KPoly<K> Monic => IsZero() ? this : KMul(Coefs.Last().Inv());
 
-    public K LT => Coefs.Last();
+    public K LC => Coefs.Last();
 
     public KPoly<K> Pow(int k)
     {

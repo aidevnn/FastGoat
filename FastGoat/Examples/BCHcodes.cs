@@ -176,7 +176,7 @@ public static class BCHcodes
             (u0, u1) = (u1, u0 - u1 * quo);
         }
 
-        var c = u1.LT;
+        var c = u1.LC;
         return (u1 / c, v1 / c);
     }
 
@@ -294,7 +294,7 @@ public static class BCHcodes
                 .Aggregate(x.Zero, (acc, xi) => acc + xi);
 
             var x2t = S.X.Pow(2 * t);
-            var c = u0.LT;
+            var c = u0.LC;
             (u0, v0) = (u0 / c, v0 / c);
             Console.WriteLine($"  Direct          : u = {u0} and v = {v0}");
             var v2 = (u0 * S).Div(x2t).rem;

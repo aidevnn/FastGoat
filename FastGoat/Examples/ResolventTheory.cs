@@ -30,7 +30,7 @@ public static class ResolventTheory
     // JS Milne, FT v5.10, page 50-51
     static void GalGrQuarticPol(KPoly<Rational> P)
     {
-        if (P.Degree != 4 || !P.LT.Equals(P.KOne))
+        if (P.Degree != 4 || !P.LC.Equals(P.KOne))
             throw new();
 
         var Pfacts = IntFactorisation.FirrZ2(P);

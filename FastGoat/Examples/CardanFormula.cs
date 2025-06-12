@@ -31,7 +31,7 @@ public static class CardanFormula
     static void Cubic(KPoly<Rational> P)
     {
         Logger.Level = LogLevel.Level1;
-        if (P.Degree != 3 || !P.LT.Equals(Rational.KOne()))
+        if (P.Degree != 3 || !P.LC.Equals(Rational.KOne()))
             throw new("P must be monic and cubic");
 
         var (P1, c) = ConstCoef(P, monic: true);
@@ -68,7 +68,7 @@ public static class CardanFormula
 
     static void Cubic2(KPoly<Rational> P)
     {
-        if (P.Degree != 3 || !P.LT.Equals(Rational.KOne()))
+        if (P.Degree != 3 || !P.LC.Equals(Rational.KOne()))
             throw new("P must be monic and cubic");
 
         var (P1, c) = ConstCoef(P, monic: true);

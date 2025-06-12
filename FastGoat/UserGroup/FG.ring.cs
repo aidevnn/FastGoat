@@ -260,7 +260,7 @@ public static partial class FG
         var P0 = P * lcm; // removes denominators
         var gcd = new Rational(
             IntExt.GcdBigInt(P0.Coefs.Select(e => BigInteger.Abs(e.Num)).Where(e => !e.IsZero).Distinct().ToArray()));
-        return P0 / gcd * P.LT.Sign; // makes primitive
+        return P0 / gcd * P.LC.Sign; // makes primitive
     }
 
     public static KPoly<Rational> ZPoly(this KPoly<Rational> P)
