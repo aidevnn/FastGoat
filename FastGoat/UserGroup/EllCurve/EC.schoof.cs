@@ -357,7 +357,7 @@ public static partial class EC
             if (2 * n + 1 <= nmax)
                 psi[2 * n + 1] = psi[n + 2] * psi[n].Pow(3) - psi[n + 1].Pow(3) * psi[n - 1];
         }
-        
+
         var f = psi.ToDictionary(e => e.Key, e => e.Key % 2 == 0 ? (e.Value / psi[2]) : e.Value);
         return (psi, f);
     }
@@ -639,7 +639,7 @@ public static partial class EC
         return (divPolys, allBasis);
     }
 
-    public static BigInteger EllApSchoof<K>(EllCoefs<K> Ep, Dictionary<int, EllPoly<K>> divPolys, List<int> listL, K g, 
+    public static BigInteger EllApSchoof<K>(EllCoefs<K> Ep, Dictionary<int, EllPoly<K>> divPolys, List<int> listL, K g,
         BigInteger p)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
@@ -657,7 +657,6 @@ public static partial class EC
             if ((X.Pow(3) + a2 * X.Pow(2) + a4 * X + a6).IsZero())
                 Y = Y.Zero;
 
-            Console.WriteLine($"divPol = {divPol}");
             var Erl = new EllGroup<EllFracPoly<K>>(Ep.ToEllCoefs(X));
             Erl.CheckValidity = false;
             Console.WriteLine($"p={p} l={l} {Erl}");
@@ -666,20 +665,30 @@ public static partial class EC
 
             var pt = Erl[X, Y];
             var p_Pt = Erl.Times(pt, (int)(p % l));
-            var phi2 = FrobRl(pt, 2);
+            var frob = FrobRl(pt);
+            var phi2 = FrobRl(frob);
             var add_phi2_p = Erl.Op(phi2, p_Pt);
 
-            var phi = Erl.Invert(FrobRl(pt));
+            var phi = frob;
             var t_phi = Erl.O;
-            foreach (var t in l.SeqLazy())
+            foreach (var t in (l / 2 + 1).SeqLazy())
             {
-                var eqFrob = Erl.Op(add_phi2_p, t_phi);
-                if (eqFrob.IsO)
+                if (add_phi2_p.IsO && t_phi.IsO)
                 {
                     pFrobTr[l] = t;
-                    Console.WriteLine($"phi(P)^2 - t*phi(P) + p*P = O");
-                    Console.WriteLine($"    t = {t}");
                     break;
+                }
+                else if (!add_phi2_p.IsO && !t_phi.IsO)
+                {
+                    if ((add_phi2_p.X - t_phi.X).IsDivZero())
+                    {
+                        if ((add_phi2_p.Y - t_phi.Y).IsDivZero())
+                            pFrobTr[l] = t;
+                        else
+                            pFrobTr[l] = l - t;
+                        
+                        break;
+                    }
                 }
 
                 t_phi = Erl.Op(phi, t_phi);
@@ -688,6 +697,9 @@ public static partial class EC
             if (!pFrobTr.ContainsKey(l))
                 throw new();
 
+            Console.WriteLine($"phi(P)^2 - t*phi(P) + p*P = O");
+            Console.WriteLine($"    t = {pFrobTr[l]}");
+            
             GlobalStopWatch.Show();
             Console.WriteLine();
         }
@@ -709,23 +721,20 @@ public static partial class EC
     {
         var E = EllCoefs(curve);
         var Ell = E.ToEllGroup();
+        var Ep = Ell.ToZnInt(p);
         var N = EllTateAlgorithm(E).N;
         var listL = SmallPrimesList(p);
         var lmax = listL.Max();
         Console.WriteLine($"{E} Conductor N = {N} j-Inv = {E.J_Invariant}");
         Console.WriteLine($"listL[{listL.Glue(", ")}]");
 
-        var (psi0, fdiv0) = DivisionPolynomial(Ell, lmax + 3);
+        var (psi0, fdiv0) = DivisionPolynomial(Ep, lmax + 3);
         var Pt2 = NPt(2, psi0);
         fdiv0[2] = new(Pt2.X.Reduction, Pt2.X.Denom, Pt2.X.Num.One);
-        var divPolys = fdiv0.ToDictionary(e => e.Key, e => e.Value.Num.Primitive());
-        divPolys.Println("divPolys");
+        var divPolys = fdiv0.ToDictionary(e => e.Key, e => e.Value.Num);
 
         var g = NumberTheory.PrimitiveRootFp(p);
-        var Ep = Ell.ToEllCoefs().ToZnInt(p);
-        var ap0 = EllApSchoof(Ep,
-            divPolys.Where(e => listL.Contains(e.Key)).ToDictionary(e => e.Key, e => e.Value.ToZnInt(p)),
-            listL, g, p);
+        var ap0 = EllApSchoof(Ep.ToEllCoefs(), divPolys, listL, g, p);
         if (BigInteger.Log10(p) < 11)
         {
             var ap = EllApBSGS(Ell, p);
@@ -751,13 +760,10 @@ public static partial class EC
         var Pt2 = NPt(2, psi0);
         fdiv0[2] = new(Pt2.X.Reduction, Pt2.X.Denom, Pt2.X.Num.One);
         var divPolys = fdiv0.ToDictionary(e => e.Key, e => e.Value.Num);
-        divPolys.Println("divPolys");
 
         ZnBigInt.Display = ZnDisplay.Unsigned;
         var g = NumberTheory.PrimitiveRootFp(p);
-        var ap0 = EllApSchoof(Ep.ToEllCoefs(),
-            divPolys.Where(e => listL.Contains(e.Key)).ToDictionary(e => e.Key, e => e.Value),
-            listL, g, p);
+        var ap0 = EllApSchoof(Ep.ToEllCoefs(), divPolys, listL, g, p);
 
         if (BigInteger.Log10(p) < 11)
         {

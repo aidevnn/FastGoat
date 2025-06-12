@@ -433,7 +433,8 @@ public static class EllipticCurvesPart2
         EC.EllApSchoof([1, -1, 0, -4, 4]);
         EC.EllApSchoof([1, -1, 1, -19353, 958713]);
         EC.EllApSchoof([1, 1, 1, -17714, 900047]);
-        GlobalStopWatch.Show(); // #  Time:4.486s
+        GlobalStopWatch.Show("End Example10"); // #  Time:1.686s
+        Console.WriteLine();
     }
 
     public static void Example11EllApSchoof()
@@ -446,15 +447,15 @@ public static class EllipticCurvesPart2
             EC.EllApSchoof(e.model);
 
         GlobalStopWatch.Show($"Nb curves = {curves.Length} of conductor in [{minN}, {maxN}]");
-        // # Nb curves = 145 of conductor in [1, 100000] Time:3m0s
+        // # Nb curves = 145 of conductor in [1, 100000] Time:1m31s
     }
     
     public static void Example12LargerPrime()
     {
         IntExt.RecomputeAllPrimesUpTo(32000000);
         
-        EC.EllApSchoofBigInt([1, 1], 10.Pow(6) + 3); // Time:3.484s
-        EC.EllApSchoofBigInt([1, 1], BigInteger.Pow(10, 10) + 19); // Time:25.543s
+        EC.EllApSchoofBigInt([1, 1], 10.Pow(6) + 3); // Time:2.158s
+        EC.EllApSchoofBigInt([1, 1], BigInteger.Pow(10, 10) + 19); // Time:15.729s
         
         EC.EllApSchoofBigInt([1, 1], BigInteger.Pow(10, 14) + 31);
         /*
@@ -469,7 +470,7 @@ public static class EllipticCurvesPart2
                [19, 13]
                [23, 7]
            p = 100000000000031 crt = 208037606 ap = -15055264 L = 223092870
-           # EllApSchoof(Ell[1,1](Z/100000000000031Z)) Time:4m1s
+           # EllApSchoof(Ell[1,1](Z/100000000000031Z)) Time:1m52s
            
            
            pari/gp
@@ -490,7 +491,7 @@ public static class EllipticCurvesPart2
                [19, 14]
                [23, 9]
            p = 1000000000000037 crt = 1847783 ap = 1847783 L = 223092870
-           # EllApSchoof(Ell[1,1](Z/1000000000000037Z)) Time:3m42s
+           # EllApSchoof(Ell[1,1](Z/1000000000000037Z)) Time:2m6s
            
            
            pari/gp
