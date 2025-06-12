@@ -609,3 +609,10 @@ Journal de Théorie des Nombres de Bordeaux, tome 7, no 1 (1995), p. 219-254
 Université Bordeaux 1, 1995
 Edition NUMDAM
 <i>EllApBSGS, EllDivRing.</i>
+
+[Analytic rank](https://web.math.princeton.edu/mathlab/jr01/arank/arank_jon.pdf)
+<b>J. Hsu, S. Miller.</b>
+Rank of elliptic curves and the Birch Swinnerton-Dyer conjecture.
+Department of Mathematics
+Princeton University.
+<i>Analytic rank</i>
