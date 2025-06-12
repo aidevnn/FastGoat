@@ -19,25 +19,7 @@ public struct EllGroup<T> : IGroup<EllPt<T>> where T : struct, IElt<T>, IRingElt
         if (Disc.IsZero())
             throw new GroupException(GroupExceptionType.GroupDef);
 
-        Field = typeof(T).Name;
-        if (Disc is Rational)
-            Field = "Q";
-        else if (Disc is ZnInt _a1)
-            Field = $"Z/{_a1.P}Z";
-        else if (Disc is ZnBigInt _a2)
-            Field = $"Z/{_a2.Mod}Z";
-        else if (Disc is ZnInt disc1)
-            Field = $"Z/{disc1.P}Z";
-        else if (Disc is ZnBigInt disc2)
-            Field = $"Z/{disc2.Mod}Z";
-        else if (Disc is EPoly<ZnInt> disc3)
-        {
-            if (disc3.F.Degree > 1)
-                Field = $"GF({disc3.P}^{disc3.F.Degree})";
-            else
-                Field = $"GF({disc3.P})";
-        }
-
+        Field = GetFieldName(Disc);
         Hash = (Coefs, Field).GetHashCode();
     }
 
@@ -196,4 +178,29 @@ public struct EllGroup<T> : IGroup<EllPt<T>> where T : struct, IElt<T>, IRingElt
     public override int GetHashCode() => Hash;
 
     public override string ToString() => Name;
+
+    public static string GetFieldName(T e)
+    {
+        if (e is Rational)
+            return "Q";
+        else if (e is ZnInt e1)
+            return $"Z/{e1.P}Z";
+        else if (e is ZnBigInt e2)
+            return $"Z/{e2.Mod}Z";
+        else if (e is EPoly<ZnInt> e3)
+        {
+            if (e3.F.Degree > 1)
+                return $"GF({e3.P}^{e3.F.Degree})";
+            else
+                return $"GF({e3.P})";
+        }
+        else if (e is EllFracPoly<Rational>)
+            return "Q[X,Y]";
+        else if (e is EllFracPoly<ZnInt> e4)
+            return $"F{e4.KOne.Mod}[X,Y]";
+        else if (e is EllFracPoly<ZnBigInt> e5)
+            return $"F{e5.KOne.Mod}[X,Y]";
+
+        return typeof(T).Name;
+    }
 }
