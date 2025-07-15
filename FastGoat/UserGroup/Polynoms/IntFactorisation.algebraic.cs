@@ -26,7 +26,8 @@ public static partial class IntFactorisation
         return bs;
     }
 
-    public static KPoly<K> Rewrite<K>(EPoly<K>[] bs, EPoly<K> b, char x = 'a') where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    public static KPoly<K> Rewrite<K>(EPoly<K>[] bs, EPoly<K> b, char x = 'a')
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         if (bs.Any(a => !a.F.Equals(b.F)))
             throw new("Elements must belong to the same field");
@@ -42,7 +43,8 @@ public static partial class IntFactorisation
         return b.Zero.Poly.SubstituteChar('a');
     }
 
-    public static KPoly<K> Rewrite<K>(EPoly<K> a, EPoly<K> b, char x = 'a') where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    public static KPoly<K> Rewrite<K>(EPoly<K> a, EPoly<K> b, char x = 'a')
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         return Rewrite(GetBase(a), b);
     }
@@ -153,7 +155,8 @@ public static partial class IntFactorisation
         return sep.Select(e => (e.i, e.g.Substitute(norm.X.Pow(e.q)))).First().Item2.SubstituteChar(c);
     }
 
-    public static KPoly<K> MinPolynomial<K>(KPoly<EPoly<K>> A, char c = 'x') where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    public static KPoly<K> MinPolynomial<K>(KPoly<EPoly<K>> A, char c = 'x')
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var norm = Norm(A, c);
         var sep = YunSFF(norm).Where(e => e.g.Degree != 0).ToList();
@@ -245,7 +248,7 @@ public static partial class IntFactorisation
 
         var (nf, c0) = ConstCoef(r, monic: true);
         var hs = FirrZ2(nf).Select(f0 => f0.Substitute(f0.X / c0)).ToArray();
-        if (hs.Length == 1)
+        if (hs.Count(e => e.Degree > 0) == 1)
         {
             L.Add(f.Substitute(x));
             if (Logger.Level != LogLevel.Off)
@@ -330,7 +333,8 @@ public static partial class IntFactorisation
 
         var minPol = CheckQuadraticMinPolynomial(e, 'x');
         if (minPol.Degree != 2)
-            return cf.E.Poly.ToPolynomial(Ring.Polynomial(Rational.KZero(), MonomOrder.RevLex, $"{Cnf.RootsOfUnit}{cf.N}")[0]);
+            return cf.E.Poly.ToPolynomial(Ring.Polynomial(Rational.KZero(), MonomOrder.RevLex,
+                $"{Cnf.RootsOfUnit}{cf.N}")[0]);
 
         var (disc, roots) = FactorsQuadratic(minPol);
         var (x0, x1) = (-roots[0][0] / roots[0][1], -roots[1][0] / roots[1][1]);
@@ -426,8 +430,10 @@ public static partial class IntFactorisation
     public static List<EPoly<Rational>> SplittingField(KPoly<Rational> P)
     {
         GlobalStopWatch.Restart();
-        if (FirrZ2(P).Length > 1)
+        if (FirrZ2(P).Count(e => e.Degree > 0) > 1)
+        {
             throw new($"{P} isnt an irreductible polynomial");
+        }
 
         var (X, y) = FG.EPolyXc(P, 'a');
         var P0 = P.Substitute(X);
