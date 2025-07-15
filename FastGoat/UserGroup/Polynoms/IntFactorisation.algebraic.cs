@@ -205,25 +205,6 @@ public static partial class IntFactorisation
         return res;
     }
 
-    public static void NormDetails<K>(KPoly<EPoly<K>> A, char c = 'X') where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
-    {
-        var norm = Norm(A, c);
-
-        Console.WriteLine($"With {A[0].F} = 0");
-        Console.WriteLine($"P = {A}");
-        var sep = YunSFF(norm);
-        var sep2 = sep.Select(e => (e.i, e.g.Substitute(norm.X.Pow(e.q))))
-            .Select(e => e.i == 1 ? $"({e.Item2})" : $"({e.Item2})^{e.i}").Glue(" * ");
-
-        var pow = sep.Where(e => e.g.Degree > 0).Select(e => norm.X.Pow(e.q)).Glue(fmt: "({0})");
-        Console.WriteLine($"Norm(P) = f = {sep2} = [{norm}]{pow}");
-        //
-        // var f2 = norm.Coefs.Select((e, i) => (A.KOne * e) * A.X.Pow(i)).Aggregate((a, b) => a + b);
-        // var (q, r) = f2.Div(A);
-        // Console.WriteLine($"f/P = {q} rem {r}");
-        Console.WriteLine();
-    }
-
     // Barry Trager, Algebraic Factoring
     public static (int s, KPoly<EPoly<K>> g, KPoly<K> r) SqfrNorm<K>(KPoly<EPoly<K>> f, bool integerOnly = false)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
