@@ -164,6 +164,18 @@ public static partial class IntFactorisation
             .Aggregate((ai, aj) => ai + aj);
     }
 
+    public static SPoly<K> ToSPoly<K>(this KPoly<K> P, int ord)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        return new(ord, P);
+    }
+
+    public static SPoly<K> ToSPoly<K>(this KPoly<K> P)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        return new(P.Degree + 1, P);
+    }
+
     public static SPoly<K> ToSPoly<K, T>(this Polynomial<K, T> P, T xi, int ord)
         where T : struct, IElt<T>
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
