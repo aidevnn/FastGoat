@@ -12,6 +12,12 @@ namespace FastGoat.UserGroup.EllCurve;
 
 public static partial class EC
 {
+    public static (EllPoly<T> Z, EllPoly<T> Y, EllPoly<T> X) EllPoly<T>(T scalar)
+        where T : struct, IElt<T>, IRingElt<T>, IFieldElt<T>
+    {
+        var o = new EllPoly<T>(scalar);
+        return (o.X3, o.X2, o.X1);
+    }
     public static EllPoly<T> Gcd<T>(EllPoly<T> a, EllPoly<T> b) where T : struct, IElt<T>, IRingElt<T>, IFieldElt<T>
     {
         var (a0, b0) = (a, b);

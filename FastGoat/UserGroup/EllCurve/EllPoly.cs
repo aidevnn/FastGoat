@@ -333,6 +333,19 @@ public readonly struct EllPoly<K> : IElt<EllPoly<K>>, IRingElt<EllPoly<K>>, IMod
         );
     }
 
+    public T Substitute<T>(T subs1, T subs2, T subs3)
+        where T : struct, IElt<T>, IRingElt<T>, IFieldElt<T>, IVsElt<K, T>, IModuleElt<K, T>
+    {
+        return Coefs.Aggregate(subs1.Zero,
+            (acc, e) => acc + e.Value * subs1.Pow(e.Key[1]) * subs2.Pow(e.Key[2]) * subs3.Pow(e.Key[3]));
+    }
+
+    public T Substitute<T>(T subs1, T subs2)
+        where T : struct, IElt<T>, IRingElt<T>, IFieldElt<T>, IVsElt<K, T>, IModuleElt<K, T>
+    {
+        return Substitute(subs1, subs2, subs1.Zero);
+    }
+
     public override int GetHashCode() => Hash;
 
     public override string ToString()

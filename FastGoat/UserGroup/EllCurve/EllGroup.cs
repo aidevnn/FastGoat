@@ -50,7 +50,7 @@ public struct EllGroup<T> : IGroup<EllPt<T>> where T : struct, IElt<T>, IRingElt
     {
         get
         {
-            var (Y, X) = Ring.Polynomial(Disc, MonomOrder.Lex, "Y", "X").Deconstruct();
+            var (_, Y, X) = EC.EllPoly(a1);
             var lhs = Y * Y + a1 * X * Y + a3 * Y;
             var rhs = X.Pow(3) + a2 * X * X + a4 * X + a6;
             return $"Elliptic curve {lhs} = {rhs}";
@@ -108,6 +108,24 @@ public struct EllGroup<T> : IGroup<EllPt<T>> where T : struct, IElt<T>, IRingElt
         yield return new EllPt<T>();
     }
 
+    public K Lhs<K>(K X, K Y) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>,
+        IVsElt<T, K>, IModuleElt<T, K>
+    {
+        return Y * Y + a1 * X * Y + a3 * Y;
+    }
+
+    public K Rhs<K>(K X) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>,
+        IVsElt<T, K>, IModuleElt<T, K>
+    {
+        return X.Pow(3) + a2 * X * X + a4 * X + a6;
+    }
+
+    public (K lhs, K rhs) Eq<K>(K X, K Y) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>,
+        IVsElt<T, K>, IModuleElt<T, K>
+    {
+        return (Lhs(X, Y), Rhs(X));
+    }
+    
     public bool Contains(T X, T Y)
     {
         if (!CheckValidity)
@@ -175,6 +193,13 @@ public struct EllGroup<T> : IGroup<EllPt<T>> where T : struct, IElt<T>, IRingElt
     public EllCoefs<T> ToLongWeierstrassForm() => ToEllCoefs().ToLongWeierstrassForm();
     public EllCoefs<T> ToShortWeierstrassForm() => ToEllCoefs().ToShortWeierstrassForm();
 
+    public EllGroup<K> ToEllGroup<K>(K scalar) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>,
+        IVsElt<T, K>, IModuleElt<T, K>
+    {
+        var o = scalar.One;
+        return new(a1 * o, a2 * o, a3 * o, a4 * o, a6 * o);
+    }
+
     public override int GetHashCode() => Hash;
 
     public override string ToString() => Name;
@@ -200,6 +225,8 @@ public struct EllGroup<T> : IGroup<EllPt<T>> where T : struct, IElt<T>, IRingElt
             return $"F{e4.KOne.Mod}[X,Y]";
         else if (e is EllFracPoly<ZnBigInt> e5)
             return $"F{e5.KOne.Mod}[X,Y]";
+        else if (e is EPoly<Rational> e6)
+            return $"Q({e6.F.x})";
 
         return typeof(T).Name;
     }

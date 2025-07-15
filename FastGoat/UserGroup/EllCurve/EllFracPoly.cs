@@ -74,6 +74,9 @@ public readonly struct EllFracPoly<K> : IElt<EllFracPoly<K>>, IRingElt<EllFracPo
 
     public K KZero => Num.KZero;
     public K KOne => Num.KOne;
+    public EllFracPoly<K> X1 => new(Reduction, Num.X1, Num.One);
+    public EllFracPoly<K> X2 => new(Reduction, Num.X2, Num.One);
+    public EllFracPoly<K> X3 => new(Reduction, Num.X3, Num.One);
 
     public EllFracPoly<K> KMul(K k)
     {
