@@ -159,7 +159,7 @@ public readonly struct BigReal : IElt<BigReal>, IRingElt<BigReal>, IFieldElt<Big
 
     public BigReal Mul(int k)
     {
-        var e = FromBigInteger(k, O);
+        var e = FromRational($"{k}", O);
         return Mul(e);
     }
 
