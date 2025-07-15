@@ -26,7 +26,7 @@ public readonly struct SPoly<K> : IElt<SPoly<K>>, IRingElt<SPoly<K>>, IFieldElt<
     public SPoly(int ord, KPoly<K> poly)
     {
         Ord = ord;
-        Poly = new KPoly<K>(x, poly.KZero, poly.Coefs.Take(Ord).TrimSeq().ToArray());
+        Poly = new KPoly<K>(poly.x, poly.KZero, poly.Coefs.Take(Ord).TrimSeq().ToArray());
         Hash = (Poly.Degree, order: ord).GetHashCode();
     }
 
