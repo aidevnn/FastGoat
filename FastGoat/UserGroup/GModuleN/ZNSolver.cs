@@ -1,6 +1,5 @@
 using System.Numerics;
 using FastGoat.Commons;
-using FastGoat.Examples;
 using FastGoat.Structures;
 using FastGoat.Structures.CartesianProduct;
 using FastGoat.Structures.GenericGroup;
@@ -539,7 +538,7 @@ public static class ZNSolver
         var max = BigInteger.Pow(N.Count(), G.Count() - 1);
         if (max < 7000)
         {
-            var all = CocyclesDFS.TwoCocycles(N, G, L, lbl);
+            var all = TC.TwoCocycles(N, G, L, lbl);
             all.AllTwoCocycles();
             if (all.AllCoboundaries.Count != nbCobs || all.AllCosets.Count != nb2Cohs)
                 throw new($"############### Error in order H{r}(G, N)");
