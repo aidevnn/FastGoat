@@ -224,22 +224,15 @@ public static partial class IntFactorisation
         if (f.Coefs.Any(c => !c.Denom.IsOne))
             throw new ArgumentException();
 
-        var k = IntExt.SolveAll_k_pow_m_equal_one_mod_n_strict(p, p - 1).First();
-        var a0 = ZnBInt.ZnZero(p) + k;
+        var a0 = new ZnBInt(p, NumberTheory.PrimitiveRootMod(p));
         var po = a0.Details;
         var f0 = QPoly2ZnInt(f, po);
 
-        // GlobalStopWatch.AddLap();
-        // var firr0 = Firr(f0, a0).ToArray();
-        var firr0 = BerlekampProbabilisticVShoup(f0.Monic, a0, p).ToArray();
-        // var firr0 = BerlekampProbabilisticAECF(f0, a0).ToArray();
-        // var firr0 = CantorZassenhausVShoup(f0, a0).ToArray();
-        // GlobalStopWatch.Show("Firr");
+        var firr0 = CantorZassenhausAECF(f0, a0, p).ToArray();
 
         var all = new List<KPoly<ZnBInt>>(firr0);
         while (po.O < o && all.Count > 1)
         {
-            // ++po;
             po *= 2;
             var tmp = new List<KPoly<ZnBInt>>();
 
@@ -248,15 +241,15 @@ public static partial class IntFactorisation
             {
                 var gi = ZPoly2ZnInt(g, po);
                 var y = FG.EPoly(gi);
-                var dgi = gi.Derivative.Substitute(y); // new EPoly<ZnBInt>(gi, gi.Derivative.Div(gi).rem);
-                var fi = fa.Substitute(y); // new EPoly<ZnBInt>(gi, fa.Div(gi).rem);
-                var dfi = fa.Derivative.Substitute(y); // new EPoly<ZnBInt>(gi, fa.Derivative.Div(gi).rem);
+                var dgi = gi.Derivative.Substitute(y);
+                var fi = fa.Substitute(y);
+                var dfi = fa.Derivative.Substitute(y);
                 var ri = (dgi * fi * dfi.Inv()).Poly;
                 tmp.Add(gi + ri);
             }
 
             all.Clear();
-            all = tmp.ToList();
+            all.AddRange(tmp);
         }
 
         return (f0, firr0, all.ToArray());
@@ -292,7 +285,7 @@ public static partial class IntFactorisation
                 itr++;
                 var H = c0 * combs.Aggregate(xp.One, (acc, a) => a * acc);
                 var G = ZPoly2QPoly(H).Primitive();
-                if (F.Div(G).rem.IsZero())
+                if (F.Rem(G).IsZero())
                 {
                     listIrr.Add(G);
                     F /= G;

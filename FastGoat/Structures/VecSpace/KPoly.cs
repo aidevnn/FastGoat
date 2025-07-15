@@ -267,36 +267,43 @@ public readonly struct KPoly<K> : IElt<KPoly<K>>, IRingElt<KPoly<K>>, IFieldElt<
         var em = e.Coefs.Last();
         var quo = Enumerable.Repeat(KZero, Degree - e.Degree + 1).ToArray();
         var rem = Coefs.ToArray();
-        // if (em.Invertible())
-        // {
-        //     var emi = em.Inv();
-        //     for (int i = Degree; i >= e.Degree; i--)
-        //     {
-        //         var ai = rem[i];
-        //         var c = ai * emi;
-        //         quo[i - e.Degree] = c;
-        //         for (int j = 0; j <= i; j++)
-        //             rem[j] -= e[e.Degree - i + j] * c;
-        //     }
-        //
-        //     return (new(x, KZero, quo.TrimSeq().ToArray()), new(x, KZero, rem.TrimSeq().ToArray()));
-        // }
-        // else
+        for (int i = Degree; i >= e.Degree; i--)
         {
-            for (int i = Degree; i >= e.Degree; i--)
-            {
-                var ai = rem[i];
-                var qr = ai.Div(em);
-                if (!qr.rem.IsZero())
-                    throw new GroupException(GroupExceptionType.GroupDef);
+            var ai = rem[i];
+            var qr = ai.Div(em);
+            if (!qr.rem.IsZero())
+                throw new GroupException(GroupExceptionType.GroupDef);
 
-                quo[i - e.Degree] = qr.quo;
-                for (int j = 0; j <= i; j++)
-                    rem[j] -= e[e.Degree - i + j] * qr.quo;
-            }
-
-            return (new(x, KZero, quo.TrimSeq().ToArray()), new(x, KZero, rem.TrimSeq().ToArray()));
+            quo[i - e.Degree] = qr.quo;
+            for (int j = 0; j <= i; j++)
+                rem[j] -= e[e.Degree - i + j] * qr.quo;
         }
+
+        return (new(x, KZero, quo.TrimSeq().ToArray()), new(x, KZero, rem.TrimSeq().ToArray()));
+    }
+
+    public KPoly<K> Rem(KPoly<K> e)
+    {
+        if (e.IsZero())
+            throw new DivideByZeroException();
+
+        if (IsZero())
+            return Zero;
+
+        if (Degree < e.Degree)
+            return new(x, KZero, Coefs);
+
+        var em = e.Coefs.Last();
+        var emi = em.Inv();
+        var rem = Coefs.ToArray();
+        for (int i = Degree; i >= e.Degree; i--)
+        {
+            var ai = rem[i] * emi;
+            for (int j = 0; j <= i; j++)
+                rem[j] -= e[e.Degree - i + j] * ai;
+        }
+
+        return new(x, KZero, rem.TrimSeq().ToArray());
     }
 
     public KPoly<K> Inv()
