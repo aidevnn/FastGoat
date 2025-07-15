@@ -7,9 +7,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FastGoat", "FastGoat\FastGo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{2483D5E8-E8ED-4479-8F09-DC38E613D439}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CraftsAndExamples", "CraftsAndExamples\CraftsAndExamples.csproj", "{3C5B109E-3A70-4483-8DB9-4F48245C7A1A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Examples", "Examples\Examples.csproj", "{3C5B109E-3A70-4483-8DB9-4F48245C7A1A}"
 	ProjectSection(ProjectDependencies) = postProject
 		{449ECED4-4D12-4A6A-8205-69E5609C6C3B} = {449ECED4-4D12-4A6A-8205-69E5609C6C3B}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Craft", "Craft\Craft.csproj", "{857D0465-5672-4CC3-B3EB-1C699CC3661E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{449ECED4-4D12-4A6A-8205-69E5609C6C3B} = {449ECED4-4D12-4A6A-8205-69E5609C6C3B}
+		{3C5B109E-3A70-4483-8DB9-4F48245C7A1A} = {3C5B109E-3A70-4483-8DB9-4F48245C7A1A}
 	EndProjectSection
 EndProject
 Global
@@ -33,5 +39,9 @@ Global
 		{3C5B109E-3A70-4483-8DB9-4F48245C7A1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3C5B109E-3A70-4483-8DB9-4F48245C7A1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3C5B109E-3A70-4483-8DB9-4F48245C7A1A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{857D0465-5672-4CC3-B3EB-1C699CC3661E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{857D0465-5672-4CC3-B3EB-1C699CC3661E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{857D0465-5672-4CC3-B3EB-1C699CC3661E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{857D0465-5672-4CC3-B3EB-1C699CC3661E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
