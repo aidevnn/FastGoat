@@ -6,7 +6,7 @@ using FastGoat.UserGroup.Integers;
 
 namespace FastGoat.UserGroup.Polynoms;
 
-public struct Cnf : IElt<Cnf>, IRingElt<Cnf>, IFieldElt<Cnf>
+public struct Cnf : IElt<Cnf>, IRingElt<Cnf>, IFieldElt<Cnf>, IModuleElt<Rational, Cnf>, IVsElt<Rational, Cnf>
 {
     static Cnf()
     {
@@ -158,6 +158,10 @@ public struct Cnf : IElt<Cnf>, IRingElt<Cnf>, IFieldElt<Cnf>
     public static Cnf operator +(Cnf a, int b) => a.Add(a.One.Mul(b));
 
     public static Cnf operator +(Rational a, Cnf b) => b.Add(b.One.Mul(a));
+
+    public Rational KZero => Rational.KZero();
+    public Rational KOne => Rational.KOne();
+    public Cnf KMul(Rational k) => new(N, k * E);
 
     public static Cnf operator +(Cnf a, Rational b) => a.Add(a.One.Mul(b));
 
