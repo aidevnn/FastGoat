@@ -12,30 +12,24 @@ namespace FastGoat.UserGroup.EllCurve;
 
 public static partial class EC
 {
-    public static (TriVarPoly<T> Z, TriVarPoly<T> Y, TriVarPoly<T> X) EllPoly<T>(T scalar)
-        where T : struct, IElt<T>, IRingElt<T>, IFieldElt<T>
+    public static (TriVarPoly<K> X, TriVarPoly<K> Y, TriVarPoly<K> Z) EllPoly<K>(K scalar, MonomOrder order = MonomOrder.Lex)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
-        var o = new TriVarPoly<T>(scalar);
-        return (o.X3, o.X2, o.X1);
+        var s = new TriVarPoly<K>(scalar, order);
+        return (s.X3, s.X2, s.X1);
     }
+
     public static EllPt<K> FrobRl<K>(EllPt<K> pt, int n = 1)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         if (pt.IsO)
             return pt;
 
-        var p = pt.X is EllFracPoly<ZnBigInt> x0 ? x0.KOne.Mod : pt.X.P;
+        var p = pt.X is TriVarFrac<ZnBigInt> x0 ? x0.KOne.Mod : pt.X.P;
         var x = pt.X.FastPow(BigInteger.Pow(p, n));
         var y = pt.Y.FastPow(BigInteger.Pow(p, n));
 
         return new(x, y);
-    }
-
-    public static (TriVarPoly<K> X, TriVarPoly<K> Y, TriVarPoly<K> Z) EllPoly<K>(K scalar, MonomOrder order = MonomOrder.Lex)
-        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
-    {
-        var s = new TriVarPoly<K>(scalar, order);
-        return (s.X3, s.X2, s.X1);
     }
 
     public static TriVarPoly<Rational> Primitive(this TriVarPoly<Rational> f)
@@ -56,31 +50,40 @@ public static partial class EC
         return new(f.TriVarInd, z, coefs);
     }
 
-    public static EllFracPoly<ZnInt> ToZnInt(this EllFracPoly<Rational> f, int p)
+    public static TriVarFrac<ZnInt> ToZnInt(this TriVarFrac<Rational> f, int p)
     {
-        var eqEll = f.Reduction.eqEll.ToZnInt(p);
-        var dvp = f.Reduction.dvp.ToZnInt(p);
-        var sd = f.Reduction.sd.ToZnInt(p);
         var num = f.Num.ToZnInt(p);
         var denom = f.Denom.ToZnInt(p);
-        return new((eqEll, sd, dvp), num, denom);
+        if (f.Simplifier is EllFracSimplifier<Rational> simp0)
+        {
+            var eqEll = simp0.EqEll.ToZnInt(p);
+            var dvp = simp0.DivPol.ToZnInt(p);
+            var sd = simp0.SD.ToZnInt(p);
+            var simp = new EllFracSimplifier<ZnInt>(eqEll, sd, dvp);
+            return new(simp, num, denom);
+        }
+        else
+        {
+            return new(num, denom);
+        }
     }
 
-    public static EllFracPoly<K> ChgDivPol<K>(this EllFracPoly<K> f, TriVarPoly<K> dvp)
-        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    public static TriVarFrac<ZnBigInt> ToZnBigInt(this TriVarFrac<Rational> f, int p)
     {
-        var (eqEll, sd, _) = f.Reduction;
-        return EllFracPoly<K>.Simplify((eqEll, sd, dvp), f.Num, f.Denom);
-    }
-
-    public static EllFracPoly<ZnBigInt> ToZnBigInt(this EllFracPoly<Rational> f, int p)
-    {
-        var eqEll = f.Reduction.eqEll.ToZnBigInt(p);
-        var dvp = f.Reduction.dvp.ToZnBigInt(p);
-        var sd = f.Reduction.sd.ToZnBigInt(p);
         var num = f.Num.ToZnBigInt(p);
         var denom = f.Denom.ToZnBigInt(p);
-        return new((eqEll, sd, dvp), num, denom);
+        if (f.Simplifier is EllFracSimplifier<Rational> simp0)
+        {
+            var eqEll = simp0.EqEll.ToZnBigInt(p);
+            var dvp = simp0.DivPol.ToZnBigInt(p);
+            var sd = simp0.SD.ToZnBigInt(p);
+            var simp = new EllFracSimplifier<ZnBigInt>(eqEll, sd, dvp);
+            return new(simp, num, denom);
+        }
+        else
+        {
+            return new(num, denom);
+        }
     }
 
     public static TriVarPoly<ZnBigInt> ToZnBigInt(this TriVarPoly<Rational> f, BigInteger p)
@@ -91,7 +94,7 @@ public static partial class EC
         return new(f.TriVarInd, z, coefs);
     }
 
-    public static (EllFracPoly<K> Y, EllFracPoly<K> X) EllFracPolyYX<K>((K a1, K a2, K a3, K a4, K a6) coefs,
+    public static (TriVarFrac<K> Y, TriVarFrac<K> X) EllFracPolyYX<K>((K a1, K a2, K a3, K a4, K a6) coefs,
         TriVarPoly<K> divPol)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
@@ -102,41 +105,43 @@ public static partial class EC
         var lhs = y * y + a1 * x * y + a3 * y;
         var rhs = x.Pow(3) + a2 * x * x + a4 * x + a6;
         var (eq, sd) = (lhs - rhs, 2 * y + a1 * x + a3);
+        var simp = new EllFracSimplifier<K>(eq, sd, divPol);
         var (Y, X) = new[] { eq.X2, eq.X1 }
-            .Select(xi => new EllFracPoly<K>((eq, sd, divPol), xi, xi.One))
+            .Select(xi => new TriVarFrac<K>(simp, xi, xi.One))
             .Deconstruct();
         return (Y, X);
     }
 
-    public static (EllFracPoly<K> Y, EllFracPoly<K> X) EllFracPolyYX<K>(this EllGroup<K> ell, TriVarPoly<K> divPol)
+    public static (TriVarFrac<K> Y, TriVarFrac<K> X) EllFracPolyYX<K>(this EllGroup<K> ell, TriVarPoly<K> divPol)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         return EllFracPolyYX(ell.Coefs, divPol);
     }
 
-    public static (EllFracPoly<K> Y, EllFracPoly<K> X) EllFracPolyYX<K>(this EllGroup<K> ell)
+    public static (TriVarFrac<K> Y, TriVarFrac<K> X) EllFracPolyYX<K>(this EllGroup<K> ell)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         return ell.EllFracPolyYX(EllPoly(ell.a1).X.Zero);
     }
 
-    public static (EllFracPoly<K> Y, EllFracPoly<K> X) EllFracPolyYX<K>(this EllCoefs<K> ell, TriVarPoly<K> divPol)
+    public static (TriVarFrac<K> Y, TriVarFrac<K> X) EllFracPolyYX<K>(this EllCoefs<K> ell, TriVarPoly<K> divPol)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         return EllFracPolyYX(ell.Model, divPol);
     }
 
-    public static (EllFracPoly<K> Y, EllFracPoly<K> X) EllFracPolyYX<K>(this EllCoefs<K> ell)
+    public static (TriVarFrac<K> Y, TriVarFrac<K> X) EllFracPolyYX<K>(this EllCoefs<K> ell)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         return ell.EllFracPolyYX(EllPoly(ell.a1).X.Zero);
     }
 
-    public static (EllFracPoly<K> Y, EllFracPoly<K> X) EllFracPolyYX<K>(TriVarPoly<K> eqEll, TriVarPoly<K> sd, TriVarPoly<K> dvp)
+    public static (TriVarFrac<K> Y, TriVarFrac<K> X) EllFracPolyYX<K>(TriVarPoly<K> eqEll, TriVarPoly<K> sd, TriVarPoly<K> dvp)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
+        var simp = new EllFracSimplifier<K>(eqEll, sd, dvp);
         var (Y, X) = new[] { eqEll.X2, eqEll.X1 }
-            .Select(xi => new EllFracPoly<K>((eqEll, sd, dvp), xi, xi.One))
+            .Select(xi => new TriVarFrac<K>(simp, xi, xi.One))
             .Deconstruct();
         return (Y, X);
     }
@@ -288,7 +293,7 @@ public static partial class EC
             throw new();
     }
 
-    public static (Dictionary<int, EllFracPoly<K>> psi, Dictionary<int, EllFracPoly<K>> f)
+    public static (Dictionary<int, TriVarFrac<K>> psi, Dictionary<int, TriVarFrac<K>> f)
         DivisionPolynomial<K>(EllGroup<K> E, int nmax) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var (Y, X) = E.EllFracPolyYX();
@@ -297,7 +302,7 @@ public static partial class EC
         var (a1, a2, a3, a4, a6) = eCoefs.Model;
         var (b2, b4, b6, b8) = eCoefs.B_Invariants;
 
-        var psi = new Dictionary<int, EllFracPoly<K>>();
+        var psi = new Dictionary<int, TriVarFrac<K>>();
         (psi[-1], psi[0], psi[1], psi[2]) = (-Y.One, Y.Zero, Y.One, 2 * Y + a1 * X + a3);
         psi[3] = 3 * X4 + b2 * X3 + 3 * b4 * X2 + 3 * b6 * X + b8;
         psi[4] = psi[2] * (2 * X6 + b2 * X5 + 5 * b4 * X4 + 10 * b6 * X3 + 10 * b8 * X2 + (b2 * b8 - b4 * b6) * X +
@@ -314,11 +319,11 @@ public static partial class EC
         return (psi, f);
     }
 
-    public static EllPt<EllFracPoly<K>> NPt<K>(int n, Dictionary<int, EllFracPoly<K>> psi)
+    public static EllPt<TriVarFrac<K>> NPt<K>(int n, Dictionary<int, TriVarFrac<K>> psi)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var psi2 = psi[2];
-        var (Y, X) = EllFracPolyYX(psi2.EqEll, psi2.SD, psi2.DivPol);
+        var X = psi2.X1;
         var (a1, a3) = (psi2.Num[(0, 0, 1)], psi2.Num.ConstTerm);
 
         var nPX = X - psi[n - 1] * psi[n + 1] / psi[n].Pow(2);
@@ -540,7 +545,7 @@ public static partial class EC
 
         var (psi0, fdiv0) = DivisionPolynomial(Ell, lmax + 3);
         var Pt2 = NPt(2, psi0);
-        fdiv0[2] = new(Pt2.X.Reduction, Pt2.X.Denom, Pt2.X.Num.One);
+        fdiv0[2] = new(Pt2.X.Simplifier, Pt2.X.Denom, Pt2.X.Num.One);
         var divPolys = fdiv0.ToDictionary(e => e.Key, e => e.Value.Num.ToKPolyX1())
             .ToDictionary(e => e.Key, e => e.Value.PrimitiveZPoly());
         divPolys.Println("divPolys");
@@ -609,7 +614,7 @@ public static partial class EC
             if ((X.Pow(3) + a2 * X.Pow(2) + a4 * X + a6).IsZero())
                 Y = Y.Zero;
 
-            var Erl = new EllGroup<EllFracPoly<K>>(Ep.ToEllCoefs(X));
+            var Erl = new EllGroup<TriVarFrac<K>>(Ep.ToEllCoefs(X));
             Erl.CheckValidity = false;
             Console.WriteLine($"p={p} l={l} {Erl}");
             Console.WriteLine($"{Erl.EqStr}");
@@ -682,7 +687,7 @@ public static partial class EC
 
         var (psi0, fdiv0) = DivisionPolynomial(Ep, lmax + 3);
         var Pt2 = NPt(2, psi0);
-        fdiv0[2] = new(Pt2.X.Reduction, Pt2.X.Denom, Pt2.X.Num.One);
+        fdiv0[2] = new(Pt2.X.Simplifier, Pt2.X.Denom, Pt2.X.Num.One);
         var divPolys = fdiv0.ToDictionary(e => e.Key, e => e.Value.Num);
 
         var g = NumberTheory.PrimitiveRootFp(p);
@@ -710,7 +715,7 @@ public static partial class EC
 
         var (psi0, fdiv0) = DivisionPolynomial(Ep, lmax + 3);
         var Pt2 = NPt(2, psi0);
-        fdiv0[2] = new(Pt2.X.Reduction, Pt2.X.Denom, Pt2.X.Num.One);
+        fdiv0[2] = new(Pt2.X.Simplifier, Pt2.X.Denom, Pt2.X.Num.One);
         var divPolys = fdiv0.ToDictionary(e => e.Key, e => e.Value.Num);
 
         ZnBigInt.Display = ZnDisplay.Unsigned;
@@ -742,7 +747,7 @@ public static partial class EC
 
         var (psi0, fdiv0) = DivisionPolynomial(Ell, lmax + 3);
         var Pt2 = NPt(2, psi0);
-        fdiv0[2] = new(Pt2.X.Reduction, Pt2.X.Denom, Pt2.X.Num.One);
+        fdiv0[2] = new(Pt2.X.Simplifier, Pt2.X.Denom, Pt2.X.Num.One);
         var divPolys = fdiv0.ToDictionary(e => e.Key, e => e.Value.Num.Primitive());
         divPolys.Println("divPolys");
 

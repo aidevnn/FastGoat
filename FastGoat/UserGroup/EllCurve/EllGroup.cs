@@ -219,11 +219,11 @@ public struct EllGroup<T> : IGroup<EllPt<T>> where T : struct, IElt<T>, IRingElt
             else
                 return $"GF({e3.P})";
         }
-        else if (e is EllFracPoly<Rational>)
+        else if (e is TriVarFrac<Rational>)
             return "Q[X,Y]";
-        else if (e is EllFracPoly<ZnInt> e4)
+        else if (e is TriVarFrac<ZnInt> e4)
             return $"F{e4.KOne.Mod}[X,Y]";
-        else if (e is EllFracPoly<ZnBigInt> e5)
+        else if (e is TriVarFrac<ZnBigInt> e5)
             return $"F{e5.KOne.Mod}[X,Y]";
         else if (e is EPoly<Rational> e6)
             return $"Q({e6.F.x})";
