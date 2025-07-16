@@ -125,6 +125,35 @@ public static class IntExt
     }
 
     /// <summary>
+    /// Sequence of primes greater or equal to a given integer
+    /// </summary>
+    /// <param name="start">Starting integer</param>
+    /// <param name="nb">Sequence size</param>
+    /// <returns>An IEnumerable of primes integer</returns>
+    public static IEnumerable<BigInteger> NextPrimes(BigInteger start, int nb)
+    {
+        if (start > MaxPrime * MaxPrime)
+            throw new($"start = {start} is bigger than maxPrime^2 = {MaxPrime * MaxPrime}");
+
+        var m = start - 1;
+        while (nb > 0)
+        {
+            if (IsPrime(++m))
+            {
+                yield return m;
+                --nb;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Smallest prime greater or equal to a given integer
+    /// </summary>
+    /// <param name="start">Starting integer</param>
+    /// <returns>A prime</returns>
+    public static BigInteger NextPrime(BigInteger start) => NextPrimes(start, 1).First();
+
+    /// <summary>
     /// Calculates the prime decomposition of a given Integer. 
     /// </summary>
     /// <param name="n">The Integer to decompose.</param>

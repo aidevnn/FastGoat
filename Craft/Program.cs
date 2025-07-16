@@ -19,38 +19,13 @@ using static FastGoat.Commons.IntExt;
 //////////////////////////////////
 
 Console.WriteLine("Hello World");
-
-// 11.1. Use the double-and-add algorithm (XI.1.1) to compute [n]P in E(Fp) for each of the
-// following curves and points.
-// (a) E : Y 2 = X 3 + 143X + 367, p = 613,
-// P = (195, 9),n = 23.
-// (b) E : Y 2 = X 3 + 1541X + 1335, p = 3221,
-// P = (2898, 439),n = 3211.
+RecomputeAllPrimesUpTo(32000000);
 
 {
-    var (p, n) = (613, 23);
-    var E = EC.EllGroup([143, 367]);
-    var Ep = E.ToZnInt(p);
-    var P = Ep[195, 9];
-    var nP = Ep.Times(P, n);
-    var ordP = EC.BSGSlong(Ep, P, Ep.O, p + (int)double.Sqrt(16 * p));
-    Console.WriteLine(new { E, p, P, n, nP, ordP });
-    Console.WriteLine();
-}
-
-{
-    var (p, n) = (3221, 3211);
-    var E = EC.EllGroup([1541, 1335]);
-    var Ep = E.ToZnInt(p);
-    var P = Ep[2898, 439];
-    var nP = Ep.Times(P, n);
-    var ordP = EC.BSGSlong(Ep, P, Ep.O, p + (int)double.Sqrt(16 * p));
-    Console.WriteLine(new { E, p, P, n, nP, ordP });
-    Console.WriteLine();
-}
-
-{
-    GlobalStopWatch.Bench(5, "ApSchoof Ex10", EllipticCurvesPart2.Example10EllApSchoof);
-    GlobalStopWatch.Bench(5, "ApSchoof Ex10", EllipticCurvesPart2.Example10EllApSchoof);
-    GlobalStopWatch.Bench(5, "ApSchoof Ex10", EllipticCurvesPart2.Example10EllApSchoof);
+    Console.WriteLine(NextPrimes(2, 20).Glue(", "));
+    Console.WriteLine(NextPrimes(1000, 10).Glue(", "));
+    Console.WriteLine(NextPrime(BigInteger.Pow(10, 6)));
+    Console.WriteLine(NextPrime(BigInteger.Pow(10, 10)));
+    Console.WriteLine(NextPrime(BigInteger.Pow(10, 14)));
+    Console.WriteLine(NextPrime(BigInteger.Pow(10, 15)));
 }
