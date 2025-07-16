@@ -1,7 +1,5 @@
-using FastGoat.Commons;
-using FastGoat.Structures;
 
-namespace FastGoat.UserGroup.EllCurve;
+namespace FastGoat.Structures.VecSpace;
 
 public readonly struct TriVar : IElt<TriVar>
 {

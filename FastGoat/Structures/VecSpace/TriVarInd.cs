@@ -1,8 +1,7 @@
-using FastGoat.Structures.VecSpace;
 
-namespace FastGoat.UserGroup.EllCurve;
+namespace FastGoat.Structures.VecSpace;
 
-public class IndTriVar
+public class TriVarInd
 {
     public MonomOrder MonomOrder { get; } = MonomOrder.Lex;
     public string X1 { get; } = "X";
@@ -10,21 +9,20 @@ public class IndTriVar
     public string X3 { get; } = "Z";
     private int Hash { get; }
 
-    public IndTriVar()
+    public TriVarInd()
     {
         Hash = (MonomOrder, X1, X2, X3).GetHashCode();
     }
 
-    public IndTriVar(MonomOrder monomOrder)
+    public TriVarInd(MonomOrder monomOrder)
     {
         MonomOrder = monomOrder;
         Hash = (MonomOrder, X1, X2, X3).GetHashCode();
     }
 
-    public IndTriVar(MonomOrder monomOrder, string x, string y, string z)
+    public TriVarInd(MonomOrder monomOrder, string x, string y, string z)
     {
-        MonomOrder = monomOrder;
-        (X1, X2, X3) = (x, y, z);
+        (MonomOrder, X1, X2, X3) = (monomOrder, x, y, z);
         Hash = (MonomOrder, X1, X2, X3).GetHashCode();
     }
 
@@ -41,7 +39,7 @@ public class IndTriVar
     public override int GetHashCode() => Hash;
     public override string ToString() => $"[Order={MonomOrder} X1={X1} X2={X2} X3={X3}]";
 
-    static IndTriVar()
+    static TriVarInd()
     {
         comparerLex = Comparer<TriVar>.Create((a, b) => a.CompareTo(b));
         comparerGrLex = Comparer<TriVar>.Create(

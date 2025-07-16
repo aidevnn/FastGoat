@@ -1050,4 +1050,58 @@ public static partial class Ring
         return A.Select(e => e.Conj).ToKMatrix(A.M).T;
     }
 
+    public static TriVarPoly<T> Gcd<T>(TriVarPoly<T> a, TriVarPoly<T> b) where T : struct, IElt<T>, IRingElt<T>, IFieldElt<T>
+    {
+        var (a0, b0) = (a, b);
+        while (!b0.IsZero())
+            (a0, b0) = (b0, a0.Rem(b0));
+
+        return a0;
+    }
+
+    public static TriVarPoly<T> Gcd<T>(TriVarPoly<T>[] arr) where T : struct, IElt<T>, IRingElt<T>, IFieldElt<T>
+    {
+        if (arr.Length == 0)
+            throw new ArgumentException();
+
+        if (arr.Length == 1)
+            return arr[0];
+
+        return Gcd(arr.First(), Gcd(arr.Skip(1).ToArray()));
+    }
+
+    // https://en.wikipedia.org/wiki/Polynomial_greatest_common_divisor#Pseudo-remainder_sequences
+    static TriVarPoly<K> FastGCDInternal<K>(TriVarPoly<K> A, TriVarPoly<K> B, K w0, K y0, int d0, int i = 0)
+        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        if (B.IsZero())
+            return A;
+
+        var d1 = A.Degree - B.Degree;
+        var y1 = B.LC;
+        var w1 = i == 0 ? -A.KOne : Ring.FastPow(-y0, d0) / Ring.FastPow(w0, d0 - 1);
+        var b = i == 0 ? ((d0 + 1) % 2 == 0 ? A.KOne : -A.KOne) : -y0 * Ring.FastPow(w1, d1);
+        var r = (Ring.FastPow(y1, d1 + 1) * A).Rem(B) / b;
+        return FastGCDInternal(B, r, w1, y1, d1, i + 1);
+    }
+
+    public static TriVarPoly<K> FastGCD<K>(TriVarPoly<K> A, TriVarPoly<K> B) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        if (A.Degree < B.Degree)
+            return FastGCD(B, A);
+
+        return FastGCDInternal(A, B, A.KOne, A.KOne, 0);
+    }
+
+    public static TriVarPoly<K> FastGCD<K>(TriVarPoly<K>[] arr) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
+    {
+        if (arr.Length == 0)
+            throw new ArgumentException();
+
+        if (arr.Length == 1)
+            return arr[0];
+
+        return FastGCD(arr.First(), FastGCD(arr.Skip(1).ToArray()));
+    }
+
 }

@@ -12,66 +12,12 @@ namespace FastGoat.UserGroup.EllCurve;
 
 public static partial class EC
 {
-    public static (EllPoly<T> Z, EllPoly<T> Y, EllPoly<T> X) EllPoly<T>(T scalar)
+    public static (TriVarPoly<T> Z, TriVarPoly<T> Y, TriVarPoly<T> X) EllPoly<T>(T scalar)
         where T : struct, IElt<T>, IRingElt<T>, IFieldElt<T>
     {
-        var o = new EllPoly<T>(scalar);
+        var o = new TriVarPoly<T>(scalar);
         return (o.X3, o.X2, o.X1);
     }
-    public static EllPoly<T> Gcd<T>(EllPoly<T> a, EllPoly<T> b) where T : struct, IElt<T>, IRingElt<T>, IFieldElt<T>
-    {
-        var (a0, b0) = (a, b);
-        while (!b0.IsZero())
-            (a0, b0) = (b0, a0.Rem(b0));
-
-        return a0;
-    }
-
-    public static EllPoly<T> Gcd<T>(EllPoly<T>[] arr) where T : struct, IElt<T>, IRingElt<T>, IFieldElt<T>
-    {
-        if (arr.Length == 0)
-            throw new ArgumentException();
-
-        if (arr.Length == 1)
-            return arr[0];
-
-        return Gcd(arr.First(), Gcd(arr.Skip(1).ToArray()));
-    }
-
-    // https://en.wikipedia.org/wiki/Polynomial_greatest_common_divisor#Pseudo-remainder_sequences
-    static EllPoly<K> FastGCDInternal<K>(EllPoly<K> A, EllPoly<K> B, K w0, K y0, int d0, int i = 0)
-        where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
-    {
-        if (B.IsZero())
-            return A;
-
-        var d1 = A.Degree - B.Degree;
-        var y1 = B.LC;
-        var w1 = i == 0 ? -A.KOne : Ring.FastPow(-y0, d0) / Ring.FastPow(w0, d0 - 1);
-        var b = i == 0 ? ((d0 + 1) % 2 == 0 ? A.KOne : -A.KOne) : -y0 * Ring.FastPow(w1, d1);
-        var r = (Ring.FastPow(y1, d1 + 1) * A).Rem(B) / b;
-        return FastGCDInternal(B, r, w1, y1, d1, i + 1);
-    }
-
-    public static EllPoly<K> FastGCD<K>(EllPoly<K> A, EllPoly<K> B) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
-    {
-        if (A.Degree < B.Degree)
-            return FastGCD(B, A);
-
-        return FastGCDInternal(A, B, A.KOne, A.KOne, 0);
-    }
-
-    public static EllPoly<K> FastGCD<K>(EllPoly<K>[] arr) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
-    {
-        if (arr.Length == 0)
-            throw new ArgumentException();
-
-        if (arr.Length == 1)
-            return arr[0];
-
-        return FastGCD(arr.First(), FastGCD(arr.Skip(1).ToArray()));
-    }
-
     public static EllPt<K> FrobRl<K>(EllPt<K> pt, int n = 1)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
@@ -85,14 +31,14 @@ public static partial class EC
         return new(x, y);
     }
 
-    public static (EllPoly<K> X, EllPoly<K> Y, EllPoly<K> Z) EllPoly<K>(K scalar, MonomOrder order = MonomOrder.Lex)
+    public static (TriVarPoly<K> X, TriVarPoly<K> Y, TriVarPoly<K> Z) EllPoly<K>(K scalar, MonomOrder order = MonomOrder.Lex)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
-        var s = new EllPoly<K>(scalar, order);
+        var s = new TriVarPoly<K>(scalar, order);
         return (s.X3, s.X2, s.X1);
     }
 
-    public static EllPoly<Rational> Primitive(this EllPoly<Rational> f)
+    public static TriVarPoly<Rational> Primitive(this TriVarPoly<Rational> f)
     {
         if (f.IsZero())
             return f;
@@ -102,12 +48,12 @@ public static partial class EC
         return f * new Rational(f.LeadingDetails.lc.Sign * IntExt.LcmBigInt(arrLcm), IntExt.GcdBigInt(arrGcd));
     }
 
-    public static EllPoly<ZnInt> ToZnInt(this EllPoly<Rational> f, int p)
+    public static TriVarPoly<ZnInt> ToZnInt(this TriVarPoly<Rational> f, int p)
     {
         var z = new ZnInt(p, 0);
         var coefs = f.Coefs.Select(e => (e.Key, e.Value.ToZnInt(p)))
             .Where(e => !e.Item2.IsZero()).ToDictionary(e => e.Key, e => e.Item2);
-        return new(f.IndTriVar, z, coefs);
+        return new(f.TriVarInd, z, coefs);
     }
 
     public static EllFracPoly<ZnInt> ToZnInt(this EllFracPoly<Rational> f, int p)
@@ -120,7 +66,7 @@ public static partial class EC
         return new((eqEll, sd, dvp), num, denom);
     }
 
-    public static EllFracPoly<K> ChgDivPol<K>(this EllFracPoly<K> f, EllPoly<K> dvp)
+    public static EllFracPoly<K> ChgDivPol<K>(this EllFracPoly<K> f, TriVarPoly<K> dvp)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var (eqEll, sd, _) = f.Reduction;
@@ -137,21 +83,21 @@ public static partial class EC
         return new((eqEll, sd, dvp), num, denom);
     }
 
-    public static EllPoly<ZnBigInt> ToZnBigInt(this EllPoly<Rational> f, BigInteger p)
+    public static TriVarPoly<ZnBigInt> ToZnBigInt(this TriVarPoly<Rational> f, BigInteger p)
     {
         var z = new ZnBigInt(p, 0);
         var coefs = f.Coefs.Select(e => (e.Key, e.Value.ToZnBigInt(p)))
             .Where(e => !e.Item2.IsZero()).ToDictionary(e => e.Key, e => e.Item2);
-        return new(f.IndTriVar, z, coefs);
+        return new(f.TriVarInd, z, coefs);
     }
 
     public static (EllFracPoly<K> Y, EllFracPoly<K> X) EllFracPolyYX<K>((K a1, K a2, K a3, K a4, K a6) coefs,
-        EllPoly<K> divPol)
+        TriVarPoly<K> divPol)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
-        var ind = divPol.IndTriVar;
+        var ind = divPol.TriVarInd;
         var (a1, a2, a3, a4, a6) = coefs;
-        var x = new EllPoly<K>(ind, a1.Zero).X1;
+        var x = new TriVarPoly<K>(ind, a1.Zero).X1;
         var y = x.X2;
         var lhs = y * y + a1 * x * y + a3 * y;
         var rhs = x.Pow(3) + a2 * x * x + a4 * x + a6;
@@ -162,7 +108,7 @@ public static partial class EC
         return (Y, X);
     }
 
-    public static (EllFracPoly<K> Y, EllFracPoly<K> X) EllFracPolyYX<K>(this EllGroup<K> ell, EllPoly<K> divPol)
+    public static (EllFracPoly<K> Y, EllFracPoly<K> X) EllFracPolyYX<K>(this EllGroup<K> ell, TriVarPoly<K> divPol)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         return EllFracPolyYX(ell.Coefs, divPol);
@@ -174,7 +120,7 @@ public static partial class EC
         return ell.EllFracPolyYX(EllPoly(ell.a1).X.Zero);
     }
 
-    public static (EllFracPoly<K> Y, EllFracPoly<K> X) EllFracPolyYX<K>(this EllCoefs<K> ell, EllPoly<K> divPol)
+    public static (EllFracPoly<K> Y, EllFracPoly<K> X) EllFracPolyYX<K>(this EllCoefs<K> ell, TriVarPoly<K> divPol)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         return EllFracPolyYX(ell.Model, divPol);
@@ -186,7 +132,7 @@ public static partial class EC
         return ell.EllFracPolyYX(EllPoly(ell.a1).X.Zero);
     }
 
-    public static (EllFracPoly<K> Y, EllFracPoly<K> X) EllFracPolyYX<K>(EllPoly<K> eqEll, EllPoly<K> sd, EllPoly<K> dvp)
+    public static (EllFracPoly<K> Y, EllFracPoly<K> X) EllFracPolyYX<K>(TriVarPoly<K> eqEll, TriVarPoly<K> sd, TriVarPoly<K> dvp)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {
         var (Y, X) = new[] { eqEll.X2, eqEll.X1 }
@@ -645,7 +591,7 @@ public static partial class EC
         return (divPolys, allBasis);
     }
 
-    public static BigInteger EllApSchoof<K>(EllCoefs<K> Ep, Dictionary<int, EllPoly<K>> divPolys, List<int> listL, K g,
+    public static BigInteger EllApSchoof<K>(EllCoefs<K> Ep, Dictionary<int, TriVarPoly<K>> divPolys, List<int> listL, K g,
         BigInteger p)
         where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
     {

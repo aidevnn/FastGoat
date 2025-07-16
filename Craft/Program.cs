@@ -50,11 +50,7 @@ Console.WriteLine("Hello World");
 }
 
 {
-    GlobalStopWatch.Bench(5, "PSLQ Galois Ex3", AlgebraicIntegerRelationPSLQ.Example3);
-    GlobalStopWatch.Bench(5, "PSLQ Galois Ex3", AlgebraicIntegerRelationPSLQ.Example3);
-    GlobalStopWatch.Bench(5, "PSLQ Galois Ex3", AlgebraicIntegerRelationPSLQ.Example3);
-    GlobalStopWatch.Bench(5, "PSLQ Galois Ex4", AlgebraicIntegerRelationPSLQ.Example4);
-    GlobalStopWatch.Bench(5, "PSLQ Galois Ex5", AlgebraicIntegerRelationPSLQ.Example5);
-    GlobalStopWatch.Bench(5, "PSLQ Galois Ex6", AlgebraicIntegerRelationPSLQ.Example6);
-    GlobalStopWatch.Bench(5, "PSLQ Galois Ex7", AlgebraicIntegerRelationPSLQ.Example7);
+    GlobalStopWatch.Bench(5, "ApSchoof Ex10", EllipticCurvesPart2.Example10EllApSchoof);
+    GlobalStopWatch.Bench(5, "ApSchoof Ex10", EllipticCurvesPart2.Example10EllApSchoof);
+    GlobalStopWatch.Bench(5, "ApSchoof Ex10", EllipticCurvesPart2.Example10EllApSchoof);
 }

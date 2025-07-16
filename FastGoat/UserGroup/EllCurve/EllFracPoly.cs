@@ -9,15 +9,15 @@ public readonly struct EllFracPoly<K> : IElt<EllFracPoly<K>>, IRingElt<EllFracPo
     IModuleElt<K, EllFracPoly<K>>, IVsElt<K, EllFracPoly<K>>
     where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
 {
-    public EllPoly<K> Num { get; }
-    public EllPoly<K> Denom { get; }
-    public (EllPoly<K> eqEll, EllPoly<K> sd, EllPoly<K> dvp) Reduction { get; }
-    public EllPoly<K> EqEll => Reduction.eqEll;
-    public EllPoly<K> DivPol => Reduction.dvp;
-    public EllPoly<K> SD => Reduction.sd;
+    public TriVarPoly<K> Num { get; }
+    public TriVarPoly<K> Denom { get; }
+    public (TriVarPoly<K> eqEll, TriVarPoly<K> sd, TriVarPoly<K> dvp) Reduction { get; }
+    public TriVarPoly<K> EqEll => Reduction.eqEll;
+    public TriVarPoly<K> DivPol => Reduction.dvp;
+    public TriVarPoly<K> SD => Reduction.sd;
 
-    public EllFracPoly((EllPoly<K> eqEll, EllPoly<K> sd, EllPoly<K> dvp) red, EllPoly<K> num,
-        EllPoly<K> denom)
+    public EllFracPoly((TriVarPoly<K> eqEll, TriVarPoly<K> sd, TriVarPoly<K> dvp) red, TriVarPoly<K> num,
+        TriVarPoly<K> denom)
     {
         (Reduction, Num, Denom) = (red, num, denom);
 
@@ -63,7 +63,7 @@ public readonly struct EllFracPoly<K> : IElt<EllFracPoly<K>>, IRingElt<EllFracPo
 
         var fdiv = DivPol;
         var arr = Num.DecomposeX2().Values.Where(e => !e.IsZero());
-        if (arr.All(f => f.Degree > 0 && EC.FastGCD(f, fdiv).Degree > 0))
+        if (arr.All(f => f.Degree > 0 && Ring.FastGCD(f, fdiv).Degree > 0))
             return true;
 
         return false;
@@ -145,8 +145,8 @@ public readonly struct EllFracPoly<K> : IElt<EllFracPoly<K>>, IRingElt<EllFracPo
 
     public bool Invertible() => !IsDivZero();
 
-    public static EllFracPoly<K> Simplify((EllPoly<K> eqEll, EllPoly<K> sd, EllPoly<K> dvp) red, EllPoly<K> num,
-        EllPoly<K> denom)
+    public static EllFracPoly<K> Simplify((TriVarPoly<K> eqEll, TriVarPoly<K> sd, TriVarPoly<K> dvp) red, TriVarPoly<K> num,
+        TriVarPoly<K> denom)
     {
         if (denom.DegreeOfX2 % 2 == 1)
         {
@@ -168,7 +168,7 @@ public readonly struct EllFracPoly<K> : IElt<EllFracPoly<K>>, IRingElt<EllFracPo
             var arr = decNum.Values.Concat(decDenom.Values).Where(e => e.Degree > 0).Distinct().ToArray();
             if (arr.Length > 1)
             {
-                var gcd = EC.FastGCD(arr).Monic;
+                var gcd = Ring.FastGCD(arr).Monic;
                 num = decNum.Select(e => e.Key * (e.Value / gcd)).Aggregate(gcd.Zero, (acc, e) => e + acc);
                 denom = decDenom.Select(e => e.Key * (e.Value / gcd)).Aggregate(gcd.Zero, (acc, e) => e + acc);
             }
@@ -216,7 +216,7 @@ public readonly struct EllFracPoly<K> : IElt<EllFracPoly<K>>, IRingElt<EllFracPo
     public static EllFracPoly<K> operator *(K a, EllFracPoly<K> b) => b.KMul(a);
 
     public static EllFracPoly<K> operator /(EllFracPoly<K> a, K b) => new(a.Reduction, a.Num, a.Denom * b);
-    public static double Abs(EllFracPoly<K> t) => EllPoly<K>.Abs(t.Num) / EllPoly<K>.Abs(t.Denom);
+    public static double Abs(EllFracPoly<K> t) => TriVarPoly<K>.Abs(t.Num) / TriVarPoly<K>.Abs(t.Denom);
 
     public static bool IsValuedField => false;
 }
