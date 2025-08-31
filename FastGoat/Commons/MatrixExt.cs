@@ -41,6 +41,24 @@ public static class MatrixExt
     }
 
     /// <summary>
+    /// Creates an permutation matrix of size nb x nb given a permutation array.
+    /// </summary>
+    /// <param name="arr">A permutation.</param>
+    /// <returns>A permutation matrix.</returns>
+    public static int[] Permutation(int[] arr)
+    {
+        var nb = arr.Length;
+        if (!arr.Order().SequenceEqual(nb.Range()))
+            throw new($"Given array [{arr.Glue(", ")}] isnt a permutation");
+
+        var mat = Enumerable.Repeat(0, nb * nb).ToArray();
+        foreach (var (i, j) in arr.Index())
+            mat[i * nb + j] = 1;
+
+        return mat;
+    }
+
+    /// <summary>
     /// Creates an identity matrix of size nb x nb. 
     /// </summary>
     /// <param name="nb">The size of the matrix.</param>
