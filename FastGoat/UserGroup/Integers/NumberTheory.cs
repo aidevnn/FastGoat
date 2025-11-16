@@ -292,7 +292,7 @@ public static class NumberTheory
         GlobalStopWatch.InfiniteLoopBreakerReset();
         while (pis.Count != 0)
         {
-            GlobalStopWatch.InfiniteLoopBreaker(100, "Infinity loop PrimitiveRoot");
+            GlobalStopWatch.InfiniteLoopBreaker(100, "Infinite loop PrimitiveRoot");
             ++nbLoopPrimRoot;
             var g = n.SeqLazy().Select(i => Rng.Next(p) * a.X.Pow(i)).ToVec().Sum();
             if (g.IsZero())

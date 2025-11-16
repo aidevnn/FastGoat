@@ -395,6 +395,15 @@ public static class InvariantTheory
         var G = Group.Generate("V", gl, A, B);
         DisplayGroup.HeadElements(G);
         InvariantGLnK(G);
+        
+        // Fundamental Invariants
+        //     u0 = x1^2
+        //     u1 = x0^2
+        // 
+        // GL(n, K) = GL(2, Q)
+        // K[x0,x1]V ~ K[u0, u1]
+        // 
+        // #  Time:265ms
     }
 
     public static void Example_C2xC2xC2_GL3R()
@@ -408,15 +417,6 @@ public static class InvariantTheory
         Console.WriteLine();
 
         InvariantGLnK(G);
-        
-        // Fundamental Invariants
-        //     u0 = x1^2
-        //     u1 = x0^2
-        // 
-        // GL(n, K) = GL(2, Q)
-        // K[x0,x1]V ~ K[u0, u1]
-        // 
-        // #  Time:265ms
     }
 
     public static void Example_C3xC3_GL3C()
