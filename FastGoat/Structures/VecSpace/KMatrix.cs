@@ -155,6 +155,11 @@ public struct KMatrix<K> : IElt<KMatrix<K>>, IRingElt<KMatrix<K>>, IFieldElt<KMa
         return true;
     }
 
+    public bool IsSquare => M == N;
+    public bool IsRow => M == 1;
+    public bool IsCol => N == 1;
+    public bool IsScalar => M == 1 && N == 1;
+
     public KMatrix<K> Clone => new(Coefs);
 
     public KMatrix<K> Zero => new(KZero, M, N);
