@@ -56,6 +56,7 @@ public static class IntExt
     public static Dictionary<int, Dictionary<int, int[][]>> SolveSquareInt { get; }
 
     public static long MaxPrime { get; private set; }
+
     /// <summary>
     /// All Primes less than 10000
     /// </summary>
@@ -581,10 +582,11 @@ public static class IntExt
     /// <returns>The greatest common divisor of the given array.</returns>
     public static int Gcd(int[] arr)
     {
-        if (!arr.Any())
-            return 0;
+        var gcd = 0;
+        foreach (var e in arr)
+            gcd = Gcd(e, gcd);
 
-        return Gcd(arr.First(), Gcd(arr.Skip(1).ToArray()));
+        return gcd;
     }
 
     /// <summary>
@@ -608,10 +610,11 @@ public static class IntExt
     /// <returns>The GCD of the given array.</returns>
     public static BigInteger GcdBigInt(BigInteger[] arr)
     {
-        if (!arr.Any())
-            return 0;
+        var gcd = BigInteger.Zero;
+        foreach (var e in arr)
+            gcd = GcdBigInt(e, gcd);
 
-        return GcdBigInt(arr.First(), GcdBigInt(arr.Skip(1).ToArray()));
+        return gcd;
     }
 
     /// <summary>
@@ -629,10 +632,11 @@ public static class IntExt
     /// <returns>The least common multiple of the array.</returns>
     public static BigInteger LcmBigInt(BigInteger[] arr)
     {
-        if (!arr.Any())
-            return 1;
+        var lcm = BigInteger.One;
+        foreach (var e in arr)
+            lcm = LcmBigInt(e, lcm);
 
-        return LcmBigInt(arr.First(), LcmBigInt(arr.Skip(1).ToArray()));
+        return lcm;
     }
 
     // wikipedia
@@ -736,7 +740,7 @@ public static class IntExt
             var ai = InvModPbez(a, mod);
             return PowMod(ai, -exp, mod);
         }
-        
+
         var (r, a0, e0) = (1, AmodP(a, mod), exp);
         while (e0 > 0)
         {
@@ -775,7 +779,7 @@ public static class IntExt
 
         return AmodPlong(r, mod);
     }
-    
+
     /// <summary>
     /// Calculates the result of raising a number to a power and then modulo it with a given number. 
     /// </summary>
@@ -939,7 +943,7 @@ public static class IntExt
     {
         if (PowMod(a, e, m) != 1)
             return false;
-        
+
         var a0 = 1;
         for (var k = 0; k < e; ++k)
         {
@@ -1151,12 +1155,13 @@ public static class IntExt
     /// <param name="n">The integer to calculate dividors for.</param>
     /// <returns>An enumerable containing the dividors of the given integer.</returns>
     public static IEnumerable<int> Dividors(int n) => Enumerable.Range(1, n / 2).Where(i => i != n && n % i == 0);
+
     public static IEnumerable<int> DividorsInt(int n)
     {
         var m = (int)double.Round(double.Sqrt(n));
         if (m * m > n)
             --m;
-        
+
         for (int i = 1; i <= m; i++)
         {
             if (n % i == 0)
@@ -1214,10 +1219,11 @@ public static class IntExt
     /// <returns>The least common multiple of the integers in the array.</returns>
     public static int Lcm(int[] arr)
     {
-        if (!arr.Any())
-            return 1;
+        var lcm = 1;
+        foreach (var e in arr)
+            lcm = Lcm(e, lcm);
 
-        return Lcm(arr.First(), Lcm(arr.Skip(1).ToArray()));
+        return lcm;
     }
 
     /// <summary>
