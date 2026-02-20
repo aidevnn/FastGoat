@@ -1,5 +1,7 @@
 using FastGoat.Commons;
 
+namespace Craft;
+
 public static class AbelianExt
 {
     static AbelianExt()
@@ -193,7 +195,7 @@ public static class AbelianExt
                 .ToArray())
             .MultiLoop()
             .Select(l => l.ToArray())
-            .Select(k => k.Select(e => new AbelianExt.DetailsQuotient(e.p, gP[e.p], nP[e.p], e.ni, e.ker)).ToArray())
+            .Select(k => k.Select(e => new DetailsQuotient(e.p, gP[e.p], nP[e.p], e.ni, e.ker)).ToArray())
             .ToArray();
 
         return new(g, gElts, gP, n, nElts, nP, quos);
