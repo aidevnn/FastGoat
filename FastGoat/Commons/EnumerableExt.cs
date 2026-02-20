@@ -434,7 +434,7 @@ public static class EnumerableExt
         }
     }
 
-    public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> a) => a.OrderBy(e => IntExt.Rng.NextSingle());
+    // public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> a) => a.OrderBy(e => IntExt.Rng.NextSingle());
 
     public static IEnumerable<IEnumerable<int>> PartitionM(int M, int L)
     {

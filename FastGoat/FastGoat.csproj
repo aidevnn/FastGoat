@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>default</LangVersion>
@@ -8,7 +8,8 @@
         <Platforms>AnyCPU;x64</Platforms>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="dotnet-t4-project-tool" Version="2.2.1"/>
+        <PackageReference Include="dotnet-t4-project-tool" Version="2.3.1" />
+        <PackageReference Include="Microsoft.NETCore.App" Version="2.2.8" />
     </ItemGroup>
     <ItemGroup>
         <None Update="Structures\CartesianProduct\GpEp.tt">
