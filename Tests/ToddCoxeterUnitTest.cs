@@ -17,8 +17,9 @@ public class ToddCoxeterUnitTest
         var words = ta5.Words().Select(e => e.Glue()).ToArray();
         Assert.Single(gens);
         Assert.Equal('a', gens[0]);
-        Assert.Contains(new[] { "", "a", "aa", "aaa", "A" }, words.Contains);
-        Assert.Equal("aa", ta5.Rewrite("aaaAaaaAaaa"));
+        var wordsTest = new[] { "", "a", "aa", "aaa", "aaaa", "A", "AA", "AAA", "AAAAA" };
+        Assert.True(wordsTest.All(e => words.Contains(ta5.Rewrite(e).Glue())));
+        Assert.Equal("aa", ta5.Rewrite("aaaAaaaAaaa").Glue());
     }
 
     [Fact]
