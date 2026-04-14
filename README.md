@@ -214,7 +214,8 @@ SuperGroup  |Symm7| = 5040
 ## Illustration
 
 ```csharp
-DisplayGroup.HeadElementsCayleyGraph(g21, gens: [g21["a"], g21["b-1"]]);
+var g21 = FG.WordGroup("C7 x: C3", "a7, b3, a2 = bab-1");
+DisplayGroup.HeadElementsCayleyGraph(g21);
 ```
 will output
 
