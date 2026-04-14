@@ -40,7 +40,7 @@ public static class DisplayGroup
         Console.WriteLine();
     }
 
-    public static void Elements<T>(ConcreteGroup<T> g, SortBy sortBy = SortBy.Order) where T : struct, IElt<T>
+    public static void Elements<T>(ConcreteGroup<T> g, Comparer<T> comp) where T : struct, IElt<T>
     {
         if (g.ElementsOrders.Count > 300)
         {
@@ -48,10 +48,7 @@ public static class DisplayGroup
             return;
         }
 
-        var ordered = sortBy == SortBy.Value
-            ? g.ElementsOrders.Keys.Ascending()
-            : g.ElementsOrders.Keys.OrderBy(a => g.ElementsOrders[a]).ThenAscending();
-
+        var ordered = g.ElementsOrders.Keys.OrderBy(e => e, comp);
         var k = 0;
         var digits1 = $"{g.ElementsOrders.Count}".Length;
         var digits2 = $"{g.ElementsOrders.Values.Max()}".Length;
@@ -65,6 +62,17 @@ public static class DisplayGroup
         }
 
         Console.WriteLine();
+    }
+
+    private static Comparer<T> BasicComparer<T>(ConcreteGroup<T> g, SortBy sortBy) where T : struct, IElt<T>
+    {
+        return Comparer<T>.Create((e0, e1) =>
+            sortBy == SortBy.Value ? e0.CompareTo(e1) : g.ElementsOrders[e0].CompareTo(g.ElementsOrders[e1]));
+    }
+
+    public static void Elements<T>(ConcreteGroup<T> g, SortBy sortBy = SortBy.Order) where T : struct, IElt<T>
+    {
+        Elements(g, BasicComparer(g, sortBy));
     }
 
     public static void Cosets<T>(ConcreteGroup<Coset<T>> g, bool details = false) where T : struct, IElt<T>
@@ -196,7 +204,7 @@ public static class DisplayGroup
     {
         Head(g);
         Cosets(g);
-        Table(g, SortBy.Order);
+        Table(g);
     }
 
     public static void HeadSdp<T1, T2>(SemiDirectProduct<T1, T2> p)
@@ -328,7 +336,7 @@ public static class DisplayGroup
         Generators(g, showBaseGroup: false);
     }
 
-    public static void CayleyGraph<T>(ConcreteGroup<T> g, SortBy sortBy = SortBy.Order, params T[] gens) 
+    public static void CayleyGraph<T>(ConcreteGroup<T> g, Comparer<T> comp, params T[] gens) 
         where T : struct, IElt<T>
     {
         if (gens.Length == 0)
@@ -336,10 +344,8 @@ public static class DisplayGroup
         if (gens.Any(e => !g.Contains(e)))
             throw new();
 
-        var ordered = sortBy == SortBy.Value
-            ? g.ElementsOrders.Keys.Ascending()
-            : g.ElementsOrders.Keys.OrderBy(a => g.ElementsOrders[a]).ThenAscending();
-        var map = ordered.Select((e, k) => (e, k)).ToDictionary(e => e.e, e => e.k + 1);
+        var ordered = g.ElementsOrders.Keys.OrderBy(e => e, comp);
+        var map = ordered.Index().ToDictionary(e => e.Item, e => e.Index + 1);
 
         var digits = map.Values.Max(e => $"{e}".Length) + 2;
         var digits2 = g.ElementsOrders.Max(e => $"{e.Value}".Length) + 2;
@@ -353,7 +359,11 @@ public static class DisplayGroup
             var cyc = (g.ElementsOrders[e] + 1).Range().Select(i => g.Times(e, i)).ToArray();
             var cosets = Group.Cosets(g, h, CosetType.Left);
             var loops = cosets.Values.Distinct().Order()
-                .Select(a => cyc.Select(b => map[g.Op(a.X, b)]).ToArray()).ToArray();
+                .Select(a =>
+                {
+                    var ax = a.MinBy(f => f, comp);
+                    return cyc.Select(b => map[g.Op(ax, b)]).ToArray();
+                }).ToArray();
             loops.OrderBy(l => l[0]).Println(l => l.Select(k => string.Format(fmt1, $"({k})")).Glue(" --> "),
                 $"Loops with Gen: {string.Format(fmt2, $"({map[e]})", $"[{g.ElementsOrders[e]}]", e)}");
 
@@ -362,6 +372,12 @@ public static class DisplayGroup
 
         Console.WriteLine($"Nb arrows:{nbArrows}");
         Console.WriteLine();
+    }
+
+    public static void CayleyGraph<T>(ConcreteGroup<T> g, SortBy sortBy = SortBy.Order, params T[] gens) 
+        where T : struct, IElt<T>
+    {
+        CayleyGraph(g, BasicComparer(g, sortBy), gens);
     }
     
     public static void HeadCayleyGraph<T>(ConcreteGroup<T> g, SortBy sortBy = SortBy.Order, params T[] gens) 
@@ -384,6 +400,14 @@ public static class DisplayGroup
         Head(g);
         Elements(g, sortBy);
         CayleyGraph(g, sortBy, gens);
+    }
+
+    public static void HeadElementsCayleyGraph<T>(ConcreteGroup<T> g, Comparer<T> comp, params T[] gens) 
+        where T : struct, IElt<T>
+    {
+        Head(g);
+        Elements(g, comp);
+        CayleyGraph(g, comp, gens);
     }
 
 }

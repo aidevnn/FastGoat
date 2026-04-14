@@ -11,8 +11,4 @@
       <ProjectReference Include="..\FastGoat\FastGoat.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Examples\" />
-    </ItemGroup>
-
 </Project>

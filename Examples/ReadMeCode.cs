@@ -83,11 +83,13 @@ public static class ReadMeCode
         var g21mat = Group.IsomorphicSubgroup(gl27, g21);
         DisplayGroup.HeadGenerators(g21mat);
     }
-
-    public static void ExampleCayletGrapheGroup21()
+    
+    public static void ExampleCayleyGraphGroup21()
     {
-        var g21 = FG.MetaCyclicSdpWg(7, 3, 2);
-        DisplayGroup.HeadElementsCayleyGraph(g21, gens: [g21["a"], g21["b-1"]]);
+        var g21 = FG.WordGroup("C7 x: C3", "a7, b3, a2 = bab-1");
+        var idx = 7.Range().Grid2D(3.Range()).ToDictionary(e => g21[$"a{e.t1}b{e.t2}"], e => e);
+        var comp = Comparer<Word>.Create((e0, e1) => idx[e0].CompareTo(idx[e1]));
+        DisplayGroup.HeadElementsCayleyGraph(g21, comp);
     }
     
     public static void ExampleGaloisCyclicGroup5()

@@ -93,9 +93,7 @@ public class WordGroup : ConcreteGroup<Word>
 
     public override Word Op(Word e1, Word e2)
     {
-        if (Ord >= Group.GetStorageCapacity())
-            return new(WGbase, Rewrite(e1.Get().Add(e2.Get())));
-        else
+        if (Ord < Group.GetStorageCapacity())
         {
             var e12 = (e1, e2);
             if (OpTable.TryGetValue(e12, out var r))
