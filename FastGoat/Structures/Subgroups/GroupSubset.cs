@@ -13,7 +13,7 @@ public readonly struct GroupSubset<T>(HashSet<T> gens, HashSet<T> content)
     public bool SuperSetOf(IEnumerable<T> other) => content.IsSupersetOf(other);
     public bool SubSetOf(IEnumerable<T> other) => content.IsSubsetOf(other);
     public bool SetEquals(IEnumerable<T> other) => content.SetEquals(other);
-    public bool Equals(GroupSubset<T> other) => content.Count == other.Count && content.SetEquals(other.Elements);
+    public bool Equals(GroupSubset<T> other) => content.Count == other.Count && Generators.IsSubsetOf(other.Elements);
 
     public int CompareTo(GroupSubset<T> other) => Count.CompareTo(other.Count);
 
