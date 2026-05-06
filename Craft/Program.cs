@@ -21,6 +21,7 @@ using FastGoat.UserGroup.Polynoms;
 //////////////////////////////////
 
 Console.WriteLine("Hello World");
+Perm.Style = DisplayPerm.CyclesComma;
 
 IEnumerable<int> ActOnSet(Perm m, IEnumerable<int> l) => l.Select(i => m.Table[i]).ToHashSet();
 GroupAction<Perm, XSet<int>> Image = (g, x) => new(ActOnSet(g, x));
@@ -84,21 +85,33 @@ XSet<XSet<int>>[] GetPartitions(int n)
 
 // {
 //     GlobalStopWatch.Restart();
-//     var n = 11;
+//     var n = 10;
 //     var sn = new Sn(n);
-//     var fmt = $"{{0,-3}} {{1,{-3 * n}}} type:{{2,{-2 * n - 2}}} count:{{3}}";
+//     var fmt = $"{{0,-3}} {{1,{-4 * n}}} type:{{2,{-2 * n - 2}}} count:{{3}}";
 //     var classes = new Dictionary<Perm, HashSet<Perm>>();
 //     foreach (var (l, c) in SetPartitions(n).Select(l => (l, c: IntExt.Lcm(l.Select(e => e.Count).ToArray())))
 //                  .OrderBy(e => e.c))
 //     {
 //         var perm = sn.CreateElementTable(IntExt.PermAndCyclesFromType(l.Select(e => e.Count).ToArray()).perm);
 //         var orbx = Orbits(sn.GetGenerators().ToHashSet(), Group.ByConjugate(sn), perm, new() { perm });
-//         var count = orbx.Count();
-//         Console.WriteLine(fmt, c, perm, $"[{perm.PermType.Glue(",")}]", $"{count}");
+//         Console.WriteLine(fmt, c, perm, $"[{perm.PermType.Glue(",")}]", $"{ orbx.Count()}");
 //     }
 //
 //     GlobalStopWatch.Show();
 // }
+
+Perm Cycles(int m)
+{
+    var dec = IntExt.PrimesDec(m).Select(e => e.Key.Pow(e.Value)).ToArray();
+    var perm = IntExt.PermAndCyclesFromType(dec).perm;
+    return (new Sn(perm.Length)).CreateElementTable(perm);
+}
+
+Perm[] CyclesSplit(int m)
+{
+    var dec = IntExt.PrimesDec(m).Select(e => e.Key.Pow(e.Value)).ToArray();
+    return dec.Select(e => new Sn(e).Cycle(e.Range(1))).ToArray();
+}
 
 Dictionary<string, string> Subs(Dictionary<string, string> map, Dictionary<string, string> subs)
 {
@@ -125,8 +138,8 @@ int Score(KeyValuePair<string, string> e)
 
 var (count, success, all, maxIter) = (0, 0, 0, 0);
 
-IEnumerable<Dictionary<string, string>> RecSubs(Dictionary<string, string> map, Dictionary<string, string> f,
-    Dictionary<string, string> subs, HashSet<int> rem, int n)
+IEnumerable<Dictionary<string, string>> SolveAction(Dictionary<string, string> map, Dictionary<string, string> f,
+    Dictionary<string, string> subs)
 {
     ++count;
     if (subs.Count == map.Count)
@@ -138,31 +151,7 @@ IEnumerable<Dictionary<string, string>> RecSubs(Dictionary<string, string> map, 
     if (count > 500)
         yield break;
 
-    if (map.Where(e => e.Key.Contains('x')).All(e => string.Equals(e.Key, e.Value)))
-    {
-        // Finishing the completion
-        var subsVal = subs.Values.Select(e => int.Parse(e)).ToArray();
-        var rem0 = rem.Except(subsVal).ToHashSet();
-        var inv = rem0.Index().ToDictionary(e => e.Index, e => e.Item);
-        var xis = map.Keys.Where(e => e.Contains('x')).Index().ToDictionary(e => e.Index, e => e.Item);
-        if (rem0.Count == 0 || map.Count(e => string.Equals(e.Key, e.Value)) != rem0.Count)
-            yield break;
-
-        var sn = new Sn(rem0.Count);
-        foreach (var (l, c) in GetPartitions(rem0.Count)
-                     .Select(l => (l, c: IntExt.Lcm(l.Select(e => e.Count).ToArray())))
-                     .Where(e => e.c == n)
-                     .OrderBy(e => e.c))
-        {
-            var perm = sn.CreateElementTable(IntExt.PermAndCyclesFromType(l.Select(e => e.Count).ToArray()).perm);
-            var subs0 = perm.Table.Index()
-                .ToDictionary(e => xis[e.Index], e => $"{inv[e.Item]}")
-                .Concat(subs)
-                .ToDictionary();
-            yield return subs0;
-        }
-    }
-    else if (subs.Count < map.Count)
+    if (subs.Count < map.Count)
     {
         // Solving the cycles
         var (k, v) = map.OrderByDescending(e => Score(e)).First(e => e.Key.Contains('x') || e.Value.Contains('x'));
@@ -171,13 +160,13 @@ IEnumerable<Dictionary<string, string>> RecSubs(Dictionary<string, string> map, 
         {
             if (vx)
             {
-                var remK = f.Keys.Where(e => !subs.ContainsValue(e) && !rem.Contains(int.Parse(e))).ToArray();
+                var remK = f.Keys.Where(e => !subs.ContainsValue(e)).ToArray();
                 foreach (var s in remK)
                 {
                     var subs0 = subs.ToDictionary(e => e.Key, e => e.Value);
                     subs0[k] = s;
                     var map0 = Subs(map, subs0);
-                    foreach (var sol in RecSubs(map0, f, subs0, rem, n))
+                    foreach (var sol in SolveAction(map0, f, subs0))
                         yield return sol;
                 }
             }
@@ -187,13 +176,13 @@ IEnumerable<Dictionary<string, string>> RecSubs(Dictionary<string, string> map, 
                 var _k = f.First(e => e.Value == v).Key;
                 if (subs0.Values.Contains(_k))
                 {
-                    var remK = f.Keys.Where(e => !subs.ContainsValue(e) && !rem.Contains(int.Parse(e))).Shuffle().ToArray();
+                    var remK = f.Keys.Where(e => !subs.ContainsValue(e)).ToArray();
                     foreach (var s in remK)
                     {
                         var subs1 = subs.ToDictionary(e => e.Key, e => e.Value);
                         subs1[k] = s;
                         var map0 = Subs(map, subs1);
-                        foreach (var sol in RecSubs(map0, f, subs1, rem, n))
+                        foreach (var sol in SolveAction(map0, f, subs1))
                             yield return sol;
                     }
                 }
@@ -201,7 +190,7 @@ IEnumerable<Dictionary<string, string>> RecSubs(Dictionary<string, string> map, 
                 {
                     subs0[k] = _k;
                     var map0 = Subs(map, subs0);
-                    foreach (var sol in RecSubs(map0, f, subs0, rem, n))
+                    foreach (var sol in SolveAction(map0, f, subs0))
                         yield return sol;
                 }
             }
@@ -214,56 +203,63 @@ IEnumerable<Dictionary<string, string>> RecSubs(Dictionary<string, string> map, 
                 var _k = f.First(e => e.Key == k).Value;
                 subs0[v] = _k;
                 var map0 = Subs(map, subs0);
-                foreach (var sol in RecSubs(map0, f, subs0, rem, n))
+                foreach (var sol in SolveAction(map0, f, subs0))
                     yield return sol;
             }
         }
     }
 }
 
-ConcreteGroup<Perm> SearchPemrGroupMetaCyclic<T>(ConcreteGroup<T> G0, Perm a, int m, int n, int r)
+ConcreteGroup<Perm> SearchPermGroupMetaCyclic<T>(ConcreteGroup<T> G0, Perm a, int m, int n, int r)
     where T : struct, IElt<T>
 {
     var sn = a.Sn;
     var N = sn.N;
     var ar = a ^ r;
+    var (_a, _ar, _N) = (a, ar, N);
     var d_a = a.Table.Index().ToDictionary(e => $"{e.Index}", e => $"{e.Item}");
     var d_ar = ar.Table.Index().ToDictionary(e => $"{e.Index}", e => $"{e.Item}");
     var d_bi = N.SeqLazy(1).Index().ToDictionary(e => $"{e.Index}", e => $"x{e.Item}");
     var d_b = d_bi.ToDictionary(e => e.Value, e => e.Key);
     var d_ba = d_b.ToDictionary(e => e.Key, e => d_a[e.Value]);
-    var d_babi = d_ba.ToDictionary(e => e.Key, e => d_bi[e.Value]);
+    var d_babi = d_ba.ToDictionary(e => e.Key, e => d_bi[e.Value])
+        .Where(e => !string.Equals(e.Key, e.Value)).ToDictionary();
 
-    Console.WriteLine($"############ Search {G0.ShortName} in {sn} ############");
-    Console.WriteLine($"a     :{a}");
-    Console.WriteLine($"a^{r,-4}:{ar}");
-    Console.WriteLine($"d_babi:{d_babi.GlueMap()}");
-
-    var rem = new HashSet<int>(a.Table.Index().Where(e => e.Index == e.Item).Select(e => e.Item));
-    foreach (var sol in RecSubs(d_babi, d_ar, new(), rem, n))
+    Console.WriteLine($"############ Search {G0.ShortName} ############");
+    foreach (var sol in SolveAction(d_babi, d_ar, new()))
     {
-        if (sol.Values.Distinct().Count() < d_b.Count)
-        {
-            Console.WriteLine($"### PROBLEMS1 a={a}");
-            Console.WriteLine($"d_babi :{d_babi.GlueMap()}");
-            Console.WriteLine($"sol :{sol.GlueMap(", ", "{0}={1}")}");
-            continue;
-        }
-
+        (a, ar, N, sn) = (_a, _ar, _N, _a.Sn);
         var d_bf = Subs(d_b, sol);
-        var table = d_bf.ToDictionary(e => int.Parse(e.Key), e => int.Parse(e.Value)).OrderBy(e => e.Key)
+        var table = N.SeqLazy().ToDictionary(e => e, e => d_bf.ContainsKey($"{e}") ? int.Parse(d_bf[$"{e}"]) : e)
+            .OrderBy(e => e.Key)
             .Select(e => e.Value).ToArray();
 
-        if (!IntExt.CheckTable(N, table))
-        {
-            Console.WriteLine("### PROBLEMS2");
-            continue;
-        }
-
         var b = sn.CreateElementTable(table);
+        Console.WriteLine($"a     :{a}");
+        Console.WriteLine($"a^{r,-4}:{ar}");
+        Console.WriteLine($"b    :{b}");
+        Console.WriteLine($"d_babi:{d_babi.GlueMap()}");
+        Console.WriteLine();
         var ord = Group.ElementIsOrder(sn, b, n);
         var c1 = (b ^ n).Equals(sn.Neutral());
         var c2 = (b * a * (b ^ -1)).Equals(ar);
+        if (!ord && c1 && c2)
+        {
+            foreach (var (a0, b0) in FindB(a, b, n))
+            {
+                var H1 = Group.GenerateElements(a0.Sn, a0, b0);
+                if (H1.Count == m * n)
+                {
+                    (sn, a, ar, b) = (a0.Sn, a0, a0 ^ r, b0);
+                    break;
+                }
+            }
+
+            ord = Group.ElementIsOrder(sn, b, n);
+            c1 = (b ^ n).Equals(sn.Neutral());
+            c2 = (b * a * (b ^ -1)).Equals(ar);
+        }
+
         if (ord && c1 && c2)
         {
             var G = Group.Generate(G0.Name, sn, a, b);
@@ -297,36 +293,38 @@ ConcreteGroup<Perm> SearchPemrGroupMetaCyclic<T>(ConcreteGroup<T> G0, Perm a, in
     return Group.Generate("G", sn, sn.Neutral());
 }
 
+IEnumerable<(Perm a, Perm b)> FindB(Perm a, Perm b, int n)
+{
+    var N0 = a.Sn.N;
+    foreach (var perms in CyclesSplit(n).AllCombinations().Where(e => e.Length > 0))
+    {
+        var table = IntExt.PermAndCyclesFromType(perms.SelectMany(e => e.PermType).Order().ToArray()).perm;
+        var b0 = new Sn(table.Length).CreateElementTable(table);
+        var N = b0.Table.Length + N0;
+        var sn = new Sn(N);
+        var a1 = sn.CreateElementTable(a.Table.Concat(b0.Table.Length.SeqLazy(N0)).ToArray());
+        var b2 = sn.CreateElementTable(b.Table.Concat(b0.Table.Select(i => i + N0).ToArray()).ToArray());
+        yield return (a1, b2);
+    }
+}
+
 void SolveMetaCyclic(int m, int n, int r)
 {
     ++all;
-    var G0 = FG.MetaCyclicSdp(m, n, r);
-    DisplayGroup.HeadOrders(G0);
-    var cycles = (n + 1).Range(m).Where(N => N < 33).SelectMany(N => IntExt.Partitions32[N])
-        .Where(e => IntExt.Lcm(e.ToArray()) == m)
-        .Select(e => (new Sn(e.Sum())).CreateElementTable(IntExt.PermAndCyclesFromType(e.ToArray()).perm))
-        .OrderBy(c => c.PermType.Sum())
-        .ThenBy(c => c.PermType.Count(e => e != 1));
-
     count = 0;
-    foreach (var a in cycles)
+    var G = FG.MetaCyclicSdp(m, n, r);
+    G.Name = IntExt.Gcd(m, n * (r - 1)) == 1 ? $"F({m}x:{n}){r}" : $"M({m}x:{n}){r}";
+    G.Name = $"M({m}x:{n}){r}";
+    if (SearchPermGroupMetaCyclic(G, Cycles(m), m, n, r).Count() == m * n)
+        maxIter = int.Max(maxIter, count);
+    else
     {
-        if (SearchPemrGroupMetaCyclic(G0, a, m, n, r).Count() > 1)
-        {
-            maxIter = int.Max(maxIter, count);
-            return;
-        }
-        else
-            Console.WriteLine($"count:{count} PASS");
-
-        count = 0;
+        Console.Beep();
+        Console.WriteLine($"count:{count}");
+        Console.WriteLine("############ NOT FOUND ############");
+        var G1 = G.ToPermGroup();
+        DisplayGroup.HeadOrdersGenerators(G1.Item1);
     }
-
-    Console.Beep();
-    Console.WriteLine($"$count:{count}");
-    Console.WriteLine("############ NOT FOUND ############");
-    var G1 = G0.ToPermGroup();
-    DisplayGroup.HeadOrdersGenerators(G1.Item1);
 }
 
 IEnumerable<(int m, int n, int r)> MetaCyclic(int ord)
@@ -343,26 +341,29 @@ void FirstExamples()
     SolveMetaCyclic(4, 4, 3);
     SolveMetaCyclic(3, 8, 2);
     SolveMetaCyclic(5, 10, 4);
+
+    SolveMetaCyclic(12, 4, 5);
+    SolveMetaCyclic(12, 4, 7);
+    SolveMetaCyclic(24, 2, 5);
+    SolveMetaCyclic(5, 12, 2);
+    SolveMetaCyclic(5, 12, 4);
 }
 
-void MetaCyclicPermFromUpTo64()
+void MetaCyclicPermFromUpTo128()
 {
+    (success, all, maxIter) = (0, 0, 0);
     GlobalStopWatch.Restart();
-    for (int i = 4; i < 65; i++)
+    for (int i = 5; i <= 128; i++)
     {
         foreach (var (m, n, r) in MetaCyclic(i))
-        {
-            var gcd = IntExt.Gcd(m, n);
-            Console.WriteLine(new { m, n, r, gcd });
             SolveMetaCyclic(m, n, r);
-        }
     }
-    
-    GlobalStopWatch.Show($"Success:{success}/{all} maxIter:{maxIter}"); 
+
+    GlobalStopWatch.Show($"Success:{success}/{all} maxIter:{maxIter}");
 }
 
 {
-    // MetaCyclicPermFromUpTo64(); // # Success:129/129 maxIter:166 Time:6.699s
+    // MetaCyclicPermFromUpTo128(); // # Success:390/390 maxIter:65 Time:3.220s
     FirstExamples();
     // |F(3,8,2)| = 24
     // Type        NonAbelianGroup
@@ -374,5 +375,17 @@ void MetaCyclicPermFromUpTo64()
     // gen2 of order 8
     // [(1 8 7 6 5 4 3 2)(10 11)]
     // 
-    
+    // |M(5x:12)4| = 60
+    // Type        NonAbelianGroup
+    // BaseGroup   S12
+    // 
+    // Generators of M(5x:12)4
+    // gen1 of order 5
+    // [(1, 2, 3, 4, 5)]
+    // gen2 of order 12
+    // [(2, 5), (3, 4), (6, 7, 8), (9, 10, 11, 12)]
+    // 
+    // M(5x:12)4 IsIsomorphicTo M(5x:12)4 : True
+    // 
+
 }
