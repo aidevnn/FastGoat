@@ -73,16 +73,6 @@ IEnumerable<XSet<XSet<int>>> SetPartitions(int n)
     }
 }
 
-var memoParts = new Dictionary<int, XSet<XSet<int>>[]>();
-
-XSet<XSet<int>>[] GetPartitions(int n)
-{
-    if (memoParts.ContainsKey(n))
-        return memoParts[n];
-
-    return memoParts[n] = SetPartitions(n).ToArray();
-}
-
 // {
 //     GlobalStopWatch.Restart();
 //     var n = 10;
@@ -147,10 +137,7 @@ IEnumerable<Dictionary<string, string>> SolveAction(Dictionary<string, string> m
         yield return subs;
         yield break;
     }
-
-    if (count > 500)
-        yield break;
-
+    
     if (subs.Count < map.Count)
     {
         // Solving the cycles
@@ -210,90 +197,46 @@ IEnumerable<Dictionary<string, string>> SolveAction(Dictionary<string, string> m
     }
 }
 
-ConcreteGroup<Perm> SearchPermGroupMetaCyclic<T>(ConcreteGroup<T> G0, Perm a, int m, int n, int r)
-    where T : struct, IElt<T>
+(Perm a, Perm b) FindAB(int m, int r)
 {
-    var sn = a.Sn;
-    var N = sn.N;
-    var ar = a ^ r;
-    var (_a, _ar, _N) = (a, ar, N);
-    var d_a = a.Table.Index().ToDictionary(e => $"{e.Index}", e => $"{e.Item}");
-    var d_ar = ar.Table.Index().ToDictionary(e => $"{e.Index}", e => $"{e.Item}");
-    var d_bi = N.SeqLazy(1).Index().ToDictionary(e => $"{e.Index}", e => $"x{e.Item}");
-    var d_b = d_bi.ToDictionary(e => e.Value, e => e.Key);
-    var d_ba = d_b.ToDictionary(e => e.Key, e => d_a[e.Value]);
-    var d_babi = d_ba.ToDictionary(e => e.Key, e => d_bi[e.Value])
-        .Where(e => !string.Equals(e.Key, e.Value)).ToDictionary();
-
-    Console.WriteLine($"############ Search {G0.ShortName} ############");
-    foreach (var sol in SolveAction(d_babi, d_ar, new()))
+    var a0 = Cycles(m);
+    var cycles = IntExt.PermutationToCycles(a0.Sn.N, a0.Table);
+    var seq = new List<Perm>() { a0.Sn.Neutral() };
+    foreach (var c in cycles)
     {
-        (a, ar, N, sn) = (_a, _ar, _N, _a.Sn);
+        var dic = c.Index().ToDictionary(e => e.Index, e => e.Item);
+        var rev = dic.ToDictionary(e => e.Value, e => e.Key);
+        var N = c.Length;
+        var sn = new Sn(N);
+        var a = sn.Cycle(N.Range(1));
+        var ar = a ^ r;
+
+        var d_a = a.Table.Index().ToDictionary(e => $"{e.Index}", e => $"{e.Item}");
+        var d_ar = ar.Table.Index().ToDictionary(e => $"{e.Index}", e => $"{e.Item}");
+        var d_bi = N.SeqLazy(1).Index().ToDictionary(e => $"{e.Index}", e => $"x{e.Item}");
+        var d_b = d_bi.ToDictionary(e => e.Value, e => e.Key);
+        var d_ba = d_b.ToDictionary(e => e.Key, e => d_a[e.Value]);
+        var d_babi = d_ba.ToDictionary(e => e.Key, e => d_bi[e.Value]);
+
+        var sol = SolveAction(d_babi, d_ar, new()).First();
         var d_bf = Subs(d_b, sol);
         var table = N.SeqLazy().ToDictionary(e => e, e => d_bf.ContainsKey($"{e}") ? int.Parse(d_bf[$"{e}"]) : e)
             .OrderBy(e => e.Key)
             .Select(e => e.Value).ToArray();
-
         var b = sn.CreateElementTable(table);
-        Console.WriteLine($"a     :{a}");
-        Console.WriteLine($"a^{r,-4}:{ar}");
-        Console.WriteLine($"b    :{b}");
-        Console.WriteLine($"d_babi:{d_babi.GlueMap()}");
-        Console.WriteLine();
-        var ord = Group.ElementIsOrder(sn, b, n);
-        var c1 = (b ^ n).Equals(sn.Neutral());
-        var c2 = (b * a * (b ^ -1)).Equals(ar);
-        if (!ord && c1 && c2)
-        {
-            foreach (var (a0, b0) in FindB(a, b, n))
-            {
-                var H1 = Group.GenerateElements(a0.Sn, a0, b0);
-                if (H1.Count == m * n)
-                {
-                    (sn, a, ar, b) = (a0.Sn, a0, a0 ^ r, b0);
-                    break;
-                }
-            }
-
-            ord = Group.ElementIsOrder(sn, b, n);
-            c1 = (b ^ n).Equals(sn.Neutral());
-            c2 = (b * a * (b ^ -1)).Equals(ar);
-        }
-
-        if (ord && c1 && c2)
-        {
-            var G = Group.Generate(G0.Name, sn, a, b);
-            if (G.Count() == n * m)
-            {
-                Console.WriteLine($"count:{count}");
-                Console.WriteLine($"d_a    ={d_a.GlueMap()}");
-                Console.WriteLine($"d_ar   ={d_ar.GlueMap()}");
-                Console.WriteLine($"d_bi   ={d_bi.GlueMap()}");
-                Console.WriteLine($"d_b    ={d_b.GlueMap()}");
-                Console.WriteLine($"d_ba   ={d_ba.GlueMap()}");
-                Console.WriteLine($"d_biab ={d_babi.GlueMap()}");
-                Console.WriteLine();
-                Console.WriteLine($"sol :{sol.GlueMap(", ", "{0}={1}")}");
-                Console.WriteLine($"d_bf={d_bf.AscendingByKey().GlueMap()}");
-                Console.WriteLine($"a:{a}");
-                Console.WriteLine($"b:{b}");
-                Console.WriteLine($"ord:{ord}");
-                Console.WriteLine($"b^{n} = e {c1}");
-                Console.WriteLine($"b * a * b^-1 = a^{r} {c2}");
-                Console.WriteLine("############ CANDIDATE ############");
-                DisplayGroup.HeadGenerators(G);
-                DisplayGroup.AreIsomorphics(G0, G);
-                ++success;
-                Console.WriteLine();
-                return G;
-            }
-        }
+        
+        seq.Add(a0.Sn.CreateElementTable(
+                a0.Sn.N.SeqLazy()
+                    .Select(i => rev.ContainsKey(i) ? dic[b.Table[rev[i]]] : i)
+                    .ToArray()
+            )
+        );
     }
 
-    return Group.Generate("G", sn, sn.Neutral());
+    return (a0, Group.OpSeq(a0.Sn, seq));
 }
 
-IEnumerable<(Perm a, Perm b)> FindB(Perm a, Perm b, int n)
+IEnumerable<(Perm a, Perm b)> ExtendB(Perm a, Perm b, int n)
 {
     var N0 = a.Sn.N;
     foreach (var perms in CyclesSplit(n).AllCombinations().Where(e => e.Length > 0))
@@ -308,14 +251,62 @@ IEnumerable<(Perm a, Perm b)> FindB(Perm a, Perm b, int n)
     }
 }
 
+ConcreteGroup<Perm> SearchPermGroupMetaCyclic<T>(ConcreteGroup<T> G0, int m, int n, int r)
+    where T : struct, IElt<T>
+{
+    Console.WriteLine($"############ Search {G0.ShortName} ############");
+    var (a, b) = FindAB(m, r);
+    var sn = a.Sn;
+    var ar = a ^ r;
+
+    var ord = Group.ElementIsOrder(sn, b, n);
+    var c1 = (b ^ n).Equals(sn.Neutral());
+    var c2 = (b * a * (b ^ -1)).Equals(ar);
+    if (!ord && c1 && c2)
+    {
+        foreach (var (a0, b0) in ExtendB(a, b, n))
+        {
+            var H1 = Group.GenerateElements(a0.Sn, a0, b0);
+            if (H1.Count == m * n)
+            {
+                (sn, a, ar, b) = (a0.Sn, a0, a0 ^ r, b0);
+                break;
+            }
+        }
+
+        ord = Group.ElementIsOrder(sn, b, n);
+        c1 = (b ^ n).Equals(sn.Neutral());
+        c2 = (b * a * (b ^ -1)).Equals(ar);
+    }
+
+    if (ord && c1 && c2)
+    {
+        var G = Group.Generate(G0.Name, sn, a, b);
+        if (G.Count() == n * m)
+        {
+            Console.WriteLine($"count:{count}");
+            Console.WriteLine($"a:{a}");
+            Console.WriteLine($"b:{b}");
+            Console.WriteLine($"b * a * b^-1 = a^{r} = {ar}");
+            Console.WriteLine("############ CANDIDATE ############");
+            DisplayGroup.HeadGenerators(G);
+            DisplayGroup.AreIsomorphics(G0, G);
+            ++success;
+            Console.WriteLine();
+            return G;
+        }
+    }
+
+    return Group.Generate("G", sn, sn.Neutral());
+}
+
 void SolveMetaCyclic(int m, int n, int r)
 {
     ++all;
     count = 0;
     var G = FG.MetaCyclicSdp(m, n, r);
     G.Name = IntExt.Gcd(m, n * (r - 1)) == 1 ? $"F({m}x:{n}){r}" : $"M({m}x:{n}){r}";
-    G.Name = $"M({m}x:{n}){r}";
-    if (SearchPermGroupMetaCyclic(G, Cycles(m), m, n, r).Count() == m * n)
+    if (SearchPermGroupMetaCyclic(G, m, n, r).Count() == m * n)
         maxIter = int.Max(maxIter, count);
     else
     {
@@ -363,29 +354,45 @@ void MetaCyclicPermFromUpTo128()
 }
 
 {
-    // MetaCyclicPermFromUpTo128(); // # Success:390/390 maxIter:65 Time:3.220s
-    FirstExamples();
-    // |F(3,8,2)| = 24
+    MetaCyclicPermFromUpTo128(); // # Success:390/390 maxIter:65 Time:1.292s
+    // FirstExamples();
+    // |F(3x:8)2| = 24
     // Type        NonAbelianGroup
     // BaseGroup   S11
     // 
-    // Generators of F(3,8,2)
+    // Generators of F(3x:8)2
     // gen1 of order 3
-    // [(9 10 11)]
+    // [(1, 2, 3)]
     // gen2 of order 8
-    // [(1 8 7 6 5 4 3 2)(10 11)]
+    // [(2, 3), (4, 5, 6, 7, 8, 9, 10, 11)]
     // 
-    // |M(5x:12)4| = 60
+    // F(3x:8)2 IsIsomorphicTo F(3x:8)2 : True
+    // 
+    // 
+    // |F(5x:12)2| = 60
+    // Type        NonAbelianGroup
+    // BaseGroup   S8
+    // 
+    // Generators of F(5x:12)2
+    // gen1 of order 5
+    // [(1, 2, 3, 4, 5)]
+    // gen2 of order 12
+    // [(2, 4, 5, 3), (6, 7, 8)]
+    // 
+    // F(5x:12)2 IsIsomorphicTo F(5x:12)2 : True
+    // 
+    // 
+    // |F(5x:12)4| = 60
     // Type        NonAbelianGroup
     // BaseGroup   S12
     // 
-    // Generators of M(5x:12)4
+    // Generators of F(5x:12)4
     // gen1 of order 5
     // [(1, 2, 3, 4, 5)]
     // gen2 of order 12
     // [(2, 5), (3, 4), (6, 7, 8), (9, 10, 11, 12)]
     // 
-    // M(5x:12)4 IsIsomorphicTo M(5x:12)4 : True
+    // F(5x:12)4 IsIsomorphicTo F(5x:12)4 : True
     // 
-
+    // 
 }
