@@ -1,6 +1,4 @@
-using FastGoat.Commons;
-
-namespace Craft;
+namespace FastGoat.Commons;
 
 public static class AbelianExt
 {
@@ -13,15 +11,28 @@ public static class AbelianExt
 
     private static EqualityComparer<int[]> seqEq { get; }
 
-    public static IEnumerable<int[]> AllAbTypes(int k)
+    extension(IEnumerable<int> seq)
+    {
+        public string ToAbString() => seq.Glue(" x ", "C{0}");
+    }
+
+    public static (int[] can, int[] facts) AbType(params int[] seq)
+    {
+        var facts = AbToElems(seq);
+        var can = ElemsToCan(facts);
+        return (can, facts);
+    }
+
+    public static IEnumerable<(int[] can, int[] facts)> AllAbTypes(int k)
     {
         if (k == 1)
-            return [[1]];
+            return [([1], [1])];
 
         var dec = IntExt.PrimesDec(k);
         return dec.Select(e => IntExt.Partitions32[e.Value].Select(l => l.Select(i => e.Key.Pow(i)).ToArray()))
             .MultiLoop()
-            .Select(l => l.SelectMany(i => i).OrderDescending().ToArray());
+            .Select(l => l.SelectMany(i => i).ToArray())
+            .Select(l => AbType(l));
     }
 
     public static (int p, int r)[] AbToElemPows(int[] seq)
