@@ -18,22 +18,6 @@ public static class GroupPermutationForm
             .ToArray();
     }
 
-    static Perm Cycles(int m)
-    {
-        if (m == 1)
-            return new Sn(1).Neutral();
-
-        var dec = IntExt.PrimesDec(m).Select(e => e.Key.Pow(e.Value)).ToArray();
-        var perm = IntExt.PermAndCyclesFromType(dec).perm;
-        return (new Sn(perm.Length)).CreateElementTable(perm);
-    }
-
-    static Perm[] CyclesSplit(int m)
-    {
-        var dec = IntExt.PrimesDec(m).Select(e => e.Key.Pow(e.Value)).ToArray();
-        return dec.Select(e => new Sn(e).Cycle(e.Range(1))).ToArray();
-    }
-
     static Perm ConcatPerm(params Perm[] perms)
     {
         var Ns = perms.Select(p => p.Sn.N).ToArray();
@@ -46,6 +30,20 @@ public static class GroupPermutationForm
     static Perm PaddingRight(Perm perm, int pad) => pad == 0 ? perm : ConcatPerm(perm, (new Sn(pad)).Neutral());
     static Perm PaddingLeft(Perm perm, int pad) => pad == 0 ? perm : ConcatPerm((new Sn(pad)).Neutral(), perm);
     static Perm Padding(int padLeft, Perm perm, int padRight) => PaddingLeft(PaddingRight(perm, padRight), padLeft);
+
+    static Perm[] CyclesSplit(int m)
+    {
+        var dec = IntExt.PrimesDec(m).Select(e => e.Key.Pow(e.Value)).Order().ToArray();
+        return dec.Select(e => new Sn(e).Cycle(e.Range(1))).ToArray();
+    }
+
+    static Perm Cycles(int m)
+    {
+        if (m == 1)
+            return new Sn(1).Neutral();
+
+        return ConcatPerm(CyclesSplit(m));
+    }
 
     static ConcreteGroup<Perm> AbelianPerm(params int[] seq)
     {
@@ -77,135 +75,25 @@ public static class GroupPermutationForm
         return $"M({m}x:{n}){r}";
     }
 
-    static Dictionary<string, string> Subs(Dictionary<string, string> map, Dictionary<string, string> subs)
+    public static (Perm a, Perm b) rUmToPerm(int m, int r)
     {
-        var map0 = new Dictionary<string, string>();
-        foreach (var (k, v) in map)
+        var (seqA, seqB) = (new List<Perm>(), new List<Perm>());
+        foreach (var c in CyclesSplit(m))
         {
-            if (subs.ContainsKey(k))
-                map0[subs[k]] = subs.ContainsKey(v) ? subs[v] : v;
-            else if (subs.ContainsKey(v))
-                map0[k] = subs[v];
-            else
-                map0[k] = v;
-        }
-
-        return map0;
-    }
-
-    static int Score(KeyValuePair<string, string> e)
-    {
-        var (x, y) = (e.Key.Contains('x') ? 0 : 1, e.Value.Contains('x') ? 0 : 1);
-        var bonus = e.Key.Equals(e.Value) ? 0 : 100;
-        return 10 * y + x + bonus;
-    }
-
-    static IEnumerable<Dictionary<string, string>> SolveAction(Dictionary<string, string> map,
-        Dictionary<string, string> f,
-        Dictionary<string, string> subs)
-    {
-        if (subs.Count == map.Count)
-        {
-            yield return subs;
-            yield break;
-        }
-
-        if (subs.Count < map.Count)
-        {
-            // Solving the cycles
-            var (k, v) = map.OrderByDescending(e => Score(e)).First(e => e.Key.Contains('x') || e.Value.Contains('x'));
-            var (kx, vx) = (k.Contains('x'), v.Contains('x'));
-            if (kx)
+            var N = c.Sn.N;
+            seqA.Add(c);
+            if (IntExt.Gcd(N, r) != 1)
             {
-                if (vx)
-                {
-                    var remK = f.Keys.Where(e => !subs.ContainsValue(e)).ToArray();
-                    foreach (var s in remK)
-                    {
-                        var subs0 = subs.ToDictionary(e => e.Key, e => e.Value);
-                        subs0[k] = s;
-                        var map0 = Subs(map, subs0);
-                        foreach (var sol in SolveAction(map0, f, subs0))
-                            yield return sol;
-                    }
-                }
-                else
-                {
-                    var subs0 = subs.ToDictionary(e => e.Key, e => e.Value);
-                    var _k = f.First(e => e.Value == v).Key;
-                    if (subs0.Values.Contains(_k))
-                    {
-                        var remK = f.Keys.Where(e => !subs.ContainsValue(e)).ToArray();
-                        foreach (var s in remK)
-                        {
-                            var subs1 = subs.ToDictionary(e => e.Key, e => e.Value);
-                            subs1[k] = s;
-                            var map0 = Subs(map, subs1);
-                            foreach (var sol in SolveAction(map0, f, subs1))
-                                yield return sol;
-                        }
-                    }
-                    else
-                    {
-                        subs0[k] = _k;
-                        var map0 = Subs(map, subs0);
-                        foreach (var sol in SolveAction(map0, f, subs0))
-                            yield return sol;
-                    }
-                }
+                seqB.Add(c.Sn.Neutral());
+                continue;
             }
-            else
-            {
-                if (vx)
-                {
-                    var subs0 = subs.ToDictionary(e => e.Key, e => e.Value);
-                    var _k = f.First(e => e.Key == k).Value;
-                    subs0[v] = _k;
-                    var map0 = Subs(map, subs0);
-                    foreach (var sol in SolveAction(map0, f, subs0))
-                        yield return sol;
-                }
-            }
-        }
-    }
 
-    static (Perm a, Perm b) FindAB(int m, int r)
-    {
-        var a0 = Cycles(m);
-        var cycles = IntExt.PermutationToCycles(a0.Sn.N, a0.Table);
-        var seq = new List<Perm>() { a0.Sn.Neutral() };
-        foreach (var c in cycles)
-        {
-            var dic = c.Index().ToDictionary(e => e.Index, e => e.Item);
-            var rev = dic.ToDictionary(e => e.Value, e => e.Key);
-            var N = c.Length;
-            var sn = new Sn(N);
-            var a = sn.Cycle(N.Range(1));
-            var ar = a ^ r;
-
-            var d_a = a.Table.Index().ToDictionary(e => $"{e.Index}", e => $"{e.Item}");
-            var d_ar = ar.Table.Index().ToDictionary(e => $"{e.Index}", e => $"{e.Item}");
-            var d_bi = N.SeqLazy(1).Index().ToDictionary(e => $"{e.Index}", e => $"x{e.Item}");
-            var d_b = d_bi.ToDictionary(e => e.Value, e => e.Key);
-            var d_ba = d_b.ToDictionary(e => e.Key, e => d_a[e.Value]);
-            var d_babi = d_ba.ToDictionary(e => e.Key, e => d_bi[e.Value]);
-
-            var sol = SolveAction(d_babi, d_ar, new()).First();
-            var d_bf = Subs(d_b, sol);
-            var table = N.SeqLazy().ToDictionary(e => e, e => d_bf.ContainsKey($"{e}") ? int.Parse(d_bf[$"{e}"]) : e)
-                .OrderBy(e => e.Key)
-                .Select(e => e.Value).ToArray();
-            var b = sn.CreateElementTable(table);
-
-            seq.Add(a0.Sn.CreateElementTable(
-                    a0.Sn.N.SeqLazy()
-                        .Select(i => rev.ContainsKey(i) ? dic[b.Table[rev[i]]] : i)
-                        .ToArray()
-                )
-            );
+            var ri = new ZnInt(N, r).Inv();
+            var b = c.Sn.CreateElementTable(N.Range().Select(i => (ri * i).K).ToArray());
+            seqB.Add(b);
         }
 
-        return (a0, Group.OpSeq(a0.Sn, seq));
+        return (ConcatPerm(seqA.ToArray()), ConcatPerm(seqB.ToArray()));
     }
 
     static IEnumerable<(Perm a, Perm b)> ExtendB(Perm a, Perm b, int n)
@@ -225,7 +113,7 @@ public static class GroupPermutationForm
 
     static ConcreteGroup<Perm> SearchPermGroupMetaCyclic(int m, int n, int r)
     {
-        var (a, b) = FindAB(m, r);
+        var (a, b) = rUmToPerm(m, r);
         var sn = a.Sn;
         var ar = a ^ r;
 
@@ -287,7 +175,7 @@ public static class GroupPermutationForm
             if (m == 1)
                 return (b.Sn, [b, c], Qname);
 
-            var (a0, b0) = FindAB(m, m - 1);
+            var (a0, b0) = rUmToPerm(m, m - 1);
             var sn = new Sn(b0.Sn.N + b.Sn.N);
             var a1 = sn.CreateElementTable(a0.Table.Concat(b.Sn.N.SeqLazy(a0.Sn.N)).ToArray());
             var b1 = sn.CreateElementTable(b0.Sn.Neutral().Table.Concat(b.Table.Select(e => e + a0.Sn.N)).ToArray());
@@ -300,7 +188,7 @@ public static class GroupPermutationForm
             throw new();
         }
 
-        var (b2, c2) = FindAB(n, n - 1);
+        var (b2, c2) = rUmToPerm(n, n - 1);
         foreach (var (b3, c3) in ExtendB(b2, c2, 4))
         {
             var H1 = Group.GenerateElements(b3.Sn, b3, c3);
@@ -313,21 +201,24 @@ public static class GroupPermutationForm
 
     public static void ExampleAbelian()
     {
-        for (int ord = 2; ord < 25; ord++)
+        for (int ord = 1; ord <= 128; ord++)
         {
             foreach (var abType in AbelianExt.AllAbTypes(ord))
             {
                 var ab = AbelianPerm(abType.can);
                 DisplayGroup.HeadGenerators(ab);
+                var abType2 = Group.AbelianGroupType(ab);
+                if (!abType.can.SequenceEqual(abType2))
+                    throw new();
             }
         }
     }
 
-    public static void ExampleDihedal()
+    public static void ExampleDihedral()
     {
         for (int n = 3; n < 33; n++)
         {
-            var D2pg = SearchPermGroupMetaCyclic(n, 2, n - 1);
+            var D2pg = Dihedral(n);
             var D2n = FG.Dihedral(n);
             DisplayGroup.HeadGenerators(D2pg);
             DisplayGroup.AreIsomorphics(D2pg, D2n);
@@ -380,8 +271,6 @@ public static class GroupPermutationForm
                 var mtpg = SearchPermGroupMetaCyclic(m, n, r);
                 var mt = FG.MetaCyclicSdp(m, n, r);
                 DisplayGroup.HeadGenerators(mtpg);
-                // DisplayGroup.AreIsomorphics(mtpg, mt);
-                Console.WriteLine();
                 if (!mt.IsIsomorphicTo(mtpg))
                     throw new();
             }
