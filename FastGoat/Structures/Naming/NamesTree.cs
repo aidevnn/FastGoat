@@ -49,6 +49,8 @@ public static class NamesTree
             return new[] { new Leaf(G, "Q32") };
         if (og == 64 && orders == "[1]:1, [2]:1, [4]:34, [8]:4, [16]:8, [32]:16")
             return new[] { new Leaf(G, "Q64") };
+        if (og == 128 && orders == "[1]:1, [2]:1, [4]:66, [8]:4, [16]:8, [32]:16, [64]:32")
+            return new[] { new Leaf(G, "Q128") };
 
         if (og == 24 && orders == "[1]:1, [2]:1, [3]:8, [4]:6, [6]:8")
             return new[] { new Leaf(G, "SL(2,3)") };

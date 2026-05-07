@@ -353,8 +353,69 @@ void MetaCyclicPermFromUpTo128()
     GlobalStopWatch.Show($"Success:{success}/{all} maxIter:{maxIter}");
 }
 
+(Perm a, Perm b) Quaternion(int n)
 {
-    MetaCyclicPermFromUpTo128(); // # Success:390/390 maxIter:65 Time:1.292s
+    if (!int.IsPow2(n))
+        throw new();
+
+    var k1 = n / 2;
+    var k2 = n / 4;
+    var sn = new Sn(n);
+    var a = sn.Cycle(k1.Range(1)) * sn.Cycle(k1.Range(k1 + 1));
+
+    {
+        var b = Group.OpSeq(sn, k2.SeqLazy().Select(i => sn.Cycle(i + 1, n - i, i + 1 + k2, n - i - k2)));
+        return (a, b);
+    }
+
+    // working, helpful for identifying the pattern
+    var ar = a ^ -1;
+    var d_a = a.Table.Index().ToDictionary(e => $"{e.Index}", e => $"{e.Item}");
+    var d_ar = ar.Table.Index().ToDictionary(e => $"{e.Index}", e => $"{e.Item}");
+    var d_bi = n.SeqLazy(1).Index().ToDictionary(e => $"{e.Index}", e => $"x{e.Item}");
+    var d_b = d_bi.ToDictionary(e => e.Value, e => e.Key);
+    var d_ba = d_b.ToDictionary(e => e.Key, e => d_a[e.Value]);
+    var d_babi = d_ba.ToDictionary(e => e.Key, e => d_bi[e.Value]).Reverse().ToDictionary();
+    var count = 0;
+    foreach (var sol in SolveAction(d_babi, d_ar, new()))
+    {
+        ++count;
+        var d_bf = Subs(d_b, sol);
+        var table = n.SeqLazy().ToDictionary(e => e, e => d_bf.ContainsKey($"{e}") ? int.Parse(d_bf[$"{e}"]) : e)
+            .OrderBy(e => e.Key)
+            .Select(e => e.Value).ToArray();
+        var b = sn.CreateElementTable(table);
+        var ak = a ^ (n / 4);
+        var b2 = b * b;
+        if (b2.Equals(ak) && b2.Equals(a * b * a * b))
+        {
+            Console.WriteLine($"count:{count}");
+            return (a, b);
+        }
+    }
+
+    throw new();
+}
+
+void QuaternionPermFromUpTo1024()
+{
+    for (int n = 8; n <= 1024; n *= 2)
+    {
+        var (a, b) = Quaternion(n);
+        var Qn = Group.Generate($"Q{n}pg", a.Sn, a, b);
+        DisplayGroup.Head(Qn);
+        if (n <= 32)
+            DisplayGroup.Generators(Qn);
+
+        var Q = FG.Quaternion(n);
+        Q.Name += "mat";
+        DisplayGroup.AreIsomorphics(Qn, Q);
+        Console.WriteLine();
+    }
+}
+
+{
+    // MetaCyclicPermFromUpTo128(); // # Success:390/390 maxIter:65 Time:1.292s
     // FirstExamples();
     // |F(3x:8)2| = 24
     // Type        NonAbelianGroup
@@ -395,4 +456,6 @@ void MetaCyclicPermFromUpTo128()
     // F(5x:12)4 IsIsomorphicTo F(5x:12)4 : True
     // 
     // 
+
+    QuaternionPermFromUpTo1024();
 }
