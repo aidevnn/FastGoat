@@ -137,7 +137,7 @@ IEnumerable<Dictionary<string, string>> SolveAction(Dictionary<string, string> m
         yield return subs;
         yield break;
     }
-    
+
     if (subs.Count < map.Count)
     {
         // Solving the cycles
@@ -224,7 +224,7 @@ IEnumerable<Dictionary<string, string>> SolveAction(Dictionary<string, string> m
             .OrderBy(e => e.Key)
             .Select(e => e.Value).ToArray();
         var b = sn.CreateElementTable(table);
-        
+
         seq.Add(a0.Sn.CreateElementTable(
                 a0.Sn.N.SeqLazy()
                     .Select(i => rev.ContainsKey(i) ? dic[b.Table[rev[i]]] : i)
@@ -397,6 +397,50 @@ void MetaCyclicPermFromUpTo128()
     throw new();
 }
 
+(Perm a, Perm b, Perm c) DiCyclic(int n)
+{
+    var k = IntExt.PrimesDecomposition(n).Count(i => i == 2);
+    if (k != 0)
+    {
+        var m = n / (1 << k);
+        var (b, c) = Quaternion(1 << (k + 2));
+        if (m == 1)
+        {
+            ++success;
+            return (b.Sn.Neutral(), b, c);
+        }
+
+        
+        var (a0, b0) = FindAB(m, m - 1);
+        var sn = new Sn(b0.Sn.N + b.Sn.N);
+        var a1 = sn.CreateElementTable(a0.Table.Concat(b.Sn.N.SeqLazy(a0.Sn.N)).ToArray());
+        var b1 = sn.CreateElementTable(b0.Sn.Neutral().Table.Concat(b.Table.Select(e => e + a0.Sn.N)).ToArray());
+        var c1 = sn.CreateElementTable(b0.Table.Concat(c.Table.Select(e => e + a0.Sn.N)).ToArray());
+
+        var H1 = Group.GenerateElements(a1.Sn, a1, b1, c1);
+        if (H1.Count == 4 * n)
+        {
+            ++success;
+            return (a1, b1, c1);
+        }
+
+        throw new();
+    }
+
+    var (b2, c2) = FindAB(n, n - 1);
+    foreach (var (b3, c3) in ExtendB(b2, c2, 4))
+    {
+        var H1 = Group.GenerateElements(b3.Sn, b3, c3);
+        if (H1.Count == 4 * n)
+        {
+            ++success;
+            return (b3.Sn.Neutral(), b3, c3);
+        }
+    }
+
+    throw new();
+}
+
 void QuaternionPermFromUpTo1024()
 {
     for (int n = 8; n <= 1024; n *= 2)
@@ -456,6 +500,26 @@ void QuaternionPermFromUpTo1024()
     // F(5x:12)4 IsIsomorphicTo F(5x:12)4 : True
     // 
     // 
+    //
+    // QuaternionPermFromUpTo1024();
 
-    QuaternionPermFromUpTo1024();
+    GlobalStopWatch.Restart();
+    for (int m = 3; m < 257; m++)
+    {
+        ++all;
+        var dic1 = FG.DicyclicGL2p(m);
+        dic1.Name += "mat";
+        var (a, b, c) = DiCyclic(m);
+        var dic2 = Group.Generate($"Dic{m}", a.Sn, a, b, c);
+        if (int.IsPow2(dic2.Count()))
+            dic2.Name = $"Q{m * 4}";
+
+        dic2.Name += "pg";
+        DisplayGroup.Head(dic2);
+        DisplayGroup.Generators(dic2);
+        DisplayGroup.AreIsomorphics(dic1, dic2);
+        Console.WriteLine();
+    }
+    GlobalStopWatch.Show($"Success:{success}/{all}"); // # Success:254/254 Time:10.912s
+
 }
