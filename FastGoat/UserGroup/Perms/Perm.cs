@@ -44,7 +44,7 @@ public struct Perm : IElt<Perm>
     {
         if (!BaseGroup.Equals(other.BaseGroup))
             throw new GroupException(GroupExceptionType.BaseGroup);
-
+        
         return Table.SequenceCompareTo(other.Table);
     }
 
@@ -62,6 +62,18 @@ public struct Perm : IElt<Perm>
 
     public int[][] Orbits => IntExt.PermutationToCycles(Sn.N, Table);
     public int[] PermType => Orbits.Select(l => l.Length).Order().ToArray();
+    public int Order => IntExt.Lcm(PermType);
+
+    public Perm[] DisjoinCycles
+    {
+        get
+        {
+            var sn = Sn;
+            return Orbits.Select(c => sn.Cycle(c.Select(i => i + 1).ToArray())).ToArray();
+        }
+    }
+
+    public int[] FixedPoints => Table.Where((e, i) => e == i).ToArray();
     public int Sgn => (-1).Pow(Orbits.Length);
     public string PermTypeStr => $"({PermType.Glue(" ")})";
     public string SgnStr => Sgn == 1 ? "(+)" : "(-)";
@@ -98,6 +110,9 @@ public struct Perm : IElt<Perm>
     {
         return obj is Perm perm && Equals(perm);
     }
+
+    public static bool TypeEquals(Perm a, Perm b) => a.PermType.SequenceEqual(b.PermType);
+    public static int Distance(Perm a, Perm b) => a.Table.Zip(b.Table).Count(e => e.First == e.Second);
 
     public static Perm operator *(Perm a, Perm b) => a.BaseGroup.Op(a, b);
     public static Perm operator ^(Perm a, int p) => a.BaseGroup.Times(a, p);
