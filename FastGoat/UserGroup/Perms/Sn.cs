@@ -87,6 +87,8 @@ public struct Sn : IGroup<Perm>
 
     public Perm Cycle(params int[] cycle) => ComposesCycles(new Tuple2Array(cycle));
 
+    public Perm CycleP1(params int[] cycle) => ComposesCycles(new Tuple2Array(cycle.Select(i => i + 1).ToArray()));
+
     public Perm ComposesCycles(params Tuple2Array[] cycles)
     {
         Neutral().Table.CopyTo(_cache, 0);
@@ -104,7 +106,24 @@ public struct Sn : IGroup<Perm>
     }
 
     public bool Equals(IGroup<Perm>? other) => other?.Hash == Hash;
+    public IEnumerable<Perm> Classes()
+    {
+        var combs = N.Range().AllCombinations().Where(l => l.Length > 0).ToArray();
+        var table = combs.GroupBy(e => e.Length).ToDictionary(e => e.Key, e => e.ToArray());
+    
+        foreach (var part in IntExt.Partitions32[N])
+        {
+            var r = Neutral();
+            var t = 0;
+            foreach (var g in part.Order())
+            {
+                r *= CycleP1(table[g].First(l => l.All(i => i >= t)));
+                t += g;
+            }
 
+            yield return r;
+        }
+    }
     public Perm this[params ValueType[] us]
     {
         get
