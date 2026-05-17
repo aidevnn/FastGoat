@@ -69,7 +69,19 @@ public struct Perm : IElt<Perm>
         get
         {
             var sn = Sn;
-            return Orbits.Select(c => sn.Cycle(c.Select(i => i + 1).ToArray())).ToArray();
+            return Orbits.Select(c => sn.CycleP1(c)).ToArray();
+        }
+    }
+
+    public Perm[] DisjoinPerm
+    {
+        get
+        {
+            var sn = Sn;
+            var orbx = sn.Invert(this).Orbits.Where(o => o.Length != 1).ToArray();
+            return orbx
+                .SelectMany(o => (o.Length - 1).SeqLazy().Select(i => sn.CycleP1([o[i], o[i + 1]])))
+                .ToArray();
         }
     }
 
@@ -126,7 +138,6 @@ public struct Perm : IElt<Perm>
 
         var ca = a.Orbits.Where(e => e.Length > 1).ToArray();
         var cb = b.Orbits.Where(e => e.Length > 1).ToArray();
-        ;
 
         var compNb = ca.Length.CompareTo(cb.Length);
         if (compNb != 0)
