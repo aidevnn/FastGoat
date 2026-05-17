@@ -39,11 +39,18 @@ public static partial class Group
         return (g, xH) => cosets[grG.Op(g, xH.X)];
     }
 
+    public static bool IsInvariant<T1, T2>(this GroupAction<T1, T2> act, T1 g, T2 x) 
+        where T1 : struct, IElt<T1>
+        where T2 : struct, IElt<T2>
+    {
+        return act(g, x).Equals(x);
+    }
+
     public static HashSet<T1> Stabs<T1, T2>(ConcreteGroup<T1> gr, GroupAction<T1, T2> act, T2 x)
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
     {
-        return gr.Where(g => act(g, x).Equals(x)).ToHashSet();
+        return gr.Where(g => act.IsInvariant(g, x)).ToHashSet();
     }
 
     public static HashSet<T2> Orbits<T1, T2>(HashSet<T1> gens, GroupAction<T1, T2> act, T2 x)
@@ -72,17 +79,21 @@ public static partial class Group
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
     {
-        var allSets = new HashSet<HashSet<T2>>(gr.Count(), new SetEquality<T2>());
+        var xsets = new HashSet<T2>();
         var allStabsOrbits = new Dictionary<T2, (HashSet<T1> Stabx, HashSet<T2> Orbx)>();
         var gens = gr.GetGenerators().ToHashSet();
         foreach (var x in set)
         {
+            if (xsets.Contains(x))
+                continue;
+            
             var orbx = Orbits(gens, act, x);
-            if (allSets.Add(orbx))
+            if (!xsets.Overlaps(orbx))
             {
                 var stabx = Stabs(gr, act, x);
                 allStabsOrbits[x] = (stabx, orbx);
             }
+            xsets.UnionWith(orbx);
         }
 
         return allStabsOrbits;
