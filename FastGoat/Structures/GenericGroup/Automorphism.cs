@@ -45,6 +45,7 @@ public readonly struct Automorphism<T> : IMap<T, T>, IElt<Automorphism<T>> where
 
     public override string ToString()
     {
-        return AutMap.AscendingByKey().GlueMap();
+        var map = AutMap;
+        return Domain.GetGenerators().ToDictionary(e => e, e => map[e]).GlueMap("; ", "{0}->[{1}]");
     }
 }

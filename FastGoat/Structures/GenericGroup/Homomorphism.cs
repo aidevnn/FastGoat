@@ -43,6 +43,7 @@ public readonly struct Homomorphism<T1, T2> : IElt<Homomorphism<T1, T2>>, IMap<T
         if (IsNull)
             return "null";
 
-        return HomMap.AscendingByKey().GlueMap("; ", "{0}->[{1}]");
+        var map = HomMap;
+        return Domain.GetGenerators().ToDictionary(e => e, e => map[e]).GlueMap("; ", "{0}->[{1}]");
     }
 }

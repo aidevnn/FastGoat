@@ -146,11 +146,12 @@ public static partial class Group
         return AllIsomorphisms(g, g);
     }
 
-    public static List<Homomorphism<T, T>> AllInnerAutomorphisms<T>(ConcreteGroup<T> g)
+    public static List<Automorphism<T>> AllInnerAutomorphisms<T>(ConcreteGroup<T> g)
         where T : struct, IElt<T>
     {
+        var bgAut = new AutomorphismGroup<T>(g);
         var act = ByConjugate(g);
-        return g.Select(x => new Homomorphism<T, T>(g, IsomorphismMap(g, g, g.GetGenerators().ToDictionary(e => e, e => act(x, e)))))
+        return g.Select(x => new Automorphism<T>(bgAut, IsomorphismMap(g, g, g.GetGenerators().ToDictionary(e => e, e => act(x, e)))))
             .ToList();
     }
 
@@ -167,10 +168,9 @@ public static partial class Group
     public static ConcreteGroup<Automorphism<T>> InnerAutomorphismGroup<T>(ConcreteGroup<T> g)
         where T : struct, IElt<T>
     {
-        var bgAut = new AutomorphismGroup<T>(g);
         var allAut = AllInnerAutomorphisms(g);
-        var autG = Generate($"Inn[{g.Name}]", bgAut,
-            allAut.Select(aut => new Automorphism<T>(bgAut, aut.HomMap)).ToArray());
+        var bgAut = allAut[0].AutGroup;
+        var autG = Generate($"Inn[{g.Name}]", bgAut, allAut.ToArray());
         return autG;
     }
 
