@@ -484,7 +484,7 @@ public class SetEquality<T> : EqualityComparer<HashSet<T>> where T : IEquatable<
     /// <returns><c>true</c>, if both sets are equal; otherwise, <c>false</c>. </returns>
     public override bool Equals(HashSet<T>? x, HashSet<T>? y)
     {
-        return y is not null && x is not null && x.SetEquals(y);
+        return y is not null && x is not null && x.Count == y.Count && x.SetEquals(y);
     }
 
     /// <summary> 
