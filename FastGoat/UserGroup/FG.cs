@@ -134,13 +134,14 @@ public static partial class FG
         return (e, p) => sn.CreateElement(p.Table.Select(i => mapEltIdx[g.Op(e, mapIdxElt[i + 1])]).ToArray());
     }
 
-    public static (ConcreteGroup<Perm>, Dictionary<T, Perm> mapGens) ToPermGroup<T>(this ConcreteGroup<T> g)
+    public static (ConcreteGroup<Perm>, Dictionary<T, Perm> mapReg) ToPermGroup<T>(this ConcreteGroup<T> g)
         where T : struct, IElt<T>
     {
         var sn = new Sn(g.Count());
         var act = Action2Perm(g, sn);
         var mapGens = g.GetGenerators().ToDictionary(e => e, e => act(e, sn.Neutral()));
-        return (Group.Generate($"{g.Name}", sn, mapGens.Values.ToArray()), mapGens);
+        var mapReg = g.ToDictionary(e => e, e => act(e, sn.Neutral()));
+        return (Group.Generate($"{g.Name}", sn, mapGens.Values.ToArray()), mapReg);
     }
 
     public static ConcreteGroup<ZnInt> UnInt(int n) =>
