@@ -10,6 +10,7 @@ public readonly struct GroupSubset<T>(HashSet<T> gens, HashSet<T> content)
     public HashSet<T> Elements => content;
     public int Count => content.Count;
     public bool Contains(T e) => content.Contains(e);
+    public bool Overlaps(HashSet<T> other) => content.Overlaps(other);
     public bool SuperSetOf(IEnumerable<T> other) => content.IsSupersetOf(other);
     public bool SubSetOf(IEnumerable<T> other) => content.IsSubsetOf(other);
     public bool SetEquals(IEnumerable<T> other) => content.SetEquals(other);
