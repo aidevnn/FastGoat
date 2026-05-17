@@ -1,5 +1,4 @@
-﻿using System.Security.Cryptography;
-using System.Text;
+﻿using System.Text;
 using Craft;
 using Craft.Craft;
 using Examples;
@@ -28,24 +27,29 @@ using FastGoat.UserGroup.Words.Tools;
 
 Console.WriteLine("Hello World");
 
-
 Perm.Style = DisplayPerm.CyclesComma;
 
-void FactorGroup<T>(ConcreteGroup<T> G, ConcreteGroup<T> H) where T : struct, IElt<T>
+Dictionary<ConcreteGroup<T>, List<GroupSubset<T>>> FactorGroup<T>(ConcreteGroup<T> G, ConcreteGroup<T> H)
+    where T : struct, IElt<T>
 {
     Console.WriteLine($"G:{G.ShortName} H:{H.ShortName}");
     var allFactors = GroupCraft.AllFactors(G, H);
     var HIsNormal = Group.IsNormalSubgroup(G, H);
-    var facts = allFactors.Keys.Where(e => HIsNormal || Group.IsNormalSubgroup(G, e)).Select(g => g.ToSet()).ToList();
-    foreach (var sol in facts.Take(1))
+    var facts = allFactors.Where(e => HIsNormal || Group.IsNormalSubgroup(G, e.Key)).ToDictionary();
+    Console.WriteLine("############ START");
+    foreach (var (sol, _) in facts)
     {
-        var K = Group.Generate("K", G, sol.Generators.ToArray());
-        DisplayGroup.HeadElements(K);
-        Console.WriteLine($"G:{G.ShortName} H:{H.ShortName} K:{K.ShortName} allFactors:{facts.Count}");
+        var K = Group.Generate("K", G, sol.GetGenerators().ToArray());
+        Console.WriteLine($"G:{G.ShortName} H:{H.ShortName} K:{K.ShortName}");
         var KIsNormal = Group.IsNormalSubgroup(G, K);
         Console.WriteLine($"H Is NormalSubgroup:{HIsNormal}");
         Console.WriteLine($"K Is NormalSubgroup:{KIsNormal}");
-        Console.WriteLine($"Is DirectProduct   :{(HIsNormal || KIsNormal) && K.Intersect(H).Count() == 1}");
+        var prodType = (!HIsNormal && !KIsNormal) || K.Intersect(H).Count() != 1
+            ? "Not a Product"
+            : (HIsNormal && !KIsNormal) || (!HIsNormal && KIsNormal)
+                ? "Semi Direct Product"
+                : "Direct Product";
+        Console.WriteLine($"Is {prodType}");
         Console.WriteLine();
     }
 
@@ -54,8 +58,14 @@ void FactorGroup<T>(ConcreteGroup<T> G, ConcreteGroup<T> H) where T : struct, IE
         Console.WriteLine("No Factor Direct");
         Console.WriteLine();
     }
+
+    Console.WriteLine("############ END");
+    Console.WriteLine();
+
+    return facts;
 }
 
+void TestFactorGroup()
 {
     // < a,b | b3, a10, baba-1 >
     // Generators of F(3x:10)2 in GL(2,31)
@@ -81,5 +91,28 @@ void FactorGroup<T>(ConcreteGroup<T> G, ConcreteGroup<T> H) where T : struct, IE
         FactorGroup(G, H);
         Console.WriteLine("############### END");
         Console.WriteLine();
+    }
+}
+
+{
+    for (int ord = 1; ord <= 64; ord++)
+    {
+        foreach (var G in FG.AllGroupsOfOrder(ord).Where(e => e.GroupType == GroupType.NonAbelianGroup))
+        {
+            var subs = G.AllSubgroups();
+            var prods = subs.DecomposeProducts(subs.ProperNonTrivialNormalSubgroups());
+            prods = prods
+                .Concat(prods.Where(e => e.isDirectProduct).Select(e => (lhs: e.rhs, rhs: e.lhs, e.isDirectProduct)))
+                .ToList();
+            foreach (var (lhs, seq) in prods.GroupBy(e => e.lhs).ToDictionary(e => e.Key, e => e.ToArray()))
+            {
+                var factorsExpected = seq.SelectMany(e => e.rhs.Conjugates.Select(c => c.ToSet())).ToXSet();
+                var factorsFounds = FactorGroup(G, lhs.Representative).SelectMany(e => e.Value).ToXSet();
+                Console.WriteLine($"facts:{factorsFounds.Count} / {factorsExpected.Count}");
+                Console.WriteLine();
+                if (factorsFounds.Count != factorsExpected.Count || !factorsFounds.Equals(factorsExpected))
+                    throw new();
+            }
+        }
     }
 }

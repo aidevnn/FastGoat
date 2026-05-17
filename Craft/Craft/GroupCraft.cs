@@ -141,7 +141,7 @@ public static class GroupCraft
             var setCyc = cyc.ToSet();
             if (!allSubGrs.Contains(setCyc))
             {
-                var conjs = table[cyc] = GroupCraft.SubGroupsConjugates(g, setCyc);
+                var conjs = table[cyc] = SubGroupsConjugates(g, setCyc);
                 allSubGrs.UnionWith(conjs);
                 if (IntExt.PrimesDec(oc).Count == 1)
                 {
@@ -165,7 +165,7 @@ public static class GroupCraft
                     continue;
 
                 var gens = sg0.Generators.Union(sg1.Generators).ToArray();
-                var elts = GroupCraft.GenerateElementsLimited(g, sg1.Concat(sg0).ToHashSet(), gens, ok);
+                var elts = GenerateElementsLimited(g, sg1.Concat(sg0).ToHashSet(), gens, ok);
                 if (elts.Count == 0 || ok % elts.Count != 0 || elts.Overlaps(h0))
                     continue;
 
@@ -173,7 +173,7 @@ public static class GroupCraft
                 if (!allSubGrs.Contains(set))
                 {
                     var sg2 = Group.Generate("K", g, gens);
-                    var conjsSg2 = table[sg2] = GroupCraft.SubGroupsConjugates(g, set);
+                    var conjsSg2 = table[sg2] = SubGroupsConjugates(g, set);
                     allSubGrs.UnionWith(conjsSg2);
                     sgsRem.Add(sg2.ToSet());
                     cycRem.UnionWith(tablePCycles[sg0]);
