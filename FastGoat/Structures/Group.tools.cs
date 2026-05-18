@@ -612,18 +612,9 @@ public static partial class Group
 
     public static ConcreteGroup<T> Zentrum<T>(ConcreteGroup<T> gr) where T : struct, IElt<T>
     {
-        var set = new HashSet<T>();
-        Func<T, bool> Conj(T s, T si) => x => gr.Op(gr.Op(s, x), si).Equals(x);
-
-        foreach (var s in gr)
-        {
-            var si = gr.Invert(s);
-            var conjByS = Conj(s, si);
-            if (gr.All(conjByS))
-                set.Add(s);
-        }
-
-        return Generate($"Z({gr})", gr, set.ToArray());
+        var act = ByConjugate(gr);
+        var set = gr.Where(s => gr.All(x => act.IsInvariant(s, x))).ToArray();
+        return Generate($"Z({gr})", gr, set);
     }
 
     static void ZentrumsChain<T>(ConcreteGroup<T> g, List<ConcreteGroup<T>> chain) where T : struct, IElt<T>
