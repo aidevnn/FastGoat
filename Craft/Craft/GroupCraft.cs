@@ -8,6 +8,21 @@ namespace Craft.Craft;
 
 public static class GroupCraft
 {
+    public static Comparer<T> ByOrder<T>(this ConcreteGroup<T> g) where T : struct, IElt<T>
+    {
+        return Comparer<T>.Create((a, b) => g.ElementsOrders[a].CompareTo(g.ElementsOrders[b]));
+    }
+
+    public static Comparer<T> ByOrderDescending<T>(this ConcreteGroup<T> g) where T : struct, IElt<T>
+    {
+        return Comparer<T>.Create((a, b) => -g.ElementsOrders[a].CompareTo(g.ElementsOrders[b]));
+    }
+    
+    public static bool AreConjugate<T>(ConcreteGroup<T> g, GroupSubset<T> sg1, GroupSubset<T> sg2) where T : struct, IElt<T>
+    {
+        return sg1.Equals(sg2) || g.Any(x => sg1.SetEquals(sg2.Select(s0 => g.Op(g.Invert(x), g.Op(s0, x)))));
+    }
+
     public static List<GroupSubset<T>> SubGroupsConjugates<T>(ConcreteGroup<T> g, GroupSubset<T> h)
         where T : struct, IElt<T>
     {
@@ -33,25 +48,28 @@ public static class GroupCraft
     public static T[] RecreateGenerators<T>(ConcreteGroup<T> g, T[] generators, Comparer<T> comp)
         where T : struct, IElt<T>
     {
+        if (g.Count() == 1)
+            return [g.Neutral()];
+        
         HashSet<T> tmpElements = new() { g.Neutral() };
         List<T> newGens = new();
         var set = generators.ToHashSet();
         set.ExceptWith(tmpElements);
-        var gens = g.GetGenerators().ToHashSet();
+        var setG = Group.GenerateElements(g, generators);
         do
         {
             newGens.Add(set.OrderBy(e => e, comp).First());
             tmpElements = Group.GenerateElements(g, tmpElements, newGens);
-            set.ExceptWith(tmpElements.SelectMany(x => Group.Orbits(gens, Group.ByConjugate(g), x)));
-        } while (g.Count() != tmpElements.Count && set.Any());
+            set.ExceptWith(tmpElements.SelectMany(x => Group.Orbits(generators.ToHashSet(), Group.ByConjugate(g), x)));
+        } while (setG.Count != tmpElements.Count && set.Any());
 
-        if (g.Count() != tmpElements.Count)
+        if (setG.Count != tmpElements.Count)
             return [];
 
         return newGens.ToArray();
     }
 
-    public static T[] RecreateGenerators<T>(ConcreteGroup<T> g, T[] generators) where T : struct, IElt<T>
+    public static T[] RecreateGenerators<T>(IGroup<T> g, T[] generators) where T : struct, IElt<T>
     {
         var idx = generators.Index().ToDictionary(e => e.Item, e => e.Index);
         var comp = Comparer<T>.Create((a, b) => idx[a].CompareTo(idx[b]));
@@ -60,7 +78,7 @@ public static class GroupCraft
 
     public static T[] RecreateGenerators<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
     {
-        return RecreateGenerators(g, g.ToArray());
+        return RecreateGenerators(g, g.ToArray(), g.ByOrderDescending());
     }
 
     public static T[] RecreateGenerators<T>(ConcreteGroup<T> g, Comparer<T> comp) where T : struct, IElt<T>
@@ -94,7 +112,7 @@ public static class GroupCraft
         return generatedElements;
     }
 
-    public static HashSet<T> GenerateElementsLimited<T>(IGroup<T> bg, HashSet<T> elements, T[] generators, int limits)
+    public static HashSet<T> GenerateElementsLimited<T>(IGroup<T> bg, HashSet<T> elements, IEnumerable<T> generators, int limits)
         where T : struct, IElt<T>
     {
         if (!elements.Contains(bg.Neutral()))
@@ -126,9 +144,20 @@ public static class GroupCraft
         ConcreteGroup<T> h)
         where T : struct, IElt<T>
     {
+        if (!g.SuperSetOf(h))
+            throw new GroupException(GroupExceptionType.NotSubGroup);
+        
         var og = g.Count();
         var oh = h.Count();
         var ok = og / oh;
+        if (ok == 1)
+        {
+            var id = Group.Generate("K", g, g.Neutral());
+            return new() { [id] = [id.ToSet()] };
+        }
+        else if (ok == og)
+            return new() { [g] = [g.ToSet()] };
+
         var h0 = h.Except([h.Neutral()]).ToHashSet();
         var allSubGrs = new HashSet<GroupSubset<T>>(og * og);
         var table = new Dictionary<ConcreteGroup<T>, List<GroupSubset<T>>>(og * og, new GroupSetEquality<T>());
@@ -136,7 +165,7 @@ public static class GroupCraft
 
         foreach (var e0 in g.Except(h).Where(e => ok % g.ElementsOrders[e] == 0))
         {
-            var cyc = Group.Generate(g, e0);
+            var cyc = Group.Generate("K", g, e0);
             var oc = cyc.Count();
             var setCyc = cyc.ToSet();
             if (!allSubGrs.Contains(setCyc))
