@@ -44,8 +44,15 @@ public static class GroupCraft
 
         return all;
     }
-
-    public static T[] RecreateGenerators<T>(ConcreteGroup<T> g, T[] generators, Comparer<T> comp)
+    
+    public static bool IsInnerAutomorphism<T>(this Automorphism<T> aut) where T : struct, IElt<T>
+    {
+        var G = aut.Domain;
+        var act = Group.ByConjugate(G);
+        return G.Any(g => aut.AutMap.All(f => aut[f.Key].Equals(act(g, f.Key))));
+    } 
+    
+    public static T[] RecreateGenerators<T>(IGroup<T> g, T[] generators, Comparer<T> comp)
         where T : struct, IElt<T>
     {
         if (g.Count() == 1)
