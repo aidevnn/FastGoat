@@ -73,23 +73,22 @@ ConcreteGroup<Perm> DummyPermForm<T>(AllSubgroups<T> gSubs) where T : struct, IE
     {
         var ordG = gSubs.Parent.Count();
         foreach (var (H, K, _) in prods.OrderBy(e => e.lhs.Order)
-                     .ThenBy(e => e.lhs.Representative.GroupType == GroupType.NonAbelianGroup ? 0 : 1))
+                     .ThenBy(e => e.lhs.GroupType == GroupType.NonAbelianGroup ? 0 : 1))
         {
             var k = DummyPermForm(gSubs.Restriction(K.Representative));
-            var h = DummyPermForm(gSubs.Restriction(H.Representative)).ToPermGroup().Item1; 
+            var h = DummyPermForm(gSubs.Restriction(H.Representative)).ToPermGroup().Item1;
             var (snH, snK) = (h.Neutral().Sn, k.Neutral().Sn);
             var (nH, nK) = (snH.N, snK.N);
 
             var autHpg = RegPermAutGroup(Group.AutomorphismGroup(h)); // TODO: better automorphisms
             var homKAutH = Group.AllHomomorphisms(k, autHpg);
-            foreach (var hom in homKAutH)
+            foreach (var hom in homKAutH.OrderBy(e => e.Kernel().Count()))
             {
                 // Console.WriteLine($"hom:{hom}");
-                var hkGens = h.GetGenerators().Concat(hom.Image()).ToArray();
-                var _HK = GroupCraft.GenerateElementsLimited(snH, hkGens, ordG);
-                if (_HK.Count == ordG)
+                var img = hom.Image().ToArray();
+                if (img.Length == k.Count() && k.IsIsomorphicTo(Group.Generate("Image", snH, img)))
                 {
-                    var HK0 = Group.Generate(gSubs.Parent.Name, snH, hkGens);
+                    var HK0 = Group.Generate(gSubs.Parent.Name, snH, h.GetGenerators().Concat(img).ToArray());
                     if (HK0.IsIsomorphicTo(gSubs.Parent))
                         return HK0;
                 }
@@ -97,10 +96,9 @@ ConcreteGroup<Perm> DummyPermForm<T>(AllSubgroups<T> gSubs) where T : struct, IE
                 var hGens = h.GetGenerators().Select(f => UGCraft.PaddingRight(f, nK)).ToArray();
                 var kGens = k.GetGenerators().Select(e => UGCraft.ConcatPerm(hom[e], e)).ToArray();
                 var sn = new Sn(nH + nK);
-                hkGens = hGens.Concat(kGens).ToArray();
+                var hkGens = hGens.Concat(kGens).ToArray();
                 // hkGens.Println();
-                _HK = GroupCraft.GenerateElementsLimited(sn, hkGens, ordG);
-                if (_HK.Count == 0)
+                if (GroupCraft.GenerateElementsLimited(sn, hkGens, ordG).Count != ordG)
                     continue;
 
                 var HK = Group.Generate(gSubs.Parent.Name, sn, hkGens);
@@ -122,7 +120,7 @@ void MetaCyclicPermForm(int maxOrd)
 {
     var (errors, total) = (0, 0);
     GlobalStopWatch.Restart();
-    
+
     for (int ord = 1; ord <= maxOrd; ord++)
     {
         foreach (var (m, n, r) in GroupPermutationForm.MetaCyclicSdp(ord))
@@ -131,15 +129,16 @@ void MetaCyclicPermForm(int maxOrd)
             var Gpg = DummyPermForm(FG.MetaCyclicSdpWg(m, n, r).AllSubgroups());
             DisplayGroup.HeadElements(Gpg);
             var sn = Gpg.Neutral().Sn;
-            var sn0 = GroupPermutationForm.MetaCyclicGens(m,n,r).sn;
+            var sn0 = GroupPermutationForm.MetaCyclicGens(m, n, r).sn;
             var test = sn.N == sn0.N;
             Console.WriteLine($"{Gpg.ShortName} in {sn} expected {sn0} Test:{test}");
             if (!test)
                 ++errors;
-            
+
             Console.WriteLine();
         }
     }
+
     GlobalStopWatch.Show($"Errors:{errors}/{total} Max Order:{maxOrd}");
 }
 
@@ -160,14 +159,78 @@ void AnyGroupPermFormUpTo(int maxOrd)
             Console.WriteLine();
         }
     }
-    
+
     GlobalStopWatch.Show($"Total:{total}  Max Order:{maxOrd}");
 }
 
 {
     // Optimal Form with smallest permutation order
     MetaCyclicPermForm(64); // # Errors:0/129 Max Order:64 Time:3.303s
-    
+
     // SubOptimal Form
-    AnyGroupPermFormUpTo(32); // # Total:144  Max Order:32 Time:4.490s
+    AnyGroupPermFormUpTo(63); // # Total:319  Max Order:63 Time:11.523s
+    
+    // |(C3 x C3) x: S3| = 54
+    // Type        NonAbelianGroup
+    // BaseGroup   S9
+    // 
+    // Elements
+    // ( 1)[1] = []
+    // ( 2)[2] = [(4, 7), (5, 8), (6, 9)]
+    // ( 3)[2] = [(4, 9), (5, 7), (6, 8)]
+    // ( 4)[2] = [(4, 8), (5, 9), (6, 7)]
+    // ( 5)[2] = [(1, 7), (2, 8), (3, 9)]
+    // ( 6)[2] = [(1, 9), (2, 7), (3, 8)]
+    // ( 7)[2] = [(1, 8), (2, 9), (3, 7)]
+    // ( 8)[2] = [(1, 4), (2, 5), (3, 6)]
+    // ( 9)[2] = [(1, 6), (2, 4), (3, 5)]
+    // (10)[2] = [(1, 5), (2, 6), (3, 4)]
+    // (11)[3] = [(4, 5, 6), (7, 9, 8)]
+    // (12)[3] = [(4, 6, 5), (7, 8, 9)]
+    // (13)[3] = [(1, 2, 3), (4, 5, 6), (7, 8, 9)]
+    // (14)[3] = [(1, 2, 3), (4, 6, 5)]
+    // (15)[3] = [(1, 2, 3), (7, 9, 8)]
+    // (16)[3] = [(1, 3, 2), (4, 6, 5), (7, 9, 8)]
+    // (17)[3] = [(1, 3, 2), (7, 8, 9)]
+    // (18)[3] = [(1, 3, 2), (4, 5, 6)]
+    // (19)[3] = [(1, 4, 7), (2, 5, 8), (3, 6, 9)]
+    // (20)[3] = [(1, 5, 7), (2, 6, 8), (3, 4, 9)]
+    // (21)[3] = [(1, 6, 7), (2, 4, 8), (3, 5, 9)]
+    // (22)[3] = [(1, 5, 9), (2, 6, 7), (3, 4, 8)]
+    // (23)[3] = [(1, 6, 9), (2, 4, 7), (3, 5, 8)]
+    // (24)[3] = [(1, 4, 9), (2, 5, 7), (3, 6, 8)]
+    // (25)[3] = [(1, 6, 8), (2, 4, 9), (3, 5, 7)]
+    // (26)[3] = [(1, 4, 8), (2, 5, 9), (3, 6, 7)]
+    // (27)[3] = [(1, 5, 8), (2, 6, 9), (3, 4, 7)]
+    // (28)[3] = [(1, 7, 4), (2, 8, 5), (3, 9, 6)]
+    // (29)[3] = [(1, 9, 4), (2, 7, 5), (3, 8, 6)]
+    // (30)[3] = [(1, 8, 4), (2, 9, 5), (3, 7, 6)]
+    // (31)[3] = [(1, 8, 6), (2, 9, 4), (3, 7, 5)]
+    // (32)[3] = [(1, 7, 6), (2, 8, 4), (3, 9, 5)]
+    // (33)[3] = [(1, 9, 6), (2, 7, 4), (3, 8, 5)]
+    // (34)[3] = [(1, 9, 5), (2, 7, 6), (3, 8, 4)]
+    // (35)[3] = [(1, 8, 5), (2, 9, 6), (3, 7, 4)]
+    // (36)[3] = [(1, 7, 5), (2, 8, 6), (3, 9, 4)]
+    // (37)[6] = [(1, 2, 3), (4, 8, 6, 7, 5, 9)]
+    // (38)[6] = [(1, 2, 3), (4, 7, 6, 9, 5, 8)]
+    // (39)[6] = [(1, 2, 3), (4, 9, 6, 8, 5, 7)]
+    // (40)[6] = [(1, 3, 2), (4, 9, 5, 7, 6, 8)]
+    // (41)[6] = [(1, 3, 2), (4, 8, 5, 9, 6, 7)]
+    // (42)[6] = [(1, 3, 2), (4, 7, 5, 8, 6, 9)]
+    // (43)[6] = [(1, 9, 3, 8, 2, 7), (4, 5, 6)]
+    // (44)[6] = [(1, 8, 2, 9, 3, 7), (4, 6, 5)]
+    // (45)[6] = [(1, 8, 3, 7, 2, 9), (4, 5, 6)]
+    // (46)[6] = [(1, 7, 2, 8, 3, 9), (4, 6, 5)]
+    // (47)[6] = [(1, 9, 2, 7, 3, 8), (4, 6, 5)]
+    // (48)[6] = [(1, 7, 3, 9, 2, 8), (4, 5, 6)]
+    // (49)[6] = [(1, 5, 2, 6, 3, 4), (7, 9, 8)]
+    // (50)[6] = [(1, 6, 3, 5, 2, 4), (7, 8, 9)]
+    // (51)[6] = [(1, 5, 3, 4, 2, 6), (7, 8, 9)]
+    // (52)[6] = [(1, 4, 2, 5, 3, 6), (7, 9, 8)]
+    // (53)[6] = [(1, 6, 2, 4, 3, 5), (7, 9, 8)]
+    // (54)[6] = [(1, 4, 3, 6, 2, 5), (7, 8, 9)]
+    // 
+    // |(C3 x C3) x: S3| = 54 in S9 Ratio:6.000
+    // 
+    // 
 }
