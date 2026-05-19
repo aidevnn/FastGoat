@@ -12,16 +12,16 @@ public static partial class Group
 
     public static GroupAction<T, T> ByConjugate<T>(IGroup<T> gr) where T : struct, IElt<T>
     {
-        return (T g, T x) => gr.Op(g, gr.Op(x, gr.Invert(g)));
+        return (g, x) => gr.OpSeq(g, x, gr.Invert(g));
     }
 
     public static GroupAction<T, GroupSubset<T>> ByConjugateSet<T>(IGroup<T> gr) where T : struct, IElt<T>
     {
-        return (T g, GroupSubset<T> s) =>
+        return (g, s) =>
         {
             var gi = gr.Invert(g);
-            var gens = s.Generators.Select(x => gr.Op(gi, gr.Op(x, g))).ToHashSet();
-            var elts = s.Select(x => gr.Op(gi, gr.Op(x, g))).ToHashSet();
+            var gens = s.Generators.Select(x => gr.OpSeq(g, x, gi)).ToHashSet();
+            var elts = s.Select(x => gr.OpSeq(g, x, gi)).ToHashSet();
             return new(gens, elts);
         };
     }
@@ -29,7 +29,7 @@ public static partial class Group
     public static GroupAction<T1, T2> ByAutomorphism<T1, T2>(Homomorphism<T1, Automorphism<T2>> aut)
         where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
     {
-        return (T1 g, T2 x) => aut[g][x];
+        return (g, x) => aut[g][x];
     }
 
     public static GroupAction<T, Coset<T>> ByLeftCoset<T>(ConcreteGroup<T> grG, ConcreteGroup<T> grH)
@@ -532,7 +532,7 @@ public static partial class Group
             foreach (var y in grK)
             {
                 var yi = grG.Invert(y);
-                var d = grG.Op(grG.Op(x, y), grG.Op(xi, yi));
+                var d = grG.OpSeq(x, y, xi, yi);
                 set.Add(d);
             }
         }
@@ -556,7 +556,7 @@ public static partial class Group
             return;
 
         chain.Add(di1);
-        CommutatorsChain<T>(gr, chain);
+        CommutatorsChain(gr, chain);
     }
 
     public static List<ConcreteGroup<T>> CommutatorsChain<T>(ConcreteGroup<T> gr) where T : struct, IElt<T>
@@ -576,7 +576,7 @@ public static partial class Group
             return;
 
         chain.Add(comGr);
-        DerivedChain<T>(chain);
+        DerivedChain(chain);
     }
 
     public static ConcreteGroup<T> Derived<T>(ConcreteGroup<T> gr) where T : struct, IElt<T>
@@ -594,27 +594,33 @@ public static partial class Group
 
     public static ConcreteGroup<T> Centralize<T>(ConcreteGroup<T> h, ConcreteGroup<T> s) where T : struct, IElt<T>
     {
-        var opH = ByConjugate(h);
-        var n = h.Where(g => s.All(a => opH(g, a).Equals(a))).ToArray();
+        var actH = ByConjugate(h);
+        var n = h.Where(g => s.All(a => actH.IsInvariant(g, a))).ToArray();
         return Generate($"C[{s}]({h})", h, n);
     }
 
     public static ConcreteGroup<T> Normalize<T>(ConcreteGroup<T> h, ConcreteGroup<T> s) where T : struct, IElt<T>
     {
-        var n = h.Where(x => s.SetEquals(s.Select(s0 => h.Op(h.Invert(x), h.Op(s0, x))))).ToArray();
+        var actH = ByConjugate(h);
+        var n = h.Where(g => s.SetEquals(s.Select(s0 => actH(g, s0)))).ToArray();
         return Generate($"N[{s}]({h})", h, n);
     }
 
     public static bool AreConjugate<T>(ConcreteGroup<T> g, ConcreteGroup<T> sg1, ConcreteGroup<T> sg2) where T : struct, IElt<T>
     {
-        return sg1.SetEquals(sg2) || g.Any(x => sg1.SetEquals(sg2.Select(s0 => g.Op(g.Invert(x), g.Op(s0, x)))));
+        var actG = ByConjugate(g);
+        return sg1.SetEquals(sg2) || g.Any(g => sg1.SetEquals(sg2.Select(s0 => actG(g, s0))));
     }
 
     public static ConcreteGroup<T> Zentrum<T>(ConcreteGroup<T> gr) where T : struct, IElt<T>
     {
-        var act = ByConjugate(gr);
-        var set = gr.Where(s => gr.All(x => act.IsInvariant(s, x))).ToArray();
-        return Generate($"Z({gr})", gr, set);
+        var F = (T g) =>
+        {
+            var gi = gr.Invert(g);
+            return (T x) => gr.OpSeq(g, x, gi).Equals(x);
+        };
+        var genZ = gr.Where(g => gr.All(F(g))).ToArray();
+        return Generate($"Z({gr})", gr, genZ);
     }
 
     static void ZentrumsChain<T>(ConcreteGroup<T> g, List<ConcreteGroup<T>> chain) where T : struct, IElt<T>
@@ -624,7 +630,7 @@ public static partial class Group
 
         var quo = g.Over(zi);
         var zQuo = Zentrum(quo);
-        var naturalMap = AllHomomorphisms(g, quo).First(h => zi.SetEquals(h.Kernel()));
+        var naturalMap = AllMorphisms(g, quo).First(h => zi.SetEquals(h.Kernel()));
         var preImag = naturalMap.HomMap.Where(kp => zQuo.Contains(kp.Value)).Select(kp => kp.Key).ToArray();
         var zi1 = Generate($"Z{i}", g, preImag);
 
@@ -641,7 +647,7 @@ public static partial class Group
         var i = chain.Count;
         var zi = chain.Last();
 
-        T Commute(T x, T y) => gr.Op(gr.Op(x, y), gr.Op(gr.Invert(x), gr.Invert(y)));
+        T Commute(T x, T y) => gr.OpSeq(x, y, gr.Invert(x), gr.Invert(y));
 
         HashSet<T> set = new(gr.Count());
         foreach (var g in gr)
