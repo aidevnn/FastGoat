@@ -17,10 +17,11 @@ public static class GroupCraft
     {
         return Comparer<T>.Create((a, b) => -g.ElementsOrders[a].CompareTo(g.ElementsOrders[b]));
     }
-    
-    public static bool AreConjugate<T>(ConcreteGroup<T> g, GroupSubset<T> sg1, GroupSubset<T> sg2) where T : struct, IElt<T>
+
+    public static bool AreConjugate<T>(ConcreteGroup<T> g, GroupSubset<T> sg1, GroupSubset<T> sg2)
+        where T : struct, IElt<T>
     {
-        return sg1.Equals(sg2) || g.Any(x => sg1.SetEquals(sg2.Select(s0 => g.Op(g.Invert(x), g.Op(s0, x)))));
+        return sg1.Equals(sg2) || g.Any(x => sg1.SetEquals(sg2.Select(s0 => g.OpSeq(x, s0, g.Invert(x)))));
     }
 
     public static List<GroupSubset<T>> SubGroupsConjugates<T>(ConcreteGroup<T> g, GroupSubset<T> h)
@@ -44,20 +45,20 @@ public static class GroupCraft
 
         return all;
     }
-    
+
     public static bool IsInnerAutomorphism<T>(this Automorphism<T> aut) where T : struct, IElt<T>
     {
         var G = aut.Domain;
         var act = Group.ByConjugate(G);
         return G.Any(g => aut.AutMap.All(f => aut[f.Key].Equals(act(g, f.Key))));
-    } 
-    
+    }
+
     public static T[] RecreateGenerators<T>(IGroup<T> g, T[] generators, Comparer<T> comp)
         where T : struct, IElt<T>
     {
-        if (g.Count() == 1)
+        if (generators.Length == 1)
             return [g.Neutral()];
-        
+
         HashSet<T> tmpElements = new() { g.Neutral() };
         List<T> newGens = new();
         var set = generators.ToHashSet();
@@ -119,7 +120,8 @@ public static class GroupCraft
         return generatedElements;
     }
 
-    public static HashSet<T> GenerateElementsLimited<T>(IGroup<T> bg, HashSet<T> elements, IEnumerable<T> generators, int limits)
+    public static HashSet<T> GenerateElementsLimited<T>(IGroup<T> bg, HashSet<T> elements, IEnumerable<T> generators,
+        int limits)
         where T : struct, IElt<T>
     {
         if (!elements.Contains(bg.Neutral()))
@@ -153,7 +155,7 @@ public static class GroupCraft
     {
         if (!g.SuperSetOf(h))
             throw new GroupException(GroupExceptionType.NotSubGroup);
-        
+
         var og = g.Count();
         var oh = h.Count();
         var ok = og / oh;
