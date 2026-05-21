@@ -60,27 +60,6 @@ public static class GroupPermutationForm
         return Group.Generate(name, sn, gens.ToArray());
     }
 
-    static string MetaCyclicName(int m, int n, int r)
-    {
-        if (r == 1)
-            return $"C{m} x C{n}";
-        if (n == 2)
-        {
-            if (r == m - 1)
-                return $"D{2 * m}";
-            if (int.IsPow2(m))
-                return r == m / 2 - 1 ? $"QD{2 * m}" : $"MM{2 * m}";
-        }
-
-        if (n == 4 && r == m - 1 && m % 2 == 1)
-            return $"Dic{m}";
-
-        if (IntExt.Gcd(m, n * (r - 1)) == 1)
-            return $"F({m}x:{n}){r}";
-
-        return $"M({m}x:{n}){r}";
-    }
-
     public static (Perm a, Perm b) rUmToPerm(int m, int r)
     {
         var (seqA, seqB) = (new List<Perm>(), new List<Perm>());
@@ -145,7 +124,7 @@ public static class GroupPermutationForm
 
         if (ord && c1 && c2)
         {
-            var name = MetaCyclicName(m, n, r);
+            var name = FG.MetaCyclicName(m, n, r);
             return (name, sn, [a, b]);
         }
 

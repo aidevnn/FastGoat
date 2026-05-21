@@ -254,12 +254,33 @@ public static partial class FG
 
     public static WordGroup DihedralWg(int n) => new($"D{2 * n}", $"a{n}, b2, abab");
 
+    public static string MetaCyclicName(int m, int n, int r)
+    {
+        if (r == 1)
+            return $"C{m} x C{n}";
+        if (n == 2)
+        {
+            if (r == m - 1)
+                return $"D{2 * m}";
+            if (int.IsPow2(m))
+                return r == m / 2 - 1 ? $"QD{2 * m}" : $"MM{2 * m}";
+        }
+
+        if (n == 4 && r == m - 1 && m % 2 == 1)
+            return $"Dic{m}";
+
+        if (IntExt.Gcd(m, n * (r - 1)) == 1)
+            return $"F({m}x:{n}){r}";
+
+        return $"M({m}x:{n}){r}";
+    }
+
     public static WordGroup MetaCyclicSdpWg(int m, int n, int r)
     {
         if (IntExt.PowMod(r, n, m) != 1 || IntExt.Gcd(r, m) != 1)
             throw new GroupException(GroupExceptionType.GroupDef);
 
-        var name = IntExt.Gcd(m, n * (r - 1)) == 1 ? $"F({m}x:{n}){r}" : $"M({m}x:{n}){r}";
+        var name = MetaCyclicName(m, n, r);
         return WordGroup(name, $"a{m}, b{n}, b-1ab = a{r}");
     }
 
