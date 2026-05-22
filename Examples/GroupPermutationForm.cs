@@ -15,7 +15,7 @@ public static class GroupPermutationForm
     {
         Perm.Style = DisplayPerm.CyclesComma;
     }
-    
+
     static (int m, int n, int r)[] MetaCyclicSdp(int order)
     {
         return IntExt.Dividors(order).Where(d => d > 1)
@@ -87,18 +87,15 @@ public static class GroupPermutationForm
         return (ConcatPerm(seqA.ToArray()), ConcatPerm(seqB.ToArray()));
     }
 
-    static IEnumerable<(Perm a, Perm b)> ExtendB(Perm a, Perm b, int n)
+    static IEnumerable<(Perm a, Perm b)> OpsCnByUm(int n, Perm a, Perm b)
     {
-        var N0 = a.Sn.N;
         foreach (var perms in CyclesSplit(n).AllCombinations().Where(e => e.Length > 0))
         {
             var table = IntExt.PermAndCyclesFromType(perms.SelectMany(e => e.PermType).Order().ToArray()).perm;
             var b0 = new Sn(table.Length).CreateElementTable(table);
-            var N = b0.Table.Length + N0;
-            var sn = new Sn(N);
-            var a1 = sn.CreateElementTable(a.Table.Concat(b0.Table.Length.SeqLazy(N0)).ToArray());
-            var b2 = sn.CreateElementTable(b.Table.Concat(b0.Table.Select(i => i + N0).ToArray()).ToArray());
-            yield return (a1, b2);
+            var a1 = PaddingRight(a, b0.Sn.N);
+            var b1 = ConcatPerm(b, b0);
+            yield return (a1, b1);
         }
     }
 
@@ -113,7 +110,7 @@ public static class GroupPermutationForm
         var c2 = (b * a * (b ^ -1)).Equals(ar);
         if (!ord && c1 && c2)
         {
-            foreach (var (a0, b0) in ExtendB(a, b, n))
+            foreach (var (a0, b0) in OpsCnByUm(n, a, b))
             {
                 var H1 = Group.GenerateElements(a0.Sn, a0, b0);
                 if (H1.Count == m * n)
@@ -173,23 +170,19 @@ public static class GroupPermutationForm
 
             var (b, c) = gens.Deconstruct();
             var (a0, b0) = rUmToPerm(m, m - 1);
-            var sn = new Sn(b0.Sn.N + b.Sn.N);
-            var a1 = sn.CreateElementTable(a0.Table.Concat(b.Sn.N.SeqLazy(a0.Sn.N)).ToArray());
-            var b1 = sn.CreateElementTable(b0.Sn.Neutral().Table.Concat(b.Table.Select(e => e + a0.Sn.N)).ToArray());
-            var c1 = sn.CreateElementTable(b0.Table.Concat(c.Table.Select(e => e + a0.Sn.N)).ToArray());
+            var a1 = PaddingRight(a0, b.Sn.N);
+            var b1 = PaddingLeft(b, b0.Sn.N);
+            var c1 = ConcatPerm(b0, c);
 
             var H1 = Group.GenerateElements(a1.Sn, a1, b1, c1);
             if (H1.Count == 4 * n)
-            {
-                Console.WriteLine(new { a1, b1, c1 });
                 return ($"C{m} x: {Qname}", a1.Sn, [a1, b1, c1]);
-            }
 
             throw new();
         }
 
         var (b2, c2) = rUmToPerm(n, n - 1);
-        foreach (var (b3, c3) in ExtendB(b2, c2, 4))
+        foreach (var (b3, c3) in OpsCnByUm(n: 4, b2, c2))
         {
             var H1 = Group.GenerateElements(b3.Sn, b3, c3);
             if (H1.Count == 4 * n)
@@ -258,11 +251,11 @@ public static class GroupPermutationForm
     {
         var G = subGroups.MaxBy(g => g.Key.Order).Key;
         if (G.GroupType == GroupType.AbelianGroup)
-            return GroupPermutationForm.AbelianPerm(Group.AbelianGroupType(G));
+            return AbelianPerm(Group.AbelianGroupType(G));
 
         var ordG = G.Order;
         var byOrder = subGroups.Keys.GroupBy(e => e.Order).ToDictionary(e => e.Key, e => e.ToHashSet());
-        var (D, Facts) = subGroups.Keys
+        var (H, Facts) = subGroups.Keys
             .Where(e => e.Order != 1 && e.Order != ordG && subGroups[e].Count == 1).OrderBy(g => g.Order).ToArray()
             .ToDictionary(d => d, d =>
             {
@@ -289,11 +282,11 @@ public static class GroupPermutationForm
             return G.ToPermGroup().Item1;
         }
 
-        var F = Facts.First();
-        if (Group.IsNormalSubgroup(G, F))
+        var K = Facts.First();
+        if (Group.IsNormalSubgroup(G, K))
         {
-            var h = PermutationForm(Restriction(D, subGroups));
-            var k = PermutationForm(Restriction(F, subGroups));
+            var h = PermutationForm(Restriction(H, subGroups));
+            var k = PermutationForm(Restriction(K, subGroups));
             var nh = h.Neutral().Sn.N;
             var nk = k.Neutral().Sn.N;
             var hGens = h.GetGenerators().Select(e => PaddingRight(e, nk));
@@ -307,8 +300,8 @@ public static class GroupPermutationForm
         }
         else
         {
-            var k = PermutationForm(Restriction(F, subGroups));
-            var h = PermutationForm(Restriction(D, subGroups)).ToPermGroup().Item1;
+            var k = PermutationForm(Restriction(K, subGroups));
+            var h = PermutationForm(Restriction(H, subGroups)).ToPermGroup().Item1;
             var (snH, snK) = (h.Neutral().Sn, k.Neutral().Sn);
             var (nH, nK) = (snH.N, snK.N);
 
@@ -328,7 +321,6 @@ public static class GroupPermutationForm
                 var kGens = k.GetGenerators().Select(e => ConcatPerm(hom[e], e)).ToArray();
                 var sn = new Sn(nH + nK);
                 var hkGens = hGens.Concat(kGens).ToArray();
-                // hkGens.Println();
                 if (GenerateElementsLimited(sn, hkGens, ordG).Count != ordG)
                     continue;
 
@@ -337,7 +329,7 @@ public static class GroupPermutationForm
                     return HK;
             }
 
-            Console.WriteLine($"NOT FOUND  H:{D.ShortName} K:{F.ShortName} {autHpg.ShortName}");
+            Console.WriteLine($"NOT FOUND  H:{H.ShortName} K:{K.ShortName} {autHpg.ShortName}");
             Console.WriteLine($"H in {h.Neutral().Sn} K in {k.Neutral().Sn}");
             throw new($"###2 {G.ShortName}");
         }
@@ -374,10 +366,10 @@ public static class GroupPermutationForm
 
     public static void ExampleDicyclic()
     {
-        for (int n = 3; n < 33; n++)
+        for (int m = 3; m < 33; m++)
         {
-            var Dic_m = FG.DicyclicGL2p(n);
-            var (name, sn, gens) = DicyclicGens(n);
+            var Dic_m = FG.DicyclicGL2p(m);
+            var (name, sn, gens) = DicyclicGens(m);
             var Dic_m_pg = Group.Generate(name + "pg", sn, gens);
             DisplayGroup.HeadGenerators(Dic_m_pg);
             DisplayGroup.AreIsomorphics(Dic_m_pg, Dic_m);
@@ -422,7 +414,7 @@ public static class GroupPermutationForm
 
         GlobalStopWatch.Show();
     }
-    
+
     static void MetaCyclicPermFormUpTo(int maxOrd)
     {
         var (errors, total) = (0, 0);
@@ -435,7 +427,7 @@ public static class GroupPermutationForm
                 ++total;
                 var Gpg = PermutationForm(Group.AllSubGroups(FG.MetaCyclicSdpWg(m, n, r))
                     .ToDictionary(e => e.Key, e => e.Value.Select(f => f.ToSet()).ToList()));
-                DisplayGroup.HeadElements(Gpg);
+                DisplayGroup.HeadOrders(Gpg);
                 DisplayGroup.Generators(Gpg, showBaseGroup: true);
                 var sn = Gpg.Neutral().Sn;
                 var sn0 = MetaCyclicGens(m, n, r).sn;
@@ -461,7 +453,7 @@ public static class GroupPermutationForm
             foreach (var G in FG.AllGroupsOfOrder(ord))
             {
                 ++total;
-                var Gpg = GroupPermutationForm.PermutationForm(Group.AllSubGroups(G)
+                var Gpg = PermutationForm(Group.AllSubGroups(G)
                     .ToDictionary(e => e.Key, e => e.Value.Select(f => f.ToSet()).ToList()));
                 DisplayGroup.HeadGenerators(Gpg);
                 var sn = Gpg.Neutral().Sn;
@@ -475,7 +467,12 @@ public static class GroupPermutationForm
 
     public static void ExampleAllMetaCyclicPermForm()
     {
-        MetaCyclicPermFormUpTo(64);
+        MetaCyclicPermFormUpTo(128);
+        // TODO: fix errors
+        // |F(7x:12)3| = 84 in S14 expected S11 Test:False
+        // |M(9x:12)2| = 108 in S16 expected S13 Test:False
+        // |F(7x:18)3| = 126 in S18 expected S16 Test:False
+        // 
     }
 
     public static void ExampleAllGroupsPermFormUpTo63()
