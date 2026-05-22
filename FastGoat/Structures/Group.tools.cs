@@ -609,7 +609,7 @@ public static partial class Group
     public static bool AreConjugate<T>(ConcreteGroup<T> g, ConcreteGroup<T> sg1, ConcreteGroup<T> sg2) where T : struct, IElt<T>
     {
         var actG = ByConjugate(g);
-        return sg1.SetEquals(sg2) || g.Any(g => sg1.SetEquals(sg2.Select(s0 => actG(g, s0))));
+        return sg1.SetEquals(sg2) || g.Any(x => sg1.SetEquals(sg2.Select(s0 => actG(x, s0))));
     }
 
     public static ConcreteGroup<T> Zentrum<T>(ConcreteGroup<T> gr) where T : struct, IElt<T>
