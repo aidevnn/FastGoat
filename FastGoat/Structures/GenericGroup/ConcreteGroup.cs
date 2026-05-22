@@ -94,6 +94,7 @@ public class ConcreteGroup<T> : IGroup<T> where T : struct, IElt<T>
 
     public virtual string[] Details => Array.Empty<string>();
     public ReadOnlyDictionary<T, int> ElementsOrders { get; protected set; }
+    public int Order => Elements.Count;
 
     public IEnumerator<T> GetEnumerator()
     {
