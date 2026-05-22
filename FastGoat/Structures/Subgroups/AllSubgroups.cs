@@ -120,6 +120,7 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
 
         return allMax.Order().ToArray();
     }
+    public SubgroupConjugates<T>[] MaximalNormalSubgroups() => MaximalNormalSubgroups(AllSubgroupConjugates.Last());
 
     public SubgroupConjugates<T>[] ProperNonTrivialNormalSubgroups()
     {
@@ -238,10 +239,8 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
             while (queue.TryPeek(out var hj))
             {
                 var K = hj.Representative;
-                var setK = K.ToSet();
                 var G = hi.Conjugates.First(sg => sg.SuperSetOf(K));
-                var op = Group.ByConjugateSet(G);
-                if (G.All(g => setK.SetEquals(op(g, setK))))
+                if (Group.IsNormalSubgroup(G, K))
                     break;
                 else
                     queue.Dequeue();
