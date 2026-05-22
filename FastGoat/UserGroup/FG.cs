@@ -143,6 +143,21 @@ public static partial class FG
         var mapReg = g.ToDictionary(e => e, e => act(e, sn.Neutral()));
         return (Group.Generate($"{g.Name}", sn, mapGens.Values.ToArray()), mapReg);
     }
+    
+    public static (ConcreteGroup<Perm>, Dictionary<Perm, int> idx) RegPermAutGroup(ConcreteGroup<Automorphism<Perm>> aut)
+    {
+        var Dom = aut.Neutral().Domain;
+        var sn = Dom.Neutral().Sn;
+        if (sn.N != Dom.Count())
+            throw new($"{sn} G:{Dom.Count()}");
+
+        var idx = Dom.Index().ToDictionary(e => e.Item, e => e.Index);
+        var gens = aut.GetGenerators().Select(e => e.AutMap.ToDictionary(f => idx[f.Key], f => idx[f.Value]))
+            .Select(e => sn.CreateElementTable(e.OrderBy(f => f.Key).Select(f => f.Value).ToArray()))
+            .ToArray();
+
+        return (Group.Generate(aut.Name, sn, gens), idx);
+    }
 
     public static ConcreteGroup<ZnInt> UnInt(int n) =>
         Group.MulGroup($"U{n}i", IntExt.Coprimes(n).Select(j => new ZnInt(n, j)).ToArray());
