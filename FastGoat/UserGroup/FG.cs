@@ -8,7 +8,6 @@ using FastGoat.UserGroup.DatabaseSmallGroups;
 using FastGoat.UserGroup.GModuleN;
 using FastGoat.UserGroup.Integers;
 using FastGoat.UserGroup.Matrix;
-using FastGoat.UserGroup.Perms;
 using FastGoat.UserGroup.Polynoms;
 using FastGoat.UserGroup.Words;
 
@@ -73,33 +72,6 @@ public static partial class FG
         return CnfBasisMap[ord] = new CnfBasis(ord);
     }
 
-    public static ConcreteGroup<Perm> Symmetric(int n) => new Symm(n);
-
-    public static ConcreteGroup<Perm> Alternate(int n)
-    {
-        if (n < 3)
-            throw new GroupException(GroupExceptionType.GroupDef);
-
-        var sn = new Sn(n);
-        var gi = (n - 2).Range(3).Select(i => sn[(1, 2, i)]).ToArray();
-        return Group.Generate($"Alt{n}", sn, gi);
-    }
-
-    public static ConcreteGroup<Perm> Dihedral(int n)
-    {
-        if (n == 2)
-            return PermGroup("D4", 4, ((1, 2), (3, 4)), ((1, 3), (2, 4)));
-
-        var m = (n % 2) == 0 ? 1 : 2;
-        var sn = new Sn(n);
-        var an = Enumerable.Range(1, n).ToArray();
-        var a2 = Enumerable.Range(m, n / 2).Select(i => (Tuple2Array)(i, n + m - i)).ToArray();
-        var cn = sn.Cycle(an);
-        var c2 = sn.ComposesCycles(a2);
-        var d2n = Group.Generate($"D{2 * n}", sn, c2, cn);
-        return d2n;
-    }
-
     public static ConcreteGroup<Mat> DihedralGL2p(int n)
     {
         var p = IntExt.Primes10000.First(p => (p - 1) % n == 0);
@@ -111,52 +83,9 @@ public static partial class FG
         return Group.Generate($"D{2 * n}", gl, m0, m1);
     }
 
-    public static ConcreteGroup<Perm> PermGroup(string name, int n, params ValueType[] generators)
-    {
-        var sn = new Sn(n);
-        var gi = generators.Select(g => sn.ComposesCycles(Tuple2Array.ComplexTuples(g))).ToArray();
-        return Group.Generate(name, sn, gi);
-    }
-
-    public static ConcreteGroup<Perm> PermGroup(int n, params ValueType[] generators) => PermGroup("G", n, generators);
-
     public static ConcreteGroup<Ep<ZnInt>> Abelian(string name, params int[] seq)
     {
         return Product.GpGenerate(name, seq.Select(i => new Cn(i)).Cast<IGroup<ZnInt>>().ToArray());
-    }
-
-    private static GroupAction<T, Perm> Action2Perm<T>(ConcreteGroup<T> g, Sn sn) where T : struct, IElt<T>
-    {
-        var mapEltIdx = g.Select((e, i) => (e, i: i + 1))
-            .OrderBy(e => g.ElementsOrders[e.e])
-            .ToDictionary(e => e.e, e => e.i);
-        var mapIdxElt = mapEltIdx.ToDictionary(e => e.Value, e => e.Key);
-        return (e, p) => sn.CreateElement(p.Table.Select(i => mapEltIdx[g.Op(e, mapIdxElt[i + 1])]).ToArray());
-    }
-
-    public static (ConcreteGroup<Perm>, Dictionary<T, Perm> mapReg) ToPermGroup<T>(this ConcreteGroup<T> g)
-        where T : struct, IElt<T>
-    {
-        var sn = new Sn(g.Count());
-        var act = Action2Perm(g, sn);
-        var mapGens = g.GetGenerators().ToDictionary(e => e, e => act(e, sn.Neutral()));
-        var mapReg = g.ToDictionary(e => e, e => act(e, sn.Neutral()));
-        return (Group.Generate($"{g.Name}", sn, mapGens.Values.ToArray()), mapReg);
-    }
-    
-    public static (ConcreteGroup<Perm>, Dictionary<Perm, int> idx) RegPermAutGroup(ConcreteGroup<Automorphism<Perm>> aut)
-    {
-        var Dom = aut.Neutral().Domain;
-        var sn = Dom.Neutral().Sn;
-        if (sn.N != Dom.Count())
-            throw new($"{sn} G:{Dom.Count()}");
-
-        var idx = Dom.Index().ToDictionary(e => e.Item, e => e.Index);
-        var gens = aut.GetGenerators().Select(e => e.AutMap.ToDictionary(f => idx[f.Key], f => idx[f.Value]))
-            .Select(e => sn.CreateElementTable(e.OrderBy(f => f.Key).Select(f => f.Value).ToArray()))
-            .ToArray();
-
-        return (Group.Generate(aut.Name, sn, gens), idx);
     }
 
     public static ConcreteGroup<ZnInt> UnInt(int n) =>
@@ -165,21 +94,6 @@ public static partial class FG
     public static ConcreteGroup<Ep<ZnInt>> Abelian(params int[] seq)
     {
         return Product.GpGenerate(seq.Select(i => new Cn(i)).Cast<IGroup<ZnInt>>().ToArray());
-    }
-
-    public static ConcreteGroup<Perm> AbelianPerm(params int[] seq)
-    {
-        var n = seq.Sum();
-        var sn = new Sn(n);
-        var gens = new List<Perm>();
-        for (int i = 0; i < seq.Length; i++)
-        {
-            var n0 = seq.Take(i).Sum() + 1;
-            gens.Add(sn.Cycle(seq[i].Range(n0)));
-        }
-
-        var name = seq.Glue(" x ", "C{0}");
-        return Group.Generate(name, sn, gens.ToArray());
     }
 
     public static ConcreteGroup<Ep<ZnInt>> ElementaryAbelian(int q)
@@ -317,14 +231,19 @@ public static partial class FG
 
     public static int[] MetaCyclicSdpGetR(int m, int n)
     {
-        var rs = IntExt.SolveAll_k_pow_m_equal_one_mod_n(m, n);
         var nCoprimes = IntExt.Coprimes(n).ToArray();
-        return rs.Select(r => nCoprimes.Select(k => IntExt.PowMod(r, k, m)).ToHashSet())
-            .Distinct(new SetEquality<int>())
-            .Select(e => e.Min())
+        return IntExt.Coprimes(m).Where(u => IntExt.PowMod(u, n, m) == 1).Order()
+            .DistinctBy(u => nCoprimes.Select(i => IntExt.PowMod(u, i, m)).ToHashSet(), new SetEquality<int>())
             .ToArray();
     }
 
+    public static (int m, int n, int r)[] MetaCyclicCoefs(int ord)
+    {
+        return IntExt.Dividors(ord).Where(d => d > 1)
+            .SelectMany(m => MetaCyclicSdpGetR(m, ord / m).Select(r => (m, n: ord / m, r)))
+            .DistinctBy(e => e.r == 1 ? (e.m * e.n, 1, 1) : e)
+            .ToArray();
+    }
     public static int[] FrobeniusGetR(int m, int n)
     {
         return MetaCyclicSdpGetR(m, n).Where(r => IntExt.Gcd(m, n * (r - 1)) == 1).ToArray();
@@ -332,10 +251,7 @@ public static partial class FG
 
     public static List<WordGroup> MetaCyclicSdpWg(int ord)
     {
-        return IntExt.Dividors(ord).Where(d => d > 1)
-            .SelectMany(m => MetaCyclicSdpGetR(m, ord / m).Select(r => (m, n: ord / m, r)))
-            .Select(e => MetaCyclicSdpWg(e.m, e.n, e.r))
-            .ToList();
+        return MetaCyclicCoefs(ord).Select(e => MetaCyclicSdpWg(e.m, e.n, e.r)).ToList();
     }
 
     public static List<WordGroup> Frobenius(int order)
@@ -354,12 +270,9 @@ public static partial class FG
             .ToList();
     }
 
-    public static List<ConcreteGroup<Ep2<ZnInt, ZnInt>>> MetaCyclicSdp(int order)
+    public static List<ConcreteGroup<Ep2<ZnInt, ZnInt>>> MetaCyclicSdp(int ord)
     {
-        return IntExt.Dividors(order).Where(d => d > 1)
-            .SelectMany(m => MetaCyclicSdpGetR(m, order / m).Select(r => (m, n: order / m, r)))
-            .Select(e => MetaCyclicSdp(e.m, e.n, e.r))
-            .ToList();
+        return MetaCyclicCoefs(ord).Select(e => MetaCyclicSdp(e.m, e.n, e.r)).ToList();
     }
 
     public static WordGroup DiCyclic(int n) =>
@@ -514,8 +427,7 @@ public static partial class FG
         var theta = Group.Hom(c2, Group.HomomorphismMap(c2, aut, pMap));
         return Group.SemiDirectProd($"MM{n1 * 2}", cn, theta, c2);
     }
-
-
+    
     public static ConcreteGroup<Mat> ModularMaxGL2p(int n)
     {
         var n1 = 1 << (n - 1);

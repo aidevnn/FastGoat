@@ -1092,10 +1092,7 @@ public static partial class FG
 
     public static List<ConcreteGroup<Mat>> MetaCyclicSdpMat(int ord, int maxDim = 12)
     {
-        return IntExt.Dividors(ord).Where(d => d > 1)
-            .SelectMany(m => MetaCyclicSdpGetR(m, ord / m).Select(r => (m, n: ord / m, r)))
-            .Select(e => MetaCyclicSdpMat(e.m, e.n, e.r, maxDim))
-            .ToList();
+        return MetaCyclicCoefs(ord).Select(e => MetaCyclicSdpMat(e.m, e.n, e.r, maxDim)).ToList();
     }
 
     public static GLn<K> GLnK<K>(int n, K scalar) where K : struct, IElt<K>, IRingElt<K>, IFieldElt<K>
@@ -1202,7 +1199,7 @@ public static partial class FG
         (KPoly<Rational>, string) e0,
         (KPoly<Rational>, string) e1, string p0, params string[] others)
     {
-        var all = new[] { e0.Item2, e1.Item2, p0, "_t_" }.ToArray();
+        var all = new[] { e0.Item2, e1.Item2, p0, "_t_" };
         var xis = Ring.Polynomial(Rational.KZero(), MonomOrder.Lex, all);
         var x0 = xis[0];
         var a = e0.Item1.ToPolynomial(x0.Indeterminates, x0.Indeterminates[0]);
