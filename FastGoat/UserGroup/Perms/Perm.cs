@@ -69,7 +69,7 @@ public struct Perm : IElt<Perm>
         get
         {
             var sn = Sn;
-            return Orbits.Select(c => sn.CycleP1(c)).ToArray();
+            return Orbits.Where(o => o.Length != 1).Select(c => sn.CycleP1(c)).ToArray();
         }
     }
 

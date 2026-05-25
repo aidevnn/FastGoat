@@ -111,11 +111,7 @@ public static partial class FG
             var b1 = PaddingLeft(b, b0.Sn.N);
             var c1 = ConcatPerm(b0, c);
 
-            var H1 = Group.GenerateElements(a1.Sn, a1, b1, c1);
-            if (H1.Count == 4 * n)
-                return ($"C{m} x: {Qname}", a1.Sn, [a1, b1, c1]);
-
-            throw new();
+            return ($"C{m} x: {Qname}", a1.Sn, [a1, b1, c1]);
         }
 
         var (b2, c2) = rUmToPerm(n, n - 1);
@@ -182,11 +178,7 @@ public static partial class FG
 
     public static List<ConcreteGroup<Perm>> MetaCyclicPg(int ord)
     {
-        return IntExt.Dividors(ord).Where(d => d > 1)
-            .SelectMany(m => MetaCyclicSdpGetR(m, ord / m).Select(r => (m, n: ord / m, r)))
-            .DistinctBy(e => e.r == 1 ? (e.m * e.n, 1, 1) : e)
-            .Select(e => MetaCyclicPg(e.m, e.n, e.r))
-            .ToList();
+        return MetaCyclicCoefs(ord).Select(e => MetaCyclicPg(e.m, e.n, e.r)).ToList();
     }
     
     private static GroupAction<T, Perm> Action2Perm<T>(ConcreteGroup<T> g, Sn sn) where T : struct, IElt<T>

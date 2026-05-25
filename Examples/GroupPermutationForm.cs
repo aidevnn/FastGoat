@@ -70,6 +70,57 @@ public static class GroupPermutationForm
             .SelectMany(e => RestrictionConjugates(G, e.Value)).ToDictionary();
     }
 
+    static (Sn sn, Perm[] gens) RemovePassiveCycles(Perm[] generators)
+    {
+        var gens = generators.ToArray();
+        while(true)
+        {
+            var sn0 = gens[0].Sn;
+            var dijCycles = gens.ToDictionary(e => e, e => e.DisjoinCycles.ToXSet());
+            var candidates = dijCycles.ToDictionary(e => e.Key,
+                e => e.Value.Where(f => e.Value.Any(g => !g.Equals(f) && g.Order % f.Order == 0)).ToXSet());
+            var passiveCycles = new Dictionary<Perm, XSet<int>>();
+            foreach (var (k, v) in candidates)
+            {
+                if (v.Count == 0)
+                    continue;
+
+                foreach (var c in v)
+                {
+                    var set = c.Orbits.Where(o => o.Length > 1).SelectMany(o => o).ToXSet();
+                    if (gens.Except([k]).All(g => set.All(i => g.Table[i] == i)))
+                    {
+                        passiveCycles[k] = set;
+                        break;
+                    }
+                }
+
+                if (passiveCycles.Count > 0)
+                    break;
+            }
+
+            if (passiveCycles.Count > 0)
+            {
+                var (g, s) = passiveCycles.First();
+                var (N, n) = (g.Sn.N, s.Count);
+                var swap = N.SeqLazy().Where(i => !s.Contains(i)).Concat(s).Index()
+                    .ToDictionary(e => e.Item, e => e.Index);
+
+                var sn1 = new Sn(N - n);
+                gens = gens.Select(e =>
+                        e.Orbits.Where(o => o.Length > 1 && !s.Equals(new XSet<int>(o)))
+                            .Select(o => o.Select(i => swap[i]).ToArray())
+                            .ToArray()).Select(e => e.Aggregate(sn1.Neutral(), (acc, o) => acc * sn1.CycleP1(o)))
+                    .ToArray();
+            }
+
+            var sn2 = gens[0].Sn;
+            if (sn2.N == sn0.N)
+                return (sn2, gens);
+        }
+
+    }
+
     static ConcreteGroup<Perm> PermutationForm<T>(Dictionary<ConcreteGroup<T>, List<GroupSubset<T>>> subGroups)
         where T : struct, IElt<T>
     {
@@ -86,7 +137,7 @@ public static class GroupPermutationForm
                 if (byOrder.ContainsKey(ordG / d.Order))
                     return byOrder[ordG / d.Order].Where(e => e.Intersect(d).Count() == 1).Take(1).ToList();
 
-                Console.WriteLine($"############ Warning {G.ShortName} D:{d.ShortName}");
+                // Console.WriteLine($"############ Warning {G.ShortName} D:{d.ShortName}");
                 return [];
             })
             .Where(e => e.Value.Count > 0)
@@ -115,8 +166,8 @@ public static class GroupPermutationForm
             var nk = k.Neutral().Sn.N;
             var hGens = h.GetGenerators().Select(e => FG.PaddingRight(e, nk));
             var kGens = k.GetGenerators().Select(e => FG.PaddingLeft(e, nh));
-            var sn = new Sn(nh + nk);
-            var HK = Group.Generate(G.Name, sn, hGens.Concat(kGens).ToArray());
+            var (sn, hkGens) = RemovePassiveCycles(hGens.Concat(kGens).ToArray());
+            var HK = Group.Generate(G.Name, sn, hkGens);
             if (!HK.IsIsomorphicTo(G))
                 throw new($"###1 {G.ShortName}");
 
@@ -126,25 +177,15 @@ public static class GroupPermutationForm
         {
             var k = PermutationForm(Restriction(K, subGroups));
             var h = PermutationForm(Restriction(H, subGroups)).ToPermGroup().Item1;
-            var (snH, snK) = (h.Neutral().Sn, k.Neutral().Sn);
-            var (nH, nK) = (snH.N, snK.N);
+            var nK = k.Neutral().Sn.N;
 
             var autHpg = FG.RegPermAutGroup(Group.AutomorphismGroup(h)).Item1;
             var homKAutH = Group.AllHomomorphisms(k, autHpg);
             foreach (var hom in homKAutH.OrderBy(e => e.Kernel().Count()))
             {
-                var img = hom.Image().ToArray();
-                if (img.Length == k.Count())
-                {
-                    var HK0 = Group.Generate(G.Name, snH, h.GetGenerators().Concat(img).ToArray());
-                    if (HK0.IsIsomorphicTo(G))
-                        return HK0;
-                }
-
                 var kGens = k.GetGenerators().Select(e => FG.ConcatPerm(hom[e], e)).ToArray();
                 var hGens = h.GetGenerators().Select(f => FG.PaddingRight(f, nK)).ToArray();
-                var sn = new Sn(nH + nK);
-                var hkGens = hGens.Concat(kGens).ToArray();
+                var (sn, hkGens) = RemovePassiveCycles(hGens.Concat(kGens).ToArray());
                 if (GenerateElementsLimited(sn, hkGens, ordG).Count != ordG)
                     continue;
 
@@ -291,11 +332,6 @@ public static class GroupPermutationForm
     public static void ExampleAllMetaCyclicPermForm()
     {
         MetaCyclicPermFormUpTo(128);
-        // TODO: fix errors
-        // |F(7x:12)3| = 84 in S14 expected S11 Test:False
-        // |M(9x:12)2| = 108 in S16 expected S13 Test:False
-        // |F(7x:18)3| = 126 in S18 expected S16 Test:False
-        // 
     }
 
     public static void ExampleAllGroupsPermFormUpTo63()
