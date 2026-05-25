@@ -1,6 +1,7 @@
 using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.GenericGroup;
+using FastGoat.Structures.Subgroups;
 using FastGoat.UserGroup.Perms;
 
 namespace Craft.Craft;

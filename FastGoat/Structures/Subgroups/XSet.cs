@@ -1,8 +1,7 @@
 using System.Collections;
 using FastGoat.Commons;
-using FastGoat.Structures;
 
-namespace Craft;
+namespace FastGoat.Structures.Subgroups;
 
 public readonly struct XSet<T> : IElt<XSet<T>>, IEnumerable<T> where T : struct, IEquatable<T>, IComparable<T>
 {
@@ -63,6 +62,7 @@ public static class XSetExt
         public bool Overlaps(IEnumerable<T> other) => a.X.Overlaps(other);
         public XSet<T> Append(T e) => new(a.X.Append(e));
         public XSet<T> Concat(IEnumerable<T> e) => new(a.X.Concat(e));
+        public XSet<T> Except(IEnumerable<T> e) => new(a.X.Except(e));
     }
 
     extension<T>(IEnumerable<XSet<T>> ts) where T : struct, IElt<T>
