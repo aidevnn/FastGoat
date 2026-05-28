@@ -30,7 +30,7 @@ public struct Perm : IElt<Perm>
     {
         BaseGroup = Sn = sn;
         Table = sn.N.Range();
-        Hash = IntExt.GenHash(sn.N, Table);
+        Hash = IntExt.GenHash(sn.P, Table);
     }
 
     public Perm(Sn sn, int[] arr, int hash)

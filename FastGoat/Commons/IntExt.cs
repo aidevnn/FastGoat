@@ -1272,17 +1272,17 @@ public static class IntExt
     /// <summary>
     /// Generates a hash value for the given integer and array.
     /// </summary>
-    /// <param name="n">An integer value.</param>
+    /// <param name="p">A prime integer.</param>
     /// <param name="m">An array of integers.</param>
     /// <returns>An integer representing the generated hash value.</returns>
-    public static int GenHash(int n, int[] m)
+    public static int GenHash(int p, int[] m)
     {
         var pow = 1;
         var hash = 0;
         for (var k = 0; k < m.Length; ++k)
         {
             hash += pow * m[k];
-            pow *= n;
+            pow *= p;
         }
 
         return hash;
@@ -1336,26 +1336,28 @@ public static class IntExt
     /// <summary>
     /// Inverts the given permutation of an array.
     /// </summary>
+    /// <param name="p">A prime integer.</param>
     /// <param name="arr0">The original array.</param>
     /// <param name="arr1">The permutation of the original array.</param>
     /// <returns>An integer representing the inversion of the given permutation.</returns>
-    public static int InvertPermutation(int[] arr0, int[] arr1)
+    public static int InvertPermutation(int p, int[] arr0, int[] arr1)
     {
         var n = arr0.Length;
         for (var k = 0; k < n; ++k)
             arr1[arr0[k]] = k;
 
-        return GenHash(n, arr1);
+        return GenHash(p, arr1);
     }
 
     /// <summary>
     /// Compose a permutation from two arrays.
     /// </summary>
+    /// <param name="p">A prime integer.</param>
     /// <param name="arr0">The first array.</param>
     /// <param name="arr1">The second array.</param>
     /// <param name="arr2">The result array.</param>
     /// <returns>The composed permutation.</returns>
-    public static int ComposePermutation(int[] arr0, int[] arr1, int[] arr2)
+    public static int ComposePermutation(int p, int[] arr0, int[] arr1, int[] arr2)
     {
         var n = arr0.Length;
         var hash = 0;
@@ -1364,7 +1366,7 @@ public static class IntExt
         {
             var v = arr1[arr0[k]];
             hash += v * pow;
-            pow *= n;
+            pow *= p;
             arr2[k] = v;
         }
 

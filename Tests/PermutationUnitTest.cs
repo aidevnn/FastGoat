@@ -68,13 +68,13 @@ public class PermutationUnitTest
         var p4 = new[] { 0, 2, 3, 1 };
         var c = new[] { 0, 0, 0, 0 };
 
-        IntExt.InvertPermutation(p1, c);
+        IntExt.InvertPermutation(5, p1, c);
         Assert.True(p1.SequenceEqual(c));
 
-        IntExt.InvertPermutation(p2, c);
+        IntExt.InvertPermutation(5, p2, c);
         Assert.True(p3.SequenceEqual(c));
 
-        IntExt.ComposePermutation(p1, p2, c);
+        IntExt.ComposePermutation(5, p1, p2, c);
         Assert.True(p4.SequenceEqual(c));
 
         c = new[] { 0, 1, 2, 3 };

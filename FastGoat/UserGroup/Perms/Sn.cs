@@ -9,6 +9,7 @@ public struct Sn : IGroup<Perm>
     public int Hash { get; }
     public string Name { get; }
     public int N { get; }
+    public int P { get; }
     readonly int[] _cache;
 
     public Sn()
@@ -16,6 +17,7 @@ public struct Sn : IGroup<Perm>
         N = Hash = 2;
         _cache = new int[2];
         Name = $"S{N}";
+        P = 2;
     }
 
     public Sn(int n)
@@ -26,6 +28,7 @@ public struct Sn : IGroup<Perm>
         N = Hash = n;
         _cache = new int[n];
         Name = $"S{N}";
+        P = IntExt.Primes10000.First(p => p >= n);
     }
 
     public IEnumerable<Perm> GetGenerators()
@@ -51,7 +54,7 @@ public struct Sn : IGroup<Perm>
         if (!Equals(e.BaseGroup))
             throw new GroupException(GroupExceptionType.BaseGroup);
 
-        var hash = IntExt.InvertPermutation(e.Table, _cache);
+        var hash = IntExt.InvertPermutation(P, e.Table, _cache);
         return new Perm(this, _cache, hash);
     }
 
@@ -60,7 +63,7 @@ public struct Sn : IGroup<Perm>
         if (!Equals(e1.BaseGroup) || !Equals(e2.BaseGroup))
             throw new GroupException(GroupExceptionType.BaseGroup);
 
-        var hash = IntExt.ComposePermutation(e1.Table, e2.Table, _cache);
+        var hash = IntExt.ComposePermutation(P, e1.Table, e2.Table, _cache);
         return new Perm(this, _cache, hash);
     }
 
@@ -70,7 +73,7 @@ public struct Sn : IGroup<Perm>
         if (!IntExt.CheckTable(N, t0))
             throw new GroupException(GroupExceptionType.GroupDef);
 
-        var hash = IntExt.GenHash(N, t0);
+        var hash = IntExt.GenHash(P, t0);
         var p = new Perm(this, t0, hash);
         return p;
     }
@@ -80,7 +83,7 @@ public struct Sn : IGroup<Perm>
         if (!IntExt.CheckTable(N, table))
             throw new GroupException(GroupExceptionType.GroupDef);
 
-        var hash = IntExt.GenHash(N, table);
+        var hash = IntExt.GenHash(P, table);
         var p = new Perm(this, table, hash);
         return p;
     }
@@ -101,7 +104,7 @@ public struct Sn : IGroup<Perm>
             IntExt.ApplyCycle(_cache, cycle);
         }
 
-        var hash = IntExt.GenHash(N, _cache);
+        var hash = IntExt.GenHash(P, _cache);
         return new Perm(this, _cache, hash);
     }
 
