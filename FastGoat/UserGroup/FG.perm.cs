@@ -176,6 +176,17 @@ public static partial class FG
         return Group.Generate(name, sn, gens);
     }
 
+    public static List<ConcreteGroup<Perm>> AllAbelianGroupsOfOrderPg(int k)
+    {
+        if (k == 1)
+            return new() { AbelianPerm(1) };
+
+        var dec = IntExt.PrimesDec(k);
+        return dec.Select(e => IntExt.Partitions32[e.Value].Select(l => l.Select(i => e.Key.Pow(i)).ToArray()))
+            .MultiLoop()
+            .Select(l => AbelianPerm(l.SelectMany(i => i).OrderDescending().ToArray())).ToList();
+    }
+
     public static List<ConcreteGroup<Perm>> MetaCyclicPg(int ord)
     {
         return MetaCyclicCoefs(ord).Select(e => MetaCyclicPg(e.m, e.n, e.r)).ToList();
@@ -199,7 +210,7 @@ public static partial class FG
         var mapReg = g.ToDictionary(e => e, e => act(e, sn.Neutral()));
         return (Group.Generate($"{g.Name}", sn, mapGens.Values.ToArray()), mapReg);
     }
-    
+
     public static (ConcreteGroup<Perm>, Dictionary<Perm, int> idx) RegPermAutGroup(ConcreteGroup<Automorphism<Perm>> aut)
     {
         var Dom = aut.Neutral().Domain;
@@ -215,4 +226,23 @@ public static partial class FG
         return (Group.Generate(aut.Name, sn, gens), idx);
     }
 
+    public static (ConcreteGroup<Perm> G, ConcreteGroup<Perm> autG, Dictionary<Perm, int> idx) 
+        RegPermAutGroup<T>(ConcreteGroup<T> G) where T : struct, IElt<T>
+    {
+        var sn = new Sn(G.Count());
+        var mapEltIdx = G.Index().OrderBy(e => G.ElementsOrders[e.Item])
+            .ToDictionary(e => e.Item, e => e.Index);
+        var mapIdxElt = mapEltIdx.ToDictionary(e => e.Value, e => e.Key);
+        GroupAction<T, Perm> act = (e, p) => sn.CreateElementTable(p.Table.Select(i => mapEltIdx[G.Op(e, mapIdxElt[i])]).ToArray());
+        var mapReg = G.ToDictionary(e => e, e => act(e, sn.Neutral()));
+        var gensReg = G.GetGenerators().Select(e => mapReg[e]).ToArray();
+        var Greg = Group.Generate(G.Name, sn, gensReg);
+        
+        var autG = Group.AutomorphismGroup(G);
+        var gens = autG.GetGenerators().Select(e => e.AutMap.ToDictionary(f => mapEltIdx[f.Key], f => mapEltIdx[f.Value]))
+            .Select(e => sn.CreateElementTable(e.OrderBy(f => f.Key).Select(f => f.Value).ToArray()))
+            .ToArray();
+        var autGreg = Group.Generate(autG.Name, sn, gens);
+        return (Greg, autGreg, mapReg.ToDictionary(e => e.Value, e => mapEltIdx[e.Key]));
+    }
 }
