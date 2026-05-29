@@ -97,10 +97,10 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
 
     public SubgroupConjugates<T>[] MaximalSubgroups(SubgroupConjugates<T> top)
     {
-        var allMax = new List<SubgroupConjugates<T>>();
+        var allMax = new HashSet<SubgroupConjugates<T>>();
         foreach (var h in AllSubgroupConjugates.Where(cj => cj.IsSubClassOf(top)))
         {
-            allMax = allMax.Except(allMax.Where(h0 => h0.IsSubClassOf(h))).ToList();
+            allMax.ExceptWith(allMax.Where(h0 => h0.IsSubClassOf(h)));
             if (allMax.All(h0 => !h.IsSubClassOf(h0)))
                 allMax.Add(h);
         }
@@ -110,10 +110,10 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
 
     public SubgroupConjugates<T>[] MaximalNormalSubgroups(SubgroupConjugates<T> top)
     {
-        var allMax = new List<SubgroupConjugates<T>>();
+        var allMax = new HashSet<SubgroupConjugates<T>>();
         foreach (var h in AllSubgroupConjugates.Where(cj => cj.IsNormal && cj.IsSubClassOf(top)))
         {
-            allMax = allMax.Except(allMax.Where(h0 => h0.IsSubClassOf(h))).ToList();
+            allMax.ExceptWith(allMax.Where(h0 => h0.IsSubClassOf(h)));
             if (allMax.All(h0 => !h.IsSubClassOf(h0)))
                 allMax.Add(h);
         }
@@ -148,6 +148,23 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
         }
 
         return allProds;
+    }
+
+    public List<(SubgroupConjugates<T> fact, bool isDirectprod)> Complements(SubgroupConjugates<T> H)
+    {
+        if (H.Conjugates.Count != 1)
+            throw new GroupException(GroupExceptionType.NotNormal);
+        
+        var og = Parent.Count();
+        return AllSubgroupConjugates.Where(cj =>
+                cj.IsNormal && !cj.IsTrivial && cj.Order * H.Order == og &&
+                cj.Representative.Intersect(H.Representative).Count() == 1)
+            .Select(K => (K, true))
+            .Concat(AllSubgroupConjugates.Where(cj =>
+                !cj.IsNormal && !cj.IsTrivial && cj.Order * H.Order == og &&
+                cj.Representative.Intersect(H.Representative).Count() == 1)
+            .Select(K => (K, false)))
+            .ToList();
     }
 
     public void Naming()
