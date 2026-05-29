@@ -65,10 +65,8 @@ public static partial class FG
 
     static (Perm a, Perm b) OpsCnByUm(int n, Perm a, Perm b)
     {
-        var n0 = IntExt.PrimesDec(n)
-            .Select(p => p.Key.Pow(p.Value))
-            .Where(e => b.Order % e != 0)
-            .Aggregate(1, (acc, e) => e * acc);
+        // Vibe-math with Grok
+        var n0 = IntExt.DividorsInt(n).Order().First(x => IntExt.Lcm(x, b.Order) == n);
         var b0 = Cycles(n0);
         return (PaddingRight(a, b0.Sn.N), ConcatPerm(b, b0));
     }
