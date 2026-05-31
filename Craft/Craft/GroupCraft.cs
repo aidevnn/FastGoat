@@ -68,11 +68,8 @@ public static class GroupCraft
         {
             newGens.Add(set.OrderBy(e => e, comp).First());
             tmpElements = Group.GenerateElements(g, tmpElements, newGens);
-            set.ExceptWith(tmpElements.SelectMany(x => Group.Orbits(generators.ToHashSet(), Group.ByConjugate(g), x)));
+            set.ExceptWith(tmpElements);
         } while (setG.Count != tmpElements.Count && set.Any());
-
-        if (setG.Count != tmpElements.Count)
-            return [];
 
         return newGens.ToArray();
     }
