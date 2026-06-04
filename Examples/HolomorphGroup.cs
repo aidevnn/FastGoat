@@ -2,14 +2,22 @@ using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.CartesianProduct;
 using FastGoat.Structures.GenericGroup;
+using FastGoat.UserGroup;
 using FastGoat.UserGroup.Integers;
 using FastGoat.UserGroup.Words;
 
 namespace Examples;
 
-public static class HolomorphC7
+public static class HolomorphGroup
 {
-    public static void Sample()
+    public static SemiDirectProduct<T, Automorphism<T>> Holomorph<T>(ConcreteGroup<T> G) where T : struct, IElt<T>
+    {
+        var autG = Group.AutomorphismGroup(G);
+        var theta = Group.Hom(autG, Group.HomomorphismMap(autG, autG, autG.GetGenerators().ToDictionary(e => e, e => e)));
+        return Group.SemiDirectProd($"Hol[{G}]", G, theta, autG);
+    }
+
+    public static void Example1HolC7()
     {
         // Saunders MacLane, Garrett Birkhoff. Algebra (3rd ed.) page 416
         var c7 = new Cn(7);
@@ -65,5 +73,28 @@ public static class HolomorphC7
         Console.WriteLine("{0} IsIsomorphicTo {1} : {2}", wgC2H21, g2, wgC2H21.IsIsomorphicTo(g2));
         var g3 = nonIsomorphics[3];
         Console.WriteLine("{0} IsIsomorphicTo {1} : {2}", hol7, g3, hol7.IsIsomorphicTo(g3));
+    }
+
+    public static void Example2CyclicGroup()
+    {
+        DisplayGroup.HeadOrdersNames(Holomorph(new Cn(4)), setName: false);
+        DisplayGroup.HeadOrdersNames(Holomorph(FG.Abelian(2, 2)), setName: false);
+        DisplayGroup.HeadOrdersNames(Holomorph(new Cn(5)), setName: false);
+        DisplayGroup.HeadOrdersNames(Holomorph(new Cn(6)), setName: false);
+        DisplayGroup.HeadOrdersNames(Holomorph(new Cn(7)), setName: false);
+        DisplayGroup.HeadOrdersNames(Holomorph(new Cn(8)), setName: false);
+        DisplayGroup.HeadOrdersNames(Holomorph(new Cn(9)), setName: false);
+        DisplayGroup.HeadOrdersNames(Holomorph(FG.Abelian(3, 3)), setName: false);
+        DisplayGroup.HeadOrdersNames(Holomorph(new Cn(11)), setName: false);
+    }
+
+    public static void Example3DihedralAndDicyclic()
+    {
+        DisplayGroup.HeadOrdersNames(Holomorph(FG.DihedralWg(4)), setName: false);
+        DisplayGroup.HeadOrdersNames(Holomorph(FG.QuaternionWg(8)), setName: false);
+        DisplayGroup.HeadOrdersNames(Holomorph(FG.DihedralWg(5)), setName: false);
+        DisplayGroup.HeadOrdersNames(Holomorph(FG.DiCyclic(3)), setName: false);
+        DisplayGroup.HeadOrdersNames(Holomorph(FG.DihedralWg(6)), setName: false);
+        DisplayGroup.HeadOrdersNames(Holomorph(FG.DihedralWg(7)), setName: false);
     }
 }
