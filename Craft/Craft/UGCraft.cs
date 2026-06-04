@@ -2,6 +2,7 @@ using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.GenericGroup;
 using FastGoat.Structures.Subgroups;
+using FastGoat.UserGroup.Integers;
 using FastGoat.UserGroup.Perms;
 
 namespace Craft.Craft;
@@ -215,5 +216,74 @@ public static class UGCraft
         SchreierSims(Group.Generate("C4", sn, sn[(1, 2, 3, 4)]));
         SchreierSims(Group.Generate("A4", sn, sn[(1, 2, 3)], sn[(2, 3, 4)]));
         SchreierSims(Group.Generate("S4", sn, sn.GetGenerators().ToArray()));
+    }
+
+    public static IEnumerable<Perm> InnerAutMatrix(Perm a, Perm b)
+    {
+        var Ha = Group.Generate("Ha", a.Sn, a);
+        var aut = Group.AutomorphismMap(Ha, new() { [a] = b });
+        var autBase = Group.AutBase(Ha);
+        return InnerAutMatrix(new(autBase, aut));
+    }
+
+    public static IEnumerable<Perm> InnerAutMatrix(Automorphism<Perm> aut)
+    {
+        var G = aut.Domain;
+        var sn = G.Neutral().Sn;
+        var n = sn.N;
+        var xis = Ring.Polynomial(ZnInt.ZnZero(2), (n * n).SeqLazy(1).Select(i => $"x{i}").ToArray());
+        var Mx = xis.ToKMatrix(n);
+        var rowsM = Mx.Rows.Select(r => r.ToXSet()).ToArray();
+        var colsM = Mx.Cols.Select(c => c.ToXSet()).ToArray();
+        var sys = G.GetGenerators().Select(a =>
+            {
+                var Ma = MatrixExt.Permutation(a.Table).Select(i => i * Mx.KOne).ToKMatrix(n);
+                var Mb = MatrixExt.Permutation(aut[a].Table).Select(i => i * Mx.KOne).ToKMatrix(n);
+                return Mx * Ma - Mb * Mx;
+            }).SelectMany(m => m.Where(e => !e.IsZero()))
+            .ToHashSet();
+
+        var bagInit = sys.Select(e => e.Variables.ToXSet()).ToHashSet();
+        var bagEnd = bagInit.Take(0).ToHashSet();
+        while (bagInit.Count != 0)
+        {
+            var set = bagInit.Max();
+            var inter = bagInit.Where(s => s.Overlaps(set)).ToArray();
+            bagInit.ExceptWith(inter);
+            if (inter.Length == 1)
+                bagEnd.Add(set);
+            else
+                bagInit.Add(inter.Union());
+        }
+
+        var dependantXis = bagEnd.ToDictionary(e => e.Min(), e => e);
+        var zeros = dependantXis.Where(e =>
+                rowsM.Any(r => r.Intersect(e.Value).Count() > 1) || 
+                colsM.Any(c => c.Intersect(e.Value).Count() > 1))
+            .SelectMany(e => e.Value).ToXSet();
+        var M1 = Mx.Select(e => zeros.Contains(e) ? e.Zero : e).ToKMatrix(n);
+        if (M1.Rows.Any(r => r.All(e => e.IsZero())) || M1.Cols.Any(c => c.All(e => e.IsZero())))
+            yield break;
+
+        var pos = n.Range().Grid2D().ToDictionary(e => Mx[e.t1, e.t2], e => e);
+        var blocks = dependantXis.Where(e => !zeros.Contains(e.Key))
+            .ToDictionary(e => e.Value, e =>
+            {
+                var coords = e.Value.Select(xi => pos[xi]).ToArray();
+                var tl = (coords.Min(p => p.t1), coords.Min(p => p.t2));
+                var br = (coords.Max(p => p.t1), coords.Max(p => p.t2));
+                return (tl, br);
+            })
+            .GroupBy(e => e.Value).ToDictionary(e => e.Key, e => e.Select(f => f.Key).ToXSet());
+
+        var rg = n.Range();
+        foreach (var perms in blocks.Values.Select(l => l.ToArray()).MultiLoop().Select(l => l.ToArray()))
+        {
+            var ones = perms.SelectMany(e => e).ToHashSet();
+            var M2 = M1.Select(e => ones.Contains(e) ? e.KOne : e.KZero).ToKMatrix(n);
+            var arr = rg.Select(i => rg.FirstOrDefault(j => M2[i, j].IsOne(), 0)).ToArray();
+            if (arr.Order().SequenceEqual(rg))
+                yield return sn.CreateElementTable(arr);
+        }
     }
 }
