@@ -777,4 +777,9 @@ public static partial class Group
 
         return gens;
     }
+    
+    extension<T>(IGroup<T> g) where T : struct, IElt<T>
+    {
+        public ConcreteGroup<T> C1 => new("C1", g, [g.Neutral()]);
+    }
 }
