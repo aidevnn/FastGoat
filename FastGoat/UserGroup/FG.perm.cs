@@ -31,12 +31,12 @@ public static partial class FG
         return dec.Select(e => new Sn(e).Cycle(e.Range(1))).ToArray();
     }
 
-    public static Perm Cycles(int m)
+    public static Perm Cycles(int m, bool split = true)
     {
         if (m == 1)
             return new Sn(1).Neutral();
 
-        return ConcatPerm(CyclesSplit(m));
+        return split ? ConcatPerm(CyclesSplit(m)) : new Sn(m).Cycle(m.Range(1));
     }
 
     static (string name, Sn sn, Perm[] gens) AbelianPermGens(params int[] seq)
