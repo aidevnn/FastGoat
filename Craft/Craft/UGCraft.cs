@@ -75,7 +75,7 @@ public static class UGCraft
         }
     }
 
-    public static IEnumerable<Perm> InnerAutCn(Perm a)
+    public static IEnumerable<Perm> HolCn(Perm a)
     {
         return IntExt.Coprimes(a.Order).Select(i => a ^ i).SelectMany(ar => InnerAut(a, ar));
     }
@@ -83,7 +83,7 @@ public static class UGCraft
     public static void TestInnerAutCn(Perm a)
     {
         var sn = a.Sn;
-        var allConjs1 = InnerAutCn(a).ToArray();
+        var allConjs1 = HolCn(a).ToArray();
         var act = Group.ByConjugate(sn);
         var H = Group.Cycle(sn, a);
         var allConjs2 = sn.Where(g => H.Keys.Contains(act(g, a))).ToHashSet();
@@ -106,10 +106,10 @@ public static class UGCraft
         }
     }
 
-    public static void TestInnerAutCnLazy(Perm a)
+    public static void TestHolCnLazy(Perm a)
     {
         var sn = a.Sn;
-        var allConjs = InnerAutCn(a);
+        var allConjs = HolCn(a);
         var act = Group.ByConjugate(sn);
         var H = Group.Cycle(sn, a);
 
@@ -224,6 +224,13 @@ public static class UGCraft
         var aut = Group.AutomorphismMap(Ha, new() { [a] = b });
         var autBase = Group.AutBase(Ha);
         return InnerAutMatrix(new(autBase, aut));
+    }
+
+    public static IEnumerable<Perm> HolCnMatrix(Perm a)
+    {
+        var Ca = Group.Generate("Ha", a.Sn, a);
+        var autCa = Group.AutomorphismGroup(Ca);
+        return autCa.SelectMany(aut => InnerAutMatrix(aut));
     }
 
     public static IEnumerable<Perm> InnerAutMatrix(Automorphism<Perm> aut)
