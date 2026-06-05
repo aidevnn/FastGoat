@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Numerics;
+using System.Text;
 using Craft;
 using Craft.Craft;
 using Examples;
@@ -65,11 +66,63 @@ void RunAutomorphismDihedrals()
         DisplayGroup.HeadOrdersGenerators(autD2n2); // Aut(D2n) ~ Hol(Cn)
         Console.WriteLine();
         
-        if (!UGCraft.InnerAutCn(FG.Cycles(n)).ToHashSet().SetEquals(autD2n2))
+        if (!UGCraft.HolCn(FG.Cycles(n)).ToHashSet().SetEquals(autD2n2))
             throw new();
     }
 }
 
+void TestHolCn()
 {
-    RunAutomorphismDihedrals();
+    for (int i = 1; i <= 128; i++)
+    {
+        var a = FG.Cycles(i);
+        var holCa1 = UGCraft.HolCn(a).ToArray();
+        if (i > 16)
+        {
+            Console.WriteLine($"|Hol(C{i})| = {holCa1.Length}");
+            continue;
+        }
+        var holCa2 = UGCraft.HolCnMatrix(a).ToArray();
+        Console.WriteLine($"|Hol(C{i})| = {holCa1.Length}/{holCa2.Length}");
+    }
+
+    Console.WriteLine();
+}
+
+void SearchHolDn(int n)
+{
+    var d2nOrd = 2 * n;
+    var autD2nOrd = n * IntExt.Phi(n);
+    var holOrd = d2nOrd * autD2nOrd;
+    var snOrder = n.SeqLazy(1).Aggregate(BigInteger.One, (acc, e) => e * acc);
+    Console.WriteLine($"{$"Hol[D{2*n}]",-10} in  {new Sn(n),-4}:{(snOrder % holOrd == 0 ? "Unknown" : "Impossible")}");
+}
+
+void HolDn(int n)
+{
+    var (d2n, autD2n, _) = FG.RegPermAutGroup(FG.Dihedral(n));
+    var sn = d2n.Neutral().Sn;
+    var d2nSet = d2n.ToSet();
+    var act = Group.ByConjugateSet(sn);
+    var invar = autD2n.GetGenerators().All(x => act.IsInvariant(x, d2nSet));
+    var holDn = Group.DirectProduct($"Hol[{d2n}]", d2n, autD2n);
+    Console.WriteLine(
+        $"{d2n.ShortName,-20} {autD2n.ShortName,-20} Inter:{d2n.Intersect(autD2n).ToXSet().Count,-10} Invar:{invar,-10} holOrd:{d2n.Order * autD2n.Order,-10} {holDn.ShortName}");
+
+}
+
+void TestHolDn()
+{
+    for (int n = 3; n <= 32; n++)
+        SearchHolDn(n);
+
+    Console.WriteLine();
+    
+    for (int n = 3; n <= 16; n++)
+        HolDn(n);
+}
+
+{
+    TestHolCn();
+    TestHolDn();
 }
