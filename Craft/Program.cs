@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Reflection;
 using System.Text;
 using Craft;
 using Craft.Craft;
@@ -31,76 +32,6 @@ Console.WriteLine("Hello World");
 
 Perm.Style = DisplayPerm.CyclesComma;
 
-Perm AutZnToPerm(Automorphism<ZnInt> aut)
-{
-    var su = new Sn(aut.Domain.Order);
-    return su.CreateElementTable(aut.AutMap.Select(e => (e.Key.K, e.Value.K)).OrderBy(e => e.Item1)
-        .Select(e => e.Item2).ToArray());
-}
-
-ConcreteGroup<Perm> UnPerm(Un u)
-{
-    var su = new Sn(u.Cn.Order);
-    return Group.Generate($"{u.Name}", su, u.GetGenerators().Select(aut => AutZnToPerm(aut)).ToArray());
-}
-
-(Perm a, Perm b, Perm[] gensUi) AutD2nPerm(int n)
-{
-    var Ui = IntExt.PrimesDec(n).Select(e => new Un(e.Key.Pow(e.Value))).OrderBy(u => u.Cn.Order).ToArray();
-    var a = FG.Cycles(n);
-    var b = FG.ConcatPerm(Ui.Select(u => AutZnToPerm(u[(u.Cn[1], -u.Cn[1])])).ToArray());
-    var gpUi = Product.Gp(Ui.Select(u => UnPerm(u)).Cast<IGroup<Perm>>().ToArray());
-    var gensUi = gpUi.GetGenerators().Select(e => FG.ConcatPerm(e.Ei)).ToArray();
-    return (a, b, gensUi);
-}
-
-void RunAutomorphismDihedrals()
-{
-    for (int n = 3; n <= 128; n++)
-    {
-        Console.WriteLine($"################################## Aut[D{2 * n}]");
-        var (a, b, gensUi) = AutD2nPerm(n);
-        var d2n = Group.Generate($"D{2 * n}", a.Sn, a, b);
-        var autD2n2 = Group.Generate($"Aut[{d2n}]", a.Sn, gensUi.Prepend(a).ToArray());
-        DisplayGroup.HeadOrdersGenerators(d2n);
-        DisplayGroup.HeadOrdersGenerators(autD2n2); // Aut(D2n) ~ Hol(Cn)
-        Console.WriteLine();
-
-        if (!UGCraft.HolCn(FG.Cycles(n)).ToHashSet().SetEquals(autD2n2))
-            throw new();
-    }
-}
-
-void TestHolCn()
-{
-    for (int i = 1; i <= 128; i++)
-    {
-        var a = FG.Cycles(i);
-        var holCaOrd = i * IntExt.Phi(i);
-        var holCa1 = UGCraft.HolCn(a).ToArray();
-        if (i > 16)
-        {
-            Console.WriteLine($"|Hol(C{i})| = {holCa1.Length}/{holCaOrd}");
-            continue;
-        }
-
-        var holCa2 = UGCraft.HolCnMatrix(a).ToArray();
-        Console.WriteLine($"|Hol(C{i})| = {holCa1.Length}/{holCa2.Length}/{holCaOrd}");
-    }
-
-    Console.WriteLine();
-}
-
-void SearchHolDn(int n)
-{
-    var d2nOrd = 2 * n;
-    var autD2nOrd = n * IntExt.Phi(n);
-    var holOrd = d2nOrd * autD2nOrd;
-    var snOrder = n.SeqLazy(1).Aggregate(BigInteger.One, (acc, e) => e * acc);
-    Console.WriteLine(
-        $"{$"Hol[D{2 * n}]",-10} in  {new Sn(n),-4}:{(snOrder % holOrd == 0 ? "Unknown" : "Impossible")}");
-}
-
 (Perm a, Perm b) PrepareDihedral(int n)
 {
     var pType = IntExt.PrimesDec(n).Select(e => e.Key.Pow(e.Value)).ToArray();
@@ -114,137 +45,181 @@ void SearchHolDn(int n)
     var b = sn.OpSeq(bCycles.Select(c => sn.CycleP1([c.First, c.Second])));
     return (a, b);
 }
-
-Dictionary<T2, HashSet<T2>> AllOrbits<T1, T2>(ConcreteGroup<T1> gr, T2[] set, GroupAction<T1, T2> act)
-    where T1 : struct, IElt<T1>
-    where T2 : struct, IElt<T2>
+Perm[] QuaternionGens(int n)
 {
-    var xsets = new HashSet<T2>();
-    var allOrbits = new Dictionary<T2, HashSet<T2>>();
-    var gens = gr.GetGenerators().ToHashSet();
-    foreach (var x in set)
-    {
-        if (xsets.Contains(x))
-            continue;
+    if (!int.IsPow2(n))
+        throw new();
 
-        var orbx = Group.Orbits(gens, act, x);
-        if (!xsets.Overlaps(orbx))
-            allOrbits[orbx.Min()] = orbx;
-
-        xsets.UnionWith(orbx);
-    }
-
-    return allOrbits;
+    var k1 = n / 2;
+    var k2 = n / 4;
+    var sn = new Sn(n);
+    var a = sn.Cycle(k1.Range(1)) * sn.Cycle(k1.Range(k1 + 1));
+    var b = Group.OpSeq(sn, k2.SeqLazy().Select(i => sn.Cycle(i + 1, n - i, i + 1 + k2, n - i - k2)));
+    return [a, b];
+}
+(Perm a, Perm b) OpsCnByUm(int n, Perm a, Perm b)
+{
+    var n0 = IntExt.DividorsInt(n).Order().First(x => IntExt.Lcm(x, b.Order) == n);
+    var b0 = FG.Cycles(n0);
+    return (FG.PaddingRight(a, b0.Sn.N), FG.ConcatPerm(b, b0));
 }
 
-ConcreteGroup<Perm> ProductPermGroup(params ConcreteGroup<Perm>[] Gs)
-{
-    var HnBase = Product.Gp(Gs.Cast<IGroup<Perm>>().ToArray());
-    var HnGens = HnBase.GetGenerators().Select(e => FG.ConcatPerm(e.Ei)).ToArray();
-    return Group.Generate(HnBase.Name, HnGens[0].Sn, HnGens);
-}
+int total, errors;
 
-(ConcreteGroup<Perm> d2n, ConcreteGroup<Perm> autd2n, ConcreteGroup<Perm> hold2n) HolomorphD2n(int n)
+void HolDic(int n)
 {
-    Console.WriteLine($"#### Start D{2 * n,-6} ####");
-    if (IntExt.PrimesDec(n).Count == 1)
+    var dicn = FG.DicyclicPg(n);
+    var sn = dicn.Neutral().Sn;
+    var autDicn = Group.AutomorphismGroup(dicn);
+    DisplayGroup.HeadOrders(dicn);
+    DisplayGroup.Generators(dicn);
+    DisplayGroup.HeadOrders(autDicn);
+    var (reg, autReg, _) = FG.RegPermAutGroup(dicn);
+    var hol0 = Group.DirectProduct($"Hol[{dicn}]", reg, autReg);
+    if (sn.N == dicn.Order)
     {
-        var _d2n = FG.Dihedral(n);
-        var (_d2nReg, _autD2nReg, _) = FG.RegPermAutGroup(_d2n);
-        var _holD2n = Group.DirectProduct($"Hol[{_d2n}]", _d2nReg, _autD2nReg);
-        DisplayGroup.HeadOrdersGenerators(_d2n);
-        DisplayGroup.HeadOrdersGenerators(_autD2nReg);
-        DisplayGroup.HeadOrdersGenerators(_holD2n);
-        return (_d2n, _autD2nReg, _holD2n);
+        DisplayGroup.HeadOrders(autReg);
+        Console.WriteLine($"Hol[{dicn}] from Regular Permutation");
+        DisplayGroup.HeadOrders(hol0);
     }
-
-    var phi = IntExt.Phi(n);
-    var phiType = Group.AbelianGroupType(FG.UnInt(n));
-    var (a, b) = PrepareDihedral(n);
-    Console.WriteLine(new { a });
-    Console.WriteLine(new { b });
-
-    var d2n = Group.Generate($"D{2 * n}", a.Sn, a, b);
-    DisplayGroup.HeadOrdersGenerators(d2n);
-    var autD2nReg = FG.RegPermAutGroup(d2n).autG;
-    Console.WriteLine($"Aut[{d2n}] = C{n} x: {phiType.ToAbString().WithParenthesis()}");
-    var holCa = UGCraft.HolCn(a).ToArray();
-    var hol = holCa.GroupBy(e => e.Order).ToDictionary(e => e.Key, e => e.ToArray());
-    var d2nSet = d2n.ToSet();
-    var act = Group.ByConjugate(a.Sn);
-    var actSet = Group.ByConjugateSet(a.Sn);
-    hol.ToDictionary(e => e.Key, e => e.Value.Length).AscendingByKey()
-        .Println($"Hol:{hol.Sum(e => e.Value.Length)}/{2 * n * n * phi}");
-
-    var gHolCa = Group.Generate("InnAuts", a.Sn, holCa.OrderByDescending(e => e.Order).ThenBy(e => e.Orbits.Length).ToArray());
-    var allOrbx = AllOrbits(gHolCa, holCa, act);
-    var holOrd = 2 * n * n * phi;
-
-    var CnOrd = allOrbx.Keys.Where(e => !d2n.Contains(e) && e.Order == n && act.IsInvariant(e, a))
-        .OrderByDescending(e => e.Orbits.Length).ThenBy(e => e).ToArray();
-    var UnOrd = phiType.Select(t =>
-            allOrbx.Keys.Where(e => !d2n.Contains(e) && e.Order == t && actSet.IsInvariant(e, d2nSet))
-                .OrderByDescending(e => e.Orbits.Length).ThenBy(e => e).ToArray())
-        .ToArray();
-    Console.WriteLine($"CnOrd:{CnOrd.Length} UnOrd:[{UnOrd.Select(e => e.Length).Glue(", ")}]");
-
-    foreach (var g0 in CnOrd)
+    else
     {
-        Console.WriteLine($"g0:{g0}");
-        var G0 = Group.Generate("G", a.Sn, g0).ToSet();
-        var filterUnOrd = UnOrd
-            .MultiLoop().Select(l => l.ToArray())
-            .Where(l => l.Distinct().Count() == l.Length &&
-                        l.Grid2D().All(g => act.IsInvariant(g.t1, g.t2)) &&
-                        l.All(e => actSet.IsInvariant(e, G0)))
-            .ToArray();
-        var gsAll = filterUnOrd.Where(l => l.All(e => actSet.IsInvariant(e, G0))).ToArray();
-        Console.WriteLine($"   filterUnOrd:{filterUnOrd.Length} gs:{gsAll.Length}");
-        var gs = gsAll.FirstOrDefault(l =>
-        {
-            var elts = GroupCraft.GenerateElementsLimited(a.Sn, l.Prepend(g0).ToArray(), n * phi);
-            return elts.Count == n * phi &&
-                   elts.Intersect(d2n).Count() == 1 &&
-                   Group.Generate(a.Sn, l.Prepend(g0).ToArray()).IsIsomorphicTo(autD2nReg) &&
-                   GroupCraft.GenerateElementsLimited(a.Sn, l.Concat([a, b, g0]).ToArray(), holOrd).Count == holOrd;
-        }, [a.Sn.Neutral()]);
+        var typeMatching = autDicn.GetGenerators()
+            .All(aut => dicn.GetGenerators().All(g => Perm.TypeEquals(g, aut[g])));
+        Console.WriteLine($"TypeMatch:{typeMatching}");
+        var autOrd = autDicn.Order;
+        var holOrd = dicn.Order * autOrd;
 
-        if (gs.All(e => e.Order != 1))
+        if (n % 2 == 1)
         {
-            var autD2n = Group.Generate($"Aut[{d2n}]", a.Sn, gs.Prepend(g0).ToArray());
-            var holD2n = Group.Generate($"Hol[{d2n}]", a.Sn, gs.Concat([a, b, g0]).ToArray());
-            DisplayGroup.HeadOrdersGenerators(autD2n);
-            DisplayGroup.HeadOrdersGenerators(holD2n);
-            return (d2n, autD2n, holD2n);
+            var (b1, c1) = PrepareDihedral(n);
+            var candidat = false;
+            var (b2, c2) = OpsCnByUm(4, b1, c1);
+            var dicn2 = Group.Generate(dicn.Name, b2.Sn, b2, c2);
+            var autDicn2 = Group.AutomorphismGroup(dicn2);
+            var aut1 = autDicn2.OrderByDescending(e => autDicn2.ElementsOrders[e])
+                .First(aut => aut[b2].Equals(b2) && !aut[c2].Equals(c2));
+            var aut2 = autDicn2.OrderByDescending(e => autDicn2.ElementsOrders[e])
+                .First(aut => aut[b2].Equals(b2) && aut[c2].Equals(c2));
+            var gensAut = GroupCraft.RecreateGenerators(autDicn2,
+                autDicn2.OrderByDescending(e =>
+                    e.Equals(aut1) ? 1000 :
+                    e.Equals(aut2) ? 500 : autDicn2.ElementsOrders[e]).ToArray());
+            var holGens = gensAut.ToDictionary(aut => aut, aut => UGCraft.InnerAutMatrix(aut).ToList());
+            foreach (var gens in holGens.Values.MultiLoop().Select(l => l.ToArray()))
+            {
+                var eltsAut = GroupCraft.GenerateElementsLimited(b2.Sn, gens, autOrd);
+                var listOrdAut = eltsAut.Select(e => e.Order).Order().ToArray();
+                if (eltsAut.Count != autOrd || !listOrdAut.SequenceEqual(autDicn.ElementsOrdersList()))
+                    continue;
+
+                var gensF = gens.Concat(dicn2.GetGenerators()).ToArray();
+                var eltsHol = GroupCraft.GenerateElementsLimited(b2.Sn, gensF, holOrd);
+                var listOrdHol = eltsHol.Select(e => e.Order).Order().ToArray();
+                if (eltsHol.Count == holOrd && listOrdHol.SequenceEqual(hol0.ElementsOrdersList()))
+                {
+                    var autDicn3 = Group.Generate($"Aut[{dicn}]", b2.Sn, gens);
+                    DisplayGroup.HeadOrdersGenerators(autDicn3);
+                    Console.WriteLine(
+                        $"Idx gen:[{holGens.Values.Zip(gens).Select(e => e.First.FindIndex(f => f.Equals(e.Second))).Glue(", ")}]");
+                    DisplayGroup.AreIsomorphics(autDicn3, autReg);
+                    Console.WriteLine();
+                    var hol = Group.Generate($"Hol[{dicn}](candidat)", b2.Sn, gensF);
+                    DisplayGroup.HeadOrdersGenerators(hol);
+                    candidat = true;
+                    break;
+                }
+            }
+
+            if (!candidat)
+            {
+                ++errors;
+                Console.WriteLine("Problem Even Dicyclic group");
+            }
+        }
+        else
+        {
+            var k = IntExt.PrimesDec(n)[2];
+            var m = n / 2.Pow(k);
+            var gensQ = QuaternionGens(1 << (k + 2));
+            var (b1, c1) = gensQ.Deconstruct();
+            var (a2, b2) = PrepareDihedral(m);
+            var a3 = FG.PaddingRight(a2, b1.Sn.N);
+            var b3 = FG.PaddingLeft(b1, b2.Sn.N);
+            var c3 = FG.ConcatPerm(b2, c1);
+            var dicn2 = Group.Generate(dicn.Name, a3.Sn, a3, b3, c3);
+            var autDicn2 = Group.AutomorphismGroup(dicn2);
+            var aut1 = autDicn2.OrderByDescending(e => autDicn2.ElementsOrders[e])
+                .First(aut => aut[a3].Equals(a3) && !aut[b3].Equals(b3) && !aut[c3].Equals(c3));
+            var aut2 = autDicn2.OrderByDescending(e => autDicn2.ElementsOrders[e])
+                .First(aut => aut[a3].Equals(a3) && aut[b3].Equals(b3) && !aut[c3].Equals(c3));
+            var aut3 = autDicn2.OrderByDescending(e => autDicn2.ElementsOrders[e])
+                .First(aut => aut[a3].Equals(a3) && aut[b3].Equals(b3) && aut[c3].Equals(c3));
+            var gensAut = GroupCraft.RecreateGenerators(autDicn2,
+                autDicn2.OrderByDescending(e =>
+                    e.Equals(aut1) ? 1000 :
+                    e.Equals(aut2) ? 750 :
+                    e.Equals(aut3) ? 500 : autDicn2.ElementsOrders[e]).ToArray());
+            var holGens = gensAut.ToDictionary(aut => aut, aut => UGCraft.InnerAutMatrix(aut).ToList());
+            var candidat = false;
+
+            foreach (var gens in holGens.Values.MultiLoop().Select(l => l.ToArray()))
+            {
+                var eltsAut = GroupCraft.GenerateElementsLimited(a3.Sn, gens, autOrd);
+                var listOrdAut = eltsAut.Select(e => e.Order).Order().ToArray();
+                if (eltsAut.Count != autOrd || !listOrdAut.SequenceEqual(autDicn.ElementsOrdersList()))
+                    continue;
+
+                var gensF = gens.Concat(dicn2.GetGenerators()).ToArray();
+                var elts = GroupCraft.GenerateElementsLimited(a3.Sn, gensF, holOrd);
+                var listOrd = elts.Select(e => e.Order).Order().ToArray();
+                if (elts.Count == holOrd && listOrd.SequenceEqual(hol0.ElementsOrdersList()))
+                {
+                    var autDicn3 = Group.Generate($"Aut[{dicn}]", a3.Sn, gens);
+                    DisplayGroup.HeadOrdersGenerators(autDicn3);
+                    Console.WriteLine(
+                        $"Idx gen:[{holGens.Values.Zip(gens).Select(e => e.First.FindIndex(f => f.Equals(e.Second))).Glue(", ")}]");
+                    DisplayGroup.AreIsomorphics(autDicn3, autReg);
+                    Console.WriteLine();
+                    var hol = Group.Generate($"Hol[{dicn}](candidat)", a3.Sn, gensF);
+                    DisplayGroup.HeadOrdersGenerators(hol);
+                    candidat = true;
+                    break;
+                }
+            }
+
+            if (!candidat)
+            {
+                ++errors;
+                Console.WriteLine("Problem Even Dicyclic group");
+            }
         }
     }
 
-    throw new("bad");
-}
-
-void HolD2n(int n)
-{
-    {
-        var (d2n, autD2n, holD2n) = HolomorphD2n(n);
-        var sn = holD2n.Neutral().Sn;
-        var (d2nReg, autD2nReg, _) = FG.RegPermAutGroup(d2n);
-        // var holReg = Group.DirectProduct(d2nReg, autD2nReg);
-        var snReg = d2nReg.Neutral().Sn;
-        var phi = IntExt.Phi(n);
-        var holOrd = 2 * n * n * phi;
-        Console.WriteLine(
-            $"{d2n.ShortName,-20} {autD2n.ShortName,-20} autD2nOrd:{n * phi,-10} {holD2n.ShortName,-20} holOrd:{holOrd,-10} {sn} {snReg}");
-        if (!autD2n.IsIsomorphicTo(autD2nReg))
-            throw new();
-    }
-
+    DisplayGroup.HeadOrders(hol0);
     Console.WriteLine();
 }
 
 {
     GlobalStopWatch.Restart();
-    for (int n = 3; n <= 32; n++)
-        HolD2n(n);
-    GlobalStopWatch.Show(); // Time:35.480s
-    // |D60| = 60           |Aut[D60]| = 240     autD2nOrd:240        |Hol[D60]| = 14400   holOrd:14400      S20 S60
+    (total, errors) = (0, 0);
+    for (int n = 2; n <= 16; n++)
+    {
+        ++total;
+        HolDic(n);
+    }
+
+    GlobalStopWatch.Show($"total:{total} errors:{errors}"); // # total:15 errors:0 Time:1m51s
+    // |Aut[Dic7]| = 84
+    // Type        NonAbelianGroup
+    // BaseGroup   S18
+    // 
+    // Elements Orders : [1]:1, [2]:15, [3]:14, [6]:42, [7]:6, [14]:6
+    // Generators of Aut[Dic7]
+    // gen1 of order 6
+    // [(1, 2, 7, 4, 3, 5), (8, 14, 9, 12, 13, 11)]
+    // gen2 of order 14
+    // [(1, 7, 6, 5, 4, 3, 2), (15, 16), (17, 18)]
+    // 
+    // 
 }
