@@ -2,6 +2,8 @@ using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.GenericGroup;
 using FastGoat.Structures.Subgroups;
+using FastGoat.Structures.VecSpace;
+using FastGoat.UserGroup;
 using FastGoat.UserGroup.Integers;
 using FastGoat.UserGroup.Perms;
 
@@ -77,7 +79,7 @@ public static class UGCraft
 
     public static IEnumerable<Perm> HolCn(Perm a)
     {
-        return IntExt.Coprimes(a.Order).Select(i => a ^ i).SelectMany(ar => InnerAut(a, ar));
+        return IntExt.Coprimes(a.Order).SelectMany(r => InnerAut(a, a ^ r));
     }
 
     public static void TestInnerAutCn(Perm a)
@@ -264,8 +266,9 @@ public static class UGCraft
         }
 
         var dependantXis = bagEnd.ToDictionary(e => e.Min(), e => e);
+        var setXis = bagEnd.SelectMany(e => e).ToHashSet();
         var zeros = dependantXis.Where(e =>
-                rowsM.Any(r => r.Intersect(e.Value).Count() > 1) || 
+                rowsM.Any(r => r.Intersect(e.Value).Count() > 1) ||
                 colsM.Any(c => c.Intersect(e.Value).Count() > 1))
             .SelectMany(e => e.Value).ToXSet();
         var M1 = Mx.Select(e => zeros.Contains(e) ? e.Zero : e).ToKMatrix(n);
@@ -273,24 +276,62 @@ public static class UGCraft
             yield break;
 
         var pos = n.Range().Grid2D().ToDictionary(e => Mx[e.t1, e.t2], e => e);
+        var rem = M1.Where(e => !e.IsZero() && !setXis.Contains(e))
+            .ToDictionary(e => e, e => new XSet<Polynomial<ZnInt, Xi>>(e));
+        dependantXis = dependantXis.Concat(rem).ToDictionary();
+        dependantXis.Println("dependantXis");
         var blocks = dependantXis.Where(e => !zeros.Contains(e.Key))
             .ToDictionary(e => e.Value, e =>
             {
                 var coords = e.Value.Select(xi => pos[xi]).ToArray();
                 var tl = (coords.Min(p => p.t1), coords.Min(p => p.t2));
                 var br = (coords.Max(p => p.t1), coords.Max(p => p.t2));
-                return (tl, br);
+                var dim = (br.Item1 - tl.Item1 + 1, br.Item2 - tl.Item2 + 1);
+                return new { dim, tl, br };
             })
             .GroupBy(e => e.Value).ToDictionary(e => e.Key, e => e.Select(f => f.Key).ToXSet());
 
+        Console.WriteLine($"aut:{aut}");
+        Console.WriteLine("M1");
+        Console.WriteLine(M1);
+        Console.WriteLine();
+        var permsByDims = new List<XSet<Polynomial<ZnInt, Xi>>[]>();
+        foreach (var gh in blocks.GroupBy(e => e.Key.dim))
+        {
+            var blocksDim = gh.ToDictionary();
+            blocksDim.Println($"dim:{gh.Key}");
+            var subBlocks = blocksDim.Values.ToArray();
+            var N = (int)(Math.Sqrt(blocksDim.Count));
+            if (N * N == blocksDim.Count)
+            {
+                var glN2 = new Sn(N).Select(e => MatrixExt.Permutation(e.Table).Zip(subBlocks)
+                        .Where(s => s.First == 1).Select(s => s.Second.ToArray()).ToArray())
+                    .ToArray();
+                var ml = glN2.SelectMany(l => l.MultiLoop().Select(y => y.Union())).ToArray();
+                permsByDims.Add(ml);
+                ml.Println("Dependants");
+            }
+            else // TODO: finding and proving all cases
+            {
+                var ml = blocksDim.Values.Select(l => l.ToArray()).MultiLoop().Select(l => l.Union()).ToArray();
+                permsByDims.Add(ml);
+                ml.Println("Independants");
+            }
+        }
+
         var rg = n.Range();
-        foreach (var perms in blocks.Values.Select(l => l.ToArray()).MultiLoop().Select(l => l.ToArray()))
+        foreach (var perms in permsByDims.Select(l => l.ToArray()).MultiLoop().Select(l => l.ToArray()))
         {
             var ones = perms.SelectMany(e => e).ToHashSet();
             var M2 = M1.Select(e => ones.Contains(e) ? e.KOne : e.KZero).ToKMatrix(n);
             var arr = rg.Select(i => rg.FirstOrDefault(j => M2[i, j].IsOne(), 0)).ToArray();
             if (arr.Order().SequenceEqual(rg))
                 yield return sn.CreateElementTable(arr);
+            else
+            {
+                Console.WriteLine($"Problem:{ones.ToXSet()}");
+                Console.WriteLine(M2);
+            }
         }
     }
 }
