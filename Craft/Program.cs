@@ -110,3 +110,13 @@ Perm.Style = DisplayPerm.CyclesComma;
     autM.GetGenerators().SelectMany(aut => UGCraft.InnerAutMatrix(aut)).ToArray().Println();
     Console.WriteLine();
 }
+
+{
+    var G = FG.AbelianPerm(2, 2, 2, 2);
+    var autG = Group.AutBase(G);
+    var autRand = Group.AllMorphisms(G, G, Group.MorphismType.Isomorphism).Take(3).ToArray();
+    Console.WriteLine(G.ShortName);
+    autRand.Select(iso => new Automorphism<Perm>(autG, iso.HomMap))
+        .SelectMany(aut => UGCraft.InnerAutMatrix(aut)).ToArray().Println();
+    Console.WriteLine();
+}

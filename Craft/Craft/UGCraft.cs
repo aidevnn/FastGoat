@@ -300,11 +300,12 @@ public static class UGCraft
         {
             var blocksDim = gh.ToDictionary();
             blocksDim.Println($"dim:{gh.Key}");
+            var xs = blocksDim.Keys.Select(e => e.tl.Item1).ToHashSet();
+            var ys = blocksDim.Keys.Select(e => e.tl.Item2).ToHashSet();
             var subBlocks = blocksDim.Values.ToArray();
-            var N = (int)(Math.Sqrt(blocksDim.Count));
-            if (N * N == blocksDim.Count)
+            if (xs.Grid2D(ys).Order().SequenceEqual(blocksDim.Keys.Select(e => e.tl).Order()))
             {
-                var glN2 = new Sn(N).Select(e => MatrixExt.Permutation(e.Table).Zip(subBlocks)
+                var glN2 = new Sn(xs.Count).Select(e => MatrixExt.Permutation(e.Table).Zip(subBlocks)
                         .Where(s => s.First == 1).Select(s => s.Second.ToArray()).ToArray())
                     .ToArray();
                 var ml = glN2.SelectMany(l => l.MultiLoop().Select(y => y.Union())).ToArray();
