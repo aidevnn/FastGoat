@@ -279,7 +279,7 @@ public static class UGCraft
         var rem = M1.Where(e => !e.IsZero() && !setXis.Contains(e))
             .ToDictionary(e => e, e => new XSet<Polynomial<ZnInt, Xi>>(e));
         dependantXis = dependantXis.Concat(rem).ToDictionary();
-        dependantXis.Println("dependantXis");
+        // dependantXis.Println("dependantXis");
         var blocks = dependantXis.Where(e => !zeros.Contains(e.Key))
             .ToDictionary(e => e.Value, e =>
             {
@@ -291,15 +291,15 @@ public static class UGCraft
             })
             .GroupBy(e => e.Value).ToDictionary(e => e.Key, e => e.Select(f => f.Key).ToXSet());
 
-        Console.WriteLine($"aut:{aut}");
-        Console.WriteLine("M1");
-        Console.WriteLine(M1);
-        Console.WriteLine();
+        // Console.WriteLine($"aut:{aut}");
+        // Console.WriteLine("M1");
+        // Console.WriteLine(M1);
+        // Console.WriteLine();
         var permsByDims = new List<XSet<Polynomial<ZnInt, Xi>>[]>();
         foreach (var gh in blocks.GroupBy(e => e.Key.dim))
         {
             var blocksDim = gh.ToDictionary();
-            blocksDim.Println($"dim:{gh.Key}");
+            // blocksDim.Println($"dim:{gh.Key}");
             var xs = blocksDim.Keys.Select(e => e.tl.Item1).ToHashSet();
             var ys = blocksDim.Keys.Select(e => e.tl.Item2).ToHashSet();
             var subBlocks = blocksDim.Values.ToArray();
@@ -310,13 +310,13 @@ public static class UGCraft
                     .ToArray();
                 var ml = glN2.SelectMany(l => l.MultiLoop().Select(y => y.Union())).ToArray();
                 permsByDims.Add(ml);
-                ml.Println("Dependants");
+                // ml.Println("Dependants");
             }
             else // TODO: finding and proving all cases
             {
                 var ml = blocksDim.Values.Select(l => l.ToArray()).MultiLoop().Select(l => l.Union()).ToArray();
                 permsByDims.Add(ml);
-                ml.Println("Independants");
+                // ml.Println("Independants");
             }
         }
 
