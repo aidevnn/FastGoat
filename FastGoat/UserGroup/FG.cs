@@ -244,9 +244,15 @@ public static partial class FG
             .DistinctBy(e => e.r == 1 ? (e.m * e.n, 1, 1) : e)
             .ToArray();
     }
+    
     public static int[] FrobeniusGetR(int m, int n)
     {
         return MetaCyclicSdpGetR(m, n).Where(r => IntExt.Gcd(m, n * (r - 1)) == 1).ToArray();
+    }
+
+    public static (int m, int n, int r)[] FrobeniusCoefs(int ord)
+    {
+        return MetaCyclicCoefs(ord).Where(e => IntExt.Gcd(e.m, e.n * (e.r - 1)) == 1).ToArray();
     }
 
     public static List<WordGroup> MetaCyclicSdpWg(int ord)
