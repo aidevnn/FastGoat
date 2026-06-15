@@ -10,6 +10,8 @@ public struct Serie<T> : IEquatable<Serie<T>> where T : struct, IElt<T>
     public SerieType SerieType { get; }
     public int Count => Content.Count;
 
+    public bool IsPolyCyclic => Content.Zip(Content.Skip(1)).All(e => IntExt.IsPrime(e.First.Order / e.Second.Order));
+
     public Serie(List<SubgroupConjugates<T>> serie, SerieType serieType, int digits, string symbolNormal = " ⊲  ")
     {
         SerieType = serieType;
