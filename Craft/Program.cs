@@ -87,16 +87,16 @@ IEnumerable<Dictionary<T1, T2>> MorphismPruning<T1, T2>(IGroup<T1> G, IGroup<T2>
 }
 
 IEnumerable<Homomorphism<T1, T2>> AllMorphismsWithPruning<T1, T2>(ConcreteGroup<T1> G, ConcreteGroup<T2> H,
-    Group.MorphismType mType)
+    Group.MorphismType mType = Group.MorphismType.Homomorphism)
     where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
 {
     var gGens = G.GetGenerators().ToArray();
     bool Filter(int e, int a) => mType == Group.MorphismType.Homomorphism ? e % a == 0 : e == a;
-    var g2ByOrders = H.GroupBy(e => H.ElementsOrders[e])
+    var hByOrders = H.GroupBy(e => H.ElementsOrders[e])
         .Select(e => (ord: e.Key, elt: e.ToArray()))
         .ToArray();
     var gGensOrders = gGens.Select(e => (g: e, ord: G.ElementsOrders[e])).ToArray();
-    var gpMap = gGensOrders.Select(e => g2ByOrders.Where(a => Filter(e.ord, a.ord)).SelectMany(a => a.elt)
+    var gpMap = gGensOrders.Select(e => hByOrders.Where(a => Filter(e.ord, a.ord)).SelectMany(a => a.elt)
             .Select(a => (e.g, a))
             .ToArray())
         .ToArray();
@@ -117,6 +117,11 @@ IEnumerable<Homomorphism<T1, T2>> AllMorphismsWithPruning<T1, T2>(ConcreteGroup<
 bool AreIsomorphic<T1, T2>(ConcreteGroup<T1> G, ConcreteGroup<T2> H) where T1 : struct, IElt<T1>
     where T2 : struct, IElt<T2>
 {
+    if (G.Order != H.Order || G.GroupType != H.GroupType)
+        return false;
+    if (!G.ElementsOrdersList().SequenceEqual(H.ElementsOrdersList()))
+        return false;
+
     Homomorphism<T1, T2> nullHom = new();
     var iso = AllMorphismsWithPruning(G, H, Group.MorphismType.Isomorphism).FirstOrDefault(nullHom);
     return !iso.IsNull;
@@ -178,17 +183,33 @@ void BenchMorphPruning()
     }
 }
 
-bool AutomorphismReconstruction(ConcreteGroup<Perm> G)
+(Homomorphism<T, Automorphism<T>> opsByAut, ConcreteGroup<Automorphism<T>> innAutG)
+    InnerAutomorphismGroup<T>(ConcreteGroup<T> g, ConcreteGroup<T> autG) where T : struct, IElt<T>
 {
-    var autG = Group.AutomorphismGroup(G);
-    var autGgens = GroupCraft.RecreateGenerators(autG);
-    if (autGgens.Any(aut => G.GetGenerators().Any(e => !Perm.TypeEquals(e, aut[e]))))
+    var bgAut = new AutomorphismGroup<T>(g);
+    var act = Group.ByConjugate(autG);
+    var allAut = autG.ToDictionary(x => x,
+        x => new Automorphism<T>(bgAut,
+            Group.IsomorphismMap(g, g, g.GetGenerators().ToDictionary(e => e, e => act(x, e)))));
+    var innAutG = Group.Generate($"Inn[{autG.Name}]", bgAut, allAut.Values.ToArray());
+    return (new Homomorphism<T, Automorphism<T>>(autG, allAut), innAutG);
+}
+
+(ConcreteGroup<Perm> G, ConcreteGroup<Perm> AutG)
+    AutomorphismPerm(ConcreteGroup<Perm> G, ConcreteGroup<Automorphism<Perm>> autG)
+{
+    var sn = G.Neutral().Sn;
+    if (!TypeMatch(autG))
+        return (sn.C1, sn.C1);
+
+    if (G.Order == sn.N)
     {
-        // Console.WriteLine($"{autG.Name} not found in {G.Neutral().Sn} TypeMisMatch");
-        return false;
+        Console.WriteLine($"Regular permutation {G}");
+        var (G0, autG0, _) = FG.RegPermAutGroup(G);
+        return (G0, autG0);
     }
 
-    DisplayGroup.HeadOrdersGenerators(G);
+    var autGgens = GroupCraft.RecreateGenerators(autG);
     var autGensImages =
         autGgens.ToDictionary(aut => aut,
             aut => UGCraft.InnerAutMatrix(aut).Where(e => e.Order == autG.ElementsOrders[aut]).Select(a => (g: aut, a))
@@ -199,21 +220,26 @@ bool AutomorphismReconstruction(ConcreteGroup<Perm> G)
             i => Group.GenerateElements(autG.BaseGroup, autGgens.Take(i).ToArray()).Count);
     sizes[autGgens.Last()] = ng;
     var gensTuples = autGgens.Select(aut => autGensImages[aut]).ToArray();
-    Dictionary<Automorphism<Perm>, Perm> emptyMap = new();
     Dictionary<Automorphism<Perm>, Perm> pmap = new();
     Dictionary<Automorphism<Perm>, Perm> map = new() { [autG.Neutral()] = G.Neutral() };
-    var iso = MorphismPruning(autG, G.BaseGroup, sizes, pmap, map, gensTuples, 0).FirstOrDefault(emptyMap);
-    if (iso.Count == 0)
+    foreach (var iso in MorphismPruning(autG, G.BaseGroup, sizes, pmap, map, gensTuples, 0))
     {
-        // Console.WriteLine($"{autG.Name} not found in {G.Neutral().Sn} Isomorphism");
-        return false;
+        var autGgensPg = autGgens.Select(aut => iso[aut]).ToArray();
+        var autGperm = Group.Generate(autG.Name + "pg", G.BaseGroup, autGgensPg);
+        if (AreIsomorphic(autG, autGperm))
+        {
+            Console.WriteLine($"{autG} Is Isomorphic To {autGperm} in {G.BaseGroup}");
+            return (G, autGperm);
+        }
     }
 
-    var autGperm = Group.Generate(autG.Name + "pg", G.BaseGroup, autGgens.Select(aut => iso[aut]).ToArray());
-    DisplayGroup.HeadOrdersGenerators(autGperm);
-    Console.WriteLine($"{autG} Is Isomorphic To {autGperm}");
-    Console.WriteLine();
-    return true;
+    return (G.C1, G.C1);
+}
+
+bool TypeMatch(ConcreteGroup<Automorphism<Perm>> autG)
+{
+    var G = autG.Neutral().Domain;
+    return autG.GetGenerators().All(aut => G.GetGenerators().All(e => Perm.TypeEquals(e, aut[e])));
 }
 
 void RunTests()
@@ -228,7 +254,7 @@ void RunTests()
     // allIsos2:432
     // seq equal:True
     // 
-    
+
     BenchMorphPruning();
     // |Q16| = 16
     // |Aut[Q16]| = 32
@@ -252,12 +278,147 @@ void RunTests()
     // 
 }
 
+IEnumerable<(Perm a, Perm b, int abCount)> rUmToPerm(int m, int n, int r, int dim = 1)
 {
-    GlobalStopWatch.Restart();
-    for (int m = 2; m <= 16; m++)
+    var a = FG.ConcatPerm(Enumerable.Repeat(FG.Cycles(m), dim).ToArray());
+    var orbx = a.Orbits.Select(o => o.ToXSet()).ToArray();
+    var idxOrbx = orbx.SelectMany(o => o.Select(i => (i, o))).ToDictionary(e => e.i, e => e.o);
+    foreach (var b in UGCraft.InnerAut(a, a ^ r).Where(b => b.Order != 1 && n % b.Order == 0))
     {
-        if (!int.IsPow2(m))
-            AutomorphismReconstruction(FG.DicyclicPg(m));
+        var ab = GroupCraft.GenerateElementsLimited(a.Sn, [a, b], m * n);
+        if (m * n % ab.Count == 0 && b.Orbits.All(o => o.Select(i => idxOrbx[i]).Distinct().Count() == dim))
+            yield return (a, b, ab.Count);
     }
+}
+
+IEnumerable<(Perm a, Perm b, ConcreteGroup<Perm> mt)> MetaCyclicPg(int m, int n, int r, int dim = 1)
+{
+    var mt1 = FG.MetaCyclicPg(m, n, r);
+    foreach (var (a0, b0, count) in rUmToPerm(m, n, r, dim).Order().DistinctBy(e => e.b.PermTypeStr))
+    {
+        if (count == m * n)
+        {
+            var mt2 = Group.Generate(mt1.Name, a0.Sn, a0, b0);
+            if (AreIsomorphic(mt1, mt2))
+                yield return (a0, b0, mt2);
+            else
+                Console.WriteLine("mtGensProblems1");
+        }
+        else
+        {
+            var n0 = IntExt.DividorsInt(n).Order().First(x => IntExt.Lcm(x, b0.Order) == n);
+            var b1 = FG.Cycles(n0);
+            var a = FG.PaddingRight(a0, b1.Sn.N);
+            var b = FG.ConcatPerm(b0, b1);
+            var mt2 = Group.Generate(mt1.Name, a.Sn, a, b);
+            if (AreIsomorphic(mt1, mt2))
+                yield return (a, b, mt2);
+            else if (n0 != n && mt2.Order < m * n)
+            {
+                var b2 = FG.Cycles(n);
+                var a3 = FG.PaddingRight(a0, b2.Sn.N);
+                var b3 = FG.ConcatPerm(b0, b2);
+                var mt3 = Group.Generate(mt1.Name, a3.Sn, a3, b3);
+                if (AreIsomorphic(mt1, mt3))
+                    yield return (a3, b3, mt3);
+                else
+                    Console.WriteLine("mtGensProblems2");
+            }
+        }
+    }
+}
+
+Perm[] InnerHol(ConcreteGroup<Perm> G, ConcreteGroup<Perm> autG)
+{
+    var holOrd = G.Order * autG.Order;
+    var holGens = autG.GetGenerators().Concat(G.GetGenerators()).ToArray();
+    var sn = holGens[0].Sn;
+    var hol = GroupCraft.GenerateElementsLimited(sn, holGens, holOrd);
+    if (hol.Count == holOrd)
+        return holGens;
+    else
+        return [];
+}
+
+Perm[] OuterHol(ConcreteGroup<Perm> G, ConcreteGroup<Perm> autG)
+{
+    var holOrd = G.Order * autG.Order;
+    var (theta, _) = InnerAutomorphismGroup(G, autG);
+    var gensConcats = autG.GetGenerators()
+        .SelectMany(g => G.GetGenerators().Select(a => FG.ConcatPerm(theta[g][a], g)))
+        .ToArray();
+    var sn = gensConcats[0].Sn;
+    var gensPads = G.GetGenerators().Select(g => FG.PaddingRight(g, sn.N - g.Sn.N))
+        .ToArray();
+    var holGens = gensPads.Concat(gensConcats).ToArray();
+    var hol = GroupCraft.GenerateElementsLimited(sn, holGens, holOrd);
+    if (hol.Count == holOrd)
+        return holGens;
+    else
+        return [];
+}
+
+// void RunHolomorphsMetaCyclic()
+{
+    var stats = new List<string>();
+    GlobalStopWatch.Restart();
+    for (int ord = 1; ord <= 64; ord++)
+    {
+        foreach (var (m, n, r) in FG.FrobeniusCoefs(ord))
+        {
+            var name = FG.MetaCyclicName(m, n, r);
+            Console.WriteLine($"{name}");
+            if (IntExt.PrimesDec(m * n).Count > 1)
+            {
+                var dims = new Dictionary<(string, Sn), Perm[]>();
+                foreach (var dim in new[] { 1, 2 })
+                {
+                    foreach (var (a, b, M1) in MetaCyclicPg(m, n, r, dim))
+                    {
+                        var autM1 = Group.AutomorphismGroup(M1);
+                        var (M2, autM2pg) = AutomorphismPerm(M1, autM1);
+                        if (autM2pg.Order == autM1.Order)
+                        {
+                            if (dim == 1)
+                            {
+                                var holGens = OuterHol(M2, autM2pg); 
+                                if(holGens.Length > 1)
+                                    dims[("outer", holGens[0].Sn)] = holGens;
+                            }
+                            
+                            if (dim == 2)
+                            {
+                                var holGens = InnerHol(M2, autM2pg);
+                                if(holGens.Length > 1)
+                                    dims[("inner", holGens[0].Sn)] = holGens;
+                            }
+                        }
+                    }
+                }
+
+                var ((case0, snBest), holG) = dims.MinBy(e => e.Key.Item2.N);
+                holG.Println($"Hol[{name}] in {snBest} {case0}");
+                stats.Add(case0);
+                dims.Keys.Println("Dims");
+            }
+            else
+            {
+                var (M2, autM2, _) = FG.RegPermAutGroup(FG.MetaCyclicPg(m, n, r));
+                var holOrd = M2.Order * autM2.Order;
+                var holGens = autM2.GetGenerators().Concat(M2.GetGenerators()).ToArray();
+                var sn = holGens[0].Sn;
+                var hol = GroupCraft.GenerateElementsLimited(sn, holGens, holOrd);
+                if (hol.Count == holOrd)
+                {
+                    holGens.Println($"Hol[{M2}] in {sn}");
+                    stats.Add("inner");
+                }
+                else
+                    Console.WriteLine($"    Problem Hol[{M2}] Reg");
+            }
+        }
+    }
+
     GlobalStopWatch.Show();
+    stats.GroupBy(e => e).ToDictionary(e => e.Key, e => e.Count()).Println("Stats");
 }
