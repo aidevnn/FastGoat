@@ -75,6 +75,7 @@ public static class GroupPermutationForm
         var gens = generators.ToArray();
         while (true)
         {
+            var prepGens = gens.ToDictionary(g => g, g => g.DisjoinCycles);
             var sn0 = gens[0].Sn;
             var dijCycles = gens.Select(e => (Key: e, Value: e.DisjoinCycles.ToXSet())).ToArray();
             var candidates = dijCycles.Select(e => (e.Key,
@@ -88,7 +89,7 @@ public static class GroupPermutationForm
                 foreach (var c in v)
                 {
                     var set = c.Orbits.Where(o => o.Length > 1).SelectMany(o => o).ToXSet();
-                    if (gens.Except([k]).All(g => set.All(i => g.Table[i] == i)))
+                    if (prepGens.All(g => g.Value.Contains(c) || set.All(i => g.Key.Table[i] == i)))
                     {
                         passiveCycles[k] = set;
                         break;
