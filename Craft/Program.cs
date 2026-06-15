@@ -278,23 +278,29 @@ void RunTests()
     // 
 }
 
-IEnumerable<(Perm a, Perm b, int abCount)> rUmToPerm(int m, int n, int r, int dim = 1)
+IEnumerable<(Perm a, Perm b, int abCount)> rUmToPerm(int m, int n, int r, int dim)
 {
-    var a = FG.ConcatPerm(Enumerable.Repeat(FG.Cycles(m), dim).ToArray());
-    var orbx = a.Orbits.Select(o => o.ToXSet()).ToArray();
-    var idxOrbx = orbx.SelectMany(o => o.Select(i => (i, o))).ToDictionary(e => e.i, e => e.o);
-    foreach (var b in UGCraft.InnerAut(a, a ^ r).Where(b => b.Order != 1 && n % b.Order == 0))
-    {
-        var ab = GroupCraft.GenerateElementsLimited(a.Sn, [a, b], m * n);
-        if (m * n % ab.Count == 0 && b.Orbits.All(o => o.Select(i => idxOrbx[i]).Distinct().Count() == dim))
-            yield return (a, b, ab.Count);
-    }
+    var mi = IntExt.PrimesDec(m).Select(e => e.Key.Pow(e.Value)).Order().ToArray();
+    var cycles = mi.Select(e => FG.Repeat(FG.Cycles(e), dim)).ToArray();
+    var a = FG.ConcatPerm(cycles);
+    var sn = a.Sn;
+    var orbx = cycles.ToDictionary(c => c, c => c.Orbits.Select(o => o.ToXSet()).ToArray());
+    var idxOrbx = orbx.ToDictionary(c => c.Key,
+        c => c.Value.SelectMany(o => o.Select(i => (i, o))).ToDictionary(e => e.i, e => e.o));
+    return cycles.Select(c => UGCraft.InnerAut(c, c ^ r)
+            .Where(b => n % b.Order == 0 && b.Orbits.All(o => o.Select(i => idxOrbx[c][i]).Distinct().Count() == dim))
+            .DistinctBy(f => f.PermTypeStr).Order().ToArray())
+        .MultiLoop()
+        .Select(l => FG.ConcatPerm(l.ToArray()))
+        .DistinctBy(f => f.PermTypeStr).Order()
+        .Select(b => (a, b, abCount: GroupCraft.GenerateElementsLimited(sn, [a, b], m * n).Count))
+        .Where(e => e.abCount != 0 && (m * n) % e.abCount == 0);
 }
 
 IEnumerable<(Perm a, Perm b, ConcreteGroup<Perm> mt)> MetaCyclicPg(int m, int n, int r, int dim = 1)
 {
     var mt1 = FG.MetaCyclicPg(m, n, r);
-    foreach (var (a0, b0, count) in rUmToPerm(m, n, r, dim).Order().DistinctBy(e => e.b.PermTypeStr))
+    foreach (var (a0, b0, count) in rUmToPerm(m, n, r, dim))
     {
         if (count == m * n)
         {
@@ -358,48 +364,60 @@ Perm[] OuterHol(ConcreteGroup<Perm> G, ConcreteGroup<Perm> autG)
         return [];
 }
 
-// void RunHolomorphsMetaCyclic()
+void RunHolomorphsMetaCyclic(int maxOrd)
 {
     var stats = new List<string>();
     GlobalStopWatch.Restart();
-    for (int ord = 1; ord <= 64; ord++)
+    var total = 0;
+    for (int ord = 1; ord <= maxOrd; ord++)
     {
-        foreach (var (m, n, r) in FG.FrobeniusCoefs(ord))
+        foreach (var (m, n, r) in FG.MetaCyclicCoefs(ord).Where(e => e.r != 1))
         {
+            ++total;
             var name = FG.MetaCyclicName(m, n, r);
             Console.WriteLine($"{name}");
-            if (IntExt.PrimesDec(m * n).Count > 1)
+            var dims = new Dictionary<(string, Sn), Perm[]>();
+
+            for (var dim = 1; dim <= 4; ++dim)
             {
-                var dims = new Dictionary<(string, Sn), Perm[]>();
-                foreach (var dim in new[] { 1, 2 })
+                if (dim > 2 && dims.Count > 0)
+                    break;
+
+                foreach (var (a, b, M1) in MetaCyclicPg(m, n, r, dim))
                 {
-                    foreach (var (a, b, M1) in MetaCyclicPg(m, n, r, dim))
+                    var autM1 = Group.AutomorphismGroup(M1);
+                    var (M2, autM2pg) = AutomorphismPerm(M1, autM1);
+
+                    if (autM2pg.Order == autM1.Order)
                     {
-                        var autM1 = Group.AutomorphismGroup(M1);
-                        var (M2, autM2pg) = AutomorphismPerm(M1, autM1);
-                        if (autM2pg.Order == autM1.Order)
+                        if (dim == 1)
                         {
-                            if (dim == 1)
+                            var holGens = OuterHol(M2, autM2pg);
+                            if (holGens.Length > 1)
+                                dims[("outer", holGens[0].Sn)] = holGens;
+                        }
+
+                        if (dim >= 2)
+                        {
+                            var holGens = InnerHol(M2, autM2pg);
+                            if (holGens.Length > 1)
+                                dims[("inner", holGens[0].Sn)] = holGens;
+                            else if (dims.Count == 0)
                             {
-                                var holGens = OuterHol(M2, autM2pg); 
-                                if(holGens.Length > 1)
-                                    dims[("outer", holGens[0].Sn)] = holGens;
-                            }
-                            
-                            if (dim == 2)
-                            {
-                                var holGens = InnerHol(M2, autM2pg);
-                                if(holGens.Length > 1)
-                                    dims[("inner", holGens[0].Sn)] = holGens;
+                                var holGens2 = OuterHol(M2, autM2pg);
+                                if (holGens2.Length > 1)
+                                    dims[("outer", holGens2[0].Sn)] = holGens2;
                             }
                         }
                     }
                 }
+            }
 
+            if (dims.Count > 0)
+            {
                 var ((case0, snBest), holG) = dims.MinBy(e => e.Key.Item2.N);
-                holG.Println($"Hol[{name}] in {snBest} {case0}");
+                holG.Println($"Generators of Hol[{name}] in {snBest}");
                 stats.Add(case0);
-                dims.Keys.Println("Dims");
             }
             else
             {
@@ -410,7 +428,8 @@ Perm[] OuterHol(ConcreteGroup<Perm> G, ConcreteGroup<Perm> autG)
                 var hol = GroupCraft.GenerateElementsLimited(sn, holGens, holOrd);
                 if (hol.Count == holOrd)
                 {
-                    holGens.Println($"Hol[{M2}] in {sn}");
+                    Console.WriteLine($"Regular permutation {M2}");
+                    holGens.Println($"Generators of Hol[{M2}] in {sn}");
                     stats.Add("inner");
                 }
                 else
@@ -420,5 +439,16 @@ Perm[] OuterHol(ConcreteGroup<Perm> G, ConcreteGroup<Perm> autG)
     }
 
     GlobalStopWatch.Show();
-    stats.GroupBy(e => e).ToDictionary(e => e.Key, e => e.Count()).Println("Stats");
+    stats.GroupBy(e => e).ToDictionary(e => e.Key, e => e.Count()).Println($"Stats total:{total}");
+}
+
+{
+    RunHolomorphsMetaCyclic(maxOrd: 48);
+    // Generators of Hol[M(8x:6)3] in S19
+    // [(9, 15, 13, 11), (10, 16, 14, 12)]
+    // [(9, 15, 13, 11), (10, 16, 14, 12), (17, 18)]
+    // [(2, 4), (3, 7), (6, 8), (10, 12), (11, 15), (14, 16)]
+    // [(1, 5), (3, 7), (9, 11, 13, 15), (10, 16, 14, 12)]
+    // [(1, 2, 3, 4, 5, 6, 7, 8), (9, 10, 11, 12, 13, 14, 15, 16)]
+    // [(1, 12), (2, 15), (3, 10), (4, 13), (5, 16), (6, 11), (7, 14), (8, 9), (17, 18, 19)]
 }

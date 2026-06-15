@@ -24,7 +24,7 @@ public static partial class FG
     public static Perm PaddingRight(Perm perm, int pad) => pad == 0 ? perm : ConcatPerm(perm, (new Sn(pad)).Neutral());
     public static Perm PaddingLeft(Perm perm, int pad) => pad == 0 ? perm : ConcatPerm((new Sn(pad)).Neutral(), perm);
     static Perm Padding(int padLeft, Perm perm, int padRight) => PaddingLeft(PaddingRight(perm, padRight), padLeft);
-
+    public static Perm Repeat(Perm a, int k) => FG.ConcatPerm(Enumerable.Repeat(a, k).ToArray());
     static Perm[] CyclesSplit(int m)
     {
         var dec = IntExt.PrimesDec(m).Select(e => e.Key.Pow(e.Value)).Order().ToArray();
