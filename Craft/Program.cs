@@ -334,34 +334,64 @@ IEnumerable<(Perm a, Perm b, ConcreteGroup<Perm> mt)> MetaCyclicPg(int m, int n,
     }
 }
 
-Perm[] InnerHol(ConcreteGroup<Perm> G, ConcreteGroup<Perm> autG)
+(string info, (Perm[] G, Perm[] AutG, Perm[] HolG) hol) BuildHolomorph(ConcreteGroup<Perm> G, ConcreteGroup<Perm> autG)
 {
     var holOrd = G.Order * autG.Order;
     var holGens = autG.GetGenerators().Concat(G.GetGenerators()).ToArray();
     var sn = holGens[0].Sn;
     var hol = GroupCraft.GenerateElementsLimited(sn, holGens, holOrd);
     if (hol.Count == holOrd)
-        return holGens;
+    {
+        var act = Group.ByConjugateSet(G.BaseGroup);
+        var setG = G.ToSet();
+        var inter = G.Intersect(autG).ToXSet();
+        var normal = autG.GetGenerators().All(x => act.IsInvariant(x, setG));
+        if (inter.Count > 1 || !normal)
+        {
+            Console.WriteLine("InnerHol");
+            Console.WriteLine($"normal:{normal}");
+            Console.WriteLine($"inter:{inter.Count} {inter}");
+            throw new();
+        }
+        return ("inner", (G.GetGenerators().ToArray(), autG.GetGenerators().ToArray(), holGens));
+    }
+    else if (holOrd % hol.Count == 0)
+    {
+        var gensAutG = autG.GetGenerators().Select(g => FG.ConcatPerm(g, g)).ToArray(); // identity map
+        var sn2 = gensAutG[0].Sn;
+        var gensG = G.GetGenerators().Select(g => FG.PaddingRight(g, sn2.N - g.Sn.N)).ToArray();
+        var holGens2 = gensAutG.Concat(gensG).ToArray();
+        var hol2 = GroupCraft.GenerateElementsLimited(sn2, holGens2, holOrd);
+        if (hol2.Count == holOrd)
+        {
+            var G1 = Group.Generate(G.Name, sn2, gensG);
+            var autG1 = Group.Generate(autG.Name, sn2, gensAutG);
+            var act = Group.ByConjugateSet(G1.BaseGroup);
+            var setG = G1.ToSet();
+            var inter = G1.Intersect(autG1).ToXSet();
+            var normal = autG1.GetGenerators().All(x => act.IsInvariant(x, setG));
+            if (inter.Count > 1 || !normal || G1.Order != G.Order || autG1.Order != autG.Order)
+            {
+                Console.WriteLine($"normal:{normal}");
+                Console.WriteLine($"inter:{inter.Count} {inter}");
+                throw new();
+            }
+            return ("outer", (gensG, gensAutG, holGens2));
+        }
+        else
+            return ("notfound", ([], [], []));
+    }
     else
-        return [];
+        return ("notfound", ([], [], []));
 }
 
-Perm[] OuterHol(ConcreteGroup<Perm> G, ConcreteGroup<Perm> autG)
+string GapExport(Perm[] gens)
 {
-    var holOrd = G.Order * autG.Order;
-    var (theta, _) = InnerAutomorphismGroup(G, autG);
-    var gensConcats = autG.GetGenerators()
-        .SelectMany(g => G.GetGenerators().Select(a => FG.ConcatPerm(theta[g][a], g)))
-        .ToArray();
-    var sn = gensConcats[0].Sn;
-    var gensPads = G.GetGenerators().Select(g => FG.PaddingRight(g, sn.N - g.Sn.N))
-        .ToArray();
-    var holGens = gensPads.Concat(gensConcats).ToArray();
-    var hol = GroupCraft.GenerateElementsLimited(sn, holGens, holOrd);
-    if (hol.Count == holOrd)
-        return holGens;
-    else
-        return [];
+    var old = Perm.Style;
+    Perm.Style = DisplayPerm.Gap;
+    var export = $"Group([{gens.Glue(", ")}]);";
+    Perm.Style = old;
+    return export;
 }
 
 void RunHolomorphsMetaCyclic(int maxOrd)
@@ -376,48 +406,37 @@ void RunHolomorphsMetaCyclic(int maxOrd)
             ++total;
             var name = FG.MetaCyclicName(m, n, r);
             Console.WriteLine($"{name}");
-            var dims = new Dictionary<(string, Sn), Perm[]>();
+            var dims = new Dictionary<(string, Sn), (Perm[] G, Perm[] AutG, Perm[] HolG)>();
 
             for (var dim = 1; dim <= 4; ++dim)
             {
                 if (dim > 2 && dims.Count > 0)
                     break;
 
-                foreach (var (a, b, M1) in MetaCyclicPg(m, n, r, dim))
+                foreach (var (_, _, M1) in MetaCyclicPg(m, n, r, dim))
                 {
                     var autM1 = Group.AutomorphismGroup(M1);
                     var (M2, autM2pg) = AutomorphismPerm(M1, autM1);
 
                     if (autM2pg.Order == autM1.Order)
                     {
-                        if (dim == 1)
-                        {
-                            var holGens = OuterHol(M2, autM2pg);
-                            if (holGens.Length > 1)
-                                dims[("outer", holGens[0].Sn)] = holGens;
-                        }
-
-                        if (dim >= 2)
-                        {
-                            var holGens = InnerHol(M2, autM2pg);
-                            if (holGens.Length > 1)
-                                dims[("inner", holGens[0].Sn)] = holGens;
-                            else if (dims.Count == 0)
-                            {
-                                var holGens2 = OuterHol(M2, autM2pg);
-                                if (holGens2.Length > 1)
-                                    dims[("outer", holGens2[0].Sn)] = holGens2;
-                            }
-                        }
+                        var (info, holGens) = BuildHolomorph(M2, autM2pg);
+                        if (holGens.HolG.Length > 1)
+                            dims[($"{info} dim:{dim}", holGens.HolG[0].Sn)] = holGens;
                     }
                 }
             }
 
             if (dims.Count > 0)
             {
-                var ((case0, snBest), holG) = dims.MinBy(e => e.Key.Item2.N);
+                var ((case0, snBest), (G, AutG, holG)) = dims.MinBy(e => e.Key.Item2.N);
                 holG.Println($"Generators of Hol[{name}] in {snBest}");
+                Console.WriteLine("GapExport");
+                Console.WriteLine(GapExport(G));
+                Console.WriteLine(GapExport(AutG));
+                Console.WriteLine(GapExport(holG));
                 stats.Add(case0);
+                dims.Keys.Println("Dim");
             }
             else
             {
@@ -430,7 +449,11 @@ void RunHolomorphsMetaCyclic(int maxOrd)
                 {
                     Console.WriteLine($"Regular permutation {M2}");
                     holGens.Println($"Generators of Hol[{M2}] in {sn}");
-                    stats.Add("inner");
+                    Console.WriteLine("GapExport");
+                    Console.WriteLine(GapExport(M2.GetGenerators().ToArray()));
+                    Console.WriteLine(GapExport(autM2.GetGenerators().ToArray()));
+                    Console.WriteLine(GapExport(holGens));
+                    stats.Add("inner reg  ");
                 }
                 else
                     Console.WriteLine($"    Problem Hol[{M2}] Reg");
