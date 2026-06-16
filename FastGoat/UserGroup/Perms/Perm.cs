@@ -8,7 +8,8 @@ public enum DisplayPerm
     Table,
     Cycles,
     TableComma,
-    CyclesComma
+    CyclesComma,
+    Gap
 }
 
 public struct Perm : IElt<Perm>
@@ -111,10 +112,15 @@ public struct Perm : IElt<Perm>
             var strCycles = cycles.Select(a => $"({a.Select(b => b + 1).Glue(" ")})").Glue();
             return $"[{strCycles}]";
         }
-        else
+        else if (Style == DisplayPerm.CyclesComma)
         {
             var strCycles = cycles.Select(a => $"({a.Select(b => b + 1).Glue(", ")})").Glue(", ");
             return $"[{strCycles}]";
+        }
+        else
+        {
+            var strCycles = cycles.Select(a => $"({a.Select(b => b + 1).Glue(", ")})").Glue("");
+            return $"{strCycles}";
         }
     }
 
