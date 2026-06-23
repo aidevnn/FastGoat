@@ -4,6 +4,7 @@ using FastGoat.Structures.CartesianProduct;
 using FastGoat.Structures.GenericGroup;
 using FastGoat.UserGroup;
 using FastGoat.UserGroup.Integers;
+using FastGoat.UserGroup.Perms;
 using FastGoat.UserGroup.Words;
 
 namespace Examples;
@@ -15,6 +16,14 @@ public static class HolomorphGroup
         var autG = Group.AutomorphismGroup(G);
         var theta = Group.Hom(autG, Group.HomomorphismMap(autG, autG, autG.GetGenerators().ToDictionary(e => e, e => e)));
         return Group.SemiDirectProd($"Hol[{G}]", G, theta, autG);
+    }
+
+    public static (ConcreteGroup<Perm> G, ConcreteGroup<Perm> AutG,ConcreteGroup<Perm> HolG)
+        HolomorphPerm<T>(ConcreteGroup<T> G) where T : struct, IElt<T>
+    {
+        var (G1, AutG, _) = FG.RegPermAutGroup(G);
+        var HolG = Group.DirectProduct($"Hol[{G}]", G1, AutG);
+        return (G1, AutG, HolG);
     }
 
     public static void Example1HolC7()
@@ -96,5 +105,33 @@ public static class HolomorphGroup
         DisplayGroup.HeadOrdersNames(Holomorph(FG.DiCyclic(3)), setName: false);
         DisplayGroup.HeadOrdersNames(Holomorph(FG.DihedralWg(6)), setName: false);
         DisplayGroup.HeadOrdersNames(Holomorph(FG.DihedralWg(7)), setName: false);
+    }
+
+    public static void Example4SimpleCyclicGroup()
+    {
+        foreach (var p in IntExt.Primes10000.Skip(1).Take(10))
+        {
+            var holCp = Holomorph(new Cn(p));
+            var Fpq = FG.MetaCyclicPg(p, p - 1, IntExt.Solve_k_pow_m_equal_one_mod_n_strict(p, p - 1));
+            var autD2p = Group.AutomorphismGroup(FG.Dihedral(p));
+            DisplayGroup.Head(Fpq);
+            DisplayGroup.AreIsomorphics(Fpq, holCp);
+            DisplayGroup.AreIsomorphics(autD2p, holCp);
+            Console.WriteLine();
+        }
+    }
+
+    public static void Example5SimpleCyclicGroupPerm()
+    {
+        foreach (var p in IntExt.Primes10000.Skip(1).Take(10))
+        {
+            var (Cp, AutCp, holCp) = HolomorphPerm(new Cn(p));
+            var Fpq = FG.MetaCyclicPg(p, p - 1, IntExt.Solve_k_pow_m_equal_one_mod_n_strict(p, p - 1));
+            var (D2p, autD2p, _) = FG.RegPermAutGroup(FG.Dihedral(p));
+            DisplayGroup.AreIsomorphics(FG.AbelianPerm(p - 1), AutCp);
+            DisplayGroup.AreIsomorphics(Fpq, holCp);
+            DisplayGroup.AreIsomorphics(autD2p, holCp);
+            Console.WriteLine();
+        }
     }
 }
