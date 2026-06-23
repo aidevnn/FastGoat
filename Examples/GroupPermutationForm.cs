@@ -42,34 +42,6 @@ public static class GroupPermutationForm
         return generatedElements;
     }
 
-    static Dictionary<ConcreteGroup<T>, List<GroupSubset<T>>> RestrictionConjugates<T>(ConcreteGroup<T> g,
-        List<GroupSubset<T>> conjugates) where T : struct, IElt<T>
-    {
-        var lt = conjugates.Where(h => h.SubSetOf(g)).ToHashSet();
-        var all = new Dictionary<ConcreteGroup<T>, List<GroupSubset<T>>>(conjugates.Count);
-        var gens = g.GetGenerators().ToHashSet();
-        var act = Group.ByConjugateSet(g);
-        while (lt.Count != 0)
-        {
-            var sg = lt.First();
-            var conjs = Group.Orbits(gens, act, sg);
-            var subConjs = lt.Where(c0 => conjs.Any(c1 => c0.SetEquals(c1))).ToList();
-            var g1 = Group.Generate("H", g, sg.Generators.ToArray());
-            all[g1] = subConjs;
-            lt.ExceptWith(subConjs);
-        }
-
-        return all;
-    }
-
-    static Dictionary<ConcreteGroup<T>, List<GroupSubset<T>>> Restriction<T>(ConcreteGroup<T> G,
-        Dictionary<ConcreteGroup<T>, List<GroupSubset<T>>> allSubgroups) where T : struct, IElt<T>
-    {
-        var setG = G.ToSet();
-        return allSubgroups.Where(e => e.Value.Any(f => f.SubSetOf(setG)))
-            .SelectMany(e => RestrictionConjugates(G, e.Value)).ToDictionary();
-    }
-
     static (Sn sn, Perm[] gens) RemovePassiveCycles(Perm[] generators)
     {
         var gens = generators.ToArray();
@@ -147,39 +119,56 @@ public static class GroupPermutationForm
         return Group.AllMorphisms(g1, g2, Group.MorphismType.Isomorphism).Any();
     }
 
-    public static ConcreteGroup<Perm> PermutationForm<T>(ConcreteGroup<T> G) where T : struct, IElt<T>
+    public record ProductTerms<T>(SubgroupConjugates<T> lhs, SubgroupConjugates<T> rhs, bool IsDirect)
+        where T : struct, IElt<T>;
+    
+    public static ProductTerms<T> NormalDecompositionHeadOnly<T>(AllSubgroups<T> allSubs) where T : struct, IElt<T>
     {
-        return PermutationForm(Group.AllSubGroups(G)
-            .ToDictionary(e => e.Key, e => e.Value.Select(f => f.ToSet()).ToList()));
+        var (pCl, tCl) = (allSubs.ParentClass, allSubs.TrivialClass);
+        if (allSubs.Parent.GroupType == GroupType.AbelianGroup)
+            return new(pCl, tCl, true);
+
+        var normalPGroups = allSubs.ProperNonTrivialNormalSubgroups()
+            .Where(n => n.IsPGroup())
+            .GroupBy(n => n.Factors.Keys.First())
+            .ToDictionary(e => e.Key, e => e.OrderBy(g => g.Order).ToArray());
+        if (normalPGroups.Count == 0)
+            return new(pCl, tCl, true);
+
+        var list = new List<ProductTerms<T>>();
+        foreach (var (p, normalGroups) in normalPGroups)
+        {
+            foreach (var N in normalGroups)
+            {
+                var (rhs, isDirect) = allSubs.Complements(N).FirstOrDefault((tCl, false));
+                if (rhs.Order == 1)
+                    continue;
+                list.Add(new(N, rhs, isDirect));
+            }
+        }
+
+        if (list.Count == 0)
+            return new(pCl, tCl, true);
+
+        return list.OrderBy(e => e.IsDirect ? 0 : 1).ThenBy(e => e.lhs.Order).First();
     }
 
-    public static ConcreteGroup<Perm> PermutationForm<T>(Dictionary<ConcreteGroup<T>, List<GroupSubset<T>>> subGroups)
+    public static ConcreteGroup<Perm> PermutationForm<T>(ConcreteGroup<T> G) where T : struct, IElt<T>
+    {
+        return PermutationForm(G.AllSubgroups());
+    }
+
+    public static ConcreteGroup<Perm> PermutationForm<T>(AllSubgroups<T> allSubs)
         where T : struct, IElt<T>
     {
-        var G = subGroups.MaxBy(g => g.Key.Order).Key;
+        var subGroups = allSubs.ToDictionary(e => e.Representative, e => e.Conjugates.Select(f => f.ToSet()).ToList());
+
+        var G = allSubs.Parent;
         if (G.GroupType == GroupType.AbelianGroup)
             return FG.AbelianPerm(Group.AbelianGroupType(G));
 
-        var ordG = G.Order;
-        var byOrder = subGroups.Keys.GroupBy(e => e.Order).ToDictionary(
-            e => e.Key,
-            e => e.OrderBy(f => subGroups[f].Count).ToArray());
-        var (H, Facts) = subGroups.Keys
-            .Where(e => e.Order != 1 && e.Order != ordG && subGroups[e].Count == 1).OrderBy(g => g.Order).ToArray()
-            .ToDictionary(d => d, d =>
-            {
-                if (byOrder.ContainsKey(ordG / d.Order))
-                    return byOrder[ordG / d.Order].Where(e => e.Intersect(d).Count() == 1).Take(1).ToList();
-
-                return [];
-            })
-            .Where(e => e.Value.Count > 0)
-            .OrderByDescending(f => f.Value.Take(1).Count(g => subGroups[g].Count == 1))
-            .ThenByDescending(f => f.Value.Take(1).Sum(g => g.Order))
-            .ThenBy(f => f.Key.Order)
-            .FirstOrDefault(_ => true, new(G, new()));
-
-        if (Facts.Count == 0)
+        var (H0, K0, isDirect) = NormalDecompositionHeadOnly(allSubs);
+        if (K0.Order == 1)
         {
             if (G.Order == 60)
             {
@@ -187,18 +176,18 @@ public static class GroupPermutationForm
                 if (G.IsIsomorphicTo(A5))
                     return A5;
             }
-
-            return G.ToPermGroup().Item1;
+            else
+                return G.ToPermGroup().Item1;
         }
 
-        var K = Facts.First();
-        if (Group.IsNormalSubgroup(G, K))
+        var ordG = G.Order;
+        var h0 = PermutationForm(allSubs.Restriction(H0.Representative));
+        var k = PermutationForm(allSubs.Restriction(K0.Representative));
+        if (isDirect)
         {
-            var h = PermutationForm(Restriction(H, subGroups));
-            var k = PermutationForm(Restriction(K, subGroups));
-            var nh = h.Neutral().Sn.N;
+            var nh = h0.Neutral().Sn.N;
             var nk = k.Neutral().Sn.N;
-            var hGens = h.GetGenerators().Select(e => FG.PaddingRight(e, nk));
+            var hGens = h0.GetGenerators().Select(e => FG.PaddingRight(e, nk));
             var kGens = k.GetGenerators().Select(e => FG.PaddingLeft(e, nh));
             var (sn, hkGens) = RemovePassiveCycles(hGens.Concat(kGens).ToArray());
             var HK = Group.Generate(G.Name, sn, hkGens);
@@ -206,8 +195,7 @@ public static class GroupPermutationForm
         }
         else
         {
-            var k = PermutationForm(Restriction(K, subGroups));
-            var (h, autHpg, _) = FG.RegPermAutGroup(PermutationForm(Restriction(H, subGroups)));
+            var (h, autHpg, _) = FG.RegPermAutGroup(h0);
             var snH = h.Neutral().Sn;
             var nK = k.Neutral().Sn.N;
 
@@ -238,7 +226,7 @@ public static class GroupPermutationForm
                 }
             }
 
-            Console.WriteLine($"NOT FOUND  H:{H.ShortName} K:{K.ShortName} {autHpg.ShortName}");
+            Console.WriteLine($"NOT FOUND  H:{h.ShortName} K:{k.ShortName} {autHpg.ShortName}");
             Console.WriteLine($"H in {h.Neutral().Sn} K in {k.Neutral().Sn}");
             throw new($"###2 {G.ShortName}");
         }
@@ -353,7 +341,7 @@ public static class GroupPermutationForm
 
     static void AllGroupPermFormUpTo(int maxOrd)
     {
-        var total = 0;
+        var total= 0;
         GlobalStopWatch.Restart();
         for (int ord = 1; ord <= maxOrd; ord++)
         {
@@ -368,7 +356,7 @@ public static class GroupPermutationForm
             }
         }
 
-        GlobalStopWatch.Show($"Total:{total}  Max Order:{maxOrd}");
+        GlobalStopWatch.Show($"Total:{total} Max Order:{maxOrd}");
     }
 
     public static void ExampleAllMetaCyclicPermForm()
