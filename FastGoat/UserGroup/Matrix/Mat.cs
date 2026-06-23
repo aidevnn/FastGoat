@@ -1,6 +1,7 @@
 using System.Text;
 using FastGoat.Commons;
 using FastGoat.Structures;
+using FastGoat.Structures.CartesianProduct;
 using FastGoat.UserGroup.Integers;
 
 namespace FastGoat.UserGroup.Matrix;
@@ -124,4 +125,25 @@ public struct Mat : IElt<Mat>
         var mod = GL.P;
         return Table.Select(i => new ZnInt(mod, i)).ToKMatrix(GL.N).ToString();
     }
+
+    public ZnInt[] Mul(ZnInt[] v)
+    {
+        var vdim = v.Length;
+        var p = GL.P;
+        if (Table.Length != vdim * vdim && v.Any(e => e.Mod != p))
+            throw new();
+        var w = new ZnInt[vdim];
+        for (int i = 0; i < vdim; i++)
+        {
+            var s = ZnInt.ZpZero(p);
+            for (int j = 0; j < vdim; j++)
+                s += Table[i * vdim + j] * v[j];
+
+            w[i] = s;
+        }
+
+        return w;
+    }
+
+    public Ep<ZnInt> Mul(Ep<ZnInt> v) => new(Mul(v.Ei));
 }

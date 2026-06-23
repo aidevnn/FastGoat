@@ -1,5 +1,6 @@
 using FastGoat.Commons;
 using FastGoat.Structures;
+using FastGoat.Structures.CartesianProduct;
 using FastGoat.Structures.VecSpace;
 using FastGoat.UserGroup.Integers;
 
@@ -107,4 +108,23 @@ public struct MatFq : IElt<MatFq>
     {
         return Table.ToKMatrix(GLnq.N).ToString();
     }
+    
+    public EPoly<ZnInt>[] Mul(EPoly<ZnInt>[] v)
+    {
+        var vdim = v.Length;
+        if (Table.Length != vdim * vdim)
+            throw new();
+        var w = new EPoly<ZnInt>[vdim];
+        for (int i = 0; i < vdim; i++)
+        {
+            var s = GLnq.Fq.Zero;
+            for (int j = 0; j < vdim; j++)
+                s = s + Table[i * vdim + j] * v[j];
+
+            w[i] = s;
+        }
+
+        return w;
+    }
+    public Ep<EPoly<ZnInt>> Mul(Ep<EPoly<ZnInt>> v) => new(Mul(v.Ei));
 }

@@ -15,6 +15,10 @@ public static class IntExt
         Primes10000 = new(AllPrimes(100000));
         MaxPrime = Primes10000.Max();
         Partitions32 = IntPartitions(32);
+        FieldChar1024 = Primes10000.Where(p => p < 1024)
+            .SelectMany(p => Enumerable.Range(1, (int)double.Floor(double.Log(1024) / double.Log(p)))
+                    .Select(k => (int)double.Pow(p, k))).Where(q => q <= 1024).Order()
+            .ToList();
 
         var comp = Comparer<int[]>.Create((a, b) => a.SequenceCompareTo(b));
         AllPermutations = new Dictionary<int, int[][]>
@@ -61,6 +65,11 @@ public static class IntExt
     /// All Primes less than 10000
     /// </summary>
     public static List<int> Primes10000 { get; private set; }
+
+    /// <summary>
+    /// All Field Characteristic less than 1024
+    /// </summary>
+    public static List<int> FieldChar1024 { get; private set; }
 
     /// <summary>
     ///  Partitions of an integers until 32. 
