@@ -21,6 +21,8 @@ public static partial class FG
         return sn.CreateElementTable(table);
     }
 
+    public static Perm ConcatPerm(params int[] orders) => FG.ConcatPerm(orders.Select(o => FG.Cycles(o)).ToArray());
+
     public static Perm PaddingRight(Perm perm, int pad) => pad == 0 ? perm : ConcatPerm(perm, (new Sn(pad)).Neutral());
     public static Perm PaddingLeft(Perm perm, int pad) => pad == 0 ? perm : ConcatPerm((new Sn(pad)).Neutral(), perm);
     static Perm Padding(int padLeft, Perm perm, int padRight) => PaddingLeft(PaddingRight(perm, padRight), padLeft);
@@ -174,15 +176,9 @@ public static partial class FG
         return Group.Generate(name, sn, gens);
     }
 
-    public static List<ConcreteGroup<Perm>> AllAbelianGroupsOfOrderPg(int k)
+    public static List<ConcreteGroup<Perm>> AllAbelianGroupsOfOrderPg(int ord)
     {
-        if (k == 1)
-            return new() { AbelianPerm(1) };
-
-        var dec = IntExt.PrimesDec(k);
-        return dec.Select(e => IntExt.Partitions32[e.Value].Select(l => l.Select(i => e.Key.Pow(i)).ToArray()))
-            .MultiLoop()
-            .Select(l => AbelianPerm(l.SelectMany(i => i).OrderDescending().ToArray())).ToList();
+        return AbelianExt.AllAbTypes(ord).Select(ab => AbelianPerm(ab.can)).ToList();
     }
 
     public static List<ConcreteGroup<Perm>> MetaCyclicPg(int ord)
