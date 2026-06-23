@@ -37,6 +37,9 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
     public bool Equals(AllSubgroups<T> other) => Parent.SetEquals(other.Parent);
     public override int GetHashCode() => Parent.Hash;
 
+    public SubgroupConjugates<T> ParentClass => AllSubgroupConjugates.Last();
+    public SubgroupConjugates<T> TrivialClass => AllSubgroupConjugates.First();
+
     public bool IsSimple()
     {
         return Infos.AllNorms == 2;
@@ -67,7 +70,7 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
     }
 
     public SubGroupsInfos Infos { get; }
-    public Dictionary<int, int> Factors => AllSubgroupConjugates.Last().Factors;
+    public Dictionary<int, int> Factors => ParentClass.Factors;
 
     public Dictionary<int, SubgroupConjugates<T>[]> AllSylows()
     {
@@ -93,7 +96,7 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
         return new AllSubgroups<WElt>(AllSubgroupConjugates.Select(sc => sc.ToGroupWrapper()).ToArray());
     }
 
-    public SubgroupConjugates<T>[] MaximalSubgroups() => MaximalSubgroups(AllSubgroupConjugates.Last());
+    public SubgroupConjugates<T>[] MaximalSubgroups() => MaximalSubgroups(ParentClass);
 
     public SubgroupConjugates<T>[] MaximalSubgroups(SubgroupConjugates<T> top)
     {
@@ -120,14 +123,14 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
 
         return allMax.Order().ToArray();
     }
-    public SubgroupConjugates<T>[] MaximalNormalSubgroups() => MaximalNormalSubgroups(AllSubgroupConjugates.Last());
+    public SubgroupConjugates<T>[] MaximalNormalSubgroups() => MaximalNormalSubgroups(ParentClass);
 
     public SubgroupConjugates<T>[] ProperNonTrivialNormalSubgroups()
     {
         return AllSubgroupConjugates.Where(cj => cj.IsProperNormal && !cj.IsTrivial).ToArray();
     }
-    
-    public List<(SubgroupConjugates<T> lhs, SubgroupConjugates<T> rhs, bool isDirectProduct)> 
+
+    public List<(SubgroupConjugates<T> lhs, SubgroupConjugates<T> rhs, bool isDirectProduct)>
         DecomposeProducts(SubgroupConjugates<T>[] subgnormals)
     {
         var normals = new Queue<SubgroupConjugates<T>>(subgnormals);
@@ -137,7 +140,7 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
         {
             var H = normals.Dequeue();
             allProds.AddRange(AllSubgroupConjugates.Where(cj =>
-                    cj.IsProperNormal && !cj.IsTrivial && 
+                    cj.IsProperNormal && !cj.IsTrivial &&
                     cj.Order * H.Order == og && H.Order <= cj.Order &&
                     cj.Representative.Intersect(H.Representative).Count() == 1)
                 .Select(K => (H, K, true)));
@@ -150,21 +153,20 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
         return allProds;
     }
 
-    public List<(SubgroupConjugates<T> fact, bool isDirectprod)> Complements(SubgroupConjugates<T> H)
+    public IEnumerable<(SubgroupConjugates<T> fact, bool isDirectprod)> Complements(SubgroupConjugates<T> H)
     {
         if (H.Conjugates.Count != 1)
             throw new GroupException(GroupExceptionType.NotNormal);
-        
+
         var og = Parent.Count();
         return AllSubgroupConjugates.Where(cj =>
                 cj.IsNormal && !cj.IsTrivial && cj.Order * H.Order == og &&
                 cj.Representative.Intersect(H.Representative).Count() == 1)
             .Select(K => (K, true))
             .Concat(AllSubgroupConjugates.Where(cj =>
-                !cj.IsNormal && !cj.IsTrivial && cj.Order * H.Order == og &&
-                cj.Representative.Intersect(H.Representative).Count() == 1)
-            .Select(K => (K, false)))
-            .ToList();
+                    !cj.IsNormal && !cj.IsTrivial && cj.Order * H.Order == og &&
+                    cj.Representative.Intersect(H.Representative).Count() == 1)
+                .Select(K => (K, false)));
     }
 
     public void Naming()
@@ -219,7 +221,7 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
 
     public List<SubgroupConjugates<T>>[] MaximalSubgroupSeries()
     {
-        var g = AllSubgroupConjugates.Last();
+        var g = ParentClass;
         var all = MaximalSubgroups().Select(m => new List<SubgroupConjugates<T>>() { g, m }).ToList();
         var sz = 0;
         while (all.Sum(s => s.Count) != sz)
@@ -244,7 +246,8 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
         return all.OrderBy(s => s.Count).ToArray();
     }
 
-    private List<SubgroupConjugates<T>> GetChiefSerie(List<SubgroupConjugates<T>> serie) => serie.Where(cj => cj.IsNormal).ToList();
+    private List<SubgroupConjugates<T>> GetChiefSerie(List<SubgroupConjugates<T>> serie) =>
+        serie.Where(cj => cj.IsNormal).ToList();
 
     private List<SubgroupConjugates<T>> GetCompositionSerie(List<SubgroupConjugates<T>> serie)
     {
@@ -284,9 +287,10 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
                 var name = sub.AllRepresentatives.Last().Name;
                 cj.Conjugates.ForEach(sg => sg.Name = name);
             }
-            
+
             tmp.Add(cj);
         }
+
         return new(tmp, SerieType.Derived, digits);
     }
 
@@ -307,9 +311,10 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
                 var name = sub.AllRepresentatives.Last().Name;
                 cj.Conjugates.ForEach(sg => sg.Name = name);
             }
-            
+
             tmp.Add(cj);
         }
+
         return new(tmp, SerieType.Lower, digits);
     }
 
@@ -330,9 +335,10 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
                 var name = sub.AllRepresentatives.Last().Name;
                 cj.Conjugates.ForEach(sg => sg.Name = name);
             }
-            
+
             tmp.Add(cj);
         }
+
         return new(tmp, SerieType.Upper, digits);
     }
 
@@ -357,11 +363,11 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
             [SerieType.Serie] = series,
             [SerieType.Chief] = chiefSeries.OrderBy(s => s.Count).ToArray(),
             [SerieType.Composition] = compSeries.OrderBy(s => s.Count).ToArray(),
-            [SerieType.Upper] = new[]{GetUpperSerie()},
-            [SerieType.Lower] = new[]{GetLowerSerie()},
-            [SerieType.Derived] = new[]{GetDerivedSerie()}
+            [SerieType.Upper] = new[] { GetUpperSerie() },
+            [SerieType.Lower] = new[] { GetLowerSerie() },
+            [SerieType.Derived] = new[] { GetDerivedSerie() }
         };
-        
+
         return allSeries;
     }
 
@@ -380,7 +386,7 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
         conjSeries.OrderBy(e => e.Count).Println("Lattice Subgroups");
         Console.WriteLine($"Total:{conjSeries.Length}");
         Console.WriteLine();
-        
+
         allSeries[SerieType.Derived].Println("Derived Serie");
         allSeries[SerieType.Lower].Println("Lower Serie");
         allSeries[SerieType.Upper].Println("Upper Serie");
@@ -398,7 +404,7 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
     {
         var z = Group.Zentrum(Parent);
         var z0 = AllRepresentatives.First(sg => sg.SetEquals(z));
-        
+
         if (z0.Name.Contains("SubGr"))
         {
             var sub = Restriction(z0);
@@ -439,7 +445,7 @@ public readonly struct AllSubgroups<T> : IEnumerable<SubgroupConjugates<T>>, IEq
             .Descending()
             .Select(cj => cj.Representative)
             .First(sg => Group.IsNilpotent(sg));
-        
+
         if (fit.Name.Contains("SubGr"))
         {
             var sub = Restriction(fit);
