@@ -192,7 +192,7 @@ void RunHolomorphD2n()
         Console.WriteLine($"{d2n,-10} ∩ {autD2n,10} = {inter}");
         Console.WriteLine();
         Console.WriteLine();
-        Console.WriteLine(GapExport(holGens));
+        Console.WriteLine($"hol2:={GapExport(holGens)}");
         Console.WriteLine();
         if (!d2nNormal || autD2nNotNormal || inter != 1)
             throw new();

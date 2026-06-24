@@ -245,16 +245,17 @@ public static partial class FG
     {
         var (a, b) = MetaCyclicGens(n, 2, n - 1).gens.Deconstruct();
         
-        var Ui = IntExt.PrimesDec(n).Select(e => new Un(e.Key.Pow(e.Value))).OrderBy(u => u.Cn.Order)
-            .Select(u =>
+        var Ui = IntExt.PrimesDec(n).Select(e => e.Key.Pow(e.Value)).Order()
+            .Select(mod =>
             {
-                var su = new Sn(u.Cn.Order);
-                var gens = Group.AbelianDecompositions(u).abType
-                    .Select(e => su.CreateElementTable(e.g.AutMap.OrderBy(f => f.Key).Select(f => f.Value.K).ToArray()))
+                var su = new Sn(mod);
+                var gens = Group.AbelianDecompositions(UnInt(mod)).abType
+                    .Select(e => su.CreateElementTable(mod.SeqLazy().Select(i => (i * e.g).K).ToArray()))
                     .ToArray();
-                return Group.Generate($"{u}", su, gens);
+                return Group.Generate($"U{mod}i", su, gens);
             }).Cast<IGroup<Perm>>().ToArray();
-        var gensUn = Product.Gp(Ui).GetGenerators().Select(e => ConcatPerm(e.Ei)).ToArray();
+        var gensUn = Group.AbelianDecompositions(Product.GpGenerate(Ui)).abType
+            .Select(e => ConcatPerm(e.g.Ei)).ToArray();
         
         return (a, b, gensUn);
     }
