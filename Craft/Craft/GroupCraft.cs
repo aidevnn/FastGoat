@@ -6,7 +6,7 @@ using FastGoat.UserGroup.Perms;
 
 namespace Craft.Craft;
 
-public static class GroupCraft
+public static partial class GroupCraft
 {
     public static Comparer<T> ByOrder<T>(this ConcreteGroup<T> g) where T : struct, IElt<T>
     {
