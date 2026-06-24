@@ -106,30 +106,30 @@ public static class DihedralAutomorphisms
         for (int n = 3; n <= 16; ++n)
         {
             var d2n = DnPerm(n);
-            var autD2N = Group.AllAutomorphisms(d2n);
+            var autD2n = Group.AllAutomorphisms(d2n);
 
             var gens = d2n.GetGenerators().ToArray();
             var a = gens.First(e => d2n.ElementsOrders[e] == n);
             var b = gens.First(e => d2n.ElementsOrders[e] == 2);
-            var autH = autD2N.Where(aut => aut[a].Equals(a)).ToArray();
-            var autK = autD2N.Where(aut => aut[b].Equals(b)).ToArray();
+            var autH = autD2n.Where(aut => aut[a].Equals(a)).ToArray();
+            var autK = autD2n.Where(aut => aut[b].Equals(b)).ToArray();
 
-            var Ca = Group.Generate($"C{n}", a.Sn, a);
-            var U = UnToPerm(n);
-            var phi = U.Count();
-            var autDNperm = Group.Generate($"Aut({d2n.Name})", a.Sn, U.GetGenerators().Prepend(a).ToArray());
+            var Cn = Group.Generate($"C{n}", a.Sn, a);
+            var Un = UnToPerm(n);
+            var phi = Un.Count();
+            var autD2nPerm = Group.Generate($"Aut({d2n.Name})", a.Sn, Un.GetGenerators().Prepend(a).ToArray());
             
-            Console.WriteLine("|Aut({0})| = {1}; phi({2}) = {3}", d2n, autD2N.Count, n, phi);
+            Console.WriteLine("|Aut({0})| = {1}; phi({2}) = {3}", d2n, autD2n.Count, n, phi);
             Console.WriteLine($"a[{d2n.ElementsOrders[a]}]={a} b[{d2n.ElementsOrders[b]}]={b}");
-            Console.WriteLine("|y in Aut({0}), y(a)=a| = {1,-3}; |y in Aut(D{0}), y(b) = b| = {2,-3}", d2n, autH.Count(),
+            Console.WriteLine("|y in Aut({0}), y(a)=a| = {1,-3}; |y in Aut({0}), y(b) = b| = {2,-3}", d2n, autH.Count(),
                 autK.Count());
-            var Udec = Group.AbelianGroupType(U).ToAbString();
-            Console.WriteLine($"{autDNperm} = {Ca} x: {U} = {Ca} x: {Udec.WithParenthesis()}");
+            var Udec = Group.AbelianGroupType(Un).ToAbString();
+            Console.WriteLine($"{autD2nPerm} = {Cn} x: {Un} = {Cn} x: {Udec.WithParenthesis()}");
             Console.WriteLine();
             DisplayGroup.HeadGenerators(d2n);
-            DisplayGroup.HeadGenerators(Ca);
-            DisplayGroup.HeadGenerators(U);
-            DisplayGroup.HeadGenerators(autDNperm);
+            DisplayGroup.HeadGenerators(Cn);
+            DisplayGroup.HeadGenerators(Un);
+            DisplayGroup.HeadGenerators(autD2nPerm);
             Console.WriteLine();
         }
     }
