@@ -1,5 +1,6 @@
 using FastGoat.Commons;
 using FastGoat.Structures;
+using FastGoat.Structures.CartesianProduct;
 using FastGoat.Structures.GenericGroup;
 using FastGoat.UserGroup.Integers;
 using FastGoat.UserGroup.Perms;
@@ -238,5 +239,31 @@ public static partial class FG
             .ToArray();
         var autGreg = Group.Generate(autG.Name, sn, gens);
         return (Greg, autGreg, mapReg.ToDictionary(e => e.Value, e => mapEltIdx[e.Key]));
+    }
+    
+    public static (Perm a, Perm b, Perm[] gensUn) AutomorphismDihedralGens(int n)
+    {
+        var (a, b) = MetaCyclicGens(n, 2, n - 1).gens.Deconstruct();
+        
+        var Ui = IntExt.PrimesDec(n).Select(e => new Un(e.Key.Pow(e.Value))).OrderBy(u => u.Cn.Order)
+            .Select(u =>
+            {
+                var su = new Sn(u.Cn.Order);
+                var gens = Group.AbelianDecompositions(u).abType
+                    .Select(e => su.CreateElementTable(e.g.AutMap.OrderBy(f => f.Key).Select(f => f.Value.K).ToArray()))
+                    .ToArray();
+                return Group.Generate($"{u}", su, gens);
+            }).Cast<IGroup<Perm>>().ToArray();
+        var gensUn = Product.Gp(Ui).GetGenerators().Select(e => ConcatPerm(e.Ei)).ToArray();
+        
+        return (a, b, gensUn);
+    }
+
+    public static (ConcreteGroup<Perm> D2n, ConcreteGroup<Perm> AutD2n) AutomorphismDihedralPg(int n)
+    {
+        var (a, b, gensUi) = AutomorphismDihedralGens(n);
+        var d2n = Group.Generate($"D{2 * n}", a.Sn, a, b);
+        var autd2n = Group.Generate($"Aut[{d2n}]", a.Sn, gensUi.Prepend(a).ToArray());
+        return (d2n, autd2n);
     }
 }

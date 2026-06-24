@@ -147,9 +147,7 @@ string GapExport(Perm[] gens)
     var a0 = IntExt.PermAndCyclesFromType(pType);
     var n1 = a0.perm.Length;
     var sn = new Sn(2 * n1);
-    var bCycles = a0.cycles.Zip(a0.cycles)
-        .SelectMany(e => e.First.Zip(e.Second.Select(i => i + n1).Reverse().ToArray()))
-        .ToArray();
+    var bCycles = a0.cycles.SelectMany(e => e.Zip(e.Select(i => i + n1).Reverse().ToArray())).ToArray();
     var cCycles = a0.cycles.Select(o => o.SelectMany(i => new[] { i, i + n1 }).ToArray()).ToArray();
     
     var cnD2n = FG.ConcatPerm(FG.Cycles(n), FG.Cycles(n));
@@ -157,35 +155,16 @@ string GapExport(Perm[] gens)
     var c2nHolD2n = sn.OpSeq(cCycles.Select(c => sn.CycleP1(c)));
 
     var cnAutD2n = FG.PaddingRight(FG.Cycles(n), n1);
-    var phiAutD2n = IntExt.PrimesDec(n).Select(e => FG.UnInt(e.Key.Pow(e.Value))).OrderBy(u => u.Neutral().Mod)
-        .Select(ui => Group.AbelianDecompositions(ui).abType
-            .Select(e => new Sn(e.g.Mod).CreateElementTable(e.g.Mod.SeqLazy().Select(i => (i * e.g).K).ToArray()))
-            .ToArray()
-        )
-        .MultiLoop().Select(l => l.ToArray())
-        .SelectMany(perms => perms.Length.SeqLazy()
-            .Select(i => FG.ConcatPerm(perms.Select((e, j) => e ^ (j == i ? 1 : 0)).ToArray()))
-        ).Where(e => e.Order > 1).Distinct().OrderByDescending(e => e.Order)
-        .Select(e => FG.ConcatPerm(e, e))
-        .ToArray();
-
-    // var phiG = Group.Generate($"U{n}", sn, phiAutD2n);
-    // var un = new Un(n);
-    // if (!AreIsomorphic(phiG, un))
-    // {
-    //     Console.WriteLine($"{un,-4} ~ {Group.AbelianGroupType(un).ToAbString()}");
-    //     Console.WriteLine($"     ~ {Group.AbelianGroupType(phiG).ToAbString()}");
-    //     phiAutD2n.Println(e => $"{e.Order} {e}");
-    //     throw new();
-    // }
+    var phiAutD2n = FG.AutomorphismDihedralGens(n).gensUn.Select(e => FG.ConcatPerm(e, e)).ToArray();
     
     return (cnD2n, c2D2n, cnAutD2n, phiAutD2n, c2nHolD2n);
 }
 
+void RunHolomorphD2n()
 {
     GlobalStopWatch.Restart();
     
-    for (int n = 3; n <= 64; ++n)
+    for (int n = 3; n <= 32; ++n)
     {
         var (cnD2n, c2D2n, cnAutD2n, phiAutD2n, c2nHolD2n) = HolD2nPerm(n);
         var d2n = Group.Generate($"D{2 * n}", cnD2n.Sn, cnD2n, c2D2n);
@@ -201,20 +180,6 @@ string GapExport(Perm[] gens)
             : phiAutD2n.Append(c2D2n).Prepend(c2nHolD2n).ToArray(); // ord(g1) = 2n, ord(g2) = 2 and gens of Un 
 
         var holD2n = Group.Generate($"Hol[{d2n}]", cnD2n.Sn, holGens);
-        // if (n <= 12)
-        // {
-        //     var autD2nSymb = Group.AutomorphismGroup(d2n);
-        //     if (!AreIsomorphic(autD2nSymb, autD2n))
-        //         throw new();
-        //     var hol = HolomorphGroup.HolomorphPerm(d2n).HolG;
-        //     if (!AreIsomorphic(holD2n, hol))
-        //     {
-        //         DisplayGroup.HeadOrders(hol);
-        //         DisplayGroup.HeadOrders(holD2n);
-        //         throw new();
-        //     }
-        // }
-
         DisplayGroup.HeadOrdersGenerators(holD2n);
         Console.WriteLine($"{holD2n} = {d2n} x: {autD2n}");
         Console.WriteLine();
@@ -239,4 +204,28 @@ string GapExport(Perm[] gens)
     // GeneratorsOfGroup(Image(SmallerDegreePermutationRepresentation(Image(IsomorphismPermGroup(hol1)))));
     // hol2:=Group([(1, 9, 2, 10, 3, 11)(4, 12, 5, 13, 6, 14, 7, 15, 8, 16), (5, 6, 8, 7)(13, 14, 16, 15), (2, 3)(10, 11), (1, 11)(2, 10)(3, 9)(4, 16)(5, 15)(6, 14)(7, 13)(8, 12)]);Size(hol2);
     // IsomorphicSubgroups(hol2,hol1);
+}
+
+void RunAutomorphismDihedrals()
+{
+    GlobalStopWatch.Restart();
+    
+    for (int n = 3; n <= 32; n++)
+    {
+        Console.WriteLine($"################################## Aut[D{2 * n}]");
+        var (d2n, autD2n) = FG.AutomorphismDihedralPg(n);
+        DisplayGroup.HeadOrdersGenerators(d2n);
+        DisplayGroup.HeadOrdersGenerators(autD2n); // Aut(D2n) ~ Hol(Cn)
+        Console.WriteLine();
+
+        if (!UGCraft.HolCn(FG.Cycles(n)).ToHashSet().SetEquals(autD2n))
+            throw new();
+    }
+    
+    GlobalStopWatch.Show();
+}
+
+{
+    RunAutomorphismDihedrals();
+    RunHolomorphD2n();
 }
