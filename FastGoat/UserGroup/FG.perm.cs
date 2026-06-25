@@ -267,4 +267,51 @@ public static partial class FG
         var autd2n = Group.Generate($"Aut[{d2n}]", a.Sn, gensUi.Prepend(a).ToArray());
         return (d2n, autd2n);
     }
+    
+    public static (string name, Sn n, Perm[] gens) AutomorphismDicyclicGens(int m)
+    {
+        if (int.IsPow2(m))
+        {
+            if (m == 2)
+                return ($"Aut[Q{m * 4}]", new Sn(4), new Sn(4).GetGenerators().ToArray());
+            var (a, _, gensUn) = AutomorphismDihedralGens(m * 2);
+            var autQm = gensUn.Prepend(a).ToArray();
+            return ($"Aut[Q{m * 4}]", a.Sn, autQm);
+        }
+        else if (m % 2 == 1)
+        {
+            var (am, bm, gensUm) = AutomorphismDihedralGens(m);
+            var a = PaddingRight(am, 2);
+            var b = PaddingRight(bm, 2);
+            var c = PaddingLeft(FG.Cycles(2), bm.Sn.N);
+            var gensPhi = gensUm.Select(e => FG.PaddingRight(e, 2)).ToArray();
+            return ($"Aut[Dic{m}]", a.Sn, gensPhi.Concat([a, b, c]).ToArray());
+        }
+        else
+        {
+            var k = IntExt.PrimesDecomposition(m).Count(i => i == 2);
+            var n = m / (1 << k);
+            var q = 1 << (k + 1);
+
+            var (an, _, gensUn) = AutomorphismDihedralGens(n);
+            var (aq, _, gensUq) = AutomorphismDihedralGens(q);
+            var autD2n = Group.Generate($"Aut[D{2 * n}]", an.Sn, gensUn.Prepend(an).ToArray());
+            var autD2q = Group.Generate($"Aut[D{2 * q}]", aq.Sn, gensUq.Prepend(aq).ToArray());
+    
+            var hom = gensUq.ToDictionary(e => e, _ => an.Sn.Neutral());
+            hom[aq] = Group.GenerateElements(an.Sn, gensUn).First(e => e.Order == 2);
+
+            var gensAutD2n = autD2n.GetGenerators().Select(c => PaddingRight(c, aq.Sn.N)).ToArray();
+            var gensAutD2q = autD2q.GetGenerators().Select(c => ConcatPerm(hom[c], c)).ToArray();
+            var gensAutDicm = gensAutD2n.Concat(gensAutD2q).ToArray();
+            return ($"Aut[C{n} x: Q{2 * q}]", gensAutD2n[0].Sn, gensAutDicm);
+        }
+    }
+
+    public static (ConcreteGroup<Perm> Dicm, ConcreteGroup<Perm> AutDicm) AutomorphismDicyclicPg(int m)
+    {
+        var (name, sn, gens) = AutomorphismDicyclicGens(m);
+        var autDicm = Group.Generate($"{name}", sn, gens);
+        return (DicyclicPg(m), autDicm);
+    }
 }
