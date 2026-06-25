@@ -56,7 +56,8 @@ string GapExport(Perm[] gens)
         }
 
         Console.WriteLine($"autDic{m}:={GapExport(autDicm.GetGenerators().ToArray())}");
-        Console.WriteLine($"IdGroup(autDic{m});IdGroup(AutomorphismGroup(DicyclicGroup({4 * m})));"); // for m < 32
+        if (m < 32)
+            Console.WriteLine($"IdGroup(autDic{m});IdGroup(AutomorphismGroup(DicyclicGroup({4 * m})));");
         Console.WriteLine();
     }
 }

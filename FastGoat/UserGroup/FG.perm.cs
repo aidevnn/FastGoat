@@ -270,41 +270,16 @@ public static partial class FG
     
     public static (string name, Sn n, Perm[] gens) AutomorphismDicyclicGens(int m)
     {
-        if (int.IsPow2(m))
-        {
-            if (m == 2)
-                return ($"Aut[Q{m * 4}]", new Sn(4), new Sn(4).GetGenerators().ToArray());
-            var (a, _, gensUn) = AutomorphismDihedralGens(m * 2);
-            var autQm = gensUn.Prepend(a).ToArray();
-            return ($"Aut[Q{m * 4}]", a.Sn, autQm);
-        }
-        else if (m % 2 == 1)
-        {
-            var (am, bm, gensUm) = AutomorphismDihedralGens(m);
-            var a = PaddingRight(am, 2);
-            var b = PaddingRight(bm, 2);
-            var c = PaddingLeft(FG.Cycles(2), bm.Sn.N);
-            var gensPhi = gensUm.Select(e => FG.PaddingRight(e, 2)).ToArray();
-            return ($"Aut[Dic{m}]", a.Sn, gensPhi.Concat([a, b, c]).ToArray());
-        }
+        if (m == 2)
+            return ($"Aut[Q{m * 4}]", new Sn(4), new Sn(4).GetGenerators().ToArray());
         else
         {
+            var (a2m, _, gensU2m) = AutomorphismDihedralGens(2 * m);
             var k = IntExt.PrimesDecomposition(m).Count(i => i == 2);
             var n = m / (1 << k);
             var q = 1 << (k + 1);
-
-            var (an, _, gensUn) = AutomorphismDihedralGens(n);
-            var (aq, _, gensUq) = AutomorphismDihedralGens(q);
-            var autD2n = Group.Generate($"Aut[D{2 * n}]", an.Sn, gensUn.Prepend(an).ToArray());
-            var autD2q = Group.Generate($"Aut[D{2 * q}]", aq.Sn, gensUq.Prepend(aq).ToArray());
-    
-            var hom = gensUq.ToDictionary(e => e, _ => an.Sn.Neutral());
-            hom[aq] = Group.GenerateElements(an.Sn, gensUn).First(e => e.Order == 2);
-
-            var gensAutD2n = autD2n.GetGenerators().Select(c => PaddingRight(c, aq.Sn.N)).ToArray();
-            var gensAutD2q = autD2q.GetGenerators().Select(c => ConcatPerm(hom[c], c)).ToArray();
-            var gensAutDicm = gensAutD2n.Concat(gensAutD2q).ToArray();
-            return ($"Aut[C{n} x: Q{2 * q}]", gensAutD2n[0].Sn, gensAutDicm);
+            var name = int.IsPow2(m) ? $"Aut[Q{m * 4}]" : (m % 2 == 1) ? $"Aut[Dic{m}]" : $"Aut[C{n} x: Q{2 * q}]";
+            return (name, a2m.Sn, gensU2m.Prepend(a2m).ToArray());
         }
     }
 
