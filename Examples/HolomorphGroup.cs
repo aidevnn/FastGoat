@@ -2,6 +2,7 @@ using FastGoat.Commons;
 using FastGoat.Structures;
 using FastGoat.Structures.CartesianProduct;
 using FastGoat.Structures.GenericGroup;
+using FastGoat.Structures.Subgroups;
 using FastGoat.UserGroup;
 using FastGoat.UserGroup.Integers;
 using FastGoat.UserGroup.Perms;
@@ -14,16 +15,36 @@ public static class HolomorphGroup
     public static SemiDirectProduct<T, Automorphism<T>> Holomorph<T>(ConcreteGroup<T> G) where T : struct, IElt<T>
     {
         var autG = Group.AutomorphismGroup(G);
-        var theta = Group.Hom(autG, Group.HomomorphismMap(autG, autG, autG.GetGenerators().ToDictionary(e => e, e => e)));
+        var theta = Group.Hom(autG,
+            Group.HomomorphismMap(autG, autG, autG.GetGenerators().ToDictionary(e => e, e => e)));
         return Group.SemiDirectProd($"Hol[{G}]", G, theta, autG);
     }
 
-    public static (ConcreteGroup<Perm> G, ConcreteGroup<Perm> AutG,ConcreteGroup<Perm> HolG)
+    public static (ConcreteGroup<Perm> G, ConcreteGroup<Perm> AutG, ConcreteGroup<Perm> HolG)
         HolomorphPerm<T>(ConcreteGroup<T> G) where T : struct, IElt<T>
     {
         var (G1, AutG, _) = FG.RegPermAutGroup(G);
         var HolG = Group.DirectProduct($"Hol[{G}]", G1, AutG);
         return (G1, AutG, HolG);
+    }
+
+    static (Perm cnD2n, Perm c2D2n, Perm cnAutD2n, Perm[] phiAutD2n, Perm c2nHolD2n) HolD2nPerm(int n)
+    {
+        var pType = IntExt.PrimesDec(n).Select(e => e.Key.Pow(e.Value)).ToArray();
+        var a0 = IntExt.PermAndCyclesFromType(pType);
+        var n1 = a0.perm.Length;
+        var sn = new Sn(2 * n1);
+        var bCycles = a0.cycles.SelectMany(e => e.Zip(e.Select(i => i + n1).Reverse().ToArray())).ToArray();
+        var cCycles = a0.cycles.Select(o => o.SelectMany(i => new[] { i, i + n1 }).ToArray()).ToArray();
+
+        var cnD2n = FG.ConcatPerm(FG.Cycles(n), FG.Cycles(n));
+        var c2D2n = sn.OpSeq(bCycles.Select(c => sn.CycleP1([c.First, c.Second])));
+        var c2nHolD2n = sn.OpSeq(cCycles.Select(c => sn.CycleP1(c)));
+
+        var cnAutD2n = FG.PaddingRight(FG.Cycles(n), n1);
+        var phiAutD2n = FG.AutomorphismDihedralGens(n).gensUn.Select(e => FG.ConcatPerm(e, e)).ToArray();
+
+        return (cnD2n, c2D2n, cnAutD2n, phiAutD2n, c2nHolD2n);
     }
 
     public static void Example1HolC7()
@@ -133,5 +154,40 @@ public static class HolomorphGroup
             DisplayGroup.AreIsomorphics(autD2p, holCp);
             Console.WriteLine();
         }
+    }
+
+    public static void Example6Dihedral()
+    {
+        GlobalStopWatch.Restart();
+
+        for (int n = 3; n <= 32; ++n)
+        {
+            var (cnD2n, c2D2n, cnAutD2n, phiAutD2n, c2nHolD2n) = HolD2nPerm(n);
+            var holGens = IntExt.IsPrime(n)
+                ? phiAutD2n.Prepend(c2nHolD2n).ToArray() // ord(g1) = 2n and gen of Un ord(g2) = n - 1
+                : phiAutD2n.Append(c2D2n).Prepend(c2nHolD2n).ToArray(); // ord(g1) = 2n, ord(g2) = 2 and gens of Un 
+
+            var d2n = Group.Generate($"D{2 * n}", cnD2n.Sn, cnD2n, c2D2n);
+            var autD2n = Group.Generate($"Aut[{d2n}]", cnD2n.Sn, phiAutD2n.Append(cnAutD2n).ToArray());
+            var holD2n = Group.Generate($"Hol[{d2n}]", cnD2n.Sn, holGens);
+            DisplayGroup.HeadOrdersGenerators(d2n);
+            DisplayGroup.HeadOrdersGenerators(autD2n);
+            DisplayGroup.HeadOrdersGenerators(holD2n);
+            Console.WriteLine($"{autD2n} = C{n} x: {phiAutD2n.Select(e => e.Order).ToAbString().WithParenthesis()}");
+            Console.WriteLine($"{holD2n} = {d2n} x: {autD2n}");
+            Console.WriteLine();
+
+            var d2nNormal = Group.IsNormalSubgroup(holD2n, d2n);
+            var autD2nNotNormal = Group.IsNormalSubgroup(holD2n, autD2n);
+            var inter = d2n.Intersect(autD2n).ToXSet();
+            Console.WriteLine($"{d2n,-10} is normal subgroup of {holD2n,-10} {d2nNormal}");
+            Console.WriteLine($"{autD2n,-10} is normal subgroup of {holD2n,-10} {autD2nNotNormal}");
+            Console.WriteLine($"{d2n,-10} ∩ {autD2n,10} = {inter}");
+            Console.WriteLine();
+            if (!d2nNormal || autD2nNotNormal || inter.Count != 1)
+                throw new();
+        }
+
+        GlobalStopWatch.Show();
     }
 }
