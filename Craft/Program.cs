@@ -50,83 +50,76 @@ string GapExport(Perm[] gens)
     var sn = new Sn(2 * n1);
     var bCycles = a0.cycles.SelectMany(e => e.Zip(e.Select(i => i + n1).Reverse().ToArray())).ToArray();
     var cCycles = a0.cycles.Select(o => o.SelectMany(i => new[] { i, i + n1 }).ToArray()).ToArray();
-    
+
     var cnD2n = FG.ConcatPerm(FG.Cycles(n), FG.Cycles(n));
     var c2D2n = sn.OpSeq(bCycles.Select(c => sn.CycleP1([c.First, c.Second])));
     var c2nHolD2n = sn.OpSeq(cCycles.Select(c => sn.CycleP1(c)));
 
     var cnAutD2n = FG.PaddingRight(FG.Cycles(n), n1);
     var phiAutD2n = FG.AutomorphismDihedralGens(n).gensUn.Select(e => FG.ConcatPerm(e, e)).ToArray();
-    
+
     return (cnD2n, c2D2n, cnAutD2n, phiAutD2n, c2nHolD2n);
 }
 
-void RunHolomorphD2n()
+(ConcreteGroup<Perm> Dicm, ConcreteGroup<Perm> AutDicm) AutomorphismDicyclic(int m)
 {
-    GlobalStopWatch.Restart();
-    
-    for (int n = 3; n <= 32; ++n)
+    if (int.IsPow2(m))
     {
-        var (cnD2n, c2D2n, cnAutD2n, phiAutD2n, c2nHolD2n) = HolD2nPerm(n);
-        var d2n = Group.Generate($"D{2 * n}", cnD2n.Sn, cnD2n, c2D2n);
-        DisplayGroup.HeadOrdersGenerators(d2n);
-
-        var autD2n = Group.Generate($"Aut[{d2n}]", cnD2n.Sn, phiAutD2n.Append(cnAutD2n).ToArray());
-        DisplayGroup.HeadOrdersGenerators(autD2n);
-        Console.WriteLine($"Aut[D{2 * n}] = C{n} x: {phiAutD2n.Select(e => e.Order).ToAbString().WithParenthesis()}");
-        Console.WriteLine();
-
-        var holGens = IntExt.IsPrime(n)
-            ? phiAutD2n.Prepend(c2nHolD2n).ToArray() // ord(g1) = 2n and gen of Un ord(g2) = n - 1
-            : phiAutD2n.Append(c2D2n).Prepend(c2nHolD2n).ToArray(); // ord(g1) = 2n, ord(g2) = 2 and gens of Un 
-
-        var holD2n = Group.Generate($"Hol[{d2n}]", cnD2n.Sn, holGens);
-        DisplayGroup.HeadOrdersGenerators(holD2n);
-        Console.WriteLine($"{holD2n} = {d2n} x: {autD2n}");
-        Console.WriteLine();
-
-        var d2nNormal = Group.IsNormalSubgroup(holD2n, d2n);
-        var autD2nNotNormal = Group.IsNormalSubgroup(holD2n, autD2n);
-        var inter = d2n.Intersect(autD2n).Count();
-        Console.WriteLine($"{d2n,-10} is normal subgroup of {holD2n,-10} {d2nNormal}");
-        Console.WriteLine($"{autD2n,-10} is normal subgroup of {holD2n,-10} {autD2nNotNormal}");
-        Console.WriteLine($"{d2n,-10} ∩ {autD2n,10} = {inter}");
-        Console.WriteLine();
-        Console.WriteLine();
-        Console.WriteLine($"hol2:={GapExport(holGens)}");
-        Console.WriteLine();
-        if (!d2nNormal || autD2nNotNormal || inter != 1)
-            throw new();
+        var Qm = FG.QuaternionPg(m * 4);
+        var autQm = m == 2 ? FG.Symmetric(4) : FG.AutomorphismDihedralPg(m * 2).AutD2n;
+        autQm.Name = $"Aut[{Qm}]";
+        return (Qm, autQm);
     }
-    
-    GlobalStopWatch.Show();
-    // GAP
-    // d2n:=DihedralGroup(30);autD2n:=AutomorphismGroup(d2n);hol1:=SemidirectProduct(autD2n,d2n);StructureDescription(autD2n);Size(hol1);
-    // GeneratorsOfGroup(Image(SmallerDegreePermutationRepresentation(Image(IsomorphismPermGroup(hol1)))));
-    // hol2:=Group([(1, 9, 2, 10, 3, 11)(4, 12, 5, 13, 6, 14, 7, 15, 8, 16), (5, 6, 8, 7)(13, 14, 16, 15), (2, 3)(10, 11), (1, 11)(2, 10)(3, 9)(4, 16)(5, 15)(6, 14)(7, 13)(8, 12)]);Size(hol2);
-    // IsomorphicSubgroups(hol2,hol1);
-}
-
-void RunAutomorphismDihedrals()
-{
-    GlobalStopWatch.Restart();
-    
-    for (int n = 3; n <= 32; n++)
+    else if (m % 2 == 1)
     {
-        Console.WriteLine($"################################## Aut[D{2 * n}]");
-        var (d2n, autD2n) = FG.AutomorphismDihedralPg(n);
-        DisplayGroup.HeadOrdersGenerators(d2n);
-        DisplayGroup.HeadOrdersGenerators(autD2n); // Aut(D2n) ~ Hol(Cn)
-        Console.WriteLine();
-
-        if (!UGCraft.HolCn(FG.Cycles(n)).ToHashSet().SetEquals(autD2n))
-            throw new();
+        var Dicm = FG.DicyclicPg(m);
+        var (a0, b0, gensUn0) = FG.AutomorphismDihedralGens(m);
+        var a = FG.PaddingRight(a0, 2);
+        var b = FG.PaddingRight(b0, 2);
+        var c = FG.PaddingLeft(FG.Cycles(2), b0.Sn.N);
+        var gensUn = gensUn0.Select(e => FG.PaddingRight(e, 2)).ToArray();
+        var AutDicm = Group.Generate($"Aut[{Dicm}]", a.Sn, gensUn.Concat([a, b, c]).ToArray());
+        return (Dicm, AutDicm);
     }
+    else
+    {
+        var Dicm = FG.DicyclicPg(m);
+        var k = IntExt.PrimesDecomposition(m).Count(i => i == 2);
+        var n = m / (1 << k);
+
+        var (a0, b0, gensUn0) = FG.AutomorphismDihedralGens(n);
+        var autD2n = Group.Generate($"Aut[D{2 * n}]", a0.Sn, gensUn0.Prepend(a0).ToArray());
+
+        var q = 1 << (k + 1);
+        var (a1, b1, gensUn1) = FG.AutomorphismDihedralGens(q);
+        var autD2q = Group.Generate($"Aut[D{2 * q}]", a1.Sn, gensUn1.Prepend(a1).ToArray());
     
-    GlobalStopWatch.Show();
+        var hom = gensUn1.ToDictionary(e => e, _ => a0.Sn.Neutral());
+        hom[a1] = Group.GenerateElements(a0.Sn, gensUn0).First(e => e.Order == 2);
+
+        var gens1 = autD2n.GetGenerators().Select(c => FG.PaddingRight(c, a1.Sn.N)).ToArray();
+        var gens2 = autD2q.GetGenerators().Select(c => FG.ConcatPerm(hom[c], c)).ToArray();
+        var sn = gens1[0].Sn;
+        var gensAutDicm = gens1.Concat(gens2).ToArray();
+        var AutDicm = Group.Generate($"Aut[{Dicm}]", sn, gensAutDicm);
+        return (Dicm, AutDicm);
+    }
 }
 
 {
-    RunAutomorphismDihedrals();
-    RunHolomorphD2n();
+    for (int m = 2; m <= 64; m++)
+    {
+        var (dicm, autDicm) = AutomorphismDicyclic(m);
+        DisplayGroup.HeadOrders(dicm);
+        DisplayGroup.HeadOrdersGenerators(autDicm);
+        if (m <= 16)
+        {
+            var autDicmReg = FG.RegPermAutGroup(dicm).autG;
+            if (!GroupCraft.AreIsomorphic(autDicmReg, autDicm))
+                throw new();
+        }
+
+        Console.WriteLine($"autDic{m}:={GapExport(autDicm.GetGenerators().ToArray())}");
+        Console.WriteLine();
+    }
 }
