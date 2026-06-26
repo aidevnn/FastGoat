@@ -43,15 +43,15 @@ string GapExport(Perm[] gens)
 }
 
 {
-    for (int m = 2; m <= 64; m++)
+    for (int m = 3; m <= 64; m++)
     {
         var (dicm, autDicm) = FG.AutomorphismDicyclicPg(m);
         DisplayGroup.HeadOrders(dicm);
-        DisplayGroup.HeadOrdersGenerators(autDicm);
-        if (m <= 16)
+        DisplayGroup.HeadOrdersGenerators(autDicm); // for m>=3, Aut[Dic[m]] ~ Aut[D4m] ~ Hol[C2m]
+        if (m >= 3)
         {
-            var autDicmReg = FG.RegPermAutGroup(dicm).autG;
-            if (!GroupCraft.AreIsomorphic(autDicmReg, autDicm))
+            var holC2m = UGCraft.HolCn(FG.Cycles(2 * m)).ToHashSet();
+            if (!autDicm.SetEquals(holC2m))
                 throw new();
         }
 
