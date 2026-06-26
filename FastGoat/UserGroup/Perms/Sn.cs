@@ -51,7 +51,7 @@ public struct Sn : IGroup<Perm>
 
     public Perm Invert(Perm e)
     {
-        if (!Equals(e.BaseGroup))
+        if (!Equals(e.Sn))
             throw new GroupException(GroupExceptionType.BaseGroup);
 
         var hash = IntExt.InvertPermutation(P, e.Table, _cache);
@@ -60,7 +60,7 @@ public struct Sn : IGroup<Perm>
 
     public Perm Op(Perm e1, Perm e2)
     {
-        if (!Equals(e1.BaseGroup) || !Equals(e2.BaseGroup))
+        if (!Equals(e1.Sn) || !Equals(e2.Sn))
             throw new GroupException(GroupExceptionType.BaseGroup);
 
         var hash = IntExt.ComposePermutation(P, e1.Table, e2.Table, _cache);
@@ -109,6 +109,7 @@ public struct Sn : IGroup<Perm>
     }
 
     public bool Equals(IGroup<Perm>? other) => other?.Hash == Hash;
+    public bool Equals(Sn other) => other.Hash == Hash;
     public IEnumerable<Perm> Classes()
     {
         var combs = N.Range().AllCombinations().Where(l => l.Length > 0).ToArray();

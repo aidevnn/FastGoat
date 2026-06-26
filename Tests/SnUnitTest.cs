@@ -41,7 +41,7 @@ public class SnUnitTest
         Assert.Equal(s4[(1, 4)], s4.Op(e1, e3));
         Assert.Equal(e4, s4.Times(e3, 2));
         Assert.Equal(s4.Neutral(), s4.Times(e3, -6));
-        Assert.Equal(s4, e3.BaseGroup);
+        Assert.Equal(s4, e3.Sn);
     }
 
     [Fact]

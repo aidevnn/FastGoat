@@ -17,33 +17,32 @@ public struct Perm : IElt<Perm>
     public static DisplayPerm Style { get; set; } = DisplayPerm.Cycles;
     public int Hash { get; }
     public int[] Table { get; }
-    public IGroup<Perm> BaseGroup { get; }
     public Sn Sn { get; }
 
     public Perm()
     {
-        BaseGroup = Sn = new Sn(2);
+        Sn = new Sn(2);
         Table = new[] { 0, 1 };
         Hash = IntExt.GenHash(2, Table);
     }
 
     public Perm(Sn sn)
     {
-        BaseGroup = Sn = sn;
+        Sn = sn;
         Table = sn.N.Range();
         Hash = IntExt.GenHash(sn.P, Table);
     }
 
     public Perm(Sn sn, int[] arr, int hash)
     {
-        BaseGroup = Sn = sn;
+        Sn = sn;
         Table = arr.ToArray();
         Hash = hash;
     }
 
     public int CompareTo(Perm other)
     {
-        if (!BaseGroup.Equals(other.BaseGroup))
+        if (!Sn.Equals(other.Sn))
             throw new GroupException(GroupExceptionType.BaseGroup);
         
         return Table.SequenceCompareTo(other.Table);
@@ -132,8 +131,8 @@ public struct Perm : IElt<Perm>
     public static bool TypeEquals(Perm a, Perm b) => a.PermType.SequenceEqual(b.PermType);
     public static int Distance(Perm a, Perm b) => a.Table.Zip(b.Table).Count(e => e.First == e.Second);
 
-    public static Perm operator *(Perm a, Perm b) => a.BaseGroup.Op(a, b);
-    public static Perm operator ^(Perm a, int p) => a.BaseGroup.Times(a, p);
+    public static Perm operator *(Perm a, Perm b) => a.Sn.Op(a, b);
+    public static Perm operator ^(Perm a, int p) => a.Sn.Times(a, p);
     public static bool operator ==(Perm a, Perm b) => a.Equals(b);
     public static bool operator !=(Perm a, Perm b) => !a.Equals(b);
 
