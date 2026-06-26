@@ -190,4 +190,75 @@ public static class HolomorphGroup
 
         GlobalStopWatch.Show();
     }
+
+    public static void Example7Dicyclic()
+    {
+        GlobalStopWatch.Restart();
+        for (int m = 2; m <= 32; ++m)
+        {
+            // var holReg = HolomorphGroup.HolomorphPerm(FG.DicyclicPg(m)).HolG;
+            if (int.IsPow2(m))
+            {
+                var (c2ma, _, _, phi, c4m) = HolD2nPerm(2 * m);
+                var c2mb = FG.QuaternionPg(4 * m).GetGenerators().First(e => !e.Equals(c2ma));
+                var holGens = phi.Append(c2mb).Prepend(c4m).ToArray();
+                if (m == 2)
+                    holGens = holGens.Append(c2ma.Sn[(2, 6), (4, 8), (5, 7)]).ToArray();
+
+                var holQ4m = Group.Generate($"Hol[Q{4 * m}]", c2ma.Sn, holGens);
+                DisplayGroup.HeadOrdersGenerators(holQ4m);
+                // if (!holReg.ElementsOrdersList().SequenceEqual(holQ4m.ElementsOrdersList()))
+                // {
+                //     DisplayGroup.HeadOrdersGenerators(holReg);
+                //     throw new();
+                // }
+            }
+            else if (m % 2 == 1)
+            {
+                var (c4a, c2a) = FG.MetaCyclicGens(4, 2, 3).gens.Deconstruct();
+                var (_, c2b, cmb, phi, _) = HolD2nPerm(m);
+                var c4 = FG.ConcatPerm(c2b, c4a);
+                var cmAut = FG.ConcatPerm(cmb, c2a);
+                var phiDic = phi.Select(e => FG.ConcatPerm(e, c2a)).ToArray();
+                var gensHol = phiDic.Append(cmAut).Append(c4).ToArray();
+                var holDicm = Group.Generate($"Hol[Dic{m}]", cmAut.Sn, gensHol);
+                DisplayGroup.HeadOrdersGenerators(holDicm);
+                // if (!holReg.ElementsOrdersList().SequenceEqual(holDicm.ElementsOrdersList()))
+                // {
+                //     DisplayGroup.HeadOrdersGenerators(holReg);
+                //     throw new();
+                // }
+            }
+            else
+            {
+                var pow2 = IntExt.PrimesDecomposition(m).Count(i => i == 2);
+                var n = m / (1 << pow2);
+                var q = 1 << pow2;
+                var name = $"C{n} x: Q{4 * q}";
+
+                var (cna, c2a, cnb, phi_n, c2n) = HolD2nPerm(n);
+                var gensAutD2n = phi_n.Prepend(cna).ToArray();
+                var (c2qa, c2b, c2qb, phi_2q, c4q) = HolD2nPerm(2 * q);
+                var gensAutQ4q = phi_2q.Prepend(c2qb).ToArray();
+
+                var cn = FG.PaddingRight(cna, c2qa.Sn.N);
+                var hom = phi_2q.ToDictionary(e => e, _ => c2a.Sn.Neutral());
+                hom[c2qb] = Group.GenerateElements(cna.Sn, phi_n).First(e => e.Order == 2);
+
+                var gensAutD2nb = gensAutD2n.Select(c => FG.PaddingRight(c, c2qa.Sn.N)).ToArray();
+                var gensAutQ4qb = gensAutQ4q.Select(c => FG.ConcatPerm(hom[c], c)).ToArray();
+                var gensAutDicm = gensAutD2nb.Concat(gensAutQ4qb).ToArray();
+                var gensHolDicm = gensAutDicm.Append(FG.ConcatPerm(c2n, c4q)).ToArray();
+                var holCnByQ4q = Group.Generate($"Hol[{name}]", cn.Sn, gensHolDicm);
+                DisplayGroup.HeadOrdersGenerators(holCnByQ4q);
+                // if (!holReg.ElementsOrdersList().SequenceEqual(holCnByQ4q.ElementsOrdersList()))
+                // {
+                //     DisplayGroup.HeadOrdersGenerators(holReg);
+                //     throw new();
+                // }
+            }
+        }
+
+        GlobalStopWatch.Show();
+    }
 }
