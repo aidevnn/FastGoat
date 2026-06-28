@@ -79,7 +79,7 @@ public static partial class GroupCraft
 
         var ng = G.Order;
         var sizes = (gGens.Length - 1).SeqLazy(1)
-            .ToDictionary(i => gGens[i - 1], i => Group.GenerateElements(G.BaseGroup, gGens.Take(i).ToArray()).Count);
+            .ToDictionary(i => gGens[i - 1], i => Group.GenerateElements(G, gGens.Take(i).ToArray()).Count);
         sizes[gGens.Last()] = ng;
         foreach (var hom in MorphismPruning(G, H, sizes, new(), new() { [G.Neutral()] = H.Neutral() }, gpMap, 0))
         {
