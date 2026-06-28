@@ -218,4 +218,45 @@ public static partial class GroupCraft
 
         return table.Where(e => e.Key.Count() == ok && !e.Key.ToSet().Overlaps(h0)).ToDictionary();
     }
+    
+    public static HashSet<T> Orbits<T>(HashSet<T> gens, GroupAction<T, T> act, T x) where T : struct, IElt<T>
+    {
+        HashSet<T> set = new() { x };
+        Queue<T> q = new Queue<T>();
+        q.Enqueue(x);
+        while (q.Count != 0)
+        {
+            var x0 = q.Dequeue();
+            foreach (var g in gens)
+            {
+                var x1 = act(g, x0);
+                if (set.Add(x1))
+                    q.Enqueue(x1);
+            }
+        }
+
+        return set;
+    }
+
+    public static Dictionary<T, HashSet<T>> AllOrbits<T>(IGroup<T> G, HashSet<T> gens, T[] set, GroupAction<T, T> act)
+        where T : struct, IElt<T>
+    {
+        var setG = set.ToHashSet();
+        var allOrbx = new Dictionary<T, HashSet<T>>();
+        while (setG.Count != 0)
+        {
+            var x = setG.First();
+            var orbx = Orbits(gens, act, x);
+            setG.ExceptWith(orbx);
+            allOrbx[x] = orbx;
+        }
+
+        return allOrbx;
+    }
+
+    public static Dictionary<T, HashSet<T>> AllOrbits<T>(ConcreteGroup<T> G) where T : struct, IElt<T>
+    {
+        var bs = G.BaseGroup;
+        return AllOrbits(bs, G.GetGenerators().ToHashSet(), G.ToArray(), Group.ByConjugate(bs));
+    }
 }
