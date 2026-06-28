@@ -26,7 +26,7 @@ public static partial class FG
 
     public static Perm PaddingRight(Perm perm, int pad) => pad == 0 ? perm : ConcatPerm(perm, (new Sn(pad)).Neutral());
     public static Perm PaddingLeft(Perm perm, int pad) => pad == 0 ? perm : ConcatPerm((new Sn(pad)).Neutral(), perm);
-    static Perm Padding(int padLeft, Perm perm, int padRight) => PaddingLeft(PaddingRight(perm, padRight), padLeft);
+    public static Perm Padding(int padLeft, Perm perm, int padRight) => PaddingLeft(PaddingRight(perm, padRight), padLeft);
     public static Perm Repeat(Perm a, int k) => FG.ConcatPerm(Enumerable.Repeat(a, k).ToArray());
     static Perm[] CyclesSplit(int m)
     {
@@ -244,7 +244,12 @@ public static partial class FG
     public static (Perm a, Perm b, Perm[] gensUn) AutomorphismDihedralGens(int n)
     {
         var (a, b) = MetaCyclicGens(n, 2, n - 1).gens.Deconstruct();
-        
+        var gensUn = UnPermGens(n);
+        return (a, b, gensUn);
+    }
+
+    public static Perm[] UnPermGens(int n)
+    {
         var Ui = IntExt.PrimesDec(n).Select(e => e.Key.Pow(e.Value)).Order()
             .Select(mod =>
             {
@@ -254,10 +259,8 @@ public static partial class FG
                     .ToArray();
                 return Group.Generate($"U{mod}i", su, gens);
             }).Cast<IGroup<Perm>>().ToArray();
-        var gensUn = Group.AbelianDecompositions(Product.GpGenerate(Ui)).abType
+        return Group.AbelianDecompositions(Product.GpGenerate(Ui)).abType
             .Select(e => ConcatPerm(e.g.Ei)).ToArray();
-        
-        return (a, b, gensUn);
     }
 
     public static (ConcreteGroup<Perm> D2n, ConcreteGroup<Perm> AutD2n) AutomorphismDihedralPg(int n)
