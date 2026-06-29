@@ -212,4 +212,12 @@ public static class AbelianExt
         return new(g, gElts, gP, n, nElts, nP, quos);
     }
 
+    public static int[][] QuotientsElems(int[] g, int[] n)
+    {
+        var quo = Quotients(g, n);
+        return quo.quos.Select(dq => dq.SelectMany(e => e.ker.Select(i => e.p.Pow(i))).ToArray())
+            .DistinctBy(l => l.ToAbString()).ToArray();
+    }
+
+    public static int[][] QuotientsCan(int[] g, int[] n) => QuotientsElems(g, n).Select(l => ElemsToCan(l)).ToArray();
 }
