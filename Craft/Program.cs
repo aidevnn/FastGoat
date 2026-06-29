@@ -78,17 +78,19 @@ ConcreteGroup<Perm> RegPermAutGroup<T>(ConcreteGroup<T> G) where T : struct, IEl
     return autG;
 }
 
-(ConcreteGroup<Perm> G, ConcreteGroup<Perm> AutG) RegPermGroupAndAutGroup<T>(ConcreteGroup<T> G) where T : struct, IElt<T>
+(ConcreteGroup<Perm> G, ConcreteGroup<Perm> AutG) RegPermGroupAndAutGroup<T>(ConcreteGroup<T> G)
+    where T : struct, IElt<T>
 {
     var sn = new Sn(G.Count());
     var mapEltIdx = G.Index().OrderBy(e => G.ElementsOrders[e.Item])
         .ToDictionary(e => e.Item, e => e.Index);
     var mapIdxElt = mapEltIdx.ToDictionary(e => e.Value, e => e.Key);
-    GroupAction<T, Perm> act = (e, p) => sn.CreateElementTable(p.Table.Select(i => mapEltIdx[G.Op(e, mapIdxElt[i])]).ToArray());
+    GroupAction<T, Perm> act = (e, p) =>
+        sn.CreateElementTable(p.Table.Select(i => mapEltIdx[G.Op(e, mapIdxElt[i])]).ToArray());
     var mapReg = G.ToDictionary(e => e, e => act(e, sn.Neutral()));
     var gensReg = G.GetGenerators().Select(e => mapReg[e]).ToArray();
     var Greg = Group.Generate(G.Name, sn, gensReg);
-        
+
     var bgAut = new AutomorphismGroup<T>(G);
     var allAut = GroupCraft.AllMorphismsWithPruning(G, G, Group.MorphismType.Isomorphism)
         .Select(aut => new Automorphism<T>(bgAut, aut.HomMap))
@@ -100,6 +102,19 @@ ConcreteGroup<Perm> RegPermAutGroup<T>(ConcreteGroup<T> G) where T : struct, IEl
     return (Greg, autG);
 }
 
+void DisplaySDPAb<T>(AllSubgroups<T> subs) where T : struct, IElt<T>
+{
+    subs.DecomposeProducts(subs.ProperNonTrivialNormalSubgroups())
+        .Where(e => e.lhs.GroupType == GroupType.AbelianGroup && e.rhs.GroupType == GroupType.AbelianGroup)
+        .Select(e => (lhs: Group.AbelianGroupType(e.lhs.Representative),
+            rhs: Group.AbelianGroupType(e.rhs.Representative),
+            symb: e.isDirectProduct ? "x" : "x:"))
+        .DistinctBy(e => e.lhs.ToAbString())
+        .Println(e => $"{e.lhs.ToAbString().WithParenthesis()} {e.symb} {e.rhs.ToAbString().WithParenthesis()}",
+            subs.Parent.Name);
+    Console.WriteLine();
+}
+
 void AutMMnames()
 {
     for (int k = 4; k <= 8; k++)
@@ -107,14 +122,7 @@ void AutMMnames()
         var mm = FG.ModularMaxPg(k);
         var autMM = RegPermGroupAndAutGroup(mm).AutG;
         DisplayGroup.HeadOrders(autMM);
-        var subs = autMM.AllSubgroups();
-        subs.DecomposeProducts(subs.ProperNonTrivialNormalSubgroups())
-            .Where(e => e.lhs.GroupType == GroupType.AbelianGroup && e.rhs.GroupType == GroupType.AbelianGroup)
-            .Select(e => (lhs: Group.AbelianGroupType(e.lhs.Representative),
-                rhs: Group.AbelianGroupType(e.rhs.Representative)))
-            .DistinctBy(e => e.lhs.ToAbString())
-            .Println(e => $"{e.lhs.ToAbString().WithParenthesis()} x: {e.rhs.ToAbString().WithParenthesis()}", autMM.Name);
-        Console.WriteLine();
+        DisplaySDPAb(autMM.AllSubgroups());
     }
 }
 
@@ -123,16 +131,9 @@ void AutQDnames()
     for (int k = 4; k <= 7; k++)
     {
         var mm = FG.SemiDihedralPg(k);
-        var autMM = RegPermGroupAndAutGroup(mm).AutG;
-        DisplayGroup.HeadOrders(autMM);
-        var subs = autMM.AllSubgroups();
-        subs.DecomposeProducts(subs.ProperNonTrivialNormalSubgroups())
-            .Where(e => e.lhs.GroupType == GroupType.AbelianGroup && e.rhs.GroupType == GroupType.AbelianGroup)
-            .Select(e => (lhs: Group.AbelianGroupType(e.lhs.Representative),
-                rhs: Group.AbelianGroupType(e.rhs.Representative)))
-            .DistinctBy(e => e.lhs.ToAbString())
-            .Println(e => $"{e.lhs.ToAbString().WithParenthesis()} x: {e.rhs.ToAbString().WithParenthesis()}", autMM.Name);
-        Console.WriteLine();
+        var autQD = RegPermGroupAndAutGroup(mm).AutG;
+        DisplayGroup.HeadOrders(autQD);
+        DisplaySDPAb(autQD.AllSubgroups());
     }
 }
 
@@ -161,7 +162,7 @@ void AutMMSDP()
                 break;
             }
         }
-        
+
         Console.WriteLine($"try:{counter}");
         Console.WriteLine();
     }
@@ -212,13 +213,13 @@ void RunAutMM()
         var l = n / 8;
         var sm = mm.Neutral().Sn;
         var m = sm.N;
-        
+
         var a = sm.OpSeq(4.SeqLazy().Select(i => sm.CycleP1((m / 4).SeqLazy(i, 4).ToArray())));
         var b = sm.OpSeq((m / 2).SeqLazy(0, 2).Select(i => sm.CycleP1([i, i + 1])).ToArray());
         var c = sm.OpSeq(2.SeqLazy().SelectMany(i => (m / 4).SeqLazy(i, 4).Select(j => sm.CycleP1([j, j + 2])))
             .ToArray());
         var d = sm.OpSeq(a.DisjoinCycles.Take(2).Select(e => e ^ (m / 8)));
-        
+
         var sdp = Group.Generate($"(C{l} x C2 x C2) x: C2", sm, a, b, c, d);
         DisplayGroup.HeadOrdersGenerators(sdp);
         var autMM = RegPermAutGroup(mm);
@@ -263,4 +264,170 @@ void TestQD()
     AutQDnames();
     AutQDSDP();
     RunAutQD();
+}
+
+Perm[] CyclesSplit(int m)
+{
+    var dec = IntExt.PrimesDec(m).Select(e => e.Key.Pow(e.Value)).Order().ToArray();
+    return dec.Select(e => new Sn(e).Cycle(e.Range(1))).ToArray();
+}
+
+Perm rUmToPerm(int m, int r)
+{
+    var cycles = CyclesSplit(m).Select(c =>
+    {
+        var N = c.Sn.N;
+        if (IntExt.Gcd(N, r) != 1)
+            return c;
+
+        var ri = new ZnInt(N, r).Inv();
+        return c.Sn.CreateElementTable(N.Range().Select(i => (i * ri).K).ToArray());
+    }).ToArray();
+
+    return FG.ConcatPerm(cycles.ToArray());
+}
+
+void OrderedMetaCyclic(int maxOrder)
+{
+    var seqm = (maxOrder / 2 - 2).Range(3).ToDictionary(m => m, m => IntExt.Coprimes(m).Where(u => u > 1).ToXSet());
+    var seqn = (maxOrder / 3 - 1).Range(2).ToDictionary(n => n, n => IntExt.Coprimes(n).ToXSet());
+    var all = seqm.Grid2D(seqn)
+        .SelectMany(e => e.t1.Value.Where(u => IntExt.PowMod(u, e.t2.Key, e.t1.Key) == 1)
+            .OrderDescending()
+            .Select(r => (e.t1, e.t2, r)))
+        .DistinctBy(e => (e.t1.Key, e.t2.Key, e.t2.Value.Select(i => IntExt.PowMod(e.r, i, e.t1.Key)).ToXSet()))
+        .Select(e => (m: e.t1.Key, n: e.t2.Key, e.r, mCoprimes: e.t1.Value, nCoprimes: e.t2.Value))
+        .Where(e => e.m * e.n <= maxOrder)
+        .GroupBy(e => (e.m, e.r))
+        .ToDictionary(gr => gr.Key, gr => gr.ToArray());
+
+    foreach (var ((m, r), gr) in all.OrderBy(e => e.Key))
+        gr.Println(e => $"   n:{e.n,-4} {FG.MetaCyclicName(m, e.n, e.r)}", $"m:{m,-4} r:{r}");
+
+    // foreach (var gr in all.Values.SelectMany(e => e)
+    //              .GroupBy(e => (e.m, e.n))
+    //              .OrderBy(e => (e.Key.m, e.Key.n)))
+    // {
+    //     gr.Order().Println(e => FG.MetaCyclicName(e.m, e.n, e.r), $"m:{gr.Key.m} n:{gr.Key.n}");
+    // }
+}
+
+Dictionary<int, (int m, int n, int r)[]> MetaCyclicsM(int m, int maxOrder, bool details = false)
+{
+    var maxN = maxOrder / m;
+    var mCoprimes = IntExt.Coprimes(m).Where(u => u > 1).ToXSet();
+    var seqn = (maxN - 1).Range(2).ToDictionary(n => n, n => IntExt.Coprimes(n).ToXSet());
+    var all = seqn.SelectMany(e => mCoprimes.Where(u => IntExt.PowMod(u, e.Key, m) == 1)
+            .OrderDescending()
+            .Select(r => (m, e, r)))
+        .DistinctBy(e => (e.e.Key, e.e.Value.Select(i => IntExt.PowMod(e.r, i, m)).ToXSet()))
+        .Select(e => (n: e.e.Key, e.r, mCoprimes, nCoprimes: e.e.Value))
+        .Where(e => m * e.n <= maxOrder)
+        .GroupBy(e => e.r)
+        .OrderBy(e => e.Key)
+        .ToDictionary(gr => gr.Key, gr => gr.ToArray());
+
+    if (details)
+    {
+        foreach (var (r, gr) in all)
+            gr.Println(e => $"   n:{e.n,-4} {FG.MetaCyclicName(m, e.n, e.r)}", $"m:{m,-4} r:{r}");
+    }
+
+    return all.ToDictionary(e => e.Key, e => e.Value.Select(f => (m, f.n, f.r)).ToArray());
+}
+
+(ConcreteGroup<Perm> mtp, ConcreteGroup<Perm> autMtp) AutMetaCyclicPNRSDP(int p, int n, int r)
+{
+    if (!IntExt.IsPrime(p))
+        throw new();
+
+    var mtp = FG.MetaCyclicPg(p, n, r);
+    DisplayGroup.HeadOrdersGenerators(mtp);
+
+    var rq = IntExt.Coprimes(p).OrderDescending().First(rq => rUmToPerm(p, rq).Order == p - 1);
+    var mtpq = FG.MetaCyclicPg(p, p - 1, rq);
+
+    var unType = Group.AbelianGroupType(new Un(n));
+    var pr = rUmToPerm(p, r).Order;
+    var ubType = Group.AbelianGroupType(new Un(pr));
+    var quos = AbelianExt.QuotientsCan(unType, ubType);
+    if (quos.Length > 1)
+    {
+        quos.Println(l => l.ToAbString(), $"U{n}={unType.ToAbString()} U{pr}:{ubType.ToAbString()}");
+        Console.WriteLine("Warning"); // TODO: quotient criterion
+    }
+
+    var lhsType = quos.MinBy(l => l.Length)!;
+    var lhsAb = FG.AbelianPerm(lhsType);
+    var autMtpg = ProductPermGroup(mtpq, lhsAb);
+    autMtpg.Name = $"Aut[{mtp}]";
+    Console.WriteLine($"{autMtpg} = {lhsAb.Name.WithParenthesis()} x {mtpq.Name}");
+    Console.WriteLine();
+    DisplayGroup.HeadOrdersGenerators(autMtpg);
+
+    if (autMtpg.Order <= 128)
+    {
+        var autMt = RegPermGroupAndAutGroup(mtp).AutG;
+        DisplayGroup.HeadOrders(autMt);
+        Console.WriteLine();
+        if (autMtpg.ElementsOrdersList().SequenceEqual(autMt.ElementsOrdersList()))
+            return (mtp, autMtpg);
+
+        throw new();
+    }
+
+    Console.WriteLine($"mtp:={GapExport(mtp.GetGenerators().ToArray())}");
+    Console.WriteLine($"autMt:={GapExport(autMtpg.GetGenerators().ToArray())}");
+    Console.WriteLine("StructureDescription(autMt);");
+    Console.WriteLine();
+
+    return (mtp, autMtpg);
+}
+
+void AutMetacyclicP(int p, int maxOrder)
+{
+    if (!IntExt.IsPrime(p))
+        throw new();
+    var mtpCoefs = MetaCyclicsM(p, maxOrder, details: true);
+    var (counter, found, check) = (0, 0, 0);
+    foreach (var (_, coefs) in mtpCoefs)
+    {
+        foreach (var (_, n, r) in coefs)
+        {
+            ++counter;
+            var (mtp, autMtp) = AutMetaCyclicPNRSDP(p, n, r);
+            if (autMtp.Order != 1)
+                ++found;
+        }
+    }
+
+    Console.WriteLine($"Total:{counter} Found:{found}");
+    Console.WriteLine();
+}
+
+void AllAutMetacyclicP(int maxP, int maxOrder)
+{
+    var counter = 0;
+    foreach (var p in IntExt.Primes10000.Where(p => p <= maxP))
+    {
+        var mtpCoefs = MetaCyclicsM(p, maxOrder, details: true);
+        foreach (var (_, coefs) in mtpCoefs)
+        {
+            foreach (var (_, n, r) in coefs)
+            {
+                ++counter;
+                AutMetaCyclicPNRSDP(p, n, r); // Aut[M(p,n)r] = M x Fpq where p is prime, q=p-1 and M is an abelian group
+            }
+        }
+    }
+
+    Console.WriteLine($"Total:{counter}");
+    Console.WriteLine();
+}
+
+{
+    AutMetaCyclicPNRSDP(17, 16, 15);
+    AutMetaCyclicPNRSDP(17, 34, 16);
+    AutMetacyclicP(p: 7, maxOrder: 256);
+    // AllAutMetacyclicP(maxP: 64, maxOrder: 1024);
 }
