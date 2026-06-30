@@ -361,7 +361,7 @@ Dictionary<int, (int m, int n, int r)[]> MetaCyclicsM(int m, int maxOrder, bool 
     var lhsAb = FG.AbelianPerm(lhsType);
     var autMtpg = ProductPermGroup(mtpq, lhsAb);
     autMtpg.Name = $"Aut[{mtp}]";
-    Console.WriteLine($"{autMtpg} = {lhsAb.Name.WithParenthesis()} x {mtpq.Name}");
+    Console.WriteLine($"{autMtpg} = {lhsAb.Name} x {mtpq.Name}");
     Console.WriteLine();
     DisplayGroup.HeadOrdersGenerators(autMtpg);
 
@@ -395,6 +395,7 @@ void AutMetacyclicP(int p, int maxOrder)
         foreach (var (_, n, r) in coefs)
         {
             ++counter;
+            // Aut[M(p,n)r] = M x Fpq where p is prime, q=p-1 and M is an abelian group
             var (mtp, autMtp) = AutMetaCyclicPNRSDP(p, n, r);
             if (autMtp.Order != 1)
                 ++found;
@@ -416,7 +417,8 @@ void AllAutMetacyclicP(int maxP, int maxOrder)
             foreach (var (_, n, r) in coefs)
             {
                 ++counter;
-                AutMetaCyclicPNRSDP(p, n, r); // Aut[M(p,n)r] = M x Fpq where p is prime, q=p-1 and M is an abelian group
+                // Aut[M(p,n)r] = M x Fpq where p is prime, q=p-1 and M is an abelian group
+                AutMetaCyclicPNRSDP(p, n, r);
             }
         }
     }
@@ -425,9 +427,170 @@ void AllAutMetacyclicP(int maxP, int maxOrder)
     Console.WriteLine();
 }
 
+(string name, int[] abType, int m, int n, int r) RewriteMetaCyclic(int m, int n, int r)
 {
-    AutMetaCyclicPNRSDP(17, 16, 15);
-    AutMetaCyclicPNRSDP(17, 34, 16);
-    AutMetacyclicP(p: 7, maxOrder: 256);
-    // AllAutMetacyclicP(maxP: 64, maxOrder: 1024);
+    var decM = IntExt.PrimesDec(m).Select(e => e.Key.Pow(e.Value)).ToArray();
+    var mAbType = decM.Where(e => r % e == 1).ToArray();
+    var m2 = m / mAbType.Aggregate(1, (acc, e) => e * acc);
+    var r2 = r % m2;
+
+    var decN = IntExt.PrimesDec(n).Select(e => e.Key.Pow(e.Value)).ToArray();
+    var nAbType = decN.Where(e => IntExt.PowMod(r2, e, m2) != 1).ToArray();
+    var n2 = n / nAbType.Aggregate(1, (acc, e) => e * acc);
+    if (n2 == 1)
+        (n2, nAbType) = (n, []);
+    
+    var abType = AbelianExt.AbType(mAbType.Concat(nAbType).ToArray()).can;
+    var name = FG.MetaCyclicName(m2, n2, r2);
+    if (abType[0] != 1)
+        name = $"{abType.ToAbString()} x {name}";
+    return (name, abType, m2, n2, r2);
+}
+
+void TestDecomposeMetaCyclic(int maxM, int maxOrder)
+{
+    var (total, found, notFound) = (0, 0, 0);
+    foreach (var m in (maxM - 2).SeqLazy(3))
+    {
+        var mtpCoefs = MetaCyclicsM(m, maxOrder);
+        foreach (var (_, coefs) in mtpCoefs)
+        {
+            foreach (var (_, n, r) in coefs)
+            {
+                ++total;
+                var mt = FG.MetaCyclicPg(m, n, r);
+                var (_, abType, m2, n2, r2) = RewriteMetaCyclic(m, n, r);
+                var mt2 = FG.MetaCyclicPg(m2, n2, r2);
+                var ab = FG.AbelianPerm(abType);
+                var prod = ab.Order == 1 ? mt : ProductPermGroup(ab, mt2);
+                DisplayGroup.HeadOrders(mt);
+                var subs = mt.AllSubgroups();
+                var decomp = subs.DecomposeProducts(subs.ProperNonTrivialNormalSubgroups());
+                if (ab.Order != 1)
+                {
+                    DisplayGroup.HeadOrders(prod);
+                    ++found;
+                    if (!GroupCraft.AreIsomorphic(mt, prod))
+                        throw new();
+
+                    var (lhs, rhs, _) = decomp.OrderByDescending(e => e.lhs.Order)
+                        .FirstOrDefault(e =>
+                                e.isDirectProduct && (e.lhs.GroupType == GroupType.AbelianGroup ||
+                                                      e.rhs.GroupType == GroupType.AbelianGroup),
+                            (lhs: subs.TrivialClass, rhs: subs.TrivialClass, isDirectProduct: true));
+
+                    if (lhs.GroupType == GroupType.NonAbelianGroup)
+                        (lhs, rhs) = (rhs, lhs);
+                    if (lhs.Order == 1)
+                    {
+                        subs.Naming();
+                        decomp.OrderByDescending(e => e.lhs.Order).Where(e => e.isDirectProduct).Take(5).Println();
+                        throw new();
+                    }
+
+                    var abName = Group.AbelianGroupType(lhs.Representative).ToAbString();
+                    var sdp = subs.Restriction(rhs.Representative);
+                    sdp.Naming();
+                    Console.WriteLine($"{mt} = {abName} x {sdp.Parent}");
+                    Console.WriteLine();
+                }
+                else
+                {
+                    var (lhs, rhs, _) = decomp.OrderByDescending(e => e.lhs.Order)
+                        .FirstOrDefault(e =>
+                                e.isDirectProduct && (e.lhs.GroupType == GroupType.AbelianGroup ||
+                                                      e.rhs.GroupType == GroupType.AbelianGroup),
+                            (lhs: subs.TrivialClass, rhs: subs.TrivialClass, isDirectProduct: true));
+                    if (lhs.Order != 1)
+                    {
+                        if (lhs.GroupType == GroupType.NonAbelianGroup)
+                            (lhs, rhs) = (rhs, lhs);
+                        var abName = Group.AbelianGroupType(lhs.Representative).ToAbString();
+                        var sdp = subs.Restriction(rhs.Representative);
+                        sdp.Naming();
+                        Console.WriteLine($"{mt} = {abName} x {sdp.Parent}");
+                        throw new();
+                    }
+                    else
+                    {
+                        ++notFound;
+                        Console.WriteLine($"M x M(m',n')r' not found for {mt}");
+                        Console.WriteLine();
+                    }
+                }
+            }
+        }
+    }
+
+    Console.WriteLine($"Total:{total} Found:{found} NotFound:{notFound}");
+    Console.WriteLine();
+    if (total != found + notFound)
+        throw new();
+}
+
+void DecomposeMetaCyclic(int maxM, int maxOrder)
+{
+    var (total, found) = (0, 0);
+    foreach (var m in (maxM - 2).SeqLazy(3))
+    {
+        var mtpCoefs = MetaCyclicsM(m, maxOrder);
+        foreach (var (_, coefs) in mtpCoefs)
+        {
+            foreach (var (_, n, r) in coefs)
+            {
+                ++total;
+                var (_, abType, m2, n2, r2) = RewriteMetaCyclic(m, n, r);
+                var nameMt = FG.MetaCyclicName(m, n, r);
+                var nameMt2 = FG.MetaCyclicName(m2, n2, r2);
+                var nameAb = abType.ToAbString();
+                var ordAb = abType.Aggregate(1, (acc, e) => e * acc);
+                if (ordAb != 1)
+                {
+                    ++found;
+                    Console.WriteLine($"{nameMt,-15} = {nameMt2,-15} x {nameAb}");
+                }
+                else
+                    Console.WriteLine(nameMt);
+            }
+        }
+    }
+
+    Console.WriteLine($"Total:{total} Found:{found}");
+    Console.WriteLine();
+}
+
+{
+    TestDecomposeMetaCyclic(maxM: 32, maxOrder: 128); // Total:302 Found:178 NotFound:124
+    DecomposeMetaCyclic(maxM: 64, maxOrder: 1024); // Total:4121 Found:3375
+
+    var ord = 5 * 9 * 4;
+    FG.MetaCyclicCoefs(ord).Where(e => e.r > 1)
+        .ToDictionary(e => (e.m, e.n, e.r, details: FG.MetaCyclicGens(e.m, e.n, e.r)),
+            e => RewriteMetaCyclic(e.m, e.n, e.r).name)
+        .Println(e => $"{e.Key.details.name,-20} = {e.Value,-30} gens:{e.Key.details.gens.ToXSet()}",
+            $"All Metacyclic groups of order {ord}");
+    // All Metacyclic groups of order 180
+    // M(3x:60)2            = C15 x Dic3                     gens:{ [(2 3)(4 5 6)(7 8 9 10)(11 12 13 14 15)], [(1 2 3)] }
+    // F(5x:36)2            = C9 x F(5x:4)2                  gens:{ [(2 4 5 3)(6 7 8 9 10 11 12 13 14)], [(1 2 3 4 5)] }
+    // F(5x:36)4            = C9 x Dic5                      gens:{ [(2 5)(3 4)(6 7 8 9)(10 11 12 13 14 15 16 17 18)], [(1 2 3 4 5)] }
+    // M(6x:30)5            = C30 x D6                       gens:{ [(4 5)(6 7 8)(9 10 11 12 13)], [(1 2)(3 4 5)] }
+    // F(9x:20)8            = C5 x Dic9                      gens:{ [(2 9)(3 8)(4 7)(5 6)(10 11 12 13)(14 15 16 17 18)], [(1 2 3 4 5 6 7 8 9)] }
+    // M(10x:18)9           = C18 x D10                      gens:{ [(4 7)(5 6)(8 9 10 11 12 13 14 15 16)], [(1 2)(3 4 5 6 7)] }
+    // M(15x:12)2           = C3 x F(15x:4)2                 gens:{ [(2 3)(5 7 8 6)(9 10 11)], [(1 2 3)(4 5 6 7 8)] }
+    // M(15x:12)4           = C3 x C3 x Dic5                 gens:{ [(5 8)(6 7)(9 10 11)(12 13 14 15)], [(1 2 3)(4 5 6 7 8)] }
+    // M(15x:12)7           = C3 x C3 x F(5x:4)2             gens:{ [(5 7 8 6)(9 10 11)], [(1 2 3)(4 5 6 7 8)] }
+    // M(15x:12)11          = C15 x Dic3                     gens:{ [(2 3)(9 10 11)(12 13 14 15)], [(1 2 3)(4 5 6 7 8)] }
+    // M(15x:12)14          = C3 x Dic15                     gens:{ [(2 3)(5 8)(6 7)(9 10 11)(12 13 14 15)], [(1 2 3)(4 5 6 7 8)] }
+    // M(18x:10)17          = C10 x D18                      gens:{ [(4 11)(5 10)(6 9)(7 8)(12 13 14 15 16)], [(1 2)(3 4 5 6 7 8 9 10 11)] }
+    // M(30x:6)11           = C30 x D6                       gens:{ [(4 5)(11 12 13)], [(1 2)(3 4 5)(6 7 8 9 10)] }
+    // M(30x:6)19           = C6 x C3 x D10                  gens:{ [(7 10)(8 9)(11 12 13)], [(1 2)(3 4 5)(6 7 8 9 10)] }
+    // M(30x:6)29           = C6 x D30                       gens:{ [(4 5)(7 10)(8 9)(11 12 13)], [(1 2)(3 4 5)(6 7 8 9 10)] }
+    // F(45x:4)8            = F(45x:4)8                      gens:{ [(2 3 5 4)(7 14)(8 13)(9 12)(10 11)], [(1 2 3 4 5)(6 7 8 9 10 11 12 13 14)] }
+    // M(45x:4)19           = C9 x Dic5                      gens:{ [(2 5)(3 4)(15 16 17 18)], [(1 2 3 4 5)(6 7 8 9 10 11 12 13 14)] }
+    // M(45x:4)26           = C5 x Dic9                      gens:{ [(7 14)(8 13)(9 12)(10 11)(15 16 17 18)], [(1 2 3 4 5)(6 7 8 9 10 11 12 13 14)] }
+    // M(45x:4)28           = C9 x F(5x:4)3                  gens:{ [(2 3 5 4)], [(1 2 3 4 5)(6 7 8 9 10 11 12 13 14)] }
+    // Dic45                = Dic45                          gens:{ [(2 5)(3 4)(7 14)(8 13)(9 12)(10 11)(15 16 17 18)], [(1 2 3 4 5)(6 7 8 9 10 11 12 13 14)] }
+    // M(90x:2)19           = C18 x D10                      gens:{ [(4 7)(5 6)], [(1 2)(3 4 5 6 7)(8 9 10 11 12 13 14 15 16)] }
+    // M(90x:2)71           = C10 x D18                      gens:{ [(9 16)(10 15)(11 14)(12 13)], [(1 2)(3 4 5 6 7)(8 9 10 11 12 13 14 15 16)] }
+    // D180                 = C2 x D90                       gens:{ [(4 7)(5 6)(9 16)(10 15)(11 14)(12 13)], [(1 2)(3 4 5 6 7)(8 9 10 11 12 13 14 15 16)] }
 }

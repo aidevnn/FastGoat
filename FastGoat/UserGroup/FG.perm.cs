@@ -263,6 +263,12 @@ public static partial class FG
             .Select(e => ConcatPerm(e.g.Ei)).ToArray();
     }
 
+    public static ConcreteGroup<Perm> UnPg(int n)
+    {
+        var gens = UnPermGens(n);
+        return Group.Generate($"U{n}", gens[0].Sn, gens);
+    }
+
     public static (ConcreteGroup<Perm> D2n, ConcreteGroup<Perm> AutD2n) AutomorphismDihedralPg(int n)
     {
         var (a, b, gensUi) = AutomorphismDihedralGens(n);
