@@ -614,12 +614,8 @@ public static partial class Group
 
     public static ConcreteGroup<T> Zentrum<T>(ConcreteGroup<T> gr) where T : struct, IElt<T>
     {
-        var F = (T g) =>
-        {
-            var gi = gr.Invert(g);
-            return (T x) => gr.OpSeq(g, x, gi).Equals(x);
-        };
-        var genZ = gr.Where(g => gr.All(F(g))).ToArray();
+        var act = ByConjugate(gr);
+        var genZ = gr.Where(g => gr.GetGenerators().All(x => act.IsInvariant(g, x))).ToArray();
         return Generate($"Z({gr})", gr, genZ);
     }
 
