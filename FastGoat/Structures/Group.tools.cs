@@ -601,9 +601,7 @@ public static partial class Group
 
     public static ConcreteGroup<T> Normalize<T>(ConcreteGroup<T> h, ConcreteGroup<T> s) where T : struct, IElt<T>
     {
-        var actH = ByConjugate(h);
-        var n = h.Where(g => s.SetEquals(s.Select(s0 => actH(g, s0)))).ToArray();
-        return Generate($"N[{s}]({h})", h, n);
+        return Generate($"N[{s}]({h})", h, Stabs(h, ByConjugateSet(h), s.ToSet()).ToArray());
     }
 
     public static bool AreConjugate<T>(ConcreteGroup<T> g, ConcreteGroup<T> sg1, ConcreteGroup<T> sg2) where T : struct, IElt<T>
