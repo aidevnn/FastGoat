@@ -708,22 +708,10 @@ void DisplayAutFrob(int m, int n, int r)
     return (name, a, b, table);
 }
 
-{
-    // M(m,n)r = Ab x M(m',n')r'
-    // with m and n coprimes
-    // m' = p1^k1 x ... x pl^kl
-    // Aut[M(m,n)r] = Aut[Ab] x Z(Aut[M(m',n')r']) x Prod[Hol[Cpi^ki]]
-    // M(21x:8)13 = C3 x F(7x:8)6 and Aut[M(21x:8)13] = C2 x C2 x C2 x Hol[C7]
-    // M(15x:16)13 = C3 x F(5x:16)3 and Aut[M(15x:16)13] = C2 x C4 x Hol[C5]
-    // RunAutFrobWithVerification(maxM: 32, maxOrd: 256); // Total:235 AutFound:235 Time:1m22s
-
-    // RunAutFrob(maxM: 64, maxOrd: 128); // # Total:151 Time:14.415s
-}
-
 void AutMetacyclic(int maxM, int maxOrd)
 {
     GlobalStopWatch.Restart();
-    var (total, found, subTotal1, subTotal2) = (0, 0, 0, 0);
+    var (total, found, totalFlag1, totalFlag2) = (0, 0, 0, 0);
     foreach (var m in (maxM - 2).SeqLazy(3))
     {
         foreach (var (r, coefs) in MetaCyclicsM(m, maxOrd))
@@ -773,11 +761,11 @@ void AutMetacyclic(int maxM, int maxOrd)
                         GroupCraft.DisplayIsNormal(Quo, iso2);
                         if (iso2.GroupType == GroupType.NonAbelianGroup || Quo2.GroupType == GroupType.NonAbelianGroup)
                         {
-                            ++subTotal1;
+                            ++totalFlag1;
                             Console.WriteLine("warning");
                         }
                         else
-                            ++subTotal2;
+                            ++totalFlag2;
                         
                         Console.WriteLine();
                     }
@@ -786,11 +774,27 @@ void AutMetacyclic(int maxM, int maxOrd)
         }
     }
 
-    GlobalStopWatch.Show($"Total:{total} SubTotal:{subTotal1}/{subTotal2} Found:{found}");
+    GlobalStopWatch.Show($"Total:{total} Flags:{totalFlag1}/{totalFlag2} Found:{found}");
 }
 
 {
-    // AutMetacyclic(32, 128); // Total:192
-    AutMetacyclic(64, 128);
-    // AutMetacyclic(32, 256);
+    // M(m,n)r = Ab x M(m',n')r'
+    // with m and n coprimes
+    // m' = p1^k1 x ... x pl^kl
+    // Aut[M(m,n)r] = Aut[Ab] x Z(Aut[M(m',n')r']) x Prod[Hol[Cpi^ki]]
+    // M(21x:8)13 = C3 x F(7x:8)6 and Aut[M(21x:8)13] = C2 x C2 x C2 x Hol[C7]
+    // M(15x:16)13 = C3 x F(5x:16)3 and Aut[M(15x:16)13] = C2 x C4 x Hol[C5]
+    // RunAutFrobWithVerification(maxM: 32, maxOrd: 256); // Total:235 AutFound:235 Time:1m22s
+
+    // RunAutFrob(maxM: 64, maxOrd: 128); // # Total:151 Time:14.415s
+}
+
+{
+    // M(m,n)r = Ab x M(m',n')r'
+    // with m' and n' coprimes
+    // Aut[M(m,n)r] = Hol[Cm'] x: (K x: Aut[Ab]) where K is group to be determinated
+    // M(30x:4)19 = C6 x Dic5 and Aut[M(30x:4)19] = Hol[C5] x: ((C2 x C2 x C2) x: C2) 
+    // AutMetacyclic(32, 128); // Total:192 Found:192 Time:28.346s
+    // AutMetacyclic(64, 128); // Total:248 Found:248 Time:1m8s
+    AutMetacyclic(32, 256); // Total:411 Found:411 Time:4m9s
 }
