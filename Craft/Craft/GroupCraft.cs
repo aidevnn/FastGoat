@@ -228,7 +228,51 @@ public static partial class GroupCraft
 
         return table.Where(e => e.Key.Count() == ok && !e.Key.ToSet().Overlaps(h0)).ToDictionary();
     }
-    
+
+    public static ConcreteGroup<T> DummyFactor<T>(ConcreteGroup<T> G, ConcreteGroup<T> N) where T : struct, IElt<T>
+    {
+        if (!IsNormal(G, N))
+            throw new GroupException(GroupExceptionType.NotNormal);
+
+        if (N.Order == G.Order)
+            return G.C1;
+        
+        if (N.Order == 1)
+            return G;
+
+        var quo = G.Over(N);
+        var gensQuo = RecreateGenerators(quo);
+        var gensFact = gensQuo.ToDictionary(e => e, e => quo.ElementsOrders[e])
+            .Select(e => e.Key.Where(f => e.Value == G.ElementsOrders[f] && !N.Contains(f)).ToArray())
+            .Where(l => l.Length != 0)
+            .MultiLoop().Select(l => l.ToArray())
+            .FirstOrDefault(l => GenerateElementsLimited(G, l, quo.Order).Count == quo.Order, [G.Neutral()]);
+
+        return Group.Generate(quo.Name, G, gensFact);
+    } 
+
+    public static ConcreteGroup<T> DummyNormal<T>(ConcreteGroup<T> G, ConcreteGroup<T> H) where T : struct, IElt<T>
+    {
+        if (H.Order == G.Order)
+            return G.C1;
+        
+        if (H.Order == 1)
+            return G;
+
+        var cosetBase = new CosetGroup<T>(G, H, CosetType.Left);
+        var cosG = Group.Generate("Normal", cosetBase, cosetBase.GetElements().ToArray());
+        var gensCosG = RecreateGenerators(cosG);
+        var gensFact = gensCosG.ToDictionary(e => e, e => cosG.ElementsOrders[e])
+            .Select(e => e.Key.Where(f => e.Value == G.ElementsOrders[f] && !H.Contains(f)).ToArray())
+            .Where(l => l.Length != 0)
+            .MultiLoop().Select(l => l.ToArray())
+            .FirstOrDefault(l => GenerateElementsLimited(G, l, cosG.Order).Count == cosG.Order && 
+                                 IsNormal(G, Group.Generate(cosG.Name, G, l)),
+                [G.Neutral()]);
+
+        return Group.Generate(cosG.Name, G, gensFact);
+    } 
+
     public static HashSet<T> Orbits<T>(HashSet<T> gens, GroupAction<T, T> act, T x) where T : struct, IElt<T>
     {
         HashSet<T> set = new() { x };
