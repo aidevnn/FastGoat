@@ -719,3 +719,78 @@ void DisplayAutFrob(int m, int n, int r)
 
     // RunAutFrob(maxM: 64, maxOrd: 128); // # Total:151 Time:14.415s
 }
+
+void AutMetacyclic(int maxM, int maxOrd)
+{
+    GlobalStopWatch.Restart();
+    var (total, found, subTotal1, subTotal2) = (0, 0, 0, 0);
+    foreach (var m in (maxM - 2).SeqLazy(3))
+    {
+        foreach (var (r, coefs) in MetaCyclicsM(m, maxOrd))
+        {
+            foreach (var (_, n, _) in coefs)
+            {
+                var (nameAbMt1, abType, m1, n1, r1) = RewriteMetaCyclic(m, n, r);
+                if (IntExt.Gcd(m1, n1) != 1)
+                    continue;
+
+                ++total;
+
+                var mt = FG.MetaCyclicPg(m, n, r);
+                var autMt = RegPermAutGroup(mt);
+                var holCm1 = HolCn(m1);
+                
+                var iso = GroupCraft.AllIsomorphicSubGroups(autMt, holCm1).First(iso => GroupCraft.IsNormal(autMt, iso));
+                var quo = autMt.Over(iso);
+                var Quo = GroupCraft.DummyFactor(autMt, iso);
+                if (quo.Order == Quo.Order && iso.Intersect(Quo).Count() == 1)
+                {
+                    ++found;
+
+                    var ab = FG.AbelianPerm(abType);
+                    var autAb = RegPermAutGroup(ab);
+                    if (Quo.Order % autAb.Order == 0)
+                    {
+                        Console.WriteLine($"##################################### {mt.Name} = {nameAbMt1}");
+                        DisplayGroup.HeadOrders(mt);
+                        DisplayGroup.HeadOrders(autMt);
+                        DisplayGroup.HeadOrders(iso);
+                        if (Quo.Order == 1)
+                            continue;
+                        
+                        DisplayGroup.HeadOrders(Quo);
+                        GroupCraft.DisplayIsNormal(autMt, iso);
+                        GroupCraft.DisplayIsNormal(autMt, Quo);
+                        if (Quo.GroupType == GroupType.AbelianGroup || autAb.Order == 1)
+                            continue;
+                        
+                        var (iso2, Quo2) = GroupCraft.AllIsomorphicSubGroups(Quo, autAb)
+                            .Select(iso2 => (iso2, quo2: GroupCraft.DummyNormal(Quo, iso2)))
+                            .First(e => Quo.Order == e.iso2.Order * e.quo2.Order && e.iso2.Intersect(e.quo2).Count() == 1);
+                        DisplayGroup.HeadOrders(Quo2);
+                        DisplayGroup.HeadOrders(iso2);
+                        GroupCraft.DisplayIsNormal(Quo, Quo2);
+                        GroupCraft.DisplayIsNormal(Quo, iso2);
+                        if (iso2.GroupType == GroupType.NonAbelianGroup || Quo2.GroupType == GroupType.NonAbelianGroup)
+                        {
+                            ++subTotal1;
+                            Console.WriteLine("warning");
+                        }
+                        else
+                            ++subTotal2;
+                        
+                        Console.WriteLine();
+                    }
+                }
+            }
+        }
+    }
+
+    GlobalStopWatch.Show($"Total:{total} SubTotal:{subTotal1}/{subTotal2} Found:{found}");
+}
+
+{
+    // AutMetacyclic(32, 128); // Total:192
+    AutMetacyclic(64, 128);
+    // AutMetacyclic(32, 256);
+}
