@@ -126,6 +126,9 @@ public static partial class Group
             }
             else
             {
+                if (map.Keys.Count != map.Values.Distinct().Count())
+                    continue;
+                
                 var iso = IsomorphismMap(g1, g2, map);
                 if (iso.Count == ng && iso.Values.Distinct().Count() == ng)
                     yield return new(g1, iso);

@@ -38,7 +38,7 @@ public static partial class GroupCraft
 
     public static IEnumerable<Dictionary<T1, T2>> MorphismPruning<T1, T2>(IGroup<T1> G, IGroup<T2> H,
         Dictionary<T1, int> sizes,
-        Dictionary<T1, T2> pMap, Dictionary<T1, T2> map, (T1 g, T2 a)[][] gens, int idx)
+        Dictionary<T1, T2> pMap, Dictionary<T1, T2> map, (T1 g, T2 a)[][] gens, int idx, Group.MorphismType mType)
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
     {
@@ -47,6 +47,8 @@ public static partial class GroupCraft
             var map2 = map.ToDictionary();
             var pMap2 = pMap.ToDictionary();
             pMap2[g] = a;
+            if (mType == Group.MorphismType.Isomorphism && pMap2.Keys.Count != pMap2.Values.Distinct().Count())
+                continue; 
             HomomorphismMapInplace(G, H, pMap2, map2);
             if (map2.Count == sizes[g])
             {
@@ -54,7 +56,7 @@ public static partial class GroupCraft
                     yield return map2;
                 else
                 {
-                    foreach (var hom in MorphismPruning(G, H, sizes, pMap2, map2, gens, idx + 1))
+                    foreach (var hom in MorphismPruning(G, H, sizes, pMap2, map2, gens, idx + 1, mType))
                         yield return hom;
                 }
             }
@@ -62,8 +64,7 @@ public static partial class GroupCraft
     }
 
     public static IEnumerable<Homomorphism<T1, T2>> AllMorphismsWithPruning<T1, T2>(ConcreteGroup<T1> G,
-        ConcreteGroup<T2> H,
-        Group.MorphismType mType = Group.MorphismType.Homomorphism)
+        ConcreteGroup<T2> H, Dictionary<T1,T2> mapInit, Group.MorphismType mType)
         where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
     {
         var gGens = G.GetGenerators().ToArray();
@@ -81,13 +82,21 @@ public static partial class GroupCraft
         var sizes = (gGens.Length - 1).SeqLazy(1)
             .ToDictionary(i => gGens[i - 1], i => Group.GenerateElements(G, gGens.Take(i).ToArray()).Count);
         sizes[gGens.Last()] = ng;
-        foreach (var hom in MorphismPruning(G, H, sizes, new(), new() { [G.Neutral()] = H.Neutral() }, gpMap, 0))
+        foreach (var hom in MorphismPruning(G, H, sizes, new(), mapInit, gpMap, 0, mType))
         {
             if (mType == Group.MorphismType.Homomorphism)
                 yield return new(G, hom);
             else if (hom.Values.Distinct().Count() == ng)
                 yield return new(G, hom);
         }
+    }
+
+
+    public static IEnumerable<Homomorphism<T1, T2>> AllMorphismsWithPruning<T1, T2>(ConcreteGroup<T1> G,
+        ConcreteGroup<T2> H, Group.MorphismType mType = Group.MorphismType.Homomorphism)
+        where T1 : struct, IElt<T1> where T2 : struct, IElt<T2>
+    {
+        return AllMorphismsWithPruning(G, H, new() { [G.Neutral()] = H.Neutral() }, mType);
     }
 
     public static bool AreIsomorphic<T1, T2>(ConcreteGroup<T1> G, ConcreteGroup<T2> H) where T1 : struct, IElt<T1>
@@ -101,5 +110,32 @@ public static partial class GroupCraft
         Homomorphism<T1, T2> nullHom = new();
         var iso = AllMorphismsWithPruning(G, H, Group.MorphismType.Isomorphism).FirstOrDefault(nullHom);
         return !iso.IsNull;
+    }
+
+    public static void DisplayAreIsomorphic<T1, T2>(ConcreteGroup<T1> G, ConcreteGroup<T2> H) where T1 : struct, IElt<T1>
+        where T2 : struct, IElt<T2>
+    {
+        var test = AreIsomorphic(G, H);
+        Console.WriteLine($"{G} IsIsomorphic to {H}:{test}");
+        Console.WriteLine();
+    }
+
+    public static ConcreteGroup<T1> IsomorphicSubgroup<T1, T2>(ConcreteGroup<T1> G, ConcreteGroup<T2> H)
+        where T1 : struct, IElt<T1>
+        where T2 : struct, IElt<T2>
+    {
+        Homomorphism<T2, T1> nullHom = new();
+        var iso = AllMorphismsWithPruning(H, G, Group.MorphismType.Isomorphism).FirstOrDefault(nullHom);
+        if (iso.IsNull)
+            return G.C1;
+        return Group.Generate(H.Name, G, H.GetGenerators().Select(e => iso[e]).ToArray());
+    }
+
+    public static IEnumerable<ConcreteGroup<T1>> AllIsomorphicSubGroups<T1, T2>(ConcreteGroup<T1> G, ConcreteGroup<T2> H)
+        where T1 : struct, IElt<T1>
+        where T2 : struct, IElt<T2>
+    {
+        foreach (var iso in AllMorphismsWithPruning(H, G, Group.MorphismType.Isomorphism))
+            yield return Group.Generate(H.Name, G, H.GetGenerators().Select(e => iso[e]).ToArray());
     }
 }
