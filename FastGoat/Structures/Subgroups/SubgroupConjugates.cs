@@ -74,6 +74,22 @@ public struct SubgroupConjugates<T> : IElt<SubgroupConjugates<T>> where T : stru
     {
         return Factors.Count == 1;
     }
+    
+    public bool IsPSylow(int p)
+    {
+        if (!IsPGroup() || !Factors.ContainsKey(p))
+            return false;
+        var quo = Parent.Order / Order;
+        return quo % p != 0;
+    }
+
+    public bool IsSylow()
+    {
+        if (!IsPGroup())
+            return false;
+
+        return IsPSylow(Factors.Keys.First());
+    }
 
     public bool Contains(ConcreteGroup<T> g) => Conjugates.Any(e => e.SetEquals(g));
     public bool Contains(HashSet<T> g) => Conjugates.Any(e => e.SetEquals(g));
