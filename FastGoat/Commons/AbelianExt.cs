@@ -177,6 +177,21 @@ public static class AbelianExt
         }
     }
 
+    public static bool IsSubgroup(int[] g, int[] n)
+    {
+        var gP = AbToElemPows(g).GroupBy(e => e.p).ToDictionary(e => e.Key, e => e.Select(f => f.r).ToArray());
+        var nP = AbToElemPows(n).GroupBy(e => e.p).ToDictionary(e => e.Key, e => e.Select(f => f.r).ToArray());
+        foreach (var k in gP.Keys.Where(k => !nP.ContainsKey(k)))
+            nP[k] = [];
+
+        if (!gP.Keys.ToHashSet().IsSupersetOf(nP.Keys) ||
+            nP.Any(e => e.Value.Length > gP[e.Key].Length) ||
+            nP.Any(e => e.Value.OrderDescending().Zip(gP[e.Key].OrderDescending()).Any(f => f.First > f.Second)))
+            return false;
+
+        return true;
+    }
+
     public static AbQuotient Quotients(int[] g, int[] n)
     {
         var gElts = AbToElems(g);
@@ -184,14 +199,15 @@ public static class AbelianExt
 
         var gP = AbToElemPows(g).GroupBy(e => e.p).ToDictionary(e => e.Key, e => e.Select(f => f.r).ToArray());
         var nP = AbToElemPows(n).GroupBy(e => e.p).ToDictionary(e => e.Key, e => e.Select(f => f.r).ToArray());
-        var sols = new Dictionary<int, List<(int[], int[])>>();
         foreach (var k in gP.Keys.Where(k => !nP.ContainsKey(k)))
             nP[k] = [];
 
-        if (nP.Any(e =>
-                e.Value.OrderDescending().Zip(gP[e.Key].OrderDescending()).Any(f => f.First > f.Second)))
+        if (!gP.Keys.ToHashSet().IsSupersetOf(nP.Keys) ||
+            nP.Any(e => e.Value.Length > gP[e.Key].Length) ||
+            nP.Any(e => e.Value.OrderDescending().Zip(gP[e.Key].OrderDescending()).Any(f => f.First > f.Second)))
             return new(g, gElts, gP, n, nElts, nP, [[]]);
 
+        var sols = new Dictionary<int, List<(int[], int[])>>();
         foreach (var (p, ln) in nP)
         {
             var lg = gP[p];
