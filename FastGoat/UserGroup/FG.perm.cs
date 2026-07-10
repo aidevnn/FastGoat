@@ -298,4 +298,18 @@ public static partial class FG
         var autDicm = Group.Generate($"{name}", sn, gens);
         return (DicyclicPg(m), autDicm);
     }
+    
+    public static ConcreteGroup<Perm> ProductPermGroup(params ConcreteGroup<Perm>[] Gs)
+    {
+        var HnBase = Product.Gp(Gs.Cast<IGroup<Perm>>().ToArray());
+        var HnGens = HnBase.GetGenerators().Select(e => FG.ConcatPerm(e.Ei)).ToArray();
+        return Group.Generate(HnBase.Name, HnGens[0].Sn, HnGens);
+    }
+
+    public static ConcreteGroup<Perm> ProductPermGroup(string name, params ConcreteGroup<Perm>[] Gs)
+    {
+        var prod = ProductPermGroup(Gs);
+        prod.Name = name;
+        return prod;
+    }
 }

@@ -33,13 +33,6 @@ Console.WriteLine("Hello World");
 
 Perm.Style = DisplayPerm.CyclesComma;
 
-ConcreteGroup<Perm> ProductPermGroup(params ConcreteGroup<Perm>[] Gs)
-{
-    var HnBase = Product.Gp(Gs.Cast<IGroup<Perm>>().ToArray());
-    var HnGens = HnBase.GetGenerators().Select(e => FG.ConcatPerm(e.Ei)).ToArray();
-    return Group.Generate(HnBase.Name, HnGens[0].Sn, HnGens);
-}
-
 bool TypeMatch(ConcreteGroup<Automorphism<Perm>> autG)
 {
     var G = autG.Neutral().Domain;
@@ -303,7 +296,7 @@ Dictionary<int, (int m, int n, int r)[]> MetaCyclicsM(int m, int maxOrder, bool 
 
     var lhsType = quos.MinBy(l => l.Length)!;
     var lhsAb = FG.AbelianPerm(lhsType);
-    var autMtpg = ProductPermGroup(mtpq, lhsAb);
+    var autMtpg = FG.ProductPermGroup(mtpq, lhsAb);
     autMtpg.Name = $"Aut[{mtp}]";
     Console.WriteLine($"{autMtpg} = {lhsAb.Name} x {mtpq.Name}");
     Console.WriteLine();
@@ -406,7 +399,7 @@ void TestDecomposeMetaCyclic(int maxM, int maxOrder)
                 var (_, abType, m2, n2, r2) = RewriteMetaCyclic(m, n, r);
                 var mt2 = FG.MetaCyclicPg(m2, n2, r2);
                 var ab = FG.AbelianPerm(abType);
-                var prod = ab.Order == 1 ? mt : ProductPermGroup(ab, mt2);
+                var prod = ab.Order == 1 ? mt : FG.ProductPermGroup(mt.Name, ab, mt2);
                 DisplayGroup.HeadOrders(mt);
                 var subs = mt.AllSubgroups();
                 var decomp = subs.DecomposeProducts(subs.ProperNonTrivialNormalSubgroups());
@@ -610,12 +603,12 @@ ConcreteGroup<Perm> HolCn(int n)
     var autAb = RegPermAutGroup(ab);
     var z1Type = IntExt.Gcd(m, n) == 1 ? Group.AbelianGroupType(RegPermZentrumAutGroup(mt1)) : [1];
     var z1pg = FG.AbelianPerm(z1Type);
-    var head = ProductPermGroup(autAb, z1pg);
+    var head = FG.ProductPermGroup(autAb, z1pg);
     if (head.GroupType == GroupType.AbelianGroup)
         head = FG.AbelianPerm(Group.AbelianGroupType(head));
 
     var tail = HolCn(m1);
-    var autMt = head.Order != 1 ? ProductPermGroup([head, tail]) : tail;
+    var autMt = head.Order != 1 ? FG.ProductPermGroup([head, tail]) : tail;
     return (name, mt, autMt);
 }
 
@@ -727,7 +720,7 @@ void AutMetacyclic(int maxM, int maxOrd)
                 var mt = FG.MetaCyclicPg(m, n, r);
                 var autMt = RegPermAutGroup(mt);
                 var holCm1 = HolCn(m1);
-                
+
                 var iso = GroupCraft.AllIsomorphicSubGroups(autMt, holCm1).First(iso => GroupCraft.IsNormal(autMt, iso));
                 var quo = autMt.Over(iso);
                 var Quo = GroupCraft.DummyFactor(autMt, iso);
@@ -745,13 +738,13 @@ void AutMetacyclic(int maxM, int maxOrd)
                         DisplayGroup.HeadOrders(iso);
                         if (Quo.Order == 1)
                             continue;
-                        
+
                         DisplayGroup.HeadOrders(Quo);
                         GroupCraft.DisplayIsNormal(autMt, iso);
                         GroupCraft.DisplayIsNormal(autMt, Quo);
                         if (Quo.GroupType == GroupType.AbelianGroup || autAb.Order == 1)
                             continue;
-                        
+
                         var (iso2, Quo2) = GroupCraft.AllIsomorphicSubGroups(Quo, autAb)
                             .Select(iso2 => (iso2, quo2: GroupCraft.DummyNormal(Quo, iso2)))
                             .First(e => Quo.Order == e.iso2.Order * e.quo2.Order && e.iso2.Intersect(e.quo2).Count() == 1);
@@ -766,7 +759,7 @@ void AutMetacyclic(int maxM, int maxOrd)
                         }
                         else
                             ++totalFlag2;
-                        
+
                         Console.WriteLine();
                     }
                 }
@@ -797,4 +790,9 @@ void AutMetacyclic(int maxM, int maxOrd)
     // AutMetacyclic(32, 128); // Total:192 Found:192 Time:28.346s
     // AutMetacyclic(64, 128); // Total:248 Found:248 Time:1m8s
     AutMetacyclic(32, 256); // Total:411 Found:411 Time:4m9s
+}
+
+{
+    // AutSymbMetacyclic(32, 64);
+    AutSymbMetacyclic(32, 128);
 }
