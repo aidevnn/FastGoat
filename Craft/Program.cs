@@ -716,116 +716,30 @@ void AutMetacyclic(int maxM, int maxOrd)
                     continue;
 
                 ++total;
-
-                var mt = FG.MetaCyclicPg(m, n, r);
-                var autMt = RegPermAutGroup(mt);
-                var holCm1 = HolCn(m1);
-
-                var iso = GroupCraft.AllIsomorphicSubGroups(autMt, holCm1).First(iso => GroupCraft.IsNormal(autMt, iso));
-                var quo = autMt.Over(iso);
-                var Quo = GroupCraft.DummyFactor(autMt, iso);
-                if (quo.Order == Quo.Order && iso.Intersect(Quo).Count() == 1)
-                {
-                    ++found;
-
-                    var ab = FG.AbelianPerm(abType);
-                    var autAb = RegPermAutGroup(ab);
-                    if (Quo.Order % autAb.Order == 0)
-                    {
-                        Console.WriteLine($"##################################### {mt.Name} = {nameAbMt1}");
-                        DisplayGroup.HeadOrders(mt);
-                        DisplayGroup.HeadOrders(autMt);
-                        DisplayGroup.HeadOrders(iso);
-                        if (Quo.Order == 1)
-                            continue;
-
-                        DisplayGroup.HeadOrders(Quo);
-                        GroupCraft.DisplayIsNormal(autMt, iso);
-                        GroupCraft.DisplayIsNormal(autMt, Quo);
-                        if (Quo.GroupType == GroupType.AbelianGroup || autAb.Order == 1)
-                            continue;
-
-                        var (iso2, Quo2) = GroupCraft.AllIsomorphicSubGroups(Quo, autAb)
-                            .Select(iso2 => (iso2, quo2: GroupCraft.DummyNormal(Quo, iso2)))
-                            .First(e => Quo.Order == e.iso2.Order * e.quo2.Order && e.iso2.Intersect(e.quo2).Count() == 1);
-                        DisplayGroup.HeadOrders(Quo2);
-                        DisplayGroup.HeadOrders(iso2);
-                        GroupCraft.DisplayIsNormal(Quo, Quo2);
-                        GroupCraft.DisplayIsNormal(Quo, iso2);
-                        if (iso2.GroupType == GroupType.NonAbelianGroup || Quo2.GroupType == GroupType.NonAbelianGroup)
-                        {
-                            ++totalFlag1;
-                            Console.WriteLine("warning");
-                        }
-                        else
-                            ++totalFlag2;
-
-                        Console.WriteLine();
-                    }
-                }
-            }
-        }
-    }
-
-    GlobalStopWatch.Show($"Total:{total} Flags:{totalFlag1}/{totalFlag2} Found:{found}");
-}
-
-{
-    // M(m,n)r = Ab x M(m',n')r'
-    // with m and n coprimes
-    // m' = p1^k1 x ... x pl^kl
-    // Aut[M(m,n)r] = Aut[Ab] x Z(Aut[M(m',n')r']) x Prod[Hol[Cpi^ki]]
-    // M(21x:8)13 = C3 x F(7x:8)6 and Aut[M(21x:8)13] = C2 x C2 x C2 x Hol[C7]
-    // M(15x:16)13 = C3 x F(5x:16)3 and Aut[M(15x:16)13] = C2 x C4 x Hol[C5]
-    // RunAutFrobWithVerification(maxM: 32, maxOrd: 256); // Total:235 AutFound:235 Time:1m22s
-
-    // RunAutFrob(maxM: 64, maxOrd: 128); // # Total:151 Time:14.415s
-}
-
-{
-    // M(m,n)r = Ab x M(m',n')r'
-    // with m' and n' coprimes
-    // Aut[M(m,n)r] = Hol[Cm'] x: (K x: Aut[Ab]) where K is group to be determinated
-    // M(30x:4)19 = C6 x Dic5 and Aut[M(30x:4)19] = Hol[C5] x: ((C2 x C2 x C2) x: C2) 
-    // AutMetacyclic(32, 128); // Total:192 Found:192 Time:28.346s
-    // AutMetacyclic(64, 128); // Total:248 Found:248 Time:1m8s
-    // AutMetacyclic(32, 256); // Total:411 Found:411 Time:4m9s
-}
-
-void AutSymbMetacyclic(int maxM, int maxOrd)
-{
-    GlobalStopWatch.Restart();
-    var (total, found, totalFlag1, totalFlag2) = (0, 0, 0, 0);
-    foreach (var m in (maxM - 2).SeqLazy(3))
-    {
-        foreach (var (r, coefs) in MetaCyclicsM(m, maxOrd))
-        {
-            foreach (var (_, n, _) in coefs)
-            {
-                var (nameAbMt1, abType, m1, n1, r1) = RewriteMetaCyclic(m, n, r);
-                if (IntExt.Gcd(m1, n1) != 1)
-                    continue;
-
-                ++total;
                 var ab1 = FG.AbelianPerm(abType);
                 var snAB1 = ab1.Neutral().Sn;
                 var (name1, sn1, gens1) = FG.MetaCyclicGens(m1, n1, r1);
                 var mt1a = Group.Generate(name1, sn1, gens1);
-                var (a, b) = (FG.PaddingRight(gens1[0], snAB1.N), FG.PaddingRight(gens1[1], snAB1.N));
-                var abGens = ab1.GetGenerators().Select(e => FG.PaddingLeft(e, sn1.N)).ToArray();
+                var (a0, b0) = (FG.PaddingRight(gens1[0], snAB1.N), FG.PaddingRight(gens1[1], snAB1.N));
+                var abGens0 = ab1.GetGenerators().Select(e => FG.PaddingLeft(e, sn1.N)).ToArray();
                 var mt = FG.ProductPermGroup(FG.MetaCyclicName(m, n, r), mt1a, ab1);
-                var ab = Group.Generate(ab1.Name, mt, abGens);
-                var mt1 = Group.Generate(name1, mt, a, b);
-                var autMt = Group.AutomorphismGroup(mt);
+                var ab2 = Group.Generate(ab1.Name, mt, abGens0);
+                var mt1 = Group.Generate(name1, mt, a0, b0);
+                var (_, autMt, map) = RegPermGroupAndAutGroup(mt);
+                var (a, b) = (map[a0], map[b0]);
+                var abGens = abGens0.Select(e => map[e]).ToArray();
+                var ab = Group.Generate(ab1.Name, autMt.BaseGroup, abGens);
+                var act = Group.ByConjugate(autMt);
                 var invMt1 = Group.Generate($"Inv[{mt1}]", autMt,
-                    autMt.Where(aut => aut[a].Equals(a) && aut[b].Equals(b)).ToArray());
-                var invAB = Group.Generate($"Inv[{ab}]", autMt, autMt.Where(aut => abGens.All(e => aut[e].Equals(e))).ToArray());
+                    autMt.Where(aut => act.IsInvariant(aut, a) && act.IsInvariant(aut, b)).ToArray());
+                var invAB = Group.Generate($"Inv[{ab}]", autMt,
+                    autMt.Where(aut => abGens.All(e => act.IsInvariant(aut, e))).ToArray());
 
                 var autAB = Group.Generate($"Aut[{ab}]", autMt,
-                    invMt1.Where(aut => abGens.All(e => ab.Contains(aut[e]))).ToArray());
-                var cm1Gen = invAB.Where(aut => autMt.ElementsOrders[aut] == m1 && aut[a].Equals(a)).First();
+                    invMt1.Where(aut => abGens.All(e => ab.Contains(act(aut, e)))).ToArray());
+                var cm1Gen = invAB.Where(aut => autMt.ElementsOrders[aut] == m1 && act.IsInvariant(aut, a)).First();
                 var holCm1 = Group.Generate($"Hol[C{m1}]", autMt,
-                    invAB.Where(aut => aut[b].Equals(b)).Append(cm1Gen).ToArray());
+                    invAB.Where(aut => act.IsInvariant(aut, b)).Append(cm1Gen).ToArray());
 
                 var quo = GroupCraft.DummyFactor(autMt, holCm1);
                 var (A, K) = GroupCraft.AllIsomorphicSubGroups(quo, autAB)
@@ -867,7 +781,7 @@ void AutSymbMetacyclic(int maxM, int maxOrd)
                         : K.Order == 1
                             ? $"{holCm1} {symb1} {autAB}"
                             : $"{($"{holCm1} {symb1} ({K} {symb2} {autAB})"),-30} with K = {Kname}";
-                Console.WriteLine($"@@@@@@@@ {($"{mt.Name,-15} = {nameAbMt1}"),-40} {autMt,-20} = {msg}");
+                Console.WriteLine($"{($"{mt.Name,-15} = {nameAbMt1}"),-40} {autMt,-20} = {msg}");
             }
         }
     }
@@ -876,6 +790,32 @@ void AutSymbMetacyclic(int maxM, int maxOrd)
 }
 
 {
-    // AutSymbMetacyclic(32, 64);
-    AutSymbMetacyclic(32, 128);
+    // M(m,n)r = Ab x M(m',n')r'
+    // with m and n coprimes
+    // m' = p1^k1 x ... x pl^kl
+    // Aut[M(m,n)r] = Aut[Ab] x Z(Aut[M(m',n')r']) x Prod[Hol[Cpi^ki]]
+    // M(21x:8)13 = C3 x F(7x:8)6 and Aut[M(21x:8)13] = C2 x C2 x C2 x Hol[C7]
+    // M(15x:16)13 = C3 x F(5x:16)3 and Aut[M(15x:16)13] = C2 x C4 x Hol[C5]
+    // RunAutFrobWithVerification(maxM: 32, maxOrd: 256); // Total:235 AutFound:235 Time:1m22s
+
+    // RunAutFrob(maxM: 64, maxOrd: 128); // # Total:151 Time:14.415s
+}
+
+{
+    // M(m,n)r = Ab x M(m',n')r'
+    // with m' and n' coprimes
+    // Aut[M(m,n)r] = Hol[Cm'] x: (K x: Aut[Ab]) where K is group to be determinated
+    // M(20x:2)9       = C4 x D10               Aut[M(20x:2)9]       = Hol[C5] x (K x Aut[C4])        with K = C2
+    // M(20x:4)9       = C4 x Dic5              Aut[M(20x:4)9]       = Hol[C5] x (K x: Aut[C4])       with K = C2 x D8
+    // M(20x:6)9       = C12 x D10              Aut[M(20x:6)9]       = Hol[C5] x (K x Aut[C12])       with K = C2
+    // M(20x:8)9       = C4 x F(5x:8)4          Aut[M(20x:8)9]       = Hol[C5] x (K x: Aut[C4])       with K = (C4 x C2 x C2) x: C4
+    // M(20x:10)9      = C20 x D10              Aut[M(20x:10)9]      = Hol[C5] x (K x Aut[C20])       with K = C2
+    // M(20x:12)9      = C12 x Dic5             Aut[M(20x:12)9]      = Hol[C5] x (K x: Aut[C12])      with K = C2 x D8
+    // M(20x:4)17      = C4 x F(5x:4)2          Aut[M(20x:4)17]      = Hol[C5] x (K x: Aut[C4])       with K = C4
+    // M(20x:8)17      = C4 x F(5x:8)2          Aut[M(20x:8)17]      = Hol[C5] x (K x: Aut[C4])       with K = C2 x D8
+    // M(20x:12)17     = C12 x F(5x:4)2         Aut[M(20x:12)17]     = Hol[C5] x (K x: Aut[C12])      with K = C4
+    
+    AutMetacyclic(32, 128); // Total:192 Found:192 Time:17.608s
+    // AutMetacyclic(64, 128); // Total:248 Found:248 Time:48.154s
+    // AutMetacyclic(32, 256); // Total:411 Found:411 Time:2m56s
 }
