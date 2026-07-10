@@ -789,7 +789,90 @@ void AutMetacyclic(int maxM, int maxOrd)
     // M(30x:4)19 = C6 x Dic5 and Aut[M(30x:4)19] = Hol[C5] x: ((C2 x C2 x C2) x: C2) 
     // AutMetacyclic(32, 128); // Total:192 Found:192 Time:28.346s
     // AutMetacyclic(64, 128); // Total:248 Found:248 Time:1m8s
-    AutMetacyclic(32, 256); // Total:411 Found:411 Time:4m9s
+    // AutMetacyclic(32, 256); // Total:411 Found:411 Time:4m9s
+}
+
+void AutSymbMetacyclic(int maxM, int maxOrd)
+{
+    GlobalStopWatch.Restart();
+    var (total, found, totalFlag1, totalFlag2) = (0, 0, 0, 0);
+    foreach (var m in (maxM - 2).SeqLazy(3))
+    {
+        foreach (var (r, coefs) in MetaCyclicsM(m, maxOrd))
+        {
+            foreach (var (_, n, _) in coefs)
+            {
+                var (nameAbMt1, abType, m1, n1, r1) = RewriteMetaCyclic(m, n, r);
+                if (IntExt.Gcd(m1, n1) != 1)
+                    continue;
+
+                ++total;
+                var ab1 = FG.AbelianPerm(abType);
+                var snAB1 = ab1.Neutral().Sn;
+                var (name1, sn1, gens1) = FG.MetaCyclicGens(m1, n1, r1);
+                var mt1a = Group.Generate(name1, sn1, gens1);
+                var (a, b) = (FG.PaddingRight(gens1[0], snAB1.N), FG.PaddingRight(gens1[1], snAB1.N));
+                var abGens = ab1.GetGenerators().Select(e => FG.PaddingLeft(e, sn1.N)).ToArray();
+                var mt = FG.ProductPermGroup(FG.MetaCyclicName(m, n, r), mt1a, ab1);
+                var ab = Group.Generate(ab1.Name, mt, abGens);
+                var mt1 = Group.Generate(name1, mt, a, b);
+                var autMt = Group.AutomorphismGroup(mt);
+                var invMt1 = Group.Generate($"Inv[{mt1}]", autMt,
+                    autMt.Where(aut => aut[a].Equals(a) && aut[b].Equals(b)).ToArray());
+                var invAB = Group.Generate($"Inv[{ab}]", autMt, autMt.Where(aut => abGens.All(e => aut[e].Equals(e))).ToArray());
+
+                var autAB = Group.Generate($"Aut[{ab}]", autMt,
+                    invMt1.Where(aut => abGens.All(e => ab.Contains(aut[e]))).ToArray());
+                var cm1Gen = invAB.Where(aut => autMt.ElementsOrders[aut] == m1 && aut[a].Equals(a)).First();
+                var holCm1 = Group.Generate($"Hol[C{m1}]", autMt,
+                    invAB.Where(aut => aut[b].Equals(b)).Append(cm1Gen).ToArray());
+
+                var quo = GroupCraft.DummyFactor(autMt, holCm1);
+                var (A, K) = GroupCraft.AllIsomorphicSubGroups(quo, autAB)
+                    .Select(A => (autAB: A, K: GroupCraft.DummyNormal(quo, A)))
+                    .First(e => e.K.Order * e.autAB.Order == quo.Order && e.K.Intersect(e.autAB).Count() == 1);
+                K.Name = "K";
+
+                if (holCm1.Order * K.Order * autAB.Order != autMt.Order || !GroupCraft.AreIsomorphic(HolCn(m1), holCm1))
+                {
+                    Console.WriteLine($"##################################### {mt.Name} = {nameAbMt1}");
+                    DisplayGroup.HeadOrdersGenerators(mt);
+                    DisplayGroup.HeadOrders(autMt);
+                    DisplayGroup.HeadOrders(holCm1);
+                    DisplayGroup.HeadOrders(quo);
+                    DisplayGroup.HeadOrders(K);
+                    DisplayGroup.HeadOrders(A);
+                    GroupCraft.DisplayIsNormal(autMt, quo);
+                    GroupCraft.DisplayIsNormal(quo, K);
+                    GroupCraft.DisplayIsNormal(quo, A);
+                    if (!holCm1.SetEquals(autMt))
+                    {
+                        if (K.Order != 1)
+                            DisplayGroup.HeadOrders(K);
+                        if (autAB.Order != 1)
+                            DisplayGroup.HeadOrders(autAB);
+                    }
+
+                    throw new();
+                }
+
+                ++found;
+                var symb1 = GroupCraft.IsNormal(autMt, quo) ? "x" : "x:";
+                var symb2 = GroupCraft.IsNormal(quo, A) ? "x" : "x:";
+                var Kname = autMt.Order != holCm1.Order ? $"{NamesTree.BuildName(K.ToPermGroup().Item1)[0].Name}" : "";
+                var msg = autMt.Order == holCm1.Order
+                    ? $"{holCm1}"
+                    : autAB.Order == 1
+                        ? $"{($"{holCm1} {symb1} {K}"),-30} with K = {Kname}"
+                        : K.Order == 1
+                            ? $"{holCm1} {symb1} {autAB}"
+                            : $"{($"{holCm1} {symb1} ({K} {symb2} {autAB})"),-30} with K = {Kname}";
+                Console.WriteLine($"@@@@@@@@ {($"{mt.Name,-15} = {nameAbMt1}"),-40} {autMt,-20} = {msg}");
+            }
+        }
+    }
+
+    GlobalStopWatch.Show($"Total:{total} Flags:{totalFlag1}/{totalFlag2} Found:{found}");
 }
 
 {
