@@ -349,4 +349,19 @@ public static partial class GroupCraft
         Console.WriteLine($"{H} IsNormalSubgroup of {G}:{IsNormal(G, H)}");
         Console.WriteLine();
     }
+
+    public static GroupSubset<T> MonogenicSet<T>(ConcreteGroup<T> G, T e) where T : struct, IElt<T>
+    {
+        return new([e], Group.GenerateElements(G, e));
+    }
+
+    public static ConcreteGroup<T> MonogenicGroup<T>(ConcreteGroup<T> G, T e) where T : struct, IElt<T>
+    {
+        return Group.Generate($"<{e}>", G, e);
+    }
+    
+    public static ConcreteGroup<T> MonogenicGroup<T>(string name, ConcreteGroup<T> G, T e) where T : struct, IElt<T>
+    {
+        return Group.Generate(name, G, e);
+    }
 }
