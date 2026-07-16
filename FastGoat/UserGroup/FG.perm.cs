@@ -147,6 +147,16 @@ public static partial class FG
         return Group.Generate(name, sn, gens.ToArray());
     }
 
+    public static ConcreteGroup<Perm> ElementaryAbelianPerm(int q)
+    {
+        var dec = IntExt.PrimesDec(q);
+        if (dec.Count != 1)
+            throw new GroupException(GroupExceptionType.GroupDef);
+
+        var (p, n) = dec.First();
+        return AbelianPerm(Enumerable.Repeat(p, n).ToArray());
+    }
+
     public static ConcreteGroup<Perm> MetaCyclicPg(int m, int n, int r)
     {
         var (name, sn, gens) = MetaCyclicGens(m, n, r);
