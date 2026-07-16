@@ -135,7 +135,18 @@ public static partial class GroupCraft
         where T1 : struct, IElt<T1>
         where T2 : struct, IElt<T2>
     {
-        foreach (var iso in AllMorphismsWithPruning(H, G, Group.MorphismType.Isomorphism))
-            yield return Group.Generate(H.Name, G, H.GetGenerators().Select(e => iso[e]).ToArray());
+        if (G.Order % H.Order == 0)
+        {
+            if (H.Order == G.Order)
+            {
+                if (AreIsomorphic(G, H))
+                    yield return G;
+            }
+            else
+            {
+                foreach (var iso in AllMorphismsWithPruning(H, G, Group.MorphismType.Isomorphism))
+                    yield return Group.Generate(H.Name, G, H.GetGenerators().Select(e => iso[e]).ToArray());
+            }
+        }
     }
 }
