@@ -236,7 +236,7 @@ public static partial class GroupCraft
 
         if (N.Order == G.Order)
             return G.C1;
-        
+
         if (N.Order == 1)
             return G;
 
@@ -249,13 +249,13 @@ public static partial class GroupCraft
             .FirstOrDefault(l => GenerateElementsLimited(G, l, quo.Order).Count == quo.Order, [G.Neutral()]);
 
         return Group.Generate(quo.Name, G, gensFact);
-    } 
+    }
 
     public static ConcreteGroup<T> DummyNormal<T>(ConcreteGroup<T> G, ConcreteGroup<T> H) where T : struct, IElt<T>
     {
         if (H.Order == G.Order)
             return G.C1;
-        
+
         if (H.Order == 1)
             return G;
 
@@ -266,12 +266,12 @@ public static partial class GroupCraft
             .Select(e => e.Key.Where(f => e.Value == G.ElementsOrders[f] && !H.Contains(f)).ToArray())
             .Where(l => l.Length != 0)
             .MultiLoop().Select(l => l.ToArray())
-            .FirstOrDefault(l => GenerateElementsLimited(G, l, cosG.Order).Count == cosG.Order && 
+            .FirstOrDefault(l => GenerateElementsLimited(G, l, cosG.Order).Count == cosG.Order &&
                                  IsNormal(G, Group.Generate(cosG.Name, G, l)),
                 [G.Neutral()]);
 
         return Group.Generate(cosG.Name, G, gensFact);
-    } 
+    }
 
     public static HashSet<T> Orbits<T>(HashSet<T> gens, GroupAction<T, T> act, T x) where T : struct, IElt<T>
     {
@@ -314,30 +314,39 @@ public static partial class GroupCraft
         return AllOrbits(bs, G.GetGenerators().ToHashSet(), G.ToArray(), Group.ByConjugate(bs));
     }
 
-    public static bool IsNormal<T>(ConcreteGroup<T> G, HashSet<T> set) where T : struct, IElt<T>
+    public static bool IsNormal<T>(ConcreteGroup<T> G, GroupSubset<T> set) where T : struct, IElt<T>
     {
         var act = Group.ByConjugate(G);
         return G.GetGenerators().All(e => set.All(x => set.Contains(act(e, x))));
     }
 
+    public static bool IsPGroup<T>(ConcreteGroup<T> G) where T : struct, IElt<T>
+    {
+        return IntExt.PrimesDec(G.Order).Count == 1;
+    }
+
+    public static bool IsSylow<T>(ConcreteGroup<T> G, ConcreteGroup<T> H) where T : struct, IElt<T>
+    {
+        return IsPGroup(H) && IntExt.Gcd(G.Order / H.Order, H.Order) == 1;
+    }
+
     public static bool IsNormal<T>(ConcreteGroup<T> G, ConcreteGroup<T> H) where T : struct, IElt<T>
     {
-        return IsNormal(G, H.ToHashSet());
+        return IsNormal(G, H.ToSet());
     }
 
     public static bool HasComplement<T>(ConcreteGroup<T> G, ConcreteGroup<T> H) where T : struct, IElt<T>
     {
-        if (IntExt.PrimesDec(H.Order).Count != 1)
+        if (!IsSylow(G, H))
             return false;
-        
+
         var (C, N) = (Group.Centralize(G, H), Group.Normalize(G, H));
         return C.SetEquals(N);
     }
 
     public static void DisplayIsNormal<T>(ConcreteGroup<T> G, ConcreteGroup<T> H) where T : struct, IElt<T>
     {
-        var test = IsNormal(G, H.ToHashSet());
-        Console.WriteLine($"{H} IsNormalSubgroup of {G}:{test}");
+        Console.WriteLine($"{H} IsNormalSubgroup of {G}:{IsNormal(G, H)}");
         Console.WriteLine();
     }
 }
