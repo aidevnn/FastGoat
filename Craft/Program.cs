@@ -201,3 +201,109 @@ void DisplayAutFrob(int m, int n, int r)
     DisplayGroup.HeadOrders(autMt);
     Console.WriteLine();
 }
+
+void AutMtSymbProperties(int m, int n, int r)
+{
+    var (name, sn, gens) = FG.MetaCyclicGens(m, n, r);
+    var mt = Group.Generate(name, sn, gens);
+    var (a, b) = (gens[0], gens[1]);
+    var aSet = GroupCraft.MonogenicSet(mt, a);
+    var bSet = GroupCraft.MonogenicSet(mt, b);
+
+    var autMt = AutomorphismGroup(mt);
+    var invA = Group.Generate($"Inv[a{m}]", autMt, autMt.Where(aut => aut[a].Equals(a)).ToArray());
+    var autCn = Group.Generate($"Aut[C{n}]b", autMt, invA.Where(aut => bSet.Contains(aut[b])).ToArray());
+    var invB = Group.Generate($"Inv[b{n}]", autMt, autMt.Where(aut => aut[b].Equals(b)).ToArray());
+    var autCm = Group.Generate($"Aut[C{m}a]", autMt, invB.Where(aut => aSet.Contains(aut[a])).ToArray());
+    var prod0 = Group.DirectProduct(invA, invB);
+    var prod1 = Group.DirectProduct(invA, autCm);
+    var prod2 = Group.DirectProduct(autCn, invB);
+    
+    Console.WriteLine($"##################################### {mt}");
+    DisplayGroup.HeadOrdersGenerators(mt);
+    DisplayGroup.HeadOrders(autMt);
+    DisplayGroup.HeadOrders(invA);
+    DisplayGroup.HeadOrders(autCn);
+    DisplayGroup.HeadOrders(invB);
+    DisplayGroup.HeadOrders(autCm);
+    DisplayGroup.HeadOrders(prod0);
+    DisplayGroup.HeadOrders(prod1);
+    DisplayGroup.HeadOrders(prod2);
+
+    GroupCraft.DisplayIsNormal(autMt, prod0);
+    GroupCraft.DisplayIsNormal(autMt, invA);
+    GroupCraft.DisplayIsNormal(invA, autCn);
+    GroupCraft.DisplayIsNormal(autMt, invB);
+    GroupCraft.DisplayIsNormal(invB, autCm);
+
+    if (!prod0.SetEquals(autMt))
+    {
+        var K1 = GroupCraft.DummyFactor(autMt, prod0);
+        DisplayGroup.HeadOrdersGenerators(K1);
+    }
+    
+    Console.WriteLine();
+}
+
+AutomorphismMetacyclicProperties AutMtProperties(int m, int n, int r)
+{
+    var (nameAbMt1, abType, m1, n1, r1) = RewriteMetaCyclic(m, n, r);
+    var ab = FG.AbelianPerm(abType);
+
+    var mnCoprimes = IntExt.Gcd(m, n) == 1;
+    var mnReductibles = ab.Order != 1;
+    var mnReductionCoprimes = IntExt.Gcd(m1, n1) == 1;
+
+    var (name, sn, gens) = FG.MetaCyclicGens(m, n, r);
+    var mt = Group.Generate(name, sn, gens);
+    var (mtReg, autMt, map) = RegPermGroupAndAutGroup(mt);
+    var (a, b) = (map[gens[0]], map[gens[1]]);
+
+    var aSet = GroupCraft.MonogenicSet(mtReg, a);
+    var bSet = GroupCraft.MonogenicSet(mtReg, b);
+
+    var invA = Group.Generate($"Inv[a{a.Order}]", autMt,
+        autMt.Where(aut => Perm.IsInvariant(aut, a)).ToArray());
+    var autCn = Group.Generate($"Aut[C{b.Order}]b", autMt,
+        invA.Where(aut => Perm.IsInvariant(aut, bSet)).ToArray());
+    var invAIsNormal = GroupCraft.IsNormal(autMt, invA);
+    var autBIsNormal = GroupCraft.IsNormal(invA, autCn);
+
+    var invB = Group.Generate($"Inv[b{b.Order}]", autMt,
+        autMt.Where(aut => Perm.IsInvariant(aut, b)).ToArray());
+    var autCm = Group.Generate($"Aut[C{a.Order}]a", autMt,
+        invB.Where(aut => Perm.IsInvariant(aut, aSet)).ToArray());
+    var invBIsNormal = GroupCraft.IsNormal(autMt, invB);
+    var autAIsNormal = GroupCraft.IsNormal(invB, autCm);
+
+    var prod0 = Group.DirectProduct(invA, invB);
+    var prod1 = Group.DirectProduct(autCm, invA);
+    var prod2 = Group.DirectProduct(autCn, invB);
+    var prodInvsIsNormal = GroupCraft.IsNormal(autMt, prod0);
+    var prodAutInvAIsNormal = GroupCraft.IsNormal(autMt, prod1);
+
+    return new((m, n, r), mnCoprimes, mnReductibles, mnReductionCoprimes, (name, nameAbMt1), (gens[0], gens[1]), mt, (a, b),
+        mtReg, autMt, invA, autCn, invB, autCm, prod0, prod1, prod2, prodInvsIsNormal, invAIsNormal, invBIsNormal,
+        autAIsNormal, autBIsNormal, prodAutInvAIsNormal);
+}
+
+void BatchAutMtProperties(int maxM, int maxOrd)
+{
+    GlobalStopWatch.Restart();
+    var allProps = (maxM - 2).SeqLazy(3)
+        .SelectMany(m => MetaCyclicsM(m, maxOrd).SelectMany(e => e.Value.Select(f => AutMtProperties(f.m, f.n, f.r))))
+        .ToList();
+
+    // allProps.Where(e => e.InvCm.Order == e.m && e.InvCn.Order == IntExt.Phi(e.m)).Println();
+    allProps.Where(e => e.InvAisAbelian && e.InvBisAbelian).Println("InvAisAbelian AND InvBisAbelian");
+    allProps.Where(e => !e.mnReductionCoprimes && !e.AutCmInvAIsNormal)
+        .Println("NOT mnReductionCoprimes AND NOT AutCmInvAIsNormal");
+
+    var (count1, count2) = (allProps.Count(e => e.mnReductionCoprimes), allProps.Count(e => e.mnCoprimes));
+    GlobalStopWatch.Show($"Total:{allProps.Count} mnReductionCoprimes:{count1} mnCoprimes:{count2}");
+}
+
+{
+    AutMtSymbProperties(28, 4, 15);
+    // BatchAutMtProperties(32, 128);
+}
