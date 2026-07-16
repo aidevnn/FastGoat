@@ -1,5 +1,6 @@
 using FastGoat.Commons;
 using FastGoat.Structures;
+using FastGoat.Structures.Subgroups;
 
 namespace FastGoat.UserGroup.Perms;
 
@@ -98,6 +99,20 @@ public struct Perm : IElt<Perm>
         return Table.Select(i => ts[i]).ToArray();
     }
 
+    public Perm ActOn(Perm a)
+    {
+        var x = this;
+        return x * a * (x ^ -1);
+    }
+
+    public GroupSubset<Perm> ActOn(GroupSubset<Perm> set)
+    {
+        var x = this;
+        var gens = set.Generators.Select(a => x * a * (x ^ -1)).ToHashSet();
+        var elts = set.Elements.Select(a => x * a * (x ^ -1)).ToHashSet();
+        return new(gens, elts);
+    }
+
     public override string ToString()
     {
         if (Style == DisplayPerm.Table)
@@ -130,7 +145,9 @@ public struct Perm : IElt<Perm>
 
     public static bool TypeEquals(Perm a, Perm b) => a.PermType.SequenceEqual(b.PermType);
     public static int Distance(Perm a, Perm b) => a.Table.Zip(b.Table).Count(e => e.First == e.Second);
-
+    public static bool IsInvariant(Perm a, GroupSubset<Perm> set) => a.ActOn(set).Equals(set);
+    public static bool IsInvariant(Perm g, Perm a) => g.ActOn(a).Equals(a);
+    
     public static Perm operator *(Perm a, Perm b) => a.Sn.Op(a, b);
     public static Perm operator ^(Perm a, int p) => a.Sn.Times(a, p);
     public static bool operator ==(Perm a, Perm b) => a.Equals(b);
