@@ -133,6 +133,9 @@ public struct Perm : IElt<Perm>
         }
         else
         {
+            if (Equals(Sn.Neutral()))
+                return "()";
+            
             var strCycles = cycles.Select(a => $"({a.Select(b => b + 1).Glue(", ")})").Glue("");
             return $"{strCycles}";
         }
