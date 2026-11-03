@@ -772,6 +772,49 @@ public static partial class Group
         return gens;
     }
     
+    public static T[] RecreateGenerators<T>(ConcreteGroup<T> g) where T : struct, IElt<T>
+    {
+        var classes = AllOrbits(g, ByConjugate(g)).ToDictionary(e => e.Key, e => e.Value.Orbx);
+        var gens = new List<T>();
+        foreach (var (_, conjs) in classes.GroupBy(e => g.ElementsOrders[e.Key])
+                     .ToDictionary(e => e.Key, e => e.OrderBy(f => f.Value.Count).ToArray())
+                     .OrderByDescending(e => e.Key))
+        {
+            gens.AddRange(conjs.Select(e => e.Key));
+            gens.AddRange(conjs.SelectMany(f => f.Value).Where(e => !gens.Contains(e)));
+        }
+
+        return UniqueGenerators(g, gens.ToArray()).uniqueGenerators.ToArray();
+    }
+
+    public static ConcreteGroup<T> FactorGroup<T>(ConcreteGroup<T> G, ConcreteGroup<T> N) where T : struct, IElt<T>
+    {
+        if (!IsNormalSubgroup(G, N))
+            throw new GroupException(GroupExceptionType.NotNormal);
+
+        if (N.Order == G.Order)
+            return G.C1;
+
+        if (N.Order == 1)
+            return G;
+
+        var nSet = N.ToHashSet();
+        var quo = G.Over(N);
+        var gensQuo = RecreateGenerators(quo);
+        var gensFact = gensQuo.ToDictionary(e => e, e => quo.ElementsOrders[e])
+            .Select(e => e.Key.Where(f => e.Value == G.ElementsOrders[f] && !N.Contains(f)).ToArray())
+            .Where(l => l.Length != 0)
+            .MultiLoop().Select(l => l.ToArray())
+            .FirstOrDefault(l =>
+            {
+                var kSet = GenerateElements(G, l);
+                return kSet.Count == quo.Order && kSet.Intersect(nSet).Count() == 1;
+            }, [G.Neutral()]);
+
+        return Generate(quo.Name, G, gensFact);
+    }
+
+    
     extension<T>(IGroup<T> g) where T : struct, IElt<T>
     {
         public ConcreteGroup<T> C1 => new("C1", g, [g.Neutral()]);
