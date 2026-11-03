@@ -237,4 +237,30 @@ public static partial class GroupCraft
     {
         return Group.Generate(name, G, e);
     }
+    
+    public static ConcreteGroup<T> DirectProduct<T>(ConcreteGroup<T> g1, ConcreteGroup<T> g2) where T : struct, IElt<T>
+    {
+        var (ng1, ng2) = (g1.NameParenthesis(), g2.NameParenthesis());
+        var prod = Group.DirectProduct($"{ng1} * {ng2}", g1, g2);
+        var norm1 = Group.IsNormalSubgroup(prod, g1);
+        var norm2 = Group.IsNormalSubgroup(prod, g2);
+        if (prod.Order != g1.Order * g2.Order)
+            return prod;
+
+        if (norm1 && norm2)
+        {
+            prod.Name = $"{ng1} x {ng2}";
+            return prod;
+        }
+
+        if (norm1)
+        {
+            prod.Name = $"{ng1} x: {ng2}";
+            return prod;
+        }
+
+        prod.Name = $"{ng2} x: {ng1}";
+        return prod;
+    }
+
 }
