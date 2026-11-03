@@ -42,8 +42,15 @@ public static partial class FG
         return split ? ConcatPerm(CyclesSplit(m)) : new Sn(m).Cycle(m.Range(1));
     }
 
-    static (string name, Sn sn, Perm[] gens) AbelianPermGens(params int[] seq)
+    public static (string name, Sn sn, Perm[] gens) AbelianPermGens(params int[] seq0)
     {
+        var seq = seq0.Where(k => k != 1).ToArray();
+        if (seq.Length == 0)
+        {
+            var s1 = new Sn(1);
+            return ("C1", s1, [s1.Neutral()]);
+        }
+
         var cycles = seq.Select(c => Cycles(c)).ToArray();
         var dims = cycles.Select(a => a.Sn.N).ToArray();
         var name = cycles.Select(c => c.Order).ToAbString();
@@ -196,7 +203,7 @@ public static partial class FG
     {
         return MetaCyclicCoefs(ord).Select(e => MetaCyclicPg(e.m, e.n, e.r)).ToList();
     }
-    
+
     private static GroupAction<T, Perm> Action2Perm<T>(ConcreteGroup<T> g, Sn sn) where T : struct, IElt<T>
     {
         var mapEltIdx = g.Select((e, i) => (e, i: i + 1))
@@ -231,18 +238,19 @@ public static partial class FG
         return (Group.Generate(aut.Name, sn, gens), idx);
     }
 
-    public static (ConcreteGroup<Perm> G, ConcreteGroup<Perm> autG, Dictionary<Perm, int> idx) 
+    public static (ConcreteGroup<Perm> G, ConcreteGroup<Perm> autG, Dictionary<Perm, int> idx)
         RegPermAutGroup<T>(ConcreteGroup<T> G) where T : struct, IElt<T>
     {
         var sn = new Sn(G.Count());
         var mapEltIdx = G.Index().OrderBy(e => G.ElementsOrders[e.Item])
             .ToDictionary(e => e.Item, e => e.Index);
         var mapIdxElt = mapEltIdx.ToDictionary(e => e.Value, e => e.Key);
-        GroupAction<T, Perm> act = (e, p) => sn.CreateElementTable(p.Table.Select(i => mapEltIdx[G.Op(e, mapIdxElt[i])]).ToArray());
+        GroupAction<T, Perm> act = (e, p) =>
+            sn.CreateElementTable(p.Table.Select(i => mapEltIdx[G.Op(e, mapIdxElt[i])]).ToArray());
         var mapReg = G.ToDictionary(e => e, e => act(e, sn.Neutral()));
         var gensReg = G.GetGenerators().Select(e => mapReg[e]).ToArray();
         var Greg = Group.Generate(G.Name, sn, gensReg);
-        
+
         var autG = Group.AutomorphismGroup(G);
         var gens = autG.GetGenerators().Select(e => e.AutMap.ToDictionary(f => mapEltIdx[f.Key], f => mapEltIdx[f.Value]))
             .Select(e => sn.CreateElementTable(e.OrderBy(f => f.Key).Select(f => f.Value).ToArray()))
@@ -250,7 +258,7 @@ public static partial class FG
         var autGreg = Group.Generate(autG.Name, sn, gens);
         return (Greg, autGreg, mapReg.ToDictionary(e => e.Value, e => mapEltIdx[e.Key]));
     }
-    
+
     public static (Perm a, Perm b, Perm[] gensUn) AutomorphismDihedralGens(int n)
     {
         var (a, b) = MetaCyclicGens(n, 2, n - 1).gens.Deconstruct();
@@ -286,7 +294,7 @@ public static partial class FG
         var autd2n = Group.Generate($"Aut[{d2n}]", a.Sn, gensUi.Prepend(a).ToArray());
         return (d2n, autd2n);
     }
-    
+
     public static (string name, Sn n, Perm[] gens) AutomorphismDicyclicGens(int m)
     {
         if (m == 2)
@@ -308,7 +316,7 @@ public static partial class FG
         var autDicm = Group.Generate($"{name}", sn, gens);
         return (DicyclicPg(m), autDicm);
     }
-    
+
     public static ConcreteGroup<Perm> ProductPermGroup(params ConcreteGroup<Perm>[] Gs)
     {
         var HnBase = Product.Gp(Gs.Cast<IGroup<Perm>>().ToArray());
