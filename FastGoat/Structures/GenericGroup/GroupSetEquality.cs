@@ -7,5 +7,5 @@ public class GroupSetEquality<T> : EqualityComparer<ConcreteGroup<T>> where T : 
         return x is not null && y is not null && x.SetEquals(y);
     }
 
-    public override int GetHashCode(ConcreteGroup<T> obj) => (obj.Count(), obj.GroupType).GetHashCode();
+    public override int GetHashCode(ConcreteGroup<T> obj) => (obj.Order, obj.GroupType).GetHashCode();
 }
