@@ -108,7 +108,7 @@ public static partial class Group
     public static bool IsNormalSubgroup<T>(ConcreteGroup<T> g, ConcreteGroup<T> n) where T : struct, IElt<T>
     {
         if (!n.SubSetOf(g))
-            throw new GroupException(GroupExceptionType.NotNormal);
+            return false;
 
         var orbx = Orbits(g.GetGenerators().ToHashSet(), ByConjugateSet(g), n.ToSet());
         return orbx.Count == 1;
@@ -812,6 +812,28 @@ public static partial class Group
             }, [G.Neutral()]);
 
         return Generate(quo.Name, G, gensFact);
+    }
+
+    public static ConcreteGroup<Coset<T>> Over2<T>(this ConcreteGroup<T> G, ConcreteGroup<T> N) where T : struct, IElt<T>
+    {
+        if (!IsNormalSubgroup(G, N))
+            throw new GroupException(GroupExceptionType.NotNormal);
+
+        var quo = G.Over(N);
+        if (N.Order == G.Order || N.Order == 1)
+            return quo;
+
+        var K = FactorGroup(G, N);
+        var gensFact = K.GetGenerators().ToArray();
+
+        if (K.Order == 1)
+            return quo;
+
+        var map = K.Select(x => new Coset<T>(G, N, x))
+            .SelectMany(c => c.Select(e => (e, c)))
+            .ToDictionary(e => e.e, e => e.c);
+        var quo2 = new Quotient<T>(map);
+        return Generate(K.Name, quo2, gensFact.Select(e => map[e]).ToArray());
     }
 
     

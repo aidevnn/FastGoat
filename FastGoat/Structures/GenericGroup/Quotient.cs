@@ -9,7 +9,7 @@ public class Quotient<T> : IGroup<Coset<T>> where T : struct, IElt<T>
     {
         G = grG;
         H = grH;
-        Hash = (G.Hash, G.Hash, "Quo").GetHashCode();
+        Hash = (G.Hash, H.Hash, "Quo").GetHashCode();
         Name = $"{G.NameParenthesis()}/{H.NameParenthesis()}";
 
         Ord = H.Count();
@@ -25,6 +25,29 @@ public class Quotient<T> : IGroup<Coset<T>> where T : struct, IElt<T>
         }
         
         Map = Group.Cosets(G, H);
+        Elements = Map.Values.ToHashSet();
+    }
+
+    public Quotient(Dictionary<T, Coset<T>> map)
+    {
+        var cos0 = map.First().Value;
+        (G, H) = (cos0.G, cos0.H);
+        Hash = (G.Hash, H.Hash, "Quo").GetHashCode();
+        Name = $"{G.NameParenthesis()}/{H.NameParenthesis()}";
+
+        Ord = H.Count();
+        if (Ord < Group.GetStorageCapacity())
+        {
+            InvertTable = new(2 * Ord);
+            OpTable = new(2 * Ord * Ord);
+        }
+        else
+        {
+            InvertTable = new();
+            OpTable = new();
+        }
+        
+        Map = map;
         Elements = Map.Values.ToHashSet();
     }
 
