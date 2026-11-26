@@ -225,7 +225,18 @@ public static class UGCraft
         var Ha = Group.Generate("Ha", a.Sn, a);
         var aut = Group.AutomorphismMap(Ha, new() { [a] = b });
         var autBase = Group.AutBase(Ha);
-        return InnerAutMatrix(new(autBase, aut));
+        return InnerAutMatrix(new Automorphism<Perm>(autBase, aut));
+    }
+
+    public static IEnumerable<Perm> InnerAutMatrix(Dictionary<Perm, Perm> pmap)
+    {
+        var a = pmap.First().Key;
+        var H = Group.Generate("H", a.Sn, pmap.Keys.ToArray());
+        var autBase = Group.AutBase(H);
+        DisplayGroup.HeadOrders(H);
+        var aut = new Automorphism<Perm>(autBase, Group.AutomorphismMap(H, pmap));
+        Console.WriteLine($"aut:{aut} in {a.Sn}\n");
+        return InnerAutMatrix(aut);
     }
 
     public static IEnumerable<Perm> HolCnMatrix(Perm a)
@@ -272,6 +283,7 @@ public static class UGCraft
                 colsM.Any(c => c.Intersect(e.Value).Count() > 1))
             .SelectMany(e => e.Value).ToXSet();
         var M1 = Mx.Select(e => zeros.Contains(e) ? e.Zero : e).ToKMatrix(n);
+        // Console.WriteLine(M1);
         if (M1.Rows.Any(r => r.All(e => e.IsZero())) || M1.Cols.Any(c => c.All(e => e.IsZero())))
             yield break;
 
