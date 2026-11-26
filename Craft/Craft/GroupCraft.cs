@@ -247,6 +247,7 @@ public static partial class GroupCraft
         if (prod.Order != g1.Order * g2.Order)
             return prod;
 
+        var symb = g1.IntersectCount(g2) == 1 ? "x:" : ".";
         if (norm1 && norm2)
         {
             prod.Name = $"{ng1} x {ng2}";
@@ -255,11 +256,11 @@ public static partial class GroupCraft
 
         if (norm1)
         {
-            prod.Name = $"{ng1} x: {ng2}";
+            prod.Name = $"{ng1} {symb} {ng2}";
             return prod;
         }
 
-        prod.Name = $"{ng2} x: {ng1}";
+        prod.Name = $"{ng2} {symb} {ng1}";
         return prod;
     }
 
