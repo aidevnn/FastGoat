@@ -49,6 +49,11 @@ public static partial class Group
     {
         return seq.Aggregate(g.Neutral(), (acc, e) => g.Op(acc, e));
     }
+    
+    public static T Commute<T>(this IGroup<T> g, T x, T y) where T : struct, IElt<T>
+    {
+        return g.OpSeq(g.Invert(x), g.Invert(y), x, y);
+    }
 
     public static HashSet<T> GenerateElements<T>(IGroup<T> bg, HashSet<T> elements, List<T> generators)
         where T : struct, IElt<T>
