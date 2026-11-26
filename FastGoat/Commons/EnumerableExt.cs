@@ -434,7 +434,10 @@ public static class EnumerableExt
         }
     }
 
-    // public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> a) => a.OrderBy(e => IntExt.Rng.NextSingle());
+    public static int IntersectCount<T>(this IEnumerable<T> a, IEnumerable<T> b) where T : IEquatable<T>
+    {
+        return a.Intersect(b).Count();
+    }
 
     public static IEnumerable<IEnumerable<int>> PartitionM(int M, int L)
     {
