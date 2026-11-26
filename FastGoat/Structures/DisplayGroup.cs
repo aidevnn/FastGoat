@@ -78,8 +78,7 @@ public static class DisplayGroup
     public static void Cosets<T>(ConcreteGroup<Coset<T>> g, bool details = false) where T : struct, IElt<T>
     {
         Console.WriteLine("Cosets");
-        var g0 = (Quotient<T>)g.BaseGroup;
-        if (g0.G.Count() > 40)
+        if (g.Count() > 40)
         {
             Console.WriteLine("   ***   Too Big   ***");
             return;
